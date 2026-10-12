@@ -35,6 +35,26 @@ describe('preassessment progress storage', () => {
     expect(readAssessmentProgress(t + ASSESSMENT_PROGRESS_MAX_AGE_MS + 1)).toBeNull();
     expect(window.localStorage.getItem(ASSESSMENT_PROGRESS_KEY)).toBeNull();
   });
+
+  it('drops an invalid layout seed so a refresh cannot reuse a crafted shuffle', () => {
+    writeAssessmentProgress({ answers: { 1: 'A' }, programInterest: '', step: 2, seed: 'ok-seed' });
+    const stored = JSON.parse(window.localStorage.getItem(ASSESSMENT_PROGRESS_KEY)!);
+    window.localStorage.setItem(ASSESSMENT_PROGRESS_KEY, JSON.stringify({
+      ...stored,
+      seed: 'not a valid seed!!',
+      answers: { 1: 'A', 0: 'B', 201: 'C', '1.5': 'D', E: 'A' },
+      step: 2.9,
+    }));
+    expect(readAssessmentProgress()).toEqual({ answers: { 1: 'A' }, programInterest: '', step: 2 });
+  });
+
+  it('clears empty progress and ignores corrupt JSON instead of restoring junk', () => {
+    writeAssessmentProgress({ answers: { 1: 'A' }, programInterest: '', step: 2 });
+    writeAssessmentProgress({ answers: {}, programInterest: '', step: 1 });
+    expect(window.localStorage.getItem(ASSESSMENT_PROGRESS_KEY)).toBeNull();
+    window.localStorage.setItem(ASSESSMENT_PROGRESS_KEY, '{not json');
+    expect(readAssessmentProgress()).toBeNull();
+  });
 });
 
 describe('AssessmentForm', () => {
