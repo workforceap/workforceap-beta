@@ -52,6 +52,8 @@ Admin access. Only `j5` and `j6` are accepted. Document facts come solely from
 `lib/billing/twoStage/mockPreview.ts`, not a request or member record. The PDFs
 use the existing draft renderer, a conspicuous MOCK title, fictional contacts,
 and the draft/signature-required marker. They cannot serve as issued documents.
+The J5 sample uses the approved syllabus description and the same three display
+cost rows as a newly saved J5; the J6 sample keeps its single tuition row.
 Responses are private/no-store. This does not open signing or delivery gates,
 verify any real student's readiness, or create a billing record.
 
@@ -142,6 +144,15 @@ primary action, signature and send:
 - One accounting line only: `Tuition & Fees $7,500.00`, stored as `750000` cents. J5 displays Training and Fees $7,500.00, Books & Supplies $0.00, and Total Required Cost $7,500.00 (WAP-292, ops 10/8/26). The three display rows derive from the frozen total and add no accounting items. J6 retains the single Tuition & Fees display row. Already signed artifacts continue to download their archived bytes. There is
   no class/syllabus itemization. This supersedes the legacy "$7,500 is a cap"
   and empty-row behavior, for two-stage documents only.
+
+The Admin draft editor now shows the approved class description after the class
+name for J5, the current stage's recorded start/end dates, and these fixed cost
+rows before a draft is saved (WAP-303). Missing evidence is labeled “Not
+provided.” The editor's unsaved PDF preview uses current syllabus terms and the
+latest J5 readiness or J6 actual-start evidence, while the regular member-level
+GET preview shows an existing saved version's frozen facts. Both are unsigned,
+read-only previews and explicitly leave funding unconfirmed. Saving still
+rebuilds and hashes the complete draft; signed archived bytes stay unchanged.
 - Hours: `canonicalizeProgramSlug(programSlug)`, then the approved syllabus
   `totalHours` (`shared/programSyllabi.ts`). The only 200-hour program is
   `software-developer-professional-certificate-ibm` (legacy alias

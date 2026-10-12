@@ -23,6 +23,7 @@ vi.mock('@/lib/db/prisma', () => ({ prisma: new Proxy({}, { get: mocks.databaseA
 
 import { GET } from '@/app/api/admin/billing/preview/[stage]/route';
 import { getMockBillingDocumentFacts, MOCK_BILLING_PREVIEW } from '@/lib/billing/twoStage/mockPreview';
+import { getProgramSyllabus } from '@/shared/programSyllabi';
 import { WAP_BILLING_LETTERHEAD, WAP_LOGO_PUBLIC_PATH } from '@/lib/billing/twoStage/letterhead';
 import { getGucContext } from '@/lib/db/gucContext';
 
@@ -128,10 +129,14 @@ describe('GET /api/admin/billing/preview/[stage]', () => {
     expect(emails.length).toBeGreaterThan(0);
     expect(emails.every((email) => email.endsWith('@example.invalid'))).toBe(true);
     if (stage === 'j6') {
+      expect(text).not.toContain('CLASS DESCRIPTION');
       expect(text).toContain('receiving signature not yet attested');
       expect(text).toContain(MOCK_BILLING_PREVIEW.voucherReference);
       expect(text).toContain('follow up in 10 to 14 days');
     } else {
+      expect(text).toContain('CLASS DESCRIPTION');
+      expect(text.replace(/\s+/gu, ' ')).toContain(getProgramSyllabus(MOCK_BILLING_PREVIEW.programSlug)!.description.replace(/\s+/gu, ' ').trim());
+      expect(text.replace(/\s+/gu, ' ')).toContain('Training and Fees $7,500.00 Books & Supplies $0.00 Total Required Cost $7,500.00');
       expect(text).not.toContain(MOCK_BILLING_PREVIEW.voucherReference);
       expect(text).not.toContain(MOCK_BILLING_PREVIEW.financePerson.email);
     }

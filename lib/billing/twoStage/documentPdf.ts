@@ -1,7 +1,7 @@
 import { PDFDocument, type PDFFont, type PDFPage, StandardFonts, rgb } from 'pdf-lib';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { getProgramSyllabus } from '@/shared/programSyllabi';
-import { CONTENT_VERSION, type ContentVersion } from './constants';
+import { CONTENT_VERSION, TUITION_AND_FEES_CENTS, TUITION_AND_FEES_LABEL, type ContentVersion } from './constants';
 import { classEndDate } from './dates';
 
 /**
@@ -148,6 +148,8 @@ export type BillingDocumentPreviewFacts = {
   finance: { name: string | null; email: string | null };
   boardName: string | null;
   className: string | null;
+  /** Approved syllabus description for J5; never inferred from a missing program. */
+  classDescription?: string | null;
   classHours: number | null;
   classStartDate: string | null;
   classEndDate: string | null;
@@ -376,6 +378,41 @@ function classDescription(page: PDFPage, fonts: Fonts, frozenText: string, top: 
   return y + DESCRIPTION_LINE_H - 4;
 }
 
+/** Incomplete previews disclose unusable text rather than failing the PDF. */
+function previewClassDescription(page: PDFPage, fonts: Fonts, value: string | null | undefined, top: number): number {
+  const normalized = value?.replace(/\s+/gu, ' ').trim();
+  if (!normalized) return classDescription(page, fonts, '[Not provided]', top);
+  if (!isWinAnsiPrintable(normalized)) return classDescription(page, fonts, '[Text unavailable in preview]', top);
+  try {
+    wrap(normalized, fonts.regular, DESCRIPTION_SIZE, CONTENT_W, DESCRIPTION_MAX_LINES);
+  } catch {
+    return classDescription(page, fonts, '[Description exceeds preview layout]', top);
+  }
+  return classDescription(page, fonts, normalized, top);
+}
+
+function costBox(page: PDFPage, fonts: Fonts, stage: 'j5' | 'j6', top: number, tuitionCents: number, tuitionLabel: string): number {
+  const height = 37;
+  const bottom = top - height;
+  page.drawRectangle({ x: LEFT, y: bottom, width: CONTENT_W, height, color: PRICE_PALE });
+  if (stage === 'j5') {
+    const costs = [
+      ['Training and Fees', formatCents(tuitionCents)],
+      ['Books & Supplies', formatCents(0)],
+      ['Total Required Cost', formatCents(tuitionCents)],
+    ] as const;
+    costs.forEach(([label, amount], index) => {
+      const baseline = bottom + 26 - index * 11;
+      drawText(page, fonts, label, LEFT + 13, baseline, 300, 8.7, index === 2);
+      drawRight(page, fonts, amount, RIGHT - 13, baseline, 8.7, index === 2);
+    });
+  } else {
+    drawText(page, fonts, tuitionLabel, LEFT + 13, bottom + 13, 210, 10.2, true);
+    drawRight(page, fonts, formatCents(tuitionCents), RIGHT - 13, bottom + 13, 10.4, true);
+  }
+  return bottom;
+}
+
 export const DRAFT_BADGE = 'DRAFT - SIGNATURE REQUIRED';
 export const DRAFT_ON_HOLD_BADGE = 'DRAFT - ON HOLD - NOT SIGNABLE';
 export const MOCK_BADGE = 'MOCK - REVIEW ONLY - NOT SIGNED';
@@ -487,24 +524,7 @@ async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode)
   y -= 13;
   // J5's requested cost breakdown is presentation only: the frozen accounting
   // item remains Tuition & Fees, and supplies never add a second charge.
-  const priceHeight = 37;
-  const priceBottom = y - priceHeight;
-  page.drawRectangle({ x: LEFT, y: priceBottom, width: CONTENT_W, height: priceHeight, color: PRICE_PALE });
-  if (facts.stage === 'j5') {
-    const costs = [
-      ['Training and Fees', formatCents(facts.tuitionCents)],
-      ['Books & Supplies', formatCents(0)],
-      ['Total Required Cost', formatCents(facts.tuitionCents)],
-    ] as const;
-    costs.forEach(([label, amount], index) => {
-      const baseline = priceBottom + 26 - index * 11;
-      drawText(page, fonts, label, LEFT + 13, baseline, 300, 8.7, index === 2);
-      drawRight(page, fonts, amount, RIGHT - 13, baseline, 8.7, index === 2);
-    });
-  } else {
-    drawText(page, fonts, facts.tuitionLabel, LEFT + 13, priceBottom + 13, 210, 10.2, true);
-    drawRight(page, fonts, formatCents(facts.tuitionCents), RIGHT - 13, priceBottom + 13, 10.4, true);
-  }
+  const priceBottom = costBox(page, fonts, facts.stage, y, facts.tuitionCents, facts.tuitionLabel);
   y = priceBottom - 18;
   if (facts.stage === 'j5') {
     y = paragraph(page, fonts, `Please send the issued voucher and any authorization details to ${org}. A copy of this request will be retained in the student's file.`, y, 2);
@@ -591,8 +611,10 @@ export async function renderBillingDocumentPreviewPdf(input: BillingDocumentPrev
     ['Class end', dateText(facts.classEndDate)],
   ];
   if (facts.stage === 'j6') rows.push(['Voucher / PO', display(facts.voucherReference, CONTENT_W - 144, 9.3)]);
-  y = details(page, fonts, rows, y) - 16;
-  drawText(page, fonts, 'Standard tuition & fees: $7,500.00 - funding not confirmed by this preview.', LEFT, y, CONTENT_W, 8.6);
+  y = details(page, fonts, rows, y);
+  if (facts.stage === 'j5') y = previewClassDescription(page, fonts, facts.classDescription, y) + 5;
+  y = costBox(page, fonts, facts.stage, y - 13, TUITION_AND_FEES_CENTS, TUITION_AND_FEES_LABEL) - 12;
+  drawText(page, fonts, 'Standard training cost; funding not confirmed by this preview.', LEFT, y, CONTENT_W, 8.1, false, MUTED);
   y -= 17;
   drawText(page, fonts, display(facts.sourceNote, CONTENT_W, 8), LEFT, y, CONTENT_W, 8, false, MUTED);
   y -= 25;

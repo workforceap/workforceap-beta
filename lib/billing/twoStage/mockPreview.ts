@@ -16,6 +16,7 @@ import {
 } from './constants';
 import type { TwoStageDocumentFacts } from './documentPdf';
 import { classEndDate } from './dates';
+import { getProgramSyllabus } from '@/shared/programSyllabi';
 import { WAP_BILLING_LETTERHEAD } from './letterhead';
 
 export const MOCK_BILLING_PREVIEW = Object.freeze({
@@ -72,7 +73,11 @@ export function getMockBillingDocumentFacts(stage: BillingStage, logoPng: Uint8A
       addressLine2: letterhead.footer.addressLines[1],
     },
   };
-  if (stage === 'j5') return { ...common, stage };
+  if (stage === 'j5') return {
+    ...common,
+    stage,
+    classDescription: getProgramSyllabus(sample.programSlug)?.description.replace(/\s+/gu, ' ').trim(),
+  };
   return {
     ...common,
     stage,

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { KitEmptyState } from '@/components/portal/kit';
 import { GATE_CODES, type BillingStage, type CaseListItemDto, type CaseSummaryDto, type ErrorCode } from '@/lib/billing/twoStage/dto';
+import { classEndDate } from '@/lib/billing/twoStage/dates';
 import TwoStageBillingWorkbench from './TwoStageBillingWorkbench';
 import TwoStageStageEditor from './TwoStageStageEditor';
 import TwoStageQuickPreview from './TwoStageQuickPreview';
@@ -222,6 +223,16 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
         memberId={memberId}
         caseId={caseId}
         stage={stage}
+        classFacts={{
+          name: summary.case.className,
+          description: stage === 'j5' ? summary.case.classDescription : null,
+          hours: summary.case.contactHours,
+          start: stage === 'j5' ? summary.j5.readinessAttestation?.confirmedClassStartDate ?? null : summary.j6.classStarted?.classStartDate ?? null,
+          end: stage === 'j5'
+            ? summary.j5.readinessAttestation?.confirmedClassStartDate
+              ? classEndDate(summary.j5.readinessAttestation.confirmedClassStartDate) : null
+            : summary.j6.classStarted?.classEndDate ?? null,
+        }}
         j5Current={stage === 'j6' ? summary.j5.current : null}
         boardInvoices={summary.j6.boardInvoice ? [summary.j6.boardInvoice] : []}
         canSaveDraft={summary[stage].canSaveDraft}

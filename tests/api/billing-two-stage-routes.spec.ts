@@ -182,6 +182,7 @@ import { adapterError } from '@/lib/billing/twoStage/api/documents';
 import { ApiError } from '@/lib/billing/twoStage/api/http';
 import { signerIntentStatement } from '@/lib/billing/twoStage/signing';
 import { syntheticPng } from '../fixtures/billing/syntheticPng';
+import { getProgramSyllabus } from '@/shared/programSyllabi';
 
 const ORIGIN = 'http://localhost';
 const base = `${ORIGIN}/api/admin/members/${h.MEMBER}/billing/two-stage/cases`;
@@ -365,6 +366,8 @@ describe('member document previews: incomplete information is allowed without is
     h.state.cases = [];
     const text = await pdfText(await memberPreviewGet(new Request(url('j5', '?programSlug=data-analytics-professional-certificate-google')), params()));
     expect(text).toContain('160 hours');
+    expect(text).toContain('CLASS DESCRIPTION');
+    expect(text.replace(/\s+/gu, ' ')).toContain('Training and Fees $7,500.00 Books & Supplies $0.00 Total Required Cost $7,500.00');
     expect(text).toContain('enrollment is not confirmed');
     expect(text).toContain('[Not provided]');
   });
@@ -375,6 +378,8 @@ describe('member document previews: incomplete information is allowed without is
     expect(text).toContain('September 30, 2026');
     expect(text).toContain('March 30, 2027');
     expect(text).toContain('not a payment request');
+    expect(text.replace(/\s+/gu, ' ')).toContain('Tuition & Fees $7,500.00');
+    expect(text).not.toContain('CLASS DESCRIPTION');
     expect(mocks.transaction).not.toHaveBeenCalled();
     expect(h.state.attestations).toHaveLength(1);
   });
@@ -395,6 +400,40 @@ describe('member document previews: incomplete information is allowed without is
     const savedText = await pdfText(await memberPreviewGet(new Request(url('j6', `?caseId=${h.CASE}`)), params('j6')));
     expect(savedText).toContain('September 30, 2026');
     expect(savedText).toContain('March 30, 2027');
+    const editorText = await pdfText(await memberPreviewPost(jsonReq(url('j6'), { caseId: h.CASE, previewSource: 'editor' }), params('j6')));
+    expect(editorText).toContain('October 15, 2026');
+    expect(editorText).toContain('April 15, 2027');
+    expect(editorText).not.toContain('September 30, 2026');
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it('keeps saved J5 preview facts frozen while editor preview uses current syllabus and readiness', async () => {
+    h.state.records = [{ organizationId: h.ORG, caseId: h.CASE, stage: 'j5', status: 'draft', content: {
+      kind: 'j5_quote_voucher_request', training: {
+        className: 'Frozen earlier class name', classDescription: 'Frozen earlier class description.',
+        contactHours: 160, classStartDate: '2026-09-30', classEndDate: '2027-03-30',
+      },
+    } }];
+    h.state.attestations = [{ organizationId: h.ORG, caseId: h.CASE, kind: 'j5_readiness', classStartDate: new Date('2026-10-31T00:00:00Z') }];
+    const frozen = await pdfText(await memberPreviewGet(new Request(url('j5', `?caseId=${h.CASE}`)), params()));
+    expect(frozen).toContain('Frozen earlier class name');
+    expect(frozen).toContain('Frozen earlier class description.');
+    expect(frozen).toContain('September 30, 2026');
+    expect(frozen).toContain('March 30, 2027');
+
+    const current = await pdfText(await memberPreviewPost(jsonReq(url('j5'), { caseId: h.CASE, previewSource: 'editor' }), params()));
+    const syllabus = getProgramSyllabus('data-analytics-professional-certificate-google')!;
+    expect(current).toContain(syllabus.title);
+    expect(current.replace(/\s+/gu, ' ')).toContain(syllabus.description.replace(/\s+/gu, ' ').trim());
+    expect(current).toContain('October 31, 2026');
+    expect(current).toContain('April 30, 2027');
+    expect(current).not.toContain('Frozen earlier class name');
+    expect(current).not.toContain('Frozen earlier class description.');
+    (h.state.records[0].content as { training: Record<string, unknown> }).training.classDescription = undefined;
+    const legacy = await pdfText(await memberPreviewGet(new Request(url('j5', `?caseId=${h.CASE}`)), params()));
+    expect(legacy.replace(/\s+/gu, ' ')).toContain('CLASS DESCRIPTION [Not provided]');
+    expect(legacy).toContain('March 30, 2027');
+    expect(legacy).not.toContain(syllabus.description.replace(/\s+/gu, ' ').trim());
     expect(mocks.transaction).not.toHaveBeenCalled();
   });
 

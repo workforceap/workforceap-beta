@@ -15,6 +15,8 @@ import {
   type DraftSaveDto,
   type StageVersionView,
 } from '@/lib/billing/twoStage/dto';
+import { TUITION_AND_FEES_CENTS, TUITION_AND_FEES_LABEL } from '@/lib/billing/twoStage/constants';
+import { formatUsdCents } from '@/lib/billing/twoStage/lineItem';
 import { twoStageApi, draftPreviewPath, type ApiFailure } from './twoStageClient';
 import { CONTACT_SOURCE_LABELS, shortHash } from './twoStagePresentation';
 import styles from './TwoStageBillingWorkbench.module.css';
@@ -84,6 +86,8 @@ type TwoStageStageEditorProps = {
   memberId: string;
   caseId: string;
   stage: BillingStage;
+  /** Read-only source facts. Dates come from the latest stage evidence, not typed draft fields. */
+  classFacts: { name: string | null; description: string | null; hours: number | null; start: string | null; end: string | null };
   /** The J5 version for a J6 editor: empty counselor fields start from its recipients. */
   j5Current?: StageVersionView | null;
   /** Uploaded board invoices of this case (J6 only). */
@@ -103,7 +107,7 @@ type TwoStageStageEditorProps = {
  * `POST …/[stage]/draft/review` (never a write); `PUT …/[stage]/draft`
  * persists only a complete set, with the version hash the editor loaded.
  */
-export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current, boardInvoices = [], canSaveDraft, reviewRevision = 0, summaryRefreshing = false, onSaved, onClose }: TwoStageStageEditorProps) {
+export default function TwoStageStageEditor({ memberId, caseId, stage, classFacts, j5Current, boardInvoices = [], canSaveDraft, reviewRevision = 0, summaryRefreshing = false, onSaved, onClose }: TwoStageStageEditorProps) {
   const announce = useAnnounce();
   const [values, setValues] = useState<Values>({});
   const [initialSources, setInitialSources] = useState<Partial<Record<DraftField, ContactSource | 'j5'>>>({});
@@ -314,7 +318,7 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
     setMockPending(true);
     try {
       const result = await twoStageApi.previewDocument(memberId, stage, {
-        ...toPatch(stage, fields, values), caseId,
+        ...toPatch(stage, fields, values), caseId, previewSource: 'editor',
       }, controller.signal);
       if (id !== mockSequence.current || scope !== scopeRef.current || controller.signal.aborted) return;
       if (result.ok) {
@@ -389,6 +393,24 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, j5Current
         </button>
       </div>
       <p className={styles.editorNote}>Saving creates a DRAFT version for review. It does not sign or send anything.</p>
+      <section className={styles.draftFacts} aria-label={`${stage.toUpperCase()} class and cost summary`}>
+        <h4 className={styles.sectionLabel}>Class and cost for this draft</h4>
+        <dl className={styles.summary}>
+          <div><dt>Class</dt><dd>{classFacts.name ?? 'Not provided'}</dd></div>
+          {stage === 'j5' ? <div><dt>Class description</dt><dd>{classFacts.description ?? 'Not provided'}</dd></div> : null}
+          <div><dt>Training hours</dt><dd>{classFacts.hours === null ? 'Not provided' : `${classFacts.hours} hours`}</dd></div>
+          <div><dt>{stage === 'j5' ? 'Planned class start' : 'Actual class start'}</dt><dd>{classFacts.start ?? 'Not provided'}</dd></div>
+          <div><dt>Calculated class end</dt><dd>{classFacts.end ?? 'Not provided'}</dd></div>
+          {stage === 'j5' ? (
+            <>
+              <div><dt>Training and Fees</dt><dd>{formatUsdCents(TUITION_AND_FEES_CENTS)}</dd></div>
+              <div><dt>Books &amp; Supplies</dt><dd>{formatUsdCents(0)}</dd></div>
+              <div><dt>Total Required Cost</dt><dd>{formatUsdCents(TUITION_AND_FEES_CENTS)}</dd></div>
+            </>
+          ) : <div><dt>{TUITION_AND_FEES_LABEL}</dt><dd>{formatUsdCents(TUITION_AND_FEES_CENTS)}</dd></div>}
+        </dl>
+        <p className={styles.editorNote}>Dates come from recorded {stage === 'j5' ? 'J5 readiness' : 'class-start'} evidence. Review the PDF before signing.</p>
+      </section>
 
       {loadError ? (
         <div className={styles.alert} role="alert">

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db/prisma';
 import { resolveAssignedCounselorContact } from '@/lib/billing/packetAccess';
 import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
 import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
+import { getProgramSyllabus } from '@/shared/programSyllabi';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { AUTHORIZED_SIGNER, type BillingStage } from '../constants';
 import type { J5Content, J6Content } from '../content';
@@ -26,7 +27,8 @@ const date = (value: Date | string | null | undefined): string | null => {
 /** Reads available information only. No readiness, enrollment, voucher, or signature is required. */
 export async function buildMemberPreview<P>(ctx: TwoStageContext<P>, stage: BillingStage, body: unknown = {}): Promise<BillingDocumentPreviewFacts> {
   const patch = parseDraftPatch(stage, body);
-  const selection = body && typeof body === 'object' ? body as { caseId?: unknown; programSlug?: unknown } : {};
+  const selection = body && typeof body === 'object' ? body as { caseId?: unknown; programSlug?: unknown; previewSource?: unknown } : {};
+  const editorPreview = selection.previewSource === 'editor';
   const url = new URL(ctx.request.url);
   const requestedCase = text(url.searchParams.get('caseId')) ?? text(selection.caseId);
   const requestedProgram = text(url.searchParams.get('programSlug')) ?? text(selection.programSlug);
@@ -73,17 +75,23 @@ export async function buildMemberPreview<P>(ctx: TwoStageContext<P>, stage: Bill
       const started = attestations.find((a) => a.kind === 'class_started');
       const ready = attestations.find((a) => a.kind === 'j5_readiness');
       const actualStart = stage === 'j6' ? date(started?.classStartDate) : null;
-      if (stage === 'j6' && saved?.kind !== 'j6_invoice_cover_letter' && actualStart) {
+      if (stage === 'j6' && editorPreview && !actualStart) {
+        start = null;
+        end = null;
+      } else if (stage === 'j6' && (editorPreview || saved?.kind !== 'j6_invoice_cover_letter') && actualStart) {
         // A J5 quote contains planned dates. Once training has started, a new
         // J6 preview uses the actual evidence instead of that earlier estimate.
         start = actualStart;
         end = date(started?.classEndDate) ?? classEndDate(actualStart);
       } else {
-        start = date(saved?.training?.classStartDate) ?? actualStart ?? date(ready?.classStartDate);
-        end = date(saved?.training?.classEndDate) ?? (actualStart && start === actualStart ? date(started?.classEndDate) : null) ?? (start ? classEndDate(start) : null);
+        start = editorPreview ? date(ready?.classStartDate)
+          : date(saved?.training?.classStartDate) ?? actualStart ?? date(ready?.classStartDate);
+        end = editorPreview ? (start ? classEndDate(start) : null)
+          : date(saved?.training?.classEndDate) ?? (actualStart && start === actualStart ? date(started?.classEndDate) : null) ?? (start ? classEndDate(start) : null);
       }
       voucher = saved?.kind === 'j6_invoice_cover_letter' ? text(saved.voucher?.reference) : text(attestations.find((a) => a.kind === 'voucher_board_signed')?.voucherReference);
-      sourceNote = saved ? 'Available saved billing details; current editor fields override this preview only.' : 'Available case details; missing values are placeholders.';
+      sourceNote = editorPreview ? 'Current case evidence and editor fields; nothing is saved by this preview.'
+        : saved ? 'Available saved billing details; missing values are placeholders.' : 'Available case details; missing values are placeholders.';
     }
   } else if (requestedCase) {
     // The id cannot be authorized without its table. The member-only preview
@@ -91,6 +99,10 @@ export async function buildMemberPreview<P>(ctx: TwoStageContext<P>, stage: Bill
     throw apiError(404, 'CASE_NOT_FOUND', 'This billing case is unavailable. Preview the member without selecting a case.');
   }
   const terms = resolveProgramTerms(selectedProgram);
+  const approvedDescription = terms.ok ? text(getProgramSyllabus(terms.canonicalSlug)?.description?.replace(/\s+/gu, ' ')) : null;
+  const classDescription = stage === 'j5' ? editorPreview
+    ? approvedDescription
+    : saved?.kind === 'j5_quote_voucher_request' ? text(saved.training.classDescription) : approvedDescription : null;
   const choose = (typed: string | undefined, stored: unknown, fallback?: unknown) => typed !== undefined ? text(typed) : text(stored) ?? text(fallback);
   const letterhead = WAP_BILLING_LETTERHEAD;
   return {
@@ -99,8 +111,9 @@ export async function buildMemberPreview<P>(ctx: TwoStageContext<P>, stage: Bill
     counselor: { name: choose(patch.counselor?.name, saved?.counselor?.name, counselor?.fullName), email: choose(patch.counselor?.email, saved?.counselor?.email, counselor?.email), phone: choose(patch.counselor?.phone, saved?.counselor?.phone) },
     finance: { name: choose(patch.finance?.name, saved?.kind === 'j6_invoice_cover_letter' ? saved.finance?.name : null), email: choose(patch.finance?.email, saved?.kind === 'j6_invoice_cover_letter' ? saved.finance?.email : null) },
     boardName: choose(patch.boardName, saved?.boardName),
-    className: text(saved?.training?.className) ?? (terms.ok ? terms.className : null),
-    classHours: saved?.training?.contactHours ?? (terms.ok ? terms.hours : null),
+    className: editorPreview ? (terms.ok ? terms.className : null) : text(saved?.training?.className) ?? (terms.ok ? terms.className : null),
+    classDescription,
+    classHours: editorPreview ? (terms.ok ? terms.hours : null) : saved?.training?.contactHours ?? (terms.ok ? terms.hours : null),
     classStartDate: start, classEndDate: end, voucherReference: voucher, sourceNote,
     signer: AUTHORIZED_SIGNER,
     letterhead: { logoPng: logo.bytes, organizationName: letterhead.headerLines[0], website: letterhead.footer.website, businessPhone: letterhead.footer.phone, addressLine1: letterhead.footer.addressLines[0], addressLine2: letterhead.footer.addressLines[1] },
