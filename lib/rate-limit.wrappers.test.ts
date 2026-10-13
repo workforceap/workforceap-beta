@@ -16,6 +16,17 @@ test('abuse-sensitive leftover checkers use the security fail-closed wrapper', (
   assert.match(src, /checkPartnerSignupRateLimit[\s\S]*failClosedLimit\(partnerSignupRateLimiter/);
   assert.match(src, /checkBulkEmailRateLimit[\s\S]*failClosedLimit\(bulkEmailRateLimiter/);
   assert.match(src, /checkVerifyMfaRateLimit[\s\S]*failClosedLimit\(verifyMfaRateLimiter/);
+  assert.match(src, /checkEnrollmentTemplateSendRateLimit[\s\S]*failClosedLimit\(enrollmentTemplateAdminRateLimiter/);
+  assert.match(src, /checkEnrollmentTemplateSendRateLimit[\s\S]*failClosedLimit\(enrollmentTemplateMemberRateLimiter/);
+});
+
+test('enrollment template send spends the admin bucket before the student bucket', () => {
+  assert.match(src, /limiter:\s*Ratelimit\.slidingWindow\(30,\s*'1 h'\),\s*prefix:\s*'ratelimit:enrollment-template-admin'/);
+  assert.match(src, /limiter:\s*Ratelimit\.slidingWindow\(8,\s*'1 d'\),\s*prefix:\s*'ratelimit:enrollment-template-member'/);
+  assert.match(
+    src,
+    /const admin = await failClosedLimit\(enrollmentTemplateAdminRateLimiter[\s\S]*if \(!admin\.success\) return \{ success: false \};[\s\S]*failClosedLimit\(enrollmentTemplateMemberRateLimiter/,
+  );
 });
 
 test('apply signup limit window stays at the launch bump of 50 / 30 m', () => {
