@@ -1,7 +1,6 @@
 'use client';
 
 import { Globe } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import type { AppLocale } from '@/lib/i18n/config';
@@ -21,7 +20,6 @@ const allLanguages: { code: AppLocale; label: string }[] = [
 const languages = allLanguages.filter((lang) => isReviewedLocale(lang.code));
 
 export default function LanguageToggle({ compact = false }: { compact?: boolean }) {
-  const router = useRouter();
   const pathname = usePathname() ?? '/';
   const tCommon = useTranslations('common');
   const { locale, pathnameWithoutLocale } = splitLocalePrefix(pathname);
@@ -50,7 +48,10 @@ export default function LanguageToggle({ compact = false }: { compact?: boolean 
       const target =
         pathnameWithoutLocale === '/' ? withLocalePrefix('/', code) : withLocalePrefix(pathnameWithoutLocale, code);
       const search = (typeof window !== 'undefined' && window.location.search) || '';
-      router.replace(`${target}${search}`);
+      // Full page load, not router.replace: /es/login and /en/login share the
+      // same layouts, so a client navigation kept the Spanish messages and the
+      // page stayed in Spanish after picking English (ops 10/14/26).
+      window.location.assign(`${target}${search}`);
     } else {
       // Portal paths have no locale prefix — reload so middleware picks up the new cookie
       window.location.reload();

@@ -197,8 +197,8 @@ html.dark .main-nav--depth .mobile-nav-toggle:hover{
   background:var(--depthnav-surface-2);border-color:var(--depthnav-crimson);
 }
 
-/* hide language toggle to match marketing chrome (kept in DOM; logic intact) */
-.main-nav--depth .nav-lang-hidden{display:none!important}
+/* Language toggle stays visible (ops 10/14/26): with it hidden, a visitor who
+   chose Español had no way back to English on login, sign-up or apply. */
 
 /* ============================================================
    Laptop / zoomed-in laptop widths (901–1120px): keep the full horizontal

@@ -2,12 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import LanguageToggle from './LanguageToggle';
 
-const mockReplace = vi.fn();
+const mockAssign = vi.fn();
 const mockReload = vi.fn();
 const nav = vi.hoisted(() => ({ pathname: '/es/about', locale: 'es' }));
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: mockReplace }),
   usePathname: () => nav.pathname,
 }));
 
@@ -22,11 +21,11 @@ vi.mock('@/lib/i18n/client', () => ({
 
 describe('LanguageToggle', () => {
   beforeEach(() => {
-    mockReplace.mockClear();
+    mockAssign.mockClear();
     mockReload.mockClear();
     nav.pathname = '/es/about';
     nav.locale = 'es';
-    vi.stubGlobal('location', { reload: mockReload });
+    vi.stubGlobal('location', { reload: mockReload, assign: mockAssign, search: '' });
   });
 
   it('renders all language options', () => {
@@ -46,11 +45,11 @@ describe('LanguageToggle', () => {
     expect(select.value).toBe('es');
   });
 
-  it('switches locale on prefixed path via router.replace', () => {
+  it('switches locale on a prefixed path with a full page load', () => {
     render(<LanguageToggle />);
     const select = screen.getByLabelText('selectLanguage');
-    fireEvent.change(select, { target: { value: 'es' } });
-    expect(mockReplace).toHaveBeenCalledWith('/es/about');
+    fireEvent.change(select, { target: { value: 'en' } });
+    expect(mockAssign).toHaveBeenCalledWith('/en/about');
   });
 
   it('shows the cookie locale on unprefixed portal paths so English can be picked again', () => {
