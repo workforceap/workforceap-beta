@@ -3,7 +3,7 @@
 import { Globe } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { AppLocale } from '@/lib/i18n/config';
 import { isAppLocale, isReviewedLocale, splitLocalePrefix, withLocalePrefix } from '@/lib/i18n/config';
 import { setLocaleCookie } from '@/lib/i18n/client';
@@ -25,8 +25,13 @@ export default function LanguageToggle({ compact = false }: { compact?: boolean 
   const pathname = usePathname() ?? '/';
   const tCommon = useTranslations('common');
   const { locale, pathnameWithoutLocale } = splitLocalePrefix(pathname);
-
-  const currentLocale: AppLocale = locale ?? 'en';
+  // Portal paths (/dashboard, …) carry no locale prefix; the language comes
+  // from the `wap-locale` cookie via middleware. Read the rendered locale
+  // instead of assuming English, or after switching to Español the control
+  // still showed "English" and picking English fired no change, so members
+  // could not switch back (ops 10/14/26).
+  const activeLocale = useLocale();
+  const currentLocale: AppLocale = locale ?? (isAppLocale(activeLocale) ? activeLocale : 'en');
   const isPrefixedPath = !!locale;
 
   // Normally only reviewed locales are offered, but if the visitor is
