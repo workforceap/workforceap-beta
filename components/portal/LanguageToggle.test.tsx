@@ -2,16 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import LanguageToggle from './LanguageToggle';
 
-const mockReplace = vi.fn();
+const mockAssign = vi.fn();
 const mockReload = vi.fn();
+const nav = vi.hoisted(() => ({ pathname: '/es/about', locale: 'es' }));
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ replace: mockReplace }),
-  usePathname: () => '/es/about',
+  usePathname: () => nav.pathname,
 }));
 
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
+  useLocale: () => nav.locale,
 }));
 
 vi.mock('@/lib/i18n/client', () => ({
@@ -20,9 +21,11 @@ vi.mock('@/lib/i18n/client', () => ({
 
 describe('LanguageToggle', () => {
   beforeEach(() => {
-    mockReplace.mockClear();
+    mockAssign.mockClear();
     mockReload.mockClear();
-    vi.stubGlobal('location', { reload: mockReload });
+    nav.pathname = '/es/about';
+    nav.locale = 'es';
+    vi.stubGlobal('location', { reload: mockReload, assign: mockAssign, search: '' });
   });
 
   it('renders all language options', () => {
@@ -42,11 +45,28 @@ describe('LanguageToggle', () => {
     expect(select.value).toBe('es');
   });
 
-  it('switches locale on prefixed path via router.replace', () => {
+  it('switches locale on a prefixed path with a full page load', () => {
     render(<LanguageToggle />);
     const select = screen.getByLabelText('selectLanguage');
-    fireEvent.change(select, { target: { value: 'es' } });
-    expect(mockReplace).toHaveBeenCalledWith('/es/about');
+    fireEvent.change(select, { target: { value: 'en' } });
+    expect(mockAssign).toHaveBeenCalledWith('/en/about');
   });
 
+  it('shows the cookie locale on unprefixed portal paths so English can be picked again', () => {
+    nav.pathname = '/dashboard';
+    nav.locale = 'es';
+    render(<LanguageToggle />);
+    const select = screen.getByLabelText('selectLanguage') as HTMLSelectElement;
+    expect(select.value).toBe('es');
+    fireEvent.change(select, { target: { value: 'en' } });
+    expect(mockReload).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers English as a button in compact mode on a Spanish portal page', () => {
+    nav.pathname = '/dashboard';
+    nav.locale = 'es';
+    render(<LanguageToggle compact />);
+    fireEvent.click(screen.getByRole('button', { name: 'English' }));
+    expect(mockReload).toHaveBeenCalledTimes(1);
+  });
 });

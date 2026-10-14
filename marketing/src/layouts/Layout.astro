@@ -76,6 +76,15 @@ const mobileNav = [
   { href: '/contact', label: 'Contact' },
 ];
 const path = Astro.url.pathname;
+// Language switch (ops 10/14/26): visitors who picked Español had no way back
+// to English on the public pages. Only the homepage has a Spanish version, so
+// Español goes to /es; English keeps an English page where it is. The inline
+// script below also saves the choice in the `wap-locale` cookie that the Next
+// routes (apply, login, portal) read, so it carries across the whole site.
+const langOptions = [
+  { code: 'en', short: 'EN', label: 'English', href: lang === 'en' ? path : '/' },
+  { code: 'es', short: 'ES', label: 'Español', href: '/es' },
+];
 // Static marketing owns these clean URLs; omit campaign and quiz query strings
 // so search engines and shared links identify the same page.
 const publicOrigin = 'https://www.workforceap.org';
@@ -154,6 +163,9 @@ const heroPhotoUrl3 = `url('${heroPhoto3}')`;
         ))}
       </div>
       <div class="navactions">
+        <div class="langswitch" role="group" aria-label="Language">
+          {langOptions.map((o) => <a href={o.href} hreflang={o.code} lang={o.code} data-set-locale={o.code} aria-label={o.label} aria-current={o.code === lang ? 'true' : undefined}>{o.short}</a>)}
+        </div>
         <div class="navdrop navdrop--end">
           <a class="navdrop-trigger signin" href="/login">Sign in<svg class="navchev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></a>
           <div class="navdrop-menu navdrop-menu--right">
@@ -182,6 +194,9 @@ const heroPhotoUrl3 = `url('${heroPhoto3}')`;
       </div>
     </details>
     <a class="btn btn--apply" href="/apply">Apply now</a>
+    <div class="langswitch" role="group" aria-label="Language">
+      {langOptions.map((o) => <a href={o.href} hreflang={o.code} lang={o.code} data-set-locale={o.code} aria-current={o.code === lang ? 'true' : undefined}>{o.label}</a>)}
+    </div>
   </nav>
 
   <main id="main-content">
@@ -210,6 +225,11 @@ const heroPhotoUrl3 = `url('${heroPhoto3}')`;
     // The page is fully functional without JS (Astro stays zero-JS-by-default;
     // this is a tiny enhancement, reduced-motion respected by the CSS).
     (function () {
+      document.querySelectorAll('[data-set-locale]').forEach(function (a) {
+        a.addEventListener('click', function () {
+          document.cookie = 'wap-locale=' + a.getAttribute('data-set-locale') + ';path=/;max-age=31536000;SameSite=Lax';
+        });
+      });
       var nav = document.querySelector('nav.top');
       var onScroll = function () { if (nav) nav.classList.toggle('scrolled', window.scrollY > 20); };
       window.addEventListener('scroll', onScroll, { passive: true }); onScroll();

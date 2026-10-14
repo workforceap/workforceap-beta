@@ -1,9 +1,8 @@
 'use client';
 
 import { Globe } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { AppLocale } from '@/lib/i18n/config';
 import { isAppLocale, isReviewedLocale, splitLocalePrefix, withLocalePrefix } from '@/lib/i18n/config';
 import { setLocaleCookie } from '@/lib/i18n/client';
@@ -21,12 +20,16 @@ const allLanguages: { code: AppLocale; label: string }[] = [
 const languages = allLanguages.filter((lang) => isReviewedLocale(lang.code));
 
 export default function LanguageToggle({ compact = false }: { compact?: boolean }) {
-  const router = useRouter();
   const pathname = usePathname() ?? '/';
   const tCommon = useTranslations('common');
   const { locale, pathnameWithoutLocale } = splitLocalePrefix(pathname);
-
-  const currentLocale: AppLocale = locale ?? 'en';
+  // Portal paths (/dashboard, …) carry no locale prefix; the language comes
+  // from the `wap-locale` cookie via middleware. Read the rendered locale
+  // instead of assuming English, or after switching to Español the control
+  // still showed "English" and picking English fired no change, so members
+  // could not switch back (ops 10/14/26).
+  const activeLocale = useLocale();
+  const currentLocale: AppLocale = locale ?? (isAppLocale(activeLocale) ? activeLocale : 'en');
   const isPrefixedPath = !!locale;
 
   // Normally only reviewed locales are offered, but if the visitor is
@@ -45,7 +48,10 @@ export default function LanguageToggle({ compact = false }: { compact?: boolean 
       const target =
         pathnameWithoutLocale === '/' ? withLocalePrefix('/', code) : withLocalePrefix(pathnameWithoutLocale, code);
       const search = (typeof window !== 'undefined' && window.location.search) || '';
-      router.replace(`${target}${search}`);
+      // Full page load, not router.replace: /es/login and /en/login share the
+      // same layouts, so a client navigation kept the Spanish messages and the
+      // page stayed in Spanish after picking English (ops 10/14/26).
+      window.location.assign(`${target}${search}`);
     } else {
       // Portal paths have no locale prefix — reload so middleware picks up the new cookie
       window.location.reload();
