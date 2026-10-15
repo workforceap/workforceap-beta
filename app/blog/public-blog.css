@@ -1,0 +1,334 @@
+/* Existing Astro blog design, scoped to its Next-owned public surfaces. */
+
+  .public-blog{
+    /* marketing is light-only (marketing/AGENTS.md); pinning color-scheme keeps
+       every light-dark() token above resolving to its light value even if a dark
+       surface is ever introduced elsewhere on the page. */
+    color-scheme: light;
+    --crimson:var(--wa-accent,#ad2c4d); --accent-dark:var(--wa-accent-dark,#8c0f37); --plum:#6d1437;
+    --gold:var(--wa-gold,#a47f38); --gold-dark:var(--wa-gold-dark,#7d5f26);
+    --blue:var(--wa-info,#2b7bb9); --green:var(--wa-success,#4a9b4f);
+    /* Text-bearing success labels: --green (#4a9b4f) is 3.45:1 on white, below AA for
+       body-size text. Icons and fills keep --green; small labels use this dark ramp. */
+    --green-dark:var(--wa-success-dark,#357a3a);
+    /* Gold ramp for the hero and CTA treatments. These three values had no name
+       at all: they were repeated as raw hex 53, 33 and 32 times across 20 page
+       files, which is what "hardcoded colours on the public pages" mostly was.
+       Each is byte-identical to the literal it replaces — naming them is a
+       de-duplication, not a new palette. The token layer has no exact analog
+       (--wa-gold-soft is #fef3c7), so these stay marketing-local rather than
+       being force-fitted onto a portal token that would change the colour. */
+    --gold-lift:#e3bd6a;  /* lighter gold — gradient start on gold pills */
+    --gold-hi:#e9c879;    /* brightest gold — the Apply CTA gradient start */
+    --gold-glow:#f3d28f;  /* gold text / shimmer over the crimson hero art */
+    --gold-ink:#3a2c10;   /* readable ink on a gold fill */
+    --grad-gold:linear-gradient(135deg,var(--gold-lift),var(--gold));
+    --grad-gold-shimmer:linear-gradient(100deg,#fff 10%,var(--gold-glow) 50%,#fff 90%);
+    --bg:#f7f4f1; --surface:#ffffff; --surface-2:#fbf8f6;
+    --text:#1a1414; --muted:#6e6a66; --border:#ece5e0;
+    --radius:22px; --max:1180px;
+    --shadow:0 1px 2px rgba(28,20,20,.04),0 12px 40px -12px rgba(109,20,55,.14);
+    --shadow-lg:0 24px 70px -24px rgba(109,20,55,.30);
+    /* warm, single-light-source glass shadow — replaces generic black-alpha on
+       the crimson/plum hero glass cards used across interior page heroes */
+    --shadow-glass:0 30px 80px -30px rgba(58,10,30,.6),0 1px 0 rgba(255,255,255,.22) inset;
+    --grad:linear-gradient(135deg,var(--crimson) 0%,var(--accent-dark) 52%,var(--plum) 100%);
+    --grad-text:linear-gradient(100deg,var(--crimson),var(--gold));
+    font-family:var(--font-inter),system-ui,sans-serif;
+  }
+  .public-blog :where(:not(.btn)){box-sizing:border-box;margin:0;padding:0}
+  .public-blog h1,.public-blog h2,.public-blog h3,.public-blog .display{font-family:var(--font-public-blog-heading),sans-serif;letter-spacing:-.02em;line-height:1.08;text-wrap:balance}
+  .public-blog p{text-wrap:pretty}
+  .public-blog a{color:inherit;text-decoration:none}
+  .public-blog .wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+  .public-blog .grad-text{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .public-blog .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--crimson);background:rgba(173,44,77,.08);border:1px solid rgba(173,44,77,.18);padding:7px 14px;border-radius:999px}
+  .public-blog .dot{width:7px;height:7px;border-radius:50%;background:var(--crimson)}
+  /* WAP-114: css/main.css owns button geometry; the blog skin only recolors it. */
+  .public-blog .btn-primary{background:var(--grad);color:#fff;box-shadow:0 10px 30px -8px rgba(173,44,77,.5)}
+  .public-blog .btn-secondary{background:var(--surface);border-color:var(--border);color:var(--text)}
+  .public-blog .btn-secondary:hover{border-color:var(--crimson);color:var(--crimson)}
+  .public-blog{ --sec-pad: clamp(60px, 7vw, 92px); }
+  .public-blog .close .btn-primary{background:linear-gradient(135deg,#cda44e,#9a7733);color:#fff;box-shadow:0 12px 30px -10px rgba(164,127,56,.55)}
+  .public-blog .close .btn-secondary{background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
+  .public-blog .close .btn-secondary:hover{background:rgba(255,255,255,.12)}
+  .public-blog .btn:focus-visible{box-shadow:var(--wa-focus-ring)}
+  .public-blog .close .btn:focus-visible{box-shadow:var(--wa-focus-ring-on-dark)}
+/**
+ * Sitewide marketing hero photo + scarlet overlay tokens.
+ * July 2026 stakeholder pass: diverse classroom photo, translucent crimson
+ * veil — light enough that the photo reads through, heaviest at the top and
+ * bottom stops where headings and CTAs sit so white text keeps contrast.
+ * Picks per-page via Layout.astro (`heroPhotoForKey`). Gradients are global.
+ */
+.public-blog {
+  --wap-hero-photo-url: url('/images/blog/1531545514256-b1400bc00f31.jpg');
+  /* per-section photos (set per page by Layout.astro): -2 = mid-band, -3 =
+     closing CTA. Fall back to the hero photo if a page never sets them. */
+  --wap-hero-photo-url-2: var(--wap-hero-photo-url, url('/images/blog/1531545514256-b1400bc00f31.jpg'));
+  --wap-hero-photo-url-3: var(--wap-hero-photo-url, url('/images/blog/1531545514256-b1400bc00f31.jpg'));
+  /* Stage veil uses the same scarlet family as the close veil (200,16,46 /
+     187,0,0) — stakeholder 2026-07-10: the rose mid-stop read as "rust", and
+     the closing CTA's scarlet is the reference color. */
+  --wap-hero-stage-gradient: linear-gradient(
+    180deg,
+    rgba(200, 16, 46, 0.78) 0%,
+    rgba(187, 0, 0, 0.64) 45%,
+    rgba(140, 15, 55, 0.8) 100%
+  );
+  /* Split stacks so a bad photo token cannot drop the scarlet veil (background shorthand is all-or-nothing). */
+  --wap-hero-stage-photo: var(--wap-hero-photo-url, url('/images/blog/1531545514256-b1400bc00f31.jpg'));
+  --wap-hero-close-veil: linear-gradient(
+    120deg,
+    rgba(200, 16, 46, 0.76) 0%,
+    rgba(187, 0, 0, 0.62) 50%,
+    rgba(140, 15, 55, 0.78) 100%
+  );
+}
+
+
+  /* ===================================================================
+     BLOGMIX — DEPTH-LED to match the home.
+     shorter depth stage hero → light body with glass + post cards →
+     bold full-bleed crimson closing CTA.
+     =================================================================== */
+  .public-blog.blogmix{--glass:rgba(255,255,255,.10);--glass-line:rgba(255,255,255,.18)}
+
+  /* ---------------- DEPTH HERO STAGE (shorter) ---------------- */
+  .public-blog.blogmix .stage{
+    position:relative;overflow:hidden;isolation:isolate;
+    background:
+      var(--wap-hero-stage-gradient),
+      var(--wap-hero-photo-url) center 30%/cover no-repeat;
+    color:#fff;padding:80px 0 88px;
+  }
+  .public-blog.blogmix .stage-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;position:relative;z-index:2}
+
+  .public-blog.blogmix .aura{position:absolute;border-radius:50%;filter:blur(70px);z-index:0;pointer-events:none}
+  .public-blog.blogmix .aura--1{width:520px;height:520px;top:-160px;right:-120px;background:radial-gradient(circle,rgba(196,154,72,.55),transparent 68%)}
+  .public-blog.blogmix .aura--2{width:460px;height:460px;bottom:-200px;left:-140px;background:radial-gradient(circle,rgba(173,44,77,.6),transparent 70%)}
+  .public-blog.blogmix .aura--3{width:360px;height:360px;top:24%;left:44%;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%)}
+
+  .public-blog.blogmix .grain{position:absolute;inset:0;z-index:1;mix-blend-mode:overlay;pointer-events:none;
+    background-image:var(--wap-hero-photo-url);background-size:cover;background-position:center;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0%,transparent 40%,#000 100%);
+    mask-image:linear-gradient(90deg,transparent 0%,transparent 40%,#000 100%);opacity:.18}
+
+  .public-blog.blogmix .pill{display:inline-flex;align-items:center;gap:7px;max-width:100%;white-space:nowrap;
+    background:var(--grad-gold);color:var(--gold-ink);font-weight:800;font-size:13px;
+    letter-spacing:.02em;line-height:1.1;padding:9px 17px;border-radius:999px;
+    box-shadow:0 10px 28px -8px rgba(164,127,56,.6),0 1px 0 rgba(255,255,255,.4) inset}
+  .public-blog.blogmix .pill__star{font-size:13px;opacity:.95}
+  @media(max-width:430px){.public-blog.blogmix .pill{white-space:normal;text-align:left}}
+
+  .public-blog.blogmix .lede h1{font-family:var(--font-public-blog-heading),sans-serif;font-weight:800;font-size:clamp(40px,5.5vw,64px);
+    line-height:1.03;letter-spacing:-.03em;margin:20px 0 0}
+  .public-blog.blogmix .shimmer{background:var(--grad-gold-shimmer);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .public-blog.blogmix .lede .sub{font-size:19px;line-height:1.55;color:rgba(255,255,255,.82);max-width:32em;margin:20px 0 0}
+
+  .public-blog.blogmix .hcard{position:relative;border-radius:22px;padding:28px;
+    background:var(--glass);border:1px solid var(--glass-line);backdrop-filter:blur(18px);
+    box-shadow:var(--shadow-glass);color:#fff}
+  .public-blog.blogmix .hcard-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .public-blog.blogmix .hcard-ic{display:inline-flex}
+  .public-blog.blogmix .dot-live{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#fff;
+    background:rgba(74,155,79,.32);border:1px solid rgba(120,220,130,.4);padding:4px 10px;border-radius:999px}
+  .public-blog.blogmix .dot-live::before{content:"";width:7px;height:7px;border-radius:50%;background:#7fe389;box-shadow:0 0 8px #7fe389}
+  .public-blog.blogmix .hcard-big{font-family:var(--font-public-blog-heading),sans-serif;font-weight:800;font-size:24px;margin-bottom:8px}
+  .public-blog.blogmix .hcard-p{font-size:15px;line-height:1.55;color:rgba(255,255,255,.8);margin-bottom:18px}
+  .public-blog.blogmix .hcard-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .public-blog.blogmix .hcard-chips span{font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;
+    background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18)}
+
+  /* ---------------- LIGHT BODY BLOCK ---------------- */
+  .public-blog.blogmix .blk{width:100%;padding:var(--sec-pad) 0}
+  .public-blog.blogmix .blk--cream{background:var(--bg);color:var(--text)}
+
+  /* quick nav cards (elevated) */
+  .public-blog.blogmix .blog-quick{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:30px}
+  .public-blog.blogmix .qcard{
+    display:flex;align-items:center;gap:16px;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);
+    border-top:5px solid var(--crimson);
+    transition:transform .18s,box-shadow .2s,border-color .2s;
+  }
+  .public-blog.blogmix .qcard:nth-child(2){border-top-color:var(--gold)}
+  .public-blog.blogmix .qcard:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:rgba(173,44,77,.3)}
+  .public-blog.blogmix .qcard .ic{width:50px;height:50px;border-radius:13px;display:grid;place-items:center;flex-shrink:0}
+  .public-blog.blogmix .qcard .ic--c{background:rgba(173,44,77,.12)}
+  .public-blog.blogmix .qcard .ic--g{background:rgba(164,127,56,.14)}
+  .public-blog.blogmix .qtext{flex:1;display:flex;flex-direction:column;gap:3px}
+  .public-blog.blogmix .qt{font-family:var(--font-public-blog-heading),sans-serif;font-weight:700;font-size:18px}
+  .public-blog.blogmix .qs{color:var(--muted);font-size:14px}
+  .public-blog.blogmix .qarr{color:var(--crimson);font-size:22px;font-weight:700;flex-shrink:0}
+
+  /* category chips */
+  .public-blog.blogmix .cats{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+  .public-blog.blogmix .cat-chip{font-size:13px;font-weight:700;padding:7px 14px;border-radius:999px;
+    background:rgba(173,44,77,.08);border:1px solid rgba(173,44,77,.18);color:var(--crimson)}
+  .public-blog.blogmix .cat-chip{cursor:pointer;background:none;font:inherit}
+  .public-blog.blogmix .cat-chip.is-active{background:var(--crimson);color:#fff;border-color:var(--crimson)}
+
+  /* post grid */
+  .public-blog.blogmix .post-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;margin-bottom:40px}
+  .public-blog.blogmix .post-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden;transition:transform .18s,box-shadow .2s,border-color .2s}
+  .public-blog.blogmix .post-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:rgba(173,44,77,.3)}
+  .public-blog.blogmix .post-link{display:flex;flex-direction:column;height:100%}
+  .public-blog.blogmix .post-cover{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--surface-2)}
+  .public-blog.blogmix .post-cover img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s ease}
+  @media (prefers-reduced-motion: no-preference){.public-blog.blogmix .post-card:hover .post-cover img{transform:scale(1.05)}}
+  .public-blog.blogmix .post-cat{position:absolute;left:12px;top:12px;font-size:13px;font-weight:800;letter-spacing:.02em;
+    padding:5px 11px;border-radius:999px;background:rgba(26,20,20,.72);color:#fff;backdrop-filter:blur(6px)}
+  .public-blog.blogmix .post-title{font-family:var(--font-public-blog-heading),sans-serif;font-size:18px;font-weight:800;line-height:1.25;
+    margin:18px 20px 0;color:var(--text)}
+  .public-blog.blogmix .post-excerpt{color:var(--muted);font-size:14.5px;line-height:1.55;margin:10px 20px 0;flex:1}
+  .public-blog.blogmix .post-meta{color:var(--muted);font-size:13px;font-weight:600;margin:16px 20px 0}
+  .public-blog.blogmix .post-cta{display:inline-block;margin:12px 20px 22px;color:var(--crimson);font-weight:700;font-size:14px}
+
+  /* updates card (elevated) */
+  .public-blog.blogmix .updates-card{
+    text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:40px 28px;box-shadow:var(--shadow);border-top:5px solid var(--gold);
+  }
+  .public-blog.blogmix .updates-ic{width:60px;height:60px;border-radius:16px;margin:0 auto 16px;
+    background:rgba(164,127,56,.14);color:var(--gold-dark);display:grid;place-items:center}
+  .public-blog.blogmix .updates-card h2{font-family:var(--font-public-blog-heading),sans-serif;font-size:26px;font-weight:800;margin-bottom:10px}
+  .public-blog.blogmix .updates-card p{color:var(--muted);font-size:16px;max-width:36em;margin:0 auto 22px}
+
+  /* ---------------- BOLD FULL-BLEED CLOSING CTA ---------------- */
+  .public-blog.blogmix .close{position:relative;overflow:hidden;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw}
+  .public-blog.blogmix .close__media{position:absolute;inset:0;background:var(--wap-hero-photo-url-3) center 40%/cover no-repeat}
+  .public-blog.blogmix .close__veil{position:absolute;inset:0;
+    background:var(--wap-hero-close-veil)}
+  .public-blog.blogmix .close__inner{position:relative;z-index:2;color:#fff;text-align:center;padding:88px 24px 96px;max-width:var(--max)}
+  .public-blog.blogmix .close__inner h2{font-family:var(--font-public-blog-heading),sans-serif;font-weight:800;font-size:clamp(34px,5.5vw,60px);line-height:.98;letter-spacing:-.03em;margin-bottom:18px}
+  .public-blog.blogmix .close__inner p{font-size:clamp(17px,2.2vw,21px);color:rgba(255,255,255,.92);max-width:40em;margin:0 auto 30px;line-height:1.5}
+  .public-blog.blogmix .cta-link{color:inherit;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+
+  .public-blog.blogmix .acts{display:flex;gap:14px;flex-wrap:wrap}
+  .public-blog.blogmix .acts--center{justify-content:center}
+
+  /* ---------------- RESPONSIVE ---------------- */
+  @media(max-width:880px){
+    .public-blog.blogmix .stage{padding:64px 0 72px}
+    .public-blog.blogmix .stage-grid{grid-template-columns:1fr;gap:44px}
+    .public-blog.blogmix .grain{-webkit-mask-image:none;mask-image:none;opacity:.12}
+  }
+  @media(max-width:760px){
+    .public-blog.blogmix .blog-quick{grid-template-columns:1fr}
+  }
+  @media(max-width:560px){
+    .public-blog.blogmix .acts .btn{width:100%}
+  }
+
+
+  .public-blog.blogpost{--glass:rgba(255,255,255,.10);--glass-line:rgba(255,255,255,.18)}
+
+  /* ---------------- COMPACT DEPTH HERO STAGE ---------------- */
+  .public-blog.blogpost .stage{
+    position:relative;overflow:hidden;isolation:isolate;
+    background:
+      var(--wap-hero-stage-gradient),
+      var(--wap-hero-photo-url) center 30%/cover no-repeat;
+    color:#fff;padding:64px 0 72px;
+  }
+  .public-blog.blogpost .stage-inner{position:relative;z-index:2;max-width:840px}
+
+  .public-blog.blogpost .aura{position:absolute;border-radius:50%;filter:blur(70px);z-index:0;pointer-events:none}
+  .public-blog.blogpost .aura--1{width:520px;height:520px;top:-160px;right:-120px;background:radial-gradient(circle,rgba(196,154,72,.55),transparent 68%)}
+  .public-blog.blogpost .aura--2{width:460px;height:460px;bottom:-200px;left:-140px;background:radial-gradient(circle,rgba(173,44,77,.6),transparent 70%)}
+  .public-blog.blogpost .aura--3{width:360px;height:360px;top:24%;left:44%;background:radial-gradient(circle,rgba(255,255,255,.16),transparent 70%)}
+
+  .public-blog.blogpost .grain{position:absolute;inset:0;z-index:1;mix-blend-mode:overlay;pointer-events:none;
+    background-image:var(--wap-hero-photo-url);background-size:cover;background-position:center;
+    -webkit-mask-image:linear-gradient(90deg,transparent 0%,transparent 40%,#000 100%);
+    mask-image:linear-gradient(90deg,transparent 0%,transparent 40%,#000 100%);opacity:.16}
+
+  .public-blog.blogpost .backlink{display:inline-flex;align-items:center;gap:7px;color:rgba(255,255,255,.82);font-weight:600;font-size:14px;margin-bottom:18px;padding:8px 0;min-height:44px;box-sizing:border-box}
+  .public-blog.blogpost .backlink:hover{color:#fff}
+  .public-blog.blogpost .backlink span{font-size:16px}
+
+  .public-blog.blogpost .pill{display:inline-flex;align-items:center;gap:7px;max-width:100%;white-space:nowrap;
+    background:var(--grad-gold);color:var(--gold-ink);font-weight:800;font-size:13px;
+    letter-spacing:.02em;line-height:1.1;padding:9px 17px;border-radius:999px;
+    box-shadow:0 10px 28px -8px rgba(164,127,56,.6),0 1px 0 rgba(255,255,255,.4) inset}
+  .public-blog.blogpost .pill__star{font-size:13px;opacity:.95}
+
+  .public-blog.blogpost .stage-inner h1{font-family:var(--font-public-blog-heading),sans-serif;font-weight:800;font-size:clamp(30px,4.6vw,52px);
+    line-height:1.06;letter-spacing:-.03em;margin:18px 0 0}
+  .public-blog.blogpost .meta{font-size:15px;color:rgba(255,255,255,.8);margin:16px 0 0;font-weight:600}
+
+  /* ---------------- LIGHT BODY BLOCK ---------------- */
+  .public-blog.blogpost .blk{width:100%;padding:var(--sec-pad) 0}
+  .public-blog.blogpost .blk--cream{background:var(--bg);color:var(--text)}
+  .public-blog.blogpost .layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:48px;align-items:start;max-width:1060px}
+
+  .public-blog.blogpost .article{min-width:0;max-width:68ch}
+  .public-blog.blogpost .cover{border-radius:var(--radius);overflow:hidden;aspect-ratio:16/9;margin-bottom:32px;box-shadow:var(--shadow)}
+  .public-blog.blogpost .cover img{width:100%;height:100%;object-fit:cover;display:block}
+
+  /* prose */
+  .public-blog.blogpost .prose{font-size:17px;line-height:1.72;color:var(--text)}
+  .public-blog.blogpost .prose p{margin:0 0 1.25em}
+  .public-blog.blogpost .prose strong{font-weight:700;color:var(--text)}
+  .public-blog.blogpost .prose ul{margin:0 0 1.25em;padding-left:1.25em}
+  .public-blog.blogpost .prose li{margin:0 0 .5em}
+  .public-blog.blogpost .prose li::marker{color:var(--crimson)}
+
+  /* closing CTA card (elevated, in-flow) */
+  .public-blog.blogpost .cta-card{
+    margin-top:48px;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:36px 32px;box-shadow:var(--shadow);
+    border-top:5px solid var(--crimson);
+  }
+  .public-blog.blogpost .cta-card h2{font-family:var(--font-public-blog-heading),sans-serif;font-size:24px;font-weight:800;margin-bottom:10px}
+  .public-blog.blogpost .cta-card p{color:var(--muted);font-size:16px;margin-bottom:22px;line-height:1.6}
+  .public-blog.blogpost .cta-acts{display:flex;gap:12px;flex-wrap:wrap}
+  .public-blog.blogpost .cta-link{color:inherit;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+
+  /* related rail (elevated) */
+  .public-blog.blogpost .related{
+    position:sticky;top:96px;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:26px 24px;box-shadow:var(--shadow);border-top:5px solid var(--gold);
+  }
+  .public-blog.blogpost .related h2{font-family:var(--font-public-blog-heading),sans-serif;font-size:18px;font-weight:800;margin-bottom:16px}
+  .public-blog.blogpost .related ul{list-style:none;display:flex;flex-direction:column;gap:14px}
+  .public-blog.blogpost .related a{color:var(--text);font-weight:600;font-size:15px;line-height:1.4;display:block}
+  .public-blog.blogpost .related a:hover{color:var(--crimson)}
+
+  /* ---------------- BOLD FULL-BLEED CLOSING CTA ---------------- */
+  .public-blog.blogpost .close{position:relative;overflow:hidden;width:100vw;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw}
+  .public-blog.blogpost .close__media{position:absolute;inset:0;background:var(--wap-hero-photo-url-3) center 40%/cover no-repeat}
+  .public-blog.blogpost .close__veil{position:absolute;inset:0;
+    background:var(--wap-hero-close-veil)}
+  .public-blog.blogpost .close__inner{position:relative;z-index:2;color:#fff;text-align:center;padding:80px 24px 88px;max-width:var(--max)}
+  .public-blog.blogpost .close__inner h2{font-family:var(--font-public-blog-heading),sans-serif;font-weight:800;font-size:clamp(30px,5vw,52px);line-height:1;letter-spacing:-.03em;margin-bottom:18px}
+  .public-blog.blogpost .close__inner p{font-size:clamp(16px,2.1vw,20px);color:rgba(255,255,255,.92);max-width:40em;margin:0 auto 28px;line-height:1.5}
+  .public-blog.blogpost .close .cta-link{color:inherit;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px}
+
+  .public-blog.blogpost .acts{display:flex;gap:14px;flex-wrap:wrap}
+  .public-blog.blogpost .acts--center{justify-content:center}
+
+  /* ---------------- RESPONSIVE ---------------- */
+  @media(max-width:880px){
+    .public-blog.blogpost .stage{padding:52px 0 60px}
+    .public-blog.blogpost .grain{-webkit-mask-image:none;mask-image:none;opacity:.12}
+    .public-blog.blogpost .layout{grid-template-columns:1fr;gap:36px}
+    .public-blog.blogpost .related{position:static}
+  }
+  @media(max-width:560px){
+    .public-blog.blogpost .cta-acts .btn,.public-blog.blogpost .acts .btn{width:100%}
+  }
+
+.public-blog { background:var(--bg); color:var(--text); line-height:1.6; --sec-pad:clamp(60px,7vw,92px); }
+.public-blog a:not(.btn):focus-visible { outline:3px solid var(--crimson); outline-offset:4px; }
+.public-blog .blog-pagination { display:flex; gap:20px; align-items:center; justify-content:center; margin:24px 0; }
+.public-blog .prose a { color:var(--crimson); text-decoration:underline; }
+.public-blog .prose h2, .public-blog .prose h3 { margin:1.5em 0 .75em; }
+.public-blog .prose ol { padding-left:1.25em; margin-bottom:1.25em; }
+.public-blog .prose pre { overflow-x:auto; }
+@media(prefers-reduced-motion:reduce) { .public-blog *, .public-blog *::before, .public-blog *::after { transition:none!important; animation:none!important; } }
+.public-blog .cat-chip { display:inline-flex; align-items:center; min-height:44px; }

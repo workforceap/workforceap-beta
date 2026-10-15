@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { isBlogPublicationAllowed } from '../shared/blogPublication';
 
 const prisma = new PrismaClient();
 
@@ -65,7 +66,7 @@ The 8-course curriculum includes hands-on labs, portfolio projects, and exam pre
     excerpt:
       "He spent 12 years in logistics. Six months later, he's a certified IT technician with a new career trajectory.",
     authorName: 'WorkforceAP Team',
-    published: true,
+    published: false,
     publishedAt: new Date('2026-03-10'),
     content: `Marcus spent 12 years working in logistics and warehouse management in the Austin area. He was good at his job — but after a facility closure in 2024, he found himself at a crossroads.
 
@@ -358,7 +359,7 @@ export async function seedBlogPosts() {
               heroImage: post.heroImage,
             }
           : {},
-      create: post,
+      create: { ...post, published: post.published && isBlogPublicationAllowed(post.slug) },
     });
     console.log(`✓ ${post.title}`);
   }

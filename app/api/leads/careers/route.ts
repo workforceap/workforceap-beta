@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkContactRateLimit } from '@/lib/rate-limit';
 import { verifyTurnstileResponse } from '@/lib/turnstile/verifyTurnstile';
-import { brandedEmailLayout } from '@/lib/email/template';
-import { escapeHtml } from '@/lib/email/escapeHtml';
-import { getResend } from '@/lib/email';
-import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
+import { submitPublicInquiry } from '@/lib/publicInquiries/submit';
+import { contactFormDataToBody, isNativeFormPost } from '@/lib/contact/nativeFormPost';
 import { validateCareersLeadPayload } from '@/lib/validation/careersLead';
 
-const CAREERS_EMAIL_TO = 'careers@workforceap.org';
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -18,11 +15,15 @@ function getClientIp(request: NextRequest): string {
 }
 
 export async function POST(request: NextRequest) {
+  const nativeForm = isNativeFormPost(request);
+  const respond = (body: Record<string, unknown>, init: { status?: number } = {}) => nativeForm
+    ? new NextResponse(null, { status: 303, headers: { Location: (init.status ?? 200) < 400 ? '/careers/thank-you' : '/careers#careers-form-error' } })
+    : NextResponse.json(body, init);
   try {
     const ip = getClientIp(request);
     const { success: rateOk } = await checkContactRateLimit(ip);
     if (!rateOk) {
-      return NextResponse.json(
+      return respond(
         { error: 'Too many submissions. Please try again in an hour.' },
         { status: 429 },
       );
@@ -30,27 +31,27 @@ export async function POST(request: NextRequest) {
 
     let body: unknown;
     try {
-      body = await request.json();
+      body = nativeForm ? contactFormDataToBody(await request.formData()) : await request.json();
     } catch {
-      return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+      return respond({ error: 'Invalid request' }, { status: 400 });
     }
 
     const parsed = validateCareersLeadPayload(body);
     if (!parsed.ok) {
       if (parsed.fieldErrors.email === 'invalid_email') {
-        return NextResponse.json({ error: 'Enter a valid email address.' }, { status: 400 });
+        return respond({ error: 'Enter a valid email address.' }, { status: 400 });
       }
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return respond({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const { firstName, lastName, email, interestArea, message, roleTitle, turnstileToken } = parsed.data;
+    const { turnstileToken } = parsed.data;
 
     const captchaEnabled = process.env.NEXT_PUBLIC_CAPTCHA_ENABLED === 'true';
     if (captchaEnabled) {
       const secret = process.env.TURNSTILE_SECRET_KEY;
       if (!secret?.trim()) {
         console.error('TURNSTILE_SECRET_KEY missing while NEXT_PUBLIC_CAPTCHA_ENABLED=true');
-        return NextResponse.json(
+        return respond(
           { error: 'Form is temporarily unavailable. Please try again later.' },
           { status: 503 },
         );
@@ -60,100 +61,33 @@ export async function POST(request: NextRequest) {
       // fail closed as a config error, not an unpassable 400.
       if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim()) {
         console.error('NEXT_PUBLIC_TURNSTILE_SITE_KEY missing while NEXT_PUBLIC_CAPTCHA_ENABLED=true');
-        return NextResponse.json(
+        return respond(
           { error: 'Form is temporarily unavailable. Please try again later.' },
           { status: 503 },
         );
       }
       const tok = turnstileToken?.trim() ?? '';
       if (!tok) {
-        return NextResponse.json({ error: 'Please complete the security check.' }, { status: 400 });
+        return respond({ error: 'Please complete the security check.' }, { status: 400 });
       }
       const ok = await verifyTurnstileResponse(secret, tok, ip !== 'unknown' ? ip : undefined);
       if (!ok) {
-        return NextResponse.json({ error: 'Security check failed. Please try again.' }, { status: 400 });
+        return respond({ error: 'Security check failed. Please try again.' }, { status: 400 });
       }
     }
 
-    const resend = getResend();
-    const emailFrom = process.env.EMAIL_FROM || 'noreply@workforceap.org';
-
-    if (!resend) {
-      console.error('RESEND_API_KEY not configured');
-      return NextResponse.json(
-        { error: 'Email service is not configured. Please try again later.' },
-        { status: 503 },
-      );
-    }
-
-    const interestLabel = formatInterestArea(interestArea);
-    const subjectParts = [
-      `Careers interest: ${firstName} ${lastName}`,
-      roleTitle || null,
-      interestLabel || null,
-    ].filter(Boolean);
-    const subject = subjectParts.join(' — ');
-    const text = [
-      `From: ${firstName} ${lastName}`,
-      `Email: ${email}`,
-      `Role of interest: ${roleTitle || 'Not specified'}`,
-      `Interest area: ${interestLabel || 'Not specified'}`,
-      '',
-      'Message:',
-      message,
-      '',
-      `Submitted: ${new Date().toISOString()}`,
-    ].join('\n');
-
-    const html = brandedEmailLayout({
-      title: 'Careers interest form',
-      bodyHtml: `
-        <p><strong>From:</strong> ${escapeHtml(firstName)} ${escapeHtml(lastName)}</p>
-        <p><strong>Email:</strong> <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p>
-        <p><strong>Role of interest:</strong> ${escapeHtml(roleTitle || 'Not specified')}</p>
-        <p><strong>Interest area:</strong> ${escapeHtml(interestLabel || 'Not specified')}</p>
-        <hr style="border: none; border-top: 1px solid #eee; margin: 1rem 0;" />
-        <p><strong>Message:</strong></p>
-        <p style="white-space: pre-wrap;">${escapeHtml(message)}</p>
-        <p style="color: #888; font-size: 0.85rem; margin-top: 1.5rem;">Submitted: ${new Date().toISOString()}</p>
-      `,
+    const result = await submitPublicInquiry(request.headers, {
+      ...parsed.data,
+      kind: 'careers', topic: 'Careers interest', smsPreferred: false,
     });
-
-    try {
-      await sendBrandedEmailOrThrowOnSkip(resend, {
-        from: emailFrom,
-        to: CAREERS_EMAIL_TO,
-        replyTo: email,
-        subject,
-        text,
-        html,
-      });
-    } catch (err) {
-      console.error('Careers lead email failed:', err);
-      return NextResponse.json(
-        { error: 'Failed to send message. Please try again later.' },
-        { status: 500 },
-      );
+    if (!result.ok) {
+      const { status, ok: _ok, ...failure } = result;
+      return respond(failure, { status });
     }
 
-    return NextResponse.json({ ok: true });
-  } catch (error) {
-    console.error('/api/leads/careers:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
-
-function formatInterestArea(value?: string): string {
-  switch (value) {
-    case 'counselor':
-      return 'Counseling / member success';
-    case 'engineering':
-      return 'Engineering / product';
-    case 'operations':
-      return 'Operations';
-    case 'other':
-      return 'Other';
-    default:
-      return '';
+    return respond({ ok: true });
+  } catch {
+    console.error('Public careers inquiry could not be processed');
+    return respond({ error: 'Internal server error' }, { status: 500 });
   }
 }

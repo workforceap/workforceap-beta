@@ -243,8 +243,8 @@ const nextConfig: NextConfig = {
       // a signed-in visitor through login or back to the portal home.
       { source: '/partner/signup', destination: '/partners#partner-signup', permanent: false },
       { source: '/:locale(en|es|fr|pt)/partner/signup', destination: '/:locale/partners#partner-signup', permanent: false },
-      // Legacy blog slug redirects — destinations must be live Astro posts under
-      // marketing/src/pages/blog (or /blog). Prior targets (our-mission,
+      // Legacy blog slug redirects — destinations must be published CMS posts
+      // under the Next /blog routes (or /blog). Prior targets (our-mission,
       // new-member-guide, career-change-guide, it-certifications-guide,
       // remote-work-guide) 404'd in production after the catalog was rewritten.
       { source: '/blog/why-we-started-workforceap', destination: '/blog/michael-brown-workforce-leader-austin', permanent: true },

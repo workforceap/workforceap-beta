@@ -229,7 +229,7 @@ export default function LoginForm({ initialRedirectTo = '/dashboard', accountDel
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const signupHref = `/signup?redirectTo=${encodeURIComponent(isMemberLogin ? redirectTo : '/dashboard')}`;
+  const signupHref = `/signup?redirectTo=${encodeURIComponent(isMemberLogin || canonicalRedirectTo === '/mentor/apply' ? redirectTo : '/dashboard')}`;
   const forgotPasswordHref = `/forgot-password?redirectTo=${encodeURIComponent(redirectTo)}`;
   const partnerSignupHref = '/partners#partner-signup';
   const isPartnerLogin = canonicalRedirectTo === '/partner' || canonicalRedirectTo.startsWith('/partner/');

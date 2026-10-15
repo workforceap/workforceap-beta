@@ -165,6 +165,7 @@ export default function PartnerSchoolEnrollmentFields({
           style={{ display: 'block', width: '100%', maxWidth: 480, marginTop: 4, padding: '0.5rem 0.75rem' }}
         />
       </label>
+      <p>Describe qualifying access as “no cost to members” and explain the funding or sponsorship.</p>
 
       <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 500 }}>
         Enrollment blurb

@@ -6,7 +6,7 @@ import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
 import { PROGRAMS, partnerBadge, type Program } from '../../data/programs';
 
-// ── Static generation: one page per program slug (all 21) ──
+// ── Static generation: one page per catalog program slug ──
 export function getStaticPaths() {
   return PROGRAMS.map((program) => ({
     params: { slug: program.slug },

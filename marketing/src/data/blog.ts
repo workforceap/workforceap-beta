@@ -1,7 +1,6 @@
-// Truth-locked blog content copied VERBATIM from /home/claw/workforceap/prisma/seed-blog.ts
-// (the Next /blog route reads these posts from Postgres via Prisma — a server dep —
-// so the canonical seed data is mirrored here as plain data for static Astro generation).
-// Do not edit copy: this is the source of truth for the marketing /blog route.
+// Historical source snapshot. Public /blog now reads the staff CMS through Next.
+// Keep known unverified outcome stories out of any remaining snapshot consumers.
+import { isBlogPublicationAllowed } from '../../../shared/blogPublication';
 
 export type BlogPost = {
   slug: string;
@@ -68,7 +67,7 @@ The 8-course curriculum includes hands-on labs, portfolio projects, and exam pre
     excerpt:
       "He spent 12 years in logistics. Six months later, he's a certified IT technician with a new career trajectory.",
     authorName: 'WorkforceAP Team',
-    published: true,
+    published: false,
     publishedAt: '2026-03-10',
     content: `Marcus spent 12 years working in logistics and warehouse management in the Austin area. He was good at his job — but after a facility closure in 2024, he found himself at a crossroads.
 
@@ -433,7 +432,7 @@ export function formatPublishedDate(value: string): string {
 
 /** Published posts, newest first (mirrors the listing query order). */
 export function getPublishedPosts(): BlogPost[] {
-  return BLOG_POSTS.filter((p) => p.published).sort(
+  return BLOG_POSTS.filter((p) => p.published && isBlogPublicationAllowed(p.slug)).sort(
     (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
   );
 }

@@ -1,5 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { WORKFORCEAP_PROGRAM_CATALOG_SIZE } from '../data/programs';
+const CAPTCHA_ENABLED = (import.meta.env.PUBLIC_CAPTCHA_ENABLED ?? process.env.NEXT_PUBLIC_CAPTCHA_ENABLED) === 'true';
+const TURNSTILE_SITE_KEY = (import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '').trim();
+const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
 ---
 <Layout
   title="Partner & Employer Giving | Sponsor a Cohort — WorkforceAP"
@@ -113,7 +117,7 @@ import Layout from '../layouts/Layout.astro';
             <div class="wg-lives">5 lives transformed</div>
             <ul class="wg-incl">
               <li>Unlimited training &amp; certs</li>
-              <li>All 19 learning paths</li>
+              <li>All {WORKFORCEAP_PROGRAM_CATALOG_SIZE} learning paths</li>
               <li>AI coaching &amp; readiness</li>
               <li>Job placement support</li>
               <li>Quarterly impact report</li>
@@ -138,7 +142,7 @@ import Layout from '../layouts/Layout.astro';
             <div class="wg-lives">10 lives transformed</div>
             <ul class="wg-incl">
               <li>Unlimited training &amp; certs</li>
-              <li>All 19 learning paths</li>
+              <li>All {WORKFORCEAP_PROGRAM_CATALOG_SIZE} learning paths</li>
               <li>AI coaching &amp; readiness</li>
               <li>Job placement support</li>
               <li>Quarterly impact report</li>
@@ -164,7 +168,7 @@ import Layout from '../layouts/Layout.astro';
             <div class="wg-lives">25 lives transformed</div>
             <ul class="wg-incl">
               <li>Unlimited training &amp; certs</li>
-              <li>All 19 learning paths</li>
+              <li>All {WORKFORCEAP_PROGRAM_CATALOG_SIZE} learning paths</li>
               <li>AI coaching &amp; readiness</li>
               <li>Job placement support</li>
               <li>Quarterly impact report</li>
@@ -189,7 +193,7 @@ import Layout from '../layouts/Layout.astro';
             <div class="wg-lives">50 lives transformed</div>
             <ul class="wg-incl">
               <li>Unlimited training &amp; certs</li>
-              <li>All 19 learning paths</li>
+              <li>All {WORKFORCEAP_PROGRAM_CATALOG_SIZE} learning paths</li>
               <li>AI coaching &amp; readiness</li>
               <li>Job placement support</li>
               <li>Quarterly impact report</li>
@@ -217,7 +221,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="wg-vcard">
           <div class="wg-vicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5"/></svg></div>
           <h3>What each seat funds</h3>
-          <p>12 months of unlimited training, all 19 learning paths, AI career coaching, resume &amp; interview prep, job placement, and 150-day post-hire support.</p>
+          <p>12 months of unlimited training, all {WORKFORCEAP_PROGRAM_CATALOG_SIZE} learning paths, AI career coaching, resume &amp; interview prep, job placement, and 150-day post-hire support.</p>
         </div>
         <div class="wg-vcard">
           <div class="wg-vicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><line x1="8.5" y1="15.5" x2="15.5" y2="8.5"/><circle cx="9" cy="9" r="1.2"/><circle cx="15" cy="15" r="1.2"/></svg></div>
@@ -257,12 +261,14 @@ import Layout from '../layouts/Layout.astro';
         <p>Share a few details and our team will follow up with next steps, an invoice or receipt, and a sponsorship built around your goals.</p>
       </div>
       <div class="wg-form-wrap">
-        <form id="wgInquiry" novalidate>
+        <form id="wgInquiry" method="post" action="/api/contact?source=sponsorship" novalidate>
+          <input type="hidden" name="source" value="sponsorship">
           <div class="wg-form-grid">
-            <div class="wg-field"><label for="wgName">Full name *</label><input id="wgName" name="name" type="text" autocomplete="name" required></div>
-            <div class="wg-field"><label for="wgOrg">Organization *</label><input id="wgOrg" name="org" type="text" autocomplete="organization" required></div>
-            <div class="wg-field"><label for="wgEmail">Work email *</label><input id="wgEmail" name="email" type="email" autocomplete="email" required></div>
-            <div class="wg-field"><label for="wgPhone">Phone</label><input id="wgPhone" name="phone" type="tel" autocomplete="tel"></div>
+            <div class="wg-field"><label for="wgFirstName">First name *</label><input id="wgFirstName" name="first_name" type="text" autocomplete="given-name" maxlength="100" required></div>
+            <div class="wg-field"><label for="wgLastName">Last name *</label><input id="wgLastName" name="last_name" type="text" autocomplete="family-name" maxlength="100" required></div>
+            <div class="wg-field"><label for="wgOrg">Organization *</label><input id="wgOrg" name="organization" type="text" autocomplete="organization" maxlength="200" required></div>
+            <div class="wg-field"><label for="wgEmail">Work email *</label><input id="wgEmail" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+            <div class="wg-field"><label for="wgPhone">Phone</label><input id="wgPhone" name="phone" type="tel" autocomplete="tel" maxlength="80"></div>
             <div class="wg-field"><label for="wgInterest">I&rsquo;m interested in *</label>
               <select id="wgInterest" name="interest" required>
                 <option value="" selected disabled>Select an option&hellip;</option>
@@ -275,14 +281,17 @@ import Layout from '../layouts/Layout.astro';
                 <option>Custom / not sure yet</option>
               </select>
             </div>
-            <div class="wg-field"><label for="wgSeats">Approx. seats</label><input id="wgSeats" name="seats" type="number" min="1" placeholder="Optional"></div>
-            <div class="wg-field full"><label for="wgMsg">Anything else?</label><textarea id="wgMsg" name="message" placeholder="Tell us about your goals, timeline, or any questions."></textarea></div>
+            <div class="wg-field"><label for="wgSeats">Approx. seats</label><input id="wgSeats" name="seats" type="number" min="1" max="100000" step="1" placeholder="Optional"></div>
+            <div class="wg-field full"><label for="wgMsg">Anything else?</label><textarea id="wgMsg" name="message" maxlength="10000" placeholder="Tell us about your goals, timeline, or any questions."></textarea></div>
           </div>
+          {SHOW_TURNSTILE && <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-theme="light"></div>}
           <div class="wg-form-actions">
             <button type="submit" class="wg-btn wg-btn-gold">Send inquiry →</button>
-            <span class="wg-form-note">Submitting opens your email app with the details ready to send to our team. Prefer to write directly? <a href="mailto:info@workforceap.org">info@workforceap.org</a></span>
+            <span class="wg-form-note">Send your inquiry directly to our team. Prefer to write by email? <a href="mailto:info@workforceap.org">info@workforceap.org</a></span>
           </div>
-          <p class="wg-form-ok" id="wgOk"><b>Thanks!</b> Your email should have opened &mdash; just hit send and we&rsquo;ll be in touch.</p>
+          <p class="wg-form-ok" id="wgOk" role="status" hidden></p>
+          <p id="wgError" role="alert" hidden></p>
+          <p id="sponsorship-form-error" class="wg-native-error" role="alert">We could not confirm this submission. It may already be saved. Please retry or email <a href="mailto:info@workforceap.org">info@workforceap.org</a>.</p>
         </form>
       </div>
     </div>
@@ -308,6 +317,9 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style>
+.wg-native-error{display:none}
+.wg-native-error:target{display:block}
+#wgError,.wg-native-error{color:var(--color-marketing-rose-on-light)}
   .wap-give{
     --maroon:#7A1530; --maroon-dark:#5E0F24; --maroon-deep:#4A0E0E;
     /* Page-local bright gold for the tier cards and gradients; prefixed so it does not
@@ -470,55 +482,8 @@ import Layout from '../layouts/Layout.astro';
   }
 </style>
 
-<script is:inline>
-(function(){
-  var RECIPIENT = "info@workforceap.org";
-  var scope = document.getElementById("partner-sponsorship") || document;
-  var form  = scope.querySelector("#wgInquiry");
-  var select = scope.querySelector("#wgInterest");
-
-  // Preselect the interest dropdown when a program/tier button is clicked
-  scope.querySelectorAll("[data-tier]").forEach(function(link){
-    link.addEventListener("click", function(){
-      if(!select) return;
-      var tier = link.getAttribute("data-tier");
-      for(var i=0;i<select.options.length;i++){
-        if(select.options[i].text.indexOf(tier) === 0){ select.selectedIndex = i; break; }
-      }
-    });
-  });
-
-  if(form){
-    form.addEventListener("submit", function(e){
-      e.preventDefault();
-      var val = function(id){ var el = scope.querySelector("#"+id); return el ? el.value.trim() : ""; };
-      // Basic required-field check
-      if(!val("wgName") || !val("wgOrg") || !val("wgEmail") || !val("wgInterest")){
-        form.reportValidity ? form.reportValidity() : alert("Please complete the required fields.");
-        return;
-      }
-      var interest = val("wgInterest") || "Not specified";
-      var subject  = "Sponsorship / donation inquiry — " + interest;
-      var body = [
-        "New donation / sponsorship inquiry from the WorkforceAP donate page:",
-        "",
-        "Name: "         + val("wgName"),
-        "Organization: " + val("wgOrg"),
-        "Email: "        + val("wgEmail"),
-        "Phone: "        + (val("wgPhone") || "—"),
-        "Interested in: "+ interest,
-        "Approx. seats: "+ (val("wgSeats") || "—"),
-        "",
-        "Message:",
-        (val("wgMsg") || "—")
-      ].join("\n");
-      var href = "mailto:" + RECIPIENT +
-                 "?subject=" + encodeURIComponent(subject) +
-                 "&body="    + encodeURIComponent(body);
-      window.location.href = href;
-      var ok = scope.querySelector("#wgOk");
-      if(ok) ok.classList.add("show");
-    });
-  }
-})();
+{SHOW_TURNSTILE && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
+<script>
+  import { bindSponsorshipInquiry } from '../scripts/publicInquiryForm';
+  bindSponsorshipInquiry();
 </script>

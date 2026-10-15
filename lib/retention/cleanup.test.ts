@@ -157,10 +157,23 @@ vi.mock('@/lib/db/prisma', () => ({
       deleteMany: (...args: unknown[]) => mockDeleteMany(...args),
       count: (...args: unknown[]) => mockCount(...args),
     },
+    publicInquiry: {
+      findMany: (...args: unknown[]) => mockFindMany(...args),
+      deleteMany: (...args: unknown[]) => mockDeleteMany(...args),
+      count: (...args: unknown[]) => mockCount(...args),
+    },
   },
 }));
 
 describe('RETENTION_TABLES', () => {
+  it('purges inquiry bodies and notification status together after the public lead TTL', async () => {
+    mockFindMany.mockResolvedValueOnce([{ id: 'expired-inquiry' }]);
+    mockDeleteMany.mockResolvedValueOnce({ count: 1 });
+    const cfg = RETENTION_TABLES.find((t) => t.model === 'publicInquiry')!;
+    expect(cfg).toMatchObject({ dateColumn: 'createdAt', days: PUBLIC_LEAD_RETENTION_DAYS });
+    expect(await cleanupTable(cfg)).toMatchObject({ model: 'publicInquiry', deleted: 1 });
+    expect(mockDeleteMany).toHaveBeenLastCalledWith({ where: { id: { in: ['expired-inquiry'] } } });
+  });
   it('purges no-account eligibility leads on a TTL under a year (WAP-172)', () => {
     const cfg = RETENTION_TABLES.find((t) => t.model === 'publicWioaScreening');
     expect(cfg).toMatchObject({ dateColumn: 'createdAt', days: PUBLIC_LEAD_RETENTION_DAYS });

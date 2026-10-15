@@ -56,6 +56,8 @@ describe('email confirmation destination (synthetic session and database)', () =
     '/dashboard/assessment?from=welcome#saved',
     '/es/dashboard/ai-tools?tab=voice&agentId=fixture-coach#practice',
     '/employer/applications?status=submitted#candidate',
+    '/mentor/apply',
+    '/es/mentor/apply',
   ])('keeps the complete intended local destination %s', async (target) => {
     const response = await callback(target);
     expect(response.headers.get('location')).toBe(`https://portal.example.test${target}`);

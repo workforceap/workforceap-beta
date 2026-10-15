@@ -36,6 +36,7 @@ async function fetchStorageStats() {
     emailSendLog: 'email_send_logs',
     portalWorkflowEvent: 'portal_workflow_events',
     publicWioaScreening: 'public_wioa_screenings',
+    publicInquiry: 'public_inquiries',
     emailFailureSnapshot: 'email_failure_snapshots',
     cspViolationBucket: 'csp_violation_buckets',
   };

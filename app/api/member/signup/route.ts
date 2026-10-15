@@ -15,6 +15,7 @@ import { partnerDisclosureAcknowledgement } from '@/lib/apply/partnerReferralDis
 import { getConversionValuePayload } from '@/lib/analytics/conversionValue';
 import { prisma } from '@/lib/db/prisma';
 import { normalizePartnerRef, PARTNER_REF_COOKIE, partnerRefCookieClearOptions } from '@/lib/apply/applyReferralCapture';
+import { normalizePostLoginRedirect } from '@/lib/auth/postLoginRedirect';
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error }, { status: 400 });
     }
   
-    const data = parsed.data;
+    const { redirectTo, ...data } = parsed.data;
 
     // Per-email rate limit. The per-IP limit above lets an attacker
     // rotating IPs spam verification mail at the same target address;
@@ -168,6 +169,8 @@ export async function POST(request: NextRequest) {
       },
     });
   
+    const confirmationRedirect = new URL('/auth/callback', request.nextUrl.origin);
+    if (redirectTo) confirmationRedirect.searchParams.set('next', normalizePostLoginRedirect(redirectTo));
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
@@ -176,7 +179,7 @@ export async function POST(request: NextRequest) {
           full_name: data.fullName,
           phone: data.phone,
         },
-        emailRedirectTo: `${request.nextUrl.origin}/auth/callback`,
+        emailRedirectTo: confirmationRedirect.toString(),
       },
     });
   

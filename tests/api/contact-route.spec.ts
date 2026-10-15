@@ -22,6 +22,12 @@ vi.mock('@/lib/turnstile/verifyTurnstile', () => ({
 // The route now sends through lib/email/send.ts, which records failures and
 // signs List-Unsubscribe tokens; keep both inert here.
 vi.mock('@/lib/diagnostics', () => ({ recordWorkflowDiagnostic: vi.fn(async () => undefined) }));
+const receipt = vi.hoisted(() => ({ upsert: vi.fn(), updateMany: vi.fn(), emailLog: vi.fn() }));
+vi.mock('@/lib/db/prisma', () => ({ prisma: {
+  publicInquiry: { upsert: receipt.upsert, updateMany: receipt.updateMany },
+  emailSendLog: { upsert: receipt.emailLog },
+} }));
+vi.mock('@/lib/tenant/resolveOrgFromRequest', () => ({ resolveOrgFromRequest: vi.fn(async () => 'org-a') }));
 
 import { POST } from '@/app/api/contact/route';
 import { CONTACT_FORM_ERROR_PATH, CONTACT_FORM_THANKS_PATH } from '@/lib/contact/nativeFormPost';
@@ -74,6 +80,9 @@ describe('POST /api/contact', () => {
     process.env.UNSUBSCRIBE_TOKEN_SECRET = 'test-unsubscribe-secret';
     delete process.env.NEXT_PUBLIC_CAPTCHA_ENABLED;
     vi.mocked(checkContactRateLimit).mockResolvedValue({ success: true });
+    receipt.upsert.mockImplementation(async ({ create }) => ({ ...create, id: 'inquiry-1', createdAt: new Date('2026-10-15T12:00:00Z'), notificationStatus: 'pending' }));
+    receipt.updateMany.mockResolvedValue({ count: 1 });
+    receipt.emailLog.mockResolvedValue({});
   });
 
   afterEach(() => {
@@ -96,9 +105,9 @@ describe('POST /api/contact', () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
     expect(resend.send).toHaveBeenCalledWith(
-      expect.objectContaining({ to: 'info@workforceap.org', replyTo: 'ada@example.com', subject: expect.stringContaining('Programs') }),
+      expect.objectContaining({ to: 'info@workforceap.org', replyTo: 'ada@example.com', subject: 'New public contact inquiry' }),
       // Shared wrapper: every send carries an idempotency key so a retry cannot double-deliver.
-      expect.objectContaining({ idempotencyKey: expect.stringMatching(/^email\/[0-9a-f]{64}$/) }),
+      expect.objectContaining({ idempotencyKey: 'public-inquiry/inquiry-1' }),
     );
   });
 
@@ -137,7 +146,7 @@ describe('POST /api/contact', () => {
         expect.objectContaining({
           to: 'info@workforceap.org',
           replyTo: 'ada@example.com',
-          subject: expect.stringContaining('Programs'),
+          subject: 'New public contact inquiry',
           text: expect.stringContaining('Prefer SMS: Yes'),
         }),
         expect.anything(),

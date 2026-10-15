@@ -11,21 +11,22 @@ type Redirect = { source: string; destination: string; permanent: boolean };
 
 const root = process.cwd();
 
-/** Published Astro blog slugs (dynamic route: marketing/src/pages/blog/[slug].astro). */
+/** Known seed slugs for redirects; the CMS-backed Next route owns publication. */
 const publishedBlogSlugs = new Set(getPublishedPosts().map((post) => post.slug));
 
 function marketingPageExists(urlPath: string): boolean {
   if (urlPath === '/blog' || urlPath === '/blog/') {
     return existsSync(path.join(root, 'marketing/src/pages/blog.astro'))
-      || existsSync(path.join(root, 'marketing/src/pages/blog/index.astro'));
+      || existsSync(path.join(root, 'marketing/src/pages/blog/index.astro'))
+      || existsSync(path.join(root, 'app/blog/page.tsx'));
   }
   const slug = urlPath.replace(/^\/blog\//, '').replace(/\/$/, '');
   return existsSync(path.join(root, 'marketing/src/pages/blog', `${slug}.astro`))
     || existsSync(path.join(root, 'marketing/src/pages/blog', slug, 'index.astro'))
     || existsSync(path.join(root, 'marketing/dist/blog', slug, 'index.html'))
     || existsSync(path.join(root, 'marketing/dist/blog', `${slug}.html`))
-    // Dynamic [slug].astro posts are live when the slug is in the published catalog.
-    || (existsSync(path.join(root, 'marketing/src/pages/blog/[slug].astro'))
+    // The dynamic Next route resolves the known seed destination from the CMS.
+    || (existsSync(path.join(root, 'app/blog/[slug]/page.tsx'))
       && publishedBlogSlugs.has(slug));
 }
 

@@ -45,6 +45,7 @@ export default function PartnerSchoolEnrollPage({ model }: { model: EnrollmentPa
   const applyUrl = (slug: string) => partnerApplyHref(model.referralCode, slug);
   const programUrl = (slug: string) => partnerProgramHref(model.referralCode, slug);
   const shortName = model.name.replace(/ High School$/i, '');
+  const headlineSuffix = 'industry certification';
   const programCountLabel = model.programs.length === 1 ? 'program' : 'programs';
 
   const steps = [
@@ -96,9 +97,11 @@ export default function PartnerSchoolEnrollPage({ model }: { model: EnrollmentPa
               {model.name} Partnership
             </span>
             <h1>
-              {shortName} students: launch your career with an <span className="shimmer">industry certification</span>
+              {model.headline.endsWith(headlineSuffix)
+                ? <>{model.headline.slice(0, -headlineSuffix.length)}<span className="shimmer">{headlineSuffix}</span></>
+                : model.headline}
             </h1>
-            <p className="sub">{model.costSentence}</p>
+            <p className="sub">{model.blurb}</p>
             <div className="acts">
               <Link className="dbtn dbtn--solid" href={applyBase}>Start your application <span>→</span></Link>
               <a className="dbtn dbtn--glass" href="#school-programs">See the programs</a>

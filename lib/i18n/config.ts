@@ -79,7 +79,6 @@ const ASTRO_MARKETING_EXACT_PATHS = new Set([
   '/',
   '/about',
   '/accessibility',
-  '/blog',
   '/career-quiz',
   '/careers',
   '/careers/thank-you',
@@ -104,7 +103,7 @@ const ASTRO_MARKETING_EXACT_PATHS = new Set([
   '/what-we-do',
 ]);
 
-const ASTRO_MARKETING_NESTED_PREFIXES = ['/blog/', '/leadership/', '/programs/'] as const;
+const ASTRO_MARKETING_NESTED_PREFIXES = ['/leadership/', '/programs/'] as const;
 
 export function isAstroMarketingPath(pathname: string): boolean {
   const { pathnameWithoutLocale } = splitLocalePrefix(pathname);

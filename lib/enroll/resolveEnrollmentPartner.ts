@@ -2,8 +2,10 @@ import { prisma } from '@/lib/db/prisma';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { normalizePartnerRef } from '@/lib/partner/sponsoredEnrollment';
 import { enrollmentPathForSlug } from '@/lib/enroll/enrollmentPath';
+import { resolveEnrollmentCopy } from '@/lib/enroll/enrollmentCopy';
 
 export { enrollmentPathForSlug, enrollmentPathSegment } from '@/lib/enroll/enrollmentPath';
+export { enrollPageCopyIsStakeSafe } from '@/lib/enroll/enrollmentCopy';
 
 export type EnrollmentProgramCard = {
   slug: string;
@@ -46,13 +48,6 @@ function candidateKeys(school: string): string[] {
   const keys = new Set<string>([key]);
   if (!key.endsWith('-high-school')) keys.add(`${key}-high-school`);
   return [...keys];
-}
-
-function buildCostSentence(name: string, termLabel: string): string {
-  return (
-    `Career training and certifications offered at no cost to ${name} students for ${termLabel}` +
-    ` — sponsored through the WorkforceAP–${name.replace(/ High School$/i, '')} partnership.`
-  );
 }
 
 export async function resolveEnrollmentPartner(school: string): Promise<EnrollmentPageModel | null> {
@@ -108,17 +103,11 @@ export async function resolveEnrollmentPartner(school: string): Promise<Enrollme
     slug: partner.slug,
     referralCode: partner.referralCode,
     enrollmentPath: enrollmentPathForSlug(partner.slug),
-    headline: partner.enrollmentHeadline?.trim() || `${partner.name} students: launch your career with an industry certification`,
-    blurb: partner.enrollmentBlurb?.trim() || buildCostSentence(partner.name, termLabel),
+    ...resolveEnrollmentCopy({ name: partner.name, termLabel, headline: partner.enrollmentHeadline, blurb: partner.enrollmentBlurb }),
     schoolDistrict: partner.schoolDistrict,
     termLabel,
-    costSentence: buildCostSentence(partner.name, termLabel),
     programs,
   };
-}
-
-export function enrollPageCopyIsStakeSafe(text: string): boolean {
-  return !/\bfree\b/i.test(text);
 }
 
 /** Humanize a URL segment for soft-404 copy (`unknown-school` → `unknown school`). */

@@ -6,6 +6,7 @@ import { getActiveProgramSlugsForSitemap } from '@/lib/seo/activeProgramSlugs';
 import { getSiteUrl } from '@/lib/seo/siteEnvironment';
 import { getPublicImpactStats, hasPublicImpactLiveData, EMPTY_PUBLIC_IMPACT_STATS } from '@/lib/marketing/publicImpactStats';
 import { getDefaultOrganizationId } from '@/lib/tenant/organization';
+import { loadPublicBlogSitemapEntries } from '@/lib/blog/publicPosts';
 
 const SITEMAP_LOCALES: { code: string; prefix: string }[] = [
   { code: 'en', prefix: '' },
@@ -91,11 +92,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let blogPages: MetadataRoute.Sitemap = [];
   if (!shouldSkipOptionalDbQueriesAtBuild()) {
     try {
-      const blogPosts = await prisma.blogPost.findMany({
-        where: { published: true },
-        select: { slug: true, updatedAt: true },
-        take: 1000,
-      });
+      const blogPosts = await loadPublicBlogSitemapEntries();
       blogPages = blogPosts.map((post) => ({
         url: `${siteUrl}/blog/${post.slug}`,
         lastModified: post.updatedAt,

@@ -5,6 +5,7 @@ import { workforceApCourseHref } from '@/lib/content/courseDelivery';
 import { PROGRAMS } from '@/lib/content/programs';
 import { PROGRAM_SYLLABI } from '../../shared/programSyllabi';
 import { PROGRAM_CURRICULA } from '../../shared/programCurricula';
+import { verifiedProgramPriceRows } from '../../marketing/src/data/programPriceList';
 import {
   PROGRAMS as MARKETING_PROGRAMS,
   partnerBadge,
@@ -197,10 +198,8 @@ describe('MSSC curriculum (CPT, CLT)', () => {
     expect(detailTemplate).toContain('program.curriculum.deliveryFormat');
     expect(detailTemplate).toContain('program.curriculum.totalHoursLabel');
     expect(detailTemplate).toContain('program.curriculum.tuitionAndFees');
-    expect(priceListTemplate).toContain(
-      ".filter((p) => !p.curriculum || p.curriculum.status === 'owner-verified')",
-    );
-    expect(priceListTemplate).toContain('No program-owner-supplied syllabus is on file');
+    const officialSlugs = verifiedProgramPriceRows(MARKETING_PROGRAMS).map((row) => row.slug);
+    for (const slug of Object.keys(EXPECTED_CURRICULA)) expect(officialSlugs).not.toContain(slug);
     expect(priceListTemplate).toMatch(/are not\s+published as official price-list facts/);
     expect(priceListTemplate).toContain("const CONTENT_VERIFIED = 'August 30, 2026'");
   });

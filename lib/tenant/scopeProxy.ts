@@ -48,6 +48,7 @@ export const TENANT_SCOPED_MODELS = new Set<string>([
   'preScreeningResponse',
   'applyEligibilityScreening',
   'publicWioaScreening',
+  'publicInquiry',
   'chapter',
   'chapterMember',
   'chapterMeeting',

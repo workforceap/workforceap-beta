@@ -89,6 +89,20 @@ afterEach(() => {
 });
 
 describe('POST /api/member/signup response contract (mocked providers)', () => {
+  it.each(['/mentor/apply', '/es/mentor/apply'])('preserves %s through the email confirmation callback', async (destination) => {
+    expect((await POST(request({ ...requiredFields, redirectTo: destination }))).status).toBe(200);
+    const options = mocks.signUp.mock.calls[0][0].options;
+    const confirmation = new URL(options.emailRedirectTo);
+    expect(confirmation.origin).toBe('http://localhost:3000');
+    expect(confirmation.pathname).toBe('/auth/callback');
+    expect(confirmation.searchParams.get('next')).toBe(destination);
+    expect(mocks.createMember.mock.calls[0][1]).not.toHaveProperty('redirectTo');
+  });
+
+  it.each(['https://evil.example/path', '//evil.example/path', '/login'])('sanitizes signup callback destination %s', async (destination) => {
+    expect((await POST(request({ ...requiredFields, redirectTo: destination }))).status).toBe(200);
+    expect(new URL(mocks.signUp.mock.calls[0][0].options.emailRedirectTo).searchParams.get('next')).toBe('/dashboard');
+  });
   it('returns the email-verification response after provisioning without phone or ZIP', async () => {
     const response = await POST(request());
 

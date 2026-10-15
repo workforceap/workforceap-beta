@@ -33,6 +33,12 @@ function copyMarketingBuild(repoRoot) {
   }
   fs.mkdirSync(destination, { recursive: true });
   fs.cpSync(source, destination, { recursive: true, force: true });
+  // /blog is CMS-backed Next output. Remove stale generated HTML from prior
+  // builds as well as any accidental Astro overlap, while keeping images/blog.
+  for (const locale of ['', 'en', 'es', 'fr', 'pt']) {
+    fs.rmSync(path.join(destination, locale, 'blog'), { recursive: true, force: true });
+    fs.rmSync(path.join(destination, locale, 'blog.html'), { force: true });
+  }
 }
 
 function main() {

@@ -1,26 +1,16 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { PROGRAMS } from '../../data/programs';
+import { verifiedProgramPriceRows } from '../../data/programPriceList';
 
 // ── ETPL / WIOA program price list ──
 // TWC (ETPL review) requires published price and contact-hour facts to be
 // verifiable. A draft curriculum must never enter this official document:
 // owner-pending records stay explicitly withheld until their source facts are
 // verified and the record is promoted to `owner-verified`.
-const MAX_PROGRAM_COST = '$7,500';
-
-const rows = PROGRAMS
-  .filter((p) => !p.curriculum || p.curriculum.status === 'owner-verified')
-  .map((p) => ({
-    slug: p.slug,
-    title: p.title,
-    duration: p.duration,
-    contactHours: p.courses.reduce((sum, c) => sum + (c.estimatedHours ?? 0), 0),
-    funding: p.fundingSource ?? 'WIOA',
-  }))
-  .sort((a, b) => a.title.localeCompare(b.title));
+const rows = verifiedProgramPriceRows(PROGRAMS);
 const ownerPendingPrograms = PROGRAMS
-  .filter((p) => p.curriculum?.status === 'draft-pending-owner-verification')
+  .filter((p) => !p.syllabus && p.curriculum?.status !== 'owner-verified')
   .map((p) => p.title)
   .sort((a, b) => a.localeCompare(b));
 
@@ -67,7 +57,7 @@ const metaDescription =
       {ownerPendingPrograms.length > 0 && (
         <p class="withheld">
           <strong>Withheld pending program-owner verification:</strong>{' '}
-          {ownerPendingPrograms.join('; ')}. No program-owner-supplied syllabus is on file
+          {ownerPendingPrograms.join('; ')}. No program-owner-supplied syllabus or owner-verified curriculum is on file
           for these programs. Their hours, delivery format, and tuition and fees are not
           published as official price-list facts.
         </p>
@@ -95,7 +85,7 @@ const metaDescription =
                 <td><a href={`/programs/${r.slug}`}>{r.title}</a></td>
                 <td>{r.duration}</td>
                 <td class="num">{r.contactHours}</td>
-                <td class="num">{MAX_PROGRAM_COST}</td>
+                <td class="num">${r.maximumProgramCost.toLocaleString('en-US')}</td>
               </tr>
             ))}
           </tbody>
