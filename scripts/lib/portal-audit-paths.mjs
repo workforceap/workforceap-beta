@@ -111,6 +111,7 @@ export const STATIC_PATHS = {
     '/admin/mentors',
     '/admin/outcomes/methodology',
     '/admin/overview',
+    '/admin/partner-signups',
     '/admin/partners',
     '/admin/partners/new',
     '/admin/pipeline',
