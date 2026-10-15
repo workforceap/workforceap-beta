@@ -10,6 +10,7 @@ import BillingPacketList from '@/components/billing/BillingPacketList';
 import { resolveProgramTitle } from '@/lib/billing/packetDocument';
 import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
+import { resolveProgramTerms } from '@/lib/billing/twoStage/hours';
 import TwoStageBillingCase, { type EnrolledProgram } from './TwoStageBillingCase';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -55,7 +56,11 @@ export default async function AdminMemberBillingPage({ params }: { params: Promi
   const enrolledPrograms: EnrolledProgram[] = [];
   for (const slug of enrolledSlugs) {
     if (!enrolledPrograms.some((p) => programSlugsEquivalent(p.slug, slug))) {
-      enrolledPrograms.push({ slug, title: resolveProgramTitle(slug) });
+      const terms = resolveProgramTerms(slug);
+      enrolledPrograms.push({ slug, title: resolveProgramTitle(slug), billingTerms: {
+        available: terms.ok,
+        reason: terms.ok ? null : terms.message,
+      } });
     }
   }
 

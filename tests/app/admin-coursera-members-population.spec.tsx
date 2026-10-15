@@ -8,7 +8,7 @@ import { MEMBER_DEFINITION_ROSTER, MEMBER_OR_DOGFOOD_IDS, admittedIds, matchesWh
  * admins (lib/admin/memberOnlyWhere.ts), not a hand-rolled `profile.role`
  * list, so every member the counts report can be mapped (#2457 follow-up).
  */
-const mocks = vi.hoisted(() => ({ userFindMany: vi.fn(), getUser: vi.fn() }));
+const mocks = vi.hoisted(() => ({ userFindMany: vi.fn(), courseProgressFindMany: vi.fn(), getUser: vi.fn() }));
 
 vi.mock('next/navigation', () => ({ redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); } }));
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
@@ -27,7 +27,7 @@ vi.mock('@/lib/tenant/adminPageScope', async () => {
 });
 vi.mock('@/lib/db/prisma', () => ({ prisma: {
   user: { findMany: mocks.userFindMany },
-  courseProgress: { findMany: async () => [] },
+  courseProgress: { findMany: mocks.courseProgressFindMany },
   $queryRaw: async () => [],
 } }));
 vi.mock('@/lib/tenant/organization', () => ({ getActorOrganizationId: async () => 'org-a' }));
@@ -71,9 +71,19 @@ beforeEach(() => {
   vi.clearAllMocks();
   mocks.getUser.mockResolvedValue({ id: 'admin-a' });
   mocks.userFindMany.mockResolvedValue([]);
+  mocks.courseProgressFindMany.mockResolvedValue([]);
 });
 
 describe('/admin/coursera member population', () => {
+  it('loads recorded progress for durable-only and unassigned members without the legacy pointer gate', async () => {
+    mocks.userFindMany.mockResolvedValue([
+      { id: 'durable-member', fullName: 'Durable member', email: 'durable@example.invalid', enrolledProgram: null, courseEnrollments: [{ programSlug: 'it-support-professional-certificate-ibm', curriculumVersion: 'legacy-v1', isPrimary: true }] },
+      { id: 'unassigned-member', fullName: 'Unassigned member', email: 'unassigned@example.invalid', enrolledProgram: null, courseEnrollments: [] },
+    ]);
+    await AdminCourseraPage({ searchParams: Promise.resolve({ ui: 'legacy' }) });
+    expect(mocks.courseProgressFindMany).toHaveBeenCalledWith(expect.objectContaining({ where: { userId: { in: ['durable-member', 'unassigned-member'] } } }));
+  });
+
   it('lists members by the one member definition plus dogfood admins, inside the tenant', async () => {
     await AdminCourseraPage({ searchParams: Promise.resolve({ ui: 'legacy' }) });
 

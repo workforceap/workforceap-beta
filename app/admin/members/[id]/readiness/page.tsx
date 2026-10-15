@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
-import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemberOrg, inheritLeaderOrg, inheritInvitedByOrg } from '@/lib/tenant/adminPageScope';
@@ -31,18 +31,30 @@ export default async function AdminMemberReadinessPage({
 
   const { id } = await params;
   const member = await withAdminPageScope(scope, (db) =>
-    db.user.findFirst({ where: { id } }),
+    db.user.findFirst({
+      where: { id },
+      select: {
+        fullName: true,
+        deletedAt: true,
+        enrolledProgram: true,
+        courseEnrollments: {
+          orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
+          select: { programSlug: true, curriculumVersion: true, isPrimary: true },
+        },
+      },
+    }),
   );
 
   if (!member || member.deletedAt) notFound();
 
-  const program = member.enrolledProgram ? getProgramBySlug(member.enrolledProgram) : null;
+  const assignment = resolveTrainingProgressAssignment(member.enrolledProgram, member.courseEnrollments);
+  const programName = assignment.programSlug ? programDisplayTitle(assignment.programSlug) : '—';
 
   return (
     <div className="readiness-counselor-page">
       <PageHeader
         title={`Career Readiness Checklist — ${member.fullName}`}
-        subtitle={`Program: ${member.enrolledProgram ? programDisplayTitle(member.enrolledProgram) : '—'}`}
+        subtitle={`Program: ${programName}`}
         breadcrumbs={[
           { href: '/admin/members', label: 'Members' },
           { href: `/admin/members/${id}`, label: member.fullName },
@@ -57,7 +69,7 @@ export default async function AdminMemberReadinessPage({
       <ReadinessCounselorClient
         memberId={id}
         memberName={member.fullName}
-        programName={member.enrolledProgram ? programDisplayTitle(member.enrolledProgram) : '—'}
+        programName={programName}
       />
     </div>
   );

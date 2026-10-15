@@ -55,7 +55,7 @@ function renderCase() {
       memberName="Sam Student"
       memberEmail="sam.student@example.test"
       counselor={null}
-      enrolledPrograms={[{ slug: 'google-it-support-professional-certificate', title: 'Google IT Support Professional Certificate' }]}
+      enrolledPrograms={[{ slug: 'google-it-support-professional-certificate', title: 'Google IT Support Professional Certificate', billingTerms: { available: true, reason: null } }]}
     />,
   );
 }

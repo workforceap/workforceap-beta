@@ -674,6 +674,7 @@ export function StageLifecycle({
   viewer,
   signature,
   showSignatureSlot,
+  onRefreshDraftDate,
 }: {
   ctx: PanelContext;
   stage: BillingStage;
@@ -682,6 +683,7 @@ export function StageLifecycle({
   signature: SignatureStatusDto;
   /** Whether this stage carries the case's single signature upload (`signatureSlotStage`). */
   showSignatureSlot: boolean;
+  onRefreshDraftDate?: () => void;
 }) {
   const freezeAction = useAction();
   const signAction = useAction();
@@ -700,8 +702,9 @@ export function StageLifecycle({
   }, [hash]);
 
   const isDraft = current?.status === 'draft';
+  const staleDate = isDraft ? view.blockers.find((blocker) => blocker.code === (stage === 'j5' ? 'J5_ISSUE_DATE_NOT_TODAY' : 'J6_ISSUE_DATE_NOT_TODAY')) : undefined;
   const signatureMissing = signatureAssetMissing(view, ctx.gates);
-  const freezeReason = isDraft ? null : current ? `This version is ${current.status}; only a draft is reviewed for signature.` : 'Save a draft first.';
+  const freezeReason = isDraft ? staleDate?.message ?? null : current ? `This version is ${current.status}; only a draft is reviewed for signature.` : 'Save a draft first.';
 
   const signGate = closedGate(ctx.gates, ACTION_GATES.sign);
   const signReason =
@@ -737,6 +740,15 @@ export function StageLifecycle({
     <div className={styles.lifecycle} aria-label={`${stage.toUpperCase()} signing and delivery`} role="group">
       <p className={styles.sectionLabel}>Sign and send</p>
       <p className={styles.fieldHint}>Each step is checked again by the server when it runs; a button being available is never the approval.</p>
+
+      {staleDate && onRefreshDraftDate ? (
+        <>
+          <p className={styles.panelFact} role="status">{staleDate.message} Saving rebuilds the current approved terms and evidence; review the new PDF before signing.</p>
+          <ActionButton label="Update draft date and review" pendingLabel="Opening…" pending={false}
+            reason={view.canSaveDraft ? null : 'This draft cannot be edited. Reload the billing case.'}
+            variant="secondary" onClick={onRefreshDraftDate} />
+        </>
+      ) : null}
 
       <ActionButton
         label="Review for signature"

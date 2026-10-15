@@ -27,6 +27,7 @@ import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
 import { MEMBER_ONLY_WHERE, MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { buildDirectorySearchWhere, normalizeDirectorySearch } from '@/lib/admin/directorySearch';
+import { memberEnrollmentFilterWhere } from '@/lib/admin/memberEnrollmentFilters';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('admin');
@@ -73,7 +74,7 @@ export default async function AdminMembersPage({
   // Build the where clause based on filters
   const whereClause: Prisma.UserWhereInput = {
     ...(includeStaff ? MEMBER_OR_DOGFOOD_WHERE : MEMBER_ONLY_WHERE),
-    AND: [buildDirectorySearchWhere(searchQuery)],
+    AND: [buildDirectorySearchWhere(searchQuery), memberEnrollmentFilterWhere({ program: programFilter, startDate: startDateFilter, endDate: endDateFilter })],
   };
 
   // Status filter: dropped includes soft-deleted members; others exclude them.
@@ -84,42 +85,20 @@ export default async function AdminMembersPage({
     whereClause.deletedAt = null;
   }
 
-  if (programFilter) {
-    whereClause.courseEnrollments = {
-      some: { programSlug: programFilter },
-    };
-  }
-
   if (validStatus && validStatus !== 'dropped') {
     whereClause.AND = [
       buildDirectorySearchWhere(searchQuery),
       buildStatusWhere(validStatus),
+      memberEnrollmentFilterWhere({ program: programFilter, startDate: startDateFilter, endDate: endDateFilter }),
     ];
   }
 
-  // Partner + enrolled-date filters are applied server-side so they span the
-  // whole member list (not just the loaded page) and match the CSV export's
-  // semantics (export route filters on enrolledAt the same way).
+  // Partner and enrollment filters run before pagination and share enrollment
+  // semantics with the CSV export.
   if (partnerFilter) {
     whereClause.partnerReferrals =
       partnerFilter === '__none' ? { none: {} } : { some: { partnerId: partnerFilter } };
   }
-  {
-    const enrolledAt: { gte?: Date; lte?: Date } = {};
-    if (startDateFilter) {
-      const d = new Date(startDateFilter);
-      if (!Number.isNaN(d.getTime())) enrolledAt.gte = d;
-    }
-    if (endDateFilter) {
-      const d = new Date(endDateFilter);
-      if (!Number.isNaN(d.getTime())) {
-        d.setHours(23, 59, 59, 999);
-        enrolledAt.lte = d;
-      }
-    }
-    if (enrolledAt.gte || enrolledAt.lte) whereClause.enrolledAt = enrolledAt;
-  }
-
   // Phase 1: page of members + the two org-wide (not member-scoped) lookups
   // in parallel. The event/progress aggregates below only ever get looked up
   // for members in this page (see membersWithProgram.map below), so they are

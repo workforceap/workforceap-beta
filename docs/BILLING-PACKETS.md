@@ -1448,3 +1448,25 @@ Safe stops and rollbacks:
   procedure in the M1 migration notes above.
 - If `20260928140000` ever fails with "bucket is missing", it ran before
   `20260927232204`. Merge #2700 first; do not edit the bucket by hand.
+
+### October 15 audit UX reconciliation
+
+The member billing page computes approved billing-term availability on the
+server for each enrolled program. Unsupported programs show the reason before
+**Open billing case**, and the action stays disabled until approved terms exist.
+The server's terms check remains authoritative. Unsigned previews are still
+available, and a missing enrollment links staff to **Review program assignment**.
+Observed training activity does not assign a program or establish billing terms.
+
+An overnight unsigned draft shows its stale-date reason before signature review.
+**Update draft date and review** opens and focuses the existing editor;
+**Save updated draft** uses the existing expected-version hash and validation.
+Saving rebuilds the current approved terms and evidence with today's Chicago
+date. Staff review the new PDF before obtaining a fresh signature statement and
+intent. GET/review/sign calls do not silently rewrite a dated document, and
+signed or sent records are not offered this refresh path.
+
+Counselor phone remains an explicit case contact; new US-phone values use the
+shared billing formatter. Voucher data and receipt signatures remain executive
+attestations. The audit's suggested profile-phone prefill, automatic signing-date
+rewrite, and broader attestation permissions are not part of these UX repairs.

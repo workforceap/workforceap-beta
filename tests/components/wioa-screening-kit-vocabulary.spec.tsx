@@ -14,6 +14,7 @@ vi.mock('next/link', () => ({
 
 import { WioaScreeningKit, type WioaScreeningRow } from '@/components/portal/kit/pages/admin-subviews/WioaScreeningKit';
 import { INTAKE_STATUS_KEYS, type IntakeStatusKey } from '@/lib/status/applicationStatusVocabulary';
+import WioaReviewFilterBar from '@/components/admin/WioaReviewFilterBar';
 
 function row(reviewStatus: IntakeStatusKey): WioaScreeningRow {
   return {
@@ -65,5 +66,21 @@ describe('WioaScreeningKit — staff review vocabulary', () => {
     expect(tile('Awaiting review')?.textContent).toContain('4');
     expect(tile('Needs more information')?.textContent).toContain('5');
     expect(tile('Not eligible')?.textContent).toContain('6');
+  });
+
+  it('labels actual application evidence and opens the member Eligibility tab in both layouts', () => {
+    render(<WioaScreeningKit rows={[{ ...row('pending'), source: 'Application screening', category: 'Not recorded' }]}
+      total={1} verified={0} pendingReview={1} needDocs={0} notEligible={0} />);
+    expect(screen.getAllByText('Application screening').length).toBeGreaterThan(0);
+    expect(screen.getByRole('columnheader', { name: 'Source' })).toBeInTheDocument();
+    for (const link of screen.getAllByRole('link', { name: 'Open' })) {
+      expect(link).toHaveAttribute('href', '/admin/members/member-pending?tab=eligibility');
+    }
+  });
+
+  it('preserves the legacy view while selecting or clearing a review filter', () => {
+    render(<WioaReviewFilterBar active="pending" legacy />);
+    expect(screen.getByRole('link', { name: 'All' })).toHaveAttribute('href', '/admin/wioa-screening?ui=legacy');
+    expect(screen.getByRole('link', { name: 'Needs more information' })).toHaveAttribute('href', '/admin/wioa-screening?ui=legacy&review=needs_info');
   });
 });

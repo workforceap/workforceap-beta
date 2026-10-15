@@ -28,7 +28,6 @@ import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { COURSERA_XAPI_UNAVAILABLE_LIST_NOTICE } from '@/lib/coursera/xapiUnavailableNotice';
-import { getDiscoveredProgram, getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import {
   loadValidatedProgramCatalog,
@@ -51,6 +50,9 @@ import {
   loadUnmatchedLearners,
 } from '@/lib/coursera/progressQueries';
 import { reportingRedirectHref, wantsLegacyView } from '@/lib/admin/reportingHub';
+import { buildCourseraXapiCourseLog, type XapiCourseLogMember } from '@/lib/admin/courseraXapiCourseLog';
+import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
+import { programSlugsEquivalent } from '@/lib/content/programSlug';
 
 type CourseProgressSummary = {
   totalRows: number;
@@ -102,13 +104,6 @@ type XapiCourseProgressSummary = {
   }>;
 };
 
-type XapiCourseLogMember = {
-  id: string;
-  fullName: string;
-  email: string;
-  enrolledProgram: string | null;
-};
-
 async function loadXapiCourseProgressSummary(
   organizationId: string,
   members: XapiCourseLogMember[]
@@ -154,11 +149,10 @@ async function loadXapiCourseProgressSummary(
       LIMIT 10
     `;
 
-    const membersWithProgress = members.filter((member) => member.enrolledProgram);
     const progressRows = await prisma.courseProgress.findMany({
       take: ADMIN_SSR_LIST_CAP,
       where: {
-        userId: { in: membersWithProgress.map((member) => member.id) },
+        userId: { in: members.map((member) => member.id) },
       },
       select: {
         userId: true,
@@ -171,38 +165,7 @@ async function loadXapiCourseProgressSummary(
         lastActivityAt: true,
       },
     });
-    const progressMap = new Map(
-      progressRows.map((row) => [`${row.userId}:${row.programSlug}:${row.courseSlug}`, row])
-    );
-
-    const courseLogRows = membersWithProgress.flatMap((member) => {
-      const programSlug = member.enrolledProgram;
-      if (!programSlug) return [];
-      const program = getProgramBySlug(programSlug);
-      if (!program) return [];
-      const discovered = getDiscoveredProgram(programSlug);
-      const discoveredBySlug = new Map((discovered?.courses ?? []).map((course) => [course.slug, course]));
-
-      return program.courses.map((course) => {
-        const progress = progressMap.get(`${member.id}:${programSlug}:${course.slug}`);
-        const discoveredCourse = discoveredBySlug.get(course.slug);
-        return {
-          key: `${member.id}:${programSlug}:${course.slug}`,
-          userId: member.id,
-          fullName: member.fullName,
-          email: member.email,
-          programSlug,
-          programTitle: program.title,
-          courseSlug: course.slug,
-          courseName: course.name,
-          courseId: progress?.courseId ?? discoveredCourse?.courseId ?? course.courseraCourseId ?? null,
-          status: progress?.status ?? 'NOT_STARTED',
-          percentComplete: progress?.percentComplete ?? 0,
-          lastUpdatedAt: progress?.lastUpdatedAt ?? null,
-          lastActivityAt: progress?.lastActivityAt ?? null,
-        };
-      });
-    });
+    const courseLogRows = buildCourseraXapiCourseLog(members, progressRows);
 
     return {
       totalRows: Number(summaryRows[0]?.total ?? 0),
@@ -409,9 +372,8 @@ export default async function AdminCourseraPage({
       workspaceEmailProvisioned: true,
       // Multi-program: workspace email is on the primary enrollment.
       courseEnrollments: {
-        where: { isPrimary: true },
-        select: { workspaceEmail: true, workspaceEmailProvisioned: true },
-        take: 1,
+        orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
+        select: { programSlug: true, curriculumVersion: true, isPrimary: true, workspaceEmail: true, workspaceEmailProvisioned: true },
       },
     },
     take: 500,
@@ -484,15 +446,20 @@ export default async function AdminCourseraPage({
     }
   }
 
-  const memberOptions = members.map((member) => ({
+  const memberOptions = members.map((member) => {
+    const assignment = resolveTrainingProgressAssignment(member.enrolledProgram, member.courseEnrollments);
+    const enrollment = member.courseEnrollments.find((row) => assignment.programSlug
+      ? programSlugsEquivalent(row.programSlug, assignment.programSlug) : false);
+    return {
     id: member.id,
     fullName: member.fullName,
     email: member.email,
-    programTitle: member.enrolledProgram ? programDisplayTitle(member.enrolledProgram) : null,
-    workspaceEmail: member.courseEnrollments[0]?.workspaceEmail ?? member.workspaceEmail,
+    programTitle: assignment.programSlug ? programDisplayTitle(assignment.programSlug) : null,
+    workspaceEmail: enrollment?.workspaceEmail ?? member.workspaceEmail,
     workspaceEmailProvisioned:
-      member.courseEnrollments[0]?.workspaceEmailProvisioned ?? member.workspaceEmailProvisioned,
-  }));
+      enrollment?.workspaceEmailProvisioned ?? member.workspaceEmailProvisioned,
+    };
+  });
   const catalogHealth = await catalogHealthPromise;
 
   return (
@@ -859,7 +826,7 @@ export default async function AdminCourseraPage({
       <details className="content-card" style={collapsibleSectionStyle}>
         <summary style={collapsibleSummaryStyle}>
           <span>
-            Live xAPI course progress
+            Recorded course progress
             <span style={{ ...collapsibleCountStyle, marginLeft: '0.5rem' }}>
               {xapiCourseProgress
                 ? `${xapiCourseProgress.totalRows} row(s) · last update ${fmtDateTime(xapiCourseProgress.latestUpdatedAt)}`
@@ -871,7 +838,7 @@ export default async function AdminCourseraPage({
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
           <div>
             <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>
-              Real-time course progress from xAPI statements (Coursera webhook). This is what members see on My Training.
+              Assigned curriculum courses and recorded course progress. The source is not verified here. Rows marked “observed activity” do not establish a program assignment.
             </span>
           </div>
         </div>
@@ -879,7 +846,7 @@ export default async function AdminCourseraPage({
         {xapiCourseProgress ? (
           <>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>
-              <span><strong>{xapiCourseProgress.totalRows}</strong> xAPI progress row(s)</span>
+              <span><strong>{xapiCourseProgress.totalRows}</strong> progress row(s)</span>
               <span>•</span>
               <span>Last updated: <strong>{fmtDateTime(xapiCourseProgress.latestUpdatedAt)}</strong></span>
             </div>
@@ -965,13 +932,13 @@ export default async function AdminCourseraPage({
               />
             ) : (
               <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>
-                No enrolled member course log is available yet. Progress appears here when members enroll in Coursera-backed programs.
+                No assigned curriculum courses or recorded course progress are available for the loaded member accounts.
               </span>
             )}
           </>
         ) : (
           <span style={{ color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>
-            xAPI progress data is unavailable right now.
+            Recorded course progress is unavailable right now.
           </span>
         )}
         </div>

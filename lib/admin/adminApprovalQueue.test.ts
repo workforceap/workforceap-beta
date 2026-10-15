@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Prisma } from '@prisma/client';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { APPROVAL_SLA_BUSINESS_DAYS } from '@/lib/counselor/approvalQueue';
 import {
@@ -69,8 +68,8 @@ test('where clauses: org-scoped, members only, no enrolled-program condition, an
   const intakes = adminIntakesAwaitingDecisionWhere('org-1');
   assert.equal(intakes.organizationId, 'org-1');
   assert.equal(intakes.deletedAt, null);
-  assert.deepEqual(intakes.wioaReviewStatus, { in: ['pending', 'in_review'] });
-  assert.deepEqual(intakes.wioaQualificationJson, { not: Prisma.DbNull });
+  assert.deepEqual(intakes.AND, [{ OR: [{ wioaReviewStatus: { in: ['pending', 'in_review'] } }, { wioaReviewStatus: null }] }]);
+  assert.deepEqual(intakes.OR?.[1], { applyEligibilityScreenings: { some: { organizationId: 'org-1' } } });
   assert.deepEqual(intakes.NOT, MEMBER_ONLY_WHERE.NOT);
 
   // Applicants have no enrolled program until they are approved: the admin

@@ -30,10 +30,17 @@ The admin assessments catalog's “Student results & retakes” action opens the
 per-student results table, where staff can request the final preassessment attempt.
 Both mobile and desktop controls use the existing admin authorization endpoint;
 pending requests and the two-attempt limit disable the action.
+The member Eligibility tab offers the same action beside the saved assessment
+answers. The Overview link uses the Tabs component's native fragment navigation
+to open that review block; preserve the attempt count and pending state.
 
 Billing phone fields normalize complete US numbers on blur and before new draft
 payloads, including unsigned previews. Keep extensions and international or
 incomplete input intact; saved and signed PDF snapshots retain their original text.
+Billing case creation shows whether the selected program has approved billing
+terms before offering the action. Keep unsigned previews available for missing
+terms. For an overnight unsigned draft, the explicit date-refresh action opens
+the editor; saving and reviewing the new PDF precede signature review.
 
 Digital Literacy uses the portal locale for lesson copy and provider links. Spanish
 catalog links must say that the student selects the topic; provider language-switch

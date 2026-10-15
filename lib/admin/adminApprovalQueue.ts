@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { wioaScreeningQueueWhere } from './wioaScreeningPopulation';
 import {
   ADMIN_QUEUE_PAGE_SIZE,
   adminApplicationCardId,
@@ -79,11 +80,11 @@ export function adminApplicationsAwaitingApplicantWhere(orgId: string): Prisma.A
 /** WIOA intakes waiting on a staff decision, with a screening on file, members only, in the org. */
 export function adminIntakesAwaitingDecisionWhere(orgId: string): Prisma.UserWhereInput {
   return {
-    organizationId: orgId,
-    deletedAt: null,
-    wioaReviewStatus: { in: [...AWAITING_INTAKE_STATUSES] },
-    wioaQualificationJson: { not: Prisma.DbNull },
-    ...MEMBER_ONLY_WHERE,
+    ...wioaScreeningQueueWhere({ ok: true, orgId, superAdmin: false }),
+    AND: [{ OR: [
+      { wioaReviewStatus: { in: [...AWAITING_INTAKE_STATUSES] } },
+      { wioaReviewStatus: null },
+    ] }],
   };
 }
 
@@ -103,7 +104,7 @@ export type AdminApprovalIntakeRow = {
   enrolledProgram: string | null;
   wioaReviewStatus: string | null;
   wioaReviewedAt: Date | null;
-  /** `wioaQualificationJson.submittedAt`, parsed by the loader. */
+  /** Questionnaire submission or application screening's saved first-submission time. */
   wioaScreeningSubmittedAt: Date | null;
 };
 

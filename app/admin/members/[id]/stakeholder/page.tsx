@@ -17,6 +17,7 @@ import MemberProgressStrip from '@/components/portal/MemberProgressStrip';
 import AdminMemberResumeSection from '@/components/admin/AdminMemberResumeSection';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
+import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
 
 export const dynamic = 'force-dynamic';
 
@@ -80,10 +81,8 @@ export default async function AdminMemberStakeholderPage({
       enrolledProgram: true,
       enrolledAt: true,
       courseEnrollments: {
-        where: { isPrimary: true },
-        orderBy: { enrolledAt: 'desc' },
-        take: 1,
-        select: { programSlug: true, curriculumVersion: true, enrolledAt: true },
+        orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
+        select: { programSlug: true, curriculumVersion: true, enrolledAt: true, isPrimary: true },
       },
       assessmentCompleted: true,
       onboardingCompletedAt: true,
@@ -162,17 +161,21 @@ export default async function AdminMemberStakeholderPage({
 
   const preScreeningCount = preScreening ? 1 : 0;
 
-  const primaryEnrollment = member.courseEnrollments[0] ?? null;
+  const assignment = resolveTrainingProgressAssignment(member.enrolledProgram, member.courseEnrollments);
+  const activeProgramSlug = assignment.programSlug;
+  const primaryEnrollment = member.courseEnrollments.find((row) =>
+    activeProgramSlug ? programSlugsEquivalent(row.programSlug, activeProgramSlug) : false,
+  ) ?? null;
   // The enrollment row is the record behind the program name shown here;
   // User.enrolledAt is the older single-program pointer and is null for
   // members enrolled through CourseEnrollment only.
-  const enrolledAtDisplay: Date | null = primaryEnrollment?.enrolledAt ?? member.enrolledAt ?? null;
-  const activeProgramSlug = primaryEnrollment?.programSlug ?? member.enrolledProgram ?? null;
+  const enrolledAtDisplay: Date | null = primaryEnrollment?.enrolledAt
+    ?? (member.courseEnrollments.length === 0 ? member.enrolledAt : null);
   const program = activeProgramSlug ? getProgramBySlug(activeProgramSlug) : null;
   const curriculumCourses = program
     ? getProgramCoursesForCurriculumVersion(
         program,
-        primaryEnrollment?.curriculumVersion ?? 'legacy-v1',
+        assignment.curriculumVersion,
       )
     : [];
   const liveCourseProgress = ((member.courseProgress ?? []) as CourseProgressRow[])

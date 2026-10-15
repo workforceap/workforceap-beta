@@ -95,6 +95,8 @@ type TwoStageStageEditorProps = {
   boardInvoices?: readonly ArtifactView[];
   /** False when the stage already has a signed or sent version (the server refuses a save). */
   canSaveDraft: boolean;
+  /** An overnight unsigned draft needs an explicit save and a new signature review. */
+  refreshIssueDate?: boolean;
   /** Changes when a sibling evidence action refreshes the case summary. */
   reviewRevision?: number;
   /** Never accept a review while the authoritative summary is still loading. */
@@ -108,7 +110,7 @@ type TwoStageStageEditorProps = {
  * `POST …/[stage]/draft/review` (never a write); `PUT …/[stage]/draft`
  * persists only a complete set, with the version hash the editor loaded.
  */
-export default function TwoStageStageEditor({ memberId, caseId, stage, classFacts, j5Current, boardInvoices = [], canSaveDraft, reviewRevision = 0, summaryRefreshing = false, onSaved, onClose }: TwoStageStageEditorProps) {
+export default function TwoStageStageEditor({ memberId, caseId, stage, classFacts, j5Current, boardInvoices = [], canSaveDraft, refreshIssueDate = false, reviewRevision = 0, summaryRefreshing = false, onSaved, onClose }: TwoStageStageEditorProps) {
   const announce = useAnnounce();
   const [values, setValues] = useState<Values>({});
   const [initialSources, setInitialSources] = useState<Partial<Record<DraftField, ContactSource | 'j5'>>>({});
@@ -141,6 +143,11 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, classFact
   const reviewRevisionRef = useRef(reviewRevision);
   reviewRevisionRef.current = reviewRevision;
   const previousReviewRevision = useRef(reviewRevision);
+  const openedForDateRefresh = useRef(refreshIssueDate);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (openedForDateRefresh.current) headingRef.current?.focus();
+  }, []);
 
   const releaseMock = useCallback(() => {
     mockSequence.current += 1;
@@ -386,7 +393,7 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, classFact
   return (
     <section className={styles.editor} aria-labelledby={`billing-${stage}-editor-heading`} data-editor={stage}>
       <div className={styles.editorHead}>
-        <h3 className={styles.editorTitle} id={`billing-${stage}-editor-heading`}>
+        <h3 ref={headingRef} tabIndex={-1} className={styles.editorTitle} id={`billing-${stage}-editor-heading`}>
           {stage.toUpperCase()} draft
         </h3>
         <button type="button" className={styles.secondaryButton} onClick={() => { clearMock(); onClose(); }}>
@@ -394,6 +401,7 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, classFact
         </button>
       </div>
       <p className={styles.editorNote}>Saving creates a DRAFT version for review. It does not sign or send anything.</p>
+      {refreshIssueDate ? <p className={styles.editorNote} role="status">Save the updated draft to use today’s date in America/Chicago and rebuild the current terms and evidence. Review the new PDF, then review this new version for signature.</p> : null}
       <section className={styles.draftFacts} aria-label={`${stage.toUpperCase()} class and cost summary`}>
         <h4 className={styles.sectionLabel}>Class and cost for this draft</h4>
         <dl className={styles.summary}>
@@ -546,7 +554,7 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, classFact
 
           <div className={styles.editorActions}>
             <button type="submit" className={styles.primaryButton} disabled={Boolean(saveBlocked) || saving} aria-describedby={`billing-${stage}-save-reason`}>
-              {saving ? 'Saving…' : current ? 'Save draft changes' : 'Save draft'}
+              {saving ? 'Saving…' : refreshIssueDate ? 'Save updated draft' : current ? 'Save draft changes' : 'Save draft'}
             </button>
             <p id={`billing-${stage}-save-reason`} className={styles.reason} aria-live="off">
               {saveBlocked ?? (reviewPending ? 'Checking the latest changes…' : review.versionHashIfSaved ? `Ready to save (version ${shortHash(review.versionHashIfSaved)}).` : 'Ready to save.')}

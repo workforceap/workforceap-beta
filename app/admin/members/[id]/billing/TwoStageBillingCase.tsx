@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { KitEmptyState } from '@/components/portal/kit';
 import { GATE_CODES, type BillingStage, type CaseListItemDto, type CaseSummaryDto, type ErrorCode } from '@/lib/billing/twoStage/dto';
 import { classEndDate } from '@/lib/billing/twoStage/dates';
@@ -11,7 +12,12 @@ import { ClassStartedPanel, FailureNotice, J5ReadinessPanel, PaymentPanel, Signe
 import { twoStageApi, type ApiFailure } from './twoStageClient';
 import styles from './TwoStageBillingWorkbench.module.css';
 
-export type EnrolledProgram = { slug: string; title: string };
+export type EnrolledProgram = {
+  slug: string;
+  title: string;
+  /** Source-backed billing capability, computed on the server. */
+  billingTerms: { available: boolean; reason: string | null };
+};
 
 type TwoStageBillingCaseProps = {
   memberId: string;
@@ -55,7 +61,9 @@ function pickCase(cases: readonly CaseListItemDto[], programs: readonly Enrolled
  * Client container for the two-stage J5/J6 page: lists or opens the
  * member's case, loads the authoritative summary (`CaseSummaryDto`) and wires
  * the workbench to the M3 routes. It holds no authority of its own: every
- * button sends a request and the server's answer is what is shown.
+ * button sends a request and the server's answer is what is shown. Programs
+ * without approved billing terms show their reason before case creation;
+ * unsigned document previews remain available outside that gate.
  */
 export default function TwoStageBillingCase(props: TwoStageBillingCaseProps) {
   const [previewCase, setPreviewCase] = useState<{ memberId: string; caseId: string } | null>(null);
@@ -76,6 +84,7 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
   const [reviewRevision, setReviewRevision] = useState(0);
   const [loadedReviewRevision, setLoadedReviewRevision] = useState(0);
   const [programSlug, setProgramSlug] = useState(enrolledPrograms[0]?.slug ?? '');
+  const selectedProgram = enrolledPrograms.find((program) => program.slug === programSlug);
   const selected = useRef<string | null>(null);
   const loadSeq = useRef(0);
 
@@ -125,6 +134,7 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
   }, [load]);
 
   const openCase = async () => {
+    if (!selectedProgram?.billingTerms.available || opening) return;
     setOpening(true);
     setOpenFailure(null);
     const result = await twoStageApi.openCase(memberId, { programSlug });
@@ -179,7 +189,9 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
             No J5/J6 billing case yet
           </h2>
           {noProgram ? (
-            <p className={styles.introText}>This member has no program enrollment on file. Assign the program first; the billing case follows the enrolled program.</p>
+            <p className={styles.introText}>This member has no program enrollment on file. Assign the program first; the billing case follows the enrolled program.{' '}
+              <Link href={`/admin/members/${memberId}?tab=program`}>Review program assignment</Link>
+            </p>
           ) : (
             <>
               <p className={styles.introText}>A case holds both documents for one program. Opening it records who opened it; it does not create, sign or send a document.</p>
@@ -191,7 +203,7 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
                   <select id="billing-open-program" className={styles.control} value={programSlug} onChange={(e) => setProgramSlug(e.target.value)}>
                     {enrolledPrograms.map((p) => (
                       <option key={p.slug} value={p.slug}>
-                        {p.title}
+                        {p.title}{p.billingTerms.available ? '' : ' — approved billing terms unavailable'}
                       </option>
                     ))}
                   </select>
@@ -200,11 +212,13 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
             </>
           )}
           <div className={styles.actionRow}>
-            <button type="button" className={styles.primaryButton} disabled={noProgram || opening} aria-describedby="billing-open-reason" onClick={() => void openCase()}>
+            <button type="button" className={styles.primaryButton} disabled={!selectedProgram?.billingTerms.available || opening} aria-describedby="billing-open-reason" onClick={() => void openCase()}>
               {opening ? 'Opening…' : `Open billing case${enrolledPrograms.length === 1 ? ` for ${enrolledPrograms[0].title}` : ''}`}
             </button>
-            <p id="billing-open-reason" className={styles.reason}>
-              {noProgram ? 'No enrolled program on file.' : 'The server checks the program’s approved class and hours.'}
+            <p id="billing-open-reason" className={styles.reason} role="status">
+              {noProgram ? 'No enrolled program on file.' : !selectedProgram?.billingTerms.available
+                ? `${selectedProgram?.billingTerms.reason ?? 'Approved billing terms are unavailable for this program.'} Ask the program owner to confirm its approved syllabus before opening a billing case. Unsigned previews remain available above.`
+                : 'The server checks the program’s approved class and hours.'}
             </p>
           </div>
           <FailureNotice failure={openFailure} />
@@ -236,6 +250,7 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
         j5Current={stage === 'j6' ? summary.j5.current : null}
         boardInvoices={summary.j6.boardInvoice ? [summary.j6.boardInvoice] : []}
         canSaveDraft={summary[stage].canSaveDraft}
+        refreshIssueDate={summary[stage].current?.status === 'draft' && summary[stage].blockers.some((blocker) => blocker.code === (stage === 'j5' ? 'J5_ISSUE_DATE_NOT_TODAY' : 'J6_ISSUE_DATE_NOT_TODAY'))}
         reviewRevision={reviewRevision}
         summaryRefreshing={reviewRevision !== loadedReviewRevision}
         onSaved={refresh}
@@ -286,7 +301,7 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
             <>
               {editor('j5')}
               <J5ReadinessPanel ctx={ctx} attestation={summary.j5.readinessAttestation} />
-              <StageLifecycle ctx={ctx} stage="j5" view={summary.j5} viewer={summary.viewer} signature={summary.signature} showSignatureSlot={signatureStage === 'j5'} />
+              <StageLifecycle ctx={ctx} stage="j5" view={summary.j5} viewer={summary.viewer} signature={summary.signature} showSignatureSlot={signatureStage === 'j5'} onRefreshDraftDate={() => setEditing('j5')} />
             </>
           ),
           j6: (
@@ -294,7 +309,7 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
               {editor('j6')}
               <VoucherPanel ctx={ctx} voucher={summary.j6.voucher} />
               <ClassStartedPanel ctx={ctx} classStarted={summary.j6.classStarted} />
-              <StageLifecycle ctx={ctx} stage="j6" view={summary.j6} viewer={summary.viewer} signature={summary.signature} showSignatureSlot={signatureStage === 'j6'} />
+              <StageLifecycle ctx={ctx} stage="j6" view={summary.j6} viewer={summary.viewer} signature={summary.signature} showSignatureSlot={signatureStage === 'j6'} onRefreshDraftDate={() => setEditing('j6')} />
               <PaymentPanel ctx={ctx} payment={summary.payment} />
             </>
           ),

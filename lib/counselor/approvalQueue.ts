@@ -1,4 +1,4 @@
-import { COUNSELOR_WIOA_INTAKE_LABELS, type CounselorWioaReviewStatus } from '@/lib/wioa/wioaReview';
+import { COUNSELOR_WIOA_INTAKE_LABELS, wioaReviewLabel, type CounselorWioaReviewStatus } from '@/lib/wioa/wioaReview';
 
 /**
  * "Waiting on your decision" — the counselor Today page's approval queue.
@@ -15,8 +15,9 @@ import { COUNSELOR_WIOA_INTAKE_LABELS, type CounselorWioaReviewStatus } from '@/
  *   - Application.status = PENDING. NEEDS_INFO is the member's move;
  *     APPROVED / DENIED are decided.
  *   - users.wioa_review_status = pending | in_review. needs_info is the
- *     member's move; verified / not_eligible are decided; null = no
- *     screening submitted yet.
+ *     member's move; verified / not_eligible are decided. A legacy null
+ *     status also waits when a real screening submission is on file;
+ *     null without screening evidence has no intake decision to list.
  * Coursera training approval is an admin action (CounselorTrainingHandoff is
  * read-only for counselors), so it is not a counselor decision and is not
  * listed here.
@@ -226,7 +227,7 @@ export function buildApprovalQueue(
         waitingSince: app.submittedAt ?? app.createdAt,
       }, now, slaBusinessDays));
     }
-    if (isAwaitingIntake(m.wioaReviewStatus)) {
+    if (isAwaitingIntake(m.wioaReviewStatus) || (m.wioaReviewStatus === null && m.wioaScreeningSubmittedAt !== null)) {
       rows.push(finishRow({
         ...common,
         key: `intake:${m.memberId}`,
@@ -234,7 +235,7 @@ export function buildApprovalQueue(
         awaiting: APPROVAL_AWAITING_LABEL.intake,
         programInterest: null,
         applicationId: null,
-        detail: COUNSELOR_WIOA_INTAKE_LABELS[m.wioaReviewStatus],
+        detail: m.wioaReviewStatus === null ? wioaReviewLabel(null) : COUNSELOR_WIOA_INTAKE_LABELS[m.wioaReviewStatus as (typeof AWAITING_INTAKE_STATUSES)[number]],
         waitingSince: intakeWaitingSince(m),
       }, now, slaBusinessDays));
     }

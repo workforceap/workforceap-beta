@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MEMBER_ONLY_WHERE, MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { matchesWhere } from '@/tests/helpers/prismaWhereMatches';
 
 /**
  * Column semantics of the /admin/members CSV (admin number audit 2026-09-20):
@@ -149,6 +150,21 @@ describe('members CSV columns', () => {
 });
 
 describe('members CSV population (audit S3; Mike: "remove staff in count")', () => {
+  it('shares alias/program/date enrollment matching with the roster', async () => {
+    const fixture = (id: string, fields: RecordValue) => member({ id, fullName: id, email: `${id}@example.invalid`, deletedAt: null, profile: { role: 'member' }, userRoles: [], ...fields });
+    const assignment = (programSlug: string, at: string) => ({ programSlug, curriculumVersion: 'legacy-v1', isPrimary: true, enrolledAt: new Date(at) });
+    const rows = [
+      fixture('durable', { enrolledProgram: null, enrolledAt: null, courseEnrollments: [assignment('comptia-a-professional-certificate', '2026-10-15')] }),
+      fixture('legacy', { enrolledProgram: 'comptia-a-plus', enrolledAt: new Date('2026-10-15'), courseEnrollments: [] }),
+      fixture('split', { enrolledProgram: null, enrolledAt: null, courseEnrollments: [assignment('comptia-a-professional-certificate', '2026-09-01'), assignment('other-program', '2026-10-15')] }),
+      fixture('stale', { enrolledProgram: 'comptia-a-plus', enrolledAt: new Date('2026-10-15'), courseEnrollments: [assignment('other-program', '2026-10-15')] }),
+    ];
+    mocks.findMany.mockImplementation(async ({ where }: { where: unknown }) => rows.filter((row) => matchesWhere(row, where)));
+    const result = await runExport('?program=comptia-a-plus&startDate=2026-10-01&endDate=2026-10-31');
+    expect(result.status).toBe(200);
+    expect(result.rows.map((row) => row[0])).toEqual(['durable', 'legacy']);
+  });
+
   it('exports members only by default, matching the screen', async () => {
     await runExport();
     const where = mocks.findMany.mock.calls[0][0].where;

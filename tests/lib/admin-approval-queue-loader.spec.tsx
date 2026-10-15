@@ -58,7 +58,7 @@ function seed() {
     (JSON.stringify(args.where.status) === JSON.stringify({ in: ['PENDING'] }) ? 75 : 4));
   db.userFindMany.mockResolvedValue([
     {
-      id: 'm-intake', fullName: null, email: 'intake@example.test', enrolledProgram: null,
+      id: 'm-intake', organizationId: 'org-1', fullName: null, email: 'intake@example.test', enrolledProgram: null,
       wioaReviewStatus: 'pending', wioaReviewedAt: null, wioaQualificationJson: SCREENING,
     },
   ]);
@@ -95,8 +95,11 @@ describe('loadAdminApprovalQueue', () => {
     expect(intakes.where).toMatchObject({
       organizationId: 'org-1',
       deletedAt: null,
-      wioaReviewStatus: { in: ['pending', 'in_review'] },
-      wioaQualificationJson: { not: Prisma.DbNull },
+      AND: [{ OR: [{ wioaReviewStatus: { in: ['pending', 'in_review'] } }, { wioaReviewStatus: null }] }],
+      OR: [
+        { AND: expect.arrayContaining([{ wioaQualificationJson: { path: ['submittedAt'], not: Prisma.AnyNull } }]) },
+        { applyEligibilityScreenings: { some: { organizationId: 'org-1' } } },
+      ],
       NOT: MEMBER_ONLY_WHERE.NOT,
     });
 
@@ -144,6 +147,31 @@ describe('loadAdminApprovalQueue', () => {
       'intake:m-intake': '/admin/members/m-intake?tab=eligibility',
       'application:m-enrolled:a-new': '/admin/command-center?queue=applications&page=1#application-a-new',
     });
+  });
+
+  it.each(['pending', null])('includes an apply-only partial screening with saved %s review state once and no invented application', async (status) => {
+    db.applicationFindMany.mockResolvedValue([]);
+    db.applicationCount.mockResolvedValue(0);
+    db.userCount.mockResolvedValue(1);
+    db.userFindMany.mockResolvedValue([{
+      id: 'apply-only', organizationId: 'org-1', fullName: 'Application member', email: 'apply-only@mail.invalid',
+      enrolledProgram: null, wioaReviewStatus: status, wioaReviewedAt: null, wioaQualificationJson: null,
+      applyEligibilityScreenings: [{
+        id: 'screening-1', organizationId: 'org-1', createdAt: new Date('2026-09-01T10:00:00Z'),
+        q1: null, q2: null, q3: null, qualifies: true, yesCount: 0,
+        receivingUnemployment: 'yes', exhaustedUnemployment: null, layoffCompany: null,
+        snapWic: 'yes', publicAssistancePrograms: ['wic'], publicAssistanceHelpRequested: 'yes',
+      }],
+    }]);
+    const approvals = await loadAdminApprovalQueue({ ok: true, orgId: 'org-1', superAdmin: false }, { now: NOW });
+    expect(approvals.total).toBe(1);
+    expect(approvals.intakes.waiting).toBe(1);
+    expect(approvals.applications.waiting).toBe(0);
+    expect(approvals.queue.rows).toHaveLength(1);
+    expect(approvals.queue.rows[0]).toMatchObject({ kind: 'intake', memberId: 'apply-only', applicationId: null, daysWaiting: 21 });
+    expect(approvals.queue.rows[0].waitingSince?.toISOString()).toBe('2026-09-01T10:00:00.000Z');
+    if (status === null) expect(approvals.queue.rows[0].detail).toBe('Not reviewed');
+    expect(approvals.rowHrefs['intake:apply-only']).toBe('/admin/members/apply-only?tab=eligibility');
   });
 
   it('renders in the shared kit list with admin destinations and says how much is not shown', async () => {

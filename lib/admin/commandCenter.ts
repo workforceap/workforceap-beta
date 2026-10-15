@@ -8,6 +8,7 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { loadPersistedAtRiskMembers, persistedRiskCommandRow } from '@/lib/member/persistedAtRisk';
 import { APPLICANT_TRIAGE_BUCKET_RANK, APPLICANT_TRIAGE_BUCKET_TEXT } from '@/lib/admin/applicantTriage';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { countConfirmedProgramEnrollments } from '@/lib/admin/confirmedEnrollmentCounts';
 import {
   adminApplicationsAwaitingApplicantWhere,
   adminApplicationsAwaitingDecisionWhere,
@@ -250,26 +251,30 @@ async function loadApplicationsPending(
 
 /**
  * Per-program enrollment counts for the "Program Health" breakdown, scoped to
- * the org. Cheap single groupBy over enrolled, non-deleted members; the pure
+ * the org. Resolve current assignments for non-deleted member accounts; the pure
  * projection (`buildProgramHealthRows`) resolves slugs to catalog titles,
  * sorts by count desc and keeps the top programs. `pct` is each program's
  * share of all enrolled students, labelled as such, never a completion rate.
  */
 async function loadProgramHealth(orgId: string): Promise<AdminProgramHealthRow[]> {
-  const grouped = await prisma.user.groupBy({
-    by: ['enrolledProgram'],
+  const members = await prisma.user.findMany({
     where: {
       organizationId: orgId,
       deletedAt: null,
-      enrolledProgram: { not: null },
       // Staff / dogfood accounts never count as members on the Command Center.
       ...MEMBER_ONLY_WHERE,
     },
-    _count: true,
+    select: {
+      enrolledProgram: true,
+      courseEnrollments: {
+        orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
+        select: { programSlug: true, curriculumVersion: true, isPrimary: true },
+      },
+    },
   });
 
   return buildProgramHealthRows(
-    grouped.map((group) => ({ programSlug: group.enrolledProgram, count: group._count })),
+    countConfirmedProgramEnrollments(members),
     { limit: PROGRAM_HEALTH_LIMIT, labelFor: programDisplayTitle },
   );
 }

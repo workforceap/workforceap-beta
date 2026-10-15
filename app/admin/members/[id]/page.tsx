@@ -1,4 +1,5 @@
 import AssessmentResultHistory from '@/components/admin/AssessmentResultHistory';
+import AllowAssessmentRetakeButton from '@/components/admin/AllowAssessmentRetakeButton';
 import type { Metadata } from 'next';
 import EnrollmentAgreementCard from '@/components/enrollment/EnrollmentAgreementCard';
 import Link from 'next/link';
@@ -82,6 +83,7 @@ import AdminMemberSkillCheckpointPanel from '@/components/admin/AdminMemberSkill
 import { loadSkillMissionSummary } from '@/lib/member/skillMissions';
 import { deriveCareerPlanSignal } from '@/lib/admin/careerPlanSignal';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
+import { resolveTrainingProgressAssignment, type TrainingProgressEnrollment } from '@/lib/member/trainingProgress';
 import { reconcileProgramProgress } from '@/lib/coursera/progressReconciliation';
 import { eventNameReadCandidates } from '@/lib/events/names';
 import { KitEmptyState, StatusTag, TabPanel, Tabs, type KitTone } from '@/components/portal/kit';
@@ -130,6 +132,11 @@ export default async function AdminMemberDetailPage({
 
   const { id } = await params;
 
+  const courseEnrollmentsSelect = {
+    orderBy: { enrolledAt: 'desc' },
+    select: { programSlug: true, curriculumVersion: true, isPrimary: true, enrolledAt: true },
+  } as const;
+
   const fullMemberSelect = {
     id: true,
     organizationId: true,
@@ -139,6 +146,7 @@ export default async function AdminMemberDetailPage({
     deletedAt: true,
     enrolledProgram: true,
     enrolledAt: true,
+    courseEnrollments: courseEnrollmentsSelect,
     programChangedAt: true,
     assessmentCompleted: true,
       assessmentAttemptCount: true,
@@ -223,6 +231,7 @@ export default async function AdminMemberDetailPage({
     deletedAt: true,
     enrolledProgram: true,
     enrolledAt: true,
+    courseEnrollments: courseEnrollmentsSelect,
     programChangedAt: true,
     assessmentCompleted: true,
       assessmentAttemptCount: true,
@@ -338,10 +347,6 @@ export default async function AdminMemberDetailPage({
       select: {
         programSlug: true,
         curriculumVersion: true,
-        // The Program tab's "Enrolled date" describes the enrollment shown
-        // beside it, which comes from this row. User.enrolledAt is the older
-        // single-program pointer and is null for members enrolled through
-        // CourseEnrollment only, which printed "—" next to a real program.
         enrolledAt: true,
         enrolledByAdminId: true,
         fundingSource: true,
@@ -426,6 +431,20 @@ export default async function AdminMemberDetailPage({
   // Super-admins may deliberately open a member outside their home tenant.
   // Program choices and WIOA history must follow the subject member, not the actor.
   const organizationId = member.organizationId;
+  const courseEnrollments = (member.courseEnrollments ?? []) as Array<TrainingProgressEnrollment & { enrolledAt: Date | null }>;
+  const assignment = resolveTrainingProgressAssignment(member.enrolledProgram, courseEnrollments);
+  const activeProgramSlug = assignment.programSlug;
+  const activeCourseEnrollment = activeProgramSlug
+    ? courseEnrollments.find((row) => row.isPrimary && programSlugsEquivalent(row.programSlug, activeProgramSlug))
+      ?? courseEnrollments.find((row) => programSlugsEquivalent(row.programSlug, activeProgramSlug))
+    : null;
+  const activeEnrollmentDate = activeProgramSlug
+    ? activeCourseEnrollment?.enrolledAt ?? (
+        member.enrolledProgram && programSlugsEquivalent(member.enrolledProgram, activeProgramSlug)
+          ? member.enrolledAt
+          : null
+      )
+    : null;
   const catalogPrograms = await prisma.organizationProgramCatalog.findMany({
     take: LOOKUP_LIST_CAP,
     where: { organizationId },
@@ -440,10 +459,8 @@ export default async function AdminMemberDetailPage({
             name: row.name,
             status: row.status,
           })),
-          (courseEnrollment?.programSlug ?? member.enrolledProgram)
-            ? getProgramBySlug(courseEnrollment?.programSlug ?? member.enrolledProgram)?.slug ??
-                courseEnrollment?.programSlug ??
-                member.enrolledProgram
+          activeProgramSlug
+            ? getProgramBySlug(activeProgramSlug)?.slug ?? activeProgramSlug
             : null,
         )
       : null;
@@ -454,7 +471,6 @@ export default async function AdminMemberDetailPage({
   });
   const enrollmentGateBlocked = !gate.ok;
 
-  const activeProgramSlug = courseEnrollment?.programSlug ?? member.enrolledProgram ?? null;
   // Enrollment drift (ported from the retired /lifecycle page): the legacy
   // `User.enrolledProgram` pointer and the primary `CourseEnrollment` row must
   // name the same program. One side set without the other, or two different
@@ -468,12 +484,7 @@ export default async function AdminMemberDetailPage({
     ? (courseEnrollment.enrolledByAdminId ? 'Admin-enrolled' : 'Self-enrolled')
     : null;
   const program = activeProgramSlug ? getProgramBySlug(activeProgramSlug) : null;
-  const curriculumVersion =
-    program &&
-    courseEnrollment?.programSlug &&
-    programSlugsEquivalent(courseEnrollment.programSlug, program.slug)
-      ? courseEnrollment.curriculumVersion
-      : 'legacy-v1';
+  const curriculumVersion = assignment.curriculumVersion;
   const curriculumCourses = program
     ? getProgramCoursesForCurriculumVersion(program, curriculumVersion)
     : [];
@@ -630,12 +641,14 @@ export default async function AdminMemberDetailPage({
   const completedCourseSlugs = liveCourseProgress
     .filter((row) => row.status === 'COMPLETED')
     .map((row) => row.courseSlug);
-  const skillMissionSummary = await loadSkillMissionSummary({
-    userId: member.id,
-    programSlug: activeProgramSlug,
-    curriculumVersion,
-    completedCourseSlugs,
-  });
+  const skillMissionSummary = activeProgramSlug && curriculumVersion
+    ? await loadSkillMissionSummary({
+        userId: member.id,
+        programSlug: activeProgramSlug,
+        curriculumVersion,
+        completedCourseSlugs,
+      })
+    : null;
 
   // Exact organization-scoped aggregates, without loading the board's sampled
   // placement list, demographic breakdowns or unrelated application funnel.
@@ -871,6 +884,11 @@ export default async function AdminMemberDetailPage({
                   <p className={styles.statLabel}>Assessment</p>
                   <p className={styles.statValue}>{member.assessmentScorePct != null ? `${member.assessmentScorePct}%` : '—'}</p>
                   <p className={styles.statNote}>{member.assessmentCompleted ? 'completed' : 'not completed'}</p>
+                  {member.assessmentCompleted || member.assessmentAttemptCount > 0 ? (
+                    <a href="#admin-member-preassessment" className={styles.inlineLink}>
+                      Review answers & retake
+                    </a>
+                  ) : null}
                 </div>
                 <div className={styles.stat}>
                   <p className={styles.statLabel}>Messages</p>
@@ -1044,7 +1062,7 @@ export default async function AdminMemberDetailPage({
                       ? '— (no enrollment on file)'
                       : '—'}
                 </p>
-                <p><strong>Enrolled date:</strong> {(courseEnrollment?.enrolledAt ?? member.enrolledAt)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) ?? '—'}</p>
+                <p><strong>Enrolled date:</strong> {activeEnrollmentDate?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) ?? '—'}</p>
                 {program ? (
                   <p>
                     <strong>Course progress:</strong>{' '}
@@ -1211,7 +1229,7 @@ export default async function AdminMemberDetailPage({
               <h2 id="admin-member-funding-title" className={styles.sectionTitle}>Enrollment funding &amp; workspace</h2>
               {!courseEnrollment && (
                 <p className={styles.lede}>
-                  Member is not currently enrolled in a program. Enrollment must be created first.
+                  No primary enrollment is on file. A primary enrollment is required to edit funding and workspace.
                 </p>
               )}
               <AdminMemberEnrollmentFundingForm
@@ -1516,15 +1534,27 @@ export default async function AdminMemberDetailPage({
               consentBlocked={Boolean(member.profile?.isMinor && !member.profile?.parentalConsentGiven)}
             />
 
-            {member.assessmentCompleted && (
-              <AssessmentAnswersReadonly
-                rows={buildAssessmentReviewRows(assessmentAnswers)}
-                score={member.assessmentScore}
-                scorePct={member.assessmentScorePct}
-                completedAt={member.assessmentCompletedAt}
-                programInterest={member.programInterest}
-              />
-            )}
+            {member.assessmentCompleted || member.assessmentAttemptCount > 0 ? (
+              <div id="admin-member-preassessment" className={styles.stack}>
+                {member.assessmentCompleted ? (
+                  <AssessmentAnswersReadonly
+                    rows={buildAssessmentReviewRows(assessmentAnswers)}
+                    score={member.assessmentScore}
+                    scorePct={member.assessmentScorePct}
+                    completedAt={member.assessmentCompletedAt}
+                    programInterest={member.programInterest}
+                  />
+                ) : null}
+                <section className="wa-kit-card" aria-labelledby="admin-member-preassessment-retake-title">
+                  <h2 id="admin-member-preassessment-retake-title" className={styles.sectionTitle}>Preassessment retake</h2>
+                  <AllowAssessmentRetakeButton
+                    memberId={member.id} memberName={member.fullName}
+                    attemptCount={member.assessmentAttemptCount} pending={!!member.assessmentRetakeRequestedAt}
+                    endpoint={`/api/admin/members/${member.id}/reset-assessment`}
+                  />
+                </section>
+              </div>
+            ) : null}
           </div>
         </TabPanel>
 
