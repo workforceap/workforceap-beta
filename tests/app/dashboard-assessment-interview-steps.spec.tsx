@@ -92,6 +92,13 @@ afterEach(() => {
 });
 
 describe('/dashboard/assessment interview steps (WAP-197)', () => {
+  it('explains how to get the second attempt after the first result', async () => {
+    await renderPage();
+    expect(screen.getByText(/You have one final attempt available/)).toHaveTextContent('Ask your counselor or administrator to authorize it');
+    expect(screen.getByRole('link', { name: 'Message your counselor about a retake' })).toHaveAttribute('href', '/dashboard/messages');
+    expect(screen.queryByTestId('assessment-form')).toBeNull();
+  });
+
   it('prompts the final authorized attempt while keeping the saved result', async () => {
     await renderPage({ assessmentRetakeRequestedAt: new Date('2026-10-15T00:00:00Z') });
     expect(screen.getByText('Your final preassessment attempt is ready')).toBeInTheDocument();
@@ -103,6 +110,7 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
     await renderPage({ assessmentAttemptCount: 2, assessmentRetakeRequestedAt: new Date() });
     expect(screen.queryByTestId('assessment-form')).toBeNull();
     expect(screen.getByText(/Both preassessment chances/)).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Message your counselor about a retake' })).toBeNull();
   });
 
   it('loads the pre-screening draft query from the member row', async () => {

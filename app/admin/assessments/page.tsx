@@ -160,6 +160,8 @@ async function renderLegacy({
           assessmentScorePct: true,
           assessmentCompletedAt: true,
           assessmentAnswers: true,
+          assessmentAttemptCount: true,
+          assessmentRetakeRequestedAt: true,
         },
       })),
       withAdminPageScope(scope, (db) => db.user.count({ where })),

@@ -22,6 +22,29 @@ export const DIGITAL_LITERACY_FIRST_COURSE_SLUG = `${DIGITAL_LITERACY_PROGRAM_SL
 export const DIGITALLEARN_HOME_URL = 'https://www.digitallearn.org/';
 export const DIGITALLEARN_COURSES_URL = 'https://www.digitallearn.org/courses';
 export const DIGITALLEARN_PROVIDER_NAME = 'DigitalLearn.org';
+export type DigitalLiteracyLanguage = 'en' | 'es';
+
+/**
+ * Supported by DigitalLearn's HomeController#language_toggle, including its
+ * current SPA. Native links must send no referrer so its redirect_back uses
+ * the provider's own catalog root. See the provider contract in the KB.
+ */
+export function digitalLiteracyProviderCatalogHref(
+  language: DigitalLiteracyLanguage,
+  provider: 'att' | 'digitallearn' = 'att',
+): string {
+  const host = provider === 'att' ? 'att.digitallearn.org' : 'www.digitallearn.org';
+  return `https://${host}/home_language_toggle?lang=${language}`;
+}
+
+/** AT&T's curated catalog omits the supplementary productivity/job topics. */
+export function digitalLiteracyModuleCatalogProvider(moduleKey: string): 'att' | 'digitallearn' {
+  return [
+    'computer-basics', 'internet-basics', 'email-basics', 'accounts-and-passwords',
+    'video-conferencing-basics', 'cybersecurity-basics',
+  ].includes(moduleKey) ? 'att' : 'digitallearn';
+}
+
 export const DIGITALLEARN_VERIFIED_ON = '2026-09-12';
 export const DIGITALLEARN_TERMS_URL = 'https://training.digitallearn.org/terms_of_use';
 export const DIGITALLEARN_LICENSE_NAME = 'CC BY-NC-SA 4.0';

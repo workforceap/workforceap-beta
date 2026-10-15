@@ -153,7 +153,7 @@ describe('mobile data labels', () => {
   });
 
   it('provides meaningful rich-header labels in the actual assessment table without breaking sorting', () => {
-    render(<AssessmentsTable users={[{ id: 'fixture', fullName: 'Taylor Example', email: 'example@example.test', phone: null, programInterest: null, assessmentScore: 8, assessmentScorePct: 80, assessmentCompletedAt: new Date('2026-09-01T12:00:00Z'), assessmentAnswers: {} }]} correctnessByUserId={{}} totalCount={1} currentPage={1} pageSize={20} />);
+    render(<AssessmentsTable users={[{ id: 'fixture', fullName: 'Taylor Example', email: 'example@example.test', phone: null, programInterest: null, assessmentScore: 8, assessmentScorePct: 80, assessmentCompletedAt: new Date('2026-09-01T12:00:00Z'), assessmentAnswers: {}, assessmentAttemptCount: 1, assessmentRetakeRequestedAt: null }]} correctnessByUserId={{}} totalCount={1} currentPage={1} pageSize={20} />);
     const table = screen.getByRole('table');
     expect(within(table).getByRole('cell', { name: /Taylor Example/ })).toHaveAttribute('data-label', 'Name');
     expect(within(table).getByRole('cell', { name: '80%' })).toHaveAttribute('data-label', 'Score %');

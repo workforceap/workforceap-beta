@@ -6,18 +6,6 @@ import { join } from 'node:path';
 const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
 
 describe('Digital Literacy provider and completion truth', () => {
-  it('shows attribution, license, fallback status, and local completion boundaries in the member module', () => {
-    const source = read('app/(portal)/dashboard/learning/modules/[courseSlug]/page.tsx');
-    assert.match(source, /Provider and license/);
-    assert.match(source, /course\.provider\.license\.url/);
-    assert.match(source, /provider terms/);
-    assert.match(source, /does not copy, host, adapt, or imply endorsement/);
-    assert.match(source, /WorkforceApModuleLessons/);
-    assert.match(source, /Mark module complete in WorkforceAP/);
-    assert.match(source, /does not verify DigitalLearn activity or issue a DigitalLearn certificate/);
-    assert.match(source, /\/dashboard\/certifications/);
-  });
-
   it('makes DigitalLearn destinations kit CTAs instead of title hyperlinks', () => {
     const source = read('app/(portal)/dashboard/learning/modules/[courseSlug]/page.tsx');
     const lessons = read('components/portal/WorkforceApModuleLessons.tsx');

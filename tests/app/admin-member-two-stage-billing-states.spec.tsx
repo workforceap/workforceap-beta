@@ -34,6 +34,15 @@ afterEach(() => {
 });
 
 describe('two-stage billing workbench states (M4)', () => {
+  it.each(['assigned_counselor', 'frozen_snapshot'] as const)('formats only live contact phones and preserves %s snapshot evidence', (source) => {
+    const summary = emptyCaseSummary();
+    summary.j5.contacts.counselor.phone = { value: '15125550123', source };
+    renderSummary(summary);
+    const expected = source === 'frozen_snapshot' ? '15125550123' : '(512) 555-0123';
+    expect(screen.getByText(/Contacts on file:/).closest('p')).toHaveTextContent(expected);
+    expect(screen.getByRole('list', { name: 'J5 recipients' })).toHaveTextContent(expected);
+  });
+
   it('empty case: gates, per-stage blockers and contacts come from the summary', () => {
     renderSummary(emptyCaseSummary());
 

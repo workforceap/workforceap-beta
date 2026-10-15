@@ -186,6 +186,18 @@ function unsourcedRemainder(text: string, content: TwoStageContent, opts: { rece
 }
 
 describe('two-stage renderer adapter: every printed field comes from frozen content', () => {
+  it('prints formatted phones in new drafts while keeping a legacy snapshot phone exact', async () => {
+    const fresh = j5({ counselor: { ...contacts.counselor, phone: '+15125550123 ext. 42' } });
+    const freshPdf = await pageText(await renderDraftFromContent(fresh, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z' }));
+    assert.ok(freshPdf.includes('(512) 555-0123 ext. 42'));
+    const legacy = { ...fresh, counselor: { ...fresh.counselor, phone: '15125550123 ext. 42' } };
+    const before = JSON.stringify(legacy);
+    const legacyPdf = await pageText(await renderDraftFromContent(legacy, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z' }));
+    assert.ok(legacyPdf.includes('15125550123 ext. 42'));
+    assert.equal(toRendererFacts(legacy, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z' }).counselor.phone, '15125550123 ext. 42');
+    assert.equal(JSON.stringify(legacy), before);
+  });
+
   it('mocks the exact saved J5, ignores frozen signature metadata, and preserves legacy dates', async () => {
     for (const version of [1, 2] as const) {
       const content: J5Content = { ...j5(), contentVersion: version };

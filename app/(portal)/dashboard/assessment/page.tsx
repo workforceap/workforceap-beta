@@ -84,7 +84,13 @@ export default async function AssessmentPage({
           {!canSubmit ? (
             <>
               {dbUser.assessmentAttemptCount >= 2 ? <p role="status">Both preassessment chances have been used. No further retakes are available.</p> : null}
-              {!dbUser.assessmentCompleted && dbUser.assessmentAttemptCount < 2 ? <p role="status">Ask your counselor or administrator to authorize your final attempt.</p> : null}
+              {dbUser.assessmentAttemptCount === 1 ? (
+                <p role="status">
+                  You have one final attempt available. Ask your counselor or administrator to authorize it.
+                  {' '}Once approved, your portal will show a prompt to start attempt 2 of 2.
+                  {' '}<Link href="/dashboard/messages">Message your counselor about a retake</Link>.
+                </p>
+              ) : null}
               {dbUser.assessmentCompleted ? <AssessmentCompletedCard
                 scorePct={dbUser.assessmentScorePct}
                 completedAt={dbUser.assessmentCompletedAt}

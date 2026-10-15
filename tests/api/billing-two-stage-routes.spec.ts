@@ -183,6 +183,7 @@ import { ApiError } from '@/lib/billing/twoStage/api/http';
 import { signerIntentStatement } from '@/lib/billing/twoStage/signing';
 import { syntheticPng } from '../fixtures/billing/syntheticPng';
 import { getProgramSyllabus } from '@/shared/programSyllabi';
+import { validateFields } from '@/lib/billing/twoStage/api/draft';
 
 const ORIGIN = 'http://localhost';
 const base = `${ORIGIN}/api/admin/members/${h.MEMBER}/billing/two-stage/cases`;
@@ -409,7 +410,7 @@ describe('member document previews: incomplete information is allowed without is
 
   it('keeps saved J5 preview facts frozen while editor preview uses current syllabus and readiness', async () => {
     h.state.records = [{ organizationId: h.ORG, caseId: h.CASE, stage: 'j5', status: 'draft', content: {
-      kind: 'j5_quote_voucher_request', training: {
+      kind: 'j5_quote_voucher_request', counselor: { name: 'Saved Counselor', email: 'saved@example.test', phone: '15125550123' }, training: {
         className: 'Frozen earlier class name', classDescription: 'Frozen earlier class description.',
         contactHours: 160, classStartDate: '2026-09-30', classEndDate: '2027-03-30',
       },
@@ -420,6 +421,8 @@ describe('member document previews: incomplete information is allowed without is
     expect(frozen).toContain('Frozen earlier class description.');
     expect(frozen).toContain('September 30, 2026');
     expect(frozen).toContain('March 30, 2027');
+    expect(frozen).toContain('15125550123');
+    const savedBeforeEditorPreview = JSON.stringify(h.state.records);
 
     const current = await pdfText(await memberPreviewPost(jsonReq(url('j5'), { caseId: h.CASE, previewSource: 'editor' }), params()));
     const syllabus = getProgramSyllabus('data-analytics-professional-certificate-google')!;
@@ -427,6 +430,9 @@ describe('member document previews: incomplete information is allowed without is
     expect(current.replace(/\s+/gu, ' ')).toContain(syllabus.description.replace(/\s+/gu, ' ').trim());
     expect(current).toContain('October 31, 2026');
     expect(current).toContain('April 30, 2027');
+    expect(current).toContain('(512) 555-0123');
+    expect(current).not.toContain('15125550123');
+    expect(JSON.stringify(h.state.records)).toBe(savedBeforeEditorPreview);
     expect(current).not.toContain('Frozen earlier class name');
     expect(current).not.toContain('Frozen earlier class description.');
     (h.state.records[0].content as { training: Record<string, unknown> }).training.classDescription = undefined;
@@ -435,6 +441,24 @@ describe('member document previews: incomplete information is allowed without is
     expect(legacy).toContain('March 30, 2027');
     expect(legacy).not.toContain(syllabus.description.replace(/\s+/gu, ' ').trim());
     expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it('validates the final formatted phone length and retains the required-phone gate', () => {
+    const values = {
+      boardName: { value: 'Board', source: 'draft' as const },
+      'student.name': { value: 'Student', source: 'draft' as const },
+      'student.email': { value: 'student@example.test', source: 'draft' as const },
+      'counselor.name': { value: 'Counselor', source: 'draft' as const },
+      'counselor.email': { value: 'counselor@example.test', source: 'draft' as const },
+      'counselor.phone': { value: '5125550123 ext. ' + '7'.repeat(22), source: 'draft' as const },
+      'finance.name': { value: null, source: 'none' as const },
+      'finance.email': { value: null, source: 'none' as const },
+      boardInvoiceArtifactId: { value: null, source: 'none' as const },
+    };
+    const expanded = validateFields('j5', values, { artifacts: [] });
+    expect(expanded['counselor.phone']).toMatchObject({ code: 'TEXT_NOT_PRINTABLE' });
+    const blank = validateFields('j5', { ...values, 'counselor.phone': { value: ' ', source: 'draft' } }, { artifacts: [] });
+    expect(blank['counselor.phone']).toMatchObject({ code: 'FIELD_REQUIRED' });
   });
 
   it('keeps authentication, administrator, tenant, provider, origin, and stage guards with the migration gate off', async () => {

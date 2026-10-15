@@ -26,6 +26,19 @@ for `/api/member/coursera/launch` redirects. Next `Link` would prefetch the laun
 as RSC before a click and trigger cross-origin CSP errors. Keep Next `Link` for
 in-app modules; preserve the tracked new-tab action and kit CTA classes.
 
+The admin assessments catalog's “Student results & retakes” action opens the
+per-student results table, where staff can request the final preassessment attempt.
+Both mobile and desktop controls use the existing admin authorization endpoint;
+pending requests and the two-attempt limit disable the action.
+
+Billing phone fields normalize complete US numbers on blur and before new draft
+payloads, including unsigned previews. Keep extensions and international or
+incomplete input intact; saved and signed PDF snapshots retain their original text.
+
+Digital Literacy uses the portal locale for lesson copy and provider links. Spanish
+catalog links must say that the student selects the topic; provider language-switch
+anchors use `referrerPolicy="no-referrer"` so the provider cannot redirect back here.
+
 ---
 
 ## 1. Token families — which one to use

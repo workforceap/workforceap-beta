@@ -10,6 +10,7 @@ import { formatPhone } from '@/lib/formatPhone';
 import DataTable from '@/components/portal/ui/DataTable';
 import PortalPagination from '@/components/portal/PortalPagination';
 import { csvCell } from '@/lib/csv/cells';
+import AllowAssessmentRetakeButton from './AllowAssessmentRetakeButton';
 
 type AssessmentUser = {
   id: string;
@@ -21,6 +22,8 @@ type AssessmentUser = {
   assessmentScorePct: number | null;
   assessmentCompletedAt: Date | null;
   assessmentAnswers: unknown;
+  assessmentAttemptCount: number;
+  assessmentRetakeRequestedAt: Date | null;
 };
 
 type AssessmentsTableProps = {
@@ -79,6 +82,7 @@ export default function AssessmentsTable({
     }
     // Reset to page 1 when filters change
     params.delete('page');
+    params.set('ui', 'legacy');
     router.push(`/admin/assessments?${params.toString()}`);
   };
 
@@ -88,6 +92,7 @@ export default function AssessmentsTable({
     if (page < 1 || page > totalPages) return;
     const params = new URLSearchParams(searchParams?.toString() ?? '');
     params.set('page', page.toString());
+    params.set('ui', 'legacy');
     router.push(`/admin/assessments?${params.toString()}`, { scroll: false });
   };
 
@@ -208,6 +213,13 @@ export default function AssessmentsTable({
                   <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '1rem', color: 'var(--color-on-surface-variant)', transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'none' }}>expand_more</span>
                 </div>
               </button>
+              <div style={{ padding: '0 var(--wa-pad) var(--wa-pad-sm)' }}>
+                <AllowAssessmentRetakeButton
+                  memberId={u.id} memberName={u.fullName}
+                  attemptCount={u.assessmentAttemptCount} pending={!!u.assessmentRetakeRequestedAt}
+                  endpoint={`/api/admin/members/${u.id}/reset-assessment`}
+                />
+              </div>
               {isExpanded && (
                 <div id={`assessment-details-${u.id}`} style={{ padding: '0 1rem 1rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.625rem', margin: '0.875rem 0' }}>
@@ -371,6 +383,19 @@ export default function AssessmentsTable({
                   {u.assessmentScorePct ?? '—'}
                   {u.assessmentScorePct !== null ? '%' : ''}
                 </span>
+              ),
+            },
+            {
+              key: 'retake',
+              header: 'Preassessment retake',
+              cell: (u) => (
+                <div onClick={(event) => event.stopPropagation()}>
+                  <AllowAssessmentRetakeButton
+                    memberId={u.id} memberName={u.fullName}
+                    attemptCount={u.assessmentAttemptCount} pending={!!u.assessmentRetakeRequestedAt}
+                    endpoint={`/api/admin/members/${u.id}/reset-assessment`}
+                  />
+                </div>
               ),
             },
             {

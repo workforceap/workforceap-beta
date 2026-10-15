@@ -1,8 +1,9 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-const nav = vi.hoisted(() => ({ refresh: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => nav }));
+const nav = vi.hoisted(() => ({ refresh: vi.fn(), push: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => nav, useSearchParams: () => new URLSearchParams() }));
 import AllowAssessmentRetakeButton from '@/components/admin/AllowAssessmentRetakeButton';
+import AssessmentsTable from '@/components/admin/AssessmentsTable';
 
 // Keep the actual shared Astryx dialog; jsdom only needs native method shims.
 const methods = ['showModal', 'close'] as const;
@@ -17,17 +18,60 @@ afterAll(() => methods.forEach((name, i) => {
 }));
 const fetchMock = vi.fn();
 beforeEach(() => {
-  fetchMock.mockReset(); nav.refresh.mockReset(); vi.stubGlobal('fetch', fetchMock);
+  fetchMock.mockReset(); nav.refresh.mockReset(); nav.push.mockReset(); vi.stubGlobal('fetch', fetchMock);
   vi.stubGlobal('scrollTo', vi.fn());
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+
+const result = {
+  id: 'student-1', fullName: 'Student Example', email: 'student@example.test', phone: null,
+  programInterest: null, assessmentScore: 27, assessmentScorePct: 77,
+  assessmentCompletedAt: new Date('2026-10-15T10:00:00Z'), assessmentAnswers: {},
+  assessmentAttemptCount: 1, assessmentRetakeRequestedAt: null as Date | null,
+};
+
+describe('admin assessment results retakes', () => {
+  function renderResults(state: Partial<typeof result> = {}) {
+    return render(<AssessmentsTable users={[{ ...result, ...state }]} correctnessByUserId={{}}
+      totalCount={51} currentPage={1} pageSize={50} />);
+  }
+
+  it.each(['mobile', 'desktop'])('offers the final retake directly in the %s results', async (view) => {
+    fetchMock.mockResolvedValue(Response.json({ ok: true, message: 'Final retake requested.' }));
+    renderResults();
+    const buttons = screen.getAllByTestId('allow-assessment-retake');
+    expect(buttons).toHaveLength(2);
+    fireEvent.click(view === 'desktop' ? within(screen.getByRole('table')).getByTestId('allow-assessment-retake') : buttons[0]);
+    const dialog = screen.getByRole('dialog', { name: 'Request final retake for Student Example?' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Request final retake' }));
+    await waitFor(() => expect(nav.refresh).toHaveBeenCalledOnce());
+    expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/admin/members/student-1/reset-assessment', expect.objectContaining({ method: 'POST' }));
+  });
+
+  it.each([
+    { assessmentAttemptCount: 2, assessmentRetakeRequestedAt: null },
+    { assessmentAttemptCount: 1, assessmentRetakeRequestedAt: new Date('2026-10-15T11:00:00Z') },
+  ])('keeps both result controls unavailable for %j', (state) => {
+    renderResults(state);
+    for (const button of screen.getAllByTestId('allow-assessment-retake')) expect(button).toBeDisabled();
+  });
+
+  it('preserves the student results view when filtering or paging', () => {
+    renderResults();
+    fireEvent.change(screen.getByLabelText('Program:'), { target: { value: 'IT Support' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply filters' }));
+    expect(nav.push).toHaveBeenCalledWith('/admin/assessments?program=IT+Support&ui=legacy');
+    fireEvent.click(screen.getByRole('button', { name: 'Go to page 2' }));
+    expect(nav.push).toHaveBeenCalledWith('/admin/assessments?page=2&ui=legacy', { scroll: false });
+  });
+});
 const props = { memberId: 'student-1', memberName: 'Student Example' };
 
 describe('staff final assessment retake control', () => {
   it('confirms, requests the portal prompt, and stays disabled while refresh is delayed', async () => {
     fetchMock.mockResolvedValue(Response.json({ ok: true, message: 'Final retake requested.' }));
-    render(<AllowAssessmentRetakeButton {...props} attemptCount={1} />);
+    const { container } = render(<AllowAssessmentRetakeButton {...props} attemptCount={1} />);
     fireEvent.click(screen.getByTestId('allow-assessment-retake'));
     const dialog = screen.getByRole('dialog', { name: 'Request final retake for Student Example?' });
     expect(within(dialog).getByText(/2 preassessment chances total/)).toBeInTheDocument();
@@ -36,7 +80,7 @@ describe('staff final assessment retake control', () => {
     expect(fetchMock).toHaveBeenCalledExactlyOnceWith('/api/counselor/assessment-retake', expect.objectContaining({ method: 'POST', body: JSON.stringify({ memberId: 'student-1' }) }));
     expect(screen.getByTestId('allow-assessment-retake')).toBeDisabled();
     expect(screen.getByTestId('allow-assessment-retake')).toHaveTextContent('Retake requested');
-    expect(screen.getByRole('status')).toHaveTextContent('Final retake requested.');
+    expect(within(container).getByRole('status')).toHaveTextContent('Final retake requested.');
   });
   it('cancels without issuing a request', () => {
     render(<AllowAssessmentRetakeButton {...props} />);
@@ -46,10 +90,10 @@ describe('staff final assessment retake control', () => {
   });
   it('shows a refused save and allows retry', async () => {
     fetchMock.mockResolvedValue(Response.json({ error: 'Both attempts used.' }, { status: 409 }));
-    render(<AllowAssessmentRetakeButton {...props} />);
+    const { container } = render(<AllowAssessmentRetakeButton {...props} />);
     fireEvent.click(screen.getByTestId('allow-assessment-retake'));
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Request final retake' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Both attempts used.');
+    expect(await within(container).findByRole('alert')).toHaveTextContent('Both attempts used.');
     expect(screen.getByTestId('allow-assessment-retake')).toBeEnabled();
     expect(nav.refresh).not.toHaveBeenCalled();
   });
