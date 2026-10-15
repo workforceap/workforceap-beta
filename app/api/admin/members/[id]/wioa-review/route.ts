@@ -4,7 +4,7 @@ import { getUser } from '@/lib/auth/server';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { WIOA_REVIEW_STATUSES } from '@/lib/wioa/wioaReview';
-import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
+import { applyWioaReviewSelect, buildWioaReviewEvidence } from '@/lib/wioa/reviewEvidence';
 import {
   COUNSELOR_WIOA_STATUS_FORBIDDEN_MESSAGE,
   canReviewActorActOnMember,
@@ -44,6 +44,7 @@ const bodySchema = z.object({
 const revisionSchema = z.object({
   expectedSubmittedAt: z.string().datetime({ offset: true }),
   expectedReviewedAt: z.string().datetime({ offset: true }).nullable(),
+  expectedEvidenceRevision: z.string().regex(/^[a-f0-9]{64}$/).optional(),
 });
 const revisionConflictMessage = 'This screening or review changed. Reload and review the latest submission before saving.';
 
@@ -65,12 +66,17 @@ async function _PATCH(request: NextRequest, { params }: Props) {
     const member = await withTenantScope(orgId, (db) =>
       db.user.findFirst({
         where: { id: memberId, deletedAt: null },
-        select: { id: true, wioaQualificationJson: true, wioaReviewStatus: true, wioaReviewNotes: true, wioaReviewedAt: true },
+        select: {
+          id: true, wioaQualificationJson: true, wioaReviewStatus: true, wioaReviewNotes: true, wioaReviewedAt: true,
+          applyEligibilityScreenings: { where: { organizationId: orgId }, take: 1, select: applyWioaReviewSelect },
+        },
       }),
     );
     if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 });
-    if (!member.wioaQualificationJson) {
-      return NextResponse.json({ error: 'Member has no WIOA self-screening on file' }, { status: 400 });
+    const evidence = buildWioaReviewEvidence(member.wioaQualificationJson, member.applyEligibilityScreenings?.[0], orgId);
+    if (!evidence) {
+      if (member.wioaQualificationJson) return NextResponse.json({ error: revisionConflictMessage }, { status: 409 });
+      return NextResponse.json({ error: 'Member has no WIOA or application screening on file' }, { status: 400 });
     }
 
     let body: unknown;
@@ -93,10 +99,13 @@ async function _PATCH(request: NextRequest, { params }: Props) {
     }
 
     const revision = revisionSchema.safeParse(body);
-    const screening = parseWioaQualificationSnapshot(member.wioaQualificationJson);
-    const savedSubmittedAt = z.string().datetime({ offset: true }).safeParse(screening?.submittedAt);
+    const savedSubmittedAt = z.string().datetime({ offset: true }).safeParse(evidence.submittedAt);
     if (!revision.success || !savedSubmittedAt.success ||
         revision.data.expectedSubmittedAt !== savedSubmittedAt.data ||
+        // Older questionnaire clients remain valid only while there is no
+        // additional apply evidence they have never loaded.
+        (evidence.applyScreening && revision.data.expectedEvidenceRevision !== evidence.revision) ||
+        (revision.data.expectedEvidenceRevision !== undefined && revision.data.expectedEvidenceRevision !== evidence.revision) ||
         revision.data.expectedReviewedAt !== (member.wioaReviewedAt?.toISOString() ?? null)) {
       return NextResponse.json({ error: revisionConflictMessage }, { status: 409 });
     }
@@ -109,6 +118,15 @@ async function _PATCH(request: NextRequest, { params }: Props) {
       if (!(await lockMemberForReview(tx, {
         memberId, organizationId: orgId, actorUserId: actor.userId, actorRole: actor.role,
       }))) return false;
+      const current = await tx.user.findFirst({
+        where: { id: memberId, organizationId: orgId, deletedAt: null },
+        select: {
+          wioaQualificationJson: true,
+          applyEligibilityScreenings: { where: { organizationId: orgId }, take: 1, select: applyWioaReviewSelect },
+        },
+      });
+      const currentEvidence = current && buildWioaReviewEvidence(current.wioaQualificationJson, current.applyEligibilityScreenings?.[0], orgId);
+      if (currentEvidence?.revision !== evidence.revision) throw new Error('WIOA_REVIEW_CONFLICT');
       const updated = await tx.user.updateMany({
         where: {
           id: memberId, organizationId: orgId, deletedAt: null,
@@ -116,7 +134,7 @@ async function _PATCH(request: NextRequest, { params }: Props) {
           wioaReviewedAt: member.wioaReviewedAt,
           // A resubmission may also be pending with null notes. Guard the
           // captured answers so new evidence cannot be approved unseen.
-          wioaQualificationJson: { equals: member.wioaQualificationJson as Prisma.InputJsonValue },
+          wioaQualificationJson: { equals: member.wioaQualificationJson ?? Prisma.AnyNull },
         },
         data: {
           wioaReviewStatus: parsed.data.status,

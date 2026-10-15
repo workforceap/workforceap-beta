@@ -6,10 +6,15 @@ import { barrierLabel, formatWioaReasons, publicAssistanceHelpLabel, publicAssis
 import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
 import { WIOA_REVIEW_LABELS, WIOA_REVIEW_STATUSES, type WioaReviewStatus } from '@/lib/wioa/wioaReview';
 import type { WioaReviewSnapshotRow } from '@/lib/wioa/reviewSnapshot';
+import type { ApplyWioaReviewScreeningDto } from '@/lib/wioa/reviewEvidence';
+import ApplyWioaReviewDetails from '@/components/counselor/ApplyWioaReviewDetails';
 
 type Props = {
   memberId: string;
-  snapshot: WioaQualificationSnapshot;
+  snapshot: WioaQualificationSnapshot | null;
+  applyScreening?: ApplyWioaReviewScreeningDto | null;
+  expectedEvidenceRevision?: string;
+  expectedSubmittedAt?: string;
   reviewStatus: WioaReviewStatus | null;
   reviewedAt: string | null;
   reviewerName: string | null;
@@ -36,6 +41,9 @@ const AGE_LABEL: Record<string, string> = {
 export default function AdminMemberWioaReviewPanel({
   memberId,
   snapshot,
+  applyScreening,
+  expectedEvidenceRevision,
+  expectedSubmittedAt,
   reviewStatus,
   reviewedAt,
   reviewerName,
@@ -65,8 +73,9 @@ export default function AdminMemberWioaReviewPanel({
         body: JSON.stringify({
           status,
           notes: notes || null,
-          expectedSubmittedAt: snapshot.submittedAt,
+          expectedSubmittedAt: expectedSubmittedAt ?? snapshot?.submittedAt,
           expectedReviewedAt: savedAt,
+          expectedEvidenceRevision,
         }),
       });
       const data = (await res.json()) as { error?: string; wioaReviewedAt?: string };
@@ -83,16 +92,20 @@ export default function AdminMemberWioaReviewPanel({
     }
   };
 
-  const a = snapshot.answers;
+  const a = snapshot?.answers;
 
   return (
     <section style={{ padding: '1rem', background: 'var(--color-light)', borderRadius: 'var(--radius-md)' }}>
-      <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>WIOA self-screening</h2>
+      <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>WIOA intake review</h2>
       <p style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', marginBottom: '1rem', lineHeight: 1.45 }}>
         Member-submitted questionnaire. Heuristic signal is not a legal determination. Use review status for internal workflow
         only.
       </p>
 
+      {applyScreening ? <ApplyWioaReviewDetails screening={applyScreening} /> : null}
+
+      {snapshot && a ? <>
+      <h3 className="wa-kit-stat-label">WIOA self-screening</h3>
       <p style={{ marginBottom: '0.35rem' }}>
         <strong>Submitted:</strong> {new Date(snapshot.submittedAt).toLocaleString()}
       </p>
@@ -145,6 +158,7 @@ export default function AdminMemberWioaReviewPanel({
           ))}
         </ul>
       </details>
+      </> : null}
 
       <div style={{ borderTop: '1px solid var(--outline-variant)', paddingTop: '1rem' }}>
         <label htmlFor="wioa-review-status" style={{ display: 'block', fontWeight: 600, marginBottom: '0.35rem' }}>

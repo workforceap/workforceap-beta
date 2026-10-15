@@ -1,7 +1,7 @@
 process.env.TZ = 'UTC';
 
 import { renderToStaticMarkup } from 'react-dom/server';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
@@ -33,8 +33,10 @@ const db = vi.hoisted(() => {
 });
 
 const panelMock = vi.hoisted(() => (name: string) => ({ default: () => <div data-panel={name} /> }));
+const routerRefresh = vi.hoisted(() => vi.fn());
 
 vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: routerRefresh }),
   redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); },
   notFound: () => { throw new Error('NOT_FOUND'); },
 }));
@@ -108,7 +110,23 @@ vi.mock('@/components/admin/AdminMemberCounselorAssign', () => panelMock('counse
 vi.mock('@/components/admin/AdminMemberPlacedOutcomeForm', () => panelMock('placed-outcome-form'));
 vi.mock('@/components/admin/AdminMemberEnrollmentFundingForm', () => panelMock('enrollment-funding'));
 vi.mock('@/components/admin/AdminMemberWorkspaceEmail', () => panelMock('workspace-email'));
-vi.mock('@/components/admin/AdminMemberWioaReviewPanel', () => panelMock('wioa-review'));
+vi.mock('@/components/admin/AdminMemberWioaReviewPanel', () => ({
+  default: ({ snapshot, applyScreening, expectedSubmittedAt, expectedEvidenceRevision }: {
+    snapshot: unknown;
+    applyScreening?: { id: string; q1: string | null } | null;
+    expectedSubmittedAt?: string;
+    expectedEvidenceRevision?: string;
+  }) => (
+    <div
+      data-panel="wioa-review"
+      data-has-snapshot={Boolean(snapshot)}
+      data-screening-id={applyScreening?.id}
+      data-first-answer={applyScreening?.q1 ?? 'unanswered'}
+      data-submitted-at={expectedSubmittedAt}
+      data-revision={expectedEvidenceRevision}
+    />
+  ),
+}));
 vi.mock('@/components/admin/ApplicantTriageChecklist', () => panelMock('triage'));
 vi.mock('@/components/admin/MemberCourseraDiagnoseButton', () => panelMock('coursera-diagnose'));
 vi.mock('@/components/admin/AdminMemberSkillCheckpointPanel', () => panelMock('skill-checkpoints'));
@@ -190,7 +208,8 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
       workspaceEmail: null,
       workspaceEmailProvisioned: false,
       careerRecommendationJson: null,
-      applications: [{ status: 'PENDING', submittedAt: INSTANT, recommendedCareerTitle: 'Data Analyst', programRankedSlugs: [] }],
+      applications: [{ id: 'application-1', status: 'PENDING', programInterest: 'it-support', submittedAt: INSTANT, recommendedCareerTitle: 'Data Analyst', programRankedSlugs: [] }],
+      applyEligibilityScreenings: [],
       memberEvents: [],
       wioaQualificationJson: null,
       wioaReviewStatus: null,
@@ -217,7 +236,13 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
       return [{ id: 'e1', eventName: 'career_plan_saved', createdAt: new Date('2026-09-18T10:00:00Z') }];
     };
   });
-  afterEach(() => { vi.unstubAllEnvs(); });
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    routerRefresh.mockClear();
+  });
 
   it('mounts one agreement card for the selected student in Program without changing billing panels', async () => {
     const doc = await renderPage({ tab: 'program' });
@@ -294,7 +319,7 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     const headingsIn = (id: string) => Array.from(panel(doc, id).querySelectorAll('h2')).map((h) => h.textContent);
     expect(headingsIn('overview')).toEqual(['Admin Actions', 'Profile', 'Counselor assignment', 'Career-plan signal', 'Workspace email']);
     expect(headingsIn('program')).toEqual(['Program', 'Coursera training', 'Enrollment funding & workspace']);
-    expect(headingsIn('eligibility')).toEqual(['Application status']);
+    expect(headingsIn('eligibility')).toEqual(['Application status', 'Application review']);
     expect(headingsIn('placement')).toEqual(['Outcomes summary', 'Placement record', 'Resumes']);
     expect(headingsIn('messages')).toEqual(['Counselor conversation']);
     expect(headingsIn('notes')).toEqual(['Notes']);
@@ -318,6 +343,92 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     for (const name of ['wioa-review', 'triage', 'assessment']) {
       expect(doc.querySelector(`[data-panel="${name}"]`), name).toBeNull();
     }
+  });
+
+  it('adds application decisions below the existing metadata in Eligibility without duplicating WIOA controls', async () => {
+    const doc = await renderPage({ tab: 'eligibility' });
+    const eligibility = panel(doc, 'eligibility');
+    const review = eligibility.querySelector('[data-testid="counselor-intake-review-panel"]');
+    expect(review).not.toBeNull();
+    expect(doc.querySelectorAll('[data-testid="counselor-intake-review-panel"]')).toHaveLength(1);
+    expect(review!.previousElementSibling?.textContent).toContain('Recommended career: Data Analyst');
+    expect(review!.querySelector('#intake-decision-notes-application-1')).not.toBeNull();
+    expect(Array.from(review!.querySelectorAll('button')).map((button) => button.textContent)).toEqual(['Approve', 'Deny', 'Request info']);
+    expect(review!.textContent).not.toContain('WIOA intake verification');
+  });
+
+  it.each([
+    ['Approve', 'APPROVED', 'Application approved.'],
+    ['Deny', 'DENIED', 'Application denied.'],
+    ['Request info', 'NEEDS_INFO', 'Application marked as needing more information.'],
+  ])('submits %s from the member record with its application ID after confirmation', async (label, status, outcome) => {
+    const request = vi.fn(async () => ({ ok: true, json: async () => ({}) }));
+    vi.stubGlobal('fetch', request);
+    render(await AdminMemberDetailPage({
+      params: Promise.resolve({ id: 'member-1' }),
+      searchParams: Promise.resolve({ tab: 'eligibility' }),
+    }));
+    const review = within(screen.getByTestId('counselor-intake-review-panel'));
+    fireEvent.change(review.getByRole('textbox', { name: /Decision notes/ }), { target: { value: 'Reviewed intake documents' } });
+    fireEvent.click(review.getByRole('button', { name: label }));
+    expect(request).not.toHaveBeenCalled();
+    fireEvent.click(review.getByRole('button', { name: `Confirm: ${label}` }));
+    await waitFor(() => expect(review.getByRole('status').textContent).toBe(outcome));
+    expect(request).toHaveBeenCalledExactlyOnceWith('/api/admin/members/application-1/status', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, notes: 'Reviewed intake documents' }),
+    });
+    expect(routerRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps application IDs and program interests in the full and schema fallback reads', async () => {
+    const baseUser = db.overrides['user.findFirst'];
+    const selects: Array<{ applications: { select: Record<string, boolean> }; wioaQualificationJson?: boolean }> = [];
+    db.overrides['user.findFirst'] = async (args) => {
+      const { select } = args as { select: (typeof selects)[number] };
+      selects.push(select);
+      if (select.wioaQualificationJson) throw new Error('wioa_qualification_json unavailable');
+      return baseUser(args);
+    };
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const doc = await renderPage({ tab: 'eligibility' });
+    expect(selects).toHaveLength(2);
+    for (const select of selects) {
+      expect(select.applications.select).toMatchObject({ id: true, programInterest: true });
+    }
+    expect(panel(doc, 'eligibility').querySelector('#intake-decision-notes-application-1')).not.toBeNull();
+  });
+
+  it('shows partial apply screening evidence for admin review when no self-screening snapshot exists', async () => {
+    const baseUser = db.overrides['user.findFirst'];
+    db.overrides['user.findFirst'] = async (args) => ({
+      ...(await baseUser(args) as object),
+      applyEligibilityScreenings: [{
+        id: 'screening-1', organizationId: 'org-1', createdAt: INSTANT,
+        q1: null, q2: null, q3: null, qualifies: false, yesCount: 0,
+        receivingUnemployment: 'yes', exhaustedUnemployment: null, layoffCompany: null,
+        snapWic: null, publicAssistancePrograms: [], publicAssistanceHelpRequested: null,
+      }],
+    });
+    const doc = await renderPage({ tab: 'eligibility' });
+    const review = panel(doc, 'eligibility').querySelector('[data-panel="wioa-review"]');
+    expect(review).not.toBeNull();
+    expect(review!.getAttribute('data-has-snapshot')).toBe('false');
+    expect(review!.getAttribute('data-screening-id')).toBe('screening-1');
+    expect(review!.getAttribute('data-first-answer')).toBe('unanswered');
+    expect(review!.getAttribute('data-submitted-at')).toBe(INSTANT.toISOString());
+    expect(review!.getAttribute('data-revision')).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('does not review apply screening evidence from a different organization', async () => {
+    const baseUser = db.overrides['user.findFirst'];
+    db.overrides['user.findFirst'] = async (args) => ({
+      ...(await baseUser(args) as object),
+      applyEligibilityScreenings: [{ id: 'foreign-screening', organizationId: 'org-other', createdAt: INSTANT }],
+    });
+    const doc = await renderPage({ tab: 'eligibility' });
+    expect(panel(doc, 'eligibility').querySelector('[data-panel="wioa-review"]')).toBeNull();
   });
 
   it('keeps both progress feeds, each labelled with its source, inside Program', async () => {
@@ -479,7 +590,7 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     const baseUser = db.overrides['user.findFirst'];
     db.overrides['user.findFirst'] = async () => ({
       ...(await baseUser({}) as object),
-      applications: [{ status: 'DENIED', submittedAt: INSTANT, recommendedCareerTitle: null, programRankedSlugs: [] }],
+      applications: [{ id: 'application-1', status: 'DENIED', programInterest: 'it-support', submittedAt: INSTANT, recommendedCareerTitle: null, programRankedSlugs: [] }],
       wioaReviewStatus: 'not_eligible',
     });
     const doc = await renderPage();
@@ -499,7 +610,7 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     const baseUser = db.overrides['user.findFirst'];
     db.overrides['user.findFirst'] = async () => ({
       ...(await baseUser({}) as object),
-      applications: [{ status: 'NEEDS_INFO', submittedAt: INSTANT, recommendedCareerTitle: null, programRankedSlugs: [] }],
+      applications: [{ id: 'application-1', status: 'NEEDS_INFO', programInterest: 'it-support', submittedAt: INSTANT, recommendedCareerTitle: null, programRankedSlugs: [] }],
       wioaReviewStatus: 'needs_info',
     });
     const doc = await renderPage();

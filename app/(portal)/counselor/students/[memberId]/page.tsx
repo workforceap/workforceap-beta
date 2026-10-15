@@ -39,6 +39,7 @@ import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAcc
 import AdvisorSessionNotesPanel from './AdvisorSessionNotesPanel';
 import StaffMemberResumePanel from '@/components/counselor/StaffMemberResumePanel';
 import CounselorIntakeReviewPanel from '@/components/counselor/CounselorIntakeReviewPanel';
+import { applyWioaReviewSelect, buildWioaReviewEvidence } from '@/lib/wioa/reviewEvidence';
 import BillingPacketList from '@/components/billing/BillingPacketList';
 import { listPacketsForMember } from '@/lib/billing/packetAccess';
 import WioaScreeningReadonly from '@/components/admin/WioaScreeningReadonly';
@@ -106,6 +107,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
     where: { id: memberId, deletedAt: null },
     select: {
       id: true,
+      organizationId: true,
       fullName: true,
       email: true,
       enrolledProgram: true,
@@ -124,6 +126,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
       wioaReviewedAt: true,
       wioaReviewedByUserId: true,
       wioaReviewNotes: true,
+      applyEligibilityScreenings: { take: 1, select: applyWioaReviewSelect },
       careerRecommendationJson: true,
       createdAt: true,
       // Multi-program-aware: load ALL course enrollments so we can render
@@ -503,6 +506,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
   }
 
   const wioaSnap = parseWioaQualificationSnapshot(member.wioaQualificationJson);
+  const wioaEvidence = buildWioaReviewEvidence(member.wioaQualificationJson, member.applyEligibilityScreenings?.[0], member.organizationId);
   // Ops (9/2/26): the preassessment answer sheet sits with the WIOA screening so
   // counselors review both in one place.
   const assessmentRows =
@@ -531,7 +535,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
   });
   const intakeReviewPanel = (
     <CounselorIntakeReviewPanel
-      key={member.id}
+      key={`${member.id}:${wioaEvidence?.revision ?? 'no-screening'}`}
       memberId={member.id}
       applications={programApplications.map((row) => ({
         id: row.id,
@@ -540,8 +544,10 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
         submittedAt: row.submittedAt?.toISOString() ?? null,
       }))}
       wioa={{
-        hasScreening: wioaSnap != null,
-        submittedAt: wioaSnap?.submittedAt ?? null,
+        hasScreening: wioaEvidence != null,
+        submittedAt: wioaEvidence?.submittedAt ?? null,
+        evidenceRevision: wioaEvidence?.revision,
+        applyScreening: wioaEvidence?.applyScreening,
         reviewStatus: member.wioaReviewStatus,
         reviewedAt: member.wioaReviewedAt?.toISOString() ?? null,
         reviewNotes: member.wioaReviewNotes,

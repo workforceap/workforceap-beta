@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   mappings: vi.fn(),
   sync: vi.fn(),
   manifest: vi.fn(),
+  assignedCourses: vi.fn(),
   RosterIncompleteError: class CourseraRosterIncompleteError extends Error {
     readonly code = 'COURSERA_ROSTER_INCOMPLETE';
     constructor(readonly reason: string) {
@@ -35,13 +36,13 @@ vi.mock('@/lib/tenant/organization', () => ({ getActorOrganizationId: mocks.getO
 vi.mock('@/lib/tenant/withTenantScope', () => ({ withTenantScope: mocks.withTenantScope }));
 vi.mock('@/lib/coursera/b4bClient', () => ({ getB4BOrgId: () => 'provider-org' }));
 vi.mock('@/lib/content/courseraDiscoveredCatalog', () => ({
-  DISCOVERED_COURSERA_PROGRAMS: { 'program-one': { courseraProgramId: 'provider-program' } },
+  DISCOVERED_COURSERA_PROGRAMS: { 'program-one': { courseraProgramId: 'provider-program' }, 'program-two': { courseraProgramId: 'provider-secondary' } },
 }));
 vi.mock('@/lib/content/programs', () => ({
-  getProgramBySlug: () => ({ slug: 'program-one' }),
+  getProgramBySlug: (slug: string) => ({ slug }),
 }));
 vi.mock('@/lib/member/curriculumAssignment', () => ({
-  getProgramCoursesForCurriculumVersion: () => [{ slug: 'course-one', courseraCourseId: 'course-id' }],
+  getProgramCoursesForCurriculumVersion: mocks.assignedCourses,
 }));
 vi.mock('@/lib/content/programCurriculumManifest', () => ({
   normalizeCourseraCourseId: (value: string) => value.trim(),
@@ -63,11 +64,11 @@ vi.mock('@/lib/coursera/syncUserFromB4B', () => ({ syncUserFromB4B: mocks.sync }
 
 import { POST } from '@/app/api/member/coursera/enroll-in-course/route';
 
-function request(courseId = 'course-id') {
+function request(courseId = 'course-id', programSlug?: string) {
   return new Request('https://workforceap.invalid/api/member/coursera/enroll-in-course', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ courseraCourseId: courseId }),
+    body: JSON.stringify({ courseraCourseId: courseId, ...(programSlug ? { programSlug } : {}) }),
   });
 }
 
@@ -91,6 +92,7 @@ function scheduledRefresh(): () => Promise<void> {
 describe('member Coursera enrollment and independent progress refresh', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mocks.assignedCourses.mockReturnValue([{ slug: 'course-one', courseraCourseId: 'course-id' }]);
     mocks.getUser.mockResolvedValue({ id: member.id, email: member.email });
     mocks.getOrg.mockResolvedValue('tenant-one');
     mocks.findUser.mockResolvedValue(member);
@@ -105,6 +107,39 @@ describe('member Coursera enrollment and independent progress refresh', () => {
     // This library may resolve even with partial results. The route must not
     // turn its resolution into a claim that all progress is synchronized.
     mocks.sync.mockResolvedValue({ ok: true, mapped: { courseProgressUpserted: 0 } });
+  });
+
+  it('enrolls a selected secondary program using its stored curriculum and provider program', async () => {
+    mocks.findUser.mockResolvedValue({ ...member, courseEnrollments: [...member.courseEnrollments, {
+      id: 'secondary', programSlug: 'program-two', curriculumVersion: 'legacy-v1', isPrimary: false, enrolledAt: new Date(),
+    }] });
+    mocks.listUsersByEmail.mockResolvedValue({ membershipProgramIds: ['provider-secondary'] });
+    const result = await POST(request('course-id', 'program-two'));
+    expect(result.status).toBe(200);
+    expect(mocks.assignedCourses).toHaveBeenCalledWith({ slug: 'program-two' }, 'legacy-v1');
+    expect(mocks.enroll).toHaveBeenCalledWith(expect.objectContaining({ programId: 'provider-secondary' }));
+    expect(mocks.audit).toHaveBeenCalledWith(expect.objectContaining({ organizationId: 'tenant-one', targetUserId: member.id }));
+  });
+
+  it('rejects a program outside the member assignments before any provider operation', async () => {
+    const result = await POST(request('course-id', 'program-two'));
+    expect(result.status).toBe(400);
+    expect(await result.json()).toMatchObject({ code: 'PROGRAM_NOT_ENROLLED' });
+    expect(mocks.listUsersByEmail).not.toHaveBeenCalled();
+  });
+
+  it('retains explicit selection of the legacy primary when no enrollment rows exist', async () => {
+    mocks.findUser.mockResolvedValue({ ...member, courseEnrollments: [] });
+    const result = await POST(request('course-id', 'program-one'));
+    expect(result.status).toBe(200);
+    expect(mocks.assignedCourses).toHaveBeenCalledWith({ slug: 'program-one' }, 'legacy-v1');
+  });
+
+  it('does not revive a stale legacy program when a different primary enrollment exists', async () => {
+    mocks.findUser.mockResolvedValue({ ...member, enrolledProgram: 'program-two' });
+    const result = await POST(request('course-id', 'program-two'));
+    expect(result.status).toBe(400);
+    expect(mocks.listUsersByEmail).not.toHaveBeenCalled();
   });
 
   it('returns provider acceptance and only a requested refresh before background work runs', async () => {

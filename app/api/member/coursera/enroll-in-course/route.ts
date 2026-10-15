@@ -17,6 +17,7 @@ import { captureApiError } from '@/lib/observability/captureApiError';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
+import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import {
   getProgramCurriculumManifest,
@@ -129,9 +130,20 @@ async function _POST(request: Request) {
     }
   
     // Gate 2: enrolled program.
+    const requestedProgramSlug = typeof o.programSlug === 'string' ? o.programSlug.trim() : '';
+    const primaryProgram = resolveActiveDashboardProgram({
+      enrollments: dbUser.courseEnrollments,
+      legacyEnrolledProgram: dbUser.enrolledProgram,
+    }).activeProgramSlug;
+    const requestedIsAssigned = dbUser.courseEnrollments.some((row) => programSlugsEquivalent(row.programSlug, requestedProgramSlug))
+      || Boolean(primaryProgram && programSlugsEquivalent(primaryProgram, requestedProgramSlug));
+    if (requestedProgramSlug && !requestedIsAssigned) {
+      return NextResponse.json({ error: 'Program is not assigned to you', code: 'PROGRAM_NOT_ENROLLED' }, { status: 400 });
+    }
     const { activeProgramSlug: enrolledProgram } = resolveActiveDashboardProgram({
       enrollments: dbUser.courseEnrollments,
       legacyEnrolledProgram: dbUser.enrolledProgram,
+      requestedProgramSlug,
     });
     if (!enrolledProgram) {
       return NextResponse.json(
@@ -145,11 +157,12 @@ async function _POST(request: Request) {
   
     // Gate 3: course belongs to the user's program.
     const enrollment = dbUser.courseEnrollments.find(
-      (row) => row.programSlug === enrolledProgram,
+      (row) => programSlugsEquivalent(row.programSlug, enrolledProgram),
     );
     const curriculumVersion = enrollment?.curriculumVersion ?? 'legacy-v1';
     const program = getProgramBySlug(enrolledProgram);
-    const discoveredProgram = DISCOVERED_COURSERA_PROGRAMS[enrolledProgram];
+    const providerProgramSlug = program?.slug ?? canonicalizeProgramSlug(enrolledProgram);
+    const discoveredProgram = DISCOVERED_COURSERA_PROGRAMS[providerProgramSlug];
     if (!program || !discoveredProgram) {
       return NextResponse.json(
         { error: 'Program not in Coursera catalog', code: 'PROGRAM_NOT_MAPPED' },
@@ -174,7 +187,7 @@ async function _POST(request: Request) {
     // short-TTL cache, plus the invite/membership/enroll write bindings —
     // identical machinery to the admin one-click route.
     const b4bOrgId = getB4BOrgId();
-    const approvedTrack = getProgramCurriculumManifest(enrolledProgram, curriculumVersion)?.externalTrack;
+    const approvedTrack = getProgramCurriculumManifest(providerProgramSlug, curriculumVersion)?.externalTrack;
     if (approvedTrack && (approvedTrack.status !== 'validated' || !approvedTrack.collectionId)) {
       return NextResponse.json(
         {
@@ -203,7 +216,7 @@ async function _POST(request: Request) {
         // audit errors so a logging-table outage can't mask the original error.
         await Promise.allSettled(
           err.events.map((event) =>
-            writeEnrollAudit({ actorUserId: user.id, actorRole: 'member', targetUserId: user.id, event }),
+            writeEnrollAudit({ actorUserId: user.id, actorRole: 'member', targetUserId: user.id, organizationId: orgId, event }),
           ),
         );
         captureApiError(err, {
@@ -238,7 +251,7 @@ async function _POST(request: Request) {
     // calls so a downstream observer reading the audit trail sees the
     // state-graph order, not whatever Postgres scheduled.
     for (const event of result.events) {
-      await writeEnrollAudit({ actorUserId: user.id, actorRole: 'member', targetUserId: user.id, event }).catch(() => {
+      await writeEnrollAudit({ actorUserId: user.id, actorRole: 'member', targetUserId: user.id, organizationId: orgId, event }).catch(() => {
         // A failure to audit must NOT undo the enrollment — the seat is
         // already spent. We surface the failure for triage but keep the
         // success response the user sees.

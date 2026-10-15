@@ -31,6 +31,7 @@ import MemberPartnerSection from '@/components/admin/MemberPartnerSection';
 import MemberSubgroupSection from '@/components/admin/MemberSubgroupSection';
 import AdminMemberCounselorChatClient from '@/components/admin/AdminMemberCounselorChatClient';
 import AdminMemberCounselorAssign from '@/components/admin/AdminMemberCounselorAssign';
+import CounselorIntakeReviewPanel from '@/components/counselor/CounselorIntakeReviewPanel';
 import AdminMemberPlacedOutcomeForm from '@/components/admin/AdminMemberPlacedOutcomeForm';
 import AdminMemberEnrollmentFundingForm from '@/components/admin/AdminMemberEnrollmentFundingForm';
 import AdminMemberWorkspaceEmail from '@/components/admin/AdminMemberWorkspaceEmail';
@@ -41,7 +42,7 @@ import { formatPhone } from '@/lib/formatPhone';
 import { compactStringIds, getMessageAuthorName, getOrCreateMemberCounselorThread, serializeMessage } from '@/lib/messages/counselorThread';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { AlertTriangle, ClipboardList, CheckCircle } from 'lucide-react';
-import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
+import { applyWioaReviewSelect, buildWioaReviewEvidence } from '@/lib/wioa/reviewEvidence';
 import type { WioaReviewStatus } from '@/lib/wioa/wioaReview';
 import {
   applicationStatusKey,
@@ -158,12 +159,15 @@ export default async function AdminMemberDetailPage({
       orderBy: { createdAt: 'desc' },
       take: 3,
       select: {
+        id: true,
         status: true,
+        programInterest: true,
         submittedAt: true,
         recommendedCareerTitle: true,
         programRankedSlugs: true,
       },
     },
+    applyEligibilityScreenings: { take: 1, select: applyWioaReviewSelect },
     memberEvents: {
       where: {
         eventName: {
@@ -239,7 +243,9 @@ export default async function AdminMemberDetailPage({
       orderBy: { createdAt: 'desc' },
       take: 3,
       select: {
+        id: true,
         status: true,
+        programInterest: true,
         submittedAt: true,
         recommendedCareerTitle: true,
         programRankedSlugs: true,
@@ -392,6 +398,7 @@ export default async function AdminMemberDetailPage({
         learningProgress: [],
         userCertifications: [],
         aiJobMatches: [],
+        applyEligibilityScreenings: [],
         wioaQualificationJson: null,
         wioaReviewStatus: null,
         wioaReviewedAt: null,
@@ -576,7 +583,12 @@ export default async function AdminMemberDetailPage({
   const chatTruncated = isListTruncated(chatMsgs.length, MEMBER_HISTORY_CAP, chatMessageTotal);
   const chatLabel = `Showing latest ${chatMsgs.length} of ${chatMessageTotal} messages`;
 
-  const wioaSnap = parseWioaQualificationSnapshot(member.wioaQualificationJson);
+  const wioaEvidence = buildWioaReviewEvidence(
+    member.wioaQualificationJson,
+    member.applyEligibilityScreenings?.[0],
+    organizationId,
+  );
+  const wioaSnap = wioaEvidence?.snapshot ?? null;
   const wioaDecisionHistory = await loadWioaReviewSnapshots(member.id, organizationId);
 
   // Applicant intake triage (read-only aid; shown only while an application is open).
@@ -1391,6 +1403,31 @@ export default async function AdminMemberDetailPage({
               )}
             </section>
 
+            {latestApplication && (
+              <CounselorIntakeReviewPanel
+                memberId={member.id}
+                applications={(member.applications ?? []).map((application: {
+                  id: string;
+                  status: string;
+                  programInterest: string;
+                  submittedAt: Date | null;
+                }) => ({
+                  id: application.id,
+                  status: application.status,
+                  programTitle: programDisplayTitle(application.programInterest),
+                  submittedAt: application.submittedAt?.toISOString() ?? null,
+                }))}
+                wioa={{
+                  hasScreening: Boolean(wioaEvidence),
+                  submittedAt: wioaEvidence?.submittedAt ?? null,
+                  reviewStatus: member.wioaReviewStatus,
+                  reviewedAt: member.wioaReviewedAt?.toISOString() ?? null,
+                  reviewNotes: member.wioaReviewNotes,
+                }}
+                showWioaReview={false}
+              />
+            )}
+
             {applicantTriage && applicantTriageDisplay && (
               <ApplicantTriageChecklist
                 triage={applicantTriageDisplay}
@@ -1408,10 +1445,14 @@ export default async function AdminMemberDetailPage({
               />
             )}
 
-            {wioaSnap && (
+            {wioaEvidence && (
               <AdminMemberWioaReviewPanel
+                key={`${member.id}:${wioaEvidence.revision}`}
                 memberId={member.id}
                 snapshot={wioaSnap}
+                applyScreening={wioaEvidence.applyScreening}
+                expectedEvidenceRevision={wioaEvidence.revision}
+                expectedSubmittedAt={wioaEvidence.submittedAt}
                 reviewStatus={(member.wioaReviewStatus as WioaReviewStatus | null) ?? null}
                 reviewedAt={member.wioaReviewedAt?.toISOString() ?? null}
                 reviewerName={wioaReviewerName}
