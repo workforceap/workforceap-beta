@@ -3,7 +3,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { scoreAssessment, TOTAL_POINTS } from '@/lib/assessment/answer-key';
 import { isStraightLined, STRAIGHT_LINE_MESSAGE } from '@/lib/assessment/answerPattern';
-import { displayLettersForAnswers, isValidAttemptSeed } from '@/lib/assessment/layout';
+import { displayLettersForAnswers, isValidAttemptSeed, MISSING_ATTEMPT_SEED_MESSAGE } from '@/lib/assessment/layout';
 import { ASSESSMENT_QUESTIONS_PUBLIC } from '@/lib/assessment/questions';
 import type { QuestionChoice } from '@/lib/assessment/answer-key';
 import { brandedEmailLayout } from '@/lib/email/template';
@@ -36,6 +36,16 @@ export const POST = withApiGuc(async (request: Request) => {
     }
   
     const { firstName, lastName, phone, programInterest, answers, seed } = parsed;
+    if (seed === null) {
+      // After shuffle (#2745/#2747) the click-through guard reconstructs
+      // on-screen letters from this seed. Treating a missing/invalid seed as
+      // "skip the display check" lets a client omit it and save a mixed
+      // original-letter sheet as the official WIOA result.
+      return NextResponse.json(
+        { error: MISSING_ATTEMPT_SEED_MESSAGE, code: 'MISSING_ATTEMPT_SEED' },
+        { status: 422 },
+      );
+    }
   
     const answersTyped: Record<number, QuestionChoice> = {};
     for (const [k, v] of Object.entries(answers)) {
@@ -50,7 +60,7 @@ export const POST = withApiGuc(async (request: Request) => {
     // of display "A" looks mixed unless we reconstruct that attempt's layout.
     if (
       isStraightLined(answersTyped)
-      || (seed !== null && isStraightLined(displayLettersForAnswers(ASSESSMENT_QUESTIONS_PUBLIC, seed, answersTyped)))
+      || isStraightLined(displayLettersForAnswers(ASSESSMENT_QUESTIONS_PUBLIC, seed, answersTyped))
     ) {
       return NextResponse.json({ error: STRAIGHT_LINE_MESSAGE, code: 'ANSWERS_ALL_SAME' }, { status: 422 });
     }
