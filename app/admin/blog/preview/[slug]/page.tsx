@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import PageHero from '@/components/PageHero';
 import { resolveBlogHeroImage } from '@/lib/blog/blogHeroImage';
+import { isBlogPublicationAllowed } from '@/shared/blogPublication';
 type Props = { params: Promise<{ slug: string }> };
 
 export default async function AdminBlogPreviewPage({ params }: Props) {
@@ -14,6 +15,7 @@ export default async function AdminBlogPreviewPage({ params }: Props) {
     where: { slug },
   });
   if (!post) notFound();
+  const withheld = !isBlogPublicationAllowed(post.slug);
 
   const related = post.published
     ? await prisma.blogPost.findMany({
@@ -30,6 +32,7 @@ export default async function AdminBlogPreviewPage({ params }: Props) {
 
   return (
     <div className="inner-page">
+      {withheld && <p role="status">Withheld from the public blog pending verification of this story and member consent. The saved publication flag does not override this review requirement.</p>}
       {!post.published && (
         <div
           style={{
@@ -122,7 +125,7 @@ export default async function AdminBlogPreviewPage({ params }: Props) {
           >
             ← Back to Edit
           </Link>
-          {post.published && (
+          {post.published && !withheld && (
             <Link
               href={`/blog/${post.slug}`}
               style={{

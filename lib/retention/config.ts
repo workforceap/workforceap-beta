@@ -232,6 +232,12 @@ export const RETENTION_TABLES: RetentionTableConfig[] = [
     description: 'No-account eligibility leads (public WIOA screening + tokenized questionnaire answers) — WAP-172 TTL',
   },
   {
+    model: 'publicInquiry',
+    dateColumn: 'createdAt',
+    days: PUBLIC_LEAD_RETENTION_DAYS,
+    description: 'No-account contact, sponsorship and careers inquiries — 180-day public lead TTL; includes message bodies and notification status',
+  },
+  {
     model: 'emailFailureSnapshot',
     dateColumn: 'snapshotAt',
     days: EMAIL_FAILURE_SNAPSHOT_RETENTION_DAYS,

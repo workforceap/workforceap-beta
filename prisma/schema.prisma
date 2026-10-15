@@ -47,6 +47,7 @@ model Organization {
   preScreenings     PreScreeningResponse[]
   applyEligibilityScreenings ApplyEligibilityScreening[]
   publicWioaScreenings PublicWioaScreening[]
+  publicInquiries PublicInquiry[]
   courseEnrollments CourseEnrollment[]
   courses           Course[]
   auditEvents       AuditEvent[]
@@ -2834,6 +2835,38 @@ model ApplyEligibilityScreening {
 
   @@index([organizationId])
   @@map("apply_eligibility_screenings")
+}
+
+// No-account public inquiries. Retention uses createdAt (180 days), never email logs.
+model PublicInquiry {
+  id                   String   @id @default(uuid())
+  organizationId       String   @map("organization_id")
+  submissionKey        String   @map("submission_key") @db.VarChar(100)
+  payloadHash          String   @map("payload_hash") @db.VarChar(64)
+  kind                 String   @db.VarChar(20)
+  firstName            String   @map("first_name") @db.VarChar(100)
+  lastName             String   @map("last_name") @db.VarChar(100)
+  email                String   @db.VarChar(254)
+  phone                String?  @db.VarChar(80)
+  topic                String   @db.VarChar(200)
+  message              String   @db.VarChar(10000)
+  organizationName     String?  @map("organization_name") @db.VarChar(200)
+  interestArea         String?  @map("interest_area") @db.VarChar(200)
+  roleTitle            String?  @map("role_title") @db.VarChar(200)
+  seats                Int?
+  smsPreferred         Boolean  @default(false) @map("sms_preferred")
+  notificationStatus   String   @default("pending") @map("notification_status") @db.VarChar(20)
+  notificationAttempts Int      @default(0) @map("notification_attempts")
+  notificationAttemptedAt DateTime? @map("notification_attempted_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, submissionKey])
+  @@index([organizationId, createdAt])
+  @@index([createdAt])
+  @@map("public_inquiries")
 }
 
 model PublicWioaScreening {

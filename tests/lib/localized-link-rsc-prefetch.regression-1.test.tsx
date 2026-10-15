@@ -54,7 +54,7 @@ describe('ISSUE-001 cross-frontend link navigation', () => {
     expect(link).not.toHaveAttribute('scroll');
   });
 
-  it.each(['/apply', '/dashboard', '/employers/signup', '/mentor/apply'])(
+  it.each(['/apply', '/dashboard', '/employers/signup', '/mentor/apply', '/blog', '/blog/new-cms-post', '/es/blog/new-cms-post'])(
     'keeps the Next router for application-owned route %s',
     (href) => {
       render(<LocalizedLink href={href}>Destination</LocalizedLink>);

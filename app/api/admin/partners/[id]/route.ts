@@ -14,6 +14,7 @@ import {
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
+import { enrollPageCopyIsStakeSafe } from '@/lib/enroll/enrollmentCopy';
 
 /**
  * Track A — Tenant Isolation Hardening (Sprint A.2 batch 2).
@@ -68,8 +69,8 @@ const patchSchema = z.object({
   sponsorshipFundingSource: z.enum(['GRANT', 'EMPLOYER', 'PARTNER_ORG', 'SELF', 'OTHER']).optional().nullable(),
   sponsorshipTermLabel: z.string().max(40).optional().nullable(),
   enrollmentPageEnabled: z.boolean().optional(),
-  enrollmentHeadline: z.string().max(200).optional().nullable(),
-  enrollmentBlurb: z.string().max(2000).optional().nullable(),
+  enrollmentHeadline: z.string().max(200).refine(enrollPageCopyIsStakeSafe, 'Enrollment headline: use qualifying no-cost wording instead of "free".').optional().nullable(),
+  enrollmentBlurb: z.string().max(2000).refine(enrollPageCopyIsStakeSafe, 'Enrollment blurb: use qualifying no-cost wording instead of "free".').optional().nullable(),
   schoolDistrict: z.string().max(200).optional().nullable(),
   programSlugs: z.array(z.string().min(1).max(120)).max(20).optional(),
 });

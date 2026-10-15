@@ -280,6 +280,7 @@ export default function SignupForm({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
+          redirectTo,
           referralRef,
           partnerDisclosureRef: disclosedPartnerRef ?? undefined,
           utmSource: attribution.utmSource,

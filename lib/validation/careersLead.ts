@@ -1,11 +1,15 @@
+import { INQUIRY_LIMITS, validInquiryEmail, validSubmissionId } from '@/lib/publicInquiries/validation';
+
 export type CareersLeadFieldKey =
   | 'first_name'
   | 'last_name'
   | 'email'
   | 'interest_area'
-  | 'message';
+  | 'message'
+  | 'role_title'
+  | 'submission_id';
 
-export type CareersLeadErrorCode = 'required' | 'invalid_email' | 'too_short';
+export type CareersLeadErrorCode = 'required' | 'invalid_email' | 'too_short' | 'too_long' | 'invalid';
 
 export type CareersLeadPayload = {
   firstName: string;
@@ -15,10 +19,10 @@ export type CareersLeadPayload = {
   message: string;
   roleTitle?: string;
   turnstileToken?: string;
+  submissionId?: string;
 };
 
 const INTEREST_AREAS = new Set(['counselor', 'engineering', 'operations', 'other']);
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validateCareersLeadPayload(body: unknown):
   | { ok: true; data: CareersLeadPayload }
@@ -47,7 +51,7 @@ export function validateCareersLeadPayload(body: unknown):
   if (!lastName) fieldErrors.last_name = 'required';
   if (!email) {
     fieldErrors.email = 'required';
-  } else if (!EMAIL_RE.test(email)) {
+  } else if (!validInquiryEmail(email)) {
     fieldErrors.email = 'invalid_email';
   }
   if (!message) {
@@ -55,6 +59,11 @@ export function validateCareersLeadPayload(body: unknown):
   } else if (message.length < 20) {
     fieldErrors.message = 'too_short';
   }
+  if (firstName.length > INQUIRY_LIMITS.name) fieldErrors.first_name = 'too_long';
+  if (lastName.length > INQUIRY_LIMITS.name) fieldErrors.last_name = 'too_long';
+  if (message.length > INQUIRY_LIMITS.message) fieldErrors.message = 'too_long';
+  if ((roleTitle?.length ?? 0) > INQUIRY_LIMITS.label) fieldErrors.role_title = 'too_long';
+  if (!validSubmissionId(o.submission_id)) fieldErrors.submission_id = 'invalid';
 
   if (Object.keys(fieldErrors).length > 0) {
     return { ok: false, fieldErrors };
@@ -70,6 +79,7 @@ export function validateCareersLeadPayload(body: unknown):
       message,
       roleTitle,
       turnstileToken,
+      submissionId: typeof o.submission_id === 'string' ? o.submission_id || undefined : undefined,
     },
   };
 }

@@ -126,21 +126,22 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
       <p>Introduce yourself — we'll keep you in mind for future roles across counseling, engineering, and operations.</p>
     </div>
     <div class="form-card">
-      <form class="careers-form" id="careers-interest-form" method="post" novalidate>
+      <p id="careers-form-error" class="careers-native-error" role="alert">We could not confirm this submission. It may already be saved. Please retry or email <a href="mailto:careers@workforceap.org">careers@workforceap.org</a>.</p>
+      <form class="careers-form" id="careers-interest-form" method="post" action="/api/leads/careers" novalidate>
         <div class="frow">
           <div class="field">
             <label for="cf-first">First name <span class="req" aria-hidden="true">*</span></label>
-            <input id="cf-first" name="first_name" type="text" autocomplete="given-name" required />
+            <input id="cf-first" name="first_name" type="text" autocomplete="given-name" maxlength="100" required />
           </div>
           <div class="field">
             <label for="cf-last">Last name <span class="req" aria-hidden="true">*</span></label>
-            <input id="cf-last" name="last_name" type="text" autocomplete="family-name" required />
+            <input id="cf-last" name="last_name" type="text" autocomplete="family-name" maxlength="100" required />
           </div>
         </div>
 
         <div class="field">
           <label for="cf-email">Email <span class="req" aria-hidden="true">*</span></label>
-          <input id="cf-email" name="email" type="email" autocomplete="email" required />
+          <input id="cf-email" name="email" type="email" autocomplete="email" maxlength="254" required />
         </div>
 
         <div class="field">
@@ -156,6 +157,8 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
             id="cf-message"
             name="message"
             rows="5"
+            minlength="20"
+            maxlength="10000"
             required
             placeholder="Share your background, what you're looking for, and links to LinkedIn or a portfolio if you have them."
           ></textarea>
@@ -174,94 +177,16 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
   </div></section>
 
   {SHOW_TURNSTILE && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
-  <script is:inline>
-    // Talent-pool interest form → POST /api/leads/careers (progressive
-    // enhancement; Astro pages and the Next.js API share the same production
-    // origin). On success we redirect to /careers/thank-you. Captcha: when
-    // NEXT_PUBLIC_CAPTCHA_ENABLED is true the Turnstile widget renders at
-    // build time (see frontmatter) and its token is sent as
-    // cf_turnstile_response; captcha-enabled deployments must set
-    // PUBLIC_TURNSTILE_SITE_KEY / NEXT_PUBLIC_TURNSTILE_SITE_KEY in the
-    // marketing build env or the API rejects submissions (400).
-    (function () {
-      var form = document.getElementById('careers-interest-form');
-      if (!form || !window.fetch) return;
-      var button = form.querySelector('button[type=submit]');
-      var errEl = document.getElementById('careers-error');
-      var okEl = document.getElementById('careers-success');
-      var idleLabel = button ? button.textContent : '';
-
-      function showError(msg) {
-        if (!errEl) return;
-        errEl.textContent = msg;
-        errEl.hidden = false;
-      }
-
-      function setPending(pending) {
-        if (!button) return;
-        button.disabled = pending;
-        button.textContent = pending ? 'Sending…' : idleLabel;
-      }
-
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        if (errEl) errEl.hidden = true;
-        if (!form.reportValidity()) return;
-
-        var fd = new FormData(form);
-        var payload = {
-          first_name: String(fd.get('first_name') || '').trim(),
-          last_name: String(fd.get('last_name') || '').trim(),
-          email: String(fd.get('email') || '').trim(),
-          interest_area: String(fd.get('interest_area') || '').trim(),
-          message: String(fd.get('message') || '').trim(),
-        };
-        if (!payload.first_name || !payload.last_name || !payload.email || !payload.message) {
-          showError('Please fill in all required fields.');
-          return;
-        }
-        // The API requires at least 20 characters in the message.
-        if (payload.message.length < 20) {
-          showError('Please tell us a bit more about yourself (at least 20 characters).');
-          return;
-        }
-        // Turnstile injects a hidden input named cf-turnstile-response when
-        // the widget is present; the API expects it as cf_turnstile_response.
-        var token = String(fd.get('cf-turnstile-response') || '').trim();
-        if (token) payload.cf_turnstile_response = token;
-
-        setPending(true);
-        fetch('/api/leads/careers', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
-          .then(function (res) {
-            return res.json().catch(function () { return {}; }).then(function (data) {
-              if (!res.ok) {
-                throw new Error(typeof data.error === 'string' ? data.error : 'Something went wrong. Please try again.');
-              }
-              if (okEl) {
-                okEl.textContent = 'We got it — redirecting…';
-                okEl.hidden = false;
-              }
-              window.location.assign('/careers/thank-you');
-            });
-          })
-          .catch(function (err) {
-            setPending(false);
-            if (window.turnstile && typeof window.turnstile.reset === 'function') {
-              try { window.turnstile.reset(); } catch (_) { /* ignore */ }
-            }
-            showError(err && err.message ? err.message : 'Network error. Please try again.');
-          });
-      });
-    })();
+  <script>
+    import { bindPublicInquiryForm } from '../scripts/publicInquiryForm';
+    bindPublicInquiryForm({ formId: 'careers-interest-form', errorId: 'careers-error', successId: 'careers-success', endpoint: '/api/leads/careers', successRedirect: '/careers/thank-you' });
   </script>
 
 </div>
 
 <style>
+  .careers-native-error{display:none}
+  .careers-native-error:target{display:block}
   /* ===================================================================
      CAREERS — DEPTH-LED restyle to match the home.
      short depth stage hero → light alternating bands w/ elevated cards.

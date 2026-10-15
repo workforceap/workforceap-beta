@@ -58,11 +58,11 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
             <div class="frow">
               <div class="fgroup">
                 <label for="first_name">First Name <span aria-hidden="true">*</span></label>
-                <input id="first_name" type="text" name="first_name" autocomplete="given-name" required />
+                <input id="first_name" type="text" name="first_name" autocomplete="given-name" maxlength="100" required />
               </div>
               <div class="fgroup">
                 <label for="last_name">Last Name <span aria-hidden="true">*</span></label>
-                <input id="last_name" type="text" name="last_name" autocomplete="family-name" required />
+                <input id="last_name" type="text" name="last_name" autocomplete="family-name" maxlength="100" required />
               </div>
             </div>
             <div class="fgroup">
@@ -95,7 +95,7 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
             </div>
             <div class="fgroup">
               <label for="message">Your Message <span aria-hidden="true">*</span></label>
-              <textarea id="message" name="message" rows="5" required></textarea>
+              <textarea id="message" name="message" rows="5" maxlength="10000" required></textarea>
             </div>
             {SHOW_TURNSTILE && (
               <div class="fgroup">
@@ -104,7 +104,7 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
             )}
             <p class="form-status form-status--err" id="contact-error" role="alert" hidden></p>
             <p class="form-status form-status--err form-status--nojs" id="contact-form-error" role="alert" hidden>
-              We couldn't send your message. Please check the required fields and try again, or email info@workforceap.org / call (512) 777-1808.
+              We could not confirm your submission. It may already be saved. Please check the required fields and retry, or email info@workforceap.org / call (512) 777-1808.
             </p>
             <button type="submit" class="btn btn--primary">Send Message</button>
             <p class="footnote">A WorkforceAP team member reads every message and replies by email.</p>
@@ -171,90 +171,9 @@ const SHOW_TURNSTILE = CAPTCHA_ENABLED && TURNSTILE_SITE_KEY.length > 0;
   </section>
 
   {SHOW_TURNSTILE && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
-  <script is:inline>
-    // Contact form → POST /api/contact (progressive enhancement; the Astro
-    // site and the Next.js app are served from the same origin in production).
-    // Captcha: when the deployment enables NEXT_PUBLIC_CAPTCHA_ENABLED, the
-    // Turnstile widget is rendered at build time (see frontmatter) and its
-    // token is sent as cf_turnstile_response; captcha-enabled deployments
-    // must set PUBLIC_TURNSTILE_SITE_KEY / NEXT_PUBLIC_TURNSTILE_SITE_KEY in
-    // the marketing build env or the API will reject submissions (400).
-    (function () {
-      var form = document.getElementById('contact-form');
-      if (!form || !window.fetch) return;
-      var button = form.querySelector('button[type=submit]');
-      var errEl = document.getElementById('contact-error');
-      var okEl = document.getElementById('contact-success');
-      var idleLabel = button ? button.textContent : '';
-
-      function showError(msg) {
-        if (!errEl) return;
-        var text = msg || 'Something went wrong. Please try again.';
-        if (text.indexOf('workforceap.org') === -1 && text.indexOf('777-1808') === -1) {
-          text += ' Or email info@workforceap.org / call (512) 777-1808.';
-        }
-        errEl.textContent = text;
-        errEl.hidden = false;
-      }
-
-      function setPending(pending) {
-        if (!button) return;
-        button.disabled = pending;
-        button.textContent = pending ? 'Sending…' : idleLabel;
-      }
-
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        if (errEl) errEl.hidden = true;
-        if (!form.reportValidity()) return;
-
-        var fd = new FormData(form);
-        var payload = {
-          first_name: String(fd.get('first_name') || '').trim(),
-          last_name: String(fd.get('last_name') || '').trim(),
-          email: String(fd.get('email') || '').trim(),
-          phone: String(fd.get('phone') || '').trim(),
-          topic: String(fd.get('topic') || '').trim(),
-          message: String(fd.get('message') || '').trim(),
-          sms_preferred: fd.get('sms_preferred') === 'true',
-        };
-        if (!payload.first_name || !payload.last_name || !payload.email || !payload.topic || !payload.message) {
-          showError('Please fill in all required fields.');
-          return;
-        }
-        // Turnstile injects a hidden input named cf-turnstile-response when
-        // the widget is present; the API expects it as cf_turnstile_response.
-        var token = String(fd.get('cf-turnstile-response') || '').trim();
-        if (token) payload.cf_turnstile_response = token;
-
-        setPending(true);
-        fetch('/api/contact', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
-          .then(function (res) {
-            return res.json().catch(function () { return {}; }).then(function (data) {
-              if (!res.ok) {
-                throw new Error(typeof data.error === 'string' ? data.error : 'Something went wrong. Please try again, or email info@workforceap.org / call (512) 777-1808.');
-              }
-              form.hidden = true;
-              if (okEl) {
-                okEl.textContent = 'We got it — a team member will reply by email.';
-                okEl.hidden = false;
-              }
-            });
-          })
-          .catch(function (err) {
-            setPending(false);
-            if (window.turnstile && typeof window.turnstile.reset === 'function') {
-              try { window.turnstile.reset(); } catch (_) { /* ignore */ }
-            }
-            var fallback = 'Network error. Please try again, or email info@workforceap.org / call (512) 777-1808.';
-            showError(err && err.message ? err.message : fallback);
-          });
-      });
-    })();
+  <script>
+    import { bindPublicInquiryForm } from '../scripts/publicInquiryForm';
+    bindPublicInquiryForm({ formId: 'contact-form', errorId: 'contact-error', successId: 'contact-success', endpoint: '/api/contact', hideOnSuccess: true });
   </script>
 
   <!-- QUOTE BAND — closing crimson depth CTA -->

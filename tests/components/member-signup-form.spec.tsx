@@ -18,10 +18,10 @@ import SignupForm from '@/app/(auth)/signup/SignupForm';
 const fetchMock = vi.fn<typeof fetch>();
 const PROGRAM_INTEREST = 'Digital Literacy Empowerment Class (6 weeks, 30 hours total)';
 
-function renderSignup() {
+function renderSignup(redirectTo = '/dashboard/training?tab=courses') {
   return render(
     <NextIntlClientProvider locale="en" messages={messages} timeZone="America/New_York">
-      <SignupForm initialRedirectTo="/dashboard/training?tab=courses" />
+      <SignupForm initialRedirectTo={redirectTo} />
     </NextIntlClientProvider>,
   );
 }
@@ -57,6 +57,15 @@ afterEach(() => {
 afterAll(() => { vi.unstubAllEnvs(); });
 
 describe('member signup form response contract (mocked transport)', () => {
+  it('carries the mentor destination into confirmation signup and the manual login link', async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ success: true }));
+    renderSignup('/mentor/apply');
+    fillRequiredFields();
+    submit();
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(fetchMock.mock.calls[0][1]!.body as string).redirectTo).toBe('/mentor/apply');
+    expect(await screen.findByRole('link', { name: 'Go to login' })).toHaveAttribute('href', '/en/login?redirectTo=%2Fmentor%2Fapply');
+  });
   it('posts valid required fields without phone/ZIP and only shows verification after the response', async () => {
     let resolveResponse!: (response: Response) => void;
     fetchMock.mockReturnValueOnce(new Promise<Response>((resolve) => { resolveResponse = resolve; }));
@@ -77,6 +86,7 @@ describe('member signup form response contract (mocked transport)', () => {
       veteranStatus: '',
       consentTerms: true,
       consentCommunications: false,
+      redirectTo: '/dashboard/training?tab=courses',
     });
     expect(screen.getByRole('button', { name: 'Creating account...' })).toBeDisabled();
     expect(screen.queryByRole('heading', { name: 'Check your email' })).not.toBeInTheDocument();

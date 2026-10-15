@@ -22,6 +22,14 @@ import { MEMBER_PORTAL_NAV_ITEMS_I18N } from './portalNav.i18n';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const source = (relativePath: string) => readFileSync(path.join(root, relativePath), 'utf8');
 
+test('public inquiries remain discoverable under Applications for an organization admin', () => {
+  const inquiry = ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === '/admin/public-inquiries');
+  assert.ok(inquiry);
+  assert.equal(inquiry.requiresSuperAdminContext, undefined);
+  assert.equal(inquiry.parentHref, '/admin/command-center?queue=applications');
+  assert.ok(navChildrenOf(ADMIN_PORTAL_NAV_ITEMS, inquiry.parentHref).includes(inquiry));
+});
+
 test('agreement entry points are unique and reachable through existing student/document navigation', () => {
   for (const items of [MEMBER_PORTAL_NAV_ITEMS, MEMBER_PORTAL_NAV_ITEMS_I18N]) {
     assert.equal(items.filter((item) => item.href === '/dashboard/documents').length, 1);

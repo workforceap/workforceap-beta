@@ -3,7 +3,6 @@ import { getTranslations } from 'next-intl/server';
 import PartnerSchoolEnrollMissing from '@/components/marketing/PartnerSchoolEnrollMissing';
 import PartnerSchoolEnrollPage from '@/components/marketing/PartnerSchoolEnrollPage';
 import {
-  enrollPageCopyIsStakeSafe,
   listPublicEnrollmentPartners,
   resolveEnrollmentPartner,
 } from '@/lib/enroll/resolveEnrollmentPartner';
@@ -33,11 +32,6 @@ export default async function PartnerEnrollmentPage({ params }: PageProps) {
   if (!model) {
     const partners = await listPublicEnrollmentPartners();
     return <PartnerSchoolEnrollMissing school={school} partners={partners} />;
-  }
-
-  const copy = `${model.headline} ${model.blurb} ${model.costSentence}`;
-  if (!enrollPageCopyIsStakeSafe(copy)) {
-    throw new Error(`enroll/${school}: public copy failed the no-cost stake (banned "free")`);
   }
 
   return <PartnerSchoolEnrollPage model={model} />;

@@ -447,6 +447,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     badgeKey: 'admin_applications_pending',
   },
   { href: '/admin/wioa-screening', label: 'Funding eligibility', group: 'dailyWork', Icon: ClipboardList },
+  { href: '/admin/public-inquiries', label: 'Public inquiries', group: 'dailyWork', Icon: MessageSquare, parentHref: '/admin/command-center?queue=applications' },
   { href: '/admin/certifications', label: 'Certificates', group: 'dailyWork', Icon: Award },
   { href: '/admin/program-change-requests', label: 'Program requests', group: 'dailyWork', Icon: ArrowLeftRight },
   // Single entry → the full-kit roster (StudentsRosterKit). The legacy hub
