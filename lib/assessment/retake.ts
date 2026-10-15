@@ -27,7 +27,7 @@ export async function allowAssessmentRetake(input: {
       FOR UPDATE
     )
     UPDATE users u SET
-      assessment_retake_requested_at = CURRENT_TIMESTAMP,
+      assessment_retake_requested_at = CURRENT_TIMESTAMP(3),
       assessment_history = CASE WHEN u.assessment_completed AND NOT EXISTS (
         SELECT 1 FROM jsonb_array_elements(u.assessment_history) h
         WHERE h->>'completedAt' IN (
@@ -39,7 +39,7 @@ export async function allowAssessmentRetake(input: {
         u.assessment_history || jsonb_build_array(jsonb_build_object(
           'score', c.assessment_score, 'scorePct', c.assessment_score_pct,
           'answers', c.assessment_answers, 'programInterest', c.program_interest,
-          'completedAt', c.assessment_completed_at, 'requestedAt', CURRENT_TIMESTAMP,
+          'completedAt', c.assessment_completed_at, 'requestedAt', CURRENT_TIMESTAMP(3),
           'allowedBy', ${input.staffUserId}::text, 'allowedByRole', ${input.staffRole}::text,
           'reason', ${input.reason?.trim().slice(0, 500) || null}::text
         )) ELSE u.assessment_history END,

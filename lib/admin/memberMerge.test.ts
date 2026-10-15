@@ -520,6 +520,18 @@ describe('assessment attempt merge accounting', () => {
     expect(data.assessmentHistory).toEqual([undatedArchive]);
   });
 
+  it('retains an undated final authorization after PostgreSQL rounds a fractional request timestamp', async () => {
+    const roundedPending = new Date('2026-10-15T10:00:00.074Z');
+    const postgresArchive = { ...firstArchive, completedAt: null, requestedAt: '2026-10-15T10:00:00.074+00:00' };
+    const { data } = await mergeAssessments({}, {
+      ...first, assessmentCompletedAt: null, assessmentRetakeRequestedAt: roundedPending,
+      assessmentHistory: [postgresArchive],
+    });
+    expect(data.assessmentAttemptCount).toBe(1);
+    expect(data.assessmentRetakeRequestedAt).toBe(roundedPending.toISOString());
+    expect(data.assessmentHistory).toEqual([postgresArchive]);
+  });
+
   it('raises stale counters to cover distinct history and the current completed result', async () => {
     const { data } = await mergeAssessments({
       ...first, assessmentAttemptCount: 0, assessmentCompletedAt: secondDate,

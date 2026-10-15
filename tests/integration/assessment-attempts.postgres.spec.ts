@@ -92,6 +92,33 @@ suite('two completed assessment chances — real PostgreSQL', () => {
     expect((await row('legacy-staff')).assessmentHistory).toHaveLength(1);
     expect(JSON.stringify((await row('legacy-staff')).assessmentHistory)).toContain('legacy evidence');
   });
+  it('keeps authorization timestamps equal across database and JSON precision rounding', async () => {
+    await seed('timestamp-precision');
+    await prisma.$executeRaw`UPDATE users SET assessment_completed_at = NULL WHERE id = 'timestamp-precision'`;
+    const originalTransaction = prisma.$transaction.bind(prisma);
+    const transaction = vi.spyOn(prisma, '$transaction').mockImplementation((async (callback: (db: typeof prisma) => Promise<unknown>) => originalTransaction(async tx => {
+      const pinnedTx = new Proxy(tx, { get(target, key) {
+        if (key !== '$queryRaw') return Reflect.get(target, key);
+        return (strings: TemplateStringsArray, ...values: unknown[]) => {
+          // Preserve the real writer's precision while pinning only its clock.
+          // .073969 rounds to .074 in TIMESTAMP(3), whereas JS truncates .073.
+          const parts = strings.map(part => part.replace(/\bCURRENT_TIMESTAMP(\(\d+\))?/g,
+            (_match, precision: string = '') => `TIMESTAMPTZ${precision} '2026-10-15T10:00:00.073969+00'`));
+          const pinnedStrings = Object.assign(parts, { raw: [...parts] }) as unknown as TemplateStringsArray;
+          return tx.$queryRaw(pinnedStrings, ...values);
+        };
+      } });
+      return callback(pinnedTx as typeof prisma);
+    })) as never);
+    try {
+      expect((await grant('timestamp-precision')).ok).toBe(true);
+    } finally { transaction.mockRestore(); }
+    const saved = await row('timestamp-precision');
+    expect(saved.assessmentRetakeRequestedAt?.toISOString()).toBe('2026-10-15T10:00:00.074Z');
+    const history = saved.assessmentHistory as Array<{ requestedAt: string; completedAt: null }>;
+    expect(history[0].completedAt).toBeNull();
+    expect(Date.parse(history[0].requestedAt)).toBe(saved.assessmentRetakeRequestedAt!.getTime());
+  });
   it('grants once under concurrent clicks, archives once, and retains official results', async () => {
     await seed('concurrent-grant');
     const results = await Promise.all([grant('concurrent-grant'), grant('concurrent-grant')]);

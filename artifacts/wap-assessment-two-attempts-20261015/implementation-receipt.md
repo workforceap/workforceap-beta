@@ -69,3 +69,17 @@ Final validation follow-ups:
   state. All 26 tests across those six suites pass, including a new rendered
   legacy-reset regression with an enabled real action and retained history.
   Details are in local `counselor-fixture-verification.log` beside this receipt.
+
+Timestamp precision follow-up:
+
+The retake writer now uses `CURRENT_TIMESTAMP(3)` for both the pending database
+value and archived `requestedAt`. This matches the column's millisecond precision
+and preserves the authorization-to-archive identity used by account merging.
+A deterministic PostgreSQL fixture pins `.073969` while preserving the actual
+writer's precision declaration: the old writer failed with JSON parsed as `.073`
+and the column rounded to `.074`; the corrected writer passes. A merge regression
+retains the undated archived result's one remaining chance after that rounding.
+All 47 PostgreSQL/merge tests, typecheck and scoped ESLint passed. Local before and
+after transcripts are `timestamp-precision-before.log` and
+`timestamp-precision-after.log`. No reader normalization or deployed-data rewrite
+was introduced because these fields have not been released.
