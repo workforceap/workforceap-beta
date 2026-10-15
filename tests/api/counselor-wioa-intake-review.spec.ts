@@ -71,6 +71,7 @@ import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAcc
 import { logAuditEvent } from '@/lib/audit/log';
 import { recordWioaReviewSnapshot } from '@/lib/wioa/reviewSnapshot';
 import { prisma } from '@/lib/db/prisma';
+import { buildWioaReviewEvidence, type ApplyWioaReviewScreening } from '@/lib/wioa/reviewEvidence';
 
 const COUNSELOR = 'c0c0c0c0-0000-4000-8000-000000000001';
 const ADMIN = 'a0a0a0a0-0000-4000-8000-000000000001';
@@ -323,5 +324,79 @@ describe('loaded review revisions', () => {
     const response = await PATCH(req(MEMBER_IN_SCOPE, { status: 'verified', expectedReviewedAt: reviewedAt.toISOString() }), paramsFor(MEMBER_IN_SCOPE));
     expect(response.status).toBe(200);
     expect(prisma.user.updateMany).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ wioaReviewedAt: reviewedAt }) }));
+  });
+});
+
+describe('application screening evidence', () => {
+  const applyScreening: ApplyWioaReviewScreening = {
+    id: 'apply-screening-1', organizationId: 'org-1', createdAt: new Date('2026-09-01T00:00:00Z'),
+    q1: null, q2: null, q3: null, qualifies: true, yesCount: 0,
+    receivingUnemployment: 'yes', exhaustedUnemployment: null, layoffCompany: null,
+    snapWic: 'yes', publicAssistancePrograms: ['wic'], publicAssistanceHelpRequested: 'yes',
+  };
+  const applyMember = (answers = applyScreening, selfScreening: unknown = null) => ({
+    id: MEMBER_IN_SCOPE, wioaQualificationJson: selfScreening, wioaReviewStatus: null,
+    wioaReviewNotes: null, wioaReviewedAt: null, applyEligibilityScreenings: [answers],
+  });
+  const revision = (answers = applyScreening, selfScreening: unknown = null) => {
+    const evidence = buildWioaReviewEvidence(selfScreening, answers, 'org-1')!;
+    return { expectedSubmittedAt: evidence.submittedAt, expectedEvidenceRevision: evidence.revision, expectedReviewedAt: null };
+  };
+
+  it.each(['admin', 'counselor'])('lets an authorized %s review actual partial application evidence without fabricating a questionnaire', async (role) => {
+    if (role === 'admin') asAdmin(); else asCounselor();
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(applyMember() as never);
+    const response = await PATCH(req(MEMBER_IN_SCOPE, { status: 'verified', ...revision() }), paramsFor(MEMBER_IN_SCOPE));
+    expect(response.status).toBe(200);
+    expect(prisma.user.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ organizationId: 'org-1', wioaQualificationJson: { equals: expect.anything() } }),
+      data: expect.objectContaining({ wioaReviewStatus: 'verified' }),
+    }));
+    expect(vi.mocked(prisma.user.updateMany).mock.calls[0]![0].data).not.toHaveProperty('wioaQualificationJson');
+    expect(recordWioaReviewSnapshot).toHaveBeenCalledWith(expect.objectContaining({ source: 'wioa_review', decision: 'verified' }), prisma);
+  });
+
+  it('requires the loaded application evidence revision, even alongside a questionnaire', async () => {
+    asAdmin();
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(applyMember(applyScreening, screening) as never);
+    const response = await PATCH(req(MEMBER_IN_SCOPE, { status: 'verified' }), paramsFor(MEMBER_IN_SCOPE));
+    expect(response.status).toBe(409);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('rejects an answer update even when its row ID and original createdAt are unchanged', async () => {
+    asAdmin();
+    const updated = { ...applyScreening, receivingUnemployment: 'no' };
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(applyMember(updated) as never);
+    const response = await PATCH(req(MEMBER_IN_SCOPE, { status: 'verified', ...revision() }), paramsFor(MEMBER_IN_SCOPE));
+    expect(response.status).toBe(409);
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('rechecks application answers inside the locked transaction before deciding', async () => {
+    asCounselor();
+    vi.mocked(prisma.user.findFirst)
+      .mockResolvedValueOnce(applyMember() as never)
+      .mockResolvedValueOnce(applyMember({ ...applyScreening, snapWic: 'no' }) as never);
+    const response = await PATCH(req(MEMBER_IN_SCOPE, { status: 'verified', ...revision() }), paramsFor(MEMBER_IN_SCOPE));
+    expect(response.status).toBe(409);
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(recordWioaReviewSnapshot).not.toHaveBeenCalled();
+  });
+
+  it('does not accept screening evidence belonging to another organization', async () => {
+    asAdmin();
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(applyMember({ ...applyScreening, organizationId: 'org-2' }) as never);
+    const response = await PATCH(req(MEMBER_IN_SCOPE, { status: 'verified', ...revision() }), paramsFor(MEMBER_IN_SCOPE));
+    expect(response.status).toBe(400);
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('still refuses a decision with no screening evidence', async () => {
+    asAdmin();
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({ ...applyMember(), applyEligibilityScreenings: [] } as never);
+    const response = await PATCH(req(MEMBER_IN_SCOPE, { status: 'verified' }), paramsFor(MEMBER_IN_SCOPE));
+    expect(response.status).toBe(400);
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
   });
 });

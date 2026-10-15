@@ -64,6 +64,8 @@ import LibraryResourcesClient from '@/app/(portal)/resources/ResourcesClient';
 import type { TrainingWorkspace } from '@/lib/member/trainingWorkspace';
 import type { MemberResource } from '@/lib/content/memberResources';
 import { prisma } from '@/lib/db/prisma';
+import { getProgramBySlug } from '@/lib/content/programs';
+import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 
 /**
  * PR 4 of the empty-state consolidation (KIT_GUIDE §6): the member program /
@@ -198,6 +200,32 @@ describe('LearningHubEnrolledCourses', () => {
 });
 
 describe('/dashboard/learning page', () => {
+  it('renders saved partial progress and provider enrollment through the enrolled course list', async () => {
+    const programSlug = 'it-support-professional-certificate-ibm';
+    const courses = getProgramCoursesForCurriculumVersion(getProgramBySlug(programSlug)!, 'legacy-v1');
+    const first = courses[0];
+    const second = courses[1];
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      enrolledProgram: null,
+      assessmentCompleted: true,
+      courseraEnrollmentApproved: true,
+      courseEnrollments: [{ id: 'assignment', programSlug, curriculumVersion: 'legacy-v1', isPrimary: true, enrolledAt: new Date('2026-10-01') }],
+      courseProgress: [{ programSlug, courseSlug: first.slug, courseId: first.courseraCourseId, status: 'IN_PROGRESS', percentComplete: 55, scoreScaled: 0.85 }],
+      courseraCourseProgress: [{ programSlug, courseraCourseId: second.courseraCourseId, overallProgress: 0, isCompleted: false, isRemovedFromProgram: false, courseGrade: null }],
+    } as never);
+    const { container } = portal('en', <>{await LearningPage()}</>);
+    const firstCard = container.querySelector<HTMLElement>(`.training-course-card[data-course-slug="${first.slug}"]`)!;
+    expect(within(firstCard).getByRole('progressbar', { name: `${first.name} progress` })).toHaveAttribute('aria-valuenow', '55');
+    expect(within(firstCard).getByText('Grade: 85% (Coursera)')).toBeInTheDocument();
+    expect(within(firstCard).getByRole('link', { name: /^Continue in Coursera:/ })).toHaveAttribute('href', expect.stringContaining(encodeURIComponent(first.slug)));
+    expect(within(firstCard).queryByRole('button', { name: /Enroll in this course/ })).toBeNull();
+    const secondCard = container.querySelector<HTMLElement>(`.training-course-card[data-course-slug="${second.slug}"]`)!;
+    expect(within(secondCard).getByRole('link', { name: /Coursera/ })).toBeInTheDocument();
+    expect(within(secondCard).queryByRole('button', { name: /Enroll in this course/ })).toBeNull();
+    const section = container.querySelector<HTMLElement>('.learning-hub-enrolled-courses')!;
+    expect(within(section).getByRole('progressbar', { name: 'Training progress' })).toHaveAttribute('aria-valuenow', String(Math.round(55 / courses.length)));
+  });
+
   it('no enrolled program → first pathway state (digital basics + choose a program) in both layouts, plus the first-kind course list', async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ enrolledProgram: null, assessmentCompleted: false, courseraEnrollmentApproved: false, courseEnrollments: [], courseProgress: [] } as never);
     const { container } = portal('en', <>{await LearningPage()}</>);

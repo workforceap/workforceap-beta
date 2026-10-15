@@ -13,6 +13,8 @@ import {
 import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
 import { StatusTag, type KitTone } from '@/components/portal/kit';
 import styles from './CounselorIntakeReviewPanel.module.css';
+import ApplyWioaReviewDetails from './ApplyWioaReviewDetails';
+import type { ApplyWioaReviewScreeningDto } from '@/lib/wioa/reviewEvidence';
 
 /**
  * Counselor approvals (Mike, 2026-09-19). Counselors review the member's
@@ -45,12 +47,16 @@ type CounselorWioaIntakeState = {
   reviewStatus: string | null;
   reviewedAt: string | null;
   reviewNotes: string | null;
+  evidenceRevision?: string;
+  applyScreening?: ApplyWioaReviewScreeningDto | null;
 };
 
 type Props = {
   memberId: string;
   applications: CounselorReviewableApplication[];
   wioa: CounselorWioaIntakeState;
+  /** Admin detail reuses application decisions alongside its full WIOA review panel. */
+  showWioaReview?: boolean;
 };
 
 type Decision = 'APPROVED' | 'DENIED' | 'NEEDS_INFO';
@@ -90,7 +96,7 @@ const DECISION_DONE_COPY: Record<Decision, string> = {
   NEEDS_INFO: 'Application marked as needing more information.',
 };
 
-export default function CounselorIntakeReviewPanel({ memberId, applications, wioa }: Props) {
+export default function CounselorIntakeReviewPanel({ memberId, applications, wioa, showWioaReview = true }: Props) {
   const router = useRouter();
 
   // ── Application decisions ──
@@ -158,6 +164,7 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
           notes: intakeNotes.trim() || null,
           expectedSubmittedAt: wioa.submittedAt,
           expectedReviewedAt: intakeSavedAt,
+          expectedEvidenceRevision: wioa.evidenceRevision,
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { error?: string; wioaReviewedAt?: string };
@@ -277,16 +284,18 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
         </p>
       ) : null}
 
-      <div className={styles.intake}>
+      {showWioaReview ? <div className={styles.intake}>
         <h3 className={`wa-kit-stat-label ${styles.subtitle}`}>WIOA intake verification</h3>
         <p className={`wa-kit-meta ${styles.help}`}>
           Record whether the member&apos;s WIOA intake paperwork is complete. This is an internal workflow status,
           not an eligibility determination — that stays with the workforce board.
         </p>
 
+        {wioa.applyScreening ? <ApplyWioaReviewDetails screening={wioa.applyScreening} /> : null}
+
         {!wioa.hasScreening ? (
           <p className={`wa-kit-meta ${styles.quiet}`}>
-            This member has not submitted the WIOA self-screening yet, so there is nothing to verify.
+            This member has not submitted a WIOA or application screening yet, so there is nothing to verify.
           </p>
         ) : (
           <>
@@ -349,7 +358,7 @@ export default function CounselorIntakeReviewPanel({ memberId, applications, wio
             ) : null}
           </>
         )}
-      </div>
+      </div> : null}
     </section>
   );
 }

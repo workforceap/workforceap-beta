@@ -24,6 +24,7 @@ import { readinessVoiceSurface } from '@/lib/portal/voice';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
 import { digitalLiteracyFirstModuleHref } from '@/lib/content/courseDelivery';
+import { buildLearningHubCourseProgress } from '@/lib/member/learningHubCourseProgress';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -67,8 +68,26 @@ export default async function LearningPage() {
           orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
         },
         courseProgress: {
-          where: { status: 'COMPLETED' },
-          select: { programSlug: true, courseSlug: true },
+          select: {
+            programSlug: true,
+            courseSlug: true,
+            courseId: true,
+            status: true,
+            percentComplete: true,
+            scoreScaled: true,
+          },
+        },
+        courseraCourseProgress: {
+          where: { isRemovedFromProgram: false },
+          orderBy: { lastSyncedAt: 'desc' },
+          select: {
+            programSlug: true,
+            courseraCourseId: true,
+            overallProgress: true,
+            isCompleted: true,
+            isRemovedFromProgram: true,
+            courseGrade: true,
+          },
         },
       },
     }),
@@ -94,11 +113,12 @@ export default async function LearningPage() {
   const coursesForMember = programMeta
     ? getProgramCoursesForCurriculumVersion(programMeta, curriculumVersion)
     : [];
-  const coursesCompletedSlugs = enrolledProgram
-    ? dbUser?.courseProgress
-        .filter((row) => programSlugsEquivalent(row.programSlug, enrolledProgram))
-        .map((row) => row.courseSlug) ?? []
-    : [];
+  const { progressBySlug, completedSlugs: coursesCompletedSlugs, enrolledCourseraCourseIds } = buildLearningHubCourseProgress({
+    programSlug: enrolledProgram,
+    courses: coursesForMember,
+    courseProgress: dbUser?.courseProgress ?? [],
+    courseraProgress: dbUser?.courseraCourseProgress ?? [],
+  });
   const [skillMissionSummary, memberSkillsetProgress] = await Promise.all([
     loadSkillMissionSummary({
       userId: user.id,
@@ -236,6 +256,8 @@ export default async function LearningPage() {
       programTitle={programMeta?.title ?? null}
       courses={coursesForMember}
       completedSlugs={coursesCompletedSlugs}
+      progressBySlug={progressBySlug}
+      enrolledCourseraCourseIds={enrolledCourseraCourseIds}
       assessmentCompleted={dbUser?.assessmentCompleted ?? false}
       eligibilityApproved={dbUser?.courseraEnrollmentApproved ?? false}
       languagesSupported={programMeta?.languagesSupported}

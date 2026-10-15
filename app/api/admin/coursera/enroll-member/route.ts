@@ -185,6 +185,7 @@ async function _POST(request: Request) {
               actorUserId: user.id,
               actorRole: superAdmin ? 'super_admin' : 'admin',
               targetUserId: member.id,
+              organizationId: subjectOrgId,
               event,
             }),
           ),
@@ -230,6 +231,7 @@ async function _POST(request: Request) {
         actorUserId: user.id,
         actorRole: superAdmin ? 'super_admin' : 'admin',
         targetUserId: member.id,
+        organizationId: subjectOrgId,
         event,
       }).catch((auditErr) => {
         captureApiError(auditErr, {

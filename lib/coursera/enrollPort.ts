@@ -122,6 +122,7 @@ export async function writeEnrollAudit(args: {
   actorUserId: string;
   actorRole: 'member' | 'admin' | 'super_admin';
   targetUserId: string;
+  organizationId?: string;
   event: EnrollAuditEvent;
 }): Promise<void> {
   const { actorUserId, actorRole, targetUserId, event } = args;
@@ -131,6 +132,7 @@ export async function writeEnrollAudit(args: {
     targetType: 'User',
     targetId: targetUserId,
     metadata: {
+      ...(args.organizationId ? { organizationId: args.organizationId } : {}),
       step: event.step,
       programId: event.programId,
       contentId: event.contentId,

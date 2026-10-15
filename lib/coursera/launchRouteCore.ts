@@ -62,6 +62,16 @@ export type CourseraLaunchDependencies<ResponseLike, ProgramType extends Program
     curriculumVersion: string,
   ) => ApprovedCurriculumTrack;
   getFirstIncompleteCourseIndex: (program: ProgramType, completedSlugs: string[]) => number | undefined;
+  /** Read-only evidence of course access, never an invitation or approval alone. */
+  hasCourseAccess: (args: {
+    userId: string;
+    email?: string | null;
+    organizationId: string | null;
+    programSlug: string;
+    curriculumVersion: string;
+    courseSlug: string;
+    courseraCourseId?: string;
+  }) => Promise<boolean>;
   getCourseraConfig: () => { courseIdMap: Record<string, string[] | undefined> };
   buildCourseraLaunchUrl: (args: {
     programSlug: string | null;
@@ -154,7 +164,7 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
     );
     const curriculumVersion = enrolledProgram
       ? dbUser?.courseEnrollments?.find(
-          (enrollment) => enrollment.programSlug === enrolledProgram,
+          (enrollment) => programSlugsEquivalent(enrollment.programSlug, enrolledProgram),
         )?.curriculumVersion ?? 'legacy-v1'
       : 'legacy-v1';
     const program = enrolledProgram
@@ -191,6 +201,32 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
         workforceApCourseHref(requestedCourse.slug, enrolledProgram ?? ''),
         request.url,
       ));
+    }
+    const completedForProgram = dbUser?.courseProgress
+      .filter((row) => enrolledProgram && programSlugsEquivalent(row.programSlug, enrolledProgram))
+      .map((row) => row.courseSlug) ?? [];
+    const launchCourse = requestedCourse ?? (program
+      ? program.courses[deps.getFirstIncompleteCourseIndex(program, completedForProgram) ?? 0]
+      : undefined);
+    if (launchCourse && isWorkforceApCourse(launchCourse)) {
+      return deps.redirect(new URL(workforceApCourseHref(launchCourse.slug, enrolledProgram ?? ''), request.url));
+    }
+    if (!enrolledProgram || !launchCourse) return launchErrorRedirect('course_not_assigned');
+    if (enrolledProgram && launchCourse && !(await deps.hasCourseAccess({
+      userId: user.id,
+      email: user.email,
+      organizationId: dbUser?.organizationId ?? null,
+      programSlug: enrolledProgram,
+      curriculumVersion,
+      courseSlug: launchCourse.slug,
+      courseraCourseId: launchCourse.courseraCourseId,
+    }))) {
+      // A GET must never spend a seat or send an invitation. Existing native
+      // launch links land on the explicit, server-gated POST enrollment UI.
+      const enrollmentUrl = new URL('/dashboard/program/coursera-enrollment', request.url);
+      enrollmentUrl.searchParams.set('program', enrolledProgram);
+      enrollmentUrl.searchParams.set('course', launchCourse.slug);
+      return deps.redirect(enrollmentUrl);
     }
     if (
       requestedCourse?.courseraCourseId
@@ -249,7 +285,7 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
     }
     const completedSlugs = enrolledProgram
       ? dbUser?.courseProgress
-          .filter((row) => row.programSlug === enrolledProgram)
+          .filter((row) => programSlugsEquivalent(row.programSlug, enrolledProgram))
           .map((row) => row.courseSlug) ?? []
       : [];
 
@@ -332,6 +368,7 @@ export function createCourseraLaunchHandler<ResponseLike, ProgramType extends Pr
   };
 }
 import { isWorkforceApCourse, workforceApCourseHref } from '@/lib/content/courseDelivery';
+import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import {
   APPROVED_CURRICULUM_VERSION,
   isExternalCurriculumTrackReady,

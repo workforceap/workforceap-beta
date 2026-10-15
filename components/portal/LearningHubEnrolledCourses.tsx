@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import TrainingCourseList from '@/components/portal/TrainingCourseList';
+import TrainingCourseList, { type CourseProgressUi } from '@/components/portal/TrainingCourseList';
 import { useTranslations } from 'next-intl';
 import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 import type { LanguageSupport, ProgramCourse } from '@/lib/content/programs';
@@ -12,6 +12,8 @@ type LearningHubEnrolledCoursesProps = {
   programTitle: string | null;
   courses: ProgramCourse[];
   completedSlugs: string[];
+  progressBySlug?: Record<string, CourseProgressUi>;
+  enrolledCourseraCourseIds?: string[];
   assessmentCompleted: boolean;
   /** Server-truth Coursera enrollment eligibility for the signed-in member. */
   eligibilityApproved?: boolean;
@@ -48,6 +50,8 @@ export default function LearningHubEnrolledCourses({
   programTitle,
   courses,
   completedSlugs,
+  progressBySlug,
+  enrolledCourseraCourseIds,
   assessmentCompleted,
   eligibilityApproved = false,
   languagesSupported,
@@ -87,7 +91,12 @@ export default function LearningHubEnrolledCourses({
   }
 
   const completedInProgram = completedSlugs.filter((s) => courses.some((c) => c.slug === s)).length;
-  const pct = courses.length > 0 ? Math.round((completedInProgram / courses.length) * 100) : 0;
+  const completedSet = new Set(completedSlugs);
+  const pct = Math.round(courses.reduce((sum, course) => {
+    const progress = progressBySlug?.[course.slug];
+    return sum + (completedSet.has(course.slug) || progress?.status === 'COMPLETED'
+      ? 100 : progress?.percentComplete ?? 0);
+  }, 0) / courses.length);
 
   const progressLabel =
     pct === 0
@@ -224,6 +233,8 @@ export default function LearningHubEnrolledCourses({
           programSlug={programSlug}
           courses={courses}
           completedSlugs={completedSlugs}
+          progressBySlug={progressBySlug}
+          enrolledCourseraCourseIds={enrolledCourseraCourseIds}
           eligibilityApproved={eligibilityApproved}
         />
       </div>

@@ -7,6 +7,7 @@ const h = vi.hoisted(() => ({
   transaction: vi.fn(), lock: vi.fn(), profile: vi.fn(), screening: vi.fn(), update: vi.fn(),
   consume: vi.fn(), realTransactions: true, failScreening: false, failLeadAudit: false,
   jsonConflict: false, expireAtConsume: false, failPreScreening: false,
+  failReviewReset: false,
   databaseError: null as unknown,
 }));
 vi.mock('@/lib/db/withRequestGuc', () => ({ withApiGuc: (handler: unknown) => handler }));
@@ -56,16 +57,20 @@ function transactionClient(draft: any) {
       findFirst: async ({ where }: any) => draft.member.id === where.id && !draft.member.deletedAt && (!where.organizationId || where.organizationId === draft.member.organizationId) ? structuredClone(draft.member) : null,
       updateMany: async (args: any) => {
         h.update(args);
+        if (draft.member.id !== args.where.id || draft.member.organizationId !== args.where.organizationId || draft.member.deletedAt) return { count: 0 };
         if (h.jsonConflict) return { count: 0 };
-        const expected = args.where.wioaQualificationJson.equals;
-        if (expected !== Prisma.AnyNull && JSON.stringify(expected) !== JSON.stringify(draft.member.wioaQualificationJson)) return { count: 0 };
+        if (args.where.wioaQualificationJson) {
+          const expected = args.where.wioaQualificationJson.equals;
+          if (expected !== Prisma.AnyNull && JSON.stringify(expected) !== JSON.stringify(draft.member.wioaQualificationJson)) return { count: 0 };
+        }
+        if (h.failReviewReset && args.data.wioaReviewStatus === 'pending') throw new Error('Review reset failed');
         Object.assign(draft.member, args.data);
         return { count: 1 };
       },
       update: async ({ data }: any) => { Object.assign(draft.member, data); return draft.member; },
     },
     profile: { upsert: async (args: any) => { h.profile(args); Object.assign(draft.profile, args.update); return draft.profile; } },
-    applyEligibilityScreening: { upsert: async (args: any) => {
+    applyEligibilityScreening: { findUnique: async ({ where }: any) => draft.screening?.userId === where.userId ? structuredClone(draft.screening) : null, upsert: async (args: any) => {
       h.screening(args);
       if (h.failScreening) throw new Error('Screening unavailable');
       draft.screening = { ...args.create, ...args.update };
@@ -99,11 +104,13 @@ beforeEach(() => {
   vi.clearAllMocks();
   h.actorId = 'member-1'; h.realTransactions = true;
   h.failScreening = false; h.failLeadAudit = false; h.jsonConflict = false; h.expireAtConsume = false; h.failPreScreening = false; h.databaseError = null;
+  h.failReviewReset = false;
   h.store = {
     member: { id: 'member-1', organizationId: 'org-1', deletedAt: null, fullName: 'Fixture Member', email: 'member@example.test', wioaQualificationJson: structuredClone(oldSnapshot), assessmentCompleted: true },
     profile: { city: 'Existing city', state: 'GA', zip: '30301', barrierTypes: ['housing'] }, screening: null, lead: null,
     token: { id: 'link-1', token, type: 'eligibility_questionnaire', orgId: 'org-1', subjectUserId: 'member-1', email: 'member@example.test', consumedAt: null, expiresAt: new Date(Date.now() + 3600_000) },
     preDraft: { saved: true }, preScreening: null,
+    reviewHistory: [{ id: 'review-1', status: 'verified', notes: 'Retained evidence' }],
   };
   // Mock transaction commit/rollback instead of immediately mutating committed state.
   let transactionTail: Promise<unknown> = Promise.resolve();
@@ -121,6 +128,11 @@ beforeEach(() => {
 });
 
 describe('eligibility persistence', () => {
+  const verifiedReview = {
+    wioaReviewStatus: 'verified', wioaReviewedAt: new Date('2026-09-02T00:00:00Z'),
+    wioaReviewedByUserId: 'staff-reviewer', wioaReviewNotes: 'Documents checked',
+  };
+
   it('saves the authenticated subject, preserves self-screening/ancillary keys, and keeps its existing qualification rule', async () => {
     const response = await memberPatch(request({ ...questionnaire, userId: 'another-member', organizationId: 'other-org' }));
     expect(response.status).toBe(200);
@@ -179,6 +191,80 @@ describe('eligibility persistence', () => {
     expect((await memberPatch(request({ q1: 'no', q2: 'no' }))).status).toBe(200);
     expect(h.store.screening).toMatchObject({ userId: 'member-1', q3: null, qualifies: false, yesCount: 0, snapWic: null });
     expect(h.screening.mock.calls.every(([args]) => args.where.userId === 'member-1')).toBe(true);
+  });
+
+  it('returns a verified review to pending for new screening evidence without changing its immutable history', async () => {
+    Object.assign(h.store.member, verifiedReview);
+    const history = structuredClone(h.store.reviewHistory);
+    expect((await memberPatch(request(questionnaire))).status).toBe(200);
+    expect(h.store.member).toMatchObject({
+      wioaReviewStatus: 'pending', wioaReviewedAt: null,
+      wioaReviewedByUserId: null, wioaReviewNotes: null,
+    });
+    expect(h.store.reviewHistory).toEqual(history);
+    expect(h.store.member.wioaQualificationJson).toMatchObject(oldSnapshot);
+  });
+
+  it.each([
+    { q1: 'yes' },
+    { q3: 'no' },
+    { receivingUnemployment: 'yes' },
+    { exhaustedUnemployment: 'yes' },
+    { layoffCompany: 'Example Employer' },
+    { publicAssistancePrograms: ['snap'] },
+    { publicAssistanceHelpRequested: 'yes' },
+  ])('clears a prior verified review when review answers change: %j', async (changed) => {
+    expect((await memberPatch(request(questionnaire))).status).toBe(200);
+    Object.assign(h.store.member, verifiedReview);
+    const history = structuredClone(h.store.reviewHistory);
+    expect((await memberPatch(request({ ...questionnaire, ...changed }))).status).toBe(200);
+    expect(h.store.member).toMatchObject({
+      wioaReviewStatus: 'pending', wioaReviewedAt: null,
+      wioaReviewedByUserId: null, wioaReviewNotes: null,
+    });
+    expect(h.store.reviewHistory).toEqual(history);
+  });
+
+  it.each([
+    {},
+    { hearAbout: 'Partner', hearAboutOther: 'Community event', partnerAmbassadorReferral: 'Different Ambassador' },
+  ])('preserves a verified review for identical screening answers with referral changes %j', async (extra) => {
+    expect((await memberPatch(request(questionnaire))).status).toBe(200);
+    Object.assign(h.store.member, verifiedReview);
+    const history = structuredClone(h.store.reviewHistory);
+    h.update.mockClear();
+    expect((await memberPatch(request({ ...questionnaire, ...extra }))).status).toBe(200);
+    expect(h.store.member).toMatchObject(verifiedReview);
+    expect(h.store.reviewHistory).toEqual(history);
+    expect(h.update.mock.calls.some(([args]) => args.data.wioaReviewStatus === 'pending')).toBe(false);
+  });
+
+  it('compares normalized benefit choices so reordering does not clear a review', async () => {
+    const first = { ...questionnaire, publicAssistancePrograms: ['snap', 'wic'], publicAssistanceHelpRequested: 'no' };
+    expect((await memberPatch(request(first))).status).toBe(200);
+    Object.assign(h.store.member, verifiedReview);
+    expect((await memberPatch(request({ ...first, publicAssistancePrograms: ['wic', 'snap', 'snap'] }))).status).toBe(200);
+    expect(h.store.member).toMatchObject(verifiedReview);
+  });
+
+  it('resets review when repairing screening ownership to the subject organization', async () => {
+    expect((await memberPatch(request(questionnaire))).status).toBe(200);
+    Object.assign(h.store.member, verifiedReview);
+    h.store.screening.organizationId = 'wrong-organization';
+    expect((await memberPatch(request(questionnaire))).status).toBe(200);
+    expect(h.store.screening.organizationId).toBe('org-1');
+    expect(h.store.member).toMatchObject({ wioaReviewStatus: 'pending', wioaReviewedAt: null });
+  });
+
+  it('rolls back changed screening evidence and the review when resetting review fails', async () => {
+    expect((await memberPatch(request(questionnaire))).status).toBe(200);
+    Object.assign(h.store.member, verifiedReview);
+    h.failReviewReset = true;
+    h.after.mockClear();
+    const before = structuredClone(h.store);
+    expect((await memberPatch(request({ ...questionnaire, receivingUnemployment: 'yes' }))).status).toBe(500);
+    expect(h.store).toEqual(before);
+    expect(h.after).not.toHaveBeenCalled();
   });
 });
 

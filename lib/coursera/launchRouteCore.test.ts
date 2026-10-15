@@ -25,6 +25,7 @@ function makeDeps(
       organizationId: 'org-1',
       courseProgress: [],
     }),
+    hasCourseAccess: async () => true,
     resolveActiveProgram: async (_userId, legacyEnrolledProgram) => legacyEnrolledProgram,
     findCourse: async () => null,
     findFirstCourse: async () => null,
@@ -479,4 +480,72 @@ test('WAP-196: a signed-out launch keeps the program and course through login', 
     new URL(res.redirectedTo).searchParams.get('redirectTo'),
     '/dashboard/program?program=second-program&course=second-course',
   );
+});
+
+test('a learner without course access is handed to explicit enrollment before any external URL lookup', async () => {
+  let providerLookups = 0;
+  const handler = createCourseraLaunchHandler(makeDeps({
+    hasCourseAccess: async () => false,
+    findCourse: async () => { providerLookups++; return { courseraSlug: 'second-course' }; },
+    getOrgScopedCourseUrl: async () => { providerLookups++; return 'https://www.coursera.org/learn/second-course'; },
+  }));
+  const result = await handler(new Request('https://workforceap.test/api/member/coursera/launch?course=second-course'));
+  const url = new URL(result.redirectedTo);
+  assert.equal(url.pathname, '/dashboard/program/coursera-enrollment');
+  assert.equal(url.searchParams.get('course'), 'second-course');
+  assert.equal(url.searchParams.get('program'), 'it-support-professional-certificate-ibm');
+  assert.equal(providerLookups, 0);
+});
+
+test('a default course launch also requires enrollment evidence', async () => {
+  const handler = createCourseraLaunchHandler(makeDeps({ hasCourseAccess: async () => false }));
+  const result = await handler(new Request('https://workforceap.test/api/member/coursera/launch'));
+  assert.equal(new URL(result.redirectedTo).pathname, '/dashboard/program/coursera-enrollment');
+  assert.ok(new URL(result.redirectedTo).searchParams.get('course'));
+});
+
+test('secondary course enrollment preserves the resolved program and immutable curriculum', async () => {
+  let checked: unknown;
+  const handler = createCourseraLaunchHandler(makeDeps({
+    findUser: async () => ({ enrolledProgram: 'primary', organizationId: 'tenant',
+      courseEnrollments: [{ programSlug: 'secondary', curriculumVersion: 'legacy-v1' }], courseProgress: [] }),
+    resolveActiveProgram: async () => 'secondary',
+    hasCourseAccess: async (args) => { checked = args; return false; },
+  }));
+  const result = await handler(new Request('https://workforceap.test/api/member/coursera/launch?course=second-course&program=secondary'));
+  assert.equal(new URL(result.redirectedTo).searchParams.get('program'), 'secondary');
+  assert.deepEqual(checked, { userId: 'user-1', email: 'member@example.org', organizationId: 'tenant', programSlug: 'secondary', curriculumVersion: 'legacy-v1', courseSlug: 'second-course', courseraCourseId: undefined });
+});
+
+test('an assigned in-platform module never invokes the Coursera access gate', async () => {
+  const handler = createCourseraLaunchHandler(makeDeps({
+    getProgramBySlug: () => ({ courses: [{ slug: 'local-lab', kind: 'workforceap' }] }),
+    hasCourseAccess: async () => { assert.fail('local modules must not require a Coursera seat'); },
+  }));
+  const result = await handler(new Request('https://workforceap.test/api/member/coursera/launch?course=local-lab'));
+  assert.ok(result.redirectedTo.includes('/dashboard/learning/modules/local-lab'));
+});
+
+test('an authenticated member without an assignment cannot launch a configured Coursera fallback', async () => {
+  const handler = createCourseraLaunchHandler(makeDeps({
+    resolveActiveProgram: async () => null,
+    buildCourseraLaunchUrl: () => 'https://www.coursera.org/learn/public-course',
+  }));
+  const result = await handler(new Request('https://workforceap.test/api/member/coursera/launch'));
+  assert.equal(new URL(result.redirectedTo).searchParams.get('error'), 'course_not_assigned');
+});
+
+test('a canonical resolved program retains the immutable curriculum stored under an alias', async () => {
+  let version: string | undefined;
+  const handler = createCourseraLaunchHandler(makeDeps({
+    findUser: async () => ({ enrolledProgram: 'comptia-a-plus', organizationId: 'tenant', courseProgress: [],
+      courseEnrollments: [{ programSlug: 'comptia-a-plus', curriculumVersion: '2026-approved-v2' }] }),
+    resolveActiveProgram: async () => 'comptia-a-professional-certificate',
+    getProgramBySlug: (_slug, curriculumVersion) => { version = curriculumVersion; return { courses: [{ slug: 'assigned-v2' }] }; },
+    getApprovedCurriculumTrack: () => ({ status: 'validated', collectionId: 'approved-collection', assignmentMode: 'enabled' }),
+    hasCourseAccess: async () => false,
+  }));
+  const result = await handler(new Request('https://workforceap.test/api/member/coursera/launch?course=assigned-v2'));
+  assert.equal(version, '2026-approved-v2');
+  assert.equal(new URL(result.redirectedTo).pathname, '/dashboard/program/coursera-enrollment');
 });

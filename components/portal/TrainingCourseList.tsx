@@ -50,6 +50,8 @@ type TrainingCourseListProps = {
    * enrolled and surface the existing "Continue Learning" CTA instead.
    */
   enrolledCourseraCourseIds?: string[];
+  /** Preserve the selected enrollment when a secondary My Program course opens. */
+  enrollmentProgramSlug?: string;
 };
 
 function chipClass(status: 'complete' | 'in_progress' | 'not_started', isUpNext: boolean): string {
@@ -71,6 +73,7 @@ export default function TrainingCourseList({
   progressBySlug,
   eligibilityApproved = false,
   enrolledCourseraCourseIds = [],
+  enrollmentProgramSlug,
 }: TrainingCourseListProps) {
   const router = useRouter();
   const announce = useAnnounce();
@@ -135,7 +138,7 @@ export default function TrainingCourseList({
     if (document.activeElement === trigger && trigger.parentElement) {
       const tracking: EnrollmentFocus = {
         programSlug, trigger, actions: trigger.parentElement,
-        launchHref: `/api/member/coursera/launch?course=${encodeURIComponent(course.slug)}`,
+        launchHref: `/api/member/coursera/launch?${new URLSearchParams({ course: course.slug, ...(enrollmentProgramSlug ? { program: enrollmentProgramSlug } : {}) })}`,
         moved: false, ready: false,
         stop: () => document.removeEventListener('focusin', onFocusMove),
       };
@@ -153,7 +156,7 @@ export default function TrainingCourseList({
       const res = await fetch('/api/member/coursera/enroll-in-course', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseraCourseId: course.courseraCourseId }),
+        body: JSON.stringify({ courseraCourseId: course.courseraCourseId, ...(enrollmentProgramSlug ? { programSlug: enrollmentProgramSlug } : {}) }),
       });
       const rawPayload: unknown = await res.json().catch(() => null);
       const payload = rawPayload && typeof rawPayload === 'object' && !Array.isArray(rawPayload)
@@ -550,7 +553,7 @@ export default function TrainingCourseList({
                 )
               ) : (
                 <TrackedCourseraLaunchLink
-                  href={`/api/member/coursera/launch?course=${encodeURIComponent(c.slug)}`}
+                  href={`/api/member/coursera/launch?${new URLSearchParams({ course: c.slug, ...(enrollmentProgramSlug ? { program: enrollmentProgramSlug } : {}) })}`}
                   className="btn btn-primary training-course-cta-primary"
                   aria-label={`${primaryCta}: ${c.name} (opens in a new tab)`}
                   courseSlug={c.slug}

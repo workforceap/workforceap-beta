@@ -15,6 +15,7 @@ import { getFirstIncompleteCourseIndex } from '@/lib/member/courseraCourseProgre
 import { getActiveProgramForDashboard } from '@/lib/member/getActiveProgramForDashboard';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { getProgramCurriculumManifest } from '@/lib/content/programCurriculumManifest';
+import { hasMemberCourseraCourseAccess } from '@/lib/coursera/memberCourseAccess';
 
 const courseraLaunchHandler = createCourseraLaunchHandler({
   getUser,
@@ -70,6 +71,7 @@ const courseraLaunchHandler = createCourseraLaunchHandler({
   getApprovedCurriculumTrack: (programSlug: string, curriculumVersion: string) =>
     getProgramCurriculumManifest(programSlug, curriculumVersion)?.externalTrack ?? null,
   getFirstIncompleteCourseIndex,
+  hasCourseAccess: hasMemberCourseraCourseAccess,
   getCourseraConfig,
   buildCourseraLaunchUrl,
   getDiscoveredProgram: (programSlug: string) => DISCOVERED_COURSERA_PROGRAMS[programSlug] ?? null,

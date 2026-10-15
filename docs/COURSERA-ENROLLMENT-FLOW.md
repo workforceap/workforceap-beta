@@ -1,7 +1,7 @@
 # Coursera For Business Enrollment Flow
 
 This document covers the self-service "Enroll in this course" button on
-`/dashboard/training`, the eligibility gate that protects paid Coursera
+the Learning Hub and My program enrollment handoff, the eligibility gate that protects paid Coursera
 seats, and the four-state graph the route handler walks per click.
 
 ## Cost note (read first)
@@ -105,6 +105,25 @@ The response keeps the provider `status` separate from `sync.status`. New enroll
 
 Background rejection, mapping lookup failure, and audit failure produce fixed-stage diagnostics without raw provider details. Reporting failures cannot overturn accepted enrollment. Durable sync history and live provider acceptance remain separate checks.
 
+## Launching an existing course
+
+`GET /api/member/coursera/launch` remains read-only. It resolves the member's
+assigned program and pinned curriculum, then checks evidence for the selected
+provider course. Existing provider progress, successful tenant-qualified course
+enrollment receipts, processed xAPI activity for an exact linked identity, or a
+read of the selected B4B program can establish continuation. Manual completion,
+staff approval, invitations and membership-only events do not establish course
+access. A recorded provider removal supersedes older evidence. Missing or
+unavailable evidence does not create a seat.
+
+Without course-access evidence, the launch redirects to
+`/dashboard/program/coursera-enrollment`, which uses the existing course-list
+enrollment action and invitation feedback. Only an explicit POST can invite or
+enroll. The POST accepts an optional `programSlug` for a secondary assignment;
+the server validates that assignment and its stored curriculum. Legacy-only
+members retain the primary-program fallback. Revoked approval still blocks new
+enrollment while learners with established course access can continue.
+
 ## Audit logging
 
 Every B4B write writes a row to the existing `audit_logs` table (see
@@ -149,6 +168,8 @@ console / runbook operation only).
 | State machine                      | `lib/coursera/enrollState.ts` + `lib/coursera/enrollState.test.ts`                          |
 | Member-facing route                | `app/api/member/coursera/enroll-in-course/route.ts`                                        |
 | Member-facing UI                   | `components/portal/TrainingCourseList.tsx`                                                  |
+| Read-only launch access check      | `lib/coursera/memberCourseAccess.ts`                                                       |
+| Explicit launch-to-enrollment handoff | `app/(portal)/dashboard/program/coursera-enrollment/page.tsx`                             |
 | Admin toggle (UI)                  | `components/admin/MemberCourseraEnrollmentApproval.tsx`                                     |
 | Admin toggle (API)                 | `app/api/admin/members/[id]/coursera-enrollment-approval/route.ts`                          |
 | Counselor auto-approve hook        | `app/api/admin/program-change-requests/[id]/route.ts`                                       |

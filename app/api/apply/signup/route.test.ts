@@ -85,6 +85,9 @@ const state = vi.hoisted(() => ({
   provisionCalls: [] as Array<{ headers?: unknown; programSlug?: string | null }>,
   userUpserts: [] as Array<{ create: Record<string, unknown>; update: Record<string, unknown> }>,
   screeningUpserts: [] as UpsertArgs[],
+  savedScreening: null as Record<string, unknown> | null,
+  screeningLocks: [] as unknown[],
+  reviewResets: [] as Array<{ where: Record<string, unknown>; data: Record<string, unknown> }>,
   userUpsertError: null as unknown,
 }));
 
@@ -99,7 +102,15 @@ vi.mock('@/lib/turnstile/verifyTurnstile', () => ({
 
 vi.mock('@/lib/db/prisma', () => {
   const tx = {
+    $queryRaw: vi.fn(async (query: { values: unknown[] }) => {
+      state.screeningLocks.push(query);
+      return [{ id: query.values[0] }];
+    }),
     user: {
+      updateMany: vi.fn(async (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+        state.reviewResets.push(args);
+        return { count: 1 };
+      }),
       upsert: vi.fn(async (args: { create: Record<string, unknown>; update: Record<string, unknown> }) => {
         state.userUpserts.push(args);
         if (state.userUpsertError) throw state.userUpsertError;
@@ -152,12 +163,14 @@ vi.mock('@/lib/db/prisma', () => {
       }),
     },
     applyEligibilityScreening: {
+      findUnique: vi.fn(async () => state.savedScreening),
       upsert: vi.fn(async (args: {
         where: Record<string, unknown>;
         create: Record<string, unknown>;
         update: Record<string, unknown>;
       }) => {
         state.screeningUpserts.push(args);
+        state.savedScreening = { ...args.create };
         return {};
       }),
     },
@@ -206,7 +219,8 @@ vi.mock('@/lib/content/programs', () => ({
   ),
 }));
 
-vi.mock('@prisma/client', () => ({
+vi.mock('@prisma/client', async (original) => ({
+  ...await original<typeof import('@prisma/client')>(),
   ApplicationStatus: { PENDING: 'PENDING' },
 }));
 
@@ -349,6 +363,9 @@ function resetState() {
   state.partnerReferralUpserts.length = 0;
   state.adminEmails.length = 0;
   state.screeningUpserts.length = 0;
+  state.savedScreening = null;
+  state.screeningLocks.length = 0;
+  state.reviewResets.length = 0;
   state.userUpsertError = null;
 
   state.provisionCalls.length = 0;
@@ -913,6 +930,27 @@ describe('POST /api/apply/signup partner ref cookie handling', () => {
 
 describe('POST /api/apply/signup WS4 eligibility extended fields', () => {
   beforeEach(resetState);
+
+  it('locks saved screening evidence and resets staff review only for new or changed answers', async () => {
+    expect((await POST(makeRequest())).status).toBe(200);
+    expect(state.screeningLocks[0]).toMatchObject({ values: ['user-test-1', 'org-test-1'] });
+    expect(state.reviewResets).toEqual([{
+      where: { id: 'user-test-1', organizationId: 'org-test-1', deletedAt: null },
+      data: {
+        wioaReviewStatus: 'pending', wioaReviewedAt: null,
+        wioaReviewedByUserId: null, wioaReviewNotes: null,
+      },
+    }]);
+
+    state.reviewResets.length = 0;
+    expect((await POST(makeRequest())).status).toBe(200);
+    expect((await POST(makeRequest({ hearAbout: 'Other', hearAboutOther: 'Neighborhood event', partnerAmbassadorReferral: 'New Ambassador' }))).status).toBe(200);
+    expect(state.reviewResets).toEqual([]);
+
+    expect((await POST(makeRequest({ receivingUnemployment: 'yes' }))).status).toBe(200);
+    expect(state.reviewResets).toHaveLength(1);
+    expect(state.reviewResets[0].data).toHaveProperty('wioaReviewStatus', 'pending');
+  });
 
   it('retains the signup supplied result rather than applying the questionnaire scoring policy', async () => {
     const res = await POST(makeRequest({
