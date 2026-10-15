@@ -33,7 +33,7 @@ const columns: Column<PartnerSignupRequest>[] = [
 
 export default async function PartnerSignupsPage({ searchParams }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
-} = {}) {
+}) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/admin/partner-signups');
   if (!(await isSuperAdmin(user.id))) redirect('/admin/partners');

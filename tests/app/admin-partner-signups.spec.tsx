@@ -40,18 +40,18 @@ beforeEach(() => {
 describe('platform partner signup intake', () => {
   it('guards anonymous requests before any intake read', async () => {
     state.user = null;
-    await expect(PartnerSignupsPage()).rejects.toThrow('REDIRECT:/login?redirectTo=/admin/partner-signups');
+    await expect(PartnerSignupsPage({})).rejects.toThrow('REDIRECT:/login?redirectTo=/admin/partner-signups');
     expect(state.findMany).not.toHaveBeenCalled(); expect(state.count).not.toHaveBeenCalled();
   });
 
   it('denies ordinary organization admins and every non-superadmin before reading unassociated submissions', async () => {
     state.superAdmin = false;
-    await expect(PartnerSignupsPage()).rejects.toThrow('REDIRECT:/admin/partners');
+    await expect(PartnerSignupsPage({})).rejects.toThrow('REDIRECT:/admin/partners');
     expect(state.findMany).not.toHaveBeenCalled(); expect(state.count).not.toHaveBeenCalled();
   });
 
   it('shows original platform-wide intake fields with no account/name/email association or approval actions', async () => {
-    render(await PartnerSignupsPage());
+    render(await PartnerSignupsPage({}));
     expect(screen.getAllByRole('row')).toHaveLength(26);
     const body = screen.getAllByRole('row')[1];
     expect(body).toHaveTextContent('Foreign organization name');
@@ -88,7 +88,7 @@ describe('platform partner signup intake', () => {
 
   it('shows a load failure without claiming intake is empty', async () => {
     state.findMany.mockRejectedValueOnce(new Error('database unavailable'));
-    render(await PartnerSignupsPage());
+    render(await PartnerSignupsPage({}));
     expect(screen.getByText('Could not load partner signup intake')).toBeInTheDocument();
     expect(screen.queryByText('No partner signup submissions')).not.toBeInTheDocument();
   });
