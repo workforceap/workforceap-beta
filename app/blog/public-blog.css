@@ -36,7 +36,7 @@
     --grad-text:linear-gradient(100deg,var(--crimson),var(--gold));
     font-family:var(--font-inter),system-ui,sans-serif;
   }
-  .public-blog *{box-sizing:border-box;margin:0;padding:0}
+  .public-blog :where(:not(.btn)){box-sizing:border-box;margin:0;padding:0}
   .public-blog h1,.public-blog h2,.public-blog h3,.public-blog .display{font-family:var(--font-public-blog-heading),sans-serif;letter-spacing:-.02em;line-height:1.08;text-wrap:balance}
   .public-blog p{text-wrap:pretty}
   .public-blog a{color:inherit;text-decoration:none}
@@ -44,26 +44,16 @@
   .public-blog .grad-text{background:var(--grad-text);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
   .public-blog .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--crimson);background:rgba(173,44,77,.08);border:1px solid rgba(173,44,77,.18);padding:7px 14px;border-radius:999px}
   .public-blog .dot{width:7px;height:7px;border-radius:50%;background:var(--crimson)}
-  .public-blog .btn{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:16px;padding:14px 26px;border-radius:14px;border:1px solid transparent;cursor:pointer;transition:transform .15s,box-shadow .2s,background .2s}
-  .public-blog .btn:hover{transform:translateY(-2px)}
-  .public-blog .btn--primary{background:var(--grad);color:#fff;box-shadow:0 10px 30px -8px rgba(173,44,77,.5)}
-  .public-blog .btn--apply{background:linear-gradient(135deg,var(--gold-hi),var(--gold));color:var(--gold-ink);font-weight:800;box-shadow:0 10px 28px -8px rgba(164,127,56,.55),0 1px 0 rgba(255,255,255,.45) inset}
-  .public-blog .btn--apply:hover{box-shadow:0 14px 36px -8px rgba(164,127,56,.62),0 1px 0 rgba(255,255,255,.55) inset}
-  .public-blog .btn--ghost{background:var(--surface);border-color:var(--border);color:var(--text)}
-  .public-blog .btn--ghost:hover{border-color:var(--crimson);color:var(--crimson)}
-  .public-blog .btn--light{background:#fff;color:var(--accent-dark)}
-  .public-blog .btn--translucent{background:rgba(255,255,255,.16);color:#fff;border-color:rgba(255,255,255,.28)}
+  /* WAP-114: css/main.css owns button geometry; the blog skin only recolors it. */
+  .public-blog .btn-primary{background:var(--grad);color:#fff;box-shadow:0 10px 30px -8px rgba(173,44,77,.5)}
+  .public-blog .btn-secondary{background:var(--surface);border-color:var(--border);color:var(--text)}
+  .public-blog .btn-secondary:hover{border-color:var(--crimson);color:var(--crimson)}
   .public-blog{ --sec-pad: clamp(60px, 7vw, 92px); }
-  .public-blog .dbtn, .public-blog .bbtn{
-    display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:16px;
-    padding:15px 28px;border-radius:14px;border:1px solid transparent;cursor:pointer;
-    text-decoration:none;line-height:1;transition:transform .15s,box-shadow .2s,background .2s;
-  }
-  .public-blog .dbtn:hover,.public-blog .bbtn:hover{transform:translateY(-2px)}
-  .public-blog .dbtn:active,.public-blog .bbtn:active{transform:translateY(0) scale(.985)}
-  .public-blog .bbtn--gold{background:linear-gradient(135deg,#cda44e,#9a7733);color:#fff;box-shadow:0 12px 30px -10px rgba(164,127,56,.55)}
-  .public-blog .bbtn--outline{background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
-  .public-blog .bbtn--outline:hover{background:rgba(255,255,255,.12)}
+  .public-blog .close .btn-primary{background:linear-gradient(135deg,#cda44e,#9a7733);color:#fff;box-shadow:0 12px 30px -10px rgba(164,127,56,.55)}
+  .public-blog .close .btn-secondary{background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
+  .public-blog .close .btn-secondary:hover{background:rgba(255,255,255,.12)}
+  .public-blog .btn:focus-visible{box-shadow:var(--wa-focus-ring)}
+  .public-blog .close .btn:focus-visible{box-shadow:var(--wa-focus-ring-on-dark)}
 /**
  * Sitewide marketing hero photo + scarlet overlay tokens.
  * July 2026 stakeholder pass: diverse classroom photo, translucent crimson
@@ -231,7 +221,7 @@
     .public-blog.blogmix .blog-quick{grid-template-columns:1fr}
   }
   @media(max-width:560px){
-    .public-blog.blogmix .acts .bbtn{width:100%;justify-content:center}
+    .public-blog.blogmix .acts .btn{width:100%}
   }
 
 
@@ -330,11 +320,11 @@
     .public-blog.blogpost .related{position:static}
   }
   @media(max-width:560px){
-    .public-blog.blogpost .cta-acts .btn,.public-blog.blogpost .acts .bbtn{width:100%;justify-content:center}
+    .public-blog.blogpost .cta-acts .btn,.public-blog.blogpost .acts .btn{width:100%}
   }
 
 .public-blog { background:var(--bg); color:var(--text); line-height:1.6; --sec-pad:clamp(60px,7vw,92px); }
-.public-blog a:focus-visible { outline:3px solid var(--crimson); outline-offset:4px; }
+.public-blog a:not(.btn):focus-visible { outline:3px solid var(--crimson); outline-offset:4px; }
 .public-blog .blog-pagination { display:flex; gap:20px; align-items:center; justify-content:center; margin:24px 0; }
 .public-blog .prose a { color:var(--crimson); text-decoration:underline; }
 .public-blog .prose h2, .public-blog .prose h3 { margin:1.5em 0 .75em; }

@@ -42,7 +42,7 @@ const columns: Column<PublicInquiry>[] = [
 
 export default async function PublicInquiriesPage({ searchParams }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
-} = {}) {
+}) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/admin/public-inquiries');
   const scope = await resolveAdminPageTenant(user.id);

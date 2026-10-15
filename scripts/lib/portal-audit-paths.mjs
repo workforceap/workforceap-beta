@@ -120,6 +120,7 @@ export const STATIC_PATHS = {
     '/admin/placements/retention',
     '/admin/program-change-requests',
     '/admin/programs',
+    '/admin/public-inquiries',
     // The reporting hub: one page, server-driven tabs (admin audit 2026-09-19, §6.1).
     '/admin/reporting',
     '/admin/reporting?tab=outcomes',

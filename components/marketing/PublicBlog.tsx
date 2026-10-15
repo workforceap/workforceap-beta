@@ -30,9 +30,9 @@ function ClosingCallToAction({ article = false }: { article?: boolean }) {
         <h2>Ready to take the next step?</h2>
         <p>WorkforceAP offers no-cost career training paths for <LocalizedLink href="/apply" className="cta-link">qualifying members</LocalizedLink> — with guided tools, advisor support, and employer-aligned credentials.</p>
         <div className="acts acts--center">
-          <LocalizedLink className="bbtn bbtn--gold" href="/find-your-path">Find Your Path</LocalizedLink>
-          <LocalizedLink className="bbtn bbtn--outline" href={article ? '/blog' : '/programs'}>{article ? 'More Articles' : 'Explore Programs'}</LocalizedLink>
-          {!article && <LocalizedLink className="bbtn bbtn--outline" href="/apply">Apply Now</LocalizedLink>}
+          <LocalizedLink className="btn btn-primary" href="/find-your-path">Find Your Path</LocalizedLink>
+          <LocalizedLink className="btn btn-secondary" href={article ? '/blog' : '/programs'}>{article ? 'More Articles' : 'Explore Programs'}</LocalizedLink>
+          {!article && <LocalizedLink className="btn btn-secondary" href="/apply">Apply Now</LocalizedLink>}
         </div>
       </div>
     </section>
@@ -100,7 +100,7 @@ export function PublicBlogListingPage({ data }: { data: PublicBlogListing }) {
             <span>Page {data.page} of {data.totalPages}</span>
             {data.page < data.totalPages && <LocalizedLink href={listingHref(data.category, data.page + 1)}>Next →</LocalizedLink>}
           </nav>}
-          <div className="updates-card"><span className="updates-ic" aria-hidden="true"><Mail size={28} /></span><h2>Want updates?</h2><p>Ask to be notified about new articles and program news — our team reads every request and replies by email.</p><LocalizedLink className="btn btn--primary" href="/contact">Contact us for updates</LocalizedLink></div>
+          <div className="updates-card"><span className="updates-ic" aria-hidden="true"><Mail size={28} /></span><h2>Want updates?</h2><p>Ask to be notified about new articles and program news — our team reads every request and replies by email.</p><LocalizedLink className="btn btn-primary" href="/contact">Contact us for updates</LocalizedLink></div>
         </div>
       </section>
       <ClosingCallToAction />
@@ -117,7 +117,7 @@ export function PublicBlogPostPage({ post, related }: { post: Post; related: Arr
       <section className="blk blk--cream"><div className="wrap layout">
         <article className="article"><div className="cover"><img src={hero.src} alt={hero.alt} width={800} height={450} /></div>
           <div className="prose"><ReactMarkdown remarkPlugins={[remarkGfm]} components={{ h1: ({ children }) => <h2>{children}</h2> }}>{post.content}</ReactMarkdown></div>
-          <section className="cta-card"><h2>Ready to take the next step?</h2><p>WorkforceAP offers no-cost career training paths for <LocalizedLink href="/apply" className="cta-link">qualifying members</LocalizedLink> — with guided tools, advisor support, and employer-aligned credentials.</p><div className="cta-acts"><LocalizedLink className="btn btn--primary" href="/find-your-path">Find Your Path</LocalizedLink><LocalizedLink className="btn btn--ghost" href="/apply">Apply Now</LocalizedLink></div></section>
+          <section className="cta-card"><h2>Ready to take the next step?</h2><p>WorkforceAP offers no-cost career training paths for <LocalizedLink href="/apply" className="cta-link">qualifying members</LocalizedLink> — with guided tools, advisor support, and employer-aligned credentials.</p><div className="cta-acts"><LocalizedLink className="btn btn-primary" href="/find-your-path">Find Your Path</LocalizedLink><LocalizedLink className="btn btn-secondary" href="/apply">Apply Now</LocalizedLink></div></section>
         </article>
         {related.length > 0 && <aside className="related"><h2>Related Posts</h2><ul>{related.map((row) => <li key={row.slug}><LocalizedLink href={`/blog/${row.slug}`}>{row.title}</LocalizedLink></li>)}</ul></aside>}
       </div></section>

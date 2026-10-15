@@ -27,11 +27,11 @@ beforeEach(() => {
 describe('public inquiry admin inbox', () => {
   it('guards anonymous and non-admin access before reading inquiries', async () => {
     mocks.user.mockResolvedValue(null);
-    await expect(PublicInquiriesPage()).rejects.toThrow('REDIRECT:/login?redirectTo=/admin/public-inquiries');
+    await expect(PublicInquiriesPage({})).rejects.toThrow('REDIRECT:/login?redirectTo=/admin/public-inquiries');
     expect(mocks.findMany).not.toHaveBeenCalled();
     mocks.user.mockResolvedValue({ id: 'member' });
     mocks.scope.mockResolvedValue({ ok: false });
-    await expect(PublicInquiriesPage()).rejects.toThrow('REDIRECT:/dashboard');
+    await expect(PublicInquiriesPage({})).rejects.toThrow('REDIRECT:/dashboard');
     expect(mocks.findMany).not.toHaveBeenCalled();
   });
 
