@@ -1,0 +1,13 @@
+/* Keep the shared Banner action below its copy on narrow member screens. */
+@media (max-width: 640px) {
+  .withAction > :global(.astryx-banner) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .withAction > :global(.astryx-banner) > :last-child {
+    grid-column: 2;
+    justify-self: start;
+    margin: 0;
+  }
+}

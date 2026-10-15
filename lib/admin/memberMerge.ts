@@ -2,6 +2,7 @@ import { Prisma, type CourseProgressStatus, type User } from '@prisma/client';
 
 import { getLevelForPoints } from '@/lib/member/pointsConfig';
 import { interactiveTransactionsGuaranteed } from '@/lib/db/transactionPolicy';
+import { MAX_ASSESSMENT_ATTEMPTS } from '@/lib/assessment/attempts';
 import {
   MEMBER_MERGE_PREVIEW_ONLY,
   MEMBER_MERGE_REPOINT_PLAN,
@@ -71,6 +72,110 @@ export interface MergeResult {
   secondaryId: string;
   repointed: string[];
   mergedFields: string[];
+}
+
+/** Stable JSON comparison also handles answer objects with different key order. */
+function assessmentJson(value: unknown): string {
+  return JSON.stringify(value, (_key, item: unknown) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return item;
+    return Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b)));
+  });
+}
+
+function assessmentResult(user: User): Prisma.JsonObject {
+  return {
+    score: user.assessmentScore,
+    scorePct: user.assessmentScorePct,
+    answers: user.assessmentAnswers,
+    programInterest: user.programInterest,
+    completedAt: user.assessmentCompletedAt?.toISOString() ?? null,
+  };
+}
+
+/** Missing dates or equal scores alone do not establish a shared attempt. */
+function assessmentAttemptIdentity(value: Prisma.JsonValue): string | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  if (typeof value.completedAt === 'string' && Number.isFinite(Date.parse(value.completedAt))) {
+    return assessmentJson({
+      completedAt: new Date(value.completedAt).toISOString(),
+      score: value.score ?? null,
+      scorePct: value.scorePct ?? null,
+      answers: value.answers ?? null,
+      programInterest: value.programInterest ?? null,
+    });
+  }
+  return typeof value.legacyDiagnosticId === 'string' ? `legacy:${value.legacyDiagnosticId}` : null;
+}
+
+function assessmentEvidence(user: User) {
+  const history = Array.isArray(user.assessmentHistory) ? user.assessmentHistory : [];
+  const known: Prisma.JsonValue[] = [];
+  const identities = new Set<string>();
+  const add = (entry: Prisma.JsonValue) => {
+    const identity = assessmentAttemptIdentity(entry);
+    if (identity && identities.has(identity)) return;
+    if (identity) identities.add(identity);
+    known.push(entry);
+  };
+  for (const entry of history) add(entry);
+  let currentArchived = false;
+  if (user.assessmentCompleted) {
+    const current = assessmentResult(user);
+    // Authorization archives the still-official result. Its request timestamp
+    // also proves that relationship when a legacy result has no completion date.
+    currentArchived = Boolean(user.assessmentRetakeRequestedAt && history.some((entry) => {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return false;
+      return typeof entry.requestedAt === 'string'
+        && Date.parse(entry.requestedAt) === user.assessmentRetakeRequestedAt!.getTime()
+        && assessmentJson(Object.fromEntries(Object.keys(current).map((key) => [key, entry[key] ?? null]))) === assessmentJson(current);
+    }));
+    if (!currentArchived) add(current);
+  }
+  return { history, identities, currentArchived, count: Math.max(user.assessmentAttemptCount, known.length) };
+}
+
+/** Merge policy and preview share the same attempt accounting and result bundle. */
+function assessmentMergeData(primary: User, secondary: User): Record<string, unknown> {
+  const p = assessmentEvidence(primary);
+  const s = assessmentEvidence(secondary);
+  const shared = [...p.identities].filter((identity) => s.identities.has(identity)).length;
+  const count = p.count + s.count - shared;
+  const official = primary.assessmentCompleted ? primary : secondary.assessmentCompleted ? secondary : null;
+  const history: Prisma.JsonValue[] = [];
+  const historyIdentities = new Set<string>();
+  const archive = (entry: Prisma.JsonValue) => {
+    const identity = assessmentAttemptIdentity(entry);
+    if (identity && historyIdentities.has(identity)) return;
+    if (identity) historyIdentities.add(identity);
+    history.push(entry);
+  };
+  for (const entry of [...p.history, ...s.history]) archive(entry);
+  if (primary.assessmentCompleted && secondary.assessmentCompleted && !s.currentArchived) {
+    const displaced = assessmentResult(secondary);
+    if (assessmentAttemptIdentity(displaced) !== assessmentAttemptIdentity(assessmentResult(primary))
+      || assessmentAttemptIdentity(displaced) === null) {
+      archive({ ...displaced, sourceMemberId: secondary.id });
+    }
+  }
+  const values: Record<string, unknown> = {
+    assessmentAttemptCount: count,
+    assessmentHistory: history,
+    assessmentRetakeRequestedAt: count > 0 && count < MAX_ASSESSMENT_ATTEMPTS
+      ? primary.assessmentRetakeRequestedAt ?? secondary.assessmentRetakeRequestedAt
+      : null,
+  };
+  // Keep one complete official result, including nulls; filling its individual
+  // gaps from another attempt would invent an answer/score combination.
+  Object.assign(values, {
+    assessmentCompleted: primary.assessmentCompleted || secondary.assessmentCompleted,
+    assessmentCompletedAt: official ? official.assessmentCompletedAt : primary.assessmentCompletedAt ?? secondary.assessmentCompletedAt,
+    assessmentScore: official ? official.assessmentScore : primary.assessmentScore ?? secondary.assessmentScore,
+    assessmentScorePct: official ? official.assessmentScorePct : primary.assessmentScorePct ?? secondary.assessmentScorePct,
+    assessmentAnswers: official ? official.assessmentAnswers : primary.assessmentAnswers ?? secondary.assessmentAnswers,
+  });
+  return Object.fromEntries(Object.entries(values).filter(([key, value]) =>
+    assessmentJson(value) !== assessmentJson(primary[key as keyof User]),
+  ));
 }
 
 const STATUS_RANK: Record<CourseProgressStatus, number> = {
@@ -687,10 +792,6 @@ export async function buildMergePreview(
   const scalarFieldsToMerge: string[] = [];
   const scalarCandidates = [
     'phone',
-    'assessmentCompleted',
-    'assessmentCompletedAt',
-    'assessmentScore',
-    'assessmentScorePct',
     'programInterest',
     'enrolledProgram',
     'enrolledAt',
@@ -701,7 +802,6 @@ export async function buildMergePreview(
     'workspaceEmail',
     'wioaQualificationJson',
     'careerRecommendationJson',
-    'assessmentAnswers',
     'coursesCompleted',
     'courseraEnrollmentApproved',
     'courseraEnrollmentApprovedAt',
@@ -728,6 +828,7 @@ export async function buildMergePreview(
       scalarFieldsToMerge.push(key);
     }
   }
+  scalarFieldsToMerge.push(...Object.keys(assessmentMergeData(primary, secondary)));
 
   return {
     points,
@@ -783,6 +884,15 @@ export async function executeMemberMerge(
     secondaryId,
     primary.organizationId,
   );
+
+  // The initial reads precede the row locks. A submission/authorization that
+  // won the lock first must be reflected in the attempt count and history.
+  const [lockedPrimary, lockedSecondary] = await Promise.all([
+    tx.user.findUnique({ where: { id: primaryId } }),
+    tx.user.findUnique({ where: { id: secondaryId } }),
+  ]);
+  if (!lockedPrimary || !lockedSecondary) throw new Error('One or both members not found');
+  const assessmentUpdates = assessmentMergeData(lockedPrimary, lockedSecondary);
 
   const conflicts = await checkMergeConflicts(tx, primaryId, secondaryId);
   if (conflicts.length > 0) {
@@ -955,10 +1065,6 @@ export async function executeMemberMerge(
   // 5. Merge scalar fields (secondary fills gaps where primary is null)
   const scalarFieldDefs: Array<{ key: string; merge: (p: User, s: User) => unknown }> = [
     { key: 'phone', merge: (p, s) => p.phone ?? s.phone },
-    { key: 'assessmentCompleted', merge: (p, s) => p.assessmentCompleted || s.assessmentCompleted },
-    { key: 'assessmentCompletedAt', merge: (p, s) => p.assessmentCompletedAt ?? s.assessmentCompletedAt },
-    { key: 'assessmentScore', merge: (p, s) => p.assessmentScore ?? s.assessmentScore },
-    { key: 'assessmentScorePct', merge: (p, s) => p.assessmentScorePct ?? s.assessmentScorePct },
     { key: 'programInterest', merge: (p, s) => p.programInterest ?? s.programInterest },
     { key: 'enrolledProgram', merge: (p, s) => p.enrolledProgram ?? s.enrolledProgram },
     { key: 'enrolledAt', merge: (p, s) => p.enrolledAt ?? s.enrolledAt },
@@ -969,7 +1075,6 @@ export async function executeMemberMerge(
     { key: 'workspaceEmail', merge: (p, s) => p.workspaceEmail ?? s.workspaceEmail },
     { key: 'wioaQualificationJson', merge: (p, s) => p.wioaQualificationJson ?? s.wioaQualificationJson },
     { key: 'careerRecommendationJson', merge: (p, s) => p.careerRecommendationJson ?? s.careerRecommendationJson },
-    { key: 'assessmentAnswers', merge: (p, s) => p.assessmentAnswers ?? s.assessmentAnswers },
     { key: 'coursesCompleted', merge: (p, s) => p.coursesCompleted ?? s.coursesCompleted },
     { key: 'courseraEnrollmentApproved', merge: (p, s) => p.courseraEnrollmentApproved || s.courseraEnrollmentApproved },
     { key: 'courseraEnrollmentApprovedAt', merge: (p, s) => p.courseraEnrollmentApprovedAt ?? s.courseraEnrollmentApprovedAt },
@@ -997,6 +1102,8 @@ export async function executeMemberMerge(
       mergedFields.push(key);
     }
   }
+  Object.assign(updateData, assessmentUpdates);
+  mergedFields.push(...Object.keys(assessmentUpdates));
 
   if (Object.keys(updateData).length > 0) {
     await tx.user.update({ where: { id: primaryId }, data: updateData });

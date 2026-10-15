@@ -503,6 +503,11 @@ jobs:
       - name: Run database contract suite
         run: node scripts/run-db-contract-tests.mjs
 
+      - name: Verify assessment migration and concurrent attempt limits
+        env:
+          ASSESSMENT_FIXTURE_DATABASE_URL: "postgresql://ci:ci@localhost:5432/wap_contract"
+        run: pnpm exec vitest run tests/integration/assessment-attempts.postgres.spec.ts
+
       - name: Upload RLS proof artifact
         if: always()
         uses: actions/upload-artifact@v4

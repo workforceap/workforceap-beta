@@ -28,6 +28,8 @@ vi.mock('@/lib/auth/server', () => ({
   getUser: vi.fn(),
 }));
 
+vi.mock('@/lib/tenant/organization', () => ({ getActorOrganizationId: vi.fn(async () => 'org-1') }));
+
 vi.mock('@/lib/db/prisma', () => {
   const prismaMock: any = {
     user: {
@@ -64,6 +66,7 @@ vi.mock('@/lib/db/prisma', () => {
       findUnique: vi.fn(),
     },
   };
+  prismaMock.user.findFirst = prismaMock.user.findUnique;
   prismaMock.$transaction = vi.fn(async (arg: any) =>
     typeof arg === 'function' ? arg(prismaMock) : Promise.all(arg)
   );
@@ -221,6 +224,8 @@ describe('POST /api/member/assessment/submit', () => {
     id: UUIDS.user,
     email: 'jane@example.org',
     assessmentCompleted: false,
+    assessmentAttemptCount: 0,
+    assessmentRetakeRequestedAt: null,
     phone: '512-555-1234',
     courseEnrollments: [{ enrolledByAdminId: null }],
     profile: {
@@ -269,6 +274,55 @@ describe('POST /api/member/assessment/submit', () => {
     ]);
   });
 
+  it('requires the exact authorization from the rendered final-attempt form', async () => {
+    const authorizedAt = new Date('2026-10-15T12:00:00Z');
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as never);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ ...mockUser, assessmentCompleted: true, assessmentAttemptCount: 1, assessmentRetakeRequestedAt: authorizedAt } as never);
+    for (const token of [undefined, '2026-10-14T12:00:00.000Z']) {
+      const response = await submitAssessment(makeRequest({ ...validBody, retakeRequestedAt: token }));
+      expect(response.status).toBe(409);
+      expect((await response.json()).code).toBe('STALE_ASSESSMENT_ATTEMPT');
+    }
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+    expect(awardPoints).not.toHaveBeenCalled();
+  });
+
+  it('accepts the authorized final attempt and atomically consumes it', async () => {
+    const authorizedAt = new Date('2026-10-15T12:00:00Z');
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as never);
+    vi.mocked(getCounselorStarterProfileReview).mockReturnValue({ required: false, missing: [] });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ ...mockUser, assessmentCompleted: true, assessmentAttemptCount: 1, assessmentRetakeRequestedAt: authorizedAt } as never);
+    const response = await submitAssessment(makeRequest({ ...validBody, retakeRequestedAt: authorizedAt.toISOString() }));
+    expect(response.status).toBe(200);
+    expect(prisma.user.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ assessmentAttemptCount: 1, assessmentRetakeRequestedAt: authorizedAt, organizationId: 'org-1' }),
+      data: expect.objectContaining({ assessmentAttemptCount: { increment: 1 }, assessmentRetakeRequestedAt: null }),
+    }));
+  });
+
+  it('blocks exhausted or unauthorized legacy resets before side effects', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as never);
+    for (const count of [1, 2, 3]) {
+      vi.mocked(prisma.user.findUnique).mockResolvedValue({ ...mockUser, assessmentAttemptCount: count } as never);
+      expect((await submitAssessment(makeRequest(validBody))).status).toBe(count === 1 ? 400 : 409);
+    }
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+    expect(trackEvent).not.toHaveBeenCalled();
+  });
+
+  it('emits no effects when another submission wins the compare-and-set', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as never);
+    vi.mocked(getCounselorStarterProfileReview).mockReturnValue({ required: false, missing: [] });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as never);
+    vi.mocked(prisma.user.updateMany).mockResolvedValueOnce({ count: 0 });
+    expect((await submitAssessment(makeRequest(validBody))).status).toBe(400);
+    expect(awardPoints).not.toHaveBeenCalled();
+    expect(trackEvent).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+  });
+
   it('does not claim staff delivery when Resend returns a provider error', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
     vi.mocked(getCounselorStarterProfileReview).mockReturnValue({ required: false, missing: [] });
@@ -299,7 +353,7 @@ describe('POST /api/member/assessment/submit', () => {
     // the WHERE clause (double-submit race guard).
     expect(prisma.user.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: UUIDS.user, assessmentCompleted: false },
+        where: expect.objectContaining({ id: UUIDS.user, assessmentCompleted: false, assessmentAttemptCount: 0, organizationId: 'org-1' }),
         data: expect.objectContaining({
           assessmentCompleted: true,
           assessmentScore: expect.any(Number),
@@ -578,57 +632,17 @@ describe('POST /api/member/skill-assessment', () => {
 // POST /api/member/assessment/reset
 // ─────────────────────────────────────────────
 describe('POST /api/member/assessment/reset', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+  beforeEach(() => vi.clearAllMocks());
+  it('requires sign-in', async () => {
+    vi.mocked(getUser).mockResolvedValue(null as never);
+    expect((await resetAssessment(new Request('http://localhost') as never)).status).toBe(401);
   });
-
-  it('allows authenticated member to reset assessment', async () => {
-    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      fullName: 'Jane Doe',
-      email: 'jane@example.org',
-      assessmentCompleted: true,
-      assessmentScore: 80,
-      assessmentScorePct: 85,
-      assessmentCompletedAt: new Date(),
-      assessmentAnswers: { '1': 'A' },
-      programInterest: 'IT Support',
-    } as any);
-    vi.mocked(prisma.workflowDiagnostic.create).mockResolvedValue({ id: 'wd-1' } as any);
-    vi.mocked(prisma.user.update).mockResolvedValue({ id: UUIDS.user } as any);
-
-    const res = await resetAssessment(new Request('http://localhost'));
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.ok).toBe(true);
-    expect(prisma.user.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: UUIDS.user },
-        data: expect.objectContaining({
-          assessmentCompleted: false,
-          assessmentScore: null,
-          assessmentScorePct: null,
-          assessmentCompletedAt: null,
-        }),
-      })
-    );
-  });
-
-  it('returns 401 for unauthenticated user', async () => {
-    vi.mocked(getUser).mockResolvedValue(null as any);
-    const res = await resetAssessment(new Request('http://localhost'));
-    expect(res.status).toBe(401);
-    expect(await res.json()).toEqual({ error: 'Unauthorized' });
-  });
-
-  it('returns 400 when assessment not yet completed', async () => {
-    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      assessmentCompleted: false,
-    } as any);
-
-    const res = await resetAssessment(new Request('http://localhost'));
-    expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: 'Assessment not completed yet — nothing to reset' });
+  it('refuses self-authorized retakes without writes or messages', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as never);
+    expect((await resetAssessment(new Request('http://localhost') as never)).status).toBe(403);
+    expect(prisma.user.update).not.toHaveBeenCalled();
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(prisma.workflowDiagnostic.create).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
   });
 });

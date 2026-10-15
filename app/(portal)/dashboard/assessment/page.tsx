@@ -1,3 +1,6 @@
+import AssessmentRetakeNotice from '@/components/portal/AssessmentRetakeNotice';
+import AssessmentResultHistory from '@/components/admin/AssessmentResultHistory';
+import { canSubmitAssessment } from '@/lib/assessment/attempts';
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -52,6 +55,8 @@ export default async function AssessmentPage({
 
   if (!dbUser) redirect('/login');
   const t = await getTranslations('dashboard');
+  const canSubmit = canSubmitAssessment(dbUser);
+  const retakePending = canSubmit && dbUser.assessmentAttemptCount === 1;
 
   return (
     <DesignSurface surface="warm">
@@ -73,14 +78,19 @@ export default async function AssessmentPage({
           </div>
         ) : null}
         <div style={{ maxWidth: 720 }}>
-          {dbUser.assessmentCompleted ? (
+          {retakePending ? <AssessmentRetakeNotice showLink={false} /> : null}
+          <p>{Math.min(dbUser.assessmentAttemptCount, 2)} of 2 attempts completed.</p>
+          <AssessmentResultHistory history={dbUser.assessmentHistory} />
+          {!canSubmit ? (
             <>
-              <AssessmentCompletedCard
+              {dbUser.assessmentAttemptCount >= 2 ? <p role="status">Both preassessment chances have been used. No further retakes are available.</p> : null}
+              {!dbUser.assessmentCompleted && dbUser.assessmentAttemptCount < 2 ? <p role="status">Ask your counselor or administrator to authorize your final attempt.</p> : null}
+              {dbUser.assessmentCompleted ? <AssessmentCompletedCard
                 scorePct={dbUser.assessmentScorePct}
                 completedAt={dbUser.assessmentCompletedAt}
                 programInterest={dbUser.programInterest}
-              />
-              <InterviewSteps
+              /> : null}
+              {dbUser.assessmentCompleted ? <InterviewSteps
                 copy={{
                   preScreeningTitle: t('interviewSteps.preScreeningTitle'),
                   preScreeningLede: t('interviewSteps.preScreeningLede'),
@@ -95,12 +105,14 @@ export default async function AssessmentPage({
                 interviewEligible={dbUser.interviewEligible}
                 interviewRequestedAt={dbUser.interviewRequestedAt}
                 interviewCompletedAt={dbUser.interviewCompletedAt}
-              />
+              /> : null}
             </>
           ) : (
             <AssessmentReady
               dbUser={dbUser}
               redirectTo={redirectTo}
+              progressScope={`${user.id}:${dbUser.assessmentAttemptCount}:${dbUser.assessmentRetakeRequestedAt?.toISOString() ?? 'initial'}`}
+              retakeRequestedAt={dbUser.assessmentRetakeRequestedAt?.toISOString() ?? null}
             />
           )}
         </div>
@@ -264,7 +276,11 @@ function AssessmentCompletedCard({
 function AssessmentReady({
   dbUser,
   redirectTo,
+  progressScope,
+  retakeRequestedAt,
 }: {
+  progressScope: string;
+  retakeRequestedAt: string | null;
   dbUser: {
     fullName: string | null;
     phone: string | null;
@@ -319,6 +335,9 @@ function AssessmentReady({
     <>
       {profileReminder}
       <AssessmentForm
+        key={progressScope}
+        progressScope={progressScope}
+        retakeRequestedAt={retakeRequestedAt}
         defaultFirstName={firstName}
         defaultLastName={lastName}
         defaultPhone={dbUser.profile?.profilePhone ?? dbUser.phone ?? ''}

@@ -32,6 +32,7 @@ const db = vi.hoisted(() => {
 });
 
 vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: vi.fn(), push: vi.fn(), replace: vi.fn() }),
   redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); },
   notFound: () => { throw new Error('NOT_FOUND'); },
 }));
@@ -133,6 +134,9 @@ describe('CounselorStudentDetailPage record tabs (server render)', () => {
       assessmentScorePct: null,
       assessmentScore: null,
       assessmentCompleted: false,
+      assessmentAttemptCount: 0,
+      assessmentRetakeRequestedAt: null,
+      assessmentHistory: [],
       assessmentCompletedAt: null,
       assessmentAnswers: null,
       wioaQualificationJson: null,
@@ -147,6 +151,21 @@ describe('CounselorStudentDetailPage record tabs (server render)', () => {
     });
   });
   afterEach(() => { vi.unstubAllEnvs(); });
+
+  it('keeps the real retake control available for a legacy reset without current answers', async () => {
+    const fixture = await db.overrides['user.findFirst']({}) as Record<string, unknown>;
+    db.overrides['user.findFirst'] = async () => ({ ...fixture,
+      assessmentAttemptCount: 1,
+      assessmentHistory: [{ scorePct: 27, completedAt: '2026-10-09T00:00:00.000Z' }],
+    });
+    const doc = await renderPage();
+    const action = doc.querySelector<HTMLButtonElement>('[data-testid="allow-assessment-retake"]');
+    expect(action).not.toBeNull();
+    expect(action!.disabled).toBe(false);
+    expect(action!.textContent).toBe('Request final retake');
+    expect(doc.body.textContent).toContain('1 of 2 available attempts used.');
+    expect(doc.body.textContent).toContain('Previous results');
+  });
 
   it('mounts one agreement card for the selected student in Training', async () => {
     const doc = await renderPage({ tab: 'training' });

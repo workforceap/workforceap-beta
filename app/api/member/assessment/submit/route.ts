@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
+import { recordAssessmentSubmission } from '@/lib/assessment/recordSubmission';
+import { canSubmitAssessment, ASSESSMENT_LIMIT_MESSAGE, MAX_ASSESSMENT_ATTEMPTS } from '@/lib/assessment/attempts';
+import { getActorOrganizationId } from '@/lib/tenant/organization';
+import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { scoreAssessment, TOTAL_POINTS } from '@/lib/assessment/answer-key';
 import { isStraightLined, STRAIGHT_LINE_MESSAGE } from '@/lib/assessment/answerPattern';
 import { displayLettersForAnswers, isValidAttemptSeed } from '@/lib/assessment/layout';
@@ -35,7 +39,7 @@ export const POST = withApiGuc(async (request: Request) => {
       return NextResponse.json({ error: 'Invalid submission data' }, { status: 400 });
     }
   
-    const { firstName, lastName, phone, programInterest, answers, seed } = parsed;
+    const { firstName, lastName, phone, programInterest, answers, seed, retakeRequestedAt } = parsed;
   
     const answersTyped: Record<number, QuestionChoice> = {};
     for (const [k, v] of Object.entries(answers)) {
@@ -57,10 +61,13 @@ export const POST = withApiGuc(async (request: Request) => {
 
     const { raw, pct } = scoreAssessment(answersTyped);
   
-    const dbUser = await prisma.$transaction((tx) => tx.user.findUnique({
+    const orgId = await getActorOrganizationId(user.id);
+    const dbUser = await prisma.$transaction((tx) => withTenantScope(orgId, (db) => db.user.findFirst({
       where: { id: user.id },
       select: {
         assessmentCompleted: true,
+        assessmentAttemptCount: true,
+        assessmentRetakeRequestedAt: true,
         email: true,
         phone: true,
         // Multi-program: counselor-created flag lives on the primary enrollment.
@@ -80,13 +87,19 @@ export const POST = withApiGuc(async (request: Request) => {
           },
         },
       },
-    }));
+    }), tx));
   
     if (!dbUser) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-    if (dbUser.assessmentCompleted) {
-      return NextResponse.json({ error: 'Assessment already completed' }, { status: 400 });
+    if (!canSubmitAssessment(dbUser)) {
+      return NextResponse.json({ error: dbUser.assessmentAttemptCount >= MAX_ASSESSMENT_ATTEMPTS ? ASSESSMENT_LIMIT_MESSAGE : dbUser.assessmentCompleted ? 'Assessment already completed' : 'Staff must authorize your final preassessment attempt.' }, { status: dbUser.assessmentAttemptCount >= MAX_ASSESSMENT_ATTEMPTS ? 409 : 400 });
+    }
+
+    // Bind the POST to the form's authorization. A delayed initial request
+    // must not become the final attempt if staff authorized a retake meanwhile.
+    if ((dbUser.assessmentRetakeRequestedAt?.toISOString() ?? null) !== retakeRequestedAt) {
+      return NextResponse.json({ error: 'Your assessment attempt changed. Reload the page before submitting.', code: 'STALE_ASSESSMENT_ATTEMPT' }, { status: 409 });
     }
 
     // Ops (9/3/26): the preassessment is never blocked. A counselor-created
@@ -106,21 +119,13 @@ export const POST = withApiGuc(async (request: Request) => {
       ? getStarterProfileFieldLabels(starterProfileReview.missing)
       : [];
 
-    // Use updateMany with assessmentCompleted=false in the WHERE clause so the
-    // check and write are atomic — prevents a duplicate submission from a race
-    // condition overwriting the first submission's answers.
-    const updated = await prisma.$transaction((tx) => tx.user.updateMany({
-      where: { id: user.id, assessmentCompleted: false },
-      data: {
-        assessmentCompleted: true,
-        assessmentCompletedAt: new Date(),
-        assessmentScore: raw,
-        assessmentScorePct: pct,
-        programInterest,
-        assessmentAnswers: answersTyped as unknown as object,
-      },
-    }));
-    if (updated.count === 0) {
+    // Compare the completed-attempt count and exact pending authorization in
+    // the same write. Duplicate or stale requests cannot consume another chance.
+    const recorded = await recordAssessmentSubmission({
+      memberId: user.id, organizationId: orgId, expected: dbUser,
+      raw, pct, programInterest, answers: answersTyped,
+    });
+    if (!recorded) {
       return NextResponse.json({ error: 'Assessment already completed' }, { status: 400 });
     }
   
@@ -231,6 +236,7 @@ function parseBody(body: unknown): {
   programInterest: string;
   answers: Record<string, string>;
   seed: string | null;
+  retakeRequestedAt: string | null;
 } | null {
   if (!body || typeof body !== 'object') return null;
   const o = body as Record<string, unknown>;
@@ -250,5 +256,6 @@ function parseBody(body: unknown): {
     programInterest: o.programInterest.trim(),
     answers,
     seed: isValidAttemptSeed(o.seed) ? o.seed : null,
+    retakeRequestedAt: typeof o.retakeRequestedAt === 'string' ? o.retakeRequestedAt : null,
   };
 }

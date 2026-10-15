@@ -1,3 +1,4 @@
+import AssessmentRetakeNotice from '@/components/portal/AssessmentRetakeNotice';
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
 import { redirect, unstable_rethrow } from 'next/navigation';
@@ -157,6 +158,7 @@ async function renderMemberDashboard(
         score read (moved here from the retired legacy home, WAP-188). */}
     {home.dashboardViewFacts ? <MemberHomeViewEvents {...home.dashboardViewFacts} /> : null}
     <PWAInstallPrompt />
+    {home.preassessmentRetakePending ? <AssessmentRetakeNotice /> : null}
     {onboarding && (onboarding.showWizard || tourAutoStart) ? (
       // A sibling, not a wrapper: if the wizard or tour throws, the boundary
       // keeps the home itself on screen. Phone and desktop alike.

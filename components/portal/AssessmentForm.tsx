@@ -41,6 +41,8 @@ type AssessmentOutcome = {
 };
 
 type AssessmentFormProps = {
+  progressScope?: string;
+  retakeRequestedAt?: string | null;
   defaultFirstName: string;
   defaultLastName: string;
   defaultPhone: string;
@@ -55,6 +57,8 @@ type AssessmentFormProps = {
 };
 
 export default function AssessmentForm({
+  progressScope,
+  retakeRequestedAt,
   defaultFirstName,
   defaultLastName,
   defaultPhone,
@@ -90,7 +94,7 @@ export default function AssessmentForm({
   const [restored, setRestored] = useState(false);
   useEffect(() => {
     if (previewOutcome || previewStep) return;
-    const saved = readAssessmentProgress();
+    const saved = readAssessmentProgress(Date.now(), progressScope);
     // Keep the attempt's layout across refreshes; a new attempt gets a new one.
     setSeed(saved?.seed || newAttemptSeed());
     if (saved) {
@@ -105,8 +109,8 @@ export default function AssessmentForm({
   useEffect(() => {
     if (previewOutcome || previewStep || step !== 'form') return;
     if (seed === 'preview') return;
-    writeAssessmentProgress({ answers, programInterest, step: currentStep, seed });
-  }, [answers, programInterest, currentStep, step, previewOutcome, previewStep, seed]);
+    writeAssessmentProgress({ answers, programInterest, step: currentStep, seed }, Date.now(), progressScope);
+  }, [answers, programInterest, currentStep, step, previewOutcome, previewStep, seed, progressScope]);
   const confirmHeadingRef = useRef<HTMLHeadingElement>(null);
   const stepHeadingRef = useRef<HTMLHeadingElement>(null);
   const isFirstStepRender = useRef(true);
@@ -216,7 +220,7 @@ export default function AssessmentForm({
       const res = await fetch('/api/member/assessment/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: JSON.stringify({ retakeRequestedAt: retakeRequestedAt ?? null,
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           phone: phone.trim(),
@@ -246,7 +250,7 @@ export default function AssessmentForm({
         staffNotificationSent: data.adminEmailSent === true,
       });
       setStep('confirm');
-      clearAssessmentProgress();
+      clearAssessmentProgress(progressScope);
 
       const intended =
         (typeof window !== 'undefined' ? sessionStorage.getItem(ASSESSMENT_REDIRECT_KEY) : null) || defaultRedirectTo || null;

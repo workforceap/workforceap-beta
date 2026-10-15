@@ -43,6 +43,8 @@ import AssessmentPage from '@/app/(portal)/dashboard/assessment/page';
 
 type Intake = {
   assessmentCompleted?: boolean;
+  assessmentAttemptCount?: number;
+  assessmentRetakeRequestedAt?: Date | null;
   preScreeningResponse?: { id: string } | null;
   interviewEligible?: boolean;
   interviewRequestedAt?: Date | null;
@@ -55,6 +57,9 @@ function member(over: Intake = {}) {
     fullName: 'Pat Member',
     phone: '5125550100',
     assessmentCompleted: true,
+    assessmentAttemptCount: over.assessmentCompleted === false ? 0 : 1,
+    assessmentRetakeRequestedAt: null,
+    assessmentHistory: [],
     assessmentScorePct: 80,
     assessmentCompletedAt: new Date('2026-09-01T15:00:00Z'),
     programInterest: null,
@@ -87,6 +92,19 @@ afterEach(() => {
 });
 
 describe('/dashboard/assessment interview steps (WAP-197)', () => {
+  it('prompts the final authorized attempt while keeping the saved result', async () => {
+    await renderPage({ assessmentRetakeRequestedAt: new Date('2026-10-15T00:00:00Z') });
+    expect(screen.getByText('Your final preassessment attempt is ready')).toBeInTheDocument();
+    expect(screen.getByTestId('assessment-form')).toBeInTheDocument();
+    expect(screen.getByText('1 of 2 attempts completed.')).toBeInTheDocument();
+  });
+
+  it('does not render a form after both chances even with a stale pending flag', async () => {
+    await renderPage({ assessmentAttemptCount: 2, assessmentRetakeRequestedAt: new Date() });
+    expect(screen.queryByTestId('assessment-form')).toBeNull();
+    expect(screen.getByText(/Both preassessment chances/)).toBeInTheDocument();
+  });
+
   it('loads the pre-screening draft query from the member row', async () => {
     await renderPage();
     const args = mocks.findUnique.mock.calls[0][0];

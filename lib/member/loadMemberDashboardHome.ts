@@ -315,6 +315,7 @@ export type MemberDashboardHomeView = {
   /** One AI Career Tools pick for the member's stage; null when none fits. */
   recommendedTool: MemberToolRecommendation | null;
   /** Drives the "Start here" shortcuts: the WIOA preassessment link reads as done once taken. */
+  preassessmentRetakePending?: boolean;
   preassessmentCompleted: boolean;
   /** Always the Digital Literacy lesson-1 URL; the kit shows it when no program is enrolled. */
   ungatedDigitalBasicsHref: string;
@@ -398,6 +399,8 @@ type DashboardUserRow = Omit<MemberApprovalFacts, 'applications'> & {
   /** Intake program interest, the wizard's fallback when the application has none. */
   programInterest?: string | null;
   enrolledProgram: string | null;
+  assessmentRetakeRequestedAt?: Date | null;
+  assessmentAttemptCount?: number;
   assessmentCompleted: boolean;
   /** Program enrolment date — half of the training-eligibility baseline. */
   enrolledAt?: Date | null;
@@ -1208,6 +1211,7 @@ function shapeHome(args: {
     doThisNext,
     upNext,
     recommendedTool,
+    preassessmentRetakePending: args.row.assessmentAttemptCount === 1 && !!args.row.assessmentRetakeRequestedAt,
     preassessmentCompleted: Boolean(args.row.assessmentCompleted),
     ungatedDigitalBasicsHref: digitalLiteracyFirstModuleHref(),
     jobOffers: args.row.jobApplications
@@ -1302,6 +1306,8 @@ function userSelect(userId: string) {
     // line and the messaging thread agree on who the counselor is.
     counselorAssignments: counselorAssignmentSelect(),
     enrolledProgram: true,
+    assessmentRetakeRequestedAt: true,
+    assessmentAttemptCount: true,
     assessmentCompleted: true,
     enrolledAt: true,
     assessmentCompletedAt: true,

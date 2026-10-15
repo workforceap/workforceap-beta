@@ -33,6 +33,7 @@ const db = vi.hoisted(() => {
 });
 
 vi.mock('next/navigation', () => ({
+  useRouter: () => ({ refresh: vi.fn(), push: vi.fn(), replace: vi.fn() }),
   redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); },
   notFound: () => { throw new Error('NOT_FOUND'); },
 }));
@@ -108,6 +109,9 @@ describe('CounselorStudentDetailPage program progress numbers', () => {
       assessmentScorePct: null,
       assessmentScore: null,
       assessmentCompleted: false,
+      assessmentAttemptCount: 0,
+      assessmentRetakeRequestedAt: null,
+      assessmentHistory: [],
       assessmentCompletedAt: null,
       assessmentAnswers: null,
       wioaQualificationJson: null,

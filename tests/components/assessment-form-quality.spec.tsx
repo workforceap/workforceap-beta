@@ -5,6 +5,7 @@ import type { AssessmentReviewRow } from '@/lib/assessment/reviewRows';
 import {
   ASSESSMENT_PROGRESS_KEY,
   ASSESSMENT_PROGRESS_MAX_AGE_MS,
+  clearAssessmentProgress,
   readAssessmentProgress,
   writeAssessmentProgress,
 } from '@/lib/assessment/progressStorage';
@@ -27,6 +28,18 @@ describe('preassessment progress storage', () => {
       JSON.stringify({ ...JSON.parse(window.localStorage.getItem(ASSESSMENT_PROGRESS_KEY)!), answers: { 1: 'A', 2: 'C', 3: 'Z', x: 'B' } }),
     );
     expect(readAssessmentProgress()).toEqual({ answers: { 1: 'A', 2: 'C' }, programInterest: 'IT Support', step: 3 });
+  });
+
+  it('keeps each student and authorized attempt in separate progress storage', () => {
+    const saved = { answers: { 1: 'A' as const }, programInterest: 'IT Support', step: 2, seed: 'first-seed' };
+    writeAssessmentProgress(saved, Date.now(), 'student-1:initial');
+    expect(readAssessmentProgress(Date.now(), 'student-1:initial')).toEqual(saved);
+    expect(readAssessmentProgress(Date.now(), 'student-1:final')).toBeNull();
+    expect(readAssessmentProgress(Date.now(), 'student-2:initial')).toBeNull();
+    clearAssessmentProgress('student-1:final');
+    expect(readAssessmentProgress(Date.now(), 'student-1:initial')).toEqual(saved);
+    clearAssessmentProgress('student-1:initial');
+    expect(readAssessmentProgress(Date.now(), 'student-1:initial')).toBeNull();
   });
 
   it('ignores progress older than two weeks', () => {
