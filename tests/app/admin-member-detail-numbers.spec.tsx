@@ -128,6 +128,7 @@ const baseMember = {
   deletedAt: null,
   enrolledProgram: null,
   enrolledAt: null,
+  courseEnrollments: [] as unknown[],
   programChangedAt: null,
   assessmentCompleted: false,
   assessmentCompletedAt: null,
@@ -271,16 +272,19 @@ describe('AdminMemberDetailPage program facts (S8, S12)', () => {
   });
 
   it('S12: Enrolled date falls back to the CourseEnrollment row when User.enrolledAt is null', async () => {
-    db.overrides['courseEnrollment.findFirst'] = async () => ({
+    const enrollment = {
       programSlug: 'it-support',
       curriculumVersion: 'legacy-v1',
+      isPrimary: true,
       enrolledAt: new Date('2026-09-16T00:00:00Z'),
       enrolledByAdminId: null,
       fundingSource: null,
       fundingNotes: null,
       workspaceEmail: null,
       workspaceEmailProvisioned: false,
-    });
+    };
+    db.overrides['courseEnrollment.findFirst'] = async () => enrollment;
+    db.overrides['user.findFirst'] = async () => ({ ...baseMember, courseEnrollments: [enrollment] });
 
     const doc = await renderPage({ tab: 'program' });
     const text = doc.body.textContent ?? '';
@@ -289,21 +293,24 @@ describe('AdminMemberDetailPage program facts (S8, S12)', () => {
   });
 
   it('S12: User.enrolledAt still wins when the enrollment row carries no date', async () => {
-    db.overrides['user.findFirst'] = async () => ({
-      ...baseMember,
-      enrolledProgram: 'it-support',
-      enrolledAt: new Date('2026-04-02T00:00:00Z'),
-    });
-    db.overrides['courseEnrollment.findFirst'] = async () => ({
+    const enrollment = {
       programSlug: 'it-support',
       curriculumVersion: 'legacy-v1',
+      isPrimary: true,
       enrolledAt: null,
       enrolledByAdminId: null,
       fundingSource: null,
       fundingNotes: null,
       workspaceEmail: null,
       workspaceEmailProvisioned: false,
+    };
+    db.overrides['user.findFirst'] = async () => ({
+      ...baseMember,
+      enrolledProgram: 'it-support',
+      enrolledAt: new Date('2026-04-02T00:00:00Z'),
+      courseEnrollments: [enrollment],
     });
+    db.overrides['courseEnrollment.findFirst'] = async () => enrollment;
 
     const doc = await renderPage({ tab: 'program' });
     expect(doc.body.textContent).toContain('Apr 2, 2026');

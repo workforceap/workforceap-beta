@@ -8,7 +8,10 @@ import { resolveAdminPageTenant, withAdminPageScope } from '@/lib/tenant/adminPa
 import { ADMIN_SSR_LIST_CAP, isListTruncated, showingFirstLabel } from '@/lib/db/queryCaps';
 import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
 import { wioaReviewLabel, WIOA_REVIEW_STATUSES } from '@/lib/wioa/wioaReview';
-import { isWioaAwaitingReview, sortWioaQueueOldestFirst, wioaDaysWaiting } from '@/lib/wioa/wioaQueueAge';
+import { sortWioaQueueOldestFirst } from '@/lib/wioa/wioaQueueAge';
+import { applyWioaReviewSelect, type ApplyWioaReviewScreening } from '@/lib/wioa/reviewEvidence';
+import { wioaScreeningQueueWhere } from '@/lib/admin/wioaScreeningPopulation';
+import { wioaScreeningQueueEvidence } from '@/lib/admin/wioaScreeningQueue';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import PortalRouteFallback from '@/components/portal/PortalRouteFallback';
@@ -26,7 +29,7 @@ import {
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
   title: 'Admin – WIOA screening queue',
-  description: 'Members who submitted the WIOA self-screening questionnaire.',
+  description: 'Member intake screening from applications and the portal questionnaire.',
   path: '/admin/wioa-screening',
 });
 }
@@ -39,6 +42,8 @@ type WioaQueueRow = {
   id: string;
   fullName: string;
   email: string;
+  organizationId: string;
+  applyEligibilityScreenings: ApplyWioaReviewScreening[];
   wioaQualificationJson: Prisma.JsonValue;
   wioaReviewStatus: string | null;
   wioaReviewedAt: Date | null;
@@ -61,7 +66,7 @@ function initialsFrom(name: string): string {
 
 /** WIOA category caption from the self-screening answers. */
 function categoryFrom(snap: ReturnType<typeof parseWioaQualificationSnapshot>): string {
-  if (!snap) return 'Adult';
+  if (!snap) return 'Not recorded';
   if (snap.answers.dislocatedWorker) return 'Dislocated Worker';
   if (snap.answers.ageBracket === 'under18') return 'Youth';
   if (snap.answers.ageBracket === '18_24') return 'Youth';
@@ -98,19 +103,14 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
 
   const sp = (await searchParams) ?? {};
   const requestedUi = Array.isArray(sp.ui) ? sp.ui[0] : sp.ui;
+  const reviewFilter = normalizeReviewParam(sp.review);
 
   // ---------- LEGACY: original review-filtered queue (escape hatch) ----------
   if (requestedUi === 'legacy') {
-    const reviewFilter = normalizeReviewParam(sp.review);
-
     let rows: WioaQueueRow[] = [];
     let totalRows = 0;
     try {
-      const where = {
-        deletedAt: null,
-        wioaQualificationJson: { not: Prisma.DbNull },
-        ...(reviewFilter ? { wioaReviewStatus: reviewFilter } : {}),
-      } satisfies Prisma.UserWhereInput;
+      const where = wioaScreeningQueueWhere(scope, reviewFilter);
       [rows, totalRows] = await withAdminPageScope(scope, (db) =>
         Promise.all([
           db.user.findMany({
@@ -121,6 +121,8 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
               id: true,
               fullName: true,
               email: true,
+              organizationId: true,
+              applyEligibilityScreenings: { take: 1, select: applyWioaReviewSelect },
               wioaQualificationJson: true,
               wioaReviewStatus: true,
               wioaReviewedAt: true,
@@ -157,20 +159,18 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
       },
     );
 
+    const now = new Date();
     const enriched = rows
       .map((r) => {
-        const snap = parseWioaQualificationSnapshot(r.wioaQualificationJson);
+        const evidence = wioaScreeningQueueEvidence(r, now);
         const triage = triageById.get(r.id) ?? null;
-        const submittedAt = snap?.submittedAt ? new Date(snap.submittedAt).getTime() : 0;
         return {
           ...r,
-          snap,
-          submittedAt,
-          signal: snap?.signal ?? '—',
+          ...evidence,
           triage,
         };
       })
-      .sort((a, b) => b.submittedAt - a.submittedAt);
+      .sort((a, b) => (b.submittedAt?.getTime() ?? 0) - (a.submittedAt?.getTime() ?? 0));
 
     return (
       <PortalPageFrame>
@@ -183,7 +183,7 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
                   totalRows,
                   reviewFilter ? 'screenings matching this filter' : 'screenings',
                 )
-              : 'Members who completed the portal self-screening. Review status is for internal workflow only.'
+              : 'Application screening and portal questionnaires. Review status is for internal workflow only.'
           }
           action={
             <Link href="/admin/members" className="btn btn-outline">
@@ -192,11 +192,11 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
           }
         />
 
-        <WioaReviewFilterBar active={reviewFilter} />
+        <WioaReviewFilterBar active={reviewFilter} legacy />
 
         {enriched.length === 0 ? (
           <p style={{ color: 'var(--color-on-surface-variant)' }}>
-            {reviewFilter ? 'No rows match this filter.' : 'No self-screenings submitted yet.'}
+            {reviewFilter ? 'No rows match this filter.' : 'No application or portal screenings submitted yet.'}
           </p>
         ) : (
           <>
@@ -224,8 +224,9 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
                   {
                     key: 'submitted',
                     header: 'Submitted',
-                    cell: (r) => (r.snap ? new Date(r.snap.submittedAt).toLocaleString() : '—'),
+                    cell: (r) => r.submittedAt?.toLocaleString() ?? '—',
                   },
+                  { key: 'source', header: 'Source', cell: (r) => r.source },
                   { key: 'signal', header: 'Signal', cell: (r) => r.signal },
                   { key: 'review', header: 'Review', cell: (r) => wioaReviewLabel(r.wioaReviewStatus) },
                   {
@@ -242,7 +243,7 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
                     key: 'open',
                     header: '',
                     cell: (r) => (
-                      <Link href={`/admin/members/${r.id}`} className="btn btn-outline btn-sm">
+                      <Link href={`/admin/members/${r.id}?tab=eligibility`} className="btn btn-outline btn-sm">
                         Open
                       </Link>
                     ),
@@ -264,17 +265,18 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.25rem' }}>
                     <div style={{ fontWeight: 600 }}>{r.fullName}</div>
-                    <Link href={`/admin/members/${r.id}`} className="btn btn-outline btn-sm">
+                    <Link href={`/admin/members/${r.id}?tab=eligibility`} className="btn btn-outline btn-sm">
                       Open
                     </Link>
                   </div>
                   <div style={{ fontSize: '0.85rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.25rem' }}>{r.email}</div>
+                  <p className="wa-kit-meta">Source: {r.source}</p>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
                     <span>Signal: <strong style={{ color: 'var(--color-on-surface)' }}>{r.signal}</strong></span>
                     <span>Review: <strong style={{ color: 'var(--color-on-surface)' }}>{wioaReviewLabel(r.wioaReviewStatus)}</strong></span>
                   </div>
                   <div style={{ marginTop: '0.25rem', fontSize: '0.875rem', color: 'var(--color-on-surface-variant)' }}>
-                    Submitted: <strong style={{ color: 'var(--color-on-surface)' }}>{r.snap ? new Date(r.snap.submittedAt).toLocaleString() : '—'}</strong>
+                    Submitted: <strong style={{ color: 'var(--color-on-surface)' }}>{r.submittedAt?.toLocaleString() ?? '—'}</strong>
                   </div>
                 </div>
               ))}
@@ -294,27 +296,20 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
     Promise.allSettled([
       db.user.groupBy({
         by: ['wioaReviewStatus'],
-        where: {
-          deletedAt: null,
-          wioaQualificationJson: { not: Prisma.DbNull },
-        },
+        where: wioaScreeningQueueWhere(scope),
         _count: { _all: true },
       }),
       db.user.findMany({
-        take: 200,
-        where: {
-          deletedAt: null,
-          wioaQualificationJson: { not: Prisma.DbNull },
-        },
-        // Never-reviewed rows first so the capped page always carries the whole
-        // pending queue, then the most recent decisions (`in_review` also
-        // stamps wioaReviewedAt, so a recent claim must not be cut by the cap);
-        // `sortWioaQueueOldestFirst` below orders the waiting block by wait
-        // (WAP-166 item 2) once the JSON `submittedAt` has been parsed.
-        orderBy: { wioaReviewedAt: { sort: 'desc', nulls: 'first' } },
+        take: ADMIN_SSR_LIST_CAP,
+        where: wioaScreeningQueueWhere(scope, reviewFilter),
+        // Prioritize never-reviewed rows within the bounded scan. The loaded
+        // waiting block is ordered by its actual source timestamp below.
+        orderBy: [{ wioaReviewedAt: { sort: 'desc', nulls: 'first' } }, { id: 'asc' }],
         select: {
           id: true,
           fullName: true,
+          organizationId: true,
+          applyEligibilityScreenings: { take: 1, select: applyWioaReviewSelect },
           wioaQualificationJson: true,
           wioaReviewStatus: true,
           wioaReviewedAt: true,
@@ -334,7 +329,7 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
           ? countsResult.reason
           : null,
     );
-    redirect('/admin/wioa-screening?ui=legacy');
+    redirect(`/admin/wioa-screening?ui=legacy${reviewFilter ? `&review=${encodeURIComponent(reviewFilter)}` : ''}`);
   }
 
   // KPI counts from the status groupBy.
@@ -352,6 +347,7 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
         break;
       case 'pending':
       case 'in_review':
+      case null:
         pendingReview += n;
         break;
       case 'needs_info':
@@ -368,25 +364,22 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
   const now = new Date();
   const rows: WioaScreeningRow[] = sortWioaQueueOldestFirst(
     rowsResult.value.map((r) => {
-      const snap = parseWioaQualificationSnapshot(r.wioaQualificationJson);
+      const evidence = wioaScreeningQueueEvidence(r, now);
       const name = r.fullName?.trim() || 'Unnamed member';
       const reviewStatus = intakeStatusKey(r.wioaReviewStatus);
       const { docs, docsComplete } = docsFrom(reviewStatus);
-      const awaitingReview = isWioaAwaitingReview(r.wioaReviewStatus);
       return {
         id: r.id,
         name,
         initials: initialsFrom(name),
-        category: categoryFrom(snap),
+        category: categoryFrom(evidence.snapshot),
+        source: evidence.source,
         docs,
         docsComplete,
         reviewStatus,
         reviewer: r.wioaReviewer?.fullName?.trim() || '—',
-        awaitingReview,
-        // Only a screening still waiting on staff has a "days waiting".
-        daysWaiting: awaitingReview
-          ? wioaDaysWaiting({ wioaQualificationJson: r.wioaQualificationJson, updatedAt: r.updatedAt }, now)
-          : null,
+        awaitingReview: evidence.awaitingReview,
+        daysWaiting: evidence.daysWaiting,
         reviewedAt: r.wioaReviewedAt,
       };
     }),
@@ -395,11 +388,12 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
   return (
     <WioaScreeningKit
       rows={rows}
-      total={total}
+      total={reviewFilter ? countsResult.value.find((group) => group.wioaReviewStatus === reviewFilter)?._count._all ?? 0 : total}
       verified={verified}
       pendingReview={pendingReview}
       needDocs={needDocs}
       notEligible={notEligible}
+      filterBar={<WioaReviewFilterBar active={reviewFilter} />}
     />
   );
 }

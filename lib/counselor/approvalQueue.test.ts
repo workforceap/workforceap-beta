@@ -88,7 +88,7 @@ test('only PENDING applications wait on the counselor; the clock starts at submi
   assert.equal(draft.tone, 'warn');
 });
 
-test('intake waits on pending / in_review only, dated from the screening the member handed in', () => {
+test('intake waits on pending / in_review, dated from the screening the member handed in', () => {
   const screening = at('2026-09-10T10:00:00Z');
   assert.equal(
     intakeWaitingSince({ wioaReviewStatus: 'pending', wioaReviewedAt: null, wioaScreeningSubmittedAt: screening }),
@@ -129,6 +129,17 @@ test('intake waits on pending / in_review only, dated from the screening the mem
   assert.equal(queue.rows[2].waitingSince, null, 'a waiting status with no stored timestamp is still listed');
   assert.equal(queue.rows[2].tone, 'muted');
   assert.equal(queue.rows[2].ageLabel, 'Waiting time not recorded');
+});
+
+test('a historical unreviewed screening waits without inventing a pending status; no-screening null remains absent', () => {
+  const queue = buildApprovalQueue([
+    member({ memberId: 'legacy-screening', wioaReviewStatus: null, wioaScreeningSubmittedAt: at('2026-09-10T10:00:00Z') }),
+    member({ memberId: 'no-screening', wioaReviewStatus: null }),
+  ], NOW);
+  assert.equal(queue.rows.length, 1);
+  assert.equal(queue.rows[0].key, 'intake:legacy-screening');
+  assert.equal(queue.rows[0].detail, 'Not reviewed');
+  assert.equal(queue.rows[0].waitingSince?.toISOString(), '2026-09-10T10:00:00.000Z');
 });
 
 test('rows sort oldest first across both kinds; undated rows last; totals equal the rows', () => {

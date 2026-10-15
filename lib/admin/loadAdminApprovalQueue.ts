@@ -3,7 +3,8 @@ import 'server-only';
 import type { AdminPageTenantOk } from '@/lib/tenant/adminPageScope';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { adminWorkbenchApplicationsOrderBy, adminWorkbenchApplicationsWhere } from '@/lib/admin/commandCenterHelpers';
-import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
+import { applyWioaReviewSelect } from '@/lib/wioa/reviewEvidence';
+import { wioaScreeningQueueEvidence } from '@/lib/admin/wioaScreeningQueue';
 import {
   ADMIN_APPROVAL_QUEUE_LIMIT,
   ADMIN_APPROVAL_SCAN_CAP,
@@ -71,12 +72,14 @@ export async function loadAdminApprovalQueue(
           orderBy: [{ updatedAt: 'asc' }, { id: 'asc' }],
           select: {
             id: true,
+            organizationId: true,
             fullName: true,
             email: true,
             enrolledProgram: true,
             wioaReviewStatus: true,
             wioaReviewedAt: true,
             wioaQualificationJson: true,
+            applyEligibilityScreenings: { where: { organizationId: orgId }, take: 1, select: applyWioaReviewSelect },
           },
         }),
       ),
@@ -94,8 +97,7 @@ export async function loadAdminApprovalQueue(
     ]);
 
   const intakes = intakeRows.map((member): AdminApprovalIntakeRow => {
-    const screening = parseWioaQualificationSnapshot(member.wioaQualificationJson);
-    const submittedAt = screening ? new Date(screening.submittedAt) : null;
+    const evidence = wioaScreeningQueueEvidence(member, now);
     return {
       id: member.id,
       fullName: member.fullName,
@@ -103,7 +105,7 @@ export async function loadAdminApprovalQueue(
       enrolledProgram: member.enrolledProgram,
       wioaReviewStatus: member.wioaReviewStatus,
       wioaReviewedAt: member.wioaReviewedAt,
-      wioaScreeningSubmittedAt: submittedAt && !Number.isNaN(submittedAt.getTime()) ? submittedAt : null,
+      wioaScreeningSubmittedAt: evidence.submittedAt,
     };
   });
 

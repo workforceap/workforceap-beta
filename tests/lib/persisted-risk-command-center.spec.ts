@@ -21,6 +21,7 @@ import { loadPersistedAtRiskMembers, persistedRiskCommandRow, type PersistedAtRi
 import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
 import { getAdminCommandCenter } from '@/lib/admin/commandCenter';
 import { getCounselorCommandCenter } from '@/lib/counselor/commandCenter';
+import { matchesWhere } from '@/tests/helpers/prismaWhereMatches';
 
 const now = new Date('2026-09-19T12:00:00Z');
 const row = (overrides: Partial<PersistedAtRiskMember> = {}): PersistedAtRiskMember => ({
@@ -99,6 +100,24 @@ describe('persisted risk selection contract', () => {
 });
 
 describe('saved cases are shared by command centers', () => {
+  it('groups confirmed primary/legacy assignments from the same member-only tenant population', async () => {
+    const base = { organizationId: 'org-1', deletedAt: null, email: 'learner@example.invalid', profile: { role: 'member' }, userRoles: [], enrolledProgram: null, courseEnrollments: [] };
+    const assigned = { programSlug: 'comptia-a-professional-certificate', curriculumVersion: 'legacy-v1', isPrimary: true };
+    const population = [
+      { ...base, courseEnrollments: [assigned] },
+      { ...base, enrolledProgram: 'comptia-a-plus' },
+      { ...base, courseEnrollments: [{ ...assigned, isPrimary: false }] },
+      { ...base, enrolledProgram: 'stale-program', courseEnrollments: [{ ...assigned, isPrimary: false }] },
+      { ...base, enrolledProgram: 'comptia-a-plus', organizationId: 'org-2' },
+      { ...base, enrolledProgram: 'comptia-a-plus', profile: { role: 'counselor' } },
+    ];
+    h.users.mockImplementation(async ({ where }: { where: unknown }) => population.filter((member) => matchesWhere(member, where)));
+    const center = await getAdminCommandCenter('admin', { now });
+    expect(center.programHealth).toHaveLength(1);
+    expect(center.programHealth[0]).toMatchObject({ programSlug: assigned.programSlug, count: 2, enrolledTotal: 2, pct: 100 });
+    expect(h.programs).not.toHaveBeenCalled();
+  });
+
   it('returns the same saved member even without a legacy program pointer or a real activity event', async () => {
     const admin = await getAdminCommandCenter('admin', { now });
     const counselor = await getCounselorCommandCenter('counselor-user');

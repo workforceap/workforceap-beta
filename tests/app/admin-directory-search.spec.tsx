@@ -229,12 +229,26 @@ describe('admin directory query composition', () => {
     const response = await exportMembers(new Request(`https://workforceap.org/api/admin/members/export?${new URLSearchParams(filters)}`));
     expect(response.status).toBe(200);
     const exportWhere = mocks.findMany.mock.calls[0][0].where;
+    const enrollment = { programSlug: 'it-support', enrolledAt: new Date('2026-08-15') };
     const member = user('1', { profile: { role: 'member' }, deletedAt: new Date(), enrolledAt: new Date('2026-08-15'),
-      courseEnrollments: [{ programSlug: 'it-support' }], partnerReferrals: [{ partnerId: 'partner-a' }],
+      courseEnrollments: [enrollment], partnerReferrals: [{ partnerId: 'partner-a' }],
     });
-    for (const candidate of [member, { ...member, deletedAt: null }, { ...member, organizationId: 'org-b' }, { ...member, enrolledAt: new Date('2025-01-01') }, { ...member, courseEnrollments: [] }, { ...member, partnerReferrals: [] }]) {
-      expect(matches(candidate, exportWhere)).toBe(matches(candidate, pageWhere));
+    const outOfRangeEnrollment = { ...enrollment, enrolledAt: new Date('2025-01-01') };
+    const candidates: Array<[RecordValue, boolean]> = [
+      [member, true],
+      [{ ...member, deletedAt: null }, false],
+      [{ ...member, organizationId: 'org-b' }, false],
+      // A durable enrollment supplies its own date; the leftover legacy date cannot override it.
+      [{ ...member, enrolledAt: new Date('2025-01-01') }, true],
+      [{ ...member, courseEnrollments: [outOfRangeEnrollment] }, false],
+      [{ ...member, courseEnrollments: [outOfRangeEnrollment, { programSlug: 'other-program', enrolledAt: enrollment.enrolledAt }] }, false],
+      [{ ...member, courseEnrollments: [] }, false],
+      [{ ...member, courseEnrollments: [], enrolledProgram: 'it-support' }, true],
+      [{ ...member, partnerReferrals: [] }, false],
+    ];
+    for (const [candidate, admitted] of candidates) {
+      expect(matches(candidate, pageWhere)).toBe(admitted);
+      expect(matches(candidate, exportWhere)).toBe(admitted);
     }
-    expect(matches(member, exportWhere)).toBe(true);
   });
 });

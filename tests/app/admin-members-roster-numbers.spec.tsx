@@ -54,6 +54,7 @@ vi.mock('@/components/portal/PortalPageFrame', () => ({ default: () => null }));
 
 import AdminMembersPage from '@/app/admin/members/page';
 import MembersTable from '@/components/admin/MembersTable';
+import { matchesWhere } from '@/tests/helpers/prismaWhereMatches';
 
 type RecordValue = Record<string, unknown>;
 
@@ -254,4 +255,20 @@ describe('/admin/members Training "N active" (audit S15)', () => {
     const rows = props?.members as Array<{ liveTraining: { coursesActive: number } | null }>;
     expect(rows[0].liveTraining?.coursesActive).toBe(2);
   });
+});
+
+it('filters durable and legacy-only aliases by the same enrollment date before pagination and counting', async () => {
+  const fixture = (id: string, fields: RecordValue) => member({ id, email: `${id}@example.invalid`, deletedAt: null, profile: { role: 'member' }, userRoles: [], ...fields });
+  const assignment = (programSlug: string, at: string) => ({ programSlug, curriculumVersion: 'legacy-v1', isPrimary: true, enrolledAt: new Date(at) });
+  const rows = [
+    fixture('durable', { enrolledProgram: null, enrolledAt: null, courseEnrollments: [assignment('comptia-a-professional-certificate', '2026-10-15')] }),
+    fixture('legacy', { enrolledProgram: 'comptia-a-plus', enrolledAt: new Date('2026-10-15'), courseEnrollments: [] }),
+    fixture('split', { enrolledProgram: null, enrolledAt: null, courseEnrollments: [assignment('comptia-a-professional-certificate', '2026-09-01'), assignment(PROGRAM, '2026-10-15')] }),
+    fixture('stale', { enrolledProgram: 'comptia-a-plus', enrolledAt: new Date('2026-10-15'), courseEnrollments: [assignment(PROGRAM, '2026-10-15')] }),
+  ];
+  mocks.userFindMany.mockImplementation(async ({ where }: { where: unknown }) => rows.filter((row) => matchesWhere(row, where)));
+  mocks.userCount.mockImplementation(async ({ where }: { where: unknown }) => rows.filter((row) => matchesWhere(row, where)).length);
+  const tree = await AdminMembersPage({ searchParams: Promise.resolve({ program: 'comptia-a-plus', startDate: '2026-10-01', endDate: '2026-10-31' }) });
+  expect((propsFor(tree, MembersTable)?.members as Array<{ id: string }>).map((row) => row.id)).toEqual(['durable', 'legacy']);
+  expect(mocks.userCount.mock.calls[0][0].where).toEqual(mocks.userFindMany.mock.calls[0][0].where);
 });

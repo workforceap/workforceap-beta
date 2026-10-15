@@ -129,6 +129,27 @@ The two-stage billing editor normalizes complete US phone numbers to
 international or incomplete input are preserved. Saved draft and signed PDF
 snapshots render their stored values exactly.
 
+Admin program displays use the saved primary or alias-matched legacy assignment;
+unmarked historical rows and observed learning do not create an active assignment.
+The [directory filter](../../lib/admin/memberEnrollmentFilters.ts) is shared with
+CSV export and applies program/date conditions to the same enrollment. The
+Command Center's active-student total and program groups share one assignment
+snapshot. The [course-progress log](../../lib/admin/courseraXapiCourseLog.ts)
+keeps additional observed progress visible with explicit provenance limits.
+
+The [WIOA screening population](../../lib/admin/wioaScreeningPopulation.ts) and
+[evidence adapter](../../lib/admin/wioaScreeningQueue.ts) include real application
+screenings alongside portal questionnaires in the WIOA views and Admin Today.
+Partial answers keep missing categories and signals unknown; saved screening
+evidence without a historical review status still needs a staff decision.
+Queue counts, row filters and waiting clocks use the same evidence rules.
+
+Billing case creation explains unavailable approved terms before opening a case;
+unsigned previews remain available. The explicit overnight date-refresh action
+opens the existing draft editor, then requires a new save, PDF review and signing
+intent. See [the expanded audit reconciliation](../audits/expanded-platform-audit-2026-10-15.md)
+for confirmed repairs and the report's outdated or intentional controls.
+
 ## Shared files with a wide change impact
 
 The generated [reference summary](generated/summary.json) identifies heavily imported files. Prisma, authentication, role resolution, request GUC helpers, the program catalog and tenant resolution sit on many paths. Review reverse references before changing their return values, failure behavior or defaults.
@@ -158,6 +179,8 @@ and request the final attempt directly in each student's mobile or desktop
 stay on that results view. Before authorization, the student's assessment page
 explains the remaining chance and links to counselor messages; after authorization,
 the portal offers the final attempt. Completed results are retained.
+The member's Eligibility tab also places the same capped control beside the
+assessment answers; the Overview assessment card links directly to that block.
 
 The three `User` fields `assessmentAttemptCount`, `assessmentRetakeRequestedAt`
 and `assessmentHistory` record completed attempts, pending staff authorization

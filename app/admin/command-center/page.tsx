@@ -106,14 +106,7 @@ export default async function AdminCommandCenterPage({
     const headline = await withAuthGuc(async () => {
       const orgId = await getActorOrganizationId(user.id);
       const memberUser = { organizationId: orgId, deletedAt: null, ...MEMBER_ONLY_WHERE };
-      const [activeStudents, placementsYtd, placementRows] = await Promise.all([
-        prisma.user
-          .count({ where: { ...memberUser, enrolledProgram: { not: null } } })
-          .catch((error) => {
-            headlineLoadFailed = true;
-            console.error('[admin/command-center] active student headline failed', error);
-            return 0;
-          }),
+      const [placementsYtd, placementRows] = await Promise.all([
         prisma.placementRecord
           .count({ where: { user: memberUser, placedAt: { gte: yearStart } } })
           .catch((error) => {
@@ -132,6 +125,9 @@ export default async function AdminCommandCenterPage({
             return [] as Array<{ placedAt: Date }>;
           }),
       ]);
+      // Program-share rows include the folded "Other" count. Reading the same
+      // resolved assignments keeps the headline and breakdown in one snapshot.
+      const activeStudents = data.programHealth.reduce((sum, row) => sum + row.count, 0);
       return { activeStudents, placementsYtd, placementRows };
     }).catch((error) => {
       headlineLoadFailed = true;

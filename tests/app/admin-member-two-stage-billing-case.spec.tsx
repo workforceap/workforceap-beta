@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import TwoStageBillingCase from '@/app/admin/members/[id]/billing/TwoStageBillingCase';
+import TwoStageBillingCase, { type EnrolledProgram } from '@/app/admin/members/[id]/billing/TwoStageBillingCase';
 import TwoStageDocumentReview from '@/app/admin/members/[id]/billing/TwoStageDocumentReview';
 import type { ContactSource, DraftFieldError, DraftReviewDto, DraftSaveDto } from '@/lib/billing/twoStage/dto';
-import { CASE_ID, HASH_A, MEMBER_ID, emptyCaseSummary, j5Draft, j5DraftSummary, jsonResponse } from '../fixtures/billing/twoStageSummary';
+import { CASE_ID, HASH_A, J5_RECORD_ID, MEMBER_ID, emptyCaseSummary, j5Draft, j5DraftSummary, jsonResponse, openGates } from '../fixtures/billing/twoStageSummary';
 
 /**
  * Route integration of the M4 container: fetch is mocked at the network
@@ -32,7 +32,7 @@ function mockRoutes(handler: (call: Call) => Response | Promise<Response>) {
 const BASE = `/api/admin/members/${MEMBER_ID}/billing/two-stage`;
 const CASE = `${BASE}/cases/${CASE_ID}`;
 const caseItem = { id: CASE_ID, programSlug: 'google-it-support-professional-certificate', className: 'Google IT Support Professional Certificate', createdAt: '2026-09-28T14:00:00.000Z', progress: emptyCaseSummary().progress };
-const programs = [{ slug: 'google-it-support-professional-certificate', title: 'Google IT Support Professional Certificate' }];
+const programs: EnrolledProgram[] = [{ slug: 'google-it-support-professional-certificate', title: 'Google IT Support Professional Certificate', billingTerms: { available: true, reason: null } }];
 
 function renderCase(enrolledPrograms = programs) {
   return render(
@@ -499,6 +499,114 @@ describe('two-stage billing container (route integration)', () => {
     renderCase([]);
     expect(await screen.findByText(/no program enrollment on file/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Open billing case' })).toBeDisabled();
+    expect(screen.getByRole('link', { name: 'Review program assignment' })).toHaveAttribute('href', `/admin/members/${MEMBER_ID}?tab=program`);
+  });
+
+  it('explains unavailable approved terms before case creation and keeps unsigned previews available', async () => {
+    const calls = mockRoutes(() => jsonResponse({ cases: [] }));
+    renderCase([{ slug: 'comptia-network-professional-certificate', title: 'CompTIA Net+', billingTerms: { available: false, reason: 'No approved syllabus is available for this program.' } }]);
+    const open = await screen.findByRole('button', { name: 'Open billing case for CompTIA Net+' });
+    expect(open).toBeDisabled();
+    expect(open).toHaveAccessibleDescription(/No approved syllabus.*Ask the program owner/);
+    fireEvent.click(open);
+    expect(calls.filter((call) => call.method !== 'GET')).toHaveLength(0);
+    expect(screen.getByRole('link', { name: 'Preview J5 PDF' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Preview J6 PDF' })).toBeInTheDocument();
+  });
+
+  it('uses the selected program capability when switching from unavailable to approved terms', async () => {
+    const calls = mockRoutes((call) => call.method === 'POST' ? jsonResponse({ case: caseItem }, 201) : jsonResponse({ cases: [] }));
+    renderCase([{ slug: 'missing-terms', title: 'Pending program', billingTerms: { available: false, reason: 'Approved terms are pending.' } }, ...programs]);
+    const open = await screen.findByRole('button', { name: 'Open billing case' });
+    expect(open).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('Program'), { target: { value: programs[0].slug } });
+    expect(open).toBeEnabled();
+    fireEvent.click(open);
+    await waitFor(() => expect(calls.some((call) => call.method === 'POST')).toBe(true));
+    expect(calls.find((call) => call.method === 'POST')?.body).toEqual({ programSlug: programs[0].slug });
+  });
+
+  it('opens an overnight draft in the existing editor and requires CAS save plus a fresh signature review', async () => {
+    const newHash = 'b'.repeat(64);
+    const staleMessage = 'The J5 is dated the day it is signed. Save the draft again today before signing.';
+    const oldRecord = j5Draft();
+    let summary = j5DraftSummary({ gates: openGates(), viewer: { isExecutiveSigner: true, isDesignatedSigner: true } });
+    summary.j5 = { ...summary.j5, canSign: false, blockers: [{ code: 'J5_ISSUE_DATE_NOT_TODAY', message: staleMessage, hardHold: false }] };
+    let updated = false;
+    const calls = mockRoutes((call) => {
+      if (call.url === `${BASE}/cases`) return jsonResponse({ cases: [caseItem] });
+      if (call.url === CASE) return jsonResponse(summary);
+      if (call.url.endsWith('/j5/draft/review')) return jsonResponse({ ...validReview(true), current: updated ? j5Draft({ versionHash: newHash }) : oldRecord, versionHashIfSaved: newHash });
+      if (call.method === 'PUT') {
+        updated = true;
+        const record = j5Draft({ versionHash: newHash });
+        summary = { ...summary, j5: { ...summary.j5, current: record, canSign: true, blockers: [] } };
+        return jsonResponse({ created: false, record, versionHash: newHash, holds: [] });
+      }
+      if (call.url.endsWith('/j5/freeze')) return jsonResponse({ recordId: J5_RECORD_ID, version: 1, versionHash: newHash, documentTitle: 'Quote / Voucher Request', documentNumber: oldRecord.documentNumber, intentText: 'Review the new version.', previewPath: '/new-preview', holds: [] });
+      return jsonResponse({ code: 'NOT_FOUND', error: 'Unexpected request' }, 404);
+    });
+    renderCase();
+    const action = await screen.findByRole('button', { name: 'Update draft date and review' });
+    const lifecycle = screen.getByRole('group', { name: 'J5 signing and delivery' });
+    expect(within(lifecycle).getByRole('button', { name: 'Review for signature' })).toBeDisabled();
+    expect(within(lifecycle).getByRole('button', { name: 'Review for signature' })).toHaveAccessibleDescription(staleMessage);
+    fireEvent.click(action);
+    const editor = await screen.findByRole('region', { name: 'J5 draft' });
+    expect(within(editor).getByRole('heading', { name: 'J5 draft' })).toHaveFocus();
+    expect(calls.filter((call) => call.method === 'PUT' || call.url.endsWith('/freeze') || call.url.endsWith('/sign'))).toHaveLength(0);
+    const save = await within(editor).findByRole('button', { name: 'Save updated draft' });
+    await waitFor(() => expect(save).toBeEnabled());
+    fireEvent.click(save);
+    await waitFor(() => expect(updated).toBe(true));
+    expect(calls.find((call) => call.method === 'PUT')?.body).toMatchObject({ expectedVersionHash: HASH_A });
+    await waitFor(() => expect(within(lifecycle).getByRole('button', { name: 'Review for signature' })).toBeEnabled());
+    expect(within(lifecycle).getByRole('button', { name: 'Sign J5' })).toHaveAccessibleDescription('Review this exact version for signature first.');
+    fireEvent.click(within(lifecycle).getByRole('button', { name: 'Review for signature' }));
+    expect(await within(lifecycle).findByText('Review the new version.')).toBeInTheDocument();
+    expect(calls.find((call) => call.url.endsWith('/freeze'))?.body).toMatchObject({ versionHash: newHash });
+    expect(calls.some((call) => call.url.endsWith('/sign'))).toBe(false);
+  });
+
+  it.each(['j5', 'j6'] as const)('retains optimistic concurrency when refreshing an overnight %s draft', async (stage) => {
+    const record = j5Draft();
+    const summary = j5DraftSummary({ gates: openGates() });
+    const dateCode = stage === 'j5' ? 'J5_ISSUE_DATE_NOT_TODAY' as const : 'J6_ISSUE_DATE_NOT_TODAY' as const;
+    const blocker = { code: dateCode, message: 'Save this draft again today before signing.', hardHold: false };
+    if (stage === 'j5') summary.j5 = { ...summary.j5, current: record, canSign: false, blockers: [blocker] };
+    else summary.j6 = { ...summary.j6, current: record, canSign: false, blockers: [blocker] };
+    const dto: DraftReviewDto = { ...validReview(), stage, current: record, versionHashIfSaved: 'b'.repeat(64) };
+    if (stage === 'j6') {
+      dto.fields['finance.name'] = field('Finance contact', 'draft');
+      dto.fields['finance.email'] = field('finance@example.test', 'draft');
+    }
+    const calls = mockRoutes((call) => {
+      if (call.url === `${BASE}/cases`) return jsonResponse({ cases: [caseItem] });
+      if (call.url === CASE) return jsonResponse(summary);
+      if (call.url.endsWith('/draft/review')) return jsonResponse(dto);
+      if (call.method === 'PUT') return jsonResponse({ code: 'DRAFT_CONFLICT', error: 'Someone else saved this draft. Reload it before saving again.' }, 409);
+      return jsonResponse({ code: 'NOT_FOUND', error: 'Unexpected request' }, 404);
+    });
+    renderCase();
+    fireEvent.click(await screen.findByRole('button', { name: 'Update draft date and review' }));
+    const editor = await screen.findByRole('region', { name: `${stage.toUpperCase()} draft` });
+    const save = within(editor).getByRole('button', { name: 'Save updated draft' });
+    await waitFor(() => expect(save).toBeEnabled());
+    fireEvent.click(save);
+    expect(await within(editor).findByRole('alert')).toHaveTextContent('Someone else saved this draft');
+    expect(within(editor).getByRole('button', { name: 'Reload the draft' })).toBeEnabled();
+    expect(calls.find((call) => call.method === 'PUT')?.body).toMatchObject({ expectedVersionHash: HASH_A });
+    expect(calls.some((call) => call.url.endsWith('/freeze') || call.url.endsWith('/sign'))).toBe(false);
+    expect(summary[stage].current?.versionHash).toBe(HASH_A);
+  });
+
+  it.each(['signed', 'sent'] as const)('never offers a date refresh for a %s document', async (status) => {
+    const summary = j5DraftSummary();
+    summary.j5 = { ...summary.j5, current: j5Draft({ status }), blockers: [{ code: 'J5_ISSUE_DATE_NOT_TODAY', message: 'Historical date.', hardHold: false }] };
+    mockRoutes((call) => call.url === `${BASE}/cases` ? jsonResponse({ cases: [caseItem] }) : jsonResponse(summary));
+    renderCase();
+    await screen.findByRole('region', { name: 'Release gates' });
+    expect(screen.queryByRole('button', { name: 'Update draft date and review' })).not.toBeInTheDocument();
   });
 
   it('J5 editor: live review per field, free-text counselor, save only a complete draft, then preview', async () => {

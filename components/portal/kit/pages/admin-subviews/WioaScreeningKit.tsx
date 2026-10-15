@@ -1,4 +1,5 @@
 import { Card } from '@astryxdesign/core/Card';
+import type { ReactNode } from 'react';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
@@ -53,6 +54,8 @@ export interface WioaScreeningRow {
   initials: string;
   /** WIOA category caption, e.g. "Adult", "Dislocated Worker", "Youth". */
   category: string;
+  /** Actual saved source; application answers do not imply questionnaire fields. */
+  source?: string;
   /** Document status caption, e.g. "Complete" or "Missing W-2". */
   docs: string;
   /** Whether docs are outstanding (drives the docs cell color). */
@@ -85,6 +88,7 @@ export interface WioaScreeningKitProps {
   needDocs: number;
   /** KPI: staff recorded not eligible. */
   notEligible: number;
+  filterBar?: ReactNode;
 }
 
 /** "117" for a waiting row; "—" once staff have decided or when no timestamp is usable. */
@@ -100,6 +104,7 @@ export function WioaScreeningKit({
   pendingReview,
   needDocs,
   notEligible,
+  filterBar,
 }: WioaScreeningKitProps) {
   const kpis: KpiItem[] = [
     { label: INTAKE_STATUS_WORDS.staff.verified, value: verified },
@@ -128,6 +133,11 @@ export function WioaScreeningKit({
 
   const columns: Column<WioaScreeningRow>[] = [
     { key: 'name', header: 'Student', render: (row) => <StudentCell row={row} /> },
+    {
+      key: 'source',
+      header: 'Source',
+      render: (row) => <span>{row.source ?? '—'}</span>,
+    },
     {
       key: 'category',
       header: 'Category',
@@ -178,7 +188,7 @@ export function WioaScreeningKit({
       header: '',
       align: 'right',
       render: (row) => (
-        <KitLinkButton href={`/admin/members/${row.id}`} label="Open" variant="secondary" size="sm" />
+        <KitLinkButton href={`/admin/members/${row.id}?tab=eligibility`} label="Open" variant="secondary" size="sm" />
       ),
     },
   ];
@@ -197,6 +207,8 @@ export function WioaScreeningKit({
       <div className="wa-mb-5">
         <KpiStrip items={kpis} />
       </div>
+
+      {filterBar}
 
       <DataTable<WioaScreeningRow>
         columns={columns}
@@ -219,7 +231,7 @@ export function WioaScreeningKit({
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <Token {...wioaReviewToken(row.reviewStatus)} size="sm" />
-                <KitLinkButton href={`/admin/members/${row.id}`} label="Open" variant="secondary" size="sm" />
+                <KitLinkButton href={`/admin/members/${row.id}?tab=eligibility`} label="Open" variant="secondary" size="sm" />
               </div>
             </div>
             <div
@@ -234,6 +246,7 @@ export function WioaScreeningKit({
                 margin: '12px 0 0',
               }}
             >
+              <span>Source <b style={{ color: 'var(--wa-text)' }}>{row.source ?? '—'}</b></span>
               <span>
                 Category <b style={{ color: 'var(--wa-text)' }}>{row.category}</b>
               </span>
@@ -258,7 +271,7 @@ export function WioaScreeningKit({
           </Card>
         )}
         emptyTitle="No screenings yet"
-        emptyDescription="Members who complete the WIOA self-screening will appear here for review."
+        emptyDescription="Members with application screening or a portal questionnaire appear here for intake review."
       />
 
       <p

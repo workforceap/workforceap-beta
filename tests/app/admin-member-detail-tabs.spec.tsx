@@ -2,7 +2,7 @@ process.env.TZ = 'UTC';
 
 import { renderToStaticMarkup } from 'react-dom/server';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /**
  * Admin audit gap map (wave 16): the admin member record reads as seven tabs
@@ -34,6 +34,17 @@ const db = vi.hoisted(() => {
 
 const panelMock = vi.hoisted(() => (name: string) => ({ default: () => <div data-panel={name} /> }));
 const routerRefresh = vi.hoisted(() => vi.fn());
+
+const dialogMethods = ['showModal', 'close'] as const;
+const originalDialogMethods = dialogMethods.map((name) => Object.getOwnPropertyDescriptor(HTMLDialogElement.prototype, name));
+beforeAll(() => {
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', { configurable: true, value: function (this: HTMLDialogElement) { this.setAttribute('open', ''); } });
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value: function (this: HTMLDialogElement) { this.removeAttribute('open'); } });
+});
+afterAll(() => dialogMethods.forEach((name, i) => {
+  if (originalDialogMethods[i]) Object.defineProperty(HTMLDialogElement.prototype, name, originalDialogMethods[i]!);
+  else Reflect.deleteProperty(HTMLDialogElement.prototype, name);
+}));
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: routerRefresh }),
@@ -108,7 +119,11 @@ vi.mock('@/components/admin/AdminMemberCounselorChatClient', () => ({
 }));
 vi.mock('@/components/admin/AdminMemberCounselorAssign', () => panelMock('counselor-assign'));
 vi.mock('@/components/admin/AdminMemberPlacedOutcomeForm', () => panelMock('placed-outcome-form'));
-vi.mock('@/components/admin/AdminMemberEnrollmentFundingForm', () => panelMock('enrollment-funding'));
+vi.mock('@/components/admin/AdminMemberEnrollmentFundingForm', () => ({
+  default: ({ hasPrimaryEnrollment }: { hasPrimaryEnrollment: boolean }) => (
+    <div data-panel="enrollment-funding" data-has-primary-enrollment={hasPrimaryEnrollment} />
+  ),
+}));
 vi.mock('@/components/admin/AdminMemberWorkspaceEmail', () => panelMock('workspace-email'));
 vi.mock('@/components/admin/AdminMemberWioaReviewPanel', () => ({
   default: ({ snapshot, applyScreening, expectedSubmittedAt, expectedEvidenceRevision }: {
@@ -195,8 +210,12 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
       deletedAt: null,
       enrolledProgram: null,
       enrolledAt: null,
+      courseEnrollments: [],
       programChangedAt: null,
       assessmentCompleted: false,
+      assessmentAttemptCount: 0,
+      assessmentRetakeRequestedAt: null,
+      assessmentHistory: [],
       assessmentCompletedAt: null,
       assessmentScore: null,
       assessmentScorePct: null,
@@ -357,6 +376,62 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     expect(review!.textContent).not.toContain('WIOA intake verification');
   });
 
+  it('offers the existing final-retake request beside Eligibility answers and links there from Overview', async () => {
+    const baseUser = db.overrides['user.findFirst'];
+    db.overrides['user.findFirst'] = async (args) => ({
+      ...(await baseUser(args) as object), assessmentCompleted: true, assessmentAttemptCount: 1,
+      assessmentCompletedAt: INSTANT, assessmentScorePct: 27,
+    });
+    const request = vi.fn(async () => Response.json({ ok: true, message: 'Final retake requested.' }));
+    vi.stubGlobal('fetch', request);
+    vi.stubGlobal('scrollTo', vi.fn());
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+    render(await AdminMemberDetailPage({ params: Promise.resolve({ id: 'member-1' }), searchParams: Promise.resolve({ tab: 'eligibility' }) }));
+    const section = screen.getByRole('region', { name: 'Preassessment retake' });
+    expect(section.closest('[role="tabpanel"]')?.id).toBe(`${BASE}-panel-eligibility`);
+    expect(section.previousElementSibling).toHaveAttribute('data-panel', 'assessment');
+    expect(screen.getByRole('link', { name: 'Review answers & retake', hidden: true })).toHaveAttribute('href', '#admin-member-preassessment');
+    fireEvent.click(within(section).getByRole('button', { name: 'Request final retake' }));
+    expect(request).not.toHaveBeenCalled();
+    const dialog = within(section).getByRole('dialog', { name: 'Request final retake for Fixture Member?' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Request final retake' }));
+    await waitFor(() => expect(routerRefresh).toHaveBeenCalledOnce());
+    expect(request).toHaveBeenCalledExactlyOnceWith('/api/admin/members/member-1/reset-assessment', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ memberId: 'member-1' }),
+    });
+    expect(within(section).getByTestId('allow-assessment-retake')).toBeDisabled();
+  });
+
+  it('opens the Eligibility retake controls from the Overview assessment link', async () => {
+    window.history.replaceState({}, '', '/admin/members/member-1?tab=overview');
+    const baseUser = db.overrides['user.findFirst'];
+    db.overrides['user.findFirst'] = async (args) => ({
+      ...(await baseUser(args) as object), assessmentCompleted: true, assessmentAttemptCount: 1,
+    });
+    render(await AdminMemberDetailPage({ params: Promise.resolve({ id: 'member-1' }), searchParams: Promise.resolve({ tab: 'overview' }) }));
+    fireEvent.click(screen.getByRole('link', { name: 'Review answers & retake' }));
+    await waitFor(() => expect(screen.getByRole('region', { name: 'Preassessment retake' })).toBeVisible());
+    expect(screen.getByRole('tab', { name: 'Eligibility' })).toHaveAttribute('aria-selected', 'true');
+    window.history.replaceState({}, '', '/');
+  });
+
+  it.each([
+    { count: 1, pending: INSTANT, label: 'Retake requested' },
+    { count: 2, pending: null, label: 'Attempt limit reached' },
+    { count: 2, pending: INSTANT, label: 'Attempt limit reached' },
+  ])('keeps the Eligibility action disabled in state %j', async ({ count, pending, label }) => {
+    const baseUser = db.overrides['user.findFirst'];
+    db.overrides['user.findFirst'] = async (args) => ({
+      ...(await baseUser(args) as object), assessmentCompleted: true,
+      assessmentAttemptCount: count, assessmentRetakeRequestedAt: pending,
+    });
+    const doc = await renderPage({ tab: 'eligibility' });
+    const section = panel(doc, 'eligibility').querySelector('[aria-labelledby="admin-member-preassessment-retake-title"]');
+    const button = section?.querySelector('[data-testid="allow-assessment-retake"]');
+    expect(button?.textContent).toBe(label);
+    expect(button?.hasAttribute('disabled')).toBe(true);
+  });
+
   it.each([
     ['Approve', 'APPROVED', 'Application approved.'],
     ['Deny', 'DENIED', 'Application denied.'],
@@ -448,6 +523,89 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     expect(form.getAttribute('data-options')).toBe('fallback');
     expect(form.getAttribute('data-current')).toBe('');
     expect(form.closest('[role="tabpanel"]')?.id).toBe(`${BASE}-panel-program`);
+  });
+
+  it('uses the alias-matched saved curriculum without granting primary-enrollment funding controls', async () => {
+    const baseUser = db.overrides['user.findFirst'];
+    let enrollmentSelect: unknown;
+    db.overrides['user.findFirst'] = async (args) => {
+      enrollmentSelect = (args as { select: { courseEnrollments: unknown } }).select.courseEnrollments;
+      return {
+        ...(await baseUser(args) as object),
+        enrolledProgram: 'data-science-and-database-administrator-dba-professional-certificate-ibm',
+        enrolledAt: new Date('2026-01-01T00:00:00Z'),
+        courseEnrollments: [{
+          programSlug: 'data-science-professional-certificate-ibm', curriculumVersion: '2026-approved-v2',
+          isPrimary: false, enrolledAt: INSTANT,
+        }],
+        courseProgress: [{
+          programSlug: 'data-science-and-database-administrator-dba-professional-certificate-ibm',
+          courseSlug: 'introduction-to-data-engineering', courseId: 'zQV3KCOCEeui6AoQjSZBrQ',
+          status: 'COMPLETED', percentComplete: 100, lastUpdatedAt: INSTANT,
+        }],
+      };
+    };
+    const doc = await renderPage({ tab: 'program' });
+    const program = panel(doc, 'program');
+    expect(enrollmentSelect).toEqual({
+      orderBy: { enrolledAt: 'desc' },
+      select: { programSlug: true, curriculumVersion: true, isPrimary: true, enrolledAt: true },
+    });
+    expect(program.textContent).toContain('11% overall · 1 of 9 complete');
+    expect(program.textContent).toContain('Sep 19, 2026');
+    expect(program.textContent).not.toContain('Jan 1, 2026');
+    expect(program.querySelector('[data-panel="program-change"]')?.getAttribute('data-current')).toBe('data-science-professional-certificate-ibm');
+    expect(program.querySelector('[data-panel="enrollment-funding"]')?.getAttribute('data-has-primary-enrollment')).toBe('false');
+    expect(program.textContent).toContain('No primary enrollment is on file');
+    expect(panel(doc, 'activity').querySelector('[data-enrollment-drift]')).not.toBeNull();
+  });
+
+  it('leaves unrelated historical enrollments unresolved even when legacy pointers and progress exist', async () => {
+    const baseUser = db.overrides['user.findFirst'];
+    db.overrides['user.findFirst'] = async (args) => ({
+      ...(await baseUser(args) as object),
+      enrolledProgram: 'data-science-professional-certificate-ibm',
+      enrolledAt: INSTANT,
+      courseEnrollments: [{ programSlug: 'ux-design-professional-certificate-google', curriculumVersion: '2026-approved-v2', isPrimary: false, enrolledAt: INSTANT }],
+      courseProgress: [{
+        programSlug: 'data-science-professional-certificate-ibm', courseSlug: 'introduction-to-data-engineering',
+        courseId: 'zQV3KCOCEeui6AoQjSZBrQ', status: 'COMPLETED', percentComplete: 100, lastUpdatedAt: INSTANT,
+      }],
+    });
+    const doc = await renderPage({ tab: 'program' });
+    const program = panel(doc, 'program');
+    expect(program.querySelector('[data-panel="program-change"]')?.getAttribute('data-current')).toBe('');
+    expect(program.textContent).toContain('Enrolled date: —');
+    expect(program.textContent).toContain('Training activity with no enrollment on file');
+    expect(program.textContent).not.toMatch(/\d+ of \d+ complete/);
+    expect(program.querySelector('[data-panel="enrollment-funding"]')?.getAttribute('data-has-primary-enrollment')).toBe('false');
+  });
+
+  it('keeps an actual primary assignment ahead of a different legacy pointer and secondary enrollment', async () => {
+    const baseUser = db.overrides['user.findFirst'];
+    const primary = {
+      programSlug: 'ux-design-professional-certificate-google', curriculumVersion: '2026-approved-v2',
+      isPrimary: true, enrolledAt: INSTANT, enrolledByAdminId: 'staff-1',
+      fundingSource: null, fundingNotes: null, workspaceEmail: null, workspaceEmailProvisioned: false,
+    };
+    db.overrides['courseEnrollment.findFirst'] = async () => primary;
+    db.overrides['user.findFirst'] = async (args) => ({
+      ...(await baseUser(args) as object),
+      enrolledProgram: 'data-science-professional-certificate-ibm',
+      enrolledAt: new Date('2026-01-01T00:00:00Z'),
+      courseEnrollments: [
+        { programSlug: 'data-science-professional-certificate-ibm', curriculumVersion: 'legacy-v1', isPrimary: false, enrolledAt: INSTANT },
+        primary,
+      ],
+    });
+    const doc = await renderPage({ tab: 'program' });
+    const program = panel(doc, 'program');
+    expect(program.textContent).toContain('0% overall · 0 of 8 complete');
+    expect(program.textContent).toContain('Sep 19, 2026');
+    expect(program.textContent).not.toContain('Jan 1, 2026');
+    expect(program.querySelector('[data-panel="program-change"]')?.getAttribute('data-current')).toBe(primary.programSlug);
+    expect(program.querySelector('[data-panel="enrollment-funding"]')?.getAttribute('data-has-primary-enrollment')).toBe('true');
+    expect(panel(doc, 'activity').querySelector('[data-enrollment-drift]')).not.toBeNull();
   });
 
   it.each([

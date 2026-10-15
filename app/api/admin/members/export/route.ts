@@ -15,6 +15,7 @@ import { formatPhone } from '@/lib/formatPhone';
 import { MEMBER_ONLY_WHERE, MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { buildDirectorySearchWhere, normalizeDirectorySearch } from '@/lib/admin/directorySearch';
 import { buildStatusWhere, type StudentStatus } from '@/lib/admin/studentStatus';
+import { memberEnrollmentFilterWhere } from '@/lib/admin/memberEnrollmentFilters';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { csvEscape } from '@/lib/csv';
 
@@ -60,30 +61,16 @@ async function _GET(request: NextRequest) {
 
     const orgId = await getActorOrganizationId(user.id);
 
-    const dateWhere: { enrolledAt?: { gte?: Date; lte?: Date } } = {};
-    if (startDate) {
-      const d = new Date(startDate);
-      if (!Number.isNaN(d.getTime())) dateWhere.enrolledAt = { ...dateWhere.enrolledAt, gte: d };
-    }
-    if (endDate) {
-      const d = new Date(endDate);
-      if (!Number.isNaN(d.getTime())) {
-        d.setHours(23, 59, 59, 999);
-        dateWhere.enrolledAt = { ...dateWhere.enrolledAt, lte: d };
-      }
-    }
-
     // Apply directory filters before the export bound, so a matching member
     // outside the first 5,000 unfiltered records is still included.
     const where: Prisma.UserWhereInput = {
       ...(includeStaff ? MEMBER_OR_DOGFOOD_WHERE : MEMBER_ONLY_WHERE),
-      ...dateWhere,
       deletedAt: statusFilter === 'dropped' ? { not: null } : null,
       AND: [
         buildDirectorySearchWhere(search),
         buildStatusWhere(statusFilter as StudentStatus),
+        memberEnrollmentFilterWhere({ program: programFilter, startDate, endDate }),
       ],
-      ...(programFilter ? { courseEnrollments: { some: { programSlug: programFilter } } } : {}),
       ...(partnerFilter ? {
         partnerReferrals: partnerFilter === '__none' ? { none: {} } : { some: { partnerId: partnerFilter } },
       } : {}),
