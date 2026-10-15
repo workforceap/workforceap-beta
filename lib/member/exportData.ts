@@ -143,6 +143,9 @@ export async function buildMemberExport(userId: string) {
       roles: user.userRoles.map((ur) => ur.role.name),
 
       // Assessment
+      assessmentAttemptCount: user.assessmentAttemptCount,
+      assessmentRetakeRequestedAt: user.assessmentRetakeRequestedAt,
+      assessmentHistory: user.assessmentHistory,
       assessmentCompleted: user.assessmentCompleted,
       assessmentCompletedAt: user.assessmentCompletedAt?.toISOString() ?? null,
       assessmentScore: user.assessmentScore,

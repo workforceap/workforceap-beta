@@ -1,3 +1,4 @@
+import AssessmentResultHistory from '@/components/admin/AssessmentResultHistory';
 import type { Metadata } from 'next';
 import EnrollmentAgreementCard from '@/components/enrollment/EnrollmentAgreementCard';
 import Link from 'next/link';
@@ -139,6 +140,9 @@ export default async function AdminMemberDetailPage({
     enrolledAt: true,
     programChangedAt: true,
     assessmentCompleted: true,
+      assessmentAttemptCount: true,
+      assessmentRetakeRequestedAt: true,
+      assessmentHistory: true,
     assessmentCompletedAt: true,
     assessmentScore: true,
     assessmentScorePct: true,
@@ -217,6 +221,9 @@ export default async function AdminMemberDetailPage({
     enrolledAt: true,
     programChangedAt: true,
     assessmentCompleted: true,
+      assessmentAttemptCount: true,
+      assessmentRetakeRequestedAt: true,
+      assessmentHistory: true,
     assessmentCompletedAt: true,
     assessmentScore: true,
     assessmentScorePct: true,
@@ -1096,6 +1103,7 @@ export default async function AdminMemberDetailPage({
                 </div>
               )}
 
+              <AssessmentResultHistory history={member.assessmentHistory} />
               <MemberDetailActions
                 userId={member.id}
                 memberName={member.fullName}
@@ -1106,6 +1114,8 @@ export default async function AdminMemberDetailPage({
                     : null
                 }
                 assessmentCompleted={member.assessmentCompleted}
+                assessmentAttemptCount={member.assessmentAttemptCount}
+                assessmentRetakePending={!!member.assessmentRetakeRequestedAt}
                 programOptions={programOptions}
               />
             </section>

@@ -4,6 +4,7 @@ import { isAdmin } from '@/lib/auth/roles';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 import { allowAssessmentRetake } from '@/lib/assessment/retake';
+import { ASSESSMENT_LIMIT_MESSAGE } from '@/lib/assessment/attempts';
 import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
@@ -34,7 +35,7 @@ export const POST = withApiGuc(async (request: Request) => {
     if (!result.ok) {
       return result.reason === 'not_found'
         ? NextResponse.json({ error: 'Member not found' }, { status: 404 })
-        : NextResponse.json({ error: 'This member has not completed the preassessment yet.' }, { status: 409 });
+        : NextResponse.json({ error: result.reason === 'limit_reached' ? ASSESSMENT_LIMIT_MESSAGE : result.reason === 'changed' ? 'The assessment changed. Reload and try again.' : 'This member has not completed the preassessment yet.' }, { status: 409 });
     }
 
     auditLog({
@@ -52,7 +53,7 @@ export const POST = withApiGuc(async (request: Request) => {
       ...auditRequestMeta(request),
     }).catch(() => {});
 
-    return NextResponse.json({ ok: true, message: 'Retake allowed. The previous score is saved in history.' });
+    return NextResponse.json({ ok: true, message: 'Final retake requested. The student will see a prompt in their portal. Previous results are saved.' });
   } catch (error) {
     console.error('/api/counselor/assessment-retake:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

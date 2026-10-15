@@ -30,15 +30,19 @@ function storage(): Storage | null {
   }
 }
 
-export function readAssessmentProgress(now: number = Date.now()): AssessmentProgress | null {
+function progressKey(scope?: string): string {
+  return scope ? `${ASSESSMENT_PROGRESS_KEY}:${scope}` : ASSESSMENT_PROGRESS_KEY;
+}
+
+export function readAssessmentProgress(now: number = Date.now(), scope?: string): AssessmentProgress | null {
   const store = storage();
   if (!store) return null;
   try {
-    const raw = store.getItem(ASSESSMENT_PROGRESS_KEY);
+    const raw = store.getItem(progressKey(scope));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<Stored>;
     if (typeof parsed.savedAt !== 'number' || now - parsed.savedAt > ASSESSMENT_PROGRESS_MAX_AGE_MS) {
-      store.removeItem(ASSESSMENT_PROGRESS_KEY);
+      store.removeItem(progressKey(scope));
       return null;
     }
     const answers: Record<number, Letter> = {};
@@ -57,23 +61,23 @@ export function readAssessmentProgress(now: number = Date.now()): AssessmentProg
   }
 }
 
-export function writeAssessmentProgress(progress: AssessmentProgress, now: number = Date.now()): void {
+export function writeAssessmentProgress(progress: AssessmentProgress, now: number = Date.now(), scope?: string): void {
   const store = storage();
   if (!store) return;
   try {
     if (Object.keys(progress.answers).length === 0 && !progress.programInterest) {
-      store.removeItem(ASSESSMENT_PROGRESS_KEY);
+      store.removeItem(progressKey(scope));
       return;
     }
-    store.setItem(ASSESSMENT_PROGRESS_KEY, JSON.stringify({ ...progress, savedAt: now } satisfies Stored));
+    store.setItem(progressKey(scope), JSON.stringify({ ...progress, savedAt: now } satisfies Stored));
   } catch {
     /* quota or private mode: saving is best effort */
   }
 }
 
-export function clearAssessmentProgress(): void {
+export function clearAssessmentProgress(scope?: string): void {
   try {
-    storage()?.removeItem(ASSESSMENT_PROGRESS_KEY);
+    storage()?.removeItem(progressKey(scope));
   } catch {
     /* ignore */
   }

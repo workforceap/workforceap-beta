@@ -131,3 +131,47 @@ The catalog includes active Astro `marketing/` build inputs, `graph/`, `.cursor/
 Partner mobile referral cards show full member names with normal wrapping and break long unbroken names within the card, retaining their existing detail link and title ([roster component](../../components/partner/PartnerReferredMembersMobile.tsx)).
 
 The [partner dev fixture frame](../../app/dev/staff/DevPartnerFrame.tsx) mounts the real partner phone navigation on `/dev/staff/partner`, `/dev/staff/partner-command`, `/dev/staff/partner-members` and `/dev/staff/partner-member-detail`. Overview/command show Overview current; roster/detail show Members current. Synthetic fixture data is labelled; links retain production partner destinations and normal auth gates. Existing global navigation/safe-area clearance and shared portal tokens apply. Other staff labs have no partner navigation; the production dev-page guards are unchanged. These fixtures support navigation appearance/keyboard QA, not authenticated destination acceptance.
+
+### Preassessment attempts (WAP-305)
+
+Students have two completed preassessment chances: the initial attempt and one
+staff-authorized final attempt. [Admin member actions](../../components/admin/MemberDetailActions.tsx)
+and [assigned counselor actions](../../app/api/counselor/assessment-retake/route.ts)
+use the shared [retake helper](../../lib/assessment/retake.ts). Existing actor,
+assignment and organization checks remain required before that helper runs.
+Members cannot authorize a retake through the retired self-reset URL.
+
+The three `User` fields `assessmentAttemptCount`, `assessmentRetakeRequestedAt`
+and `assessmentHistory` record completed attempts, pending staff authorization
+and durable previous results. Granting the final attempt archives the current
+score, answers, program interest, completion date and staff provenance in one
+SQL statement and leaves the official result and training gates intact. The
+student sees a prompt on home and the assessment page; no retake email is sent.
+The [submit writer](../../lib/assessment/recordSubmission.ts) compares the exact
+count and authorization timestamp before incrementing and clearing permission.
+The POST also matches the timestamp supplied by the rendered form, so a stale
+initial request cannot consume the final attempt. Device progress is scoped to
+the student and attempt. Profile reminders continue to allow valid submissions.
+
+The additive [migration](../../prisma/migrations/20261015120000_assessment_two_attempts/migration.sql)
+imports available legacy staff/member reset diagnostics, deduplicates dated
+completions, and retains undated evidence separately. It recognizes legacy staff
+permission but requires staff after a legacy member self-reset. An exhausted
+legacy reset restores its latest known result rather than demanding a third
+attempt. Backfill can use only retained evidence: diagnostics already purged
+cannot establish older attempt counts. New result history lives on the member,
+outside diagnostic retention, and is included in the member data export.
+A trigger prevents Data API `anon`/`authenticated` sessions from changing the
+three server-owned fields, including through inherited table-wide grants.
+Account merges preserve known attempts/history and cannot reopen an exhausted
+record. New API writes enforce the cap even if a stale pending flag exists.
+
+[PostgreSQL fixture tests](../../tests/integration/assessment-attempts.postgres.spec.ts)
+exercise the migration, duplicate grants/submissions, legacy states, tenant
+boundaries and deletion predicates. They require an explicitly supplied
+`ASSESSMENT_FIXTURE_DATABASE_URL` on localhost and create/drop a uniquely named
+schema; they never use the configured application database URL. Route and
+rendered-page tests cover authorization, stale form tokens, side effects and
+student prompts. These fixtures do not certify production Auth, RLS or delivery.
+Release preflight follows [database recovery](../DATABASE-RECOVERY.md); keep the
+additive columns/history on an application rollback rather than deleting results.

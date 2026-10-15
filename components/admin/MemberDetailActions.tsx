@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import AllowAssessmentRetakeButton from './AllowAssessmentRetakeButton';
 import { useRouter } from 'next/navigation';
 import { getProgramBySlug, PROGRAMS } from '@/lib/content/programs';
 
@@ -24,6 +25,8 @@ type MemberDetailActionsProps = {
   enrollmentGateBlocked: boolean;
   currentProgramSlug: string | null;
   assessmentCompleted: boolean;
+  assessmentAttemptCount?: number;
+  assessmentRetakePending?: boolean;
   /** null is a truly absent catalog; an explicit empty list stays empty. */
   programOptions: ProgramOption[] | null;
 };
@@ -34,6 +37,8 @@ export default function MemberDetailActions({
   enrollmentGateBlocked,
   currentProgramSlug,
   assessmentCompleted,
+  assessmentAttemptCount = assessmentCompleted ? 1 : 0,
+  assessmentRetakePending = false,
   programOptions,
 }: MemberDetailActionsProps) {
   const router = useRouter();
@@ -89,27 +94,6 @@ export default function MemberDetailActions({
         return;
       }
       setFeedback({ kind: 'success', text: `${memberName} is now assigned to ${label}.` });
-      router.refresh();
-    } catch {
-      setFeedback({ kind: 'error', text: 'Could not reach the server.' });
-    } finally {
-      setLoading('');
-    }
-  };
-
-  const handleResetAssessment = async () => {
-    setLoading('assessment');
-    setFeedback(null);
-    try {
-      const res = await fetch(`/api/admin/members/${userId}/reset-assessment`, { method: 'POST' });
-      if (!res.ok) {
-        setFeedback({
-          kind: 'error',
-          text: await responseError(res, 'Could not reset this assessment.'),
-        });
-        return;
-      }
-      setFeedback({ kind: 'success', text: 'Assessment reset.' });
       router.refresh();
     } catch {
       setFeedback({ kind: 'error', text: 'Could not reach the server.' });
@@ -213,16 +197,11 @@ export default function MemberDetailActions({
         </p>
       ) : null}
 
-      {assessmentCompleted && (
-        <button
-          type="button"
-          className="btn btn-outline"
-          onClick={handleResetAssessment}
-          disabled={!!loading}
-        >
-          {loading === 'assessment' ? '...' : 'Reset Assessment'}
-        </button>
-      )}
+      <AllowAssessmentRetakeButton
+        memberId={userId} memberName={memberName}
+        attemptCount={assessmentAttemptCount} pending={assessmentRetakePending}
+        endpoint={`/api/admin/members/${userId}/reset-assessment`}
+      />
 
       <div>
         <button

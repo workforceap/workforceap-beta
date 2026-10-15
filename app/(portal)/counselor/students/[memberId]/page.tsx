@@ -1,3 +1,4 @@
+import AssessmentResultHistory from '@/components/admin/AssessmentResultHistory';
 import { getTranslations } from 'next-intl/server';
 import EnrollmentAgreementCard from '@/components/enrollment/EnrollmentAgreementCard';
 import { notFound, redirect } from 'next/navigation';
@@ -113,6 +114,9 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
       assessmentScorePct: true,
       assessmentScore: true,
       assessmentCompleted: true,
+      assessmentAttemptCount: true,
+      assessmentRetakeRequestedAt: true,
+      assessmentHistory: true,
       assessmentCompletedAt: true,
       assessmentAnswers: true,
       wioaQualificationJson: true,
@@ -646,9 +650,11 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
                   completedAt={member.assessmentCompletedAt}
                   programInterest={member.programInterest}
                 />
-                <AllowAssessmentRetakeButton memberId={member.id} memberName={member.fullName ?? 'this member'} />
               </div>
             ) : null}
+
+            <AssessmentResultHistory history={member.assessmentHistory} />
+            <AllowAssessmentRetakeButton memberId={member.id} memberName={member.fullName ?? 'this member'} attemptCount={member.assessmentAttemptCount} pending={!!member.assessmentRetakeRequestedAt} />
 
             {/* Counselor 360 signals — at-risk, career quiz, next-best-actions */}
             <section aria-labelledby="counselor-member-360-title">

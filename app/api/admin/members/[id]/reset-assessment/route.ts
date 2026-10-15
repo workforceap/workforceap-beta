@@ -3,6 +3,7 @@ import { getUser } from '@/lib/auth/server';
 import { isAdmin, isSuperAdmin, getProfileRole } from '@/lib/auth/roles';
 import { withDbRetry } from '@/lib/db/withDbRetry';
 import { allowAssessmentRetake } from '@/lib/assessment/retake';
+import { ASSESSMENT_LIMIT_MESSAGE } from '@/lib/assessment/attempts';
 import { getActorOrganizationId, getSubjectOrganizationId } from '@/lib/tenant/organization';
 import { canAdminActInSubjectOrganization } from '@/lib/tenant/adminSubjectAccess';
 
@@ -35,14 +36,13 @@ export const POST = withApiGuc(async (
     }
     const orgId = subjectOrgId;
 
-    // Ops (10/9/26): archive the previous result to assessment history before
-    // clearing it (this used to delete the score and answers outright). The
-    // member's program interest is kept; the retake asks for it again anyway.
+    // Archive the prior result and prompt the student's final attempt.
+    // Their completed result stays on file until that attempt is submitted.
     const result = await allowAssessmentRetake({ memberId: id, staffUserId: user.id, staffRole: 'admin' });
     if (!result.ok) {
       return result.reason === 'not_found'
         ? NextResponse.json({ error: 'Member not found' }, { status: 404 })
-        : NextResponse.json({ error: 'This member has not completed the preassessment yet.' }, { status: 409 });
+        : NextResponse.json({ error: result.reason === 'limit_reached' ? ASSESSMENT_LIMIT_MESSAGE : result.reason === 'changed' ? 'The assessment changed. Reload and try again.' : 'This member has not completed the preassessment yet.' }, { status: 409 });
     }
 
     const profileRole = await withDbRetry(() => getProfileRole(user.id)).catch((err) => {
@@ -59,7 +59,7 @@ export const POST = withApiGuc(async (
       orgId,
     }).catch((err) => console.error('[audit] reset-assessment:', err));
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, message: 'Final retake requested. The student will see a prompt in their portal. Previous results are saved.' });
   } catch (error) {
     console.error('[admin/members/[id]/reset-assessment POST] error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

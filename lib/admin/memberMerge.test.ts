@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from 'vitest';
-import { checkMergeConflicts, executeMemberMerge } from './memberMerge';
+import { buildMergePreview, checkMergeConflicts, executeMemberMerge } from './memberMerge';
 import { MEMBER_MERGE_PREVIEW_ONLY, MEMBER_MERGE_REPOINT_PLAN } from './memberMergeRepointPlan';
 import type { Prisma } from '@prisma/client';
 
@@ -12,6 +12,9 @@ function makeMockUser(overrides: Partial<Record<string, unknown>> = {}) {
     phone: null,
     enrolledProgram: null,
     assessmentCompleted: false,
+    assessmentAttemptCount: 0,
+    assessmentRetakeRequestedAt: null,
+    assessmentHistory: [],
     deletedAt: null,
     assessmentCompletedAt: null,
     assessmentScore: null,
@@ -396,6 +399,173 @@ describe('executeMemberMerge', () => {
   });
 });
 
+
+describe('assessment attempt merge accounting', () => {
+  const firstDate = new Date('2026-10-01T12:00:00Z');
+  const secondDate = new Date('2026-10-02T12:00:00Z');
+  const requestedAt = new Date('2026-10-03T12:00:00Z');
+  const first = {
+    assessmentCompleted: true,
+    assessmentCompletedAt: firstDate,
+    assessmentScore: 60,
+    assessmentScorePct: 60,
+    assessmentAnswers: { 1: 'A', 2: 'B' },
+    assessmentAttemptCount: 1,
+  };
+  const firstArchive = {
+    score: 60, scorePct: 60, answers: { 1: 'A', 2: 'B' },
+    programInterest: null, completedAt: firstDate.toISOString(),
+    requestedAt: requestedAt.toISOString(), allowedBy: 'admin-1',
+  };
+
+  async function mergeAssessments(primary: Record<string, unknown>, secondary: Record<string, unknown>) {
+    const tx = makeMockTx();
+    (tx as unknown as MockTxExtras).user.findUnique = async ({ where }) =>
+      makeMockUser({ id: String(where.id), ...(where.id === 'primary' ? primary : secondary) });
+    const preview = await buildMergePreview(tx, 'primary', 'secondary');
+    const result = await executeMemberMerge(tx, 'primary', 'secondary', 'admin-1');
+    const call = (tx as unknown as MockTxExtras).calls.find((entry) =>
+      entry.startsWith('user.update({"where":{"id":"primary"}'),
+    );
+    const data = call ? JSON.parse(call.slice('user.update('.length, -1)).data : {};
+    return { data, result, preview };
+  }
+
+  it('counts both distinct completed results, archives the secondary, and revokes pending permission', async () => {
+    const { data, preview, result } = await mergeAssessments({
+      ...first, assessmentAnswers: null, assessmentRetakeRequestedAt: requestedAt,
+    }, {
+      ...first, assessmentCompletedAt: secondDate, assessmentScore: 80, assessmentScorePct: 80,
+    });
+    expect(data.assessmentAttemptCount).toBe(2);
+    expect(data.assessmentRetakeRequestedAt).toBeNull();
+    expect(data.assessmentHistory).toEqual([expect.objectContaining({
+      completedAt: secondDate.toISOString(), score: 80, scorePct: 80,
+      answers: { 1: 'A', 2: 'B' }, sourceMemberId: 'secondary',
+    })]);
+    // The primary's missing answers belong to its own result; the merge must
+    // not pair the secondary answer sheet with the primary score.
+    expect(data).not.toHaveProperty('assessmentAnswers');
+    expect(data).not.toHaveProperty('assessmentScore');
+    expect(preview.scalarFieldsToMerge).toEqual(expect.arrayContaining([
+      'assessmentAttemptCount', 'assessmentHistory', 'assessmentRetakeRequestedAt',
+    ]));
+    expect(result.mergedFields).toEqual(expect.arrayContaining(preview.scalarFieldsToMerge));
+  });
+
+  it('copies the complete secondary result and its two-attempt cap onto an empty primary', async () => {
+    const { data } = await mergeAssessments({}, {
+      ...first, assessmentCompletedAt: secondDate, assessmentScore: null,
+      assessmentAttemptCount: 2, assessmentHistory: [firstArchive],
+      assessmentRetakeRequestedAt: requestedAt,
+    });
+    expect(data).toMatchObject({
+      assessmentAttemptCount: 2, assessmentCompleted: true,
+      assessmentCompletedAt: secondDate.toISOString(), assessmentScorePct: 60,
+      assessmentAnswers: { 1: 'A', 2: 'B' }, assessmentHistory: [firstArchive],
+    });
+    expect(data).not.toHaveProperty('assessmentRetakeRequestedAt');
+    expect(data).not.toHaveProperty('assessmentScore');
+  });
+
+  it('preserves both histories and all counted attempts, including historical totals over two', async () => {
+    const secondaryArchive = { ...firstArchive, completedAt: '2026-09-01T12:00:00.000Z', legacyDiagnosticId: 'legacy-2' };
+    const { data } = await mergeAssessments({
+      ...first, assessmentAttemptCount: 3, assessmentHistory: [firstArchive],
+    }, {
+      ...first, assessmentCompletedAt: secondDate, assessmentAttemptCount: 2,
+      assessmentHistory: [secondaryArchive], assessmentRetakeRequestedAt: requestedAt,
+    });
+    expect(data.assessmentAttemptCount).toBe(5);
+    expect(data.assessmentHistory).toEqual([
+      firstArchive, secondaryArchive,
+      expect.objectContaining({ completedAt: secondDate.toISOString(), sourceMemberId: 'secondary' }),
+    ]);
+  });
+
+  it('dedupes a proven shared dated result despite answer-object key order or authorization metadata', async () => {
+    const { data } = await mergeAssessments({
+      ...first, assessmentHistory: [firstArchive], assessmentRetakeRequestedAt: requestedAt,
+    }, {
+      ...first, assessmentAnswers: { 2: 'B', 1: 'A' },
+      assessmentHistory: [{ ...firstArchive, allowedBy: 'counselor-2' }],
+    });
+    expect(data).not.toHaveProperty('assessmentAttemptCount');
+    expect(data).not.toHaveProperty('assessmentRetakeRequestedAt');
+    expect(data).not.toHaveProperty('assessmentHistory');
+  });
+
+  it('does not treat equal scores on separate dates as one attempt', async () => {
+    const { data } = await mergeAssessments(first, { ...first, assessmentCompletedAt: secondDate });
+    expect(data.assessmentAttemptCount).toBe(2);
+    expect(data.assessmentHistory).toHaveLength(1);
+  });
+
+  it('does not treat undated equal results on separate accounts as one attempt', async () => {
+    const { data } = await mergeAssessments({ ...first, assessmentCompletedAt: null }, {
+      ...first, assessmentCompletedAt: null,
+    });
+    expect(data.assessmentAttemptCount).toBe(2);
+    expect(data.assessmentHistory).toEqual([expect.objectContaining({ completedAt: null })]);
+  });
+
+  it('does not count an undated current result again when its authorization already archived it', async () => {
+    const undatedArchive = { ...firstArchive, completedAt: null };
+    const { data } = await mergeAssessments({}, {
+      ...first, assessmentCompletedAt: null, assessmentRetakeRequestedAt: requestedAt,
+      assessmentHistory: [undatedArchive],
+    });
+    expect(data.assessmentAttemptCount).toBe(1);
+    expect(data.assessmentRetakeRequestedAt).toBe(requestedAt.toISOString());
+    expect(data.assessmentHistory).toEqual([undatedArchive]);
+  });
+
+  it('retains an undated final authorization after PostgreSQL rounds a fractional request timestamp', async () => {
+    const roundedPending = new Date('2026-10-15T10:00:00.074Z');
+    const postgresArchive = { ...firstArchive, completedAt: null, requestedAt: '2026-10-15T10:00:00.074+00:00' };
+    const { data } = await mergeAssessments({}, {
+      ...first, assessmentCompletedAt: null, assessmentRetakeRequestedAt: roundedPending,
+      assessmentHistory: [postgresArchive],
+    });
+    expect(data.assessmentAttemptCount).toBe(1);
+    expect(data.assessmentRetakeRequestedAt).toBe(roundedPending.toISOString());
+    expect(data.assessmentHistory).toEqual([postgresArchive]);
+  });
+
+  it('raises stale counters to cover distinct history and the current completed result', async () => {
+    const { data } = await mergeAssessments({
+      ...first, assessmentAttemptCount: 0, assessmentCompletedAt: secondDate,
+      assessmentHistory: [firstArchive], assessmentRetakeRequestedAt: requestedAt,
+    }, {});
+    expect(data.assessmentAttemptCount).toBe(2);
+    expect(data.assessmentRetakeRequestedAt).toBeNull();
+  });
+
+  it('uses the assessment state after acquiring row locks when a submission won the race', async () => {
+    const tx = makeMockTx();
+    let locked = false;
+    const originalQuery = tx.$queryRaw;
+    (tx as unknown as { $queryRaw: (query: Prisma.Sql) => Promise<unknown> }).$queryRaw = async (query) => {
+      const rows = await originalQuery(query);
+      if (query.sql.includes('FOR UPDATE')) locked = true;
+      return rows;
+    };
+    (tx as unknown as MockTxExtras).user.findUnique = async ({ where }) => makeMockUser({
+      id: String(where.id),
+      ...(where.id === 'primary'
+        ? locked ? first : {}
+        : { ...first, assessmentCompletedAt: secondDate }),
+    });
+    await executeMemberMerge(tx, 'primary', 'secondary', 'admin-1');
+    const call = (tx as unknown as MockTxExtras).calls.find((entry) =>
+      entry.startsWith('user.update({"where":{"id":"primary"}'),
+    );
+    const { data } = JSON.parse(call!.slice('user.update('.length, -1));
+    expect(data.assessmentAttemptCount).toBe(2);
+    expect(data.assessmentHistory).toEqual([expect.objectContaining({ completedAt: secondDate.toISOString() })]);
+    expect(data).not.toHaveProperty('assessmentCompletedAt');
+  });
+});
 
 describe('collision planning (the duplicate key never reaches PostgreSQL)', () => {
   function pointsRows() {

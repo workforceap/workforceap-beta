@@ -147,6 +147,9 @@ model User {
   email                        String              @unique
   fullName                     String              @map("full_name")
   phone                        String?
+  assessmentAttemptCount       Int                 @default(0) @map("assessment_attempt_count")
+  assessmentRetakeRequestedAt  DateTime?           @map("assessment_retake_requested_at")
+  assessmentHistory            Json                @default("[]") @map("assessment_history")
   assessmentCompleted          Boolean             @default(false) @map("assessment_completed")
   assessmentCompletedAt        DateTime?           @map("assessment_completed_at")
   assessmentScore              Int?                @map("assessment_score")
