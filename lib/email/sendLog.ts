@@ -8,6 +8,10 @@
  * each transition (skipped → sending → sent | failed), and stores the
  * provider's message id so /api/webhooks/resend can attach delivery events.
  *
+ * Enrollment-template send (`lib/enrollmentAgreements/templateSend.ts`) reuses
+ * this table for internal gate/reserved rows (`gate_busy`, `gate_idle`,
+ * `reserved`) with provider `internal`. Those statuses are not written here.
+ *
  * Hard rules:
  * - Best-effort. A store failure is swallowed and never changes the send's
  *   outcome or throws into the caller. The writer waits at most
