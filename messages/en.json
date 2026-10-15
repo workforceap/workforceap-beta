@@ -4277,6 +4277,67 @@
       }
     }
   },
+  "workforceApModule": {
+    "attCatalog": "Open AT&T courses in English",
+    "digitalLearnCatalog": "Open DigitalLearn courses in English",
+    "catalogHelp": "The provider catalog opens in English. Select the course title shown above; individual lessons open on the provider site.",
+    "catalogNote": "Opens the English course catalog; select “{title}”.",
+    "attCatalogNote": "AT&T's catalog opens in English. Choose the topic you want to study.",
+    "metaTitle": "WorkforceAP Lab",
+    "metaDescription": "Complete an approved WorkforceAP applied-learning lab.",
+    "providerModule": "{provider} module",
+    "appliedLab": "WorkforceAP applied lab",
+    "complete": "Complete",
+    "lessonMinutes": "{minutes} min of lessons",
+    "hours": "{hours} hours",
+    "lessonsHeading": "Open course pages and materials",
+    "lessonsIntro": "These links open on {provider} in a new tab. Access is free and a provider account is optional.",
+    "activityBoundary": "WorkforceAP does not receive provider-side activity.",
+    "practiceHeading": "What you will practice",
+    "providerLabel": "Provider and license.",
+    "providerAttribution": "Linked material is provided by {provider}.",
+    "licenseIntro": "DigitalLearn identifies its course content as",
+    "providerTerms": "provider terms",
+    "licenseBoundary": "WorkforceAP links to the original pages and does not copy, host, adapt, or imply endorsement of provider videos.",
+    "providerIndexIntro": "Need another route? Browse the",
+    "providerIndex": "{provider} course index",
+    "completionHeading": "WorkforceAP completion record",
+    "completionBoundary": "Return here after finishing the linked material. Marking this module complete records WorkforceAP progress, points, and counselor-visible completion. It does not verify DigitalLearn activity or issue a DigitalLearn certificate.",
+    "completionRecords": "View your WorkforceAP completion and certificate records",
+    "keepMoving": "Keep your learning moving",
+    "appliedWork": "Complete the applied work",
+    "optionalTools": "Use these optional WorkforceAP tools to practice, document, and discuss what you learned.",
+    "appliedTools": "Work through these portal tools, keep your project evidence, and mark the lab complete when your required work is finished.",
+    "markModule": "Mark module complete in WorkforceAP",
+    "markLab": "Mark lab complete",
+    "moduleCompleted": "Completed in WorkforceAP",
+    "completed": "Completed",
+    "back": "Back to Learning Hub",
+    "startLesson": "Start this lesson",
+    "openLesson": "Open this lesson",
+    "fallback": "Open provider materials fallback",
+    "saving": "Saving…",
+    "saveError": "Could not save completion. Please try again.",
+    "networkError": "Could not reach the server. Check your connection and try again.",
+    "actions": {
+      "artifact": {
+        "title": "Build an applied artifact",
+        "detail": "Use Skill Missions to turn the work into evidence you can show."
+      },
+      "resume": {
+        "title": "Add the work to your resume",
+        "detail": "Translate the project into an outcome-focused resume bullet."
+      },
+      "interview": {
+        "title": "Practice explaining your work",
+        "detail": "Prepare a concise interview story about what you built and learned."
+      },
+      "feedback": {
+        "title": "Ask for feedback",
+        "detail": "Send your counselor the artifact or question before you finish."
+      }
+    }
+  },
   "aiToolsDiscovery": {
     "title": "AI Career Tools",
     "homeIntro": "Get help with your resume, interview practice, and job applications. Choose a tool, follow the prompts, then review and edit the result before using it.",

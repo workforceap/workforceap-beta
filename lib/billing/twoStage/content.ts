@@ -15,6 +15,7 @@ import { WAP_BILLING_LETTERHEAD } from './letterhead';
 import { buildTuitionLineItems, type TuitionLine } from './lineItem';
 import { j5Recipients, j6Recipients, normalizeRecipientName, type Contact, type Recipient, type RecipientRole } from './recipients';
 import { checkJ5Prerequisites, checkJ6Prerequisites, type J6Prerequisites, type J6Variance, type PriorJ5Summary, type ReviewReason } from './stateMachine';
+import { formatBillingPhone } from './phone';
 
 /** The approved description to freeze, normalized to one line of single spaces. */
 function frozenClassDescription(programSlug: string): { classDescription?: string } {
@@ -207,7 +208,7 @@ export function buildJ5Content(input: {
     letterhead: letterhead(input.logoSha256),
     student: printed(recipients.recipients, 'student'),
     boardName: input.boardName.trim(),
-    counselor: { ...printed(recipients.recipients, 'counselor'), phone: normalizeRecipientName(input.counselor.phone) },
+    counselor: { ...printed(recipients.recipients, 'counselor'), phone: formatBillingPhone(normalizeRecipientName(input.counselor.phone)) },
     training: { programSlug: terms.canonicalSlug, className: terms.className, ...frozenClassDescription(terms.canonicalSlug), contactHours: terms.hours, classStartDate: start, classEndDate: classEndDate(start) },
     ...lineItems(),
     signer: signer(),
@@ -267,7 +268,7 @@ export function buildJ6Content(
     letterhead: letterhead(input.logoSha256),
     student: printed(recipients.recipients, 'student'),
     boardName: input.boardName.trim(),
-    counselor: { ...printed(recipients.recipients, 'counselor'), phone: normalizeRecipientName(input.counselor.phone) },
+    counselor: { ...printed(recipients.recipients, 'counselor'), phone: formatBillingPhone(normalizeRecipientName(input.counselor.phone)) },
     finance: printed(recipients.recipients, 'finance'),
     training: gate.training,
     ...lineItems(),

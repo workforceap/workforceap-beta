@@ -38,6 +38,7 @@ import { dateColumn, j6Prerequisites, latestAttestation, loadCaseSnapshot, recor
 import { apiError, NO_STORE_HEADERS, PDF_FRAME_HEADERS } from './http';
 import { readLetterheadLogo } from './logo';
 import { versionView } from './summary';
+import { formatBillingPhone } from '../phone';
 
 type Inputs = J6DraftInput; // J5 uses the subset without finance / board invoice.
 type Sourced = { value: string | null; source: ContactSource };
@@ -159,7 +160,8 @@ export function validateFields(stage: BillingStage, values: Record<DraftField, S
         continue;
       }
     }
-    const printed = f.endsWith('.email') ? normalizeEmail(value) : value.replace(/[ \t\n\v\f\r]+/gu, ' ');
+    const normalized = value.replace(/[ \t\n\v\f\r]+/gu, ' ');
+    const printed = f.endsWith('.email') ? normalizeEmail(value) : f === 'counselor.phone' ? formatBillingPhone(normalized) : normalized;
     const issue = printableIssue(f, printed, LIMITS[f]);
     if (issue) errors[f] = { code: issue.code, message: issue.message };
   }

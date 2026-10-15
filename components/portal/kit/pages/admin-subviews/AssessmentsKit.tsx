@@ -18,6 +18,7 @@ import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
  * Columns: Assessment · Type · Completions · Avg Score · Status.
  * Status is an Astryx Token (Live=green). Wide table collapses to stacked
  * cards on mobile via DataTable mobile="cards".
+ * Student results & retakes opens the per-member results and final-retake controls.
  *
  * NOTE on data: the platform tracks a single combined skills + readiness
  * assessment per member (User.assessmentCompleted / assessmentScorePct), not a
@@ -137,7 +138,7 @@ export function AssessmentsKit({
         kicker="Members"
         lede={subtitle}
         action={
-          <KitLinkButton href="/admin/assessments?ui=legacy" label="Results & export" variant="secondary" size="sm" />
+          <KitLinkButton href="/admin/assessments?ui=legacy" label="Student results & retakes" variant="secondary" size="sm" />
         }
       />
 

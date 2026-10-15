@@ -17,6 +17,7 @@ import { parseDraftPatch } from './draft';
 import { envGates } from './gates';
 import { apiError, NO_STORE_HEADERS, PDF_FRAME_HEADERS } from './http';
 import { readLetterheadLogo } from './logo';
+import { formatBillingPhone } from '../phone';
 
 const text = (value: unknown): string | null => typeof value === 'string' && value.trim() ? value.trim() : null;
 const date = (value: Date | string | null | undefined): string | null => {
@@ -105,10 +106,13 @@ export async function buildMemberPreview<P>(ctx: TwoStageContext<P>, stage: Bill
     : saved?.kind === 'j5_quote_voucher_request' ? text(saved.training.classDescription) : approvedDescription : null;
   const choose = (typed: string | undefined, stored: unknown, fallback?: unknown) => typed !== undefined ? text(typed) : text(stored) ?? text(fallback);
   const letterhead = WAP_BILLING_LETTERHEAD;
+  // Editor previews reflect new draft formatting; snapshots retain the exact
+  // phone value bound into their saved document version.
+  const counselorPhone = choose(patch.counselor?.phone, saved?.counselor?.phone);
   return {
     stage, preparedAt: ctx.now.toISOString(),
     student: { name: choose(patch.student?.name, saved?.student?.name, ctx.member.fullName), email: choose(patch.student?.email, saved?.student?.email, ctx.member.email) },
-    counselor: { name: choose(patch.counselor?.name, saved?.counselor?.name, counselor?.fullName), email: choose(patch.counselor?.email, saved?.counselor?.email, counselor?.email), phone: choose(patch.counselor?.phone, saved?.counselor?.phone) },
+    counselor: { name: choose(patch.counselor?.name, saved?.counselor?.name, counselor?.fullName), email: choose(patch.counselor?.email, saved?.counselor?.email, counselor?.email), phone: editorPreview ? formatBillingPhone(counselorPhone) || null : counselorPhone },
     finance: { name: choose(patch.finance?.name, saved?.kind === 'j6_invoice_cover_letter' ? saved.finance?.name : null), email: choose(patch.finance?.email, saved?.kind === 'j6_invoice_cover_letter' ? saved.finance?.email : null) },
     boardName: choose(patch.boardName, saved?.boardName),
     className: editorPreview ? (terms.ok ? terms.className : null) : text(saved?.training?.className) ?? (terms.ok ? terms.className : null),

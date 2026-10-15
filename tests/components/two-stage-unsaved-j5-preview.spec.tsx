@@ -63,6 +63,25 @@ afterEach(() => {
 });
 
 describe('editor PDF preview', () => {
+  it.each([
+    ['5125550123', '(512) 555-0123'],
+    ['+15125550123 ext. 42', '(512) 555-0123 ext. 42'],
+    ['+47 1234 5678', '+47 1234 5678'],
+  ])('keeps typing intact and formats phone %s for preview and on blur', async (typed, formatted) => {
+    const calls = mockNetwork();
+    render(editor());
+    const phone = await screen.findByLabelText('Counselor phone');
+    expect(phone).toHaveValue('(512) 555-0100');
+    fireEvent.change(phone, { target: { value: typed } });
+    expect(phone).toHaveValue(typed);
+    await startPreview();
+    await screen.findByTitle('Unsaved J5 PDF preview');
+    expect(calls.find((call) => call.url.endsWith('/preview'))?.body).toMatchObject({ counselor: { phone: formatted } });
+    fireEvent.blur(phone);
+    expect(phone).toHaveValue(formatted);
+    expect(onSaved).not.toHaveBeenCalled();
+  });
+
   it('previews current typed values without a draft save, even when saving is unavailable', async () => {
     const calls = mockNetwork();
     render(editor());
@@ -75,7 +94,7 @@ describe('editor PDF preview', () => {
     expect(calls.find((call) => call.url === `${BASE}/j5/preview`)).toMatchObject({
       method: 'POST', body: {
         boardName: 'Unsaved Board', student: { name: 'Sam Student', email: 'sam@example.test' },
-        counselor: { name: 'Unsaved Counselor', email: 'counselor@example.test', phone: '512-555-0100' },
+        counselor: { name: 'Unsaved Counselor', email: 'counselor@example.test', phone: '(512) 555-0100' },
         caseId: CASE_ID, previewSource: 'editor',
       },
     });

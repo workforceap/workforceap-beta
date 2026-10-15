@@ -17,6 +17,7 @@ import {
 } from '@/lib/billing/twoStage/dto';
 import { TUITION_AND_FEES_CENTS, TUITION_AND_FEES_LABEL } from '@/lib/billing/twoStage/constants';
 import { formatUsdCents } from '@/lib/billing/twoStage/lineItem';
+import { formatBillingPhone } from '@/lib/billing/twoStage/phone';
 import { twoStageApi, draftPreviewPath, type ApiFailure } from './twoStageClient';
 import { CONTACT_SOURCE_LABELS, shortHash } from './twoStagePresentation';
 import styles from './TwoStageBillingWorkbench.module.css';
@@ -38,7 +39,7 @@ const FIELD_LABELS: Readonly<Record<DraftField, string>> = {
 const FIELD_HINTS: Readonly<Partial<Record<DraftField, string>>> = {
   boardName: 'The board that issues the voucher, for example “Workforce Solutions Capital Area”.',
   'counselor.name': 'Any counselor can be entered; it does not have to be the assigned one.',
-  'counselor.phone': 'Printed on the document with the counselor’s name and email.',
+  'counselor.phone': 'Printed with the counselor’s name and email. US format: (512) 555-0123. International numbers and extensions are kept.',
 };
 
 const INPUT_TYPES: Readonly<Partial<Record<DraftField, 'email' | 'tel' | 'text'>>> = {
@@ -55,7 +56,7 @@ function toPatch(stage: BillingStage, fields: readonly DraftField[], values: Val
   const patch: DraftPatch<'j6'> = {
     boardName: v('boardName'),
     student: { name: v('student.name'), email: v('student.email') },
-    counselor: { name: v('counselor.name'), email: v('counselor.email'), phone: v('counselor.phone') },
+    counselor: { name: v('counselor.name'), email: v('counselor.email'), phone: formatBillingPhone(v('counselor.phone')) },
   };
   if (stage === 'j6') {
     if (fields.includes('finance.name') || fields.includes('finance.email')) patch.finance = { name: v('finance.name'), email: v('finance.email') };
@@ -230,7 +231,7 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, classFact
     for (const f of DRAFT_FIELDS) {
       const field = dto.fields[f];
       if (!field) continue;
-      next[f] = field.value ?? '';
+      next[f] = f === 'counselor.phone' ? formatBillingPhone(field.value) : field.value ?? '';
       sources[f] = field.source;
     }
     // A J6 starts from the counselor printed on the J5 when nothing else is on file.
@@ -243,7 +244,7 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, classFact
       ];
       for (const [f, value] of fill) {
         if (value && f in dto.fields && !next[f]) {
-          next[f] = value;
+          next[f] = f === 'counselor.phone' ? formatBillingPhone(value) : value;
           sources[f] = 'j5';
         }
       }
@@ -474,7 +475,13 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, classFact
                       aria-invalid={error ? true : undefined}
                       aria-describedby={describedBy}
                       onChange={(e) => setField(f, e.target.value)}
-                      onBlur={() => setTouched((t) => ({ ...t, [f]: true }))}
+                      onBlur={() => {
+                        if (f === 'counselor.phone') {
+                          const formatted = formatBillingPhone(values[f]);
+                          if (formatted !== values[f]) setField(f, formatted);
+                        }
+                        setTouched((t) => ({ ...t, [f]: true }));
+                      }}
                     />
                   )}
                   {hint || sourceText ? (

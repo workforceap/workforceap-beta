@@ -85,6 +85,8 @@ describe('admin assessments CSV download', () => {
             assessmentScorePct: 80,
             assessmentCompletedAt: new Date('2026-09-01T12:00:00.000Z'),
             assessmentAnswers: null,
+            assessmentAttemptCount: 1,
+            assessmentRetakeRequestedAt: null,
           },
         ]}
         correctnessByUserId={{}}

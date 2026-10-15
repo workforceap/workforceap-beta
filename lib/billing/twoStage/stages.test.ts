@@ -362,6 +362,20 @@ describe('J6: gated on the received signed voucher and class start', () => {
     assert.ok(!('finance' in j5.content));
   });
 
+  it('freezes US phone formatting before hashing new J5/J6 versions and deriving recipient rows', () => {
+    for (const phone of ['5125550123', '+1 512 555 0123']) {
+      const counselor = { ...people.counselor, phone };
+      const quote = buildJ5Content({ logoSha256: LOGO_SHA, documentNumber: 'WAP-Q-2026-0001', issueDate: '2026-09-15', programSlug: IT_SUPPORT, readiness, ...people, counselor });
+      const invoice = buildJ6Content({ ...j6Input(), logoSha256: LOGO_SHA, documentNumber: 'WAP-I-2026-0001', issueDate: '2026-10-20', ...people, counselor, finance: { name: 'Synthetic Finance', email: 'finance@example.test' } });
+      for (const built of [quote, invoice]) {
+        assert.ok(built.ok, !built.ok ? built.errors.join('; ') : '');
+        assert.equal(built.content.counselor.phone, '(512) 555-0123');
+        assert.equal(recipientRowsForContent(built.content).find((row) => row.role === 'counselor')?.phone, '(512) 555-0123');
+        assert.equal(built.contentSha256, contentSha256(built.content));
+      }
+    }
+  });
+
   it('limits the printed voucher/PO reference to 80 characters (renderer and DB CHECK)', () => {
     const at = (voucherReference: string) => recordVoucherBoardSigned({
       boardName: people.boardName, voucherReference, artifact: voucherArtifact, authorizedAmountCents: 750_000, authorizedProgramSlug: IT_SUPPORT,

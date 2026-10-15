@@ -30,6 +30,7 @@ import {
   type TwoStageBillingReadiness,
 } from '@/lib/billing/twoStage/dto';
 import { formatUsdCents } from '@/lib/billing/twoStage/lineItem';
+import { formatBillingPhone } from '@/lib/billing/twoStage/phone';
 import { STAGE_RECIPIENT_ROLES } from '@/lib/billing/twoStage/recipients';
 import {
   CONTACT_SOURCE_LABELS,
@@ -153,6 +154,11 @@ function contactText(field: ContactField): string {
   return field.value ? `${field.value} (${CONTACT_SOURCE_LABELS[field.source]})` : CONTACT_SOURCE_LABELS.none;
 }
 
+function contactPhoneValue(field: ContactField | undefined): string | null {
+  if (field?.source === 'frozen_snapshot' || field?.source === 'draft') return field.value;
+  return formatBillingPhone(field?.value) || null;
+}
+
 type RecipientRow = { role: RecipientRole; name: string | null; email: string | null; phone: string | null; note: string | null };
 
 const OPEN_STATUSES = new Set(['draft', 'signed', 'sent']);
@@ -175,7 +181,7 @@ function recipientRows(stage: BillingStage, view: StageView | undefined): Recipi
       role,
       name: c?.name.value ?? null,
       email: c?.email.value ?? null,
-      phone: c?.phone?.value ?? null,
+      phone: contactPhoneValue(c?.phone),
       note: c ? CONTACT_SOURCE_LABELS[c.email.value ? c.email.source : 'none'] : null,
     };
   });
@@ -423,7 +429,7 @@ function ContactsLine({ memberEmail, counselor, j5, j6 }: Pick<TwoStageBillingWo
   return (
     <p className={styles.contacts}>
       <strong>Contacts on file:</strong> Student {contactText(c.student.email)} · Counselor {contactText(c.counselor.name)}, {contactText(c.counselor.email)}, phone{' '}
-      {contactText(c.counselor.phone)}
+      {contactText({ ...c.counselor.phone, value: contactPhoneValue(c.counselor.phone) })}
       {finance ? <> · Board finance {contactText(finance.name)}, {contactText(finance.email)}</> : null}. Any counselor or finance contact can be entered in the draft.
     </p>
   );

@@ -118,6 +118,17 @@ General application copy uses “about five minutes” in the public how-it-work
 
 - [Pre-screening submission](../../app/api/member/pre-screening/route.ts) acknowledges a lost-response retry only when the signed-in member's normalized answers and current saved phone/address match the first immutable submission. Missing/edited contacts and changed/invalid repeats still fail. Recovery of a concurrent duplicate is confined to the response insert's single user-ID unique key, followed by a same-member reread after rollback; unrelated unique failures remain errors. Acknowledgements do not rewrite completed data or enqueue another email/audit. [Retry regressions](../../tests/api/member-pre-screening-idempotency.spec.ts) and [transactional workflow tests](../../tests/api/eligibility-writers.spec.ts) cover the boundary; the [first-use audit](../audits/first-use-2026-10-11.md) states the synthetic concurrency limits.
 
+Digital Literacy follows the portal English/Español switch for module text and
+learning destinations. English retains direct lesson links; Spanish opens the
+provider's language-selected catalog with explicit topic-selection instructions.
+See [provider contracts and acceptance limits](digital-literacy-language-links.md).
+
+The two-stage billing editor normalizes complete US phone numbers to
+`(512) 555-0123` for new drafts and unsigned previews through
+[the billing formatter](../../lib/billing/twoStage/phone.ts). Extensions and
+international or incomplete input are preserved. Saved draft and signed PDF
+snapshots render their stored values exactly.
+
 ## Shared files with a wide change impact
 
 The generated [reference summary](generated/summary.json) identifies heavily imported files. Prisma, authentication, role resolution, request GUC helpers, the program catalog and tenant resolution sit on many paths. Review reverse references before changing their return values, failure behavior or defaults.
@@ -140,6 +151,13 @@ and [assigned counselor actions](../../app/api/counselor/assessment-retake/route
 use the shared [retake helper](../../lib/assessment/retake.ts). Existing actor,
 assignment and organization checks remain required before that helper runs.
 Members cannot authorize a retake through the retired self-reset URL.
+
+Admins can also open “Student results & retakes” from the assessments catalog
+and request the final attempt directly in each student's mobile or desktop
+[results row](../../components/admin/AssessmentsTable.tsx). Filters and pagination
+stay on that results view. Before authorization, the student's assessment page
+explains the remaining chance and links to counselor messages; after authorization,
+the portal offers the final attempt. Completed results are retained.
 
 The three `User` fields `assessmentAttemptCount`, `assessmentRetakeRequestedAt`
 and `assessmentHistory` record completed attempts, pending staff authorization

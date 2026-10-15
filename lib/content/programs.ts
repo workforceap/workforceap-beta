@@ -92,10 +92,14 @@ export interface ProgramCourse {
     title: string;
     minutes: number;
     url: string;
-    destinationKind?: 'verified-course' | 'course-materials-fallback' | 'course-details-with-materials-fallback';
+    destinationKind?: 'verified-course' | 'language-course-catalog' | 'course-materials-fallback' | 'course-details-with-materials-fallback';
     verificationLabel?: string;
     fallbackUrl?: string;
     fallbackLabel?: string;
+    /** A catalog entry must say it opens a catalog rather than a specific lesson. */
+    ctaLabel?: string;
+    /** Provider language-entry endpoints redirect to their root when no referrer is sent. */
+    referrerPolicy?: 'no-referrer';
   }>;
   /** What the member practises in this module. */
   topics?: readonly string[];

@@ -4277,6 +4277,215 @@
       }
     }
   },
+  "workforceApModule": {
+    "attCatalog": "Abrir cursos de AT&T en español",
+    "digitalLearnCatalog": "Abrir cursos de DigitalLearn en español",
+    "catalogHelp": "El catálogo del proveedor se abre en español. Busca el tema indicado arriba y elige el curso; las lecciones se abren en el sitio del proveedor.",
+    "catalogNote": "Abre el catálogo en español; busca el tema «{title}».",
+    "attCatalogNote": "El catálogo de AT&T se abre en español. Elige el tema que quieres estudiar.",
+    "metaTitle": "Módulo de WorkforceAP",
+    "metaDescription": "Completa un módulo de aprendizaje aplicado aprobado por WorkforceAP.",
+    "providerModule": "Módulo de {provider}",
+    "appliedLab": "Laboratorio aplicado de WorkforceAP",
+    "complete": "Completo",
+    "lessonMinutes": "{minutes} min de lecciones",
+    "hours": "{hours} horas",
+    "lessonsHeading": "Abrir cursos y materiales",
+    "lessonsIntro": "Estos enlaces se abren en {provider} en una pestaña nueva. El acceso es gratuito y la cuenta del proveedor es opcional.",
+    "activityBoundary": "WorkforceAP no recibe información sobre tu actividad en el sitio del proveedor.",
+    "practiceHeading": "Lo que practicarás",
+    "providerLabel": "Proveedor y licencia.",
+    "providerAttribution": "El material enlazado es de {provider}.",
+    "licenseIntro": "DigitalLearn identifica el contenido de sus cursos como",
+    "providerTerms": "condiciones del proveedor",
+    "licenseBoundary": "WorkforceAP enlaza a las páginas originales y no copia, aloja ni adapta los videos del proveedor, ni afirma contar con su respaldo.",
+    "providerIndexIntro": "¿Necesitas otra opción? Consulta el",
+    "providerIndex": "catálogo de cursos de {provider}",
+    "completionHeading": "Registro de finalización de WorkforceAP",
+    "completionBoundary": "Regresa aquí después de terminar el material enlazado. Marcar este módulo como completo registra tu progreso, puntos y finalización para tu consejero en WorkforceAP. No verifica tu actividad en DigitalLearn ni emite un certificado de DigitalLearn.",
+    "completionRecords": "Ver tus registros de finalización y certificados de WorkforceAP",
+    "keepMoving": "Sigue aprendiendo",
+    "appliedWork": "Completa el trabajo aplicado",
+    "optionalTools": "Usa estas herramientas opcionales de WorkforceAP para practicar, documentar y comentar lo que aprendiste.",
+    "appliedTools": "Usa estas herramientas del portal, guarda las pruebas de tu proyecto y marca el laboratorio como completo cuando termines el trabajo requerido.",
+    "markModule": "Marcar módulo como completo en WorkforceAP",
+    "markLab": "Marcar laboratorio como completo",
+    "moduleCompleted": "Completado en WorkforceAP",
+    "completed": "Completado",
+    "back": "Volver al Centro de aprendizaje",
+    "startLesson": "Comenzar esta lección",
+    "openLesson": "Abrir esta lección",
+    "fallback": "Abrir materiales alternativos del proveedor",
+    "saving": "Guardando…",
+    "saveError": "No se pudo guardar la finalización. Inténtalo de nuevo.",
+    "networkError": "No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
+    "actions": {
+      "artifact": {
+        "title": "Crea una muestra de tu trabajo",
+        "detail": "Usa las Misiones de habilidades para crear pruebas que puedas mostrar."
+      },
+      "resume": {
+        "title": "Agrega el trabajo a tu currículum",
+        "detail": "Describe el proyecto en una viñeta de tu currículum centrada en los resultados."
+      },
+      "interview": {
+        "title": "Practica cómo explicar tu trabajo",
+        "detail": "Prepara una historia breve para una entrevista sobre lo que creaste y aprendiste."
+      },
+      "feedback": {
+        "title": "Pide comentarios",
+        "detail": "Envía a tu consejero tu trabajo o pregunta antes de terminar."
+      }
+    },
+    "modules": {
+      "computer-basics": {
+        "name": "Conceptos básicos de computación",
+        "summary": "Familiarízate con las partes de una computadora, el ratón, el teclado, el escritorio y el uso diario.",
+        "topics": {
+          "0": "Qué es una computadora",
+          "1": "Primeros pasos con una computadora",
+          "2": "Componentes de una computadora",
+          "3": "Uso del ratón y el teclado",
+          "4": "Navegación por el escritorio",
+          "5": "Abrir y cerrar programas",
+          "6": "Copiar, pegar, guardar e imprimir"
+        },
+        "lessons": {
+          "0": "Primeros pasos con una computadora"
+        }
+      },
+      "file-management-basics": {
+        "name": "Conceptos básicos de archivos y carpetas",
+        "summary": "Organiza tu información digital: crea, nombra, mueve, busca, guarda y elimina archivos y carpetas.",
+        "topics": {
+          "0": "Crear archivos y carpetas",
+          "1": "Nombrar, mover y eliminar archivos",
+          "2": "Encontrar documentos guardados",
+          "3": "Cargar y descargar archivos",
+          "4": "Organizar información digital"
+        },
+        "lessons": {
+          "0": "Archivos y carpetas: guardar, cerrar y eliminar archivos",
+          "1": "Introducción a la creación de documentos",
+          "2": "Agregar una imagen"
+        }
+      },
+      "internet-basics": {
+        "name": "Conceptos básicos de internet",
+        "summary": "Navega con confianza: usa exploradores web, recorre sitios, busca información y evalúa lo que encuentras.",
+        "topics": {
+          "0": "Conectarse a internet",
+          "1": "Usar exploradores web",
+          "2": "Navegar por sitios web",
+          "3": "Usar motores de búsqueda",
+          "4": "Evaluar información en línea"
+        },
+        "lessons": {
+          "0": "Búsqueda básica",
+          "1": "Navegar por un sitio web"
+        }
+      },
+      "email-basics": {
+        "name": "Conceptos básicos del correo electrónico",
+        "summary": "Configura y usa una cuenta de correo electrónico: escribe, responde, adjunta archivos, organiza mensajes y detecta mensajes sospechosos.",
+        "topics": {
+          "0": "Crear una cuenta de correo electrónico",
+          "1": "Escribir y enviar mensajes",
+          "2": "Responder, responder a todos, CC y CCO",
+          "3": "Enviar archivos adjuntos",
+          "4": "Abrir y descargar archivos adjuntos",
+          "5": "Organizar y eliminar mensajes",
+          "6": "Reconocer mensajes sospechosos"
+        },
+        "lessons": {
+          "0": "Introducción al correo electrónico",
+          "1": "Introducción al correo electrónico 2: más allá de lo básico"
+        }
+      },
+      "accounts-and-passwords": {
+        "name": "Cuentas y contraseñas",
+        "summary": "Crea cuentas en línea de forma segura, elige contraseñas seguras, recupera el acceso y activa la autenticación multifactor.",
+        "topics": {
+          "0": "Crear cuentas en línea",
+          "1": "Crear contraseñas seguras",
+          "2": "Recuperar contraseñas",
+          "3": "Autenticación multifactor",
+          "4": "Proteger la información personal"
+        },
+        "lessons": {
+          "0": "Cuentas y contraseñas"
+        }
+      },
+      "video-conferencing-basics": {
+        "name": "Conceptos básicos de videoconferencias",
+        "summary": "Participa y organiza videoconferencias: usa la cámara, el micrófono, el chat y la pantalla compartida con hábitos profesionales.",
+        "topics": {
+          "0": "Configurar y usar videoconferencias",
+          "1": "Participar y organizar reuniones",
+          "2": "Controles de cámara y micrófono",
+          "3": "Chat y pantalla compartida",
+          "4": "Hábitos profesionales en videoconferencias"
+        },
+        "lessons": {
+          "0": "Conceptos básicos de videoconferencias"
+        }
+      },
+      "cybersecurity-basics": {
+        "name": "Ciberseguridad básica: fraudes y estafas en línea",
+        "summary": "Reconoce mensajes fraudulentos y estafas, evita programas dañinos y descargas inseguras, y protege tus dispositivos y privacidad.",
+        "topics": {
+          "0": "Mensajes fraudulentos y estafas en línea",
+          "1": "Programas dañinos y descargas inseguras",
+          "2": "Navegación segura",
+          "3": "Privacidad en internet",
+          "4": "Proteger dispositivos e información personal"
+        },
+        "lessons": {
+          "0": "Fraudes y estafas en línea (2025)"
+        }
+      },
+      "cloud-storage": {
+        "name": "Almacenamiento en la nube",
+        "summary": "Guarda archivos en línea, carga y descarga documentos, compártelos, administra el acceso y colabora.",
+        "topics": {
+          "0": "Guardar archivos en línea",
+          "1": "Cargar y descargar documentos",
+          "2": "Compartir archivos",
+          "3": "Administrar permisos de acceso",
+          "4": "Colaborar en línea"
+        },
+        "lessons": {
+          "0": "Almacenamiento en la nube"
+        }
+      },
+      "microsoft-word-basics": {
+        "name": "Conceptos básicos de Microsoft Word",
+        "summary": "Crea y edita documentos en Word: da formato al texto y guarda, descarga e imprime tus documentos.",
+        "topics": {
+          "0": "Crear y editar documentos",
+          "1": "Dar formato al texto",
+          "2": "Guardar, descargar e imprimir documentos"
+        },
+        "lessons": {
+          "0": "Microsoft Word"
+        }
+      },
+      "online-job-searching": {
+        "name": "Búsqueda y solicitudes de empleo en línea",
+        "summary": "Busca empleo en línea, crea y carga un currículum, completa solicitudes y comunícate de forma profesional.",
+        "topics": {
+          "0": "Buscar empleo",
+          "1": "Crear y cargar currículums",
+          "2": "Completar solicitudes en línea",
+          "3": "Comunicarse de forma profesional con empleadores"
+        },
+        "lessons": {
+          "0": "Búsqueda de empleo en línea",
+          "1": "Solicitudes de empleo en línea"
+        }
+      }
+    }
+  },
   "aiToolsDiscovery": {
     "title": "AI Career Tools",
     "homeIntro": "Recibe ayuda con tu currículum, las entrevistas y las solicitudes de empleo. Elige una herramienta, sigue las indicaciones y revisa y edita el resultado antes de usarlo.",

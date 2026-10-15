@@ -9,12 +9,18 @@ export default function WorkforceApModuleCompleteButton({
   completed,
   label = 'Mark lab complete',
   completedLabel = 'Completed',
+  savingLabel = 'Saving…',
+  saveErrorLabel = 'Could not save completion. Please try again.',
+  networkErrorLabel = 'Could not reach the server. Check your connection and try again.',
 }: {
   courseSlug: string;
   programSlug: string;
   completed: boolean;
   label?: string;
   completedLabel?: string;
+  savingLabel?: string;
+  saveErrorLabel?: string;
+  networkErrorLabel?: string;
 }) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
@@ -35,12 +41,12 @@ export default function WorkforceApModuleCompleteButton({
       });
       const payload = await response.json().catch(() => ({})) as { error?: string };
       if (!response.ok) {
-        setError(payload.error ?? 'Could not save completion. Please try again.');
+        setError(payload.error ?? saveErrorLabel);
         return;
       }
       router.refresh();
     } catch {
-      setError('Could not reach the server. Check your connection and try again.');
+      setError(networkErrorLabel);
     } finally {
       setSaving(false);
     }
@@ -55,7 +61,7 @@ export default function WorkforceApModuleCompleteButton({
         disabled={saving}
         aria-busy={saving}
       >
-        {saving ? 'Saving…' : label}
+        {saving ? savingLabel : label}
       </button>
       {error ? <p role="alert" style={{ marginTop: 8, color: 'var(--color-error)' }}>{error}</p> : null}
     </div>
