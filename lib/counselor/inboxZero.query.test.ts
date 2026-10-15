@@ -58,6 +58,7 @@ describe('getInboxZeroQueue via the attention fact loader', () => {
         email: `member${i + 1}@example.test`,
         enrolledProgram: 'cybersecurity-google',
         enrolledAt: assignedAt,
+        courseEnrollments: [],
         createdAt: assignedAt,
         staleTrainingDetectedAt: null,
         needsComputerSupportFollowUp: false,
