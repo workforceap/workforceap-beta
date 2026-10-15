@@ -390,6 +390,21 @@ describe('portal route inventory gate', () => {
     });
   });
 
+  it('audits the bare enrollment handoff as a missing-course redirect rather than a rendered course screen', () => {
+    const path = '/dashboard/program/coursera-enrollment';
+    expect(STATIC_PATHS.member).not.toContain(path);
+    const entry = REDIRECT_ONLY_PATHS.member.find((candidate) => candidate.path === path);
+    expect(entry).toEqual({
+      path,
+      target: '/dashboard/program?error=course_not_assigned',
+      reason: 'course_selection_required',
+    });
+    const resolved = resolveRedirectAuditEntry(entry);
+    expect(resolved).toEqual({ sourcePath: path, targetPath: '/dashboard/program?error=course_not_assigned' });
+    expect(redirectTargetMatches('https://portal.test/dashboard/program?error=course_not_assigned', resolved!.targetPath, 'https://portal.test')).toBe(true);
+    expect(redirectTargetMatches('https://portal.test/dashboard/program', resolved!.targetPath, 'https://portal.test')).toBe(false);
+  });
+
   it('counts redirect-only pages as discovered inventory coverage and rejects overlap', () => {
     const covered = comparePortalRouteInventory({
       discovered: {

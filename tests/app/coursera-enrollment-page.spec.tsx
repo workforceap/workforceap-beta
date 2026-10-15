@@ -73,6 +73,12 @@ describe('explicit course enrollment handoff', () => {
     expect(mocks.access).not.toHaveBeenCalled();
   });
 
+  it('redirects the bare route to My Program without checking access or initiating enrollment', async () => {
+    await expect(Page({ searchParams: Promise.resolve({}) })).rejects.toThrow('redirect:/dashboard/program?error=course_not_assigned');
+    expect(mocks.access).not.toHaveBeenCalled();
+    expect(mocks.fetch).not.toHaveBeenCalled();
+  });
+
   it('keeps an assigned lab in the platform without a provider-access check', async () => {
     await expect(page('lab')).rejects.toThrow('redirect:/dashboard/learning/modules/lab?program=secondary');
     expect(mocks.access).not.toHaveBeenCalled();

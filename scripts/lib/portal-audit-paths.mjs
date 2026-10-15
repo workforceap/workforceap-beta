@@ -400,6 +400,13 @@ export const REDIRECT_ONLY_PATHS = {
       fixtureCondition: 'member_program_route',
     })),
     {
+      // A rendered enrollment handoff requires an assigned course query.
+      // The bare route intentionally returns to My Program without enrolling.
+      path: '/dashboard/program/coursera-enrollment',
+      target: '/dashboard/program?error=course_not_assigned',
+      reason: 'course_selection_required',
+    },
+    {
       path: '/dashboard/ai-tools/application-tracker',
       target: '/dashboard/job-applications',
       reason: 'legacy_alias',
