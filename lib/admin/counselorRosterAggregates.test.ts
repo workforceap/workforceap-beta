@@ -1,102 +1,74 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import type { Prisma } from '@prisma/client';
 
 import { ACTIVE_AT_RISK_STATUSES } from '@/lib/member/atRiskStatuses';
+import { confirmedCurrentProgramAssignmentsSql } from '@/lib/reporting/currentProgramAssignment';
+import { memberOnlySqlJoin } from './memberOnlyWhere';
 import { loadCounselorAssignmentAggregates } from './counselorRosterAggregates';
 
 const scope = { ok: true, orgId: 'org-1', superAdmin: false } as const;
 
-function makeDb(calls: Array<{ where: unknown }>) {
+function makeDb(calls: Array<{ where: unknown }>, queries: Prisma.Sql[]) {
   return {
     counselorAssignment: {
-      groupBy: async (args: { where: unknown; by: ['counselorId']; _count: { _all: true } }) => {
+      groupBy: async (args: { where: unknown }) => {
         calls.push({ where: args.where });
-        const where = JSON.stringify(args.where);
-        if (where.includes('placementRecord')) {
-          return [{ counselorId: 'c1', _count: { _all: 2 } }];
-        }
-        if (where.includes('atRiskAlerts')) {
-          return [{ counselorId: 'c1', _count: { _all: 1 } }];
-        }
-        return [{ counselorId: 'c1', _count: { _all: 4 } }, { counselorId: 'c2', _count: { _all: 1 } }];
+        return JSON.stringify(args.where).includes('placementRecord')
+          ? [{ counselorId: 'c1', _count: { _all: 2 } }]
+          : [{ counselorId: 'c1', _count: { _all: 4 } }, { counselorId: 'c2', _count: { _all: 1 } }];
       },
+    },
+    $queryRaw: async (query: Prisma.Sql) => {
+      queries.push(query);
+      return [{ counselorId: 'c1', count: 1 }];
     },
   };
 }
 
-test('assignment aggregates come from groupBy counts, not a 20k findMany', async () => {
+test('counselor counts stay aggregated without hydrating a capped assignment list', async () => {
   const calls: Array<{ where: unknown }> = [];
-  const agg = await loadCounselorAssignmentAggregates(makeDb(calls) as never, scope);
-
-  assert.equal(calls.length, 3);
-  assert.equal(agg.get('c1')?.caseload, 4);
-  assert.equal(agg.get('c1')?.placements, 2);
-  assert.equal(agg.get('c1')?.atRisk, 1);
-  assert.equal(agg.get('c2')?.caseload, 1);
-  assert.equal(agg.get('c2')?.placements, 0);
-  assert.equal(agg.get('c2')?.atRisk, 0);
-});
-
-test('at-risk owned is the saved active alert on an enrolled member, the same rule as every other at-risk tile', async () => {
-  const calls: Array<{ where: { AND?: unknown[] } }> = [];
-  await loadCounselorAssignmentAggregates(makeDb(calls) as never, scope);
-  const atRiskWhere = calls[2].where;
-  assert.deepEqual(atRiskWhere.AND?.[1], {
-    member: { enrolledProgram: { not: null }, atRiskAlerts: { some: { status: { in: [...ACTIVE_AT_RISK_STATUSES] } } } },
+  const queries: Prisma.Sql[] = [];
+  const agg = await loadCounselorAssignmentAggregates(makeDb(calls, queries) as never, scope);
+  assert.equal(calls.length, 2);
+  assert.equal(queries.length, 1);
+  assert.deepEqual(agg.get('c1'), { caseload: 4, placements: 2, atRisk: 1 });
+  assert.deepEqual(agg.get('c2'), { caseload: 1, placements: 0, atRisk: 0 });
+  assert.deepEqual(calls[0].where, {
+    active: true, counselor: { active: true, user: { organizationId: 'org-1' } }, member: { organizationId: 'org-1' },
   });
-  const serialized = JSON.stringify(atRiskWhere);
-  assert.ok(!serialized.includes('lastLoginAt'), 'no private days-since-login rule');
-  assert.ok(!serialized.includes('inactive'), 'memberStatus is not a risk signal');
 });
 
-/**
- * Behavioural pin (Needs Mike 8, 2026-09-20): an assigned member with an open
- * alert but no program is not "at risk owned"; an enrolled member with an open
- * alert is; an enrolled member with only a resolved alert is not.
- */
-test('a no-program alert holder is excluded from at-risk owned', async () => {
-  type Member = { enrolledProgram: string | null; alerts: string[] };
-  const assignments: Array<{ counselorId: string; member: Member }> = [
-    { counselorId: 'c1', member: { enrolledProgram: null, alerts: ['open'] } },
-    { counselorId: 'c1', member: { enrolledProgram: 'it-support', alerts: ['escalated'] } },
-    { counselorId: 'c1', member: { enrolledProgram: 'it-support', alerts: ['resolved'] } },
-    { counselorId: 'c2', member: { enrolledProgram: null, alerts: ['open', 'acknowledged'] } },
-  ];
-  const matchesMember = (filter: Record<string, unknown> | undefined, m: Member) => {
-    if (!filter) return true;
-    if ('enrolledProgram' in filter) {
-      const f = filter.enrolledProgram as { not: null };
-      if (f.not === null && m.enrolledProgram === null) return false;
-    }
-    if ('atRiskAlerts' in filter) {
-      const statuses = (filter.atRiskAlerts as { some: { status: { in: string[] } } }).some.status.in;
-      if (!m.alerts.some((s) => statuses.includes(s))) return false;
-    }
-    return true;
-  };
-  const db = {
-    counselorAssignment: {
-      groupBy: async (args: { where: { AND?: Array<{ member?: Record<string, unknown> }> } }) => {
-        const memberFilter = args.where.AND?.[1]?.member;
-        const counts = new Map<string, number>();
-        for (const a of assignments) {
-          if (memberFilter && !matchesMember(memberFilter, a.member)) continue;
-          counts.set(a.counselorId, (counts.get(a.counselorId) ?? 0) + 1);
-        }
-        return [...counts.entries()].map(([counselorId, n]) => ({ counselorId, _count: { _all: n } }));
-      },
-    },
-  };
-  const agg = await loadCounselorAssignmentAggregates(db as never, scope);
-  assert.equal(agg.get('c1')?.caseload, 3);
-  assert.equal(agg.get('c1')?.atRisk, 1, 'only the enrolled member with an active alert');
-  assert.equal(agg.get('c2')?.caseload, 1);
-  assert.equal(agg.get('c2')?.atRisk, 0, 'two active alerts, no program: not at risk');
+test('saved-risk ownership uses the same confirmed assignment and member population as risk pages', async () => {
+  const queries: Prisma.Sql[] = [];
+  await loadCounselorAssignmentAggregates(makeDb([], queries) as never, scope);
+  const query = queries[0];
+  assert.ok(query.sql.includes(confirmedCurrentProgramAssignmentsSql().sql));
+  assert.ok(query.sql.includes(memberOnlySqlJoin().sql));
+  assert.ok(query.sql.includes('JOIN current_assignments current_program ON current_program.user_id = u.id'));
+  for (const condition of ['ca.active = true', 'c.active = true', 'actor.deleted_at IS NULL', 'u.deleted_at IS NULL', 'actor.organization_id = u.organization_id']) assert.ok(query.sql.includes(condition));
+  assert.ok(query.sql.includes('EXISTS (SELECT 1 FROM at_risk_alerts'), 'several cases do not multiply a member assignment');
+  assert.deepEqual(query.values.slice(-5), ['org-1', 'org-1', ...ACTIVE_AT_RISK_STATUSES]);
+  assert.ok(!query.sql.includes('last_login_at'), 'no private inactivity rule');
+  assert.ok(!query.sql.includes('member_status'), 'placement/status pointers are not a risk signal');
+  assert.ok(query.sql.trim().endsWith('GROUP BY ca.counselor_id'), 'risk totals are not capped');
 });
 
-test('placements owned are placement records, not the memberStatus pointer', async () => {
+test('explicit platform scope removes only the organization bind, preserving active ownership', async () => {
+  const queries: Prisma.Sql[] = [];
+  await loadCounselorAssignmentAggregates(makeDb([], queries) as never, { ...scope, superAdmin: true });
+  assert.ok(!queries[0].values.includes(scope.orgId));
+  assert.ok(queries[0].sql.includes('actor.organization_id = u.organization_id'));
+});
+
+test('placements still count placement records rather than a member-status pointer', async () => {
   const calls: Array<{ where: { AND?: unknown[] } }> = [];
-  await loadCounselorAssignmentAggregates(makeDb(calls) as never, scope);
+  await loadCounselorAssignmentAggregates(makeDb(calls, []) as never, scope);
   assert.deepEqual(calls[1].where.AND?.[1], { member: { placementRecord: { isNot: null } } });
-  assert.ok(!JSON.stringify(calls[1].where).includes('memberStatus'));
+});
+
+test('risk read failures remain failures rather than zero-valued counselor reports', async () => {
+  const db = makeDb([], []);
+  db.$queryRaw = async () => { throw new Error('risk unavailable'); };
+  await assert.rejects(loadCounselorAssignmentAggregates(db as never, scope), /risk unavailable/);
 });

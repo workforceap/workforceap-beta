@@ -4,8 +4,10 @@ import { prisma } from '@/lib/db/prisma';
 import { REPORT_SAMPLE_CAP, sqlCount } from '@/lib/db/scanCaps';
 import { MEMBER_ONLY_WHERE, memberOnlyProfileWhere, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
 import { summarizeRetentionGroups } from '@/lib/analytics/retentionOutcome';
+import { enrollmentHistoryWhere, historicalProgramEnrollmentsSql, placementEnrollmentAttributionSql, resolvePlacementEnrollment } from '@/lib/reporting/enrollmentHistory';
+import { confirmedCurrentProgramAssignmentsSql, normalizedProgramStorageKeySql } from '@/lib/reporting/currentProgramAssignment';
+import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import {
-  validatedProgramAssignmentRowsSql,
   validatedProgramCompletionValuesSql,
 } from '@/lib/reporting/programCompletion';
 
@@ -106,39 +108,6 @@ function bucketFromGroupBy(
   return out.filter((r) => r.count > 0);
 }
 
-/**
- * Pick which program a placement should be credited to when the learner is
- * enrolled in multiple programs simultaneously.
- *
- * Heuristic: among the learner's `course_enrollments`, choose the one whose
- * `enrolledAt <= placedAt` and is most-recently started (i.e. the program
- * the learner had most recently entered at the time of placement). If no
- * enrollment row predates the placement (e.g. data was backfilled in an odd
- * order), fall back to the earliest enrollment so we still credit *some*
- * program. If the learner has zero `course_enrollments` rows, fall back to
- * the legacy `User.enrolledProgram` cache so unmigrated/seeded users keep
- * the old behavior. Returns `null` only if both signals are missing.
- *
- * Used by funder-facing program rollups and the placements export — see
- * audit punch list items #2 and #6.
- */
-function attributeProgramAtPlacement(
-  enrollments: ReadonlyArray<{ programSlug: string; enrolledAt: Date }>,
-  placedAt: Date,
-  legacyEnrolledProgram: string | null,
-): string | null {
-  if (enrollments.length === 0) return legacyEnrolledProgram ?? null;
-  if (enrollments.length === 1) return enrollments[0].programSlug;
-  const placedMs = placedAt.getTime();
-  const eligible = enrollments.filter((e) => e.enrolledAt.getTime() <= placedMs);
-  const pool = eligible.length > 0 ? eligible : enrollments;
-  let best = pool[0];
-  for (const e of pool) {
-    if (e.enrolledAt.getTime() > best.enrolledAt.getTime()) best = e;
-  }
-  return best.programSlug;
-}
-
 const VETERAN_BUCKETS = ['Not a Veteran', 'Veteran', 'Disabled Veteran'];
 const EMPLOYMENT_BUCKETS = ['Unemployed', 'Underemployed', 'Employed', 'Self-Employed'];
 const INCOME_BUCKETS = ['Under $20K', '$20K–$40K', '$40K–$60K', 'Over $60K'];
@@ -181,10 +150,9 @@ export async function getBoardOutcomes(
   // `/admin/outcomes` callers pass no org and still see the cumulative roll-up.
   const enrolledWhere = {
     deletedAt: null,
-    enrolledProgram: { not: null },
+    ...enrollmentHistoryWhere(start ? { gte: start, lte: end } : null),
     ...MEMBER_ONLY_WHERE,
     ...(organizationId ? { organizationId } : {}),
-    ...(start ? { enrolledAt: { gte: start, lte: end } } : {}),
   } as const;
 
   // Placements are counted only for member-role users (same population as
@@ -193,21 +161,14 @@ export async function getBoardOutcomes(
     ...(start ? { placedAt: { gte: start, lte: end } } : {}),
     user: { ...MEMBER_ONLY_WHERE, ...(organizationId ? { organizationId } : {}) },
   } as const;
-  const profileUserWhere = start
-    ? enrolledWhere
-    : {
-        deletedAt: null,
-        enrolledProgram: { not: null },
-        ...MEMBER_ONLY_WHERE,
-        ...(organizationId ? { organizationId } : {}),
-      };
+  const profileUserWhere = enrolledWhere;
   // Demographics run on `prisma.profile`, so the role predicate sits on the
   // profile row itself (see memberOnlyProfileWhere).
   const demographicsWhere = memberOnlyProfileWhere(profileUserWhere);
   const orgSql = organizationId ? Prisma.sql`AND u.organization_id = ${organizationId}` : Prisma.empty;
   const memberJoin = memberOnlySqlJoin();
   const enrolledAtSql = start
-    ? Prisma.sql`AND u.enrolled_at >= ${start} AND u.enrolled_at <= ${end}`
+    ? Prisma.sql`AND ce.enrolled_at >= ${start} AND ce.enrolled_at <= ${end}`
     : Prisma.empty;
   const placedAtSql = start
     ? Prisma.sql`AND pr.placed_at >= ${start} AND pr.placed_at <= ${end}`
@@ -237,8 +198,8 @@ export async function getBoardOutcomes(
     prisma.$queryRaw<Array<{ certified: bigint | number; in_training: bigint | number }>>`
       WITH validated_programs(canonical_slug, storage_value, curriculum_version, total_courses) AS (
         VALUES ${validatedProgramCompletionValuesSql()}
-      ), learner_program_assignments(user_id, program_slug, curriculum_version) AS (
-        ${validatedProgramAssignmentRowsSql()}
+      ), learner_program_assignments AS (
+        ${historicalProgramEnrollmentsSql()}
       ), learner_training_status AS (
         SELECT
           u.id,
@@ -255,16 +216,15 @@ export async function getBoardOutcomes(
         INNER JOIN learner_program_assignments ce
           ON ce.user_id = u.id
         INNER JOIN validated_programs enrolled_program
-          ON enrolled_program.storage_value = ce.program_slug
+          ON ${normalizedProgramStorageKeySql(Prisma.sql`enrolled_program.storage_value`)} = ${normalizedProgramStorageKeySql(Prisma.sql`ce.program_slug`)}
           AND enrolled_program.curriculum_version = ce.curriculum_version
         LEFT JOIN member_program_progress mpp
           ON mpp.user_id = u.id
         LEFT JOIN validated_programs progress_program
           ON progress_program.canonical_slug = enrolled_program.canonical_slug
-          AND progress_program.storage_value = mpp.program_slug
+          AND ${normalizedProgramStorageKeySql(Prisma.sql`progress_program.storage_value`)} = ${normalizedProgramStorageKeySql(Prisma.sql`mpp.program_slug`)}
           AND progress_program.curriculum_version = ce.curriculum_version
         WHERE u.deleted_at IS NULL
-          AND u.enrolled_program IS NOT NULL
           ${orgSql}
           ${enrolledAtSql}
         GROUP BY u.id
@@ -289,18 +249,20 @@ export async function getBoardOutcomes(
         ${placedAtSql}
     `,
     prisma.$queryRaw<Array<{ avg_weeks: number | null }>>`
-      SELECT AVG(EXTRACT(EPOCH FROM (pr.placed_at - u.enrolled_at)) / (7 * 86400)) AS avg_weeks
+      WITH placement_assignments AS (${placementEnrollmentAttributionSql()})
+      SELECT AVG(EXTRACT(EPOCH FROM (pr.placed_at - pa.enrolled_at)) / (7 * 86400)) AS avg_weeks
       FROM placement_records pr
       INNER JOIN users u ON u.id = pr.user_id
       ${memberJoin}
-      WHERE u.enrolled_at IS NOT NULL
-        AND pr.placed_at > u.enrolled_at
+      JOIN placement_assignments pa ON pa.placement_id = pr.id
+      WHERE pa.enrolled_at IS NOT NULL
+        AND pr.placed_at > pa.enrolled_at
         ${orgSql}
         ${placedAtSql}
     `,
     prisma.courseEnrollment.groupBy({
       by: ['programSlug'],
-      where: { user: enrolledWhere },
+      where: { user: { deletedAt: null, ...MEMBER_ONLY_WHERE, ...(organizationId ? { organizationId } : {}) }, ...(start ? { enrolledAt: { gte: start, lte: end } } : {}) },
       _count: { _all: true },
     }),
     prisma.user.groupBy({
@@ -311,8 +273,8 @@ export async function getBoardOutcomes(
     prisma.$queryRaw<Array<{ program_slug: string; count: bigint | number }>>`
       WITH validated_programs(canonical_slug, storage_value, curriculum_version, total_courses) AS (
         VALUES ${validatedProgramCompletionValuesSql()}
-      ), learner_program_assignments(user_id, program_slug, curriculum_version) AS (
-        ${validatedProgramAssignmentRowsSql()}
+      ), learner_program_assignments AS (
+        ${historicalProgramEnrollmentsSql()}
       )
       SELECT
         enrolled_program.canonical_slug AS program_slug,
@@ -322,16 +284,15 @@ export async function getBoardOutcomes(
       INNER JOIN learner_program_assignments ce
         ON ce.user_id = u.id
       INNER JOIN validated_programs enrolled_program
-        ON enrolled_program.storage_value = ce.program_slug
+        ON ${normalizedProgramStorageKeySql(Prisma.sql`enrolled_program.storage_value`)} = ${normalizedProgramStorageKeySql(Prisma.sql`ce.program_slug`)}
         AND enrolled_program.curriculum_version = ce.curriculum_version
       INNER JOIN member_program_progress mpp
         ON mpp.user_id = u.id
       INNER JOIN validated_programs progress_program
         ON progress_program.canonical_slug = enrolled_program.canonical_slug
-        AND progress_program.storage_value = mpp.program_slug
+        AND ${normalizedProgramStorageKeySql(Prisma.sql`progress_program.storage_value`)} = ${normalizedProgramStorageKeySql(Prisma.sql`mpp.program_slug`)}
         AND progress_program.curriculum_version = ce.curriculum_version
       WHERE u.deleted_at IS NULL
-        AND u.enrolled_program IS NOT NULL
         AND mpp.courses_completed = progress_program.total_courses
         ${orgSql}
         ${enrolledAtSql}
@@ -343,15 +304,16 @@ export async function getBoardOutcomes(
       _count: { _all: true },
     }),
     prisma.$queryRaw<Array<{ program_slug: string; count: bigint | number }>>`
-      SELECT u.enrolled_program AS program_slug, COUNT(*)::bigint AS count
+      WITH placement_assignments AS (${placementEnrollmentAttributionSql()})
+      SELECT pa.program_slug, COUNT(*)::bigint AS count
       FROM placement_records pr
       INNER JOIN users u ON u.id = pr.user_id
       ${memberJoin}
+      JOIN placement_assignments pa ON pa.placement_id = pr.id
       WHERE pr.program_slug IS NULL
-        AND u.enrolled_program IS NOT NULL
         ${orgSql}
         ${placedAtSql}
-      GROUP BY u.enrolled_program
+      GROUP BY pa.program_slug
     `,
     prisma.profile.groupBy({
       by: ['veteranStatus'],
@@ -412,9 +374,10 @@ export async function getBoardOutcomes(
   >();
   const bump = (slug: string | null | undefined, field: 'enrolled' | 'certified' | 'placed', n: number) => {
     if (!slug || n <= 0) return;
-    const cur = programs.get(slug) ?? { programSlug: slug, enrolled: 0, certified: 0, placed: 0 };
+    const canonicalSlug = canonicalizeProgramSlug(slug);
+    const cur = programs.get(canonicalSlug) ?? { programSlug: canonicalSlug, enrolled: 0, certified: 0, placed: 0 };
     cur[field] += n;
-    programs.set(slug, cur);
+    programs.set(canonicalSlug, cur);
   };
   for (const row of enrollmentByCourse) bump(row.programSlug, 'enrolled', row._count._all);
   for (const row of enrollmentLegacy) bump(row.enrolledProgram, 'enrolled', row._count._all);
@@ -487,25 +450,20 @@ export async function getBoardOutcomes(
     programs: programsList,
     // Each placement records the program credited for it. With multi-program
     // enrollments we credit the program the learner had most recently
-    // entered at placement time (see attributeProgramAtPlacement); with a
+    // entered at placement time (see resolvePlacementEnrollment); with a
     // single enrollment behavior is unchanged. Audit punch list item #2.
-    placements: placementSample.map((p) => ({
-      jobTitle: p.jobTitle,
-      employerIndustry: null,
-      annualSalary: p.salaryOffered,
-      enrolledProgram:
-        p.programSlug ??
-        attributeProgramAtPlacement(
-          p.user.courseEnrollments,
-          p.placedAt,
-          p.user.enrolledProgram,
-        ),
-      weeksFromEnrollmentToPlacement:
-        p.user.enrolledAt
-          ? Math.max(0, Math.round((p.placedAt.getTime() - p.user.enrolledAt.getTime()) / (7 * 24 * 60 * 60 * 1000)))
-          : null,
-      placedAt: p.placedAt,
-    })),
+    placements: placementSample.map((p) => {
+      const attributed = resolvePlacementEnrollment(p.user.courseEnrollments, p.placedAt, p.user.enrolledProgram, p.user.enrolledAt, p.programSlug);
+      return {
+        jobTitle: p.jobTitle,
+        employerIndustry: null,
+        annualSalary: p.salaryOffered,
+        enrolledProgram: p.programSlug ?? attributed?.programSlug ?? null,
+        weeksFromEnrollmentToPlacement: attributed?.enrolledAt
+          ? Math.max(0, Math.round((p.placedAt.getTime() - attributed.enrolledAt.getTime()) / (7 * 24 * 60 * 60 * 1000))) : null,
+        placedAt: p.placedAt,
+      };
+    }),
   };
 }
 
@@ -819,14 +777,13 @@ export async function getBoardSnapshot(
     prisma.placementRecord.count({
       where: { salaryOffered: null, user: memberUser },
     }),
-    prisma.user.count({
-      where: {
-        deletedAt: null,
-        enrolledProgram: { not: null },
-        enrolledAt: null,
-        ...memberUser,
-      },
-    }),
+    prisma.$queryRaw<Array<{ count: bigint | number }>>`
+      WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
+      SELECT COUNT(*)::int AS count FROM users u ${memberJoin}
+      JOIN current_assignments ca ON ca.user_id = u.id
+      WHERE u.deleted_at IS NULL AND ca.enrolled_at IS NULL
+        ${organizationId ? Prisma.sql`AND u.organization_id = ${organizationId}` : Prisma.empty}
+    `.then((rows) => sqlCount(rows[0]?.count)),
     prisma.$queryRaw<Array<{ month: string; count: bigint | number }>>`
       SELECT to_char(date_trunc('month', me.created_at), 'YYYY-MM') AS month, COUNT(*)::bigint AS count
       FROM member_events me
@@ -890,14 +847,14 @@ export async function getBoardSnapshot(
       GROUP BY 1
     `,
     prisma.$queryRaw<Array<{ month: string; count: bigint | number }>>`
-      SELECT to_char(date_trunc('month', u.enrolled_at), 'YYYY-MM') AS month, COUNT(*)::bigint AS count
+      WITH enrollment_history AS (${historicalProgramEnrollmentsSql()})
+      SELECT to_char(date_trunc('month', ce.enrolled_at), 'YYYY-MM') AS month, COUNT(DISTINCT u.id)::bigint AS count
       FROM users u
       ${memberJoin}
-      WHERE u.deleted_at IS NULL
-        AND u.enrolled_program IS NOT NULL
-        AND u.enrolled_at IS NOT NULL
+      JOIN enrollment_history ce ON ce.user_id = u.id
+      WHERE u.deleted_at IS NULL AND ce.enrolled_at IS NOT NULL
         ${orgUserSql}
-        ${periodSql('u.enrolled_at')}
+        ${periodSql('ce.enrolled_at')}
       GROUP BY 1
     `,
     prisma.$queryRaw<Array<{ month: string; count: bigint | number }>>`
@@ -913,31 +870,30 @@ export async function getBoardSnapshot(
     prisma.$queryRaw<Array<{ month: string; count: bigint | number }>>`
       WITH validated_programs(canonical_slug, storage_value, curriculum_version, total_courses) AS (
         VALUES ${validatedProgramCompletionValuesSql()}
-      ), learner_program_assignments(user_id, program_slug, curriculum_version) AS (
-        ${validatedProgramAssignmentRowsSql()}
+      ), learner_program_assignments AS (
+        ${historicalProgramEnrollmentsSql()}
       )
       SELECT
-        to_char(date_trunc('month', u.enrolled_at), 'YYYY-MM') AS month,
+        to_char(date_trunc('month', ce.enrolled_at), 'YYYY-MM') AS month,
         COUNT(DISTINCT u.id)::bigint AS count
       FROM users u
       ${memberJoin}
       INNER JOIN learner_program_assignments ce
         ON ce.user_id = u.id
       INNER JOIN validated_programs enrolled_program
-        ON enrolled_program.storage_value = ce.program_slug
+        ON ${normalizedProgramStorageKeySql(Prisma.sql`enrolled_program.storage_value`)} = ${normalizedProgramStorageKeySql(Prisma.sql`ce.program_slug`)}
         AND enrolled_program.curriculum_version = ce.curriculum_version
       INNER JOIN member_program_progress mpp
         ON mpp.user_id = u.id
       INNER JOIN validated_programs progress_program
         ON progress_program.canonical_slug = enrolled_program.canonical_slug
-        AND progress_program.storage_value = mpp.program_slug
+        AND ${normalizedProgramStorageKeySql(Prisma.sql`progress_program.storage_value`)} = ${normalizedProgramStorageKeySql(Prisma.sql`mpp.program_slug`)}
         AND progress_program.curriculum_version = ce.curriculum_version
       WHERE u.deleted_at IS NULL
-        AND u.enrolled_program IS NOT NULL
-        AND u.enrolled_at IS NOT NULL
+        AND ce.enrolled_at IS NOT NULL
         AND mpp.courses_completed = progress_program.total_courses
         ${orgUserSql}
-        ${periodSql('u.enrolled_at')}
+        ${periodSql('ce.enrolled_at')}
       GROUP BY 1
     `,
   ]);
@@ -1011,20 +967,18 @@ export async function getBoardSnapshot(
     }),
     countDistinctEventUsers(sevenDaysAgo, organizationId),
     // Qualified leads = members who completed assessment + have program interest but are not yet enrolled
-    prisma.user.count({
-      where: {
-        deletedAt: null,
-        assessmentCompleted: true,
-        enrolledProgram: null,
-        ...memberUser,
-      },
-    }),
+    prisma.$queryRaw<Array<{ count: bigint | number }>>`
+      WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
+      SELECT COUNT(*)::int AS count FROM users u ${memberJoin}
+      WHERE u.deleted_at IS NULL AND u.assessment_completed = true
+        AND NOT EXISTS (SELECT 1 FROM current_assignments ca WHERE ca.user_id = u.id)
+        ${organizationId ? Prisma.sql`AND u.organization_id = ${organizationId}` : Prisma.empty}
+    `.then((rows) => sqlCount(rows[0]?.count)),
     // Funded starts = members enrolled this month with a funding source on their placement (or any enrolled this month if no placement yet)
     prisma.user.count({
       where: {
         deletedAt: null,
-        enrolledProgram: { not: null },
-        enrolledAt: { gte: startOfMonth },
+        ...enrollmentHistoryWhere({ gte: startOfMonth }),
         ...memberUser,
       },
     }),
@@ -1174,7 +1128,7 @@ export function formatBoardSnapshotMarkdown(snapshot: BoardSnapshot): string {
     }`,
   );
   lines.push('');
-  lines.push(`*Source: \`users\` (enrolled), assigned-curriculum course completion rollups, and \`placement_records\`. Training completion does not establish credential verification.*`);
+  lines.push(`*Source: saved enrollment history (legacy pointers only when no enrollment rows exist), assigned-curriculum course completion rollups, and \`placement_records\`. Training completion does not establish credential verification.*`);
   lines.push('');
 
   // 3. Activity recency
@@ -1216,7 +1170,7 @@ export function formatBoardSnapshotMarkdown(snapshot: BoardSnapshot): string {
     }
   }
   lines.push('');
-  lines.push(`*Source: \`users.enrolled_program\` joined with \`placement_records\` and program progress rollups.*`);
+  lines.push(`*Source: saved enrollment history with immutable curriculum versions, \`placement_records\` and program progress rollups. Legacy program pointers apply only when no enrollment rows exist.*`);
   lines.push('');
 
   // 6. Data quality flags
@@ -1230,7 +1184,7 @@ export function formatBoardSnapshotMarkdown(snapshot: BoardSnapshot): string {
   lines.push(`- Placements missing funding source: ${fmtNumber(dataQuality.placementsMissingFunding)}`);
   lines.push(`- Placements missing retention status / decision: ${fmtNumber(dataQuality.placementsMissingRetention)}`);
   lines.push(`- Placements missing salary at placement: ${fmtNumber(dataQuality.placementsMissingSalary)}`);
-  lines.push(`- Enrolled members missing \`enrolled_at\` timestamp: ${fmtNumber(dataQuality.enrolledWithoutEnrolledAt)}`);
+  lines.push(`- Currently assigned members missing an effective enrollment date: ${fmtNumber(dataQuality.enrolledWithoutEnrolledAt)}`);
   lines.push('');
 
   // Footer

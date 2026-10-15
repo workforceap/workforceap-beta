@@ -88,7 +88,7 @@ async function _POST(request: NextRequest) {
         phone: contact.data.phone || null,
       },
       snapshot,
-      adminUrl: `${siteUrl}/admin/wioa-screening`,
+      adminUrl: `${siteUrl}/admin/wioa-screening#public-wioa-screenings`,
     });
 
     if (emailSent) {

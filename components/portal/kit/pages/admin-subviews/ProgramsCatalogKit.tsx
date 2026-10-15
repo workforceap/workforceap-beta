@@ -239,8 +239,8 @@ export function ProgramsCatalogKit({
       ) : (
         <EmptyState
           icon={<BookOpen className="h-6 w-6" aria-hidden />}
-          title="No programs yet"
-          description="Add your first program to start tracking enrollment and completion."
+          title="No program enrollments yet"
+          description="Programs with enrolled learners appear here. Use Manage catalog to view or edit the full program catalog."
         />
       )}
 

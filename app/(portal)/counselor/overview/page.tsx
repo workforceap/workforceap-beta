@@ -29,6 +29,7 @@ import {
   computeTrainingProgress,
   resolveTrainingProgressAssignment,
 } from '@/lib/member/trainingProgress';
+import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
 import PortalCard from '@/components/portal/ui/PortalCard';
 import {
   CounselorHomeKit,
@@ -208,14 +209,7 @@ export default async function CounselorPortalPage({
               email: true,
               programInterest: true,
               enrolledProgram: true,
-              courseEnrollments: {
-                orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
-                select: {
-                  programSlug: true,
-                  curriculumVersion: true,
-                  isPrimary: true,
-                },
-              },
+              courseEnrollments: CONFIRMED_PROGRAM_ENROLLMENTS_SELECT,
               assessmentScorePct: true,
               memberProgramProgress: {
                 select: { programSlug: true, averagePercent: true, coursesCompleted: true },
@@ -280,8 +274,8 @@ export default async function CounselorPortalPage({
 
   const affiliation = counselor ? counselorAffiliationLabel(counselor.partner?.name) : 'WorkforceAP';
 
-  const enrolledCount = assignments.filter((a) => a.member.enrolledProgram).length;
-  const needsAttentionCount = assignments.filter((a) => !a.member.enrolledProgram && !a.member.programInterest).length;
+  const enrolledCount = assignments.filter((a) => resolveConfirmedProgramAssignment(a.member).programSlug).length;
+  const needsAttentionCount = assignments.filter((a) => !resolveConfirmedProgramAssignment(a.member).programSlug && !a.member.programInterest).length;
 
   const firstName = (dbUser.fullName ?? t('counselorNameFallback')).split(' ')[0];
   const goodTimePhrase = getGoodTimeOfDayPhrase();
@@ -530,7 +524,8 @@ export default async function CounselorPortalPage({
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                 {assignments.map((assignment) => {
-                  const isEnrolled = !!assignment.member.enrolledProgram;
+                  const resolved = resolveConfirmedProgramAssignment(assignment.member);
+                  const isEnrolled = !!resolved.programSlug;
                   const initials = (assignment.member.fullName ?? '?').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
                   return (
                     <Link
@@ -554,7 +549,7 @@ export default async function CounselorPortalPage({
                             </h4>
                             <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {(() => {
-                                const rawProgram = assignment.member.enrolledProgram ?? assignment.member.programInterest;
+                                const rawProgram = resolved.programSlug ?? assignment.member.programInterest;
                                 return rawProgram ? programDisplayTitle(rawProgram) : t('noProgram');
                               })()} · {assignment.member.email}
                             </p>

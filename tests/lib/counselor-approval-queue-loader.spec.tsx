@@ -34,7 +34,7 @@ const MEMBER_IDS = ['m-both', 'm-intake', 'm-decided'];
 function seedMembers() {
   mocks.userFindMany.mockResolvedValue([
     {
-      id: 'm-both', fullName: 'Ada Pending', email: 'ada@example.test', enrolledProgram: null,
+      id: 'm-both', organizationId: 'org-1', fullName: 'Ada Pending', email: 'ada@example.test', enrolledProgram: null,
       wioaReviewStatus: 'pending', wioaReviewedAt: null,
       wioaQualificationJson: {
         version: 2, submittedAt: '2026-09-01T10:00:00Z', signal: 'likely', reasons: [],
@@ -43,13 +43,13 @@ function seedMembers() {
       applications: [{ id: 'a-1', status: 'PENDING', programInterest: 'it-support', submittedAt: new Date('2026-08-08T12:00:00Z'), createdAt: new Date('2026-08-08T12:00:00Z') }],
     },
     {
-      id: 'm-intake', fullName: null, email: 'intake@example.test', enrolledProgram: 'it-support',
+      id: 'm-intake', organizationId: 'org-1', fullName: null, email: 'intake@example.test', enrolledProgram: 'it-support',
       wioaReviewStatus: 'in_review', wioaReviewedAt: new Date('2026-09-21T09:00:00Z'),
       wioaQualificationJson: null, // no parsable screening: the staff timestamp is the only anchor
       applications: [],
     },
     {
-      id: 'm-decided', fullName: 'Done Already', email: 'done@example.test', enrolledProgram: 'it-support',
+      id: 'm-decided', organizationId: 'org-1', fullName: 'Done Already', email: 'done@example.test', enrolledProgram: 'it-support',
       wioaReviewStatus: 'verified', wioaReviewedAt: new Date('2026-09-01T09:00:00Z'),
       wioaQualificationJson: null,
       applications: [], // APPROVED rows are filtered by the query's `status in` and never come back
@@ -93,6 +93,28 @@ describe('getCounselorApprovalQueue', () => {
     expect(mocks.userFindMany).not.toHaveBeenCalled();
     expect(queue.rows).toEqual([]);
     expect(queue.totals.waiting).toBe(0);
+  });
+
+  it.each(['pending', null])('uses real partial application evidence with %s status inside the same caseload and organization', async (status) => {
+    const screening = { id: 'screening', organizationId: 'org-1', createdAt: new Date('2026-09-01T10:00:00Z'),
+      q1: null, q2: null, q3: null, qualifies: false, yesCount: 0, receivingUnemployment: 'yes',
+      exhaustedUnemployment: null, layoffCompany: null, snapWic: null, publicAssistancePrograms: [], publicAssistanceHelpRequested: null };
+    mocks.userFindMany.mockResolvedValue([{ id: 'm-intake', organizationId: 'org-1', fullName: 'Intake member', email: 'intake@example.test',
+      enrolledProgram: null, wioaReviewStatus: status, wioaReviewedAt: null,
+      wioaQualificationJson: { eligibilityForm: { county: 'Travis' } }, applyEligibilityScreenings: [screening], applications: [] }]);
+    const queue = await getCounselorApprovalQueue('counselor-user');
+    expect(queue.rows).toHaveLength(1);
+    expect(queue.rows[0]).toMatchObject({ key: 'intake:m-intake', kind: 'intake', daysWaiting: 21, applicationId: null });
+    if (status === null) expect(queue.rows[0].detail).toBe('Not reviewed');
+    expect(mocks.userFindMany.mock.calls[0][0].select.applyEligibilityScreenings.where).toEqual({ organizationId: 'org-1' });
+  });
+
+  it('does not turn foreign application evidence or malformed metadata into a null-status intake', async () => {
+    mocks.userFindMany.mockResolvedValue([{ id: 'm-intake', organizationId: 'org-1', fullName: 'Intake member', email: 'intake@example.test',
+      enrolledProgram: null, wioaReviewStatus: null, wioaReviewedAt: null, applications: [],
+      wioaQualificationJson: { submittedAt: '2026-01-01' },
+      applyEligibilityScreenings: [{ organizationId: 'other-org', createdAt: new Date('2026-01-01') }] }]);
+    expect((await getCounselorApprovalQueue('counselor-user')).rows).toEqual([]);
   });
 
   it('turns the facts into rows dated from the stored timestamps, and the Today tile prints exactly that many', async () => {

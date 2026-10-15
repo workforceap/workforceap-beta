@@ -36,7 +36,9 @@ export type MemberAttentionInput = {
   memberId: string;
   memberName: string;
   memberEmail: string;
+  /** Confirmed current assignment, resolved by loadAttentionFacts; never provider activity. */
   enrolledProgram: string | null;
+  /** Date of that exact assignment, not a stale legacy program's date. */
   enrolledAt: Date | null;
   createdAt: Date;
   /** Active counselor assignment date; null when nobody owns the member. */

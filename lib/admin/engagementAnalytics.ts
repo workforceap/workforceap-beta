@@ -4,6 +4,8 @@ import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { ANALYTICS_SAMPLE_CAP } from '@/lib/db/queryCaps';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import type { RankDatum } from '@/components/portal/kit/Charts';
+import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
+import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
 
 /**
  * Engagement loader of the reporting hub's Overview tab (moved verbatim from
@@ -115,7 +117,7 @@ export async function getEngagementData(orgId?: string): Promise<EngagementData>
     prisma.memberEvent.findMany({
       take: ANALYTICS_SAMPLE_CAP,
       where: { createdAt: { gte: sevenDaysAgo }, ...scope },
-      select: { userId: true, user: { select: { enrolledProgram: true } } },
+      select: { userId: true, user: { select: { enrolledProgram: true, courseEnrollments: CONFIRMED_PROGRAM_ENROLLMENTS_SELECT } } },
     }),
   ]);
 
@@ -177,7 +179,8 @@ export async function getEngagementData(orgId?: string): Promise<EngagementData>
     for (const row of activeMembersR.value) {
       if (seen.has(row.userId)) continue;
       seen.add(row.userId);
-      const prog = row.user?.enrolledProgram;
+      const assignment = row.user ? resolveConfirmedProgramAssignment(row.user) : null;
+      const prog = assignment?.programSlug ? canonicalizeProgramSlug(assignment.programSlug) : null;
       if (!prog) continue;
       byProgram.set(prog, (byProgram.get(prog) ?? 0) + 1);
     }

@@ -23,6 +23,7 @@ import {
 } from '@/lib/coursera/progressQueries';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Coursera learner detail',
@@ -103,11 +104,13 @@ export default async function AdminCourseraLearnerPage({
       fullName: true,
       email: true,
       enrolledProgram: true,
+      courseEnrollments: CONFIRMED_PROGRAM_ENROLLMENTS_SELECT,
       workspaceEmail: true,
       workspaceEmailProvisioned: true,
     },
   }));
   if (!member) notFound();
+  const program = resolveConfirmedProgramAssignment(member);
 
   const role = await withDbRetry(() => getProfileRole(member.id)).catch((err) => {
     console.error('[admin:coursera-learner] profileRole lookup failed; degrading to member', err);
@@ -156,7 +159,7 @@ export default async function AdminCourseraLearnerPage({
           <dt style={{ color: 'var(--color-on-surface-variant)' }}>Role</dt>
           <dd style={{ margin: 0 }}>{role}</dd>
           <dt style={{ color: 'var(--color-on-surface-variant)' }}>Enrolled program</dt>
-          <dd style={{ margin: 0 }}>{member.enrolledProgram ? programDisplayTitle(member.enrolledProgram) : '—'}</dd>
+          <dd style={{ margin: 0 }}>{program.programSlug ? programDisplayTitle(program.programSlug) : '—'}</dd>
           <dt style={{ color: 'var(--color-on-surface-variant)' }}>Workspace email</dt>
           <dd style={{ margin: 0 }}>
             {member.workspaceEmail

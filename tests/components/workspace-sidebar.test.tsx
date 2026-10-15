@@ -763,6 +763,17 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     ]);
   });
 
+  it('lets an org admin discover Chapters and Lab reviews through their existing parent workflows', async () => {
+    const user = userEvent.setup();
+    const { container } = showAdmin(false);
+    await user.click(container.querySelector<HTMLButtonElement>('[data-testid="sidebar-children-toggle"][data-parent="/admin/students"]')!);
+    expect(screen.getByRole('link', { name: 'Chapters' })).toHaveAttribute('href', '/admin/chapters');
+    await user.click(sectionButtons(container).find((button) => button.textContent === 'Programs')!);
+    await user.click(container.querySelector<HTMLButtonElement>('[data-testid="sidebar-children-toggle"][data-parent="/admin/training-progress"]')!);
+    expect(screen.getByRole('link', { name: 'Lab reviews' })).toHaveAttribute('href', '/counselor/lab-reviews');
+    expect(container.querySelector('a[href="/admin/users"]')).toBeNull();
+  });
+
   it('keeps Daily work open on every page, whatever an old saved preference says', () => {
     localStorage.setItem(ADMIN_SECTIONS_KEY, JSON.stringify({ 'section:dailyWork': false }));
     location.pathname = '/admin/programs';

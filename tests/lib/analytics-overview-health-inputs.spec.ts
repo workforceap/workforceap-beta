@@ -11,6 +11,7 @@ vi.mock('server-only', () => ({}));
  */
 const mocks = vi.hoisted(() => ({
   userCount: vi.fn(),
+  queryRaw: vi.fn(),
   userFindMany: vi.fn(),
   memberEventGroupBy: vi.fn(),
   courseProgressGroupBy: vi.fn(),
@@ -18,6 +19,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock('@/lib/db/prisma', () => ({ prisma: {
+  $queryRaw: mocks.queryRaw,
   user: { count: mocks.userCount, findMany: mocks.userFindMany },
   memberEvent: { groupBy: mocks.memberEventGroupBy },
   courseProgress: { groupBy: mocks.courseProgressGroupBy },
@@ -49,8 +51,9 @@ const scope = { orgId: 'org-1', superAdmin: false } as Parameters<typeof loadAna
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.userCount.mockResolvedValue(1);
+  mocks.queryRaw.mockResolvedValue([{ id: MEMBER_ID }]);
   mocks.userFindMany.mockResolvedValue([
-    { id: MEMBER_ID, enrolledAt: new Date('2026-01-05'), lastLoginAt: LOGIN_AT },
+    { id: MEMBER_ID, enrolledProgram: 'it-support', courseEnrollments: [], enrolledAt: new Date('2026-01-05'), lastLoginAt: LOGIN_AT },
   ]);
   mocks.memberEventGroupBy.mockImplementation(async (args: { _max?: unknown }) =>
     args._max
@@ -90,7 +93,7 @@ describe('analytics overview health inputs', () => {
   });
 
   it('leaves missing signals null rather than inventing activity', async () => {
-    mocks.userFindMany.mockResolvedValue([{ id: MEMBER_ID, enrolledAt: null, lastLoginAt: null }]);
+    mocks.userFindMany.mockResolvedValue([{ id: MEMBER_ID, enrolledProgram: 'it-support', courseEnrollments: [], enrolledAt: null, lastLoginAt: null }]);
     mocks.memberEventGroupBy.mockResolvedValue([]);
     mocks.courseProgressGroupBy.mockResolvedValue([{ userId: MEMBER_ID, _max: { lastActivityAt: null } }]);
     await loadAnalyticsOverview(scope);
@@ -101,5 +104,20 @@ describe('analytics overview health inputs', () => {
       lastLoginAt: null,
       lastCourseActivityAt: null,
     });
+  });
+});
+
+describe('analytics health assignment population', () => {
+  it('includes a primary-only learner with the effective saved date, excluding cleared history', async () => {
+    const savedAt = new Date('2026-10-15');
+    const ce = { programSlug: 'it-support', curriculumVersion: 'legacy-v1', isPrimary: true, enrolledAt: savedAt };
+    mocks.userFindMany.mockResolvedValue([
+      { id: 'primary', enrolledProgram: null, enrolledAt: new Date('2020-01-01'), lastLoginAt: null, courseEnrollments: [ce] },
+      { id: 'history', enrolledProgram: null, enrolledAt: null, lastLoginAt: null, courseEnrollments: [{ ...ce, isPrimary: false }] },
+    ]);
+    const result = await loadAnalyticsOverview(scope);
+    expect(mocks.calculateHealthStatus).toHaveBeenCalledTimes(1);
+    expect(mocks.calculateHealthStatus).toHaveBeenCalledWith(expect.objectContaining({ enrolledAt: savedAt }));
+    expect(result.engagement.active).toBe(1);
   });
 });

@@ -4,7 +4,8 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { COUNSELOR_ROSTER_CAP } from '@/lib/db/queryCaps';
 import { resolveCounselorMemberIds, type CounselorAttentionOptions } from '@/lib/attention/counselor';
-import { parseWioaQualificationSnapshot } from '@/lib/wioa/wioaQualification';
+import { applyWioaReviewSelect } from '@/lib/wioa/reviewEvidence';
+import { wioaScreeningQueueEvidence } from '@/lib/admin/wioaScreeningQueue';
 import {
   AWAITING_APPLICATION_STATUSES,
   buildApprovalQueue,
@@ -22,8 +23,8 @@ import {
  * staff account with a stray pending application never shows up here.
  *
  * No new column: the waiting-state timestamps are the ones already stored —
- * `applications.submitted_at` (falling back to `created_at`), the screening's
- * `wioaQualificationJson.submittedAt` and `users.wioa_reviewed_at`.
+ * `applications.submitted_at` (falling back to `created_at`), submitted portal
+ * or linked application screening evidence, and `users.wioa_reviewed_at`.
  */
 export async function loadApprovalQueueFacts(
   memberIds: readonly string[],
@@ -38,12 +39,14 @@ export async function loadApprovalQueueFacts(
       where: { id: { in: ids }, organizationId: orgId, deletedAt: null, ...MEMBER_ONLY_WHERE },
       select: {
         id: true,
+        organizationId: true,
         fullName: true,
         email: true,
         enrolledProgram: true,
         wioaReviewStatus: true,
         wioaReviewedAt: true,
         wioaQualificationJson: true,
+        applyEligibilityScreenings: { where: { organizationId: orgId }, take: 1, select: applyWioaReviewSelect },
         applications: {
           where: { status: { in: [...AWAITING_APPLICATION_STATUSES] } },
           orderBy: { createdAt: 'asc' },
@@ -53,9 +56,9 @@ export async function loadApprovalQueueFacts(
     }),
   );
 
+  const now = new Date();
   return members.map((m): ApprovalQueueMemberFacts => {
-    const screening = parseWioaQualificationSnapshot(m.wioaQualificationJson);
-    const screeningAt = screening ? new Date(screening.submittedAt) : null;
+    const evidence = wioaScreeningQueueEvidence(m, now);
     return {
       memberId: m.id,
       memberName: m.fullName ?? m.email,
@@ -64,7 +67,7 @@ export async function loadApprovalQueueFacts(
       applications: m.applications,
       wioaReviewStatus: m.wioaReviewStatus,
       wioaReviewedAt: m.wioaReviewedAt,
-      wioaScreeningSubmittedAt: screeningAt && !Number.isNaN(screeningAt.getTime()) ? screeningAt : null,
+      wioaScreeningSubmittedAt: evidence.submittedAt,
     };
   });
 }

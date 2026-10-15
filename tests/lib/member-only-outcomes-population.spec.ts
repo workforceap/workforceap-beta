@@ -176,7 +176,10 @@ function matchesUser(where: UserWhere, u: SeededUser): boolean {
         if (!(filter as UserWhere[]).some((clause) => matchesUser(clause, u))) return false;
         break;
       }
-      case 'courseEnrollments': break; // `none: {}` — the seeded roster has no course_enrollments rows
+      case 'courseEnrollments': { // This fixture roster has no durable enrollment rows.
+        if ('some' in (filter as object)) return false;
+        break;
+      }
       case 'NOT': {
         // Prisma `NOT: [...]`: the row is out when any listed condition matches.
         const clauses = Array.isArray(filter) ? (filter as UserWhere[]) : [filter as UserWhere];

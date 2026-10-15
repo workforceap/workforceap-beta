@@ -1,6 +1,8 @@
-import type { PrismaClient } from '@prisma/client';
+import { Prisma, type PrismaClient } from '@prisma/client';
 import { inheritMemberOrg, inheritUserOrg, type AdminPageTenantOk } from '@/lib/tenant/adminPageScopeFilters';
 import { ACTIVE_AT_RISK_STATUSES } from '@/lib/member/atRiskStatuses';
+import { confirmedCurrentProgramAssignmentsSql } from '@/lib/reporting/currentProgramAssignment';
+import { memberOnlySqlJoin } from './memberOnlyWhere';
 
 export { COUNSELOR_AT_RISK_DEFINITION, COUNSELOR_PLACEMENTS_DEFINITION } from './counselorRosterLabels';
 
@@ -11,7 +13,8 @@ export type CounselorAssignmentAgg = {
 };
 
 /**
- * Caseload / at-risk / placement counts via `groupBy` — no 20k-row hydrate.
+ * Caseload / placement counts via `groupBy`, saved-risk counts via the shared
+ * confirmed-assignment SQL population — no 20k-row hydrate.
  *
  * "At risk" is the saved `at_risk_alerts` case in an active status on a
  * member enrolled in a program — the same rule as every other at-risk tile
@@ -23,7 +26,7 @@ export type CounselorAssignmentAgg = {
  * S27).
  */
 export async function loadCounselorAssignmentAggregates(
-  db: Pick<PrismaClient, 'counselorAssignment'>,
+  db: Pick<PrismaClient, 'counselorAssignment' | '$queryRaw'>,
   scope: AdminPageTenantOk,
 ): Promise<Map<string, CounselorAssignmentAgg>> {
   const cohort = {
@@ -31,6 +34,8 @@ export async function loadCounselorAssignmentAggregates(
     counselor: { active: true, ...inheritUserOrg(scope) },
     ...inheritMemberOrg(scope),
   };
+  const organization = scope.superAdmin ? Prisma.empty : Prisma.sql`
+    AND actor.organization_id = ${scope.orgId} AND u.organization_id = ${scope.orgId}`;
   const [caseloadRows, placedRows, atRiskRows] = await Promise.all([
     db.counselorAssignment.groupBy({
       by: ['counselorId'],
@@ -42,13 +47,20 @@ export async function loadCounselorAssignmentAggregates(
       where: { AND: [cohort, { member: { placementRecord: { isNot: null } } }] },
       _count: { _all: true },
     }),
-    db.counselorAssignment.groupBy({
-      by: ['counselorId'],
-      where: {
-        AND: [cohort, { member: { enrolledProgram: { not: null }, atRiskAlerts: { some: { status: { in: [...ACTIVE_AT_RISK_STATUSES] } } } } }],
-      },
-      _count: { _all: true },
-    }),
+    db.$queryRaw<Array<{ counselorId: string; count: number }>>(Prisma.sql`
+      WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
+      SELECT ca.counselor_id AS "counselorId", COUNT(*)::int AS count
+      FROM counselor_assignments ca
+      JOIN counselors c ON c.id = ca.counselor_id AND c.active = true
+      JOIN users actor ON actor.id = c.user_id AND actor.deleted_at IS NULL
+      JOIN users u ON u.id = ca.member_id AND u.deleted_at IS NULL
+      ${memberOnlySqlJoin('u')}
+      JOIN current_assignments current_program ON current_program.user_id = u.id
+      WHERE ca.active = true AND actor.organization_id = u.organization_id ${organization}
+        AND EXISTS (SELECT 1 FROM at_risk_alerts alert WHERE alert.user_id = u.id
+          AND alert.status IN (${Prisma.join([...ACTIVE_AT_RISK_STATUSES])}))
+      GROUP BY ca.counselor_id
+    `),
   ]);
 
   const aggMap = new Map<string, CounselorAssignmentAgg>();
@@ -66,7 +78,7 @@ export async function loadCounselorAssignmentAggregates(
   }
   for (const row of atRiskRows) {
     const agg = aggMap.get(row.counselorId) ?? { caseload: 0, atRisk: 0, placements: 0 };
-    agg.atRisk = row._count._all;
+    agg.atRisk = row.count;
     aggMap.set(row.counselorId, agg);
   }
   return aggMap;

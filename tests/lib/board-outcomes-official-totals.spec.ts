@@ -27,6 +27,8 @@ import { getBoardOutcomes } from '@/lib/admin/boardOutcomes';
 import { MEMBER_ONLY_EMAIL_WHERE, MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, MEMBER_ONLY_WHERE, memberOnlyProfileWhere, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
 import { REPORT_SAMPLE_CAP, UNBOUNDED_SCAN_TAKE_FLOOR } from '@/lib/db/scanCaps';
 import { prisma } from '@/lib/db/prisma';
+import { enrollmentHistoryWhere } from '@/lib/reporting/enrollmentHistory';
+import { matchesWhere } from '@/tests/helpers/prismaWhereMatches';
 
 // One definition of "a member" (WAP-182 item 3): read the join off the
 // shared helper so this pins "every headline total uses it", not its text.
@@ -64,7 +66,7 @@ describe('getBoardOutcomes official totals', () => {
     // Members served / placed come from count() while the only row read returned nothing.
     expect(prisma.user.count).toHaveBeenCalledTimes(1);
     expect(prisma.user.count).toHaveBeenCalledWith({
-      where: expect.objectContaining({ deletedAt: null, enrolledProgram: { not: null }, organizationId: 'org-1', ...MEMBER_ONLY_WHERE }),
+      where: expect.objectContaining({ deletedAt: null, ...enrollmentHistoryWhere(), organizationId: 'org-1', ...MEMBER_ONLY_WHERE }),
     });
     expect(prisma.placementRecord.count).toHaveBeenCalledTimes(1);
     expect(prisma.placementRecord.count).toHaveBeenCalledWith({
@@ -119,7 +121,7 @@ describe('getBoardOutcomes official totals', () => {
     await getBoardOutcomes('all-time');
 
     expect(prisma.user.count).toHaveBeenCalledWith({
-      where: { deletedAt: null, enrolledProgram: { not: null }, ...MEMBER_ONLY_WHERE },
+      where: { deletedAt: null, ...enrollmentHistoryWhere(), ...MEMBER_ONLY_WHERE },
     });
     for (const q of rawQueries()) {
       expect(q.sql).not.toContain('organization_id');
@@ -147,14 +149,14 @@ describe('getBoardOutcomes official totals', () => {
     expect(prisma.profile.groupBy).toHaveBeenCalledTimes(5);
     const memberProfile = memberOnlyProfileWhere();
     for (const call of vi.mocked(prisma.profile.groupBy).mock.calls) {
-      const [args] = call as unknown as [{ where: { OR?: unknown; NOT?: unknown; user?: { email?: unknown; NOT?: unknown; enrolledProgram?: unknown } } }];
+      const [args] = call as unknown as [{ where: { OR?: unknown; NOT?: unknown; user?: { email?: unknown; NOT?: unknown; OR?: unknown } } }];
       expect(args.where.OR).toEqual(memberProfile.OR);
       expect(args.where.NOT).toEqual(memberProfile.NOT);
       expect(args.where.user?.email).toEqual({ notIn: [...MEMBER_ONLY_EXCLUDED_EMAILS] });
       // On `prisma.profile` the role predicate sits on the profile row, so the
       // `user` relation carries the fixture-email exclusion only.
       expect(args.where.user?.NOT).toEqual(MEMBER_ONLY_EMAIL_WHERE.NOT);
-      expect(args.where.user?.enrolledProgram).toEqual({ not: null });
+      expect(args.where.user?.OR).toEqual(enrollmentHistoryWhere().OR);
     }
 
     // Program enrolment groupBys and the placement sample carry the same population.

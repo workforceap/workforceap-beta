@@ -374,6 +374,7 @@ export default async function AdminTodayPage({
           dateLabel={dateLabel}
           queuesFirst
           lead={
+            <>
             <CounselorApprovalQueue
               queue={approvals.queue}
               total={approvals.total}
@@ -386,6 +387,8 @@ export default async function AdminTodayPage({
                 { label: 'Funding eligibility', href: '/admin/wioa-screening' },
               ]}
             />
+            <p className="wa-kit-meta wa-mt-3"><Link href="/admin/wioa-screening#public-wioa-screenings">Public screening contacts</Link> — saved public questionnaire submissions for follow-up.</p>
+            </>
           }
           kpis={kpis}
           queueItems={queueItems}

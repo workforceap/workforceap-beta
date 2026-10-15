@@ -189,6 +189,7 @@ describe('eligibilityScreeningAdminAlertHtml', () => {
     assert.match(lead, /record lead-&lt;1&gt;/);
     assert.match(lead, /for \d+ days/);
     assert.ok(!lead.includes('/admin/members/'));
+    assert.ok(lead.includes('/admin/wioa-screening#public-wioa-screenings'));
     assertNoAnswers(lead);
   });
 });

@@ -32,7 +32,7 @@ export function eligibilityScreeningAdminAlertHtml(params: {
   const reviewBlock = memberId
     ? `<p><a href="https://www.workforceap.org/admin/members/${encodeURIComponent(memberId)}">Review the answers on the member's admin page</a></p>`
     : leadRecordId
-      ? `<p>This person has no member account yet. Their answers are held in the public screening store (record ${escapeHtml(leadRecordId)}) for ${PUBLIC_LEAD_RETENTION_DAYS} days.</p>`
+      ? `<p>This person has no member account yet. Their answers are held in the public screening store (record ${escapeHtml(leadRecordId)}) for ${PUBLIC_LEAD_RETENTION_DAYS} days.</p><p><a href="https://www.workforceap.org/admin/wioa-screening#public-wioa-screenings">Review saved public screening contacts in admin</a></p>`
       : '';
   return `
     <p>An adult eligibility screening was submitted.</p>

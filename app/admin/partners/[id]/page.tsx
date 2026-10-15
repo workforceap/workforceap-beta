@@ -361,6 +361,7 @@ export default async function AdminPartnerDetailPage({ params }: Props) {
           <CardHead title="Partner details" />
           <dl style={{ display: 'flex', flexDirection: 'column', gap: 10, margin: 0 }}>
             {[
+              { label: 'Organization type', value: partner.organizationType?.trim() || 'Not recorded' },
               { label: 'Contact', value: partner.contactName ?? '—' },
               { label: 'Email', value: partner.contactEmail ?? '—' },
               { label: 'Phone', value: partner.contactPhone ?? '—' },

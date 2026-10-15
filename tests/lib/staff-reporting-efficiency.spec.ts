@@ -53,8 +53,8 @@ describe('counselor grouped reports and pagination', () => {
     counselor: { count: vi.fn().mockResolvedValue(125), findMany: vi.fn().mockResolvedValue([]) },
     counselorAssignment: { groupBy: vi.fn()
       .mockResolvedValueOnce([{ counselorId: 'c1', _count: { _all: 20005 } }, { counselorId: 'c2', _count: { _all: 7 } }])
-      .mockResolvedValueOnce([{ counselorId: 'c1', _count: { _all: 301 } }])
-      .mockResolvedValueOnce([{ counselorId: 'c1', _count: { _all: 21 } }]) },
+      .mockResolvedValueOnce([{ counselorId: 'c1', _count: { _all: 301 } }]) },
+    $queryRaw: vi.fn().mockResolvedValue([{ counselorId: 'c1', count: 21 }]),
   });
   it('uses all grouped assignments, bounded rows and a stable page order', async () => {
     const db = makeDb();
@@ -63,13 +63,12 @@ describe('counselor grouped reports and pagination', () => {
     expect(result.avgCaseload).toBe(160); expect(result.atRiskOwned).toBe(21);
     expect(result.total).toBe(125); expect(result.matchingTotal).toBe(125);
     expect(db.counselor.count).toHaveBeenCalledTimes(1);
-    expect(db.counselorAssignment.groupBy).toHaveBeenCalledTimes(3);
+    expect(db.counselorAssignment.groupBy).toHaveBeenCalledTimes(2);
+    expect(db.$queryRaw).toHaveBeenCalledTimes(1);
     expect(db.counselor.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 50, skip: 50, orderBy: [{ user: { fullName: 'asc' } }, { id: 'asc' }] }));
     const cohort = { active: true, counselor: { active: true, user: { organizationId: 'org-1' } }, member: { organizationId: 'org-1' } };
     expect(db.counselorAssignment.groupBy.mock.calls[0][0].where).toEqual(cohort);
     expect(db.counselorAssignment.groupBy.mock.calls[1][0].where.AND[0]).toEqual(cohort);
-    expect(db.counselorAssignment.groupBy.mock.calls[2][0].where.AND[0]).toEqual(cohort);
-    expect(db.counselorAssignment.groupBy.mock.calls[2][0].where.AND[1]).toEqual({ member: { enrolledProgram: { not: null }, atRiskAlerts: { some: { status: { in: ['open', 'acknowledged', 'escalated'] } } } } });
     expect(db.counselorAssignment.groupBy.mock.calls[1][0].where.AND[1]).toEqual({ member: { placementRecord: { isNot: null } } });
   });
   it('searches in the tenant query and clamps stale pages without changing cohort KPIs', async () => {

@@ -12,6 +12,8 @@ import { sortWioaQueueOldestFirst } from '@/lib/wioa/wioaQueueAge';
 import { applyWioaReviewSelect, type ApplyWioaReviewScreening } from '@/lib/wioa/reviewEvidence';
 import { wioaScreeningQueueWhere } from '@/lib/admin/wioaScreeningPopulation';
 import { wioaScreeningQueueEvidence } from '@/lib/admin/wioaScreeningQueue';
+import { loadPublicWioaScreenings } from '@/lib/admin/publicWioaScreenings';
+import PublicWioaScreeningsPanel from '@/components/admin/PublicWioaScreeningsPanel';
 import PageHeader from '@/components/portal/PageHeader';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import PortalRouteFallback from '@/components/portal/PortalRouteFallback';
@@ -104,6 +106,13 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
   const sp = (await searchParams) ?? {};
   const requestedUi = Array.isArray(sp.ui) ? sp.ui[0] : sp.ui;
   const reviewFilter = normalizeReviewParam(sp.review);
+  const publicScreenings = await loadPublicWioaScreenings(scope).then(
+    (data) => <PublicWioaScreeningsPanel {...data} />,
+    (error: unknown) => {
+      console.error('[admin/wioa-screening] public screening load failed', error);
+      return <PublicWioaScreeningsPanel rows={[]} total={0} failed />;
+    },
+  );
 
   // ---------- LEGACY: original review-filtered queue (escape hatch) ----------
   if (requestedUi === 'legacy') {
@@ -283,6 +292,7 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
             </div>
           </>
         )}
+        {publicScreenings}
       </PortalPageFrame>
     );
   }
@@ -394,6 +404,7 @@ export default async function AdminWioaScreeningQueuePage({ searchParams }: Page
       needDocs={needDocs}
       notEligible={notEligible}
       filterBar={<WioaReviewFilterBar active={reviewFilter} />}
+      publicScreenings={publicScreenings}
     />
   );
 }

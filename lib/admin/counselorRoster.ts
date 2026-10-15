@@ -11,7 +11,7 @@ export function parseCounselorRosterQuery(params: Record<string, string | string
 }
 
 export async function loadCounselorRoster(
-  db: Pick<PrismaClient, 'counselor' | 'counselorAssignment'>,
+  db: Pick<PrismaClient, 'counselor' | 'counselorAssignment' | '$queryRaw'>,
   scope: AdminPageTenantOk,
   query: ReturnType<typeof parseCounselorRosterQuery>,
   now = new Date(),

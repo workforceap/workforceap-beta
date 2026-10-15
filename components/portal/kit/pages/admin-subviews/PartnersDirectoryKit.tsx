@@ -23,6 +23,7 @@ import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
  * name, a "{N} referrals · {N} placed" line, and a footer row of status + a
  * green "{X}% placement". Topped with a KPI strip of real aggregates.
  * Target route: /admin/partners (DEFAULT render).
+ * The server may add a platform-only signup intake link beside Add Partner.
  *
  * Pure presentational + a couple of Astryx <Button> CTAs — no client state, so
  * this stays a server component (no 'use client').
@@ -52,6 +53,8 @@ export interface PartnersDirectoryKitProps {
   totalReferrals?: number;
   /** Org-wide placed count. Falls back to the rendered page sum. */
   totalPlaced?: number;
+  /** Server-authorized platform intake link; absent for organization admins. */
+  signupIntakeHref?: string;
 }
 
 /** Demo data so the kit renders standalone (matches the mockup numbers). */
@@ -93,6 +96,7 @@ export function PartnersDirectoryKit({
   total,
   totalReferrals: totalReferralsProp,
   totalPlaced: totalPlacedProp,
+  signupIntakeHref,
 }: PartnersDirectoryKitProps) {
   const count = total ?? partners.length;
   const pageReferrals = partners.reduce((sum, p) => sum + p.referrals, 0);
@@ -115,7 +119,10 @@ export function PartnersDirectoryKit({
         title="Partners"
         lede="Workforce centers, nonprofits, referral orgs, and partner schools"
         action={
-          <KitLinkButton href="/admin/partners/new" label="Add Partner" variant="primary" size="sm" icon={<Plus size={14} aria-hidden="true" />} />
+          <div className="wa-flex wa-items-center wa-flex-wrap wa-gap-3">
+            {signupIntakeHref ? <KitLinkButton href={signupIntakeHref} label="Signup intake" variant="secondary" size="sm" /> : null}
+            <KitLinkButton href="/admin/partners/new" label="Add Partner" variant="primary" size="sm" icon={<Plus size={14} aria-hidden="true" />} />
+          </div>
         }
       />
 

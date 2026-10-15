@@ -157,6 +157,14 @@ opens the existing draft editor, then requires a new save, PDF review and signin
 intent. See [the expanded audit reconciliation](../audits/expanded-platform-audit-2026-10-15.md)
 for confirmed repairs and the report's outdated or intentional controls.
 
+## Confirmed assignments and public intake follow-up
+
+- [Current assignment projection](../../lib/member/confirmedProgramAssignment.ts) and its [SQL relation](../../lib/reporting/currentProgramAssignment.ts) follow the unchanged primary/alias-matched/legacy-only policy, including the exact assignment's date. Reporting, saved-risk/attention, provisioning and staff labels use it without promoting observed activity or arbitrary history. [Historical enrollment rows](../../lib/reporting/enrollmentHistory.ts) remain separate for board cohorts and placement-time attribution.
+- [Public screening contacts](../../lib/admin/publicWioaScreenings.ts) are read in a separate section of [WIOA screening](../../app/admin/wioa-screening/page.tsx), reachable from Admin Today and public alert links. Both actual saved formats are supported; partial answers stay partial, unknown formats stay unknown, and public contacts never join member decision counts/counselor caseloads by email.
+- [Saved service requests](../../lib/admin/memberServiceRequests.ts) appear on the member's Program tab, scoped to the selected active subject and organization. Recorded benefit/training statuses are read-only history, not provider entitlement. Duplicate counselor placement recording returns 409 without replacing verified records or emitting success effects. Counselor Today reads actual application screening evidence within the existing caseload.
+- [Partner signup intake](../../app/admin/partner-signups/page.tsx) exposes the original unassociated request fields only to platform admins, with 25-row paging and contextual links from both Partners views. It performs no email/name joins or conversion actions. Organization-scoped partner detail shows the already-copied organization type, with missing values explicit.
+- [Staff audit receipt](../audits/staff-reporting-audit-2026-10-15.md) records the qualified findings, preserved contracts and verification boundary.
+
 ## Shared files with a wide change impact
 
 The generated [reference summary](generated/summary.json) identifies heavily imported files. Prisma, authentication, role resolution, request GUC helpers, the program catalog and tenant resolution sit on many paths. Review reverse references before changing their return values, failure behavior or defaults.
