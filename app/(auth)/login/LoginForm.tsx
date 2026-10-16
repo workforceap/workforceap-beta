@@ -190,6 +190,16 @@ const s = {
     fontSize: 'var(--font-size-sm)',
   } as React.CSSProperties,
 
+  infoBanner: {
+    background: 'color-mix(in srgb, var(--wa-info) 12%, transparent)',
+    borderLeft: '4px solid var(--wa-info)',
+    padding: 'var(--space-3) var(--space-4)',
+    marginBottom: 'var(--space-4)',
+    borderRadius: '0 var(--radius-md) var(--radius-md) 0',
+    color: 'var(--color-on-surface)',
+    fontSize: 'var(--font-size-sm)',
+  } as React.CSSProperties,
+
   fieldGroup: {
     marginBottom: 'var(--space-4)',
   } as React.CSSProperties,
@@ -213,9 +223,16 @@ type LoginFormProps = {
   initialRedirectTo?: string;
   accountDeleted?: boolean;
   emailVerified?: boolean;
+  /** True when middleware/layout sent the user here with a deep-link redirectTo (UI-04). */
+  sessionExpired?: boolean;
 };
 
-export default function LoginForm({ initialRedirectTo = '/dashboard', accountDeleted = false, emailVerified = false }: LoginFormProps) {
+export default function LoginForm({
+  initialRedirectTo = '/dashboard',
+  accountDeleted = false,
+  emailVerified = false,
+  sessionExpired = false,
+}: LoginFormProps) {
   const tAuth = useTranslations('auth');
   /* Keep the requested page through sign-in and recovery. */
   const redirectTo = sanitizeRedirectPath(initialRedirectTo, '/dashboard');
@@ -493,6 +510,11 @@ export default function LoginForm({ initialRedirectTo = '/dashboard', accountDel
           {emailVerified && !accountDeleted && (
             <div role="status" style={{ ...s.errorBanner, borderLeft: '4px solid #16a34a', background: 'color-mix(in srgb, #16a34a 10%, transparent)' }}>
               {tAuth('emailVerifiedNotice')}
+            </div>
+          )}
+          {sessionExpired && !accountDeleted && !emailVerified && (
+            <div role="status" data-testid="session-expired-banner" style={s.infoBanner}>
+              {tAuth('sessionExpiredNotice')}
             </div>
           )}
           <form onSubmit={handleSubmit} noValidate>

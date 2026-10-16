@@ -3002,6 +3002,7 @@
     },
     "accountDeletedNotice": "Esta cuenta ha sido eliminada. Si crees que es un error, contáctanos en info@workforceap.org o al (512) 777-1808.",
     "emailVerifiedNotice": "Correo verificado — ya puedes iniciar sesión.",
+    "sessionExpiredNotice": "Tu sesión expiró — inicia sesión para continuar.",
     "invite": {
       "metaTitle": "Acepta tu invitación",
       "metaDescription": "Acepta tu invitación para unirte a Workforce Advancement Project.",

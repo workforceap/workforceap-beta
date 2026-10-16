@@ -584,6 +584,15 @@
   border-radius: var(--wa-radius);
 }
 
+.preflight {
+  display: grid;
+  gap: 0.5rem;
+  padding: var(--wa-pad-sm);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-surface-2);
+}
+
 .stateBox {
   margin-bottom: var(--wa-pad-sm);
 }

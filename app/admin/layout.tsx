@@ -48,7 +48,12 @@ export default async function AdminLayout({
   try {
     const scope = await resolveAdminPageTenant(user.id);
     if (!scope.ok) redirect(await deniedPortalHomeHref(user.id, 'admin'));
-    const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
+    const requestHeaders = await headers();
+    const readOnlyAudit = isReadOnlyPortalAuditHeader(requestHeaders);
+    // Board print packet is chromeless on screen and in print (UI-14): skip
+    // AdminPortalShell sidebar/header so Cmd+P is a clean funder PDF.
+    const pathname = requestHeaders.get('x-pathname') ?? '';
+    const chromelessPrint = pathname === '/admin/board/print' || pathname.startsWith('/admin/board/print?');
 
     const adminTour = getHomeTourForRole('admin');
     const [branding, portalRoles, tour, effectiveRole] = await Promise.all([
@@ -84,21 +89,27 @@ export default async function AdminLayout({
         {readOnlyAudit && (
           <span hidden data-portal-audit-suppressed="admin-organization-branding-data-cache" />
         )}
-        <OrgBrandingBar branding={branding} />
-        {/* useSearchParams requires a Suspense boundary or the admin shell can
-            hydrate as a CSR bailout / mismatch (Sentry JAVASCRIPT-NEXTJS-1). */}
-        <Suspense fallback={null}>
-          <LegacyViewNotice />
-        </Suspense>
-        <AdminPortalShell
-          superAdmin={scope.superAdmin}
-          knownIsAdmin={effectiveRole === 'admin'}
-          portalRoles={portalRoles}
-          readOnlyAudit={readOnlyAudit}
-          tour={tour}
-        >
-          {children}
-        </AdminPortalShell>
+        {chromelessPrint ? (
+          children
+        ) : (
+          <>
+            <OrgBrandingBar branding={branding} />
+            {/* useSearchParams requires a Suspense boundary or the admin shell can
+                hydrate as a CSR bailout / mismatch (Sentry JAVASCRIPT-NEXTJS-1). */}
+            <Suspense fallback={null}>
+              <LegacyViewNotice />
+            </Suspense>
+            <AdminPortalShell
+              superAdmin={scope.superAdmin}
+              knownIsAdmin={effectiveRole === 'admin'}
+              portalRoles={portalRoles}
+              readOnlyAudit={readOnlyAudit}
+              tour={tour}
+            >
+              {children}
+            </AdminPortalShell>
+          </>
+        )}
       </div>
       </NextIntlClientProvider>
     );

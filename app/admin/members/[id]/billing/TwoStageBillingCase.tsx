@@ -182,6 +182,34 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
 
   if (state.phase === 'no_case') {
     const noProgram = enrolledPrograms.length === 0;
+    const syllabusReady = Boolean(selectedProgram?.billingTerms.available);
+    const counselorOnFile = Boolean(counselor?.name || counselor?.email);
+    // Confirmed class start is recorded after the case opens (J5 readiness
+    // attestation). Surface it as a planned step so staff know the sequence.
+    const preflightItems = [
+      {
+        key: 'syllabus',
+        ready: syllabusReady,
+        label: '160h/200h approved syllabus on file',
+        detail: syllabusReady
+          ? (selectedProgram?.title ?? 'Approved billing terms available')
+          : (selectedProgram?.billingTerms.reason ?? 'Approved billing terms unavailable for this program'),
+      },
+      {
+        key: 'counselor',
+        ready: counselorOnFile,
+        label: 'Counselor contact on file',
+        detail: counselorOnFile
+          ? [counselor?.name, counselor?.email].filter(Boolean).join(' · ')
+          : 'Assign a counselor before locking the packet',
+      },
+      {
+        key: 'startDate',
+        ready: false,
+        label: 'Confirmed start date',
+        detail: 'Recorded after opening the case (J5 readiness attestation)',
+      },
+    ] as const;
     return (
       <div>
         <section className={styles.openCase} aria-labelledby="billing-open-case-heading">
@@ -211,6 +239,37 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
               ) : null}
             </>
           )}
+          <div
+            className={styles.preflight}
+            data-testid="j5-j6-preflight"
+            aria-labelledby="billing-preflight-heading"
+          >
+            <p className={styles.sectionLabel} id="billing-preflight-heading">
+              J5/J6 pre-flight checklist
+            </p>
+            <ul className={styles.checkList}>
+              {preflightItems.map((item) => (
+                <li
+                  key={item.key}
+                  className={styles.checkRow}
+                  data-status={item.ready ? 'verified' : 'unchecked'}
+                  data-preflight={item.key}
+                >
+                  <span className={styles.checkLabel}>{item.label}</span>
+                  <span className={item.ready ? styles.verified : styles.unverified}>
+                    {item.ready ? 'Ready' : 'Needed'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className={styles.reason} style={{ margin: 0 }}>
+              {preflightItems.map((item) => (
+                <span key={item.key} style={{ display: 'block' }}>
+                  {item.ready ? '✓' : '○'} {item.detail}
+                </span>
+              ))}
+            </p>
+          </div>
           <div className={styles.actionRow}>
             <button type="button" className={styles.primaryButton} disabled={!selectedProgram?.billingTerms.available || opening} aria-describedby="billing-open-reason" onClick={() => void openCase()}>
               {opening ? 'Opening…' : `Open billing case${enrolledPrograms.length === 1 ? ` for ${enrolledPrograms[0].title}` : ''}`}

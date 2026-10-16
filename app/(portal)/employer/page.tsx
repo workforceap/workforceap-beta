@@ -14,6 +14,7 @@ import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
 import { EMPLOYER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
 import PortalVoiceSessionLazy from '@/components/portal/PortalVoiceSessionLazy';
 import VoiceAgentSurface from '@/components/portal/VoiceAgentSurface';
+import EmployerVoiceCollapse from '@/components/employer/EmployerVoiceCollapse';
 import { employerVoiceSurface, employerVoiceSessionAccent } from '@/lib/portal/voice';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import StatusBadge from '@/components/portal/StatusBadge';
@@ -160,11 +161,8 @@ export default async function EmployerDashboardPage({
 
     return (
       <>
-        {/* ── Voice Assistant ── */}
-        {/* Mounts the real ElevenLabs voice surface (same wiring as the legacy
-            path) so the start control actually opens a hands-free session
-            against /api/employer/voice-session — not a Link to the apps list. */}
-        <div className="wa-px-6 wa-pt-6">
+        {/* ── Voice Assistant (collapsed by default so KPIs stay above the fold; UI-29) ── */}
+        <EmployerVoiceCollapse title={kitT('employerVoiceAssistant')}>
           <VoiceAgentSurface {...employerVoiceSurface}>
             <PortalVoiceSessionLazy
               sessionEndpoint="/api/employer/voice-session"
@@ -175,7 +173,7 @@ export default async function EmployerDashboardPage({
               listeningLabel={kitT('listeningAskYourQuestion')}
             />
           </VoiceAgentSurface>
-        </div>
+        </EmployerVoiceCollapse>
 
         <EmployerHomeKit
           companyName={ctx.employer.companyName}
@@ -462,7 +460,12 @@ export default async function EmployerDashboardPage({
             </div>
           ))}
         </div>
-        <div style={{ marginLeft: '1.5rem', marginRight: '1.5rem', marginTop: '1rem' }}>
+        {/* Legacy mobile: collapse voice so pipeline KPIs stay first. */}
+        <EmployerVoiceCollapse
+          title={t('employerVoiceAssistant')}
+          className=""
+          style={{ marginLeft: '1.5rem', marginRight: '1.5rem', marginTop: '1rem' }}
+        >
           <VoiceAgentSurface {...employerVoiceSurface}>
             <PortalVoiceSessionLazy
               sessionEndpoint="/api/employer/voice-session"
@@ -473,7 +476,7 @@ export default async function EmployerDashboardPage({
               listeningLabel={t('listeningAskYourQuestion')}
             />
           </VoiceAgentSurface>
-        </div>
+        </EmployerVoiceCollapse>
         {/* Quick actions — Review Apps is primary when candidates exist */}
         <div className="employer-quick-actions" style={{ marginLeft:"1.5rem", marginRight:"1.5rem", marginTop:"1rem", display:"grid", gridTemplateColumns:"repeat(2, 1fr)", gap:"0.75rem" }}>
           {totalApplications > 0 ? (
@@ -570,7 +573,11 @@ export default async function EmployerDashboardPage({
 
       {/* ── Desktop View ── */}
       <div className="wa-hidden md:wa-block">
-      <section style={{ marginBottom: '2rem' }}>
+      <EmployerVoiceCollapse
+        title={t('employerVoiceAssistant')}
+        className=""
+        style={{ marginBottom: '2rem' }}
+      >
         <VoiceAgentSurface {...employerVoiceSurface}>
           <PortalVoiceSessionLazy
             sessionEndpoint="/api/employer/voice-session"
@@ -581,7 +588,7 @@ export default async function EmployerDashboardPage({
             listeningLabel={t('listeningAskYourQuestion')}
           />
         </VoiceAgentSurface>
-      </section>
+      </EmployerVoiceCollapse>
 
       {/* ── Empty State (shown first for cold-start clarity) ── */}
       {totalJobs === 0 && (
