@@ -55,6 +55,15 @@ describe('ProgramChangeRequestsKit reviewable', () => {
     expect(screen.getAllByText('No program change requests').length).toBeGreaterThan(0);
     expect(screen.queryByRole('table')).toBeNull();
     expect(document.querySelector('.wa-overflow-x-auto')).toBeNull();
+    // Desktop wrap pads the bare KitEmptyState into a short panel (not a 44px strip).
+    const desktopEmpty = document.querySelector('.wa-kit-table-wrap--empty > .wa-kit-empty');
+    expect(desktopEmpty).not.toBeNull();
+    expect(desktopEmpty).toHaveAttribute('data-kind', 'first');
+    expect(desktopEmpty?.querySelector('.wa-kit-lede')).toHaveTextContent(
+      /When members request to switch programs/,
+    );
+    // Mobile cards branch frames the same empty outside the table wrap.
+    expect(document.querySelector('.lg\\:wa-hidden .wa-kit-empty--framed')).not.toBeNull();
   });
 
   it('shows Approve and Deny only on pending rows', () => {

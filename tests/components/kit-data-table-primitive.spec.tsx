@@ -200,7 +200,9 @@ describe('kit DataTable — loading, error notice, scroll cue', () => {
 
     rerender(<DataTable<Row> {...base} rows={[]} data-testid="loading" />);
     expect(screen.getByTestId('loading')).not.toHaveAttribute('aria-busy');
+    expect(screen.getByTestId('loading')).toHaveClass('wa-kit-table-wrap--empty');
     expect(screen.getByRole('heading', { name: 'No rows yet' })).toBeInTheDocument();
+    expect(screen.getByTestId('loading').querySelector(':scope > .wa-kit-empty')).not.toBeNull();
   });
 
   it('shows the error notice as an alert above the rows without hiding them', () => {

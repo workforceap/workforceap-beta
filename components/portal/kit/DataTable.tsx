@@ -193,7 +193,7 @@ export function DataTable<T>({
           </div>
         ) : null}
         {rows.length === 0 ? (
-          <KitEmptyState {...emptyProps} />
+          <KitEmptyState {...emptyProps} framed />
         ) : (
           rows.map((row) => (
             <div

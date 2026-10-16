@@ -713,6 +713,17 @@ a.wa-kit-tab {
   max-width: 100%;
   min-width: 0;
 }
+/* Empty queue (UI-09): no thead / scroller. KitEmptyState is bare by default
+   (padding:0 for cells); inside the bordered wrap it needs room so title +
+   lede read as a short panel, not a ~44px compressed strip. */
+.wa-kit-table-wrap--empty > .wa-kit-empty {
+  padding: calc(var(--wa-pad) * 1.5) var(--wa-pad);
+  min-height: 7.5rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 .wa-kit-table-wrap .wa-overflow-x-auto {
   max-width: 100%;
   min-width: 0;
