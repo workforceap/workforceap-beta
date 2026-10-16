@@ -21,6 +21,12 @@ awaiting approval and approved cascades with incomplete delivery. Delivery
 rows stay visible for retry or staff reconciliation; provider acceptance is
 not labelled as confirmed inbox delivery.
 
+The audit page's `AuditLogsKit` displays `MemberEvent` activity, separate from
+security audit records. Its Account column identifies the related account, which
+can be the affected member rather than the staff actor. Reported IP is optional,
+unverified event metadata; an unavailable value does not prove an audit-capture
+failure. Keep these labels consistent in the table, mobile cards and legacy view.
+
 Member training Coursera CTAs use `TrackedCourseraLaunchLink` (a native anchor)
 for `/api/member/coursera/launch` redirects. Next `Link` would prefetch the launch
 as RSC before a click and trigger cross-origin CSP errors. Keep Next `Link` for

@@ -29,6 +29,7 @@ beforeEach(() => {
   localStorage.clear();
   document.body.innerHTML = `<button id="outside">Outside action</button>${markup}`;
   document.body.style.paddingBottom = '32px';
+  document.documentElement.style.removeProperty('--cookie-consent-reserve');
   Object.defineProperty(navigator, 'globalPrivacyControl', { configurable: true, value: false });
   Object.defineProperty(window, 'gtag', { configurable: true, value: gtag });
   window.addEventListener('wap:consent-change', consentChanged);
@@ -51,6 +52,7 @@ afterEach(() => {
   window.removeEventListener('wap:consent-change', consentChanged);
   document.body.innerHTML = '';
   document.body.style.paddingBottom = '';
+  document.documentElement.style.removeProperty('--cookie-consent-reserve');
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -65,6 +67,7 @@ describe('Astro-owned cookie banner', () => {
     expect(document.querySelector('[inert]')).toBeNull();
     expect(outside).toHaveFocus();
     expect(document.body.style.paddingBottom).toBe('260.5px');
+    expect(document.documentElement.style.getPropertyValue('--cookie-consent-reserve')).toBe('228.5px');
     expect(gtag).not.toHaveBeenCalled();
     expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy');
     expect(screen.getByRole('link', { name: 'Terms' })).toHaveAttribute('href', '/terms');
@@ -75,10 +78,12 @@ describe('Astro-owned cookie banner', () => {
     height = 300;
     measurements[0]([], {} as ResizeObserver);
     expect(document.body.style.paddingBottom).toBe('344px');
+    expect(document.documentElement.style.getPropertyValue('--cookie-consent-reserve')).toBe('312px');
     height = 96;
     bottom = 0;
     fireEvent(window, new Event('resize'));
     expect(document.body.style.paddingBottom).toBe('128px');
+    expect(document.documentElement.style.getPropertyValue('--cookie-consent-reserve')).toBe('96px');
   });
 
   it.each([['Accept', 'accepted', 'granted'], ['Decline', 'declined', 'denied']])('preserves %s storage, broadcast and analytics contract and releases space', (label, decision, analytics) => {
@@ -92,6 +97,7 @@ describe('Astro-owned cookie banner', () => {
     });
     expect(screen.queryByRole('region')).not.toBeInTheDocument();
     expect(document.body.style.paddingBottom).toBe('32px');
+    expect(document.documentElement.style.getPropertyValue('--cookie-consent-reserve')).toBe('');
     expect(disconnect).toHaveBeenCalledTimes(1);
     fireEvent(window, new Event('resize'));
     expect(document.body.style.paddingBottom).toBe('32px');
@@ -103,6 +109,7 @@ describe('Astro-owned cookie banner', () => {
     expect(screen.queryByRole('region')).not.toBeInTheDocument();
     expect(document.body.style.paddingBottom).toBe('32px');
     expect(measurements).toHaveLength(0);
+    expect(document.documentElement.style.getPropertyValue('--cookie-consent-reserve')).toBe('');
     expect(gtag).not.toHaveBeenCalled();
     expect(consentChanged).not.toHaveBeenCalled();
   });
@@ -116,5 +123,16 @@ describe('Astro-owned cookie banner', () => {
     expect(screen.queryByRole('region')).not.toBeInTheDocument();
     expect(document.body.style.paddingBottom).toBe('32px');
     expect(measurements).toHaveLength(0);
+    expect(document.documentElement.style.getPropertyValue('--cookie-consent-reserve')).toBe('');
+  });
+
+  it('restores a previously owned focus reserve when dismissed', () => {
+    document.documentElement.style.setProperty('--cookie-consent-reserve', '24px');
+    start();
+    expect(document.documentElement.style.getPropertyValue('--cookie-consent-reserve')).toBe('228.5px');
+    fireEvent.click(screen.getByRole('button', { name: 'Decline' }));
+    expect(document.documentElement.style.getPropertyValue('--cookie-consent-reserve')).toBe('24px');
+    fireEvent(window, new Event('resize'));
+    expect(document.documentElement.style.getPropertyValue('--cookie-consent-reserve')).toBe('24px');
   });
 });

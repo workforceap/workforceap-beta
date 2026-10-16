@@ -12,16 +12,18 @@ import { Card } from '@astryxdesign/core/Card';
 import { Token } from '@astryxdesign/core/Token';
 
 /**
- * Audit logs — the immutable privileged-action trail rendered as a dense table.
+ * Member activity logs — recorded MemberEvent rows rendered as a dense table.
  * Mockup: workforceap-admin-full.html "audit" view.
  * Target route: /admin/audit-logs
  *
- * Columns: When · Actor · Action · Target · IP.
+ * This view is separate from the security audit records; it does not establish
+ * the privileged actor or completeness/immutability of a security audit trail.
+ * Columns: When · Account · Event · Target · Reported IP.
  *  - When   → relative/short timestamp (e.g. "9:41 AM", "Yesterday").
- *  - Actor  → user full name (email as the muted sub-line on mobile cards).
- *  - Action → eventName, shown as an Astryx Token (blue).
+ *  - Account → related user, which may be the affected member rather than the actor.
+ *  - Event  → eventName, shown as an Astryx Token (blue).
  *  - Target → entityType / entityId (or sourcePage fallback).
- *  - IP     → masked source IP from metadata, else "—" (system events).
+ *  - Reported IP → optional, unverified event metadata; "—" means unavailable.
  *
  * Wide table collapses to stacked cards on mobile via DataTable mobile="cards".
  */
@@ -30,15 +32,15 @@ export interface AuditRow {
   id: string;
   /** Pre-formatted "when" label, e.g. "9:41 AM" or "Yesterday". */
   when: string;
-  /** Actor display name. */
+  /** Related account display name; not necessarily the actor. */
   actor: string;
-  /** Actor email (mobile card sub-line). */
+  /** Related account email (mobile card sub-line). */
   actorEmail: string;
   /** Human-readable action / event name. */
   action: string;
   /** What the action touched. */
   target: string;
-  /** Masked source IP, e.g. "73.x.x.12", or "—". */
+  /** Event-reported IP (IPv4 masked), or "—" when unavailable. */
   ip: string;
 }
 
@@ -48,7 +50,7 @@ export interface AuditLogsKitProps {
   eventsToday?: number;
   /** Events recorded over the last 7 days. */
   eventsThisWeek?: number;
-  /** Distinct actors in the active window. */
+  /** Distinct related accounts in the active window. */
   distinctActors?: number;
 }
 
@@ -100,7 +102,7 @@ export function AuditLogsKit({
   const kpis: KpiItem[] = [
     { label: 'Events today', value: eventsToday.toLocaleString() },
     { label: 'This week', value: eventsThisWeek.toLocaleString() },
-    { label: 'Distinct actors', value: distinctActors.toLocaleString() },
+    { label: 'Distinct accounts', value: distinctActors.toLocaleString() },
   ];
 
   const columns: Column<AuditRow>[] = [
@@ -115,12 +117,12 @@ export function AuditLogsKit({
     },
     {
       key: 'actor',
-      header: 'Actor',
+      header: 'Account',
       render: (row) => <span style={{ fontWeight: 700 }}>{row.actor}</span>,
     },
     {
       key: 'action',
-      header: 'Action',
+      header: 'Event',
       render: (row) => <Token label={row.action} size="sm" color="blue" />,
     },
     {
@@ -130,7 +132,7 @@ export function AuditLogsKit({
     },
     {
       key: 'ip',
-      header: 'IP',
+      header: 'Reported IP',
       align: 'right',
       render: (row) => (
         <span style={{ fontVariantNumeric: 'tabular-nums', color: 'var(--wa-muted)' }}>{row.ip}</span>
@@ -141,10 +143,14 @@ export function AuditLogsKit({
   return (
     <DesignSurface surface="dense" className="wa-p-6">
       <PageOpener className="wa-mb-5"
-        title="Audit logs"
-        kicker="Compliance"
-        lede="Every privileged action, immutable"
+        title="Member activity logs"
+        kicker="Activity"
+        lede="Recorded member events; security audit records are maintained separately."
       />
+
+      <p className="wa-mb-5" style={{ color: 'var(--wa-muted)' }}>
+        Reported IP is optional, unverified event data; — means unavailable.
+      </p>
 
       <div className="wa-mb-5">
         <KpiStrip items={kpis} />
@@ -209,13 +215,13 @@ export function AuditLogsKit({
                 {row.target}
               </span>
               <span style={{ whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
-                {row.when} · {row.ip}
+                {row.when} · Reported IP: {row.ip}
               </span>
             </div>
           </Card>
         )}
-        emptyTitle="No audit events"
-        emptyDescription="Privileged actions across the portal will appear here as they happen."
+        emptyTitle="No member activity recorded"
+        emptyDescription="No recorded member events are available in this view."
       />
     </DesignSurface>
   );

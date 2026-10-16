@@ -13,8 +13,8 @@ import { AuditLogsKit, type AuditRow } from '@/components/portal/kit/pages/admin
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
-  title: 'Admin – Audit Logs',
-  description: 'Compliance registry and system event audit trail.',
+  title: 'Admin – Member activity logs',
+  description: 'Recorded member activity events, separate from security audit records.',
   path: '/admin/audit-logs',
 });
 }
@@ -71,7 +71,7 @@ function humanizeAction(name: string): string {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : name;
 }
 
-/** Read a source IP out of event metadata (best-effort) and mask it (73.x.x.12). */
+/** Read optional, unverified event-reported IP metadata and mask IPv4 (73.x.x.12). */
 function maskIp(metadata: unknown): string {
   if (!metadata || typeof metadata !== 'object') return '—';
   const m = metadata as Record<string, unknown>;
@@ -92,7 +92,7 @@ export default async function AdminAuditLogsPage({ searchParams }: Props) {
 
   const sp = (await searchParams) ?? {};
 
-  // --- DEFAULT: design-kit audit trail wired into real (lean) event data ---
+  // --- DEFAULT: design-kit member activity wired into real (lean) event data ---
   if (sp.ui !== 'legacy') {
     return renderKit();
   }
@@ -173,8 +173,8 @@ export default async function AdminAuditLogsPage({ searchParams }: Props) {
   return (
     <>
       <PageHeader
-        title="Audit Logs"
-        subtitle="Compliance registry — 30-day event trail (paginated)"
+        title="Member activity logs"
+        subtitle="Recorded member activity — 30-day view (paginated). Security audit records are maintained separately."
       />
 
       {/* Stats row */}
@@ -235,7 +235,7 @@ export default async function AdminAuditLogsPage({ searchParams }: Props) {
 const KIT_LIMIT = 50;
 
 /**
- * Design-kit default: dense immutable audit trail → <AuditLogsKit/>.
+ * Design-kit default: recorded member activity → <AuditLogsKit/>.
  * Lean reads only: latest N events + three scalar counts, run in parallel.
  * Aggregate failures degrade to 0 so the table still renders.
  */

@@ -66,7 +66,9 @@ test.describe('Apply smoke', () => {
     // Mobile step breadcrumb (sidebar progress hidden below 768px)
     await page.setViewportSize({ width: 375, height: 812 });
     await expect(page.locator('.apply-mobile-step-nav')).toBeVisible();
-    await expect(page.locator('.apply-mobile-step-nav__summary')).toContainText(/step 1 of 3 · about 5 min/i);
+    // The shared application estimate lives outside this breadcrumb; the
+    // breadcrumb identifies the current step (see #2781).
+    await expect(page.locator('.apply-mobile-step-nav__summary')).toHaveText('Step 1 of 3 · Eligibility');
     await expect(page.locator('.apply-mobile-step-nav__item--active')).toContainText(/eligibility|you/i);
     await expect(page.locator('.apply-mobile-trust-bar')).toBeVisible();
     await expect(page.locator('.apply-mobile-trust-bar')).toContainText(/501\(c\)\(3\)|no cost/i);
@@ -106,7 +108,7 @@ test.describe('Apply smoke', () => {
     await page.goto('/apply/results');
 
     await expect(page.locator('.apply-mobile-trust-bar')).toBeVisible();
-    await expect(page.locator('.apply-mobile-step-nav__summary')).toContainText(/step 2 of 3 · about 2 min/i);
+    await expect(page.locator('.apply-mobile-step-nav__summary')).toHaveText('Step 2 of 3 · Programs');
     await expect(page.locator('.apply-mobile-step-nav__item--active')).toContainText(/program/i);
     await expect(page.locator('.apply-funnel-form-kicker')).toContainText(/still no account required/i);
     await expect(page.locator('.apply-flow .apply-step-kicker')).not.toBeVisible();
@@ -118,7 +120,7 @@ test.describe('Apply smoke', () => {
     await page.goto('/apply/create-account');
 
     await expect(page.locator('.apply-mobile-step-nav')).toBeVisible();
-    await expect(page.locator('.apply-mobile-step-nav__summary')).toContainText(/step 3 of 3 · about 2 min/i);
+    await expect(page.locator('.apply-mobile-step-nav__summary')).toHaveText('Step 3 of 3 · Account');
     await expect(page.locator('.apply-mobile-step-nav__item--active')).toContainText(/account/i);
   });
 
