@@ -89,10 +89,12 @@
 | `TURNSTILE_SECRET_KEY` | 🟡 🔒 | Turnstile secret key | `0x4AAAA...` | API validation |
 | `UPSTASH_REDIS_REST_URL` | 🟡 🔒 | Upstash Redis REST URL for rate limiters and short-lived member-agent tool sessions | `https://….upstash.io` | `lib/rate-limit.ts`, `lib/agents/gateway/sessionStore.ts` |
 | `UPSTASH_REDIS_REST_TOKEN` | 🟡 🔒 | Upstash Redis REST token for rate limits and member-agent tool sessions | `AXxxxx` | `lib/rate-limit.ts`, `lib/agents/gateway/sessionStore.ts` |
-| `RATE_LIMIT_ALLOW_MISSING_UPSTASH` | 🟢 🔒 | Set `1` to boot production/preview without Redis. Auth/contact/partner-signup/MFA/bulk-email fail-open. Apply/signup stay open unless `WAP_APPLY_RATE_LIMIT_FAIL_CLOSED=1`. | `1` | `lib/rate-limit.ts`, `lib/rate-limit-policy.ts` |
+| `RATE_LIMIT_ALLOW_MISSING_UPSTASH` | 🟢 🔒 | Set `1` to boot production/preview without Redis. Auth/contact/partner-signup/MFA/bulk-email fail-open. Apply/signup stay open unless `WAP_APPLY_RATE_LIMIT_FAIL_CLOSED=1`. Paid AI/voice/help/job-import checks still fail closed in production. This override does not allow configured-provider failures through protected checks. | `1` | `lib/rate-limit.ts`, `lib/rate-limit-policy.ts` |
 | `WAP_APPLY_RATE_LIMIT_FAIL_CLOSED` | 🟢 🔒 | Set `1` to 429 apply/member signup when Redis is missing, even if `RATE_LIMIT_ALLOW_MISSING_UPSTASH=1`. Off by default so pre-prod conversion is not bricked. | `1` | `lib/rate-limit-policy.ts` |
 
-Still fail-open when Redis is missing (dev, or prod with `RATE_LIMIT_ALLOW_MISSING_UPSTASH=1`): public GET caps, invite-accept, org-onboard, careers-recommend, interest-profiler, webhooks, message-send, employer job-import, admin invite / token-links, Coursera identity, voice session, AI tools. Lilley's member-data tools are the exception: gateway token issue and authorization always fail closed without Upstash.
+Still fail-open when Redis is missing (dev, or prod with `RATE_LIMIT_ALLOW_MISSING_UPSTASH=1`): public GET caps, invite-accept, org-onboard, careers-recommend, interest-profiler, webhooks, message-send, admin invite / token-links, Coursera identity. Paid AI tools, authenticated/public voice, help chat and employer job import use spend mode: missing Redis denies in production and remains available without credentials in development. Lilley's gateway token issue and authorization always fail closed without Upstash.
+
+Configured-provider timeouts and errors deny requests through the shared security, apply and spend checks, regardless of the missing-configuration override. Callers retain their existing throttling responses and retry headers; the helper does not add an account lockout or local cooldown. A later request can succeed once Redis recovers. This is not a change to every legacy public/read/webhook limiter, and `getRateLimiterMode()` reports configuration posture rather than real-time provider availability.
 
 ---
 

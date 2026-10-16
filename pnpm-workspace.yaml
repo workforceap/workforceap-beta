@@ -1,5 +1,13 @@
 overrides:
-  fast-uri: '3.1.2'
+  fast-uri: '3.1.8'
+  # Keep security updates within the affected consumers' supported major versions.
+  'next@15.5.28>sharp': '0.35.5'
+  'next>postcss': '8.5.23'
+  '@supabase/realtime-js>ws': '8.21.0'
+  'brace-expansion@^5.0.0': '5.0.12'
+  'browserslist@^4.0.0': '4.28.7'
+  'postcss>nanoid': '3.3.18'
+  'postcss>source-map-js': '1.2.2'
 
 allowBuilds:
   '@parcel/watcher': true
@@ -12,6 +20,6 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
 patchedDependencies:
-  # Next 15.5.18 vendors a React canary predating the hydration replay cursor
+  # Next 15.5.28 vendors a React canary predating the hydration replay cursor
   # fix (facebook/react#35494). Remove after a Next release bundles that fix.
-  next@15.5.18: patches/next@15.5.18.patch
+  next@15.5.28: patches/next@15.5.28.patch

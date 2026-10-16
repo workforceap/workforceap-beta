@@ -79,8 +79,7 @@ let aiToolRateLimiter: Ratelimit | null = null;
 // Per-user limiter for the in-portal help assistant (/api/help/chat,
 // `help_assistant_v1`). Each question is one LLM completion; 30/h covers a
 // real conversation while capping a stuck retry loop or a scripted client.
-// Security-mode (fail-closed) unlike the general AI-tool limiter: the endpoint
-// is a free-text prompt surface and must not run unmetered in production.
+// Like the other paid AI tools, this must not run unmetered in production.
 let helpAssistantRateLimiter: Ratelimit | null = null;
 let resumeUploadRateLimiter: Ratelimit | null = null;
 let resumeDraftSaveRateLimiter: Ratelimit | null = null;
@@ -209,8 +208,21 @@ async function runLimiter(
   }
 
   if (limiter) {
-    const result = await limiter.limit(identifier);
-    return { success: result.success, remaining: result.remaining };
+    try {
+      const result = await limiter.limit(identifier);
+      // The SDK permits requests when its Redis deadline expires. Protected
+      // actions need an actual quota decision, even when missing configuration
+      // is explicitly allowed for preview/development. Do not log identifiers
+      // or provider errors, which may include email addresses or credentials.
+      if (result.reason === 'timeout') {
+        logger.error(`[RATE-LIMIT] ${name} provider timed out — blocking request`);
+        return { success: false, remaining: 0 };
+      }
+      return { success: result.success, remaining: result.remaining };
+    } catch {
+      logger.error(`[RATE-LIMIT] ${name} provider unavailable — blocking request`);
+      return { success: false, remaining: 0 };
+    }
   }
 
   const decision = decideMissingLimiter({
@@ -537,9 +549,7 @@ export async function checkAuthIpRateLimit(ip: string, request?: Request): Promi
  * compromised account.
  */
 export async function checkVoiceSessionRateLimit(userId: string): Promise<{ success: boolean; remaining?: number }> {
-  if (!voiceSessionRateLimiter) return { success: true };
-  const result = await voiceSessionRateLimiter.limit(`voice-session:${userId}`);
-  return { success: result.success, remaining: result.remaining };
+  return runLimiter(voiceSessionRateLimiter, 'voice-session', `voice-session:${userId}`, 'spend');
 }
 
 /**
@@ -554,14 +564,12 @@ export async function checkSignupEmailRateLimit(email: string, request?: Request
 }
 
 export async function checkAIToolRateLimit(userId: string): Promise<{ success: boolean; remaining?: number }> {
-  if (!aiToolRateLimiter) return { success: true };
-  const result = await aiToolRateLimiter.limit(userId);
-  return { success: result.success, remaining: result.remaining };
+  return runLimiter(aiToolRateLimiter, 'ai-tool', userId, 'spend');
 }
 
 /** Help assistant questions: fail-closed when the limiter is unavailable in production. */
 export async function checkHelpAssistantRateLimit(userId: string, request?: Request): Promise<{ success: boolean; remaining?: number }> {
-  return failClosedLimit(helpAssistantRateLimiter, 'help-assistant', `help-assistant:${userId}`, request);
+  return runLimiter(helpAssistantRateLimiter, 'help-assistant', `help-assistant:${userId}`, 'spend', request);
 }
 
 export async function checkResumeUploadRateLimit(userId: string): Promise<{ success: boolean; remaining?: number }> {
@@ -612,11 +620,9 @@ export async function checkEnrollmentTemplateSendRateLimit(
   return { success: member.success };
 }
 
-/** Per-user cap on employer job import POSTs (single + bulk share one bucket). Fail-open without Redis. */
+/** Per-user cap on paid job imports (single + bulk share one bucket). Production requires a limiter. */
 export async function checkEmployerJobImportRateLimit(userId: string): Promise<{ success: boolean; remaining?: number }> {
-  if (!employerJobImportRateLimiter) return { success: true };
-  const result = await employerJobImportRateLimiter.limit(userId);
-  return { success: result.success, remaining: result.remaining };
+  return runLimiter(employerJobImportRateLimiter, 'employer-job-import', userId, 'spend');
 }
 
 /** Public confirmation-email endpoint — 5 per IP per hour. Fails closed in production. */
@@ -685,10 +691,9 @@ export async function checkPublicPartnerDisclosureRateLimit(ip: string): Promise
   return { success: result.success };
 }
 
-/** Public voice-session minting — per IP; fail-open without Redis in dev, but throttle aggressively when configured. */
+/** Public paid voice-session minting — per IP; production requires a limiter. */
 export async function checkPublicVoiceSessionRateLimit(ip: string): Promise<{ success: boolean }> {
-  if (!publicVoiceSessionRateLimiter) return { success: true };
-  const result = await publicVoiceSessionRateLimiter.limit(ip);
+  const result = await runLimiter(publicVoiceSessionRateLimiter, 'public-voice-session', ip, 'spend');
   return { success: result.success };
 }
 
