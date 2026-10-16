@@ -1,5 +1,7 @@
+'use client';
+
+import { useMemo, useState, type ReactNode } from 'react';
 import { Card } from '@astryxdesign/core/Card';
-import type { ReactNode } from 'react';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
@@ -7,9 +9,11 @@ import {
   KpiStrip,
   DataTable,
   Avatar,
+  FormField,
   type Column,
   type KpiItem,
 } from '@/components/portal/kit';
+import { ariaSortForColumn, useKitTableSort } from '@/components/portal/kit/kitTableSort';
 import { WIOA_QUEUE_AGE_ALERT_DAYS } from '@/lib/wioa/wioaQueueAge';
 import {
   INTAKE_STATUS_WORDS,
@@ -17,6 +21,13 @@ import {
   intakeStatusTone,
   type IntakeStatusKey,
 } from '@/lib/status/applicationStatusVocabulary';
+import {
+  DEFAULT_WIOA_SCREENING_SORT_DIRECTION,
+  DEFAULT_WIOA_SCREENING_SORT_KEY,
+  matchesWioaScreeningSearch,
+  sortWioaScreeningRows,
+  type WioaScreeningSortKey,
+} from '@/lib/admin/wioaScreeningSort';
 import { toneToTokenColor } from '../../astryxMap';
 import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
@@ -25,15 +36,11 @@ import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
  * Mockup: workforceap-admin-full.html "wioa" view.
  * Target route: /admin/wioa-screening
  *
- * Server-rendered (no interactivity): the page loader does all the lean
- * aggregation (groupBy on review status + a capped findMany for the table) and
- * lands plain data here. DataTable mobile="cards" so the wide compliance table
- * stacks on phones instead of squishing.
- *
+ * Interactive search + sortable Student / Docs / Days waiting columns (UI-08).
  * Rows arrive already ordered by `lib/wioa/wioaQueueAge.ts`
- * (`sortWioaQueueOldestFirst`): screenings awaiting review first, longest wait
- * first, then reviewed rows. The "Days waiting" column carries `aria-sort` for
- * that default order.
+ * (`sortWioaQueueOldestFirst`); client sort overrides that default.
+ * DataTable mobile="cards" so the wide compliance table stacks on phones.
+ * Bulk reviewer assignment is omitted until a staff-assign API exists.
  */
 
 /**
@@ -108,6 +115,18 @@ export function WioaScreeningKit({
   filterBar,
   publicScreenings,
 }: WioaScreeningKitProps) {
+  const [search, setSearch] = useState('');
+  const { sortKey, sortDirection, sortHeader } = useKitTableSort<WioaScreeningSortKey>(
+    DEFAULT_WIOA_SCREENING_SORT_KEY,
+    DEFAULT_WIOA_SCREENING_SORT_DIRECTION,
+    ['name', 'docs'],
+  );
+
+  const visibleRows = useMemo(() => {
+    const kept = rows.filter((row) => matchesWioaScreeningSearch(row, search));
+    return sortWioaScreeningRows(kept, sortKey, sortDirection);
+  }, [rows, search, sortKey, sortDirection]);
+
   const kpis: KpiItem[] = [
     { label: INTAKE_STATUS_WORDS.staff.verified, value: verified },
     { label: INTAKE_STATUS_WORDS.staff.pending, value: pendingReview, tone: pendingReview > 0 ? 'warn' : undefined },
@@ -134,7 +153,12 @@ export function WioaScreeningKit({
   );
 
   const columns: Column<WioaScreeningRow>[] = [
-    { key: 'name', header: 'Student', render: (row) => <StudentCell row={row} /> },
+    {
+      key: 'name',
+      header: sortHeader('name', 'Student'),
+      ariaSort: ariaSortForColumn('name', sortKey, sortDirection),
+      render: (row) => <StudentCell row={row} />,
+    },
     {
       key: 'source',
       header: 'Source',
@@ -149,7 +173,8 @@ export function WioaScreeningKit({
     },
     {
       key: 'docs',
-      header: 'Docs',
+      header: sortHeader('docs', 'Docs'),
+      ariaSort: ariaSortForColumn('docs', sortKey, sortDirection),
       render: (row) => (
         <span
           style={{ color: row.docsComplete ? 'var(--wa-text)' : 'var(--wa-accent)', fontWeight: row.docsComplete ? 400 : 700 }}
@@ -165,9 +190,9 @@ export function WioaScreeningKit({
     },
     {
       key: 'daysWaiting',
-      header: 'Days waiting',
+      header: sortHeader('daysWaiting', 'Days waiting'),
       align: 'right',
-      ariaSort: 'descending',
+      ariaSort: ariaSortForColumn('daysWaiting', sortKey, sortDirection),
       render: (row) => (
         <span
           className="wa-kit-table-cell--num"
@@ -212,9 +237,19 @@ export function WioaScreeningKit({
 
       {filterBar}
 
+      <div className="wa-mb-4" style={{ maxWidth: 28 * 16 }}>
+        <FormField
+          label="Search students"
+          type="search"
+          placeholder="Name, source, category, docs, or reviewer"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+      </div>
+
       <DataTable<WioaScreeningRow>
         columns={columns}
-        rows={rows}
+        rows={visibleRows}
         rowKey={(row) => row.id}
         minWidth={760}
         mobile="cards"
@@ -272,8 +307,12 @@ export function WioaScreeningKit({
             </div>
           </Card>
         )}
-        emptyTitle="No screenings yet"
-        emptyDescription="Members with application screening or a portal questionnaire appear here for intake review."
+        emptyTitle={search.trim() ? 'No matching screenings' : 'No screenings yet'}
+        emptyDescription={
+          search.trim()
+            ? 'Try a different name or clear the search.'
+            : 'Members with application screening or a portal questionnaire appear here for intake review.'
+        }
       />
 
       <p
@@ -284,7 +323,8 @@ export function WioaScreeningKit({
           marginTop: 16,
         }}
       >
-        Showing {rows.length} of {total}
+        Showing {visibleRows.length} of {total}
+        {search.trim() && visibleRows.length !== rows.length ? ` (filtered from ${rows.length})` : ''}
       </p>
       {publicScreenings}
     </DesignSurface>
