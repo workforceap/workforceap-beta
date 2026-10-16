@@ -62,17 +62,18 @@ export const REPORTING_PERIOD_LABELS: Record<BoardOutcomesPeriod, string> = {
 };
 
 /**
- * Hub URL for a tab. The Overview is the bare hub path; every other tab is
- * `?tab=<id>`. Extra params (e.g. `period`) are appended in insertion order.
+ * Hub URL for a tab. Every tab — including Overview — is `?tab=<id>` so
+ * sidebar deep-links (Analytics → overview, Outcomes → outcomes) can match
+ * the active rail row via query (UI-19). Extra params (e.g. `period`) follow
+ * in insertion order. Bare `/admin/reporting` still parses as Overview.
  */
 export function reportingTabHref(tab: ReportingTabId, extra: Record<string, string | undefined> = {}): string {
   const query = new URLSearchParams();
-  if (tab !== DEFAULT_TAB) query.set(REPORTING_TAB_PARAM, tab);
+  query.set(REPORTING_TAB_PARAM, tab);
   for (const [key, value] of Object.entries(extra)) {
     if (typeof value === 'string' && value.length > 0) query.set(key, value);
   }
-  const qs = query.toString();
-  return qs ? `${REPORTING_HUB_PATH}?${qs}` : REPORTING_HUB_PATH;
+  return `${REPORTING_HUB_PATH}?${query.toString()}`;
 }
 
 /**

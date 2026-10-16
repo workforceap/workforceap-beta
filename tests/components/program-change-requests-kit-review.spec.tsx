@@ -49,6 +49,14 @@ function firstButton(name: string) {
 }
 
 describe('ProgramChangeRequestsKit reviewable', () => {
+  it('hides the table header and overflow wrapper when the queue is empty (UI-09)', () => {
+    render(<ProgramChangeRequestsKit requests={[]} pendingCount={0} reviewable />);
+    // Desktop + mobile card branches each render the empty panel (no table).
+    expect(screen.getAllByText('No program change requests').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('table')).toBeNull();
+    expect(document.querySelector('.wa-overflow-x-auto')).toBeNull();
+  });
+
   it('shows Approve and Deny only on pending rows', () => {
     render(<ProgramChangeRequestsKit requests={ROWS} pendingCount={1} reviewable />);
     expect(screen.getAllByRole('button', { name: 'Approve Devon Hill' }).length).toBeGreaterThan(0);

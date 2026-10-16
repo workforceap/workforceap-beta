@@ -207,147 +207,149 @@ export function KitTableShell({
           {errorNotice}
         </div>
       ) : null}
-      <div
-        ref={scrollerRef}
-        className="wa-overflow-x-auto"
-        style={stickyHeader ? { maxHeight: stickyMaxHeight, overflowY: 'auto' } : undefined}
-      >
-        <table
-          className={cx('wa-kit-table', clickable && 'wa-kit-table--clickable')}
-          data-density={density}
-          style={{ minWidth }}
-        >
-          <thead>
-            <tr>
-              {selectable ? (
-                <th scope="col" className={cx('wa-kit-table-select', stickyHeader && 'wa-kit-table-th--sticky')}>
-                  <input
-                    ref={selectAllRef}
-                    type="checkbox"
-                    className="wa-kit-table-checkbox wa-kit-focus"
-                    aria-label="Select all rows on this page"
-                    checked={allOnPageSelected}
-                    disabled={rows.length === 0}
-                    onChange={(e) => {
-                      const others = selected.filter((k) => !rowKeys.includes(k));
-                      setSelected(e.target.checked ? [...others, ...rowKeys] : others);
-                    }}
-                  />
-                </th>
-              ) : null}
-              {hasSubRows ? (
-                <th scope="col" className={cx('wa-kit-table-expand', stickyHeader && 'wa-kit-table-th--sticky')}>
-                  <span className="wa-sr-only">Details</span>
-                </th>
-              ) : null}
-              {columns.map((c) => (
-                <th
-                  key={c.key}
-                  scope="col"
-                  aria-sort={c.ariaSort}
-                  className={cx(c.stickyLeft && 'wa-kit-table-sticky-left', c.numeric && 'wa-kit-table-cell--num', stickyHeader && 'wa-kit-table-th--sticky')}
-                  style={cellStyle(c)}
-                >
-                  {c.header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {showSkeleton ? (
-              Array.from({ length: loadingRows }, (_, i) => (
-                <tr key={`skeleton-${i}`} className="wa-kit-table-skeleton-row" aria-hidden="true">
-                  {Array.from({ length: colSpan }, (_, j) => (
-                    <td key={j}>
-                      <span className="wa-kit-table-skeleton" />
-                    </td>
+      {/* Empty (non-loading): skip thead + overflow wrapper so empty queues do not
+          show a stray horizontal scrollbar under a blank header (UI-09). */}
+      {!showSkeleton && rows.length === 0 ? (
+        <KitEmptyState {...empty} />
+      ) : (
+        <>
+          <div
+            ref={scrollerRef}
+            className="wa-overflow-x-auto"
+            style={stickyHeader ? { maxHeight: stickyMaxHeight, overflowY: 'auto' } : undefined}
+          >
+            <table
+              className={cx('wa-kit-table', clickable && 'wa-kit-table--clickable')}
+              data-density={density}
+              style={{ minWidth }}
+            >
+              <thead>
+                <tr>
+                  {selectable ? (
+                    <th scope="col" className={cx('wa-kit-table-select', stickyHeader && 'wa-kit-table-th--sticky')}>
+                      <input
+                        ref={selectAllRef}
+                        type="checkbox"
+                        className="wa-kit-table-checkbox wa-kit-focus"
+                        aria-label="Select all rows on this page"
+                        checked={allOnPageSelected}
+                        disabled={rows.length === 0}
+                        onChange={(e) => {
+                          const others = selected.filter((k) => !rowKeys.includes(k));
+                          setSelected(e.target.checked ? [...others, ...rowKeys] : others);
+                        }}
+                      />
+                    </th>
+                  ) : null}
+                  {hasSubRows ? (
+                    <th scope="col" className={cx('wa-kit-table-expand', stickyHeader && 'wa-kit-table-th--sticky')}>
+                      <span className="wa-sr-only">Details</span>
+                    </th>
+                  ) : null}
+                  {columns.map((c) => (
+                    <th
+                      key={c.key}
+                      scope="col"
+                      aria-sort={c.ariaSort}
+                      className={cx(c.stickyLeft && 'wa-kit-table-sticky-left', c.numeric && 'wa-kit-table-cell--num', stickyHeader && 'wa-kit-table-th--sticky')}
+                      style={cellStyle(c)}
+                    >
+                      {c.header}
+                    </th>
                   ))}
                 </tr>
-              ))
-            ) : rows.length === 0 ? (
-              <tr>
-                <td colSpan={colSpan}>
-                  <KitEmptyState {...empty} />
-                </td>
-              </tr>
-            ) : (
-              rows.map((row) => {
-                const isSelected = selected.includes(row.key);
-                const isExpanded = expanded.includes(row.key);
-                const subRowId = `${shellId}-sub-${row.key}`;
-                const rowLabel = row.label ?? `row ${row.key}`;
-                return [
-                  <tr
-                    key={row.key}
-                    onClick={clickable ? () => onRowKeyClick?.(row.key) : undefined}
-                    onKeyDown={
-                      clickable
-                        ? (e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              onRowKeyClick?.(row.key);
-                            }
-                          }
-                        : undefined
-                    }
-                    role={clickable ? 'button' : undefined}
-                    tabIndex={clickable ? 0 : undefined}
-                    className={cx(clickable && 'wa-kit-focus', isSelected && 'wa-kit-table-row--selected')}
-                    // `aria-selected` is not permitted on role="button"; clickable rows
-                    // keep the selected state on the class and the checkbox only.
-                    aria-selected={selectable && !clickable ? isSelected : undefined}
-                    data-selected={selectable ? String(isSelected) : undefined}
-                  >
-                    {selectable ? (
-                      <td className="wa-kit-table-select" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          className="wa-kit-table-checkbox wa-kit-focus"
-                          aria-label={`Select ${rowLabel}`}
-                          checked={isSelected}
-                          onChange={(e) => setSelected(nextSelection(selected, row.key, e.target.checked))}
-                        />
-                      </td>
-                    ) : null}
-                    {hasSubRows ? (
-                      <td className="wa-kit-table-expand" onClick={(e) => e.stopPropagation()}>
-                        {row.subRow != null ? (
-                          <button
-                            type="button"
-                            className="wa-kit-table-expand__button wa-kit-focus"
-                            aria-expanded={isExpanded}
-                            aria-controls={subRowId}
-                            aria-label={`${isExpanded ? 'Hide' : 'Show'} details for ${rowLabel}`}
-                            onClick={() => toggleExpanded(row.key)}
-                          >
-                            <ChevronDown size={16} aria-hidden />
-                          </button>
-                        ) : null}
-                      </td>
-                    ) : null}
-                    {columns.map((c, i) => (
-                      <td key={c.key} className={cx(c.stickyLeft && 'wa-kit-table-sticky-left', c.numeric && 'wa-kit-table-cell--num')} style={cellStyle(c)}>
-                        {row.cells[i]}
-                      </td>
-                    ))}
-                  </tr>,
-                  row.subRow != null && isExpanded ? (
-                    <tr key={`${row.key}-sub`} id={subRowId} className="wa-kit-table-subrow">
-                      <td colSpan={colSpan}>{row.subRow}</td>
+              </thead>
+              <tbody>
+                {showSkeleton ? (
+                  Array.from({ length: loadingRows }, (_, i) => (
+                    <tr key={`skeleton-${i}`} className="wa-kit-table-skeleton-row" aria-hidden="true">
+                      {Array.from({ length: colSpan }, (_, j) => (
+                        <td key={j}>
+                          <span className="wa-kit-table-skeleton" />
+                        </td>
+                      ))}
                     </tr>
-                  ) : null,
-                ];
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-      {scrollCue ? (
-        <p className={cx('wa-kit-table-scroll-cue', !showCue && 'wa-sr-only')} aria-live="polite">
-          {showCue ? 'Scroll for more' : ''}
-        </p>
-      ) : null}
-      {showPager && pagination ? <KitTablePager pagination={pagination} /> : null}
+                  ))
+                ) : (
+                  rows.map((row) => {
+                    const isSelected = selected.includes(row.key);
+                    const isExpanded = expanded.includes(row.key);
+                    const subRowId = `${shellId}-sub-${row.key}`;
+                    const rowLabel = row.label ?? `row ${row.key}`;
+                    return [
+                      <tr
+                        key={row.key}
+                        onClick={clickable ? () => onRowKeyClick?.(row.key) : undefined}
+                        onKeyDown={
+                          clickable
+                            ? (e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  onRowKeyClick?.(row.key);
+                                }
+                              }
+                            : undefined
+                        }
+                        role={clickable ? 'button' : undefined}
+                        tabIndex={clickable ? 0 : undefined}
+                        className={cx(clickable && 'wa-kit-focus', isSelected && 'wa-kit-table-row--selected')}
+                        // `aria-selected` is not permitted on role="button"; clickable rows
+                        // keep the selected state on the class and the checkbox only.
+                        aria-selected={selectable && !clickable ? isSelected : undefined}
+                        data-selected={selectable ? String(isSelected) : undefined}
+                      >
+                        {selectable ? (
+                          <td className="wa-kit-table-select" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              className="wa-kit-table-checkbox wa-kit-focus"
+                              aria-label={`Select ${rowLabel}`}
+                              checked={isSelected}
+                              onChange={(e) => setSelected(nextSelection(selected, row.key, e.target.checked))}
+                            />
+                          </td>
+                        ) : null}
+                        {hasSubRows ? (
+                          <td className="wa-kit-table-expand" onClick={(e) => e.stopPropagation()}>
+                            {row.subRow != null ? (
+                              <button
+                                type="button"
+                                className="wa-kit-table-expand__button wa-kit-focus"
+                                aria-expanded={isExpanded}
+                                aria-controls={subRowId}
+                                aria-label={`${isExpanded ? 'Hide' : 'Show'} details for ${rowLabel}`}
+                                onClick={() => toggleExpanded(row.key)}
+                              >
+                                <ChevronDown size={16} aria-hidden />
+                              </button>
+                            ) : null}
+                          </td>
+                        ) : null}
+                        {columns.map((c, i) => (
+                          <td key={c.key} className={cx(c.stickyLeft && 'wa-kit-table-sticky-left', c.numeric && 'wa-kit-table-cell--num')} style={cellStyle(c)}>
+                            {row.cells[i]}
+                          </td>
+                        ))}
+                      </tr>,
+                      row.subRow != null && isExpanded ? (
+                        <tr key={`${row.key}-sub`} id={subRowId} className="wa-kit-table-subrow">
+                          <td colSpan={colSpan}>{row.subRow}</td>
+                        </tr>
+                      ) : null,
+                    ];
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+          {scrollCue ? (
+            <p className={cx('wa-kit-table-scroll-cue', !showCue && 'wa-sr-only')} aria-live="polite">
+              {showCue ? 'Scroll for more' : ''}
+            </p>
+          ) : null}
+          {showPager && pagination ? <KitTablePager pagination={pagination} /> : null}
+        </>
+      )}
     </div>
   );
 }

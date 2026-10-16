@@ -497,10 +497,30 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { href: '/admin/mentors', label: 'Mentors', group: 'partnersEmployers', Icon: GraduationCap },
 
   // ── Reporting — one hub row; the pages it absorbs are its children ──
+  // Analytics / Metrics / Outcomes deep-link the hub `?tab=` anchors (UI-19)
+  // so the sidebar lands on the matching tab without an extra redirect hop.
+  // Metrics shares the Overview tab with Analytics; it keeps a distinct href
+  // so only one child lights up after the redirect resolves.
   { href: '/admin/reporting', label: 'Reporting', group: 'reporting', Icon: LineChart },
-  { href: '/admin/analytics', label: 'Analytics', group: 'reporting', Icon: BarChart3, parentHref: '/admin/reporting' },
-  { href: '/admin/outcomes', label: 'Placement outcomes', group: 'reporting', Icon: LineChart, parentHref: '/admin/reporting' },
+  {
+    href: '/admin/reporting?tab=overview',
+    label: 'Analytics',
+    group: 'reporting',
+    Icon: BarChart3,
+    parentHref: '/admin/reporting',
+    aliases: ['/admin/analytics'],
+  },
+  {
+    href: '/admin/reporting?tab=outcomes',
+    label: 'Placement outcomes',
+    group: 'reporting',
+    Icon: LineChart,
+    parentHref: '/admin/reporting',
+    aliases: ['/admin/outcomes'],
+  },
   { href: '/admin/board', label: 'Board outcomes', group: 'reporting', Icon: TrendingUp, parentHref: '/admin/reporting' },
+  // Metrics still owns `/admin/metrics` (redirects to Overview); a shared
+  // `?tab=overview` href would light up both Analytics and Metrics.
   { href: '/admin/metrics', label: 'Metrics', group: 'reporting', Icon: LineChart, requiresSuperAdminContext: true, parentHref: '/admin/reporting' },
   { href: '/admin/weekly-recap', label: 'Weekly recap', group: 'reporting', Icon: BarChart3, requiresSuperAdminContext: true, parentHref: '/admin/reporting' },
   { href: '/admin/growth', label: 'Growth', group: 'reporting', Icon: TrendingUp, requiresSuperAdminContext: true, parentHref: '/admin/reporting' },

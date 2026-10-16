@@ -758,7 +758,7 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     expect(container.querySelector('a[href="/admin/settings"]')?.closest('[hidden]')).not.toBeNull();
     expect(container.querySelector('a[href="/admin/overview"]')?.closest('[hidden]')).not.toBeNull();
     // Nested rows are closed until opened.
-    expect(container.querySelector('a[href="/admin/analytics"]')?.closest('[hidden]')).not.toBeNull();
+    expect(container.querySelector('a[href="/admin/reporting?tab=overview"]')?.closest('[hidden]')).not.toBeNull();
     expect(container.querySelector('a[href="/admin/invites"]')?.closest('[hidden]')).not.toBeNull();
     // Collapsed rows stay in the DOM, so every tour anchor is still there.
     expect(document.querySelectorAll('[data-tour]')).toHaveLength(7);
@@ -854,7 +854,7 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     const programs = sectionButtons(container).find((b) => b.textContent === 'Programs')!;
     expect(programs).toHaveAttribute('aria-expanded', 'true');
     expect(container.querySelector('a[href="/admin/programs"]')?.closest('[hidden]')).toBeNull();
-    expect(container.querySelector('a[href="/admin/analytics"]')?.closest('[hidden]')).toBeNull();
+    expect(container.querySelector('a[href="/admin/reporting?tab=overview"]')?.closest('[hidden]')).toBeNull();
     // Untouched sections keep their default.
     expect(sectionButtons(container).find((b) => b.textContent === 'Content')).toHaveAttribute('aria-expanded', 'false');
   });
@@ -896,7 +896,7 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     await user.click(toggle);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     const children = [...container.querySelectorAll(`#${toggle.getAttribute('aria-controls')} a`)].map((a) => a.getAttribute('href'));
-    expect(children).toEqual(expect.arrayContaining(['/admin/analytics', '/admin/outcomes', '/admin/board']));
+    expect(children).toEqual(expect.arrayContaining(['/admin/reporting?tab=overview', '/admin/reporting?tab=outcomes', '/admin/board']));
     expect(children).toHaveLength(8);
     expect(JSON.parse(localStorage.getItem(ADMIN_SECTIONS_KEY)!)).toEqual({ 'section:reporting': true, 'item:/admin/reporting': true });
   });

@@ -33,11 +33,11 @@ test('parseReportingTab accepts known ids and falls back to the Overview', () =>
   assert.equal(parseReportingTab(null), 'overview');
 });
 
-test('reportingTabHref keeps the Overview on the bare hub path and appends extras in order', () => {
-  assert.equal(reportingTabHref('overview'), REPORTING_HUB_PATH);
+test('reportingTabHref always emits ?tab= (including Overview) and appends extras in order', () => {
+  assert.equal(reportingTabHref('overview'), '/admin/reporting?tab=overview');
   assert.equal(reportingTabHref('outcomes'), '/admin/reporting?tab=outcomes');
   assert.equal(reportingTabHref('outcomes', { period: 'ytd' }), '/admin/reporting?tab=outcomes&period=ytd');
-  assert.equal(reportingTabHref('overview', { period: undefined }), REPORTING_HUB_PATH);
+  assert.equal(reportingTabHref('overview', { period: undefined }), '/admin/reporting?tab=overview');
 });
 
 test('parseReportingPeriod validates the board periods', () => {
@@ -50,8 +50,8 @@ test('parseReportingPeriod validates the board periods', () => {
 test('every legacy reporting route forwards to a real tab', () => {
   const tabIds = new Set(REPORTING_TABS.map((tab) => tab.id));
   for (const tab of Object.values(REPORTING_REDIRECTS)) assert.ok(tabIds.has(tab), `${tab} is a hub tab`);
-  assert.equal(reportingRedirectHref('/admin/analytics'), '/admin/reporting');
-  assert.equal(reportingRedirectHref('/admin/metrics'), '/admin/reporting');
+  assert.equal(reportingRedirectHref('/admin/analytics'), '/admin/reporting?tab=overview');
+  assert.equal(reportingRedirectHref('/admin/metrics'), '/admin/reporting?tab=overview');
   assert.equal(reportingRedirectHref('/admin/board'), '/admin/reporting?tab=outcomes');
   assert.equal(reportingRedirectHref('/admin/outcomes'), '/admin/reporting?tab=outcomes');
   assert.equal(reportingRedirectHref('/admin/training-progress'), '/admin/reporting?tab=training');
@@ -64,7 +64,7 @@ test('the outcomes routes carry a valid period into the hub and drop junk', () =
   assert.equal(reportingRedirectHref('/admin/outcomes', { period: 'ytd', org: 'x' }), '/admin/reporting?tab=outcomes&period=ytd');
   assert.equal(reportingRedirectHref('/admin/outcomes', { period: 'nope' }), '/admin/reporting?tab=outcomes');
   // The analytics ?tab= (engagement | enrollment) both live on the Overview now.
-  assert.equal(reportingRedirectHref('/admin/analytics', { tab: 'enrollment' }), '/admin/reporting');
+  assert.equal(reportingRedirectHref('/admin/analytics', { tab: 'enrollment' }), '/admin/reporting?tab=overview');
 });
 
 test('wantsLegacyView reads only ?ui=legacy', () => {

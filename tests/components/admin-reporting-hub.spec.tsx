@@ -142,7 +142,7 @@ describe('/admin/reporting — gate', () => {
     const links = within(nav).getAllByRole('link');
     expect(links.map((a) => a.textContent)).toEqual(REPORTING_TABS.map((tab) => tab.label));
     expect(links.map((a) => a.getAttribute('href'))).toEqual([
-      '/admin/reporting',
+      '/admin/reporting?tab=overview',
       '/admin/reporting?tab=outcomes',
       '/admin/reporting?tab=training',
       '/admin/reporting?tab=coursera',
@@ -212,9 +212,9 @@ describe('/admin/reporting — tabs', () => {
 
 describe('legacy reporting routes forward to their hub tab', () => {
   it.each([
-    ['/admin/analytics', () => AnalyticsPage({ searchParams: search({}) }), '/admin/reporting'],
-    ['/admin/analytics?tab=enrollment', () => AnalyticsPage({ searchParams: search({ tab: 'enrollment' }) }), '/admin/reporting'],
-    ['/admin/metrics', () => AdminMetricsPage({ searchParams: search({}) }), '/admin/reporting'],
+    ['/admin/analytics', () => AnalyticsPage({ searchParams: search({}) }), '/admin/reporting?tab=overview'],
+    ['/admin/analytics?tab=enrollment', () => AnalyticsPage({ searchParams: search({ tab: 'enrollment' }) }), '/admin/reporting?tab=overview'],
+    ['/admin/metrics', () => AdminMetricsPage({ searchParams: search({}) }), '/admin/reporting?tab=overview'],
     ['/admin/board', () => BoardOutcomesPage({ searchParams: search({}) }), '/admin/reporting?tab=outcomes'],
     ['/admin/board?period=q-prev', () => BoardOutcomesPage({ searchParams: search({ period: 'q-prev' }) }), '/admin/reporting?tab=outcomes&period=q-prev'],
     ['/admin/outcomes', () => OutcomesPage({ searchParams: search({}) }), '/admin/reporting?tab=outcomes'],
@@ -228,7 +228,7 @@ describe('legacy reporting routes forward to their hub tab', () => {
 
   it('forwards before any auth work, and a signed-out visitor still ends at login via the hub', async () => {
     mocks.user = null;
-    await expect(AdminMetricsPage({ searchParams: search({}) })).rejects.toThrow('redirect:/admin/reporting');
+    await expect(AdminMetricsPage({ searchParams: search({}) })).rejects.toThrow('redirect:/admin/reporting?tab=overview');
   });
 
   it('keeps the pre-kit view behind ?ui=legacy instead of forwarding (analytics as the sample)', async () => {
