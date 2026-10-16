@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 import { Pagination } from '@astryxdesign/core/Pagination';
+import { LayoutGrid, Rows3 } from 'lucide-react';
 import {
   adminApplicationCardId,
   adminQueueHref,
@@ -12,6 +13,8 @@ import {
 } from '@/lib/admin/commandCenterHelpers';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
 import ApplicantTriageChip from '@/components/admin/ApplicantTriageChip';
+import { DataTable, type Column } from '@/components/portal/kit/DataTable';
+import { KitTableToolbar } from '@/components/portal/kit/KitTableToolbar';
 import type {
   AdminApplicationPendingRow,
   AdminAtRiskRow,
@@ -25,6 +28,7 @@ import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wio
 import { pluralCount } from '@/lib/i18n/pluralCount';
 
 type ReviewStatus = 'APPROVED' | 'NEEDS_INFO' | 'DENIED';
+type ApplicationsView = 'cards' | 'table';
 
 const REVIEW_ACTIONS: Array<{ status: ReviewStatus; label: string; tone: 'primary' | 'outline' | 'danger' }> = [
   { status: 'APPROVED', label: 'Approve', tone: 'primary' },
@@ -39,6 +43,12 @@ const BULK_LABEL: Record<ReviewStatus, string> = {
 };
 
 const UNCERTAIN_REVIEW = 'The review response could not be confirmed. Reload the queue before retrying; some items may have completed.';
+
+function matchesApplicantSearch(row: AdminApplicationPendingRow, query: string): boolean {
+  if (!query) return true;
+  const haystack = `${row.memberName} ${row.memberEmail}`.toLowerCase();
+  return haystack.includes(query);
+}
 
 export default function AdminCommandCenterClient({ data }: { data: AdminCommandCenter }) {
   const router = useRouter();
@@ -66,7 +76,16 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
   const [uncertainSnapshot, setUncertainSnapshot] = useState<AdminCommandCenter | null>(null);
   const outcomeUncertain = uncertainSnapshot === data;
 
-  const pendingIds = useMemo(() => data.applicationsPending.map((r) => r.applicationId), [data.applicationsPending]);
+  // UI-06 remaining: name/email search + compact table toggle (bulk triage already ships).
+  const [applicantSearch, setApplicantSearch] = useState('');
+  const [applicationsView, setApplicationsView] = useState<ApplicationsView>('cards');
+
+  const searchQuery = applicantSearch.trim().toLowerCase();
+  const visibleApplications = useMemo(
+    () => data.applicationsPending.filter((row) => matchesApplicantSearch(row, searchQuery)),
+    [data.applicationsPending, searchQuery],
+  );
+  const pendingIds = useMemo(() => visibleApplications.map((r) => r.applicationId), [visibleApplications]);
   const activeSelected = useMemo(() => new Set(pendingIds.filter((id) => selected.has(id))), [pendingIds, selected]);
   const allSelected = pendingIds.length > 0 && pendingIds.every((id) => selected.has(id));
 
@@ -81,8 +100,14 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
 
   function toggleAll() {
     setSelected((prev) => {
-      if (allSelected) return new Set();
-      return new Set(pendingIds);
+      if (allSelected) {
+        const next = new Set(prev);
+        for (const id of pendingIds) next.delete(id);
+        return next;
+      }
+      const next = new Set(prev);
+      for (const id of pendingIds) next.add(id);
+      return next;
     });
   }
 
@@ -201,50 +226,101 @@ export default function AdminCommandCenterClient({ data }: { data: AdminCommandC
             ? adminWorkbenchApplicationsSplitCopy(data.totals.applicationsPendingCount, data.totals.applicationsWaitingOn)
             : undefined}>
           {data.applicationsPending.length > 0 ? (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '0.6rem',
-                flexWrap: 'wrap',
-                padding: '0.5rem 0.6rem',
-                marginBottom: '0.25rem',
-                background: 'var(--surface-container-low)',
-                border: '1px solid var(--outline-variant)',
-                borderRadius: '0.6rem',
-              }}
-            >
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem', fontWeight: 700, cursor: 'pointer' }}>
-                <input type="checkbox" checked={allSelected} onChange={toggleAll} />
-                {activeSelected.size > 0 ? `${activeSelected.size} selected` : 'Select this page'}
-              </label>
-              {activeSelected.size > 0 ? (
-                <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                  {REVIEW_ACTIONS.map((action) => (
+            <>
+              <KitTableToolbar
+                searchLabel="Search applicants by name or email"
+                searchValue={applicantSearch}
+                onSearchChange={setApplicantSearch}
+                searchPlaceholder="Search name or email"
+                actions={
+                  <div role="group" aria-label="Applications layout" style={{ display: 'inline-flex', gap: '0.35rem' }}>
                     <button
-                      key={action.status}
                       type="button"
-                      className={`btn btn-sm ${action.tone === 'primary' ? 'btn-primary' : 'btn-outline'}`}
-                      onClick={() => openBulk(action.status)}
-                      style={action.tone === 'danger' ? { borderColor: 'color-mix(in srgb, var(--wa-danger) 35%, transparent)', color: 'var(--wa-danger-text)' } : undefined}
+                      className={`btn btn-sm ${applicationsView === 'cards' ? 'btn-primary' : 'btn-outline'}`}
+                      aria-pressed={applicationsView === 'cards'}
+                      onClick={() => setApplicationsView('cards')}
                     >
-                      {action.label} ({activeSelected.size})
+                      <LayoutGrid size={14} aria-hidden style={{ marginRight: '0.3rem' }} />
+                      Cards
                     </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+                    <button
+                      type="button"
+                      className={`btn btn-sm ${applicationsView === 'table' ? 'btn-primary' : 'btn-outline'}`}
+                      aria-pressed={applicationsView === 'table'}
+                      onClick={() => setApplicationsView('table')}
+                    >
+                      <Rows3 size={14} aria-hidden style={{ marginRight: '0.3rem' }} />
+                      Compact table
+                    </button>
+                  </div>
+                }
+              />
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '0.6rem',
+                  flexWrap: 'wrap',
+                  padding: '0.5rem 0.6rem',
+                  marginBottom: '0.25rem',
+                  background: 'var(--surface-container-low)',
+                  border: '1px solid var(--outline-variant)',
+                  borderRadius: '0.6rem',
+                }}
+              >
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem', fontWeight: 700, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={allSelected} onChange={toggleAll} disabled={pendingIds.length === 0} />
+                  {activeSelected.size > 0 ? `${activeSelected.size} selected` : 'Select this page'}
+                </label>
+                {activeSelected.size > 0 ? (
+                  <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                    {REVIEW_ACTIONS.map((action) => (
+                      <button
+                        key={action.status}
+                        type="button"
+                        className={`btn btn-sm ${action.tone === 'primary' ? 'btn-primary' : 'btn-outline'}`}
+                        onClick={() => openBulk(action.status)}
+                        style={action.tone === 'danger' ? { borderColor: 'color-mix(in srgb, var(--wa-danger) 35%, transparent)', color: 'var(--wa-danger-text)' } : undefined}
+                      >
+                        {action.label} ({activeSelected.size})
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </>
           ) : null}
           {bulkResult ? <p role="status" style={{ margin: '0 0 0.5rem', fontSize: '0.8125rem', color: 'var(--wa-success-dark)' }}>{bulkResult}</p> : null}
-          {data.applicationsPending.map((row) => (
-            <ApplicationCard
-              key={row.applicationId}
-              row={row}
-              selected={activeSelected.has(row.applicationId)}
-              onToggleSelect={() => toggleOne(row.applicationId)}
+          {data.applicationsPending.length > 0 && visibleApplications.length === 0 ? (
+            <p role="status" style={{ margin: 0, color: 'var(--color-on-surface-variant)', fontSize: '0.9rem' }}>
+              No applicants on this page match “{applicantSearch.trim()}”.
+            </p>
+          ) : null}
+          {applicationsView === 'table' && visibleApplications.length > 0 ? (
+            <ApplicationsCompactTable
+              rows={visibleApplications}
+              selectedKeys={[...activeSelected]}
+              onSelectionChange={(keys) => {
+                setSelected((prev) => {
+                  const next = new Set(prev);
+                  for (const id of pendingIds) next.delete(id);
+                  for (const key of keys) next.add(key);
+                  return next;
+                });
+              }}
             />
-          ))}
+          ) : null}
+          {applicationsView === 'cards'
+            ? visibleApplications.map((row) => (
+              <ApplicationCard
+                key={row.applicationId}
+                row={row}
+                selected={activeSelected.has(row.applicationId)}
+                onToggleSelect={() => toggleOne(row.applicationId)}
+              />
+            ))
+            : null}
         </Bucket>}
       </div>
 
@@ -410,6 +486,109 @@ function InterviewingCard({ row }: { row: AdminInterviewingRow }) {
   );
 }
 
+const APPLICATION_TABLE_COLUMNS: Column<AdminApplicationPendingRow>[] = [
+  {
+    key: 'applicant',
+    header: 'Applicant',
+    stickyLeft: true,
+    minWidth: 160,
+    render: (row) => (
+      <>
+        <span id={adminApplicationCardId(row.applicationId)} style={{ scrollMarginTop: 'calc(var(--wa-pad) * 3)' }} />
+        <Link
+          href={`/admin/members/${row.memberId}`}
+          className="wa-kit-table-cell--truncate"
+          title={row.memberName}
+          style={{ color: 'var(--color-on-surface)', fontWeight: 700, textDecoration: 'none' }}
+        >
+          {row.memberName}
+        </Link>
+      </>
+    ),
+  },
+  {
+    key: 'email',
+    header: 'Email',
+    minWidth: 160,
+    render: (row) => (
+      <span className="wa-kit-table-cell--truncate" title={row.memberEmail}>{row.memberEmail}</span>
+    ),
+  },
+  {
+    key: 'program',
+    header: 'Program',
+    minWidth: 140,
+    render: (row) => (
+      <span className="wa-kit-table-cell--truncate" title={row.programLabel}>{row.programLabel}</span>
+    ),
+  },
+  {
+    key: 'age',
+    header: 'Age',
+    render: (row) => {
+      const ageLabel = row.submittedDaysAgo == null
+        ? 'Recent'
+        : row.submittedDaysAgo === 0
+          ? 'Today'
+          : `${row.submittedDaysAgo}d`;
+      const ageUrgent = row.submittedDaysAgo != null && row.submittedDaysAgo >= 7;
+      return (
+        <span
+          className="wa-kit-table-cell--nowrap"
+          style={{ color: ageUrgent ? 'var(--wa-accent-text)' : undefined, fontWeight: ageUrgent ? 700 : 500 }}
+        >
+          {ageLabel}
+        </span>
+      );
+    },
+  },
+  {
+    key: 'triage',
+    header: 'Triage',
+    render: (row) => (row.triage
+      ? <ApplicantTriageChip bucket={row.triage.bucket} label={row.triage.label} reasons={row.triage.reasons} />
+      : <span className="wa-kit-meta">—</span>),
+  },
+  {
+    key: 'actions',
+    header: <span className="wa-sr-only">Actions</span>,
+    render: (row) => (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', justifyContent: 'flex-end' }}>
+        <a className="btn btn-outline btn-sm" href={row.emailPacket.mailto}>Email</a>
+        <ReviewButtons applicationId={row.applicationId} applicantName={row.memberName} compact />
+      </div>
+    ),
+  },
+];
+
+function ApplicationsCompactTable({
+  rows,
+  selectedKeys,
+  onSelectionChange,
+}: {
+  rows: AdminApplicationPendingRow[];
+  selectedKeys: string[];
+  onSelectionChange: (keys: string[]) => void;
+}) {
+  return (
+    <DataTable
+      columns={APPLICATION_TABLE_COLUMNS}
+      rows={rows}
+      rowKey={(row) => row.applicationId}
+      rowLabel={(row) => row.memberName}
+      selectable
+      selectedKeys={selectedKeys}
+      onSelectionChange={onSelectionChange}
+      density="compact"
+      stickyHeader
+      scrollCue
+      minWidth={720}
+      mobile="scroll"
+      data-testid="applications-compact-table"
+    />
+  );
+}
+
 function ApplicationCard({
   row,
   selected,
@@ -439,6 +618,9 @@ function ApplicationCard({
               {row.memberName}
             </Link>
             <p style={{ margin: '0.2rem 0 0', color: 'var(--color-on-surface-variant)', fontSize: '0.82rem' }}>
+              {row.memberEmail}
+            </p>
+            <p style={{ margin: '0.2rem 0 0', color: 'var(--color-on-surface-variant)', fontSize: '0.82rem' }}>
               {row.programLabel} · {row.statusLabel}
             </p>
             {row.triage ? (
@@ -465,7 +647,15 @@ function ApplicationCard({
   );
 }
 
-function ReviewButtons({ applicationId, applicantName }: { applicationId: string; applicantName: string }) {
+function ReviewButtons({
+  applicationId,
+  applicantName,
+  compact = false,
+}: {
+  applicationId: string;
+  applicantName: string;
+  compact?: boolean;
+}) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -508,7 +698,7 @@ function ReviewButtons({ applicationId, applicantName }: { applicationId: string
   }
 
   return (
-    <div style={{ marginTop: '0.75rem' }}>
+    <div style={{ marginTop: compact ? 0 : '0.75rem' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
         {REVIEW_ACTIONS.map((action) => (
           <button
