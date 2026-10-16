@@ -13,6 +13,7 @@ describe('isExcludedPublicEmployerName', () => {
       'Capital Area Employer Network',
       'capital area employer network',
       'QA Employer Co',
+      'QA Audit Co',
       'Demo Employer',
       'WorkforceAP Example Employer',
       'Test Kitchen Co',

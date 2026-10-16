@@ -11,6 +11,10 @@ import { CheckCircle2, ClipboardCheck, Wand2 } from 'lucide-react';
  * had completed the preassessment). These two links are always shown, at the
  * top, as plain large buttons; the preassessment one turns into a quiet
  * "done" link once taken so it never nags.
+ *
+ * Tool list + "See all" use `.wa-kit-start-here-*` (portal-kit.css) so titles,
+ * descriptions, and the footer link share hierarchy with other member home
+ * kit cards — not bare magenta link blocks.
  */
 export default function MemberStartHereCard({
   preassessmentHref = '/dashboard/assessment',
@@ -24,58 +28,60 @@ export default function MemberStartHereCard({
   return (
     <section
       aria-labelledby="member-start-here-heading"
-      className="wa-kit-card"
+      className="wa-kit-card wa-kit-start-here"
       data-testid="member-start-here"
-      style={{ padding: '14px 16px' }}
     >
-      <h2 id="member-start-here-heading" className="wa-text-base wa-font-bold" style={{ margin: '0 0 10px' }}>
+      <h2 id="member-start-here-heading" className="wa-kit-start-here__heading">
         Start here
       </h2>
-      <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+      <div className="wa-kit-start-here__actions">
         <Link
           href={preassessmentHref}
-          className="wa-kit-cta wa-min-h-11"
+          className={
+            preassessmentCompleted
+              ? 'wa-kit-cta wa-kit-cta--ghost wa-kit-start-here__cta wa-min-h-11'
+              : 'wa-kit-cta wa-kit-start-here__cta wa-min-h-11'
+          }
           data-done={preassessmentCompleted ? 'true' : 'false'}
-          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', textDecoration: 'none' }}
         >
           {preassessmentCompleted ? (
             <CheckCircle2 size={22} aria-hidden="true" />
           ) : (
             <ClipboardCheck size={22} aria-hidden="true" />
           )}
-          <span style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+          <span className="wa-kit-start-here__cta-copy">
             <strong>WIOA Preassessment</strong>
-            <span style={{ fontSize: 'var(--wa-type-meta)', opacity: 0.85 }}>
+            <span className="wa-kit-meta">
               {preassessmentCompleted ? 'Done. View your results' : '35 questions for your counselor'}
             </span>
           </span>
         </Link>
         <Link
           href={toolkitHref}
-          className="wa-kit-cta wa-kit-cta--ghost wa-min-h-11"
-          style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', textDecoration: 'none' }}
+          className="wa-kit-cta wa-kit-cta--ghost wa-kit-start-here__cta wa-min-h-11"
         >
           <Wand2 size={22} aria-hidden="true" />
-          <span style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+          <span className="wa-kit-start-here__cta-copy">
             <strong>AI Career Tools</strong>
-            <span style={{ fontSize: 'var(--wa-type-meta)', opacity: 0.85 }}>Resume, interview practice, cover letters</span>
+            <span className="wa-kit-meta">Resume, interview practice, cover letters</span>
           </span>
         </Link>
       </div>
-      <h3 className="wa-text-sm wa-font-bold" style={{ margin: '14px 0 6px' }}>
-        What the AI Career Tools do
-      </h3>
-      <ul data-testid="member-start-here-tools" style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 6 }}>
+      <h3 className="wa-kit-start-here__subhead">What the AI Career Tools do</h3>
+      <ul className="wa-kit-start-here__tools" data-testid="member-start-here-tools">
         {START_HERE_TOOLS.map((tool) => (
           <li key={tool.href}>
-            <Link href={tool.href} style={{ display: 'block', padding: '6px 0' }}>
+            <Link href={tool.href} className="wa-kit-start-here__tool wa-kit-focus">
               <strong>{tool.title}</strong>
-              <span style={{ color: 'var(--wa-muted)' }}> — {tool.body}</span>
+              <span className="wa-kit-meta">{tool.body}</span>
             </Link>
           </li>
         ))}
       </ul>
-      <Link href={`${toolkitHref}?tab=toolkit`} className="wa-text-sm wa-font-bold" style={{ display: 'inline-block', marginTop: 8 }}>
+      <Link
+        href={`${toolkitHref}?tab=toolkit`}
+        className="wa-kit-start-here__see-all wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
+      >
         See all the AI Career Tools →
       </Link>
     </section>
