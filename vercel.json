@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build:vercel",
-  "ignoreCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then exit 1; fi; case \"$VERCEL_GIT_COMMIT_REF\" in preview|feature/portal-*|feature/astro-*|claude/*|codex/*) exit 1 ;; esac; exit 0",
+  "ignoreCommand": "if [ \"$VERCEL_ENV\" = \"production\" ]; then exit 1; fi; case \"$VERCEL_GIT_COMMIT_REF\" in preview|feature/portal-*|feature/astro-*) exit 1 ;; esac; exit 0",
   "crons": [
     {
       "path": "/api/cron/applicant-followup",
