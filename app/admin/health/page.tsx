@@ -5,14 +5,50 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { RefreshCw } from 'lucide-react';
 import PageHeader from '@/components/portal/PageHeader';
-import type { HealthResponse, HealthStatus, SubsystemCheck } from '@/app/api/admin/health/route';
+import type {
+  HealthChecks,
+  HealthResponse,
+  HealthStatus,
+  SubsystemCheck,
+} from '@/app/api/admin/health/route';
 import {
   SystemHealthKit,
   statusToKitTone,
+  type HealthIssue,
   type HealthTile,
   type TileStatus,
 } from '@/components/portal/kit/pages/admin-subviews/SystemHealthKit';
 import type { RankDatum } from '@/components/portal/kit';
+
+/** Human labels for each /api/admin/health subsystem key (UI-21 callout). */
+const HEALTH_CHECK_LABELS: Record<keyof HealthChecks, string> = {
+  database: 'Database',
+  redis: 'Redis cache',
+  prisma: 'Prisma client',
+  cronJobs: 'Cron jobs',
+  webhooks: 'Webhooks',
+  xapi: 'xAPI ingestion',
+  aiTools: 'AI tools',
+  email: 'Email',
+  emailDelivery: 'Email delivery',
+  discordNotifications: 'Discord notifications',
+  webPush: 'Web push',
+};
+
+/** Collect non-ok checks with their notes for the degraded callout. */
+function collectHealthIssues(checks: HealthChecks): HealthIssue[] {
+  const issues: HealthIssue[] = [];
+  for (const key of Object.keys(HEALTH_CHECK_LABELS) as (keyof HealthChecks)[]) {
+    const check = checks[key];
+    if (check.status === 'ok') continue;
+    issues.push({
+      label: HEALTH_CHECK_LABELS[key],
+      status: check.status === 'fail' ? 'fail' : 'degraded',
+      detail: check.note,
+    });
+  }
+  return issues;
+}
 
 interface AlertEntry {
   id: string;
@@ -401,11 +437,17 @@ function HealthKitView({
     },
   ];
 
+  // UI-21: when the App tile is not Operational, list every non-ok check with
+  // its note so the roll-up is explainable (DB/Email/Integrations can still look green).
+  const issues =
+    appStatus === 'ok' ? undefined : collectHealthIssues(checks);
+
   return (
     <SystemHealthKit
       title="System Health"
       goal="Services & integrations"
       tiles={tiles}
+      issues={issues}
       uptime={uptime}
       uptimeCaption={`Current integration status · checked ${new Date(generatedAt).toLocaleTimeString()} · no 30-day uptime store, bars reflect live status`}
       headerAction={
