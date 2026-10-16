@@ -68,7 +68,8 @@ async function loadMemberThreads(): Promise<MessageThread[]> {
 
     return threads.map((t): MessageThread => {
       const last = t.messages[0];
-      const from = t.member?.fullName?.trim() || t.member?.email || 'Unknown member';
+      const email = t.member?.email?.trim() || undefined;
+      const from = t.member?.fullName?.trim() || email || 'Unknown member';
       const subject = last
         ? last.body.length > 80
           ? `${last.body.slice(0, 77)}…`
@@ -78,6 +79,7 @@ async function loadMemberThreads(): Promise<MessageThread[]> {
       return {
         id: t.id,
         from,
+        email,
         subject,
         // The data model has no per-thread channel; member ↔ counselor threads
         // are the in-app portal inbox, so they're all In-app.

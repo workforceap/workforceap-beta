@@ -23,7 +23,7 @@ import {
  * Rows/cards are clickable: selecting a thread opens it in the interactive
  * inbox (?ui=legacy&thread=<id>) where staff can read and reply.
  *
- * Filter pills cover Unanswered vs All plus name/subject search (UI-10).
+ * Filter pills cover Unanswered vs All plus name/email/subject search (UI-10).
  * Channel pills (SMS / Portal) stay omitted while every loaded thread is
  * hard-coded In-app — cosmetic channel filters would mislead.
  */
@@ -33,6 +33,8 @@ export interface MessageThread {
   id: string;
   /** Member the thread is with. */
   from: string;
+  /** Member email when known — used for search and muted From disambiguation. */
+  email?: string;
   /** Initials for the avatar (defaults to derived initials). */
   initials?: string;
   subject: string;
@@ -59,6 +61,7 @@ const DEFAULT_THREADS: MessageThread[] = [
   {
     id: 'mb',
     from: 'Mike Brown',
+    email: 'michael.brown@workforceap.org',
     initials: 'MB',
     subject: 'Question about exam voucher',
     channel: 'In-app',
@@ -68,6 +71,7 @@ const DEFAULT_THREADS: MessageThread[] = [
   {
     id: 'tr',
     from: 'Tanya Reed',
+    email: 'tanya.reed@example.com',
     initials: 'TR',
     subject: 'Schedule change request',
     channel: 'Email',
@@ -76,6 +80,7 @@ const DEFAULT_THREADS: MessageThread[] = [
   {
     id: 'ct',
     from: 'Carlos Torres',
+    email: 'carlos.torres@example.com',
     initials: 'CT',
     subject: 'Re: outreach check-in',
     channel: 'SMS',
@@ -104,10 +109,21 @@ function ChannelTag({ channel }: { channel: MessageChannel }) {
   return <Token label={channel} icon={meta.icon} size="sm" color={meta.color} />;
 }
 
-function matchesSearch(row: MessageThread, query: string): boolean {
+/** Case-insensitive match on display name, member email, or subject. */
+export function matchesMessageSearch(row: MessageThread, query: string): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  return row.from.toLowerCase().includes(q) || row.subject.toLowerCase().includes(q);
+  if (row.from.toLowerCase().includes(q) || row.subject.toLowerCase().includes(q)) return true;
+  const email = row.email?.trim().toLowerCase();
+  return Boolean(email && email.includes(q));
+}
+
+/** Show muted email under the name when it adds information (not already the From label). */
+function emailCaption(row: MessageThread): string | null {
+  const email = row.email?.trim();
+  if (!email) return null;
+  if (email.toLowerCase() === row.from.trim().toLowerCase()) return null;
+  return email;
 }
 
 export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: MessagesKitProps) {
@@ -123,7 +139,7 @@ export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: Mess
   const visibleThreads = useMemo(() => {
     return threads.filter((row) => {
       if (filter === 'unanswered' && !row.unread) return false;
-      return matchesSearch(row, search);
+      return matchesMessageSearch(row, search);
     });
   }, [threads, filter, search]);
 
@@ -134,17 +150,33 @@ export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: Mess
     {
       key: 'from',
       header: 'From',
-      render: (row) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Avatar initials={row.initials ?? initialsFor(row.from)} size={32} />
-          <div>
-            <div style={{ fontWeight: 700 }}>{row.from}</div>
-            {row.unread ? (
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)' }}>Unread</div>
-            ) : null}
+      render: (row) => {
+        const email = emailCaption(row);
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Avatar initials={row.initials ?? initialsFor(row.from)} size={32} />
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 700 }}>{row.from}</div>
+              {email ? (
+                <div
+                  style={{
+                    fontSize: 13,
+                    color: 'var(--wa-muted)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {email}
+                </div>
+              ) : null}
+              {row.unread ? (
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)' }}>Unread</div>
+              ) : null}
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: 'subject',
@@ -201,7 +233,7 @@ export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: Mess
         <FormField
           label="Search messages"
           type="search"
-          placeholder="Name or subject"
+          placeholder="Name, email, or subject"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
@@ -228,7 +260,9 @@ export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: Mess
         rowKey={(row) => row.id}
         onRowClick={openThread}
         mobile="cards"
-        cardRender={(row) => (
+        cardRender={(row) => {
+          const email = emailCaption(row);
+          return (
           <Card padding={3}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Avatar initials={row.initials ?? initialsFor(row.from)} size={36} />
@@ -243,6 +277,19 @@ export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: Mess
                 >
                   {row.from}
                 </div>
+                {email ? (
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: 'var(--wa-muted)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {email}
+                  </div>
+                ) : null}
                 <div
                   style={{
                     fontSize: 13,
@@ -272,7 +319,8 @@ export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: Mess
               </span>
             </div>
           </Card>
-        )}
+          );
+        }}
         emptyTitle={
           search.trim() || filter === 'unanswered'
             ? 'No matching messages'
@@ -280,7 +328,7 @@ export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: Mess
         }
         emptyDescription={
           search.trim()
-            ? 'Try a different name or subject, or clear the search.'
+            ? 'Try a different name, email, or subject, or clear the search.'
             : filter === 'unanswered'
               ? 'Every loaded thread has a staff reply. Switch to All messages to browse the inbox.'
               : 'Member ↔ staff threads will show up here.'
