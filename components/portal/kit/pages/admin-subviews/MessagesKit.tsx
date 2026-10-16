@@ -1,15 +1,17 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, Mail, Smartphone } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
+import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import {
   DesignSurface,
   PageOpener,
   DataTable,
   Avatar,
+  FormField,
   type Column,
 } from '@/components/portal/kit';
 
@@ -20,6 +22,10 @@ import {
  *
  * Rows/cards are clickable: selecting a thread opens it in the interactive
  * inbox (?ui=legacy&thread=<id>) where staff can read and reply.
+ *
+ * Filter pills cover Unanswered vs All plus name/subject search (UI-10).
+ * Channel pills (SMS / Portal) stay omitted while every loaded thread is
+ * hard-coded In-app — cosmetic channel filters would mislead.
  */
 export type MessageChannel = 'In-app' | 'Email' | 'SMS';
 
@@ -46,6 +52,8 @@ export interface MessagesKitProps {
    */
   unansweredCount?: number;
 }
+
+type MessageFilter = 'unanswered' | 'all';
 
 const DEFAULT_THREADS: MessageThread[] = [
   {
@@ -96,8 +104,29 @@ function ChannelTag({ channel }: { channel: MessageChannel }) {
   return <Token label={channel} icon={meta.icon} size="sm" color={meta.color} />;
 }
 
+function matchesSearch(row: MessageThread, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return row.from.toLowerCase().includes(q) || row.subject.toLowerCase().includes(q);
+}
+
 export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: MessagesKitProps) {
   const router = useRouter();
+  const [filter, setFilter] = useState<MessageFilter>('unanswered');
+  const [search, setSearch] = useState('');
+
+  const unansweredInView = useMemo(
+    () => threads.filter((t) => t.unread).length,
+    [threads],
+  );
+
+  const visibleThreads = useMemo(() => {
+    return threads.filter((row) => {
+      if (filter === 'unanswered' && !row.unread) return false;
+      return matchesSearch(row, search);
+    });
+  }, [threads, filter, search]);
+
   const openThread = (row: MessageThread) =>
     router.push(`/admin/messages?ui=legacy&thread=${encodeURIComponent(row.id)}`);
 
@@ -139,6 +168,8 @@ export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: Mess
     },
   ];
 
+  const unansweredLabelCount = unansweredCount ?? unansweredInView;
+
   return (
     <DesignSurface surface="dense" className="wa-p-6">
       <PageOpener className="wa-mb-5"
@@ -162,9 +193,38 @@ export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: Mess
         }
       />
 
+      <div
+        className="wa-mb-5 wa-grid wa-grid-cols-1 lg:wa-grid-cols-3 wa-gap-3"
+        style={{ alignItems: 'end' }}
+        data-testid="messages-kit-filters"
+      >
+        <FormField
+          label="Search messages"
+          type="search"
+          placeholder="Name or subject"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+        <div className="lg:wa-col-span-2 wa-kit-view-chips">
+          <SegmentedControl
+            value={filter}
+            onChange={(v) => setFilter(v as MessageFilter)}
+            label="Message filters"
+            size="sm"
+            layout="hug"
+          >
+            <SegmentedControlItem
+              value="unanswered"
+              label={`Unanswered · ${unansweredLabelCount}`}
+            />
+            <SegmentedControlItem value="all" label={`All messages · ${threads.length}`} />
+          </SegmentedControl>
+        </div>
+      </div>
+
       <DataTable<MessageThread>
         columns={columns}
-        rows={threads}
+        rows={visibleThreads}
         rowKey={(row) => row.id}
         onRowClick={openThread}
         mobile="cards"
@@ -213,8 +273,18 @@ export function MessagesKit({ threads = DEFAULT_THREADS, unansweredCount }: Mess
             </div>
           </Card>
         )}
-        emptyTitle="No messages yet"
-        emptyDescription="Member ↔ staff threads will show up here."
+        emptyTitle={
+          search.trim() || filter === 'unanswered'
+            ? 'No matching messages'
+            : 'No messages yet'
+        }
+        emptyDescription={
+          search.trim()
+            ? 'Try a different name or subject, or clear the search.'
+            : filter === 'unanswered'
+              ? 'Every loaded thread has a staff reply. Switch to All messages to browse the inbox.'
+              : 'Member ↔ staff threads will show up here.'
+        }
       />
     </DesignSurface>
   );

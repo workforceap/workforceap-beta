@@ -1,7 +1,10 @@
-import type { ReactNode } from 'react';
+'use client';
+
+import { useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { ClipboardCheck, ShieldCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
 import { KitEmptyState, StatusTag, type KitTone } from '@/components/portal/kit';
 import { cx } from '@/components/portal/kit/base';
 import { toneClass } from '@/components/portal/kit/tokens';
@@ -26,13 +29,11 @@ import { programDisplayTitle } from '@/lib/content/programTitle';
  * Empty and failed states use the same KitEmptyState the Today groups use:
  * an empty queue is `clear` (zero decisions is the goal), a failed load is
  * `unavailable` + danger (role="alert") with a Retry, never a confirmed empty.
- * Pure and serializable: no clock reads, so a render test is deterministic.
  *
- * The admin Today page (/admin, WAP-190) renders the same list over the
- * whole organization: `rowHrefs` sends each row to the admin screen that
- * records that decision, `description` / `emptyDescription` swap the
- * caseload wording, and `total` + `moreLinks` say honestly when the list is
- * the oldest slice of a longer queue ("Showing the 50 oldest of 75").
+ * Admin Today (/admin) uses the same list over the whole organization with
+ * filter chips (All / Overdue red / Overdue gold / WIOA) and 25-row pagination
+ * over the loaded slice (UI-07). Server still caps the slice; truncation notes
+ * remain when `total` exceeds loaded rows.
  */
 
 export interface CounselorApprovalQueueProps {
@@ -63,6 +64,11 @@ export const APPROVAL_QUEUE_TITLE = 'Waiting on your decision';
 export const APPROVAL_QUEUE_EMPTY_TITLE = 'Nothing is waiting on you';
 export const APPROVAL_QUEUE_LOAD_FAILED_TITLE = "Couldn't load the approval queue";
 
+/** Page size for the decision list (UI-07). Independent of kit table page size. */
+export const APPROVAL_QUEUE_PAGE_SIZE = 25;
+
+type ApprovalFilter = 'all' | 'alert' | 'warn' | 'intake';
+
 const KIND_ICON: Record<ApprovalDecisionKind, LucideIcon> = {
   application: ClipboardCheck,
   intake: ShieldCheck,
@@ -82,6 +88,23 @@ function rowMeta(row: ApprovalQueueRow): string {
   if (row.detail) parts.push(row.detail);
   parts.push(row.memberEmail);
   return parts.join(' · ');
+}
+
+function matchesFilter(row: ApprovalQueueRow, filter: ApprovalFilter): boolean {
+  switch (filter) {
+    case 'all':
+      return true;
+    case 'alert':
+      return row.tone === 'alert';
+    case 'warn':
+      return row.tone === 'warn';
+    case 'intake':
+      return row.kind === 'intake';
+    default: {
+      const _exhaustive: never = filter;
+      return _exhaustive;
+    }
+  }
 }
 
 function ApprovalRow({ row, href }: { row: ApprovalQueueRow; href: string }) {
@@ -124,12 +147,15 @@ export function CounselorApprovalQueue({
   moreLinks,
 }: CounselorApprovalQueueProps) {
   const headingId = 'today-approvals-title';
-  const count = loadError ? 0 : queue.rows.length;
+  const [filter, setFilter] = useState<ApprovalFilter>('all');
+  const [page, setPage] = useState(1);
+
+  const loadedCount = loadError ? 0 : queue.rows.length;
   // An empty list is an empty queue: a count read a moment before the last
   // decision landed must not print "3 decisions" over "Nothing is waiting".
-  const waiting = loadError || count === 0 ? 0 : Math.max(count, total ?? count);
-  const truncated = waiting > count;
-  const countTone: KitTone = count === 0
+  const waiting = loadError || loadedCount === 0 ? 0 : Math.max(loadedCount, total ?? loadedCount);
+  const truncated = waiting > loadedCount;
+  const countTone: KitTone = loadedCount === 0
     ? 'muted'
     : queue.totals.overDoubleSla > 0
       ? 'alert'
@@ -138,12 +164,40 @@ export function CounselorApprovalQueue({
         : 'info';
   const sla = queue.slaBusinessDays;
 
+  const filterCounts = useMemo(() => {
+    const rows = queue.rows;
+    return {
+      all: rows.length,
+      alert: rows.filter((r) => r.tone === 'alert').length,
+      warn: rows.filter((r) => r.tone === 'warn').length,
+      intake: rows.filter((r) => r.kind === 'intake').length,
+    };
+  }, [queue.rows]);
+
+  const filteredRows = useMemo(
+    () => queue.rows.filter((row) => matchesFilter(row, filter)),
+    [queue.rows, filter],
+  );
+
+  const pageCount = Math.max(1, Math.ceil(filteredRows.length / APPROVAL_QUEUE_PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const pageRows = filteredRows.slice(
+    (safePage - 1) * APPROVAL_QUEUE_PAGE_SIZE,
+    safePage * APPROVAL_QUEUE_PAGE_SIZE,
+  );
+
+  const selectFilter = (next: ApprovalFilter) => {
+    setFilter(next);
+    setPage(1);
+  };
+
   return (
     <section
       aria-labelledby={headingId}
       data-testid="today-approval-queue"
-      data-count={count}
+      data-count={loadedCount}
       data-total={waiting}
+      data-filter={filter}
       style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
@@ -165,7 +219,7 @@ export function CounselorApprovalQueue({
           headingAs="h3"
           primaryAction={{ label: 'Retry', href: retryHref }}
         />
-      ) : count === 0 ? (
+      ) : loadedCount === 0 ? (
         <KitEmptyState
           kind="clear"
           title={APPROVAL_QUEUE_EMPTY_TITLE}
@@ -174,14 +228,70 @@ export function CounselorApprovalQueue({
         />
       ) : (
         <>
-          <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: '0.75rem' }}>
-            {queue.rows.map((row) => (
-              <ApprovalRow key={row.key} row={row} href={rowHrefs?.[row.key] ?? approvalReviewHref(row.memberId, memberHrefBase)} />
-            ))}
-          </ul>
+          <div className="wa-kit-view-chips" data-testid="approval-queue-filters">
+            <SegmentedControl
+              value={filter}
+              onChange={(v) => selectFilter(v as ApprovalFilter)}
+              label="Decision filters"
+              size="sm"
+              layout="hug"
+            >
+              <SegmentedControlItem value="all" label={`All · ${filterCounts.all}`} />
+              <SegmentedControlItem value="alert" label={`Overdue >${sla * 2}d · ${filterCounts.alert}`} />
+              <SegmentedControlItem value="warn" label={`Overdue >${sla}d · ${filterCounts.warn}`} />
+              <SegmentedControlItem value="intake" label={`WIOA pending · ${filterCounts.intake}`} />
+            </SegmentedControl>
+          </div>
+          {filteredRows.length === 0 ? (
+            <KitEmptyState
+              kind="clear"
+              title="No decisions in this filter"
+              description="Try All, or another urgency chip."
+              headingAs="h3"
+            />
+          ) : (
+            <>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'grid', gap: '0.75rem' }}>
+                {pageRows.map((row) => (
+                  <ApprovalRow key={row.key} row={row} href={rowHrefs?.[row.key] ?? approvalReviewHref(row.memberId, memberHrefBase)} />
+                ))}
+              </ul>
+              {filteredRows.length > APPROVAL_QUEUE_PAGE_SIZE ? (
+                <nav
+                  aria-label="Decision queue pagination"
+                  data-testid="approval-queue-pagination"
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}
+                >
+                  <p className="wa-kit-meta" style={{ margin: 0, color: 'var(--wa-muted)' }}>
+                    Showing {(safePage - 1) * APPROVAL_QUEUE_PAGE_SIZE + 1}–
+                    {Math.min(safePage * APPROVAL_QUEUE_PAGE_SIZE, filteredRows.length)} of {plural(filteredRows.length, 'decision')}
+                    {filter !== 'all' ? ' in this filter' : ''}.
+                  </p>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline"
+                      disabled={safePage <= 1}
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline"
+                      disabled={safePage >= pageCount}
+                      onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                    >
+                      Next
+                    </button>
+                  </div>
+                </nav>
+              ) : null}
+            </>
+          )}
           {truncated ? (
             <p className="wa-kit-meta" data-testid="approval-queue-truncated" style={{ margin: 0, color: 'var(--wa-muted)' }}>
-              Showing the {count} oldest of {plural(waiting, 'decision')}.
+              Showing the {loadedCount} oldest of {plural(waiting, 'decision')}.
               {moreLinks && moreLinks.length > 0 ? (
                 <>
                   {' '}The rest are in{' '}
