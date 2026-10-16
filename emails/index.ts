@@ -49,6 +49,7 @@ export { onboardingStallsDigestHtml } from './onboarding-stalls-digest';
 export { counselorAtRiskAlertHtml, counselorAtRiskBatchHtml } from './counselor-at-risk-alert';
 export { placementSurveyHtml, placementSurveyEscalationHtml } from './placement-survey';
 export { counselorAssignedHtml } from './counselor-assigned';
+export { portalStaffMessageHtml } from './portal-staff-message';
 export { partnerReferralInviteHtml } from './partner-referral-invite';
 export { employerWelcomeHtml } from './employer-welcome';
 export { employerVerifyEmailHtml } from './employer-verify-email';

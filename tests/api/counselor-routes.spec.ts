@@ -214,6 +214,10 @@ vi.mock('@/lib/notifications/create', () => ({
   createBulkNotifications: vi.fn(),
 }));
 
+vi.mock('@/lib/messages/notifyMemberOfStaffMessageEmail', () => ({
+  notifyMemberOfStaffPortalMessageEmail: vi.fn(async () => undefined),
+}));
+
 // ─── Imports after mocks ───
 import { GET as getDashboard } from '@/app/api/counselor/dashboard/route';
 import { GET as getMemberDetail } from '@/app/api/counselor/members/[memberId]/route';
@@ -246,6 +250,7 @@ import { loadMemberProgramTrainingView } from '@/lib/member/memberProgramTrainin
 import { loadMemberSkillsetProgress } from '@/lib/coursera/memberSkillsetProgress';
 import { getMemberPoints } from '@/lib/member/points';
 import { createNotification } from '@/lib/notifications/create';
+import { notifyMemberOfStaffPortalMessageEmail } from '@/lib/messages/notifyMemberOfStaffMessageEmail';
 import { getProgramBySlug } from '@/lib/content/programs';
 
 const UUIDS = {
@@ -848,6 +853,13 @@ describe('POST /api/counselor/members/[memberId]/messages', () => {
         data: expect.objectContaining({ threadId: UUIDS.threadId, authorId: UUIDS.counselorUser }),
       })
     );
+    expect(notifyMemberOfStaffPortalMessageEmail).toHaveBeenCalledWith({
+      memberId: UUIDS.memberUser,
+      staffUserId: UUIDS.counselorUser,
+      organizationId: UUIDS.orgId,
+      bodyPreview: 'Great progress!',
+      title: 'New message from your advisor',
+    });
   });
 
   it('returns 400 for empty message body', async () => {

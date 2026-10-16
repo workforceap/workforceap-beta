@@ -54,6 +54,7 @@ import {
   enrollmentConfirmationHtml,
   partnerWeeklyDigestHtml,
   counselorAssignedHtml,
+  portalStaffMessageHtml,
   partnerReferralInviteHtml,
   onboardingStallsDigestHtml,
   counselorAtRiskBatchHtml,
@@ -503,6 +504,61 @@ export async function sendCounselorAssignedEmail(params: {
       return { ok: false, skipped: true, error: err.reason };
     }
     console.error('sendCounselorAssignedEmail failed:', err);
+    return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
+  }
+}
+
+/**
+ * Notify member by email when staff send or reply in portal Messages.
+ *
+ * Optional `orgId` brands the subject, logo, accent, and CTA origin the same
+ * way as counselor-assigned. Callers should honor `notificationsUpdates` and
+ * treat failures as non-blocking after the Message row is committed.
+ */
+export async function sendPortalStaffMessageEmail(params: {
+  to: string;
+  memberFullName: string;
+  staffFullName: string;
+  bodyPreview: string;
+  title: string;
+  orgId?: string | null;
+}): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('sendPortalStaffMessageEmail: RESEND_API_KEY not set');
+    return { ok: false, error: 'Email not configured' };
+  }
+  const branding = await getOrganizationBranding(params.orgId);
+  const first = params.memberFullName.trim().split(/\s+/)[0] || 'there';
+  const messagesUrl = `${branding.domain}/dashboard/messages`;
+  const subjectTitle = params.title.trim() || 'New message';
+  const html = brandedEmailLayout({
+    title: subjectTitle,
+    bodyHtml: portalStaffMessageHtml({
+      firstName: first,
+      staffName: params.staffFullName,
+      bodyPreview: params.bodyPreview,
+      messagesUrl,
+      branding,
+    }),
+    ctaText: 'Open Messages',
+    ctaUrl: messagesUrl,
+    branding,
+  });
+  try {
+    await sendBrandedEmail(resend, {
+      from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.portal_staff_message,
+      to: params.to,
+      subject: sanitizeEmailSubjectLine(`${branding.name} — ${subjectTitle}`),
+      html,
+    });
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof FixtureRecipientSkippedError) {
+      return { ok: false, skipped: true, error: err.reason };
+    }
+    console.error('sendPortalStaffMessageEmail failed:', err);
     return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
   }
 }

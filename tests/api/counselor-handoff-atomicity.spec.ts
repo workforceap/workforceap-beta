@@ -12,6 +12,9 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({ withTenantScope: async (_org: s
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: () => false }));
 vi.mock('@/lib/email', () => ({ sendCounselorAssignedEmail: vi.fn(async () => ({ ok: true })) }));
 vi.mock('@/lib/notifications/create', () => ({ createNotification: vi.fn(async () => { }) }));
+vi.mock('@/lib/messages/notifyMemberOfStaffMessageEmail', () => ({
+  notifyMemberOfStaffPortalMessageEmail: vi.fn(async () => undefined),
+}));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => { }) }));
 vi.mock('@/lib/db/prisma', () => {
     const prisma: any = {

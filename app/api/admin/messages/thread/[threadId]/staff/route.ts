@@ -7,6 +7,8 @@ import { auditLog } from '@/lib/audit';
 import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { createNotification } from '@/lib/notifications/create';
 import { STAFF_MESSAGE_NOTIFICATION_TITLE } from '@/lib/messages/staffMessageNotification';
+import { notifyMemberOfStaffPortalMessageEmail } from '@/lib/messages/notifyMemberOfStaffMessageEmail';
+import { getSubjectOrganizationId } from '@/lib/tenant/organization';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -67,6 +69,16 @@ type Props = { params: Promise<{ threadId: string }> };async function _POST(requ
       body: normalized.body.slice(0, 200),
       data: { threadId, authorId: user.id, link: '/dashboard/messages' },
     });
+    const memberOrgId = await getSubjectOrganizationId(thread.memberId).catch(() => null);
+    if (memberOrgId) {
+      await notifyMemberOfStaffPortalMessageEmail({
+        memberId: thread.memberId,
+        staffUserId: user.id,
+        organizationId: memberOrgId,
+        bodyPreview: normalized.body,
+        title: STAFF_MESSAGE_NOTIFICATION_TITLE,
+      });
+    }
   }
 
   auditLog({
