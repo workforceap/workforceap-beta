@@ -70,10 +70,15 @@ test('coursera-sync and b4b-sync no longer share the same minute', () => {
   assert.match(vercel, /"path": "\/api\/cron\/coursera-b4b-sync"[\s\S]*?"schedule": "30 \*\/6 \* \* \*"/);
 });
 
-test('Vercel preview policy builds Codex branches', () => {
+test('Vercel preview policy skips Claude and Codex branches', () => {
   const vercel = JSON.parse(readRepo('vercel.json')) as { ignoreCommand?: unknown };
 
   assert.equal(typeof vercel.ignoreCommand, 'string');
-  assert.match(vercel.ignoreCommand as string, /(?:^|\|)codex\/\*/);
   assert.match(vercel.ignoreCommand as string, /VERCEL_ENV.*production/);
+  assert.match(
+    vercel.ignoreCommand as string,
+    /preview\|feature\/portal-\*\|feature\/astro-\*/,
+  );
+  assert.doesNotMatch(vercel.ignoreCommand as string, /(?:^|\|)claude\/\*/);
+  assert.doesNotMatch(vercel.ignoreCommand as string, /(?:^|\|)codex\/\*/);
 });
