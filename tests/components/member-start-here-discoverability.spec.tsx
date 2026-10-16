@@ -44,6 +44,8 @@ describe('member "Start here" shortcuts', () => {
 describe('AI tools explained on the home', () => {
   it('lists what the main tools do, each linked, plus the full list', () => {
     render(<MemberStartHereCard preassessmentCompleted={false} />);
+    const card = screen.getByTestId('member-start-here');
+    expect(card.className).toContain('wa-kit-start-here');
     const tools = within(screen.getByTestId('member-start-here-tools')).getAllByRole('link');
     expect(tools).toHaveLength(4);
     expect(tools.map((a) => a.getAttribute('href'))).toEqual([
@@ -52,8 +54,21 @@ describe('AI tools explained on the home', () => {
       '/dashboard/ai-tools/cover-letter',
       '/dashboard/ai-tools/job-match-scorer',
     ]);
+    expect(tools[1].className).toContain('wa-kit-start-here__tool');
     expect(tools[1].textContent).toMatch(/mock interviews/);
-    expect(screen.getByRole('link', { name: /See all the AI Career Tools/ }).getAttribute('href')).toBe('/dashboard/ai-tools?tab=toolkit');
+    // Title and description are stacked kit hierarchy, not a bare accent link blob.
+    expect(within(tools[1]).getByText('Interview Practice').tagName).toBe('STRONG');
+    expect(within(tools[1]).getByText(/mock interviews/).className).toContain('wa-kit-meta');
+    const seeAll = screen.getByRole('link', { name: /See all the AI Career Tools/ });
+    expect(seeAll.getAttribute('href')).toBe('/dashboard/ai-tools?tab=toolkit');
+    expect(seeAll.className).toContain('wa-kit-start-here__see-all');
+  });
+
+  it('uses a quiet ghost CTA once the preassessment is done', () => {
+    render(<MemberStartHereCard preassessmentCompleted />);
+    const pre = within(screen.getByTestId('member-start-here')).getByRole('link', { name: /WIOA Preassessment/ });
+    expect(pre.className).toContain('wa-kit-cta--ghost');
+    expect(pre.getAttribute('data-done')).toBe('true');
   });
 });
 

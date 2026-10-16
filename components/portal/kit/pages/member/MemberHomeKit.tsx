@@ -47,6 +47,7 @@ import DashboardProgramSelector, { type DashboardProgramOption } from '@/compone
 import type { NextBestAction } from '@/lib/member/nextBestActions';
 import type { MemberToolRecommendation } from '@/lib/member/recommendMemberTool';
 import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
+import { isExcludedPublicEmployerName } from '@/lib/jobs/publicJobFilters';
 
 /**
  * Member Portal — HOME view ("Command Center" redesign).
@@ -293,6 +294,18 @@ function logoColorFor(name: string): string {
   return LOGO_COLORS[hash % LOGO_COLORS.length];
 }
 
+/**
+ * Company line for the home pipeline. Reuses the public job-board sandbox /
+ * QA / demo employer rule (`isExcludedPublicEmployerName`) so fixture names
+ * like "QA Audit Co" stay off the member home while real employers (e.g.
+ * Dell Technologies) still show.
+ */
+function pipelineCompanyDisplay(company: string): string | null {
+  const trimmed = company.trim();
+  if (!trimmed || isExcludedPublicEmployerName(trimmed)) return null;
+  return trimmed;
+}
+
 /* ---------------------------------------------------------------------- */
 /* Presentational sub-components                                          */
 /* ---------------------------------------------------------------------- */
@@ -462,39 +475,45 @@ function WeeklyActivityChart({ data }: { data: WeeklyActivityPoint[] }) {
   );
 }
 
+function PipelineRoleCell({ row, roleWeight = 700 }: { row: PipelineRow; roleWeight?: number }) {
+  const company = pipelineCompanyDisplay(row.company);
+  const markSource = company ?? row.role;
+  const initial = markSource.trim().charAt(0).toUpperCase() || '?';
+  return (
+    <div className="wa-flex wa-items-center wa-gap-3">
+      <div
+        aria-hidden
+        style={{
+          width: 30,
+          height: 30,
+          borderRadius: 8,
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontWeight: 800,
+          fontSize: 'var(--wa-type-meta)',
+          color: 'var(--wa-on-accent)',
+          background: logoColorFor(markSource),
+        }}
+      >
+        {initial}
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontWeight: roleWeight, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)' }}>{row.role}</div>
+        {company ? (
+          <div className="wa-kit-meta" style={{ fontWeight: 600, marginTop: 1 }}>{company}</div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 const pipelineColumns: Column<PipelineRow>[] = [
   {
     key: 'role',
     header: 'Role',
-    render: (row) => {
-      const initial = row.company.trim().charAt(0).toUpperCase() || '?';
-      return (
-        <div className="wa-flex wa-items-center wa-gap-3">
-          <div
-            aria-hidden
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: 'var(--wa-type-meta)',
-              color: 'var(--wa-on-accent)',
-              background: logoColorFor(row.company),
-            }}
-          >
-            {initial}
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)' }}>{row.role}</div>
-            <div className="wa-kit-meta" style={{ fontWeight: 600, marginTop: 1 }}>{row.company}</div>
-          </div>
-        </div>
-      );
-    },
+    render: (row) => <PipelineRoleCell row={row} />,
   },
   {
     key: 'status',
@@ -519,7 +538,6 @@ const pipelineColumns: Column<PipelineRow>[] = [
 ];
 
 const pipelineCard = (row: PipelineRow) => {
-  const initial = row.company.trim().charAt(0).toUpperCase() || '?';
   return (
     <div className="wa-kit-card wa-kit-card--sm">
       {/* Phones: stack the stage tag under the role+company block. Side by
@@ -527,29 +545,8 @@ const pipelineCard = (row: PipelineRow) => {
           role column 98-139px and wrapping titles onto 3 lines. Row layout
           returns at >=768px. */}
       <div className="wa-flex wa-flex-col wa-items-start wa-gap-2 md:wa-flex-row md:wa-justify-between md:wa-gap-3">
-        <div className="wa-flex wa-items-center wa-gap-3" style={{ minWidth: 0 }}>
-          <div
-            aria-hidden
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 800,
-              fontSize: 'var(--wa-type-meta)',
-              color: 'var(--wa-on-accent)',
-              background: logoColorFor(row.company),
-            }}
-          >
-            {initial}
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)' }}>{row.role}</div>
-            <div className="wa-kit-meta" style={{ marginTop: 2 }}>{row.company}</div>
-          </div>
+        <div style={{ minWidth: 0 }}>
+          <PipelineRoleCell row={row} roleWeight={800} />
         </div>
         <StatusTag tone={row.tone}>{row.stage}</StatusTag>
       </div>

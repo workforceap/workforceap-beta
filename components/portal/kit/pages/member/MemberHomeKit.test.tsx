@@ -225,6 +225,24 @@ describe('MemberHomeKit up next + recommended tool', () => {
  * kit home, each piece only for the members it applies to, and the goals
  * links stay on kit pages.
  */
+describe('MemberHomeKit application pipeline company line', () => {
+  it('hides QA / demo / sandbox employers and keeps real ones', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        pipeline={[
+          { role: 'Browser Tester', company: 'QA Audit Co', stage: 'Applied', tone: 'muted', appliedLabel: 'Apr 21' },
+          { role: 'IT Support Technician', company: 'Dell Technologies', stage: 'Applied', tone: 'muted', appliedLabel: 'Apr 15' },
+        ]}
+      />,
+    );
+    expect(screen.getAllByText('Browser Tester').length).toBeGreaterThan(0);
+    expect(screen.queryByText('QA Audit Co')).toBeNull();
+    expect(screen.getAllByText('IT Support Technician').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Dell Technologies').length).toBeGreaterThan(0);
+  });
+});
+
 describe('MemberHomeKit pieces moved over from the legacy home', () => {
   const first90 = {
     stage: 'day_30' as const,
