@@ -77,6 +77,7 @@ export default function TrainingCourseList({
 }: TrainingCourseListProps) {
   const router = useRouter();
   const announce = useAnnounce();
+  const [courseSearch, setCourseSearch] = useState('');
   const [marking, setMarking] = useState<string | null>(null);
   const [markError, setMarkError] = useState<string | null>(null);
   /** Course slug currently being enrolled (button → "Enrolling…"). */
@@ -248,7 +249,18 @@ export default function TrainingCourseList({
     }
   };
 
-  const firstNotStartedSlug = courses.find((c) => getStatus(c.slug) !== 'complete')?.slug ?? null;
+  const searchQuery = courseSearch.trim().toLowerCase();
+  const visibleCourses = searchQuery
+    ? courses.filter((c) => {
+        const haystack = [c.name, c.slug, c.description, c.provider?.name]
+          .filter((part): part is string => typeof part === 'string' && part.length > 0)
+          .join(' ')
+          .toLowerCase();
+        return haystack.includes(searchQuery);
+      })
+    : courses;
+
+  const firstNotStartedSlug = visibleCourses.find((c) => getStatus(c.slug) !== 'complete')?.slug ?? null;
 
   const statusLabel = (slug: string) => {
     const s = getStatus(slug);
@@ -284,6 +296,38 @@ export default function TrainingCourseList({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {courses.length > 5 ? (
+        <label style={{ display: 'grid', gap: 4 }}>
+          <span className="wa-kit-field-label" style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>
+            Search courses
+          </span>
+          <input
+            type="search"
+            value={courseSearch}
+            onChange={(e) => setCourseSearch(e.target.value)}
+            placeholder="Title or provider"
+            aria-label="Search courses"
+            data-testid="course-search"
+            className="wa-kit-focus wa-kit-control"
+            style={{
+              width: '100%',
+              maxWidth: '28rem',
+              minHeight: 44,
+              fontSize: 'var(--wa-type-body)',
+              border: '1px solid var(--wa-border)',
+              borderRadius: 'var(--wa-radius-sm)',
+              padding: '10px 12px',
+              background: 'var(--wa-surface)',
+              color: 'var(--wa-text)',
+            }}
+          />
+        </label>
+      ) : null}
+      {searchQuery && visibleCourses.length === 0 ? (
+        <p role="status" className="wa-kit-meta" style={{ margin: 0, color: 'var(--wa-muted)' }}>
+          No courses match “{courseSearch.trim()}”.
+        </p>
+      ) : null}
       {enrollNotice && (
         <div
           role="note"
@@ -372,7 +416,7 @@ export default function TrainingCourseList({
           {markError}
         </div>
       )}
-      {courses.map((c) => {
+      {visibleCourses.map((c) => {
         const status = getStatus(c.slug);
         const isComplete = status === 'complete';
         const isUpNext = !isComplete && c.slug === firstNotStartedSlug;

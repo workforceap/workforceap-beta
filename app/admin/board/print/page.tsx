@@ -64,6 +64,8 @@ export default async function FunderReportPrintPage({
           a { text-decoration: none !important; color: inherit !important; }
           /* Avoid awkward page breaks inside cards / tables */
           section, table, tr { break-inside: avoid; page-break-inside: avoid; }
+          /* Belt-and-suspenders if a parent shell reappears */
+          aside, nav, .portal-header, .workspace-sidebar, .workspace-sidebar-nav { display: none !important; }
         }
         .funder-report-shell { padding: 1.25rem; max-width: 1100px; margin: 0 auto; }
       `}</style>

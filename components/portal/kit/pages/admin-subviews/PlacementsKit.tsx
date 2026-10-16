@@ -124,10 +124,22 @@ export function PlacementsKit({
     [placements, sortKey, sortDirection],
   );
 
+  const wageEmpty = avgWage === '—' || avgWage.trim() === '';
+  const retentionEmpty = retention90d === '—' || retention90d.trim() === '';
   const kpis: KpiItem[] = [
     { label: 'YTD', value: ytd },
-    { label: 'Avg Wage', value: avgWage },
-    { label: 'Retention 90d', value: retention90d },
+    {
+      label: 'Avg Wage',
+      value: avgWage,
+      delta: wageEmpty ? 'Awaiting confirmed wage' : undefined,
+      deltaTone: 'muted',
+    },
+    {
+      label: 'Retention 90d',
+      value: retention90d,
+      delta: retentionEmpty ? 'Awaiting retention follow-up' : undefined,
+      deltaTone: 'muted',
+    },
     { label: 'To Confirm', value: toConfirm, tone: toConfirm > 0 ? 'alert' : undefined },
   ];
 

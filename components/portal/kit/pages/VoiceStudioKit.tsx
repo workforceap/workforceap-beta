@@ -492,18 +492,18 @@ function CoachesPanel({ onPick }: { onPick: (agent: SessionAgentConfig) => void 
         <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', margin: 0, maxWidth: '42rem' }}>
           Real-time spoken coaching. Your program context is included automatically.
         </p>
-        <HStack
-          gap={2}
-          align="center"
-          style={{
-            padding: '6px 12px',
-            background: 'var(--wa-surface)',
-            border: '1px solid var(--wa-border)',
-            borderRadius: 999,
-          }}
-        >
+        <HStack gap={2} align="center" data-testid="live-voice-caption">
           <StatusDot variant="success" label="Live voice session available" isPulsing />
-          <Token label="Live voice · ~5 min" size="sm" color="green" />
+          <p
+            style={{
+              margin: 0,
+              fontSize: 'var(--wa-type-meta)',
+              color: 'var(--wa-muted)',
+              fontWeight: 500,
+            }}
+          >
+            Live voice · ~5 min
+          </p>
         </HStack>
       </div>
 

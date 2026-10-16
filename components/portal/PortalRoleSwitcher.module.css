@@ -95,6 +95,49 @@
   font-weight: 700;
 }
 
+.portal-role-switcher-trigger:disabled {
+  cursor: wait;
+  opacity: 0.85;
+}
+
+.portal-role-switcher-spinner,
+.portal-role-switcher-option-spinner {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid color-mix(in srgb, currentColor 35%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: portal-role-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.portal-role-switcher-option.pending {
+  cursor: wait;
+}
+
+.portal-role-switcher-option-spinner {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+@keyframes portal-role-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.portal-role-switcher-option-spinner {
+  animation: portal-role-spin-centered 0.7s linear infinite;
+}
+
+@keyframes portal-role-spin-centered {
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
 @keyframes dropdownFadeIn {
   from {
     opacity: 0;

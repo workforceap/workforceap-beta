@@ -64,6 +64,7 @@ export default async function LoginPage({
         initialRedirectTo={normalizedRedirect}
         accountDeleted={accountDeleted}
         emailVerified={emailVerified}
+        sessionExpired={Boolean(rawRedirect) && !accountDeleted}
       />
     </>
   );
