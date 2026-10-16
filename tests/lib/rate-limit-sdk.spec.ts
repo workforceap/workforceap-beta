@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const redisState = vi.hoisted(() => ({
-  mode: 'allow' as 'allow' | 'last-token' | 'deny' | 'timeout' | 'reject',
+  mode: 'allow' as 'allow' | 'last-token' | 'deny' | 'timeout' | 'reject' | 'allow-then-deny',
   calls: 0,
 }));
 
@@ -14,6 +14,9 @@ vi.mock('@upstash/redis', () => ({
       redisState.calls += 1;
       if (redisState.mode === 'timeout') return new Promise(() => {});
       if (redisState.mode === 'reject') return Promise.reject(new Error('Synthetic Redis rejection'));
+      if (redisState.mode === 'allow-then-deny') {
+        return Promise.resolve(redisState.calls === 1 ? [24, 25] : [-1, 25]);
+      }
       return Promise.resolve(redisState.mode === 'allow' ? [24, 25] : redisState.mode === 'last-token' ? [0, 25] : [-1, 25]);
     }
   },
@@ -133,6 +136,27 @@ describe('configured rate limits through the installed SDK', () => {
       expect((await app[name]('ordinary-paid-user')).success).toBe(false);
     }
   });
+
+  it('short-circuits enrollment template send on the admin bucket before consulting the member bucket', async () => {
+    redisState.mode = 'deny';
+    const app = await loadLimiters();
+    expect((await app.checkEnrollmentTemplateSendRateLimit('admin-1', 'member-1')).success).toBe(false);
+    expect(redisState.calls).toBe(1);
+  });
+
+  it('still applies the member bucket after the admin bucket allows', async () => {
+    redisState.mode = 'allow-then-deny';
+    const app = await loadLimiters();
+    expect((await app.checkEnrollmentTemplateSendRateLimit('admin-1', 'member-1')).success).toBe(false);
+    expect(redisState.calls).toBe(2);
+  });
+
+  it('requires both enrollment template buckets to allow', async () => {
+    redisState.mode = 'allow';
+    const app = await loadLimiters();
+    expect((await app.checkEnrollmentTemplateSendRateLimit('admin-1', 'member-1')).success).toBe(true);
+    expect(redisState.calls).toBe(2);
+  });
 });
 
 describe('missing limiter configuration remains distinct from a provider outage', () => {
@@ -151,6 +175,7 @@ describe('missing limiter configuration remains distinct from a provider outage'
     const app = await loadLimiters({ configured: false });
     expect((await app.checkAuthRateLimit('synthetic-user')).success).toBe(true);
     expect((await app.checkApplySignupRateLimit('192.0.2.10')).success).toBe(true);
+    expect((await app.checkEnrollmentTemplateSendRateLimit('admin-1', 'member-1')).success).toBe(true);
     expect((await app.checkPublicCareersGetRateLimit('192.0.2.10')).success).toBe(true);
     vi.stubEnv('WAP_APPLY_RATE_LIMIT_FAIL_CLOSED', '1');
     expect((await app.checkApplySignupRateLimit('192.0.2.10')).success).toBe(false);
