@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Award, Check, FileText } from 'lucide-react';
+import { Award, Check, FileText, X } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
 import { Button } from '@astryxdesign/core/Button';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { HStack, VStack } from '@astryxdesign/core/Layout';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
 
 /**
@@ -22,6 +24,9 @@ import { DesignSurface, PageOpener } from '@/components/portal/kit';
  * `actionsEnabled` is false (no real backend caller), the controls render
  * disabled with an explanatory note — backward compatible with the prior
  * read-only usage.
+ *
+ * UI-05: Approve is disabled when there is no proof file (`proofHref` missing).
+ * Submitted proof opens in an inline preview dialog (image or document link).
  */
 export interface CertSubmission {
   id: string;
@@ -75,6 +80,13 @@ const DEFAULT_SUBMISSIONS: CertSubmission[] = [
 
 const REVIEW_ENDPOINT = '/api/admin/certifications/review';
 
+/** Detect image proof from the storage path / signed URL (before query string). */
+export function isImageProofHref(href: string | undefined): boolean {
+  if (!href) return false;
+  const path = href.split('?')[0]?.toLowerCase() ?? '';
+  return /\.(png|jpe?g|gif|webp|avif|bmp|svg)$/.test(path);
+}
+
 export function CertificationsQueueKit({
   submissions = DEFAULT_SUBMISSIONS,
   awaitingCount,
@@ -85,6 +97,7 @@ export function CertificationsQueueKit({
   // Per-row in-flight action and error, keyed by submission id.
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [preview, setPreview] = useState<CertSubmission | null>(null);
 
   useEffect(() => {
     setRows(submissions);
@@ -99,6 +112,9 @@ export function CertificationsQueueKit({
 
   async function handleReview(id: string, action: 'approve' | 'reject') {
     if (!actionsEnabled || pendingId) return;
+    const row = rows.find((r) => r.id === id);
+    // UI-05: never one-click approve without proof on record.
+    if (action === 'approve' && !row?.proofHref) return;
     setPendingId(id);
     setErrors((prev) => {
       const next = { ...prev };
@@ -194,6 +210,8 @@ export function CertificationsQueueKit({
         {rows.map((sub) => {
           const isBusy = pendingId === sub.id;
           const rowError = errors[sub.id];
+          const hasProof = Boolean(sub.proofHref);
+          const canApprove = actionsEnabled && hasProof && !isBusy;
           return (
             <Card key={sub.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div
@@ -226,14 +244,10 @@ export function CertificationsQueueKit({
                   <div style={{ fontSize: 13, color: 'var(--wa-muted)' }}>
                     {sub.member} · {sub.meta}
                   </div>
-                  {/* Mobile-only proof link: the desktop one is hidden below md, so
-                      surface it inline with the meta on phones (kept reachable, no
-                      overflow). */}
-                  {sub.proofHref ? (
-                    <a
-                      href={sub.proofHref}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  {/* Mobile-only proof control */}
+                  {hasProof ? (
+                    <button
+                      type="button"
                       className="md:wa-hidden wa-inline-flex wa-kit-focus"
                       style={{
                         alignItems: 'center',
@@ -243,10 +257,15 @@ export function CertificationsQueueKit({
                         fontWeight: 700,
                         color: 'var(--wa-info)',
                         textDecoration: 'none',
+                        background: 'transparent',
+                        border: 0,
+                        padding: 0,
+                        cursor: 'pointer',
                       }}
+                      onClick={() => setPreview(sub)}
                     >
                       <FileText size={13} /> View proof
-                    </a>
+                    </button>
                   ) : (
                     <span
                       className="md:wa-hidden wa-inline-flex"
@@ -265,11 +284,9 @@ export function CertificationsQueueKit({
                   )}
                 </div>
 
-                {sub.proofHref ? (
-                  <a
-                    href={sub.proofHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                {hasProof ? (
+                  <button
+                    type="button"
                     className="wa-hidden md:wa-inline-flex wa-kit-focus"
                     style={{
                       alignItems: 'center',
@@ -278,11 +295,16 @@ export function CertificationsQueueKit({
                       fontWeight: 700,
                       color: 'var(--wa-info)',
                       textDecoration: 'none',
+                      background: 'transparent',
+                      border: 0,
+                      padding: 0,
+                      cursor: 'pointer',
                       flexShrink: 0,
                     }}
+                    onClick={() => setPreview(sub)}
                   >
                     <FileText size={13} /> View proof
-                  </a>
+                  </button>
                 ) : (
                   <span
                     className="wa-hidden md:wa-inline-flex"
@@ -306,9 +328,15 @@ export function CertificationsQueueKit({
                     variant="primary"
                     size="sm"
                     icon={<Check size={13} />}
-                    isDisabled={!actionsEnabled || isBusy}
+                    isDisabled={!canApprove}
                     isLoading={isBusy}
-                    tooltip={actionsEnabled ? undefined : 'Credential review is not yet available'}
+                    tooltip={
+                      !actionsEnabled
+                        ? 'Credential review is not yet available'
+                        : !hasProof
+                          ? 'Upload proof is required before approval'
+                          : undefined
+                    }
                     onClick={() => handleReview(sub.id, 'approve')}
                   />
                   <Button
@@ -339,6 +367,69 @@ export function CertificationsQueueKit({
           );
         })}
       </div>
+
+      <Dialog
+        isOpen={Boolean(preview?.proofHref)}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setPreview(null);
+        }}
+        width={640}
+        purpose="info"
+        aria-label={preview ? `Proof for ${preview.credential}` : 'Proof preview'}
+      >
+        {preview?.proofHref ? (
+          <VStack gap={3}>
+            <DialogHeader title={`Proof · ${preview.credential}`} />
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--wa-muted)' }}>
+              {preview.member} · {preview.meta}
+            </p>
+            {isImageProofHref(preview.proofHref) ? (
+              // eslint-disable-next-line @next/next/no-img-element -- signed storage URL; not a Next Image origin
+              <img
+                src={preview.proofHref}
+                alt={`Uploaded proof for ${preview.credential}`}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  maxHeight: '60vh',
+                  objectFit: 'contain',
+                  borderRadius: 12,
+                  border: '1px solid var(--wa-border)',
+                  background: 'var(--wa-surface-2)',
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  padding: 16,
+                  borderRadius: 12,
+                  border: '1px solid var(--wa-border)',
+                  background: 'var(--wa-surface-2)',
+                  fontSize: 14,
+                }}
+              >
+                Document proof is available as a file. Open it in a new tab to review before approving.
+              </div>
+            )}
+            <HStack gap={2} justify="end">
+              <Button
+                label="Close"
+                variant="ghost"
+                icon={<X size={13} />}
+                onClick={() => setPreview(null)}
+              />
+              <Button
+                label="Open in new tab"
+                variant="secondary"
+                icon={<FileText size={13} />}
+                onClick={() => {
+                  window.open(preview.proofHref, '_blank', 'noopener,noreferrer');
+                }}
+              />
+            </HStack>
+          </VStack>
+        ) : null}
+      </Dialog>
     </DesignSurface>
   );
 }

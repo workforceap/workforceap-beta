@@ -43,6 +43,16 @@ export interface HealthTile {
   icon?: LucideIcon;
 }
 
+/** One non-ok subsystem for the degraded/fail callout (UI-21). */
+export interface HealthIssue {
+  /** Human subsystem name, e.g. "Cron jobs". */
+  label: string;
+  /** ok is never passed; degraded or fail only. */
+  status: Exclude<TileStatus, 'ok' | 'unknown'>;
+  /** Optional detail from the health check note / env / limiter. */
+  detail?: string;
+}
+
 export interface SystemHealthKitProps {
   /** The 4 (or more) status tiles. */
   tiles: HealthTile[];
@@ -50,6 +60,11 @@ export interface SystemHealthKitProps {
   uptime?: RankDatum[];
   /** Caption under the uptime heading (e.g. data-source honesty note). */
   uptimeCaption?: string;
+  /**
+   * UI-21: when App is Degraded/Down, list the exact failing checks above the
+   * tiles so staff see *why* the roll-up is not green.
+   */
+  issues?: HealthIssue[];
   /** Page header title. */
   title?: string;
   /** Page goal / subtitle caption. */
@@ -101,14 +116,57 @@ export function SystemHealthKit({
   tiles,
   uptime,
   uptimeCaption,
+  issues,
   title = 'System Health',
   goal,
   kicker,
   headerAction,
 }: SystemHealthKitProps) {
+  const showIssues = Boolean(issues && issues.length > 0);
+
   return (
     <DesignSurface surface="dense" className="wa-p-6">
       <PageOpener className="wa-mb-5" title={title} kicker={kicker ?? 'Admin'} lede={goal} action={headerAction} />
+
+      {showIssues ? (
+        <Card
+          role="status"
+          aria-live="polite"
+          data-testid="health-degraded-callout"
+          style={{
+            marginBottom: 16,
+            borderColor: 'color-mix(in srgb, var(--wa-gold) 45%, var(--wa-border))',
+            background: 'var(--wa-gold-soft)',
+          }}
+        >
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <AlertTriangle
+              size={18}
+              style={{ color: 'var(--wa-gold-dark)', flexShrink: 0, marginTop: 2 }}
+              aria-hidden
+            />
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontWeight: 800, fontSize: 14, letterSpacing: '-0.01em', marginBottom: 6 }}>
+                App is degraded — failing checks
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '1.1rem', fontSize: 13, color: 'var(--wa-text)' }}>
+                {issues!.map((issue) => (
+                  <li key={issue.label} style={{ marginBottom: 4 }}>
+                    <strong>{issue.label}</strong>
+                    {' · '}
+                    <span style={{ color: tileColorVar(issue.status), fontWeight: 700 }}>
+                      {issue.status === 'fail' ? 'Down' : 'Degraded'}
+                    </span>
+                    {issue.detail ? (
+                      <span style={{ color: 'var(--wa-muted)' }}> — {issue.detail}</span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </Card>
+      ) : null}
 
       {/* Status tiles — responsive grid: 2-col mobile → 4-col desktop. */}
       <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">

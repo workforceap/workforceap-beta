@@ -105,6 +105,20 @@ describe('workspace navigation', () => {
     expect(css).toMatch(/@media \(max-height: 40rem\)[\s\S]*?\.workspace-shell-root\[data-workspace-role\] \.workspace-sidebar \{[\s\S]*?overflow-y: auto;/);
   });
 
+  it('UI-01: keeps nav labels on one line and pins count badges to the trailing edge', () => {
+    const css = readFileSync(join(process.cwd(), 'css/portal-main-extracted.css'), 'utf8');
+    const labelRule = css.match(/\.workspace-sidebar-link-label \{[^}]+\}/)?.[0] ?? '';
+    expect(labelRule).toMatch(/white-space:\s*nowrap/);
+    expect(labelRule).toMatch(/text-overflow:\s*ellipsis/);
+    expect(labelRule).not.toMatch(/overflow-wrap:\s*anywhere/);
+    const badgeRule = css.match(/\.workspace-nav-badge \{[^}]+\}/)?.[0] ?? '';
+    expect(badgeRule).toMatch(/flex-shrink:\s*0/);
+    expect(badgeRule).toMatch(/margin-left:\s*auto/);
+    expect(css).toMatch(
+      /\.workspace-shell-root:not\(\[data-workspace-role='member'\]\) \.workspace-sidebar:not\(\.workspace-sidebar--collapsed\) \{[\s\S]*?width:\s*15\.5rem;/,
+    );
+  });
+
   it('keeps the site footer in flow so it cannot cover the last page controls', () => {
     const css = readFileSync(join(process.cwd(), 'css/portal-main-extracted.css'), 'utf8');
     expect(css).toMatch(/\.workspace-shell-main-inner \{[\s\S]*?flex: 1 0 auto;[\s\S]*?min-height: 100%;/);
