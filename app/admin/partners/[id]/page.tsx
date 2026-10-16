@@ -32,8 +32,17 @@ import {
   type KitTone,
 } from '@/components/portal/kit';
 import { eventNameReadCandidates } from '@/lib/events/names';
+import {
+  loadPartnerIntakeMetadata,
+  partnerContactIncomplete,
+} from '@/lib/partner/partnerIntakeMetadata';
 
 type Props = { params: Promise<{ id: string }> };
+
+function recorded(value: string | null | undefined): string {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : 'Not recorded';
+}
 
 /** Semantic tone for a pipeline stage pill — matches /admin/pipeline's tone language. */
 function pipelineStageTone(stage: PipelineStage): KitTone {
@@ -117,6 +126,13 @@ export default async function AdminPartnerDetailPage({ params }: Props) {
   ]));
 
   if (!partner) notFound();
+
+  const intake = await loadPartnerIntakeMetadata({
+    name: partner.name,
+    contactEmail: partner.contactEmail,
+    organizationType: partner.organizationType,
+  });
+  const contactIncomplete = partnerContactIncomplete(partner);
 
   const members = partner.referrals.map((r) => r.member);
 
@@ -335,6 +351,23 @@ export default async function AdminPartnerDetailPage({ params }: Props) {
         <StatSparkTile icon={<Trophy size={16} />} label="Placements" value={placements} />
       </div>
 
+      {contactIncomplete ? (
+        <div
+          className="wa-kit-card wa-kit-tone--warn"
+          role="status"
+          data-testid="partner-contact-incomplete"
+          style={{ marginBottom: 24 }}
+        >
+          <p className="wa-kit-tone-text" style={{ fontWeight: 700, margin: 0 }}>
+            Complete Partner Contact Info
+          </p>
+          <p style={{ margin: '0.35rem 0 0', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-text)' }}>
+            Contact name, email, or phone is missing on this partner record. Use Edit to add the
+            missing fields so invites and milestone notifications can reach them.
+          </p>
+        </div>
+      ) : null}
+
       <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-2 wa-gap-4" style={{ marginBottom: 24 }}>
         <div className="wa-kit-card">
           <CardHead
@@ -361,10 +394,10 @@ export default async function AdminPartnerDetailPage({ params }: Props) {
           <CardHead title="Partner details" />
           <dl style={{ display: 'flex', flexDirection: 'column', gap: 10, margin: 0 }}>
             {[
-              { label: 'Organization type', value: partner.organizationType?.trim() || 'Not recorded' },
-              { label: 'Contact', value: partner.contactName ?? '—' },
-              { label: 'Email', value: partner.contactEmail ?? '—' },
-              { label: 'Phone', value: partner.contactPhone ?? '—' },
+              { label: 'Organization type', value: recorded(intake.orgType) },
+              { label: 'Contact', value: partner.contactName?.trim() || '—' },
+              { label: 'Email', value: partner.contactEmail?.trim() || '—' },
+              { label: 'Phone', value: partner.contactPhone?.trim() || '—' },
             ].map((row) => (
               <div key={row.label}>
                 <dt className="wa-kit-stat-label" style={{ marginBottom: 2 }}>{row.label}</dt>
@@ -373,6 +406,27 @@ export default async function AdminPartnerDetailPage({ params }: Props) {
             ))}
           </dl>
         </div>
+      </div>
+
+      <div className="wa-kit-card" data-testid="partner-intake-metadata" style={{ marginBottom: 24 }}>
+        <CardHead title="Partner Intake Metadata" />
+        <p className="wa-kit-meta" style={{ marginBottom: 12 }}>
+          {intake.fromSignupRequest
+            ? 'Captured from the partner signup request.'
+            : 'No matching signup request found — showing values saved on the partner record when available.'}
+        </p>
+        <dl style={{ display: 'flex', flexDirection: 'column', gap: 10, margin: 0 }}>
+          {[
+            { label: 'Organization type', value: recorded(intake.orgType) },
+            { label: 'Service area', value: recorded(intake.serveArea) },
+            { label: 'Expected monthly referrals', value: recorded(intake.expectedMonthly) },
+          ].map((row) => (
+            <div key={row.label}>
+              <dt className="wa-kit-stat-label" style={{ marginBottom: 2 }}>{row.label}</dt>
+              <dd style={{ margin: 0, fontSize: 14, color: 'var(--wa-text)' }}>{row.value}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
       <div className="wa-kit-card" style={{ marginBottom: 24 }}>

@@ -1,4 +1,6 @@
 import AssessmentResultHistory from '@/components/admin/AssessmentResultHistory';
+import MemberServiceRequests from '@/components/admin/MemberServiceRequests';
+import { loadMemberServiceRequestsForStaff } from '@/lib/admin/memberServiceRequests';
 import { getTranslations } from 'next-intl/server';
 import EnrollmentAgreementCard from '@/components/enrollment/EnrollmentAgreementCard';
 import { notFound, redirect } from 'next/navigation';
@@ -163,6 +165,13 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
   } else if (!adminUser) {
     notFound();
   }
+
+  const serviceRequests = await loadMemberServiceRequestsForStaff(member.id, member.organizationId).catch(
+    (error: unknown) => {
+      console.error('[counselor/student-detail] service requests failed', error);
+      return { benefits: [], training: [], failed: true };
+    },
+  );
 
   // ── Timeline data fetch ───────────────────────────────────────────
   // applicationCount is queried up-front (rather than reading
@@ -696,6 +705,8 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
                 <StaffMemberResumePanel memberId={member.id} />
               </div>
             </section>
+
+            <MemberServiceRequests {...serviceRequests} />
 
             {/* Job Pipeline */}
             <section aria-labelledby="counselor-member-jobs-title">

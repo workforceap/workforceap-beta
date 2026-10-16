@@ -37,6 +37,19 @@ const workQueue = vi.hoisted(() => ({
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn(async () => ({ id: 'staff-1' })) }));
 vi.mock('@/lib/auth/roles', () => auth);
 vi.mock('@/lib/db/prisma', () => ({ prisma: db.prisma }));
+vi.mock('@/lib/tenant/organization', () => ({ getActorOrganizationId: vi.fn(async () => 'org-1') }));
+vi.mock('@/lib/counselor/loadRosterByScope', () => ({
+  loadCounselorScopeOptions: vi.fn(async () => ({
+    options: [
+      { value: 'all', label: 'All counselors [0]', count: 0 },
+      { value: 'unassigned', label: 'Unassigned [0]', count: 0 },
+    ],
+    allCount: 0,
+    unassignedCount: 0,
+  })),
+  loadRosterAssignmentsByScope: vi.fn(async () => []),
+  selectedScopeParam: vi.fn(() => 'all'),
+}));
 vi.mock('@/lib/counselor/counselorStudentsRoster', () => ({ loadCounselorRosterRiskAndActivity: vi.fn(async () => new Map()) }));
 vi.mock('@/lib/attention/loadFacts', () => ({ loadAttentionFacts: vi.fn(async () => []) }));
 vi.mock('@/lib/attention/evaluate', async (importOriginal) => ({
@@ -173,14 +186,16 @@ describe('/counselor/students page', () => {
     noLegacyEmpty(container);
   });
 
-  it('an admin viewer without a counselor row gets the no-counselor-record variant', async () => {
+  it('an admin viewer without a counselor row gets a Counselor Scope selector instead of a dead-end empty', async () => {
     db.overrides['counselor.findFirst'] = async () => null;
     auth.isAdmin.mockResolvedValue(true);
     const { container } = portal('en', <>{await CounselorStudentsPage({ searchParams: Promise.resolve({}) })}</>);
+    expect(container.querySelector('[data-testid="counselor-scope-selector"]')).not.toBeNull();
+    expect(screen.getByLabelText('Counselor scope')).toBeVisible();
     const empties = container.querySelectorAll<HTMLElement>('[data-testid="counselor-roster-empty"]');
     expect(empties).toHaveLength(2);
-    expect(empties[0].dataset.variant).toBe('noCounselorRecord');
-    link(empties[0], 'Open admin members', '/admin/members');
+    expect(empties[0].dataset.variant).toBe('unassigned');
+    expect(empties[0].textContent).not.toMatch(/No counselor record for your account/);
     auth.isAdmin.mockResolvedValue(false);
   });
 });
