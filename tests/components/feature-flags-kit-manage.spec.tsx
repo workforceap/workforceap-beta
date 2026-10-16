@@ -27,6 +27,17 @@ beforeEach(() => {
   nav.refresh.mockReset();
   fetchMock.mockReset();
   vi.stubGlobal('fetch', fetchMock);
+  // jsdom lacks <dialog> showModal/close; Astryx Dialog needs both when open.
+  if (!HTMLDialogElement.prototype.showModal) {
+    HTMLDialogElement.prototype.showModal = function showModal() {
+      this.setAttribute('open', '');
+    };
+  }
+  if (!HTMLDialogElement.prototype.close) {
+    HTMLDialogElement.prototype.close = function close() {
+      this.removeAttribute('open');
+    };
+  }
 });
 afterEach(() => {
   cleanup();
@@ -80,11 +91,14 @@ describe('FeatureFlagsKit manageable', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/admin/feature-flags/f1', { method: 'DELETE' });
   });
 
-  it('creates a flag from the new-flag form and shows the route error on failure', async () => {
+  it('creates a flag from the New flag modal and shows the route error on failure', async () => {
     fetchMock.mockResolvedValueOnce({ ok: false, status: 409, json: async () => ({ error: 'Key already exists' }) } as Response);
     render(<FeatureFlagsKit flags={[]} {...{ ...props, total: 0, on: 0 }} manageable />);
-    expect(screen.getAllByRole('link', { name: 'Create a flag' })[0]).toHaveAttribute('href', '#new-feature-flag');
-    const form = screen.getByRole('button', { name: 'Create flag' }).closest('form')!;
+    // One opener CTA — empty state no longer duplicates "Create a flag" (UI-23).
+    expect(screen.queryByRole('link', { name: 'Create a flag' })).toBeNull();
+    fireEvent.click(screen.getAllByRole('button', { name: 'New flag' })[0]);
+    const dialog = await screen.findByRole('dialog', { name: 'New feature flag' });
+    const form = within(dialog).getByRole('button', { name: 'Create flag' }).closest('form')!;
     fireEvent.change(within(form).getByLabelText('Key'), { target: { value: ' new-nav ' } });
     fireEvent.change(within(form).getByLabelText('Name'), { target: { value: 'New nav' } });
     fireEvent.click(within(form).getByRole('button', { name: 'Create flag' }));
@@ -100,7 +114,7 @@ describe('FeatureFlagsKit manageable', () => {
 
   it('keeps the legacy links without the prop', () => {
     render(<FeatureFlagsKit flags={[FLAG]} {...props} />);
-    expect(screen.queryByRole('button', { name: /Save|Delete|Create flag/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Save|Delete|Create flag|New flag/ })).toBeNull();
     expect(screen.getByRole('link', { name: 'Manage' })).toHaveAttribute('href', '/admin/feature-flags?ui=legacy');
   });
 });

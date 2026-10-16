@@ -9,16 +9,17 @@ import {
   type KitTone,
 } from '@/components/portal/kit';
 import { Card } from '@astryxdesign/core/Card';
+import { retentionModelLabel } from '@/lib/retention/config';
+import { DataRetentionPurgeButton } from './DataRetentionPurgeButton';
 
 /**
  * Data retention — policies, storage usage & cleanup history (dense).
  * No mockup: consistent light dense-kit treatment for an ops/policy page.
  * Target route: /admin/data-retention (default kit view).
  *
- * Server-rendered (no interactivity): all aggregation happens in the page
- * loader and lands here as plain data. The interactive "Run Cleanup Now"
- * purge action lives in the legacy client view (?ui=legacy) — it is NOT
- * reproduced here so this stays a read-only server module.
+ * Aggregation happens in the page loader. Human-readable model labels and an
+ * optional confirmed purge control ship in-kit (UI-26); legacy ?ui=legacy
+ * remains as an escape hatch.
  */
 export interface StorageRow {
   tableName: string;
@@ -83,11 +84,18 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
     { label: 'Recent Runs', value: recentRuns.length },
   ];
 
+  const ModelCell = ({ model }: { model: string }) => (
+    <div style={{ minWidth: 0 }}>
+      <div style={{ fontWeight: 700 }}>{retentionModelLabel(model)}</div>
+      <code style={{ fontSize: 13, color: 'var(--wa-muted)', display: 'block' }}>{model}</code>
+    </div>
+  );
+
   const policyColumns: Column<PolicyRow>[] = [
     {
       key: 'model',
       header: 'Model',
-      render: (row) => <span style={{ fontWeight: 700 }}>{row.model}</span>,
+      render: (row) => <ModelCell model={row.model} />,
     },
     {
       key: 'description',
@@ -204,6 +212,10 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
       </div>
 
       <div className="wa-mb-5">
+        <DataRetentionPurgeButton />
+      </div>
+
+      <div className="wa-mb-5">
         <h3 className="wa-text-sm wa-font-bold wa-mb-3" style={{ color: 'var(--wa-text)' }}>
           Retention Policies
         </h3>
@@ -223,9 +235,10 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
                   gap: 10,
                 }}
               >
-                <span style={{ fontWeight: 700 }}>{row.model}</span>
+                <span style={{ fontWeight: 700 }}>{retentionModelLabel(row.model)}</span>
                 <span style={numStyle}>{formatRetention(row.days)}</span>
               </div>
+              <code style={{ fontSize: 13, color: 'var(--wa-muted)', display: 'block', marginTop: 4 }}>{row.model}</code>
               <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '6px 0 10px' }}>
                 {row.description}
               </p>
@@ -345,16 +358,16 @@ export function DataRetentionKit({ storage, policies, recentRuns }: DataRetentio
           lineHeight: 1.6,
         }}
       >
-        Member records are never auto-deleted — only log/telemetry tables are in scope. To run the
-        cleanup job manually, open the{' '}
+        Member records are never auto-deleted — only log/telemetry tables are in scope. A confirmed
+        cleanup is available above; the{' '}
         <a
           href="/admin/data-retention?ui=legacy"
           className="wa-kit-focus"
           style={{ color: 'var(--wa-accent)', fontWeight: 700 }}
         >
           legacy view
-        </a>
-        .
+        </a>{' '}
+        remains as an escape hatch.
       </p>
     </DesignSurface>
   );

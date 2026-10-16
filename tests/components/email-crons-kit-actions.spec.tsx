@@ -7,6 +7,7 @@ import { EmailCronsKit, type EmailCronRow } from '@/components/portal/kit/pages/
  * WAP-193: enabling/disabling, dry-running and manually sending an email cron
  * used to exist only on /admin/email-crons?ui=legacy. The default roster now
  * carries them; Send now always confirms with the recipient count.
+ * UI-24: Send now / Disable live in the ⋯ menu; Dry run stays primary.
  */
 
 const nav = vi.hoisted(() => ({ refresh: vi.fn() }));
@@ -39,11 +40,16 @@ const JOB: EmailCronRow = { id: 'weekly-recap', job: 'Weekly recap', schedule: '
 const props = { totalJobs: 1, enabled: 1, failing: 0, lastRun: '3h ago' };
 const first = (name: string) => screen.getAllByRole('button', { name })[0];
 
+function openRowMenu() {
+  fireEvent.click(first('More actions for Weekly recap'));
+}
+
 describe('EmailCronsKit manageable', () => {
-  it('disables a job through the toggle route', async () => {
+  it('disables a job through the toggle route from the ⋯ menu', async () => {
     fetchMock.mockResolvedValueOnce(ok({ ok: true }));
     render(<EmailCronsKit jobs={[JOB]} {...props} manageable />);
-    fireEvent.click(first('Disable Weekly recap'));
+    openRowMenu();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Disable' }));
     await waitFor(() => expect(nav.refresh).toHaveBeenCalledTimes(1));
     expect(fetchMock).toHaveBeenCalledWith('/api/admin/email-crons/weekly-recap/toggle', {
       method: 'POST',
@@ -65,7 +71,8 @@ describe('EmailCronsKit manageable', () => {
   it('confirms Send now with the recipient count before triggering', async () => {
     fetchMock.mockResolvedValueOnce(ok({ count: 12 })).mockResolvedValueOnce(ok({ ok: true, result: {} }));
     render(<EmailCronsKit jobs={[JOB]} {...props} manageable />);
-    fireEvent.click(first('Send Weekly recap now'));
+    openRowMenu();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Send now' }));
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent('12 recipients');
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -80,7 +87,8 @@ describe('EmailCronsKit manageable', () => {
   it('shows a failed manual run', async () => {
     fetchMock.mockResolvedValueOnce(ok({ count: 1 })).mockResolvedValueOnce({ ok: false, status: 401, json: async () => ({ ok: false, error: 'Unauthorized' }) } as Response);
     render(<EmailCronsKit jobs={[JOB]} {...props} manageable />);
-    fireEvent.click(first('Send Weekly recap now'));
+    openRowMenu();
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Send now' }));
     fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Send now' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Unauthorized');
     expect(nav.refresh).not.toHaveBeenCalled();
@@ -88,6 +96,6 @@ describe('EmailCronsKit manageable', () => {
 
   it('is read-only without the prop', () => {
     render(<EmailCronsKit jobs={[JOB]} {...props} />);
-    expect(screen.queryByRole('button', { name: /Disable|Dry run|Send/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Dry run|More actions/ })).toBeNull();
   });
 });
