@@ -37,6 +37,12 @@
   @media(min-width:880px){.consent{left:0;right:0;bottom:0;border-radius:0;padding:16px 24px}}
 </style>
 
+<style is:global>
+  :root{--cookie-consent-reserve:0px}
+  /* Clear the measured banner plus the focus outline and fractional scroll rounding. */
+  :is(a,button,input,select,textarea,[tabindex]){scroll-margin-bottom:calc(var(--cookie-consent-reserve) + .5rem)}
+</style>
+
 <script is:inline>
   (function () {
     var KEY = 'wap-cookie-consent';
@@ -84,12 +90,16 @@
     el.hidden = false;
     var prevPad = document.body.style.paddingBottom;
     var basePad = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+    var reserveProperty = '--cookie-consent-reserve';
+    var rootStyle = document.documentElement.style;
+    var previousReserve = rootStyle.getPropertyValue(reserveProperty);
     function measure() {
       if (el.hidden) return;
       // The occupied area includes the rendered height, bottom gap and safe
       // area. Re-measure wrapped text, viewport changes and loaded fonts.
       var occupied = Math.max(0, window.innerHeight - el.getBoundingClientRect().top);
       document.body.style.paddingBottom = (basePad + occupied) + 'px';
+      rootStyle.setProperty(reserveProperty, occupied + 'px');
     }
     measure();
     var observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
@@ -103,6 +113,8 @@
       if (observer) observer.disconnect();
       window.removeEventListener('resize', measure);
       document.body.style.paddingBottom = prevPad;
+      if (previousReserve) rootStyle.setProperty(reserveProperty, previousReserve);
+      else rootStyle.removeProperty(reserveProperty);
     });
   })();
 </script>
