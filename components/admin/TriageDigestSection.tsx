@@ -29,7 +29,7 @@ export default function TriageDigestSection({
   const pendingCount = pendingApplications?.count ?? 0;
   const allClear = digest.allClear && pendingCount === 0;
   return (
-    <section style={{ padding: '0 1.5rem', marginBottom: '2rem' }}>
+    <section style={{ padding: '0 1.5rem', marginBottom: '1.25rem' }}>
       <h2
         className="portal-section-heading"
         style={{ margin: '0 0 0.25rem', fontSize: '1.15rem' }}
@@ -38,7 +38,7 @@ export default function TriageDigestSection({
       </h2>
       <p
         style={{
-          margin: '0 0 1rem',
+          margin: '0 0 0.75rem',
           fontSize: '0.85rem',
           color: 'var(--color-on-surface-variant)',
         }}
@@ -50,10 +50,10 @@ export default function TriageDigestSection({
         <div
           className="portal-card portal-card--flat"
           style={{
-            padding: '1.5rem',
+            padding: '1rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '1rem',
+            gap: '0.75rem',
           }}
         >
           <div
@@ -100,10 +100,10 @@ export default function TriageDigestSection({
               className="portal-card portal-card--flat"
               data-triage-card="pending-applications"
               style={{
-                padding: '1.25rem',
+                padding: '0.875rem',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.85rem',
+                gap: '0.6rem',
                 borderTop: '4px solid var(--wa-accent)',
               }}
             >
@@ -147,10 +147,10 @@ export default function TriageDigestSection({
               key={bucket.key}
               className="portal-card portal-card--flat"
               style={{
-                padding: '1.25rem',
+                padding: '0.875rem',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.85rem',
+                gap: '0.6rem',
                 borderTop: `4px solid ${bucket.accent}`,
               }}
             >

@@ -179,7 +179,7 @@ test('admin rail: every pre-consolidation destination is still present', () => {
     '/admin/program-change-requests', '/admin/training-progress', '/admin/assessments', '/admin/certifications',
     '/admin/career-mappings', '/admin/wioa-screening', '/admin/partners', '/admin/employers',
     '/admin/employer-screening-packs', '/admin/jobs', '/admin/mentors', '/admin/counselors', '/admin/subgroups',
-    '/admin/board', '/admin/outcomes', '/admin/placements', '/admin/placement-surveys', '/admin/analytics',
+    '/admin/board', '/admin/reporting?tab=outcomes', '/admin/placements', '/admin/placement-surveys', '/admin/reporting?tab=overview',
     '/admin/blog', '/admin/invites', '/admin/sessions', '/admin/pipeline', '/admin/members/duplicates',
     '/admin/users', '/admin/exports', '/admin/coursera', '/admin/metrics', '/admin/weekly-recap', '/admin/ai-tools',
     '/admin/analytics/ai-efficacy', '/admin/diagnostics', '/admin/crons', '/admin/health',
@@ -246,7 +246,9 @@ test('admin rail: Reporting is one top-level hub row with the reporting pages ne
   const hub = ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === '/admin/reporting');
   assert.ok(hub && !hub.parentHref && hub.group === 'reporting');
   const children = navChildrenOf(ADMIN_PORTAL_NAV_ITEMS, '/admin/reporting').map((item) => item.href);
-  for (const href of ['/admin/analytics', '/admin/outcomes', '/admin/board']) assert.ok(children.includes(href), href);
+  for (const href of ['/admin/reporting?tab=overview', '/admin/reporting?tab=outcomes', '/admin/board']) {
+    assert.ok(children.includes(href), href);
+  }
   assert.equal(navTopLevelItems(ADMIN_PORTAL_NAV_ITEMS).filter((item) => item.group === 'reporting').length, 1);
 });
 
@@ -269,7 +271,7 @@ test('admin rail: role gates are unchanged per destination', () => {
   for (const href of ['/admin/messages', '/admin/settings', '/admin/users', '/admin/coursera', '/admin/metrics', '/admin/sessions', '/admin/pipeline', '/admin/members/duplicates', '/admin/feedback', '/admin/email-templates', '/admin/what-workforceap-does', '/admin/health', '/admin/agent-inbox', '/admin/csp-report']) {
     assert.ok(gated.has(href), `${href} must stay super-admin only`);
   }
-  for (const href of ['/admin', '/admin/students', '/admin/programs', '/admin/training-progress', '/admin/invites', '/admin/blog', '/admin/analytics', '/admin/outcomes', '/admin/board', '/admin/placements', '/admin/jobs', '/admin/subgroups', '/admin/reporting', '/admin/command-center?queue=applications', '/admin/wioa-screening', '/admin/certifications', '/admin/program-change-requests']) {
+  for (const href of ['/admin', '/admin/students', '/admin/programs', '/admin/training-progress', '/admin/invites', '/admin/blog', '/admin/reporting?tab=overview', '/admin/reporting?tab=outcomes', '/admin/board', '/admin/placements', '/admin/jobs', '/admin/subgroups', '/admin/reporting', '/admin/command-center?queue=applications', '/admin/wioa-screening', '/admin/certifications', '/admin/program-change-requests']) {
     assert.ok(!gated.has(href), `${href} must stay open to org admins`);
   }
   assert.equal(gated.size, 26, 'the 26 super-admin gates from the flat rail carry over exactly');

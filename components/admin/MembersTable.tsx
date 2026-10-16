@@ -446,6 +446,40 @@ export default function MembersTable({
     updateUrl({ search: '', program: '', status: '', partner: '', startDate: '', endDate: '', health: '', attention: '', page: '' });
   }
 
+  /** Local YYYY-MM-DD for date inputs (avoids UTC day-shift from toISOString). */
+  function toDateInputValue(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function applyDatePreset(preset: '7d' | '30d' | 'quarter' | 'all') {
+    if (preset === 'all') {
+      setStartDate('');
+      setEndDate('');
+      updateUrl({ startDate: '', endDate: '', page: '' });
+      return;
+    }
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    const start = new Date(end);
+    if (preset === '7d') {
+      start.setDate(start.getDate() - 6);
+    } else if (preset === '30d') {
+      start.setDate(start.getDate() - 29);
+    } else {
+      const quarterStartMonth = Math.floor(end.getMonth() / 3) * 3;
+      start.setMonth(quarterStartMonth, 1);
+    }
+    start.setHours(0, 0, 0, 0);
+    const startValue = toDateInputValue(start);
+    const endValue = toDateInputValue(end);
+    setStartDate(startValue);
+    setEndDate(endValue);
+    updateUrl({ startDate: startValue, endDate: endValue, page: '' });
+  }
+
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -622,6 +656,30 @@ export default function MembersTable({
                 style={{ fontSize: '0.8125rem', padding: '0.25rem 0.5rem' }}
               />
             </label>
+            <div
+              role="group"
+              aria-label="Date range presets"
+              style={{ display: 'inline-flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}
+            >
+              {(
+                [
+                  { id: '7d', label: 'Last 7d' },
+                  { id: '30d', label: 'Last 30d' },
+                  { id: 'quarter', label: 'This quarter' },
+                  { id: 'all', label: 'All time' },
+                ] as const
+              ).map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => applyDatePreset(preset.id)}
+                  style={{ fontSize: '0.8125rem', padding: '0.2rem 0.5rem' }}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
             <button
               type="button"
               className="btn btn-outline btn-sm"

@@ -104,56 +104,69 @@ function ProgramTile({ card }: { card: ProgramCard }) {
   const healthy = card.completion != null && card.completion >= HEALTHY_THRESHOLD;
 
   return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
     <ClickableCard label={card.title} href={`/admin/programs?ui=legacy#${card.slug}`}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 12,
-              background: bg,
-              color: fg,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <Icon className="h-5 w-5" aria-hidden />
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          gap: 14,
+          height: '100%',
+          minHeight: 168,
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0, flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+            <div
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                background: bg,
+                color: fg,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <Icon className="h-5 w-5" aria-hidden />
+            </div>
+            {card.completion != null ? (
+              <Token
+                label={healthy ? 'Healthy' : 'Attention'}
+                size="sm"
+                color={TONE_TOKEN_COLOR[healthy ? 'ok' : 'alert']}
+              />
+            ) : null}
           </div>
-          {card.completion != null ? (
-            <Token
-              label={healthy ? 'Healthy' : 'Attention'}
-              size="sm"
-              color={TONE_TOKEN_COLOR[healthy ? 'ok' : 'alert']}
-            />
-          ) : null}
-        </div>
 
-        <div style={{ minWidth: 0 }}>
-          <h3
-            style={{
-              fontWeight: 800,
-              fontSize: 16,
-              letterSpacing: '-0.02em',
-              margin: 0,
-            }}
-          >
-            {card.title}
-          </h3>
-          <p
-            style={{
-              fontSize: 13,
-              color: 'var(--wa-muted)',
-              margin: '2px 0 0',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {card.description}
-          </p>
+          <div style={{ minWidth: 0 }}>
+            <h3
+              style={{
+                fontWeight: 800,
+                fontSize: 16,
+                letterSpacing: '-0.02em',
+                margin: 0,
+              }}
+            >
+              {card.title}
+            </h3>
+            <p
+              style={{
+                fontSize: 13,
+                color: 'var(--wa-muted)',
+                margin: '2px 0 0',
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 3,
+                overflow: 'hidden',
+              }}
+            >
+              {card.description}
+            </p>
+          </div>
         </div>
 
         <div
@@ -165,6 +178,7 @@ function ProgramTile({ card }: { card: ProgramCard }) {
             fontSize: 13,
             paddingTop: 12,
             borderTop: '1px solid var(--wa-border)',
+            marginTop: 'auto',
           }}
         >
           <span style={{ color: 'var(--wa-muted)' }}>{card.enrolled} enrolled</span>
@@ -176,6 +190,7 @@ function ProgramTile({ card }: { card: ProgramCard }) {
         </div>
       </div>
     </ClickableCard>
+    </div>
   );
 }
 
@@ -231,7 +246,7 @@ export function ProgramsCatalogKit({
       </div>
 
       {programs.length > 0 ? (
-        <div className="wa-grid wa-grid-cols-1 md:wa-grid-cols-2 lg:wa-grid-cols-3 wa-gap-4">
+        <div className="wa-grid wa-grid-cols-1 md:wa-grid-cols-2 lg:wa-grid-cols-3 wa-gap-4" style={{ alignItems: 'stretch' }}>
           {programs.map((card) => (
             <ProgramTile key={card.slug} card={card} />
           ))}

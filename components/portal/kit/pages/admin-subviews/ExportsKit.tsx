@@ -1,5 +1,7 @@
-import type { ReactNode } from 'react';
-import { ArrowRight, FileSpreadsheet, FileText, Users, SlidersHorizontal, Download } from 'lucide-react';
+'use client';
+
+import { useEffect, useState, type ReactNode } from 'react';
+import { ArrowRight, FileSpreadsheet, FileText, Users, SlidersHorizontal, Download, Loader2 } from 'lucide-react';
 import { PageOpener, colorVar } from '@/components/portal/kit';
 import { Token, type TokenColor } from '@astryxdesign/core/Token';
 import { EmptyState } from '@astryxdesign/core/EmptyState';
@@ -10,15 +12,9 @@ import { EmbeddableFrame } from './EmbeddableFrame';
  * Mockup: workforceap-admin-full.html "exports" view.
  * Target route: /admin/exports
  *
- * Each card is a file-icon tile + title + description, linking to a REAL export
- * route the page already exposes (CSV download endpoints) or, for the filterable
- * Member Training Report, into the legacy form view. Server-rendered (plain
- * anchors, no interactivity) so it stays a clean RSC.
- *
- * One verb per row type (admin audit §6.6): a file endpoint says "Download"
- * (or the page's translated download label), carries the `download`
- * attribute and a download glyph; an in-portal page says "Open" with an
- * arrow. `exportRowKind` decides from the row itself.
+ * Download tiles show an inline "Generating…" state on click (UI-20). Open tiles
+ * stay plain navigations. Optional last-exported timestamps live in sessionStorage
+ * so they survive within the tab without a backend.
  */
 
 export type ExportTone = 'success' | 'info' | 'accent' | 'gold' | 'muted';
@@ -108,6 +104,18 @@ const BADGE_TOKEN_COLOR: Record<NonNullable<ExportOption['badgeTone']>, TokenCol
   muted: 'gray',
 };
 
+const LAST_EXPORT_PREFIX = 'wa-export-last:';
+
+function lastExportKey(id: string): string {
+  return `${LAST_EXPORT_PREFIX}${id}`;
+}
+
+function formatLastExported(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
 function exportIcon(kind: ExportOption['iconKey']): ReactNode {
   switch (kind) {
     case 'csv':
@@ -126,12 +134,43 @@ function exportIcon(kind: ExportOption['iconKey']): ReactNode {
 function ExportTile({ option }: { option: ExportOption }) {
   const tint = TONE_TINT[option.tone ?? 'muted'];
   const kind = exportRowKind(option);
+  const [generating, setGenerating] = useState(false);
+  const [lastExported, setLastExported] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(lastExportKey(option.id));
+      if (stored) setLastExported(stored);
+    } catch {
+      // sessionStorage unavailable (private mode / SSR) — skip last-exported.
+    }
+  }, [option.id]);
+
+  useEffect(() => {
+    if (!generating) return;
+    const timer = window.setTimeout(() => setGenerating(false), 4500);
+    return () => window.clearTimeout(timer);
+  }, [generating]);
+
+  const onDownloadClick = () => {
+    setGenerating(true);
+    const now = new Date().toISOString();
+    try {
+      sessionStorage.setItem(lastExportKey(option.id), now);
+    } catch {
+      // ignore
+    }
+    setLastExported(now);
+  };
+
   return (
     <a
       href={option.href}
       data-export-action={kind}
       {...(kind === 'download' ? { download: true } : {})}
       {...(option.newTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      onClick={kind === 'download' ? onDownloadClick : undefined}
+      aria-busy={kind === 'download' && generating ? true : undefined}
       className="wa-kit-card wa-kit-card--hover wa-kit-focus"
       style={{
         display: 'flex',
@@ -139,6 +178,7 @@ function ExportTile({ option }: { option: ExportOption }) {
         gap: 14,
         textDecoration: 'none',
         color: 'inherit',
+        height: '100%',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
@@ -162,9 +202,14 @@ function ExportTile({ option }: { option: ExportOption }) {
         ) : null}
       </div>
 
-      <div style={{ minWidth: 0 }}>
+      <div style={{ minWidth: 0, flex: 1 }}>
         <h3 style={{ fontWeight: 800, fontSize: 16, letterSpacing: '-0.02em', margin: 0 }}>{option.title}</h3>
         <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '2px 0 0' }}>{option.description}</p>
+        {kind === 'download' && lastExported ? (
+          <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '6px 0 0' }}>
+            Last exported {formatLastExported(lastExported)}
+          </p>
+        ) : null}
       </div>
 
       <div
@@ -179,8 +224,17 @@ function ExportTile({ option }: { option: ExportOption }) {
           borderTop: '1px solid var(--wa-border)',
         }}
       >
-        {kind === 'download' ? <Download className="h-3.5 w-3.5" aria-hidden /> : <ArrowRight className="h-3.5 w-3.5" aria-hidden />}
-        {option.actionLabel ?? (kind === 'download' ? 'Download' : 'Open')}
+        {kind === 'download' && generating ? (
+          <>
+            <Loader2 className="h-3.5 w-3.5" aria-hidden style={{ animation: 'spin 1s linear infinite' }} />
+            Generating CSV…
+          </>
+        ) : (
+          <>
+            {kind === 'download' ? <Download className="h-3.5 w-3.5" aria-hidden /> : <ArrowRight className="h-3.5 w-3.5" aria-hidden />}
+            {option.actionLabel ?? (kind === 'download' ? 'Download' : 'Open')}
+          </>
+        )}
       </div>
     </a>
   );
@@ -200,7 +254,7 @@ export function ExportsKit({ exports = DEFAULT_EXPORTS, embedded = false }: Expo
       }
     >
       {exports.length > 0 ? (
-        <div className="wa-grid wa-grid-cols-1 md:wa-grid-cols-2 lg:wa-grid-cols-3 wa-gap-4">
+        <div className="wa-grid wa-grid-cols-1 md:wa-grid-cols-2 lg:wa-grid-cols-3 wa-gap-4" style={{ alignItems: 'stretch' }}>
           {exports.map((option) => (
             <ExportTile key={option.id} option={option} />
           ))}
