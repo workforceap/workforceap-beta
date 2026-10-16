@@ -28,6 +28,14 @@ test('program comparison pick-to-compare matrix is in the Astro page', () => {
   assert.match(page, /<h3 id="sidebyside-heading">Side-by-side comparison<\/h3>/);
   assert.match(page, /btn--sm/);
   assert.doesNotMatch(page, /<h4[\s>]/);
+  // UI-33: real catalog tuition/funding column + sticky Track (no invented prices).
+  assert.match(page, /Tuition \/ Funding/);
+  assert.match(page, /publicProgramFundingLabel/);
+  assert.match(page, /tuitionAndFees/);
+  assert.match(page, /See advisor/);
+  assert.match(page, /\.cmp \.cmp-track\{[^}]*position:sticky/);
+  assert.match(page, /data-tuition-funding/);
+  assert.match(page, /key: 'tuition-funding'/);
 });
 
 test('both pathfinders link to the real comparison page without unsupported selection copy', () => {

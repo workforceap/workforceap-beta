@@ -264,6 +264,18 @@ describe('admin bulk review selection and recovery', () => {
     await waitFor(() => expect(mocks.refresh).toHaveBeenCalledOnce());
     expect(requestBody()).toMatchObject({ applicationIds: ['application-a'], status: 'APPROVED', verified: true });
   });
+
+  it('filters the page by applicant name or email and toggles compact table view', () => {
+    render(<AdminCommandCenterClient data={center({ pagination: { queue: 'applications', page: 1, pageSize: 25 } })} />);
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Search applicants by name or email' }), {
+      target: { value: 'b@example' },
+    });
+    expect(screen.getByRole('checkbox', { name: 'Select Applicant b' })).toBeInTheDocument();
+    expect(screen.queryByRole('checkbox', { name: 'Select Applicant a' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Compact table' }));
+    expect(screen.getByTestId('applications-compact-table')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Email' })).toBeInTheDocument();
+  });
 });
 
 describe('admin system-health evidence', () => {

@@ -4,12 +4,32 @@ import Icon from '../components/Icon.astro';
 import { PROGRAM_COMPARISON_TRACKS, STARTER_SLUGS } from '../data/programComparison';
 import { PROGRAMS, partnerBadge } from '../data/programs';
 import { languageSupportLine } from '../data/languageSupport';
+import { publicProgramFundingLabel } from '../data/programFunding';
+
+function tuitionFundingCell(program: (typeof PROGRAMS)[number]): {
+  fundingLabel: string;
+  tuitionLabel: string;
+  cellLabel: string;
+} {
+  const fundingLabel = publicProgramFundingLabel(program);
+  const tuitionAmount = program.syllabus?.tuitionAndFees ?? program.curriculum?.tuitionAndFees;
+  // Honest empty when catalog has no syllabus/curriculum tuition — do not invent prices.
+  const tuitionLabel = typeof tuitionAmount === 'number'
+    ? `$${tuitionAmount.toLocaleString('en-US')}`
+    : 'See advisor';
+  return {
+    fundingLabel,
+    tuitionLabel,
+    cellLabel: `${tuitionLabel} · ${fundingLabel}`,
+  };
+}
 
 // Preserve the familiar grouping while using the same current syllabus facts
 // as program details. Historical salary/demand scores are not outcome evidence.
 const tracks = PROGRAM_COMPARISON_TRACKS.map((track) => {
   const program = PROGRAMS.find((entry) => entry.slug === track.slug);
   if (!program) throw new Error(`Comparison program missing: ${track.slug}`);
+  const tuitionFunding = tuitionFundingCell(program);
   return {
     slug: program.slug,
     shortName: track.shortName,
@@ -27,6 +47,9 @@ const tracks = PROGRAM_COMPARISON_TRACKS.map((track) => {
       ? 'Tech-curious learners ready for cloud.'
       : (program.extra?.bestFor ?? program.description),
     roles: program.extra?.jobOutcomes ?? [],
+    fundingLabel: tuitionFunding.fundingLabel,
+    tuitionLabel: tuitionFunding.tuitionLabel,
+    tuitionFunding: tuitionFunding.cellLabel,
   };
 });
 
@@ -74,7 +97,7 @@ const factors = [
 ---
 <Layout
   title="Compare Programs — Side-by-Side Career Tracks"
-  description="Compare WorkforceAP career tracks side-by-side: course hours, delivery format, preparation, roles to research, and training providers."
+  description="Compare WorkforceAP career tracks side-by-side: course hours, delivery format, preparation, tuition and funding, roles to research, and training providers."
 >
 <div class="cmpdepth">
 
@@ -199,15 +222,16 @@ const factors = [
     </div>
   </section>
 
-  <!-- Wide table wraps with horizontal scroll on narrow screens -->
+  <!-- Wide table wraps with horizontal scroll on narrow screens; Track stays sticky while panning. -->
   <div class="cmp-wrap" role="region" aria-label="Program comparison table" tabindex="0" aria-describedby="compare-table-hint">
-    <p class="cmp-scroll-hint" id="compare-table-hint">On a wide screen, the track name stays in view while you scroll.</p>
+    <p class="cmp-scroll-hint" id="compare-table-hint">Scroll sideways inside this table. Compare and Track stay in view.</p>
     <table class="cmp">
       <thead>
         <tr>
           <th scope="col" class="cmp-pick">Compare</th>
           <th scope="col" class="cmp-track">Track</th>
           <th scope="col">Duration</th>
+          <th scope="col">Tuition / Funding</th>
           <th scope="col">Languages</th>
           <th scope="col">Preparation</th>
           <th scope="col">Roles to research</th>
@@ -218,7 +242,7 @@ const factors = [
       <tbody>
         {categories.map((cat) => (
           <>
-            <tr class="cmp-cat"><th scope="colgroup" colspan="8">{cat.label}</th></tr>
+            <tr class="cmp-cat"><th scope="colgroup" colspan="9">{cat.label}</th></tr>
             {cat.tracks.map((t) => (
               <tr
                 class="cmp-track-row"
@@ -227,6 +251,7 @@ const factors = [
                 data-href={`/programs/${t.slug}`}
                 data-apply={`/apply?program=${t.slug}`}
                 data-duration={t.duration}
+                data-tuition-funding={t.tuitionFunding}
                 data-languages={t.languages}
                 data-preparation={t.preparation}
                 data-roles={t.roles.join(' · ')}
@@ -242,6 +267,10 @@ const factors = [
                   <a href={`/programs/${t.slug}`}>{t.title}</a>
                 </th>
                 <td data-label="Duration">{t.duration}</td>
+                <td data-label="Tuition / Funding" class="cmp-funding">
+                  <span class="cmp-funding-tuition">{t.tuitionLabel}</span>
+                  <span class="cmp-funding-source">{t.fundingLabel}</span>
+                </td>
                 <td data-label="Languages">{t.languages}</td>
                 <td data-label="Preparation">{t.preparation}</td>
                 <td data-label="Roles to research">{t.roles.join(' · ')}</td>
@@ -313,6 +342,7 @@ const factors = [
     var MAX_PICK = 4;
     var CRITERIA = [
       { key: 'duration', label: 'Duration' },
+      { key: 'tuition-funding', label: 'Tuition / Funding' },
       { key: 'languages', label: 'Languages' },
       { key: 'preparation', label: 'Preparation' },
       { key: 'roles', label: 'Roles to research' },
@@ -604,28 +634,32 @@ const factors = [
   .cmp-sidebyside[hidden]{display:none}
   .cmp-sidebyside-header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
   .cmp-sidebyside-header h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(22px,3vw,32px);font-weight:800;letter-spacing:-.02em;margin:0;color:var(--text)}
-  .cmp-matrix-wrap,.cmp-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);background:var(--surface);-webkit-overflow-scrolling:touch}
+  .cmp-matrix-wrap,.cmp-wrap{overflow-x:auto;overscroll-behavior-x:contain;max-width:100%;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);background:var(--surface);-webkit-overflow-scrolling:touch}
   .cmp-wrap{position:relative}
   .cmp-matrix-wrap{box-shadow:none}
   .cmp-wrap:focus-visible,.cmp-matrix-wrap:focus-visible{outline:2px solid var(--crimson);outline-offset:2px}
   .cmp{--cmp-pick-width:6.5rem}
-  .cmp,.cmp-matrix{width:100%;border-collapse:collapse;min-width:760px;font-size:16px}
-  .cmp-matrix{min-width:520px}
+  .cmp,.cmp-matrix{width:100%;border-collapse:collapse;min-width:880px;font-size:16px}
+  .cmp-matrix{min-width:560px}
   .cmp thead th,.cmp-matrix thead th{text-align:left;padding:14px 16px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
     color:var(--muted);background:var(--surface-2);border-bottom:1px solid var(--border);white-space:nowrap}
   .cmp tbody td,.cmp tbody th,.cmp-matrix tbody td,.cmp-matrix tbody th{padding:14px 16px;border-bottom:1px solid var(--border);vertical-align:top;text-align:left;font-weight:400}
   .cmp tbody tr:hover td,.cmp tbody tr:hover th{background:var(--surface-2)}
-  .cmp .cmp-track{font-weight:700;position:sticky;left:var(--cmp-pick-width);z-index:1;background:var(--surface)}
-  .cmp thead .cmp-track{left:var(--cmp-pick-width);z-index:2}
-  .cmp .cmp-pick{width:var(--cmp-pick-width);min-width:var(--cmp-pick-width);max-width:var(--cmp-pick-width);text-align:center;position:sticky;left:0;z-index:2;background:var(--surface-2)}
-  .cmp tbody .cmp-pick{background:var(--surface)}
+  .cmp tbody tr:hover .cmp-track,.cmp tbody tr:hover .cmp-pick{background:var(--surface-2)}
+  .cmp .cmp-track{font-weight:700;position:sticky;left:var(--cmp-pick-width);z-index:1;background:var(--surface);box-shadow:1px 0 0 var(--border)}
+  .cmp thead .cmp-track{left:var(--cmp-pick-width);z-index:3;background:var(--surface-2)}
+  .cmp .cmp-pick{width:var(--cmp-pick-width);min-width:var(--cmp-pick-width);max-width:var(--cmp-pick-width);text-align:center;position:sticky;left:0;z-index:2;background:var(--surface-2);box-shadow:1px 0 0 var(--border)}
+  .cmp tbody .cmp-pick{background:var(--surface);z-index:2}
   .cmp .cmp-check-text{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
   .cmp .cmp-track a,.cmp-matrix thead a{color:var(--text);font-weight:700;text-decoration:none}
   .cmp .cmp-track a:hover,.cmp-matrix thead a:hover{color:var(--crimson);text-decoration:underline}
+  .cmp .cmp-funding{min-width:9.5rem}
+  .cmp .cmp-funding-tuition{display:block;font-weight:700;color:var(--text)}
+  .cmp .cmp-funding-source{display:block;margin-top:2px;font-size:13px;color:var(--muted)}
   .cmp .cmp-sal{color:var(--crimson);font-weight:800;white-space:nowrap}
   .cmp .cmp-act{text-align:right}
   .cmp tr.cmp-cat th{background:color-mix(in srgb, var(--crimson) 7%, var(--surface));color:var(--crimson);font-size:13px;font-weight:800;letter-spacing:.08em;
-    text-transform:uppercase;padding:8px 16px;border-top:1px solid color-mix(in srgb, var(--crimson) 18%, var(--border));border-bottom:1px solid color-mix(in srgb, var(--crimson) 18%, var(--border));position:sticky;left:0}
+    text-transform:uppercase;padding:8px 16px;border-top:1px solid color-mix(in srgb, var(--crimson) 18%, var(--border));border-bottom:1px solid color-mix(in srgb, var(--crimson) 18%, var(--border));position:sticky;left:0;z-index:1}
   .cmp-matrix tbody th[scope="row"]{background:var(--surface-2);font-weight:700;white-space:nowrap;position:sticky;left:0;z-index:1}
   .cmp-matrix thead th:first-child{position:sticky;left:0;z-index:2}
   .demand{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;
