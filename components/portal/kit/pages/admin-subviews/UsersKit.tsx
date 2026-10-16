@@ -264,8 +264,25 @@ export function UsersKit({
     return <KitRowMenu label={`Actions for ${row.name}`} items={menuItemsFor(row)} />;
   };
 
+  const roleTone = (role: string): 'alert' | 'info' | 'ok' | 'muted' => {
+    const key = (role.trim().toLowerCase().replace(/\s+/g, '_') || '');
+    switch (key) {
+      case 'super_admin':
+        return 'alert';
+      case 'admin':
+        return 'info';
+      case 'counselor':
+      case 'case_manager':
+        return 'ok';
+      default:
+        return 'muted';
+    }
+  };
+
   const roleFor = (row: UserRow) => {
-    if (editingId !== row.id) return directoryRoleLabel(row.role);
+    if (editingId !== row.id) {
+      return <StatusTag tone={roleTone(row.roleCode ?? row.role)}>{directoryRoleLabel(row.role)}</StatusTag>;
+    }
     return (
       <span className="wa-flex wa-flex-wrap wa-items-center wa-gap-2">
         <select

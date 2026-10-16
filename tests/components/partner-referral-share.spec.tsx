@@ -14,19 +14,19 @@ beforeEach(() => {
 afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 
 describe('partner attributed sharing', () => {
-  it('shows and copies the identical attributed URL without sending a request', async () => {
+  it('shows the referral URL inline and copies without sending a request', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch');
     const link = buildPartnerReferralLink({ referralCode: ' community&1 ', slug: 'community' });
     render(<PartnerReferralShare url={link.url} referralCode={link.referralCode} />);
-    expect(screen.getByText('Referral code: community&1')).not.toBeVisible();
-    fireEvent.click(screen.getByText('View link and referral code'));
-    const anchor = screen.getByRole('link');
-    expect(new URL(anchor.getAttribute('href')!).searchParams.get('ref')).toBe('community&1');
+    const input = screen.getByLabelText('Referral link') as HTMLInputElement;
+    expect(input).toBeVisible();
+    expect(input.value).toBe(link.url);
+    expect(new URL(input.value).searchParams.get('ref')).toBe('community&1');
     expect(screen.getByText('Referral code: community&1')).toBeVisible();
     expect(clipboard).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Copy referral link' }));
-    await waitFor(() => expect(clipboard).toHaveBeenCalledWith(anchor.getAttribute('href')));
-    expect(await screen.findByRole('button', { name: 'Link copied' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Copy' }));
+    await waitFor(() => expect(clipboard).toHaveBeenCalledWith(input.value));
+    expect(await screen.findByRole('button', { name: 'Copied' })).toBeVisible();
     expect(fetchMock).not.toHaveBeenCalled();
     fetchMock.mockRestore();
   });
@@ -35,11 +35,10 @@ describe('partner attributed sharing', () => {
     clipboard.mockRejectedValue(new Error('Clipboard denied'));
     const link = buildPartnerReferralLink({ referralCode: '', slug: 'community-slug' });
     render(<PartnerReferralShare url={link.url} referralCode={link.referralCode} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Copy referral link' }));
-    expect(await screen.findByText('Copy failed. Select and copy your referral link manually.')).toBeVisible();
-    expect(screen.getByRole('link')).toBeVisible();
-    expect(screen.getByRole('link')).toHaveAttribute('href', 'https://training.example.invalid/apply?ref=community-slug');
-    expect(screen.getByRole('button', { name: 'Copy referral link' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Copy' }));
+    expect(await screen.findByText('Copy failed. Select the link above and copy it manually.')).toBeVisible();
+    expect(screen.getByLabelText('Referral link')).toHaveValue('https://training.example.invalid/apply?ref=community-slug');
+    expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled();
   });
 
   it('keeps attribution in both editable outreach templates and states funding is confirmed by WorkforceAP', async () => {

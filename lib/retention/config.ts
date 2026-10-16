@@ -30,6 +30,26 @@ export type RetentionTableConfig = {
   description: string;
 };
 
+/** Human labels for retention model ids shown in the admin kit (UI-26). */
+export const RETENTION_MODEL_LABELS: Record<string, string> = {
+  auditLog: 'Audit logs',
+  xapiStatement: 'Learning statements (xAPI)',
+  cronExecution: 'Cron executions',
+  webhookEvent: 'Webhook events',
+  memberEvent: 'Member activity events',
+  workflowDiagnostic: 'Workflow diagnostics',
+  emailSendLog: 'Email send log',
+  portalWorkflowEvent: 'Portal workflow events',
+  publicWioaScreening: 'Public WIOA screenings',
+  publicInquiry: 'Public inquiries',
+  emailFailureSnapshot: 'Email failure snapshots',
+  cspViolationBucket: 'CSP violation buckets',
+};
+
+export function retentionModelLabel(model: string): string {
+  return RETENTION_MODEL_LABELS[model] ?? model.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
+}
+
 export const RETENTION_BATCH_SIZE = 1000;
 
 /**

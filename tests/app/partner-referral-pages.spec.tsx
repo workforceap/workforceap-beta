@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
@@ -58,14 +58,14 @@ describe('partner default referral journey', () => {
   it('renders the attributed link and copy action on the default overview without legacy mode', async () => {
     render(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{await PartnerDashboardPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
     const share = screen.getByRole('region', { name: 'Share your referral link' });
-    fireEvent.click(within(share).getByText('View link and referral code'));
-    expect(within(share).getByRole('link', { name: 'https://training.example.invalid/apply?ref=community-code' }))
-      .toHaveAttribute('href', 'https://training.example.invalid/apply?ref=community-code');
+    expect(within(share).getByLabelText('Referral link')).toHaveValue(
+      'https://training.example.invalid/apply?ref=community-code',
+    );
     expect(within(share).getByRole('link', { name: 'https://training.example.invalid/join/community-code' }))
       .toHaveAttribute('href', 'https://training.example.invalid/join/community-code');
     expect(within(share).getByRole('link', { name: 'Landing page, channel links and Apply button' }))
       .toHaveAttribute('href', '/partner/guide#share-tools');
-    expect(within(share).getByRole('button', { name: 'Copy referral link' })).toBeVisible();
+    expect(within(share).getByRole('button', { name: 'Copy' })).toBeVisible();
   });
 
   it('shows the landing page, UTM channel links and a plain-link Apply snippet on the guide', async () => {
@@ -101,8 +101,9 @@ describe('partner default referral journey', () => {
     mocks.partner.mockResolvedValue({ name: 'Synthetic Community', slug: null, referralCode: ' ', status: 'active' });
     render(<NextIntlClientProvider locale="en" messages={pickClientMessageSlice(en, 'portal')}>{await PartnerDashboardPage({ searchParams: Promise.resolve({}) })}</NextIntlClientProvider>);
     const share = screen.getByRole('region', { name: 'Share your referral link' });
-    fireEvent.click(within(share).getByText('View link and referral code'));
-    expect(within(share).getByRole('link', { name: 'https://training.example.invalid/apply?ref=community-slug' }))
-      .toHaveAttribute('href', 'https://training.example.invalid/apply?ref=community-slug');
+    expect(within(share).getByLabelText('Referral link')).toHaveValue(
+      'https://training.example.invalid/apply?ref=community-slug',
+    );
+    expect(within(share).getByText('Referral code: community-slug')).toBeVisible();
   });
 });

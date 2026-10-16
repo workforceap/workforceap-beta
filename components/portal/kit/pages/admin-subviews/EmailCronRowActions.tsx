@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ConfirmDialog from '@/components/admin/ConfirmDialog';
+import { KitRowMenu, type KitRowMenuItem } from '@/components/portal/kit/KitRowMenu';
 
 type DryRun = {
   recipientCount: number;
@@ -15,8 +16,8 @@ type Notice = { ok: boolean; text: string };
 
 /**
  * Enable/disable, dry-run and send-now for one email/cron job in the kit
- * roster (WAP-193). Same /api/admin/email-crons/[id]/{toggle,dry-run,preview,
- * trigger} requests as the ?ui=legacy workspace. Send now always asks for
+ * roster (WAP-193). Dry run stays the safe primary control; Send now and
+ * Disable/Enable live in the ⋯ menu (UI-24). Send now always asks for
  * confirmation with the recipient count first; manual sends run even when the
  * job is disabled.
  */
@@ -106,19 +107,28 @@ export function EmailCronRowActions({ id, name, enabled }: { id: string; name: s
   }
 
   const count = confirmSend?.count;
+  const menuBusy = busy !== null;
+  const menuItems: KitRowMenuItem[] = [
+    {
+      key: 'send',
+      label: busy === 'prepare' || busy === 'send' ? 'Working…' : 'Send now',
+      disabled: menuBusy,
+      reason: menuBusy ? 'Another action is in progress' : undefined,
+      onSelect: () => void prepareSend(),
+    },
+    {
+      key: 'toggle',
+      label: busy === 'toggle' ? 'Saving…' : enabled ? 'Disable' : 'Enable',
+      tone: enabled ? 'danger' : 'default',
+      disabled: menuBusy,
+      reason: menuBusy ? 'Another action is in progress' : undefined,
+      onSelect: () => void toggle(),
+    },
+  ];
 
   return (
     <div style={{ display: 'grid', gap: 6 }}>
-      <span style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 6 }}>
-        <button
-          type="button"
-          className="btn btn-outline btn-sm wa-kit-focus"
-          aria-label={`${enabled ? 'Disable' : 'Enable'} ${name}`}
-          disabled={busy !== null}
-          onClick={() => void toggle()}
-        >
-          {busy === 'toggle' ? 'Saving…' : enabled ? 'Disable' : 'Enable'}
-        </button>
+      <span style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
         <button
           type="button"
           className="btn btn-outline btn-sm wa-kit-focus"
@@ -128,15 +138,7 @@ export function EmailCronRowActions({ id, name, enabled }: { id: string; name: s
         >
           {busy === 'dry' ? 'Checking…' : 'Dry run'}
         </button>
-        <button
-          type="button"
-          className="btn btn-primary btn-sm wa-kit-focus"
-          aria-label={`Send ${name} now`}
-          disabled={busy !== null}
-          onClick={() => void prepareSend()}
-        >
-          {busy === 'prepare' || busy === 'send' ? 'Working…' : 'Send now'}
-        </button>
+        <KitRowMenu label={`More actions for ${name}`} items={menuItems} />
       </span>
       {dryRun ? (
         <div role="status" style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>

@@ -188,7 +188,16 @@ export function FeatureFlagSettings({
 export const NEW_FEATURE_FLAG_ID = 'new-feature-flag';
 
 /** Create a flag (POST /api/admin/feature-flags), as the legacy workspace does. */
-export function NewFeatureFlagForm() {
+export function NewFeatureFlagForm({
+  embedded = false,
+  onCreated,
+  onCancel,
+}: {
+  /** Drop the card chrome / heading when mounted inside a dialog (UI-23). */
+  embedded?: boolean;
+  onCreated?: () => void;
+  onCancel?: () => void;
+} = {}) {
   const router = useRouter();
   const ids = { key: useId(), name: useId(), description: useId(), rollout: useId() };
   const [key, setKey] = useState('');
@@ -235,6 +244,7 @@ export function NewFeatureFlagForm() {
       setRollout('0');
       setRoles([]);
       router.refresh();
+      onCreated?.();
     } catch (err) {
       setMessage({ ok: false, text: err instanceof Error ? err.message : 'Failed to create flag' });
     } finally {
@@ -248,10 +258,10 @@ export function NewFeatureFlagForm() {
     <form
       id={NEW_FEATURE_FLAG_ID}
       onSubmit={submit}
-      className="wa-kit-card"
-      style={{ display: 'grid', gap: 10, maxWidth: 560, scrollMarginTop: 16 }}
+      className={embedded ? undefined : 'wa-kit-card'}
+      style={{ display: 'grid', gap: 10, maxWidth: embedded ? undefined : 560, scrollMarginTop: 16 }}
     >
-      <h2 style={{ fontWeight: 800, fontSize: 16 }}>New flag</h2>
+      {embedded ? null : <h2 style={{ fontWeight: 800, fontSize: 16 }}>New flag</h2>}
       <label htmlFor={ids.key} style={label}>Key</label>
       <input id={ids.key} className="wa-kit-focus" value={key} onChange={(e) => setKey(e.target.value)} placeholder="e.g. coursera-v2" style={FIELD_STYLE} />
       <label htmlFor={ids.name} style={label}>Name</label>
@@ -275,9 +285,16 @@ export function NewFeatureFlagForm() {
         style={{ ...FIELD_STYLE, width: 120 }}
       />
       <RolePicker legend="Allowed roles (none checked = everyone)" roles={roles} onChange={setRoles} />
-      <button type="submit" className="btn btn-primary wa-kit-focus" disabled={busy} style={{ justifySelf: 'start' }}>
-        {busy ? 'Creating…' : 'Create flag'}
-      </button>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifySelf: 'start' }}>
+        <button type="submit" className="btn btn-primary wa-kit-focus" disabled={busy}>
+          {busy ? 'Creating…' : 'Create flag'}
+        </button>
+        {onCancel ? (
+          <button type="button" className="btn btn-outline wa-kit-focus" disabled={busy} onClick={onCancel}>
+            Cancel
+          </button>
+        ) : null}
+      </div>
       {message ? (
         <span
           role={message.ok ? 'status' : 'alert'}

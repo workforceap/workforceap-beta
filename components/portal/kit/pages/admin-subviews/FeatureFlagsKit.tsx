@@ -9,7 +9,8 @@ import {
   type KpiItem,
 } from '@/components/portal/kit';
 import FeatureFlagToggle from './FeatureFlagToggle';
-import { FeatureFlagSettings, NewFeatureFlagForm, NEW_FEATURE_FLAG_ID } from './FeatureFlagSettings';
+import { FeatureFlagSettings } from './FeatureFlagSettings';
+import { NewFeatureFlagDialog } from './NewFeatureFlagDialog';
 import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
@@ -69,7 +70,7 @@ export function FeatureFlagsKit({
   notice,
   manageable = false,
 }: FeatureFlagsKitProps) {
-  const createHref = manageable ? `#${NEW_FEATURE_FLAG_ID}` : '/admin/feature-flags?ui=legacy';
+  const createHref = '/admin/feature-flags?ui=legacy';
   const settings = (row: FeatureFlagRow) => (
     <FeatureFlagSettings
       id={row.id}
@@ -161,7 +162,11 @@ export function FeatureFlagsKit({
         kicker="Platform"
         lede="Gradual rollout & role-gating of platform features"
         action={
-          <KitLinkButton href={createHref} label={manageable ? 'New flag' : 'Manage'} variant="primary" size="sm" />
+          manageable ? (
+            <NewFeatureFlagDialog label="New flag" size="sm" />
+          ) : (
+            <KitLinkButton href={createHref} label="Manage" variant="primary" size="sm" />
+          )
         }
       />
 
@@ -178,7 +183,10 @@ export function FeatureFlagsKit({
             title="No feature flags yet"
             description="Create a flag to start rolling out features gradually. Flags apply to every member, counselor, employer and partner portal in this organization."
             action={
-              <KitLinkButton href={createHref} label="Create a flag" variant="primary" size="sm" />
+              // Manageable pages already expose "New flag" in the opener (UI-23).
+              manageable ? undefined : (
+                <KitLinkButton href={createHref} label="Create a flag" variant="primary" size="sm" />
+              )
             }
           />
         </section>
@@ -251,12 +259,6 @@ export function FeatureFlagsKit({
       </p>
       </>
       )}
-
-      {manageable ? (
-        <div style={{ marginTop: 24 }}>
-          <NewFeatureFlagForm />
-        </div>
-      ) : null}
     </DesignSurface>
   );
 }

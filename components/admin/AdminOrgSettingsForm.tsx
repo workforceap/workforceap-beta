@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, CheckCircle2 } from 'lucide-react';
 import { PortalInlineSpinner } from '@/components/portal/PortalInlineSpinner';
@@ -56,9 +56,7 @@ export default function AdminOrgSettingsForm({
     }
   };
 
-  const onLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const uploadLogo = async (file: File, input?: HTMLInputElement | null) => {
     setLogoUploading(true);
     setError('');
     try {
@@ -74,8 +72,14 @@ export default function AdminOrgSettingsForm({
       setError(e2 instanceof Error ? e2.message : 'Logo upload failed');
     } finally {
       setLogoUploading(false);
-      e.target.value = '';
+      if (input) input.value = '';
     }
+  };
+
+  const onLogo = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await uploadLogo(file, e.target);
   };
 
   const validPrimaryColor = /^#[0-9A-Fa-f]{6}$/.test(primaryColor);
@@ -97,21 +101,71 @@ export default function AdminOrgSettingsForm({
 
       <div>
         <label className="wa-kit-field-label" htmlFor="logo">Organization logo</label>
-        {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={logoUrl} alt="" style={{ display: 'block', maxHeight: 48, margin: '6px 0' }} />
-        ) : null}
-        <input
-          id="logo"
-          type="file"
-          accept="image/*"
-          onChange={(e) => void onLogo(e)}
-          disabled={logoUploading}
-          className="wa-kit-focus"
-          style={{ display: 'block', marginTop: 4, fontSize: 13, color: 'var(--wa-text)' }}
-        />
+        <label
+          htmlFor="logo"
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            if (logoUploading) return;
+            const file = e.dataTransfer.files?.[0];
+            if (!file || !file.type.startsWith('image/')) return;
+            void uploadLogo(file);
+          }}
+          style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            marginTop: 6,
+            minHeight: 120,
+            padding: 16,
+            border: '1px dashed var(--wa-border)',
+            borderRadius: 'var(--wa-radius-sm)',
+            background: 'var(--wa-surface-2)',
+            cursor: logoUploading ? 'wait' : 'pointer',
+            textAlign: 'center',
+          }}
+        >
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt="Current organization logo"
+              style={{ display: 'block', maxHeight: 64, maxWidth: '100%', objectFit: 'contain' }}
+            />
+          ) : (
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--wa-text)' }}>Drop a logo here</span>
+          )}
+          <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>
+            {logoUploading ? 'Uploading…' : logoUrl ? 'Drop to replace, or click to choose a file' : 'or click to choose a file'}
+          </span>
+          <input
+            id="logo"
+            type="file"
+            accept="image/*"
+            onChange={(e) => void onLogo(e)}
+            disabled={logoUploading}
+            className="wa-kit-focus"
+            style={{
+              position: 'absolute',
+              width: 1,
+              height: 1,
+              padding: 0,
+              margin: -1,
+              overflow: 'hidden',
+              clip: 'rect(0,0,0,0)',
+              whiteSpace: 'nowrap',
+              border: 0,
+            }}
+          />
+        </label>
         <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 6 }}>
-          {logoUploading ? 'Uploading…' : 'Stored in Supabase bucket organization-branding and resolved at render time.'}
+          Stored in Supabase bucket organization-branding and resolved at render time.
         </p>
       </div>
 
