@@ -176,6 +176,8 @@ export function KitTableShell({
     ...(c.minWidth != null ? { minWidth: c.minWidth } : undefined),
   });
 
+  const isEmpty = !showSkeleton && rows.length === 0;
+
   return (
     <div
       ref={ref}
@@ -183,6 +185,7 @@ export function KitTableShell({
         'wa-kit-table-wrap',
         stickyHeader && 'wa-kit-table-wrap--sticky',
         scrollCue && 'wa-kit-table-wrap--cue',
+        isEmpty && 'wa-kit-table-wrap--empty',
         className,
       )}
       style={style}
@@ -208,8 +211,10 @@ export function KitTableShell({
         </div>
       ) : null}
       {/* Empty (non-loading): skip thead + overflow wrapper so empty queues do not
-          show a stray horizontal scrollbar under a blank header (UI-09). */}
-      {!showSkeleton && rows.length === 0 ? (
+          show a stray horizontal scrollbar under a blank header (UI-09). The wrap
+          keeps its border/surface; `--empty` pads KitEmptyState into a short panel
+          (bare empties use padding:0 for cells/cards). */}
+      {isEmpty ? (
         <KitEmptyState {...empty} />
       ) : (
         <>
