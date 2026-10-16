@@ -24,7 +24,7 @@ export default function CounselorScopeSelector({ options, selected }: Props) {
 
   const onChange = useCallback(
     (value: string) => {
-      const next = new URLSearchParams(searchParams.toString());
+      const next = new URLSearchParams(searchParams?.toString() ?? '');
       next.set(ROSTER_SCOPE_PARAM, value);
       startTransition(() => {
         router.push(`${pathname}?${next.toString()}`);
