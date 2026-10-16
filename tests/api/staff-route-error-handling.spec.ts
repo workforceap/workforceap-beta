@@ -164,6 +164,9 @@ vi.mock('@/lib/audit/log', () => ({
 }));
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: vi.fn(() => false) }));
 vi.mock('@/lib/notifications/create', () => ({ createNotification: vi.fn(async () => undefined) }));
+vi.mock('@/lib/messages/notifyMemberOfStaffMessageEmail', () => ({
+  notifyMemberOfStaffPortalMessageEmail: vi.fn(async () => undefined),
+}));
 vi.mock('@/lib/messages/counselorThread', () => ({
   getOrCreateMemberCounselorThread: vi.fn(async () => ({ id: 'thread-1', counselorUserId: null })),
   assertStaffCanAccessThread: vi.fn(async () => null),

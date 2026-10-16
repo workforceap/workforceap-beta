@@ -18,6 +18,7 @@ import {
 } from '@/lib/messages/counselorThread';
 import { advanceThreadReadCursor, readCursorInputSchema } from '@/lib/messages/readCursor';
 import { createNotification } from '@/lib/notifications/create';
+import { notifyMemberOfStaffPortalMessageEmail } from '@/lib/messages/notifyMemberOfStaffMessageEmail';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 
 /**
@@ -179,12 +180,20 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest, {
     return m;
   });
 
+  const notificationTitle = 'New message from your advisor';
   await createNotification({
     userId: memberId,
     type: 'message',
-    title: 'New message from your advisor',
+    title: notificationTitle,
     body: normalized.body.slice(0, 200),
     data: { threadId: thread.id, authorId: user.id },
+  });
+  await notifyMemberOfStaffPortalMessageEmail({
+    memberId,
+    staffUserId: user.id,
+    organizationId: orgId,
+    bodyPreview: normalized.body,
+    title: notificationTitle,
   });
 
   return NextResponse.json({ message: serializeMessage(msg) });

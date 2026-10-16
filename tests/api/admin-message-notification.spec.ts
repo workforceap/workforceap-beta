@@ -27,10 +27,16 @@ vi.mock('next/server', () => {
 vi.mock('@/lib/db/withRequestGuc', () => ({ withApiGuc: (handler: unknown) => handler }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn(async () => ({ id: 'staff-1' })) }));
 vi.mock('@/lib/auth/roles', () => ({ isAdmin: vi.fn(async () => true), isSuperAdmin: vi.fn(async () => true) }));
-vi.mock('@/lib/tenant/organization', () => ({ getActorOrganizationId: vi.fn(async () => 'org-1') }));
+vi.mock('@/lib/tenant/organization', () => ({
+  getActorOrganizationId: vi.fn(async () => 'org-1'),
+  getSubjectOrganizationId: vi.fn(async () => 'org-1'),
+}));
 vi.mock('@/lib/audit', () => ({ auditLog: vi.fn(async () => undefined) }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: vi.fn(async () => undefined), auditRequestMeta: vi.fn(() => ({})) }));
 vi.mock('@/lib/notifications/create', () => ({ createNotification: vi.fn(async () => undefined) }));
+vi.mock('@/lib/messages/notifyMemberOfStaffMessageEmail', () => ({
+  notifyMemberOfStaffPortalMessageEmail: vi.fn(async () => undefined),
+}));
 
 const db = vi.hoisted(() => ({
   userFindFirst: vi.fn(),
@@ -58,6 +64,7 @@ vi.mock('@/lib/messages/counselorThread', () => ({
 import { POST as postMemberMessage } from '@/app/api/admin/members/[id]/messages/route';
 import { POST as postStaffMessage } from '@/app/api/admin/messages/thread/[threadId]/staff/route';
 import { createNotification } from '@/lib/notifications/create';
+import { notifyMemberOfStaffPortalMessageEmail } from '@/lib/messages/notifyMemberOfStaffMessageEmail';
 import { STAFF_MESSAGE_NOTIFICATION_TITLE } from '@/lib/messages/staffMessageNotification';
 import { NextRequest } from 'next/server';
 
@@ -87,6 +94,13 @@ describe('admin staff replies notify the member', () => {
       body: 'Your paperwork is approved.',
       data: { threadId: 'thread-1', authorId: 'staff-1', link: '/dashboard/messages' },
     });
+    expect(notifyMemberOfStaffPortalMessageEmail).toHaveBeenCalledWith({
+      memberId: 'member-1',
+      staffUserId: 'staff-1',
+      organizationId: 'org-1',
+      bodyPreview: 'Your paperwork is approved.',
+      title: STAFF_MESSAGE_NOTIFICATION_TITLE,
+    });
   });
 
   it('POST /api/admin/messages/thread/[threadId]/staff notifies the member of a member thread', async () => {
@@ -107,6 +121,13 @@ describe('admin staff replies notify the member', () => {
         data: { threadId: 'thread-9', authorId: 'staff-1', link: '/dashboard/messages' },
       }),
     );
+    expect(notifyMemberOfStaffPortalMessageEmail).toHaveBeenCalledWith({
+      memberId: 'member-7',
+      staffUserId: 'staff-1',
+      organizationId: 'org-1',
+      bodyPreview: 'Reply from the office.',
+      title: STAFF_MESSAGE_NOTIFICATION_TITLE,
+    });
   });
 
   it('does not notify a member for an employer or partner thread', async () => {
@@ -117,6 +138,7 @@ describe('admin staff replies notify the member', () => {
     );
     expect(response.status).toBe(200);
     expect(createNotification).not.toHaveBeenCalled();
+    expect(notifyMemberOfStaffPortalMessageEmail).not.toHaveBeenCalled();
   });
 
   it('does not notify when the body is rejected', async () => {
@@ -127,5 +149,6 @@ describe('admin staff replies notify the member', () => {
     expect(response.status).toBe(400);
     expect(db.messageCreate).not.toHaveBeenCalled();
     expect(createNotification).not.toHaveBeenCalled();
+    expect(notifyMemberOfStaffPortalMessageEmail).not.toHaveBeenCalled();
   });
 });
