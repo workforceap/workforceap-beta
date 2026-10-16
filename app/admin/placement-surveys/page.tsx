@@ -14,6 +14,7 @@ import {
   type PlacementSurveyRow,
 } from '@/components/portal/kit/pages/admin-subviews/PlacementSurveysKit';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -67,7 +68,7 @@ async function loadSurveyStats(scope: import("@/lib/tenant/adminPageScope").Admi
           supportQuality: true,
           allowTestimonial: true,
           user: {
-            select: { fullName: true, email: true, enrolledProgram: true },
+            select: { fullName: true, email: true, enrolledProgram: true, courseEnrollments: CONFIRMED_PROGRAM_ENROLLMENTS_SELECT },
           },
         },
       }),
@@ -92,7 +93,10 @@ async function loadSurveyStats(scope: import("@/lib/tenant/adminPageScope").Admi
 
     return {
       total,
-      surveys,
+      surveys: surveys.map((survey) => ({
+        ...survey,
+        currentProgramSlug: survey.user ? resolveConfirmedProgramAssignment(survey.user).programSlug : null,
+      })),
       stats: {
         completed: completedCount,
         pending: pendingCount,
@@ -204,7 +208,7 @@ export default async function PlacementSurveysPage({
                         <div className="wa-font-medium">{s.user?.fullName ?? '—'}</div>
                         <div className="wa-text-gray-500 wa-text-xs">{s.user?.email ?? '—'}</div>
                       </td>
-                      <td className="wa-px-4 wa-py-3 wa-text-gray-600">{s.user?.enrolledProgram ? programDisplayTitle(s.user.enrolledProgram) : '—'}</td>
+                      <td className="wa-px-4 wa-py-3 wa-text-gray-600">{s.currentProgramSlug ? programDisplayTitle(s.currentProgramSlug) : '—'}</td>
                       <td className="wa-px-4 wa-py-3 wa-text-center" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         {s.jobSatisfaction ? (
                           <span className="wa-inline-flex wa-items-center wa-gap-1">

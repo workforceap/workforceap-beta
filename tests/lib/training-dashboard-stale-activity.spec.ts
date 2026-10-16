@@ -144,3 +144,52 @@ describe('training dashboard last activity (audit S20)', () => {
     expect(metrics.stale).toBe(0);
   });
 });
+
+describe('training dashboard assignment boundaries', () => {
+  it('uses a durable-only primary and its saved enrollment date', async () => {
+    const row = member([], null);
+    row.enrolledProgram = null as unknown as string;
+    row.enrolledAt = daysAgo(200);
+    const savedAt = daysAgo(2);
+    row.courseEnrollments[0].enrolledAt = savedAt;
+    mocks.findMany.mockResolvedValue([row]);
+    const result = await loadTrainingDashboardData(scope);
+    expect(result.rows[0]).toMatchObject({ noProgram: false, enrolledAt: savedAt });
+    expect(result.metrics.enrolledMembers).toBe(1);
+    expect(result.metrics.stale).toBe(0);
+  });
+  it.each([null, 'unrelated-stale-program'])('keeps observed activity separate from unresolved history for pointer %j', async (pointer) => {
+    const row = member([course({ status: 'COMPLETED', percentComplete: 100 })], TONIGHT);
+    row.enrolledProgram = pointer as unknown as string;
+    row.courseEnrollments[0].isPrimary = false;
+    mocks.findMany.mockResolvedValue([row]);
+    const result = await loadTrainingDashboardData(scope);
+    expect(result.rows[0]).toMatchObject({ noProgram: true, enrolledAt: null, totalCourses: 0, observedActivity: { completedRecords: 1, activeRecords: 0 } });
+    expect(result.metrics).toMatchObject({ enrolledMembers: 0, completed: 0, activeInTraining: 0, notStarted: 0, stale: 0, averagePercent: 0 });
+    expect(mocks.loadValidatedProgramCourses).not.toHaveBeenCalled();
+  });
+  it('does not list zero-only inferred rollups as observed learning', async () => {
+    const row = member([], TONIGHT);
+    row.enrolledProgram = null as unknown as string;
+    row.courseEnrollments = [];
+    row.memberProgramProgress[0].averagePercent = 0;
+    row.memberProgramProgress[0].coursesCompleted = 0;
+    mocks.findMany.mockResolvedValue([row]);
+    expect((await loadTrainingDashboardData(scope)).rows).toEqual([]);
+  });
+  it('retains a positive saved rollup without inventing course rows or an assigned denominator', async () => {
+    const row = member([], TONIGHT);
+    row.enrolledProgram = null as unknown as string;
+    row.courseEnrollments = [];
+    row.memberProgramProgress[0].coursesCompleted = 5;
+    row.memberProgramProgress[0].averagePercent = 60;
+    mocks.findMany.mockResolvedValue([row]);
+    const result = await loadTrainingDashboardData(scope);
+    expect(result.rows[0]).toMatchObject({
+      noProgram: true, totalCourses: 0, enrolledAt: null,
+      observedActivity: { completedRecords: 0, activeRecords: 0, rollup: { coursesCompleted: 5, averagePercent: 60 } },
+    });
+    expect(result.metrics).toMatchObject({ enrolledMembers: 0, completed: 0, activeInTraining: 0, averagePercent: 0 });
+    expect(mocks.loadValidatedProgramCourses).not.toHaveBeenCalled();
+  });
+});

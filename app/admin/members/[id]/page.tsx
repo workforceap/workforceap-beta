@@ -1,5 +1,7 @@
 import AssessmentResultHistory from '@/components/admin/AssessmentResultHistory';
 import AllowAssessmentRetakeButton from '@/components/admin/AllowAssessmentRetakeButton';
+import MemberServiceRequests from '@/components/admin/MemberServiceRequests';
+import { loadMemberServiceRequests } from '@/lib/admin/memberServiceRequests';
 import type { Metadata } from 'next';
 import EnrollmentAgreementCard from '@/components/enrollment/EnrollmentAgreementCard';
 import Link from 'next/link';
@@ -650,6 +652,11 @@ export default async function AdminMemberDetailPage({
       })
     : null;
 
+  const serviceRequests = await loadMemberServiceRequests(scope, member.id, member.organizationId).catch((error: unknown) => {
+    console.error('[admin/member-detail] saved service requests failed', error);
+    return { benefits: [], training: [], failed: true };
+  });
+
   // Exact organization-scoped aggregates, without loading the board's sampled
   // placement list, demographic breakdowns or unrelated application funnel.
   const outcomesSummary = await getMemberOutcomesSummary(member.organizationId).catch(
@@ -1223,6 +1230,7 @@ export default async function AdminMemberDetailPage({
             </section>
 
             <AdminMemberSkillCheckpointPanel memberId={member.id} summary={skillMissionSummary} />
+            <MemberServiceRequests {...serviceRequests} />
             {process.env.ENROLLMENT_AGREEMENTS_ENABLED === 'true' && <EnrollmentAgreementCard memberId={member.id} />}
 
             <section className="wa-kit-card" aria-labelledby="admin-member-funding-title">

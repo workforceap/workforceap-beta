@@ -1,12 +1,9 @@
 import Link from 'next/link';
+import type { Prisma } from '@prisma/client';
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/db/prisma';
 import { LOOKUP_LIST_CAP } from '@/lib/db/queryCaps';
 import { getUser } from '@/lib/auth/server';
-import { resolveAdminPageTenant, withAdminPageScope, inheritUserOrg, inheritMemberOrg, inheritLeaderOrg, inheritInvitedByOrg } from '@/lib/tenant/adminPageScope';
-import { isSuperAdmin } from '@/lib/auth/roles';
-import { getActorOrganizationId } from '@/lib/tenant/organization';
-import { withTenantScope } from '@/lib/tenant/withTenantScope';
+import { resolveAdminPageTenant, withAdminPageScope, inheritLeaderOrg } from '@/lib/tenant/adminPageScope';
 import PartnersTableClient from '@/components/admin/PartnersTableClient';
 import PageHeader from '@/components/portal/PageHeader';
 import {
@@ -28,6 +25,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Cap the lean directory so first paint stays cheap. */
 const PARTNER_LIMIT = 60;
+
+/** Parent and member must share an org admin's tenant, including relation counts. */
+function referralTenantFilter(scope: import("@/lib/tenant/adminPageScope").AdminPageTenantOk): Prisma.PartnerReferralWhereInput {
+  return scope.superAdmin ? {} : {
+    partner: { organizationId: scope.orgId },
+    member: { organizationId: scope.orgId },
+  };
+}
 
 /** Legacy management table data (unchanged from the prior default render). */
 async function loadAdminPartnersData(scope: import("@/lib/tenant/adminPageScope").AdminPageTenantOk) {
@@ -61,7 +66,7 @@ async function loadAdminPartnersData(scope: import("@/lib/tenant/adminPageScope"
         _count: {
           select: {
             counselors: true,
-            referrals: true,
+            referrals: { where: referralTenantFilter(scope) },
           },
         },
       },
@@ -118,6 +123,8 @@ async function LegacyPartnersTable({ userId, scope }: { userId: string; scope: i
         }
       />
 
+      {superAdmin ? <p><Link href="/admin/partner-signups" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">Signup intake</Link></p> : null}
+
       {loadError ? (
         <div
           className="admin-empty-state"
@@ -165,7 +172,6 @@ export default async function AdminPartnersPage({
   if (!user) redirect('/login?redirectTo=/admin/partners');
   const scope = await resolveAdminPageTenant(user.id);
   if (!scope.ok) redirect('/dashboard');
-  const orgId = await getActorOrganizationId(user.id);
 
   const params = (await searchParams) ?? {};
   const requestedUi = typeof params.ui === 'string' ? params.ui : null;
@@ -180,6 +186,12 @@ export default async function AdminPartnersPage({
   // Lean directory (name + referral count) + full count + placed-per-partner,
   // all in parallel. Aggregate failures degrade gracefully (the grid still
   // renders; placed counts just fall back to 0).
+  // PartnerReferral has no organizationId and is not scoped by the tenant
+  // proxy. Both related records must belong to an org admin's tenant.
+  const referralTenantWhere = referralTenantFilter(scope);
+  const placedReferralWhere: Prisma.PartnerReferralWhereInput = {
+    AND: [referralTenantWhere, { member: { memberStatus: 'placed' } }],
+  };
   const [partnersResult, totalResult, placedResult, referralTotalResult, placedTotalResult] = await Promise.allSettled([
     withAdminPageScope(scope, (db) =>
       db.partner.findMany({
@@ -195,19 +207,19 @@ export default async function AdminPartnersPage({
           referralCode: true,
           enrollmentPageEnabled: true,
           sponsoredEnrollment: true,
-          _count: { select: { referrals: true } },
+          _count: { select: { referrals: { where: referralTenantWhere } } },
         },
       }),
     ),
     withAdminPageScope(scope, (db) => db.partner.count()),
     // "Placed" per partner = referred members whose memberStatus is 'placed'.
-    prisma.partnerReferral.groupBy({
+    withAdminPageScope(scope, (db) => db.partnerReferral.groupBy({
       by: ['partnerId'],
-      where: { member: { memberStatus: 'placed' } },
+      where: placedReferralWhere,
       _count: { _all: true },
-    }),
-    prisma.partnerReferral.count(),
-    prisma.partnerReferral.count({ where: { member: { memberStatus: 'placed' } } }),
+    })),
+    withAdminPageScope(scope, (db) => db.partnerReferral.count({ where: referralTenantWhere })),
+    withAdminPageScope(scope, (db) => db.partnerReferral.count({ where: placedReferralWhere })),
   ]);
 
   // If the core directory query fails, fall back to the legacy management table
@@ -245,6 +257,7 @@ export default async function AdminPartnersPage({
       total={total}
       totalReferrals={referralTotalResult.status === 'fulfilled' ? referralTotalResult.value : undefined}
       totalPlaced={placedTotalResult.status === 'fulfilled' ? placedTotalResult.value : undefined}
+      signupIntakeHref={scope.superAdmin ? '/admin/partner-signups' : undefined}
     />
   );
 }

@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { matchesWhere } from '../helpers/prismaWhereMatches';
 
-const fixture = vi.hoisted(() => ({ rows: [] as Array<Record<string, any>>, superAdmin: false, fail: false }));
+const fixture = vi.hoisted(() => ({ rows: [] as Array<Record<string, any>>, publicRows: [] as Array<Record<string, any>>, superAdmin: false, fail: false }));
 vi.mock('@/lib/auth/server', () => ({ getUser: async () => ({ id: 'admin-1' }) }));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: async () => ({}) }));
 vi.mock('next/navigation', () => ({ redirect: (href: string) => { throw new Error(`REDIRECT:${href}`); } }));
@@ -23,15 +23,19 @@ vi.mock('@/lib/tenant/adminPageScope', () => ({
       }
       return [...groups].map(([wioaReviewStatus, count]) => ({ wioaReviewStatus, _count: { _all: count } }));
     },
+  }, publicWioaScreening: {
+    findMany: async (args: any) => fixture.publicRows.filter((row) => matchesWhere(row, args.where)).slice(0, args.take),
+    count: async (args: any) => fixture.publicRows.filter((row) => matchesWhere(row, args.where)).length,
   } }),
 }));
 vi.mock('@/components/portal/kit/pages/admin-subviews/WioaScreeningKit', () => ({
-  WioaScreeningKit: ({ rows, total, verified, pendingReview, needDocs, notEligible, filterBar }: any) => (
+  WioaScreeningKit: ({ rows, total, verified, pendingReview, needDocs, notEligible, filterBar, publicScreenings }: any) => (
     <main data-total={total} data-verified={verified} data-pending={pendingReview} data-needs-info={needDocs} data-not-eligible={notEligible}>
       {filterBar}
       {rows.map((row: any) => <article key={row.id} data-member={row.id} data-status={row.reviewStatus} data-wait={row.daysWaiting}>
         {row.name} · {row.source} · {row.category}
       </article>)}
+      {publicScreenings}
     </main>
   ),
 }));
@@ -83,6 +87,7 @@ async function page(params: Record<string, string> = {}) {
 beforeEach(() => {
   vi.useFakeTimers(); vi.setSystemTime(NOW);
   fixture.superAdmin = false; fixture.fail = false;
+  fixture.publicRows = [];
   fixture.rows = [
     member('portal', { wioaQualificationJson: snapshot }),
     member('apply', { applyEligibilityScreenings: [apply()] }),
@@ -154,6 +159,20 @@ describe('admin WIOA source-aware queue', () => {
     fixture.superAdmin = true;
     const doc = await page();
     expect(doc.querySelector('[data-member="foreign"]')?.textContent).toContain('Application screening');
+  });
+
+  it.each(['kit', 'legacy'])('surfaces scoped public contacts separately from member review counts in %s', async (ui) => {
+    const contact = { id: 'public-contact', organizationId: 'org-1', fullName: 'Saved public contact',
+      email: 'saved@mail.invalid', phone: null, createdAt: NOW, snapshot };
+    fixture.publicRows = [contact, { ...contact, id: 'foreign-public', organizationId: 'org-2', fullName: 'Foreign public contact' }];
+    const doc = await page(ui === 'legacy' ? { ui } : {});
+    const section = doc.querySelector('#public-wioa-screenings');
+    expect(section?.textContent).toContain('Saved public contact');
+    expect(section?.textContent).toContain('Public WIOA questionnaire');
+    expect(section?.textContent).not.toContain('Foreign public contact');
+    expect(section?.textContent).toContain('Showing 1 of 1 saved public screenings');
+    expect(section?.querySelector('a[href*="/admin/members/"]')).toBeNull();
+    if (ui === 'kit') expect(doc.querySelector('main')?.dataset).toMatchObject({ total: '4', pending: '2' });
   });
 
   it('retains the selected status when falling back to legacy after a core query failure', async () => {

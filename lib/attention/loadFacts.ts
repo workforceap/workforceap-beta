@@ -14,6 +14,8 @@
 import { prisma } from '@/lib/db/prisma';
 import { ATTENTION_THRESHOLDS as T } from './reasons';
 import type { MemberAttentionInput } from './evaluate';
+import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
+import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 
 /** Alerts still owned by someone: open, acknowledged or escalated. Resolved ones never count. */
 export const ACTIVE_RISK_ALERT_STATUSES = ['open', 'acknowledged', 'escalated'] as const;
@@ -69,13 +71,14 @@ export async function loadAttentionFacts(
     milestoneEvents,
   ] = await Promise.all([
     db.user.findMany({
-      where: { id: { in: ids }, deletedAt: null },
+      where: { id: { in: ids }, deletedAt: null, ...MEMBER_ONLY_WHERE },
       select: {
         id: true,
         fullName: true,
         email: true,
         enrolledProgram: true,
         enrolledAt: true,
+        courseEnrollments: CONFIRMED_PROGRAM_ENROLLMENTS_SELECT,
         createdAt: true,
         staleTrainingDetectedAt: true,
         needsComputerSupportFollowUp: true,
@@ -164,6 +167,7 @@ export async function loadAttentionFacts(
   const milestoneByMember = firstBy(milestoneEvents, (e) => e.userId);
 
   return members.map((m): MemberAttentionInput => {
+    const program = resolveConfirmedProgramAssignment(m);
     const latest = latestMessageByMember.get(m.id);
     const unanswered = latest && latest.author_id === m.id
       ? { threadId: latest.thread_id, at: new Date(latest.created_at), preview: previewMessageBody(latest.body) }
@@ -175,8 +179,8 @@ export async function loadAttentionFacts(
       memberId: m.id,
       memberName: m.fullName ?? m.email,
       memberEmail: m.email,
-      enrolledProgram: m.enrolledProgram,
-      enrolledAt: m.enrolledAt,
+      enrolledProgram: program.programSlug,
+      enrolledAt: program.enrolledAt,
       createdAt: m.createdAt,
       assignedAt: assignmentByMember.get(m.id)?.assignedAt ?? null,
       hasResume: Boolean(m.profile?.resumeOriginalPath || m.profile?.resumeEnhancedPath),

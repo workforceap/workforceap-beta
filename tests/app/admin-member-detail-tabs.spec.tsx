@@ -337,12 +337,24 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     const doc = await renderPage();
     const headingsIn = (id: string) => Array.from(panel(doc, id).querySelectorAll('h2')).map((h) => h.textContent);
     expect(headingsIn('overview')).toEqual(['Admin Actions', 'Profile', 'Counselor assignment', 'Career-plan signal', 'Workspace email']);
-    expect(headingsIn('program')).toEqual(['Program', 'Coursera training', 'Enrollment funding & workspace']);
+    expect(headingsIn('program')).toEqual(['Program', 'Coursera training', 'Saved access requests', 'Enrollment funding & workspace']);
     expect(headingsIn('eligibility')).toEqual(['Application status', 'Application review']);
     expect(headingsIn('placement')).toEqual(['Outcomes summary', 'Placement record', 'Resumes']);
     expect(headingsIn('messages')).toEqual(['Counselor conversation']);
     expect(headingsIn('notes')).toEqual(['Notes']);
     expect(headingsIn('activity')).toEqual(['Recent activity']);
+  });
+
+  it('shows recorded benefit requests in Program without turning them into provider enrollment actions', async () => {
+    db.overrides['benefitRequest.findMany'] = async () => [{ id: 'benefit-1', benefit: 'coursera', status: 'PENDING',
+      createdAt: new Date('2026-10-01T12:00:00Z'), updatedAt: new Date('2026-10-01T12:00:00Z') }];
+    const doc = await renderPage();
+    const section = doc.querySelector('[aria-labelledby="admin-member-service-requests-title"]');
+    expect(section?.closest('[role="tabpanel"]')?.getAttribute('id')).toBe(panel(doc, 'program').id);
+    expect(section?.textContent).toContain('Benefit request');
+    expect(section?.textContent).toContain('pending');
+    expect(section?.textContent).toContain('does not confirm a live provider seat');
+    expect(section?.querySelector('button')).toBeNull();
   });
 
   it('preserves every existing sub-panel exactly once, under its tab', async () => {

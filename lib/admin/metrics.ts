@@ -1,6 +1,7 @@
 import { AIToolType, Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { sqlCount } from '@/lib/db/scanCaps';
+import { canonicalProgramSlugSql, confirmedCurrentProgramAssignmentsSql } from '@/lib/reporting/currentProgramAssignment';
 import { CAREER_OS_WORKFLOW } from '@/lib/workflows/careerOS';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getCache, setCache } from '@/lib/cache';
@@ -278,16 +279,15 @@ async function countDistinctActiveUsers(orgId: string, since: Date): Promise<num
 
 /** Get program enrollment breakdown */
 async function getEnrollmentByProgram(orgId: string): Promise<{ program: string; count: number }[]> {
-  const rows = await withTenantScope(orgId, (db) =>
-    db.user.groupBy({
-      by: ['enrolledProgram'],
-      where: { enrolledProgram: { not: null }, deletedAt: null, ...MEMBER_ONLY_WHERE },
-      _count: { id: true },
-      orderBy: { _count: { id: 'desc' } },
-      take: 8,
-    }),
-  );
-  return rows.map((r) => ({ program: r.enrolledProgram ?? 'Unknown', count: r._count.id }));
+  const rows = await prisma.$queryRaw<Array<{ program: string; count: bigint | number }>>`
+    WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
+    SELECT ${canonicalProgramSlugSql(Prisma.sql`ca.program_slug`)} AS program, COUNT(*)::int AS count
+    FROM users u ${memberOnlySqlJoin()}
+    JOIN current_assignments ca ON ca.user_id = u.id
+    WHERE u.organization_id = ${orgId} AND u.deleted_at IS NULL
+    GROUP BY 1 ORDER BY count DESC, program ASC LIMIT 8
+  `;
+  return rows.map((row) => ({ program: row.program, count: sqlCount(row.count) }));
 }
 
 /** Career OS funnel: completion events received → actions created → real action completion */
@@ -372,16 +372,17 @@ async function getCareerOsMetrics(orgId: string) {
  * (number audit 2026-09-20, F1). Credentials are approved records only.
  */
 export async function getPlacementStats(orgId: string) {
-  const baseMember = { deletedAt: null, ...MEMBER_ONLY_WHERE };
-  const [enrolled, placed, certifications] = await Promise.all([
-    withTenantScope(orgId, (db) =>
-      db.user.count({
-        where: { ...baseMember, enrolledProgram: { not: null } },
-      }),
-    ),
+  const [enrolledRows, placed, certifications] = await Promise.all([
+    prisma.$queryRaw<Array<{ count: bigint | number }>>`
+      WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
+      SELECT COUNT(*)::int AS count FROM users u ${memberOnlySqlJoin()}
+      JOIN current_assignments ca ON ca.user_id = u.id
+      WHERE u.organization_id = ${orgId} AND u.deleted_at IS NULL
+    `,
     prisma.placementRecord.count({ where: memberInOrg(orgId) }),
     prisma.userCertification.count({ where: { status: 'approved', ...memberInOrg(orgId) } }),
   ]);
+  const enrolled = sqlCount(enrolledRows[0]?.count);
   return { enrolled, placed, certifications, placementRate: enrolled > 0 ? Math.round((placed / enrolled) * 100) : 0 };
 }
 

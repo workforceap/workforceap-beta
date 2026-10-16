@@ -161,7 +161,6 @@ test('production-facing reports consume the shared completion policy, not percen
   assert.match(sources.board, /validatedProgramCompletionValuesSql/);
   assert.match(sources.publicImpact, /validatedProgramCompletionValuesSql/);
   assert.match(sources.funder, /hasValidatedProgramCompletion/);
-  assert.match(sources.funder, /courseEnrollments\.length === 0/);
   assert.match(sources.analytics, /validatedProgramCompletionValuesSql/);
   assert.match(sources.googleIt, /validatedProgramCompletionValuesSql/);
   assert.match(sources.staleTraining, /curriculumVersion/);

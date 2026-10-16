@@ -22,6 +22,7 @@ import { MEMBER_ONLY_EXCLUDED_EMAILS, MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, membe
 import { getAdminCommandCenter } from '@/lib/admin/commandCenter';
 import { getCounselorCommandCenter } from '@/lib/counselor/commandCenter';
 import { matchesWhere } from '@/tests/helpers/prismaWhereMatches';
+import { confirmedCurrentProgramAssignmentsSql } from '@/lib/reporting/currentProgramAssignment';
 
 const now = new Date('2026-09-19T12:00:00Z');
 const row = (overrides: Partial<PersistedAtRiskMember> = {}): PersistedAtRiskMember => ({
@@ -49,7 +50,7 @@ describe('persisted risk selection contract', () => {
     const result = await loadPersistedAtRiskMembers({ organizationId: 'org-1' }, { limit: 25, offset: 25 });
     expect(result).toEqual({ total: 43, rows: [row()] });
     const query = riskQueries()[0];
-    expect(query.values).toEqual([...MEMBER_ONLY_EXCLUDED_EMAILS, ...MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, 'open', 'acknowledged', 'escalated', 0, 'org-1', 25, 25]);
+    expect(query.values).toEqual([...confirmedCurrentProgramAssignmentsSql().values, ...MEMBER_ONLY_EXCLUDED_EMAILS, ...MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, 'open', 'acknowledged', 'escalated', 0, 'org-1', 25, 25]);
     // Member-role accounts only: the KPI must agree with the /admin attention tile (number audit S2).
     expect(query.sql).toContain(memberOnlySqlJoin().sql.replace(/\s+/g, ' ').trim());
     expect(query.sql).toMatch(/PARTITION BY a.user_id ORDER BY a.score DESC, a.updated_at DESC, a.id ASC/);
@@ -65,7 +66,10 @@ describe('persisted risk selection contract', () => {
     expect(query.sql).not.toMatch(/created_at\s*[<>]/);
     // At risk = not active lately AND in a program (Mike, 2026-09-20): a saved
     // alert on a member with no program is not a member at risk.
-    expect(query.sql).toContain('u.enrolled_program IS NOT NULL');
+    expect(query.sql).toContain(confirmedCurrentProgramAssignmentsSql().sql);
+    expect(query.sql).toContain('JOIN current_assignments current_program ON current_program.user_id = u.id');
+    expect(query.sql).toContain('current_program.program_slug AS "enrolledProgram"');
+    expect(query.sql).toContain('current_program.enrolled_at AT TIME ZONE');
   });
 
   it('uses a current active assignment and same-organization actor for counselors', async () => {
@@ -88,7 +92,7 @@ describe('persisted risk selection contract', () => {
 
   it('only includes resolved cases when explicitly requesting history', async () => {
     await loadPersistedAtRiskMembers({ organizationId: 'org-1' }, { limit: 20, threshold: 50, status: 'resolved' });
-    expect(riskQueries()[0].values).toEqual([...MEMBER_ONLY_EXCLUDED_EMAILS, ...MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, 'resolved', 50, 'org-1', 20, 0]);
+    expect(riskQueries()[0].values).toEqual([...confirmedCurrentProgramAssignmentsSql().values, ...MEMBER_ONLY_EXCLUDED_EMAILS, ...MEMBER_ONLY_EXCLUDED_EMAIL_PATTERNS, 'resolved', 50, 'org-1', 20, 0]);
   });
 
   it('retains the full member total for an empty page and propagates read failures', async () => {

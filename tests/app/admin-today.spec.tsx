@@ -141,6 +141,8 @@ describe('admin Today (WAP-190)', () => {
       '/admin/command-center?queue=applications&page=1#application-a-new',
     ]);
     expect(within(section).queryByTestId('approval-queue-truncated')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Public screening contacts' })).toHaveAttribute('href', '/admin/wioa-screening#public-wioa-screenings');
+    expect(within(section).queryByRole('link', { name: 'Public screening contacts' })).toBeNull();
   });
 
   it('says "showing N of M" when the list is the oldest slice of a longer queue', async () => {

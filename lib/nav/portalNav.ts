@@ -456,6 +456,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { href: '/admin/students', label: 'Students', group: 'dailyWork', Icon: Users, tourTarget: 'tour-students' },
   { href: '/admin/billing/preview', label: 'J5 / J6 preview', group: 'dailyWork', Icon: FileText, parentHref: '/admin/students' },
   { href: '/admin/subgroups', label: 'Subgroups', group: 'dailyWork', Icon: UsersRound, parentHref: '/admin/students' },
+  { href: '/admin/chapters', label: 'Chapters', group: 'dailyWork', Icon: UsersRound, parentHref: '/admin/students' },
   { href: '/admin/enrollment-agreements', label: 'Enrollment agreements', group: 'dailyWork', Icon: FileText, parentHref: '/admin/students' },
   { href: '/admin/sessions', label: 'In-office sessions', group: 'dailyWork', Icon: Sparkles, requiresSuperAdminContext: true, parentHref: '/admin/students' },
   { href: '/admin/pipeline', label: 'Applications funnel', group: 'dailyWork', Icon: GitBranch, requiresSuperAdminContext: true, parentHref: '/admin/students' },
@@ -482,6 +483,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { href: '/admin/career-mappings', label: 'Career paths', group: 'programs', Icon: Target, parentHref: '/admin/programs' },
   { href: '/admin/training-progress', label: 'Training progress', group: 'programs', Icon: Table2, tourTarget: 'tour-training-progress' },
   { href: '/admin/assessments', label: 'Assessments', group: 'programs', Icon: ClipboardCheck, parentHref: '/admin/training-progress' },
+  { href: '/counselor/lab-reviews', label: 'Lab reviews', group: 'programs', Icon: ClipboardCheck, parentHref: '/admin/training-progress' },
   { href: '/admin/coursera', label: 'Coursera', group: 'programs', Icon: Library, requiresSuperAdminContext: true, parentHref: '/admin/training-progress' },
 
   // ── Partners & Employers ──

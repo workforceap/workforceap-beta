@@ -13,6 +13,8 @@ import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAs
 import { isTrainingActivityStale } from '@/lib/member/trainingStaleness';
 import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import { deriveCareerPlanSignal, type CareerPlanSignal } from '@/lib/admin/careerPlanSignal';
+import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
+import { isProgramLevelCourseraId } from '@/lib/content/coursera/learningPaths';
 import {
   withAdminPageScope,
   type AdminPageTenantOk,
@@ -52,6 +54,13 @@ export type TrainingDashboardRow = {
   programSlugsAll: string[];
   /** Coursera progress exists, but no WAP program has been assigned. */
   noProgram: boolean;
+  /** Recorded local rows, not an assigned curriculum denominator or provider receipt. */
+  observedActivity?: {
+    completedRecords: number;
+    activeRecords: number;
+    /** One saved program rollup, displayed separately from individual course records. */
+    rollup?: { coursesCompleted: number; averagePercent: number };
+  };
 };
 
 export type TrainingDashboardData = {
@@ -129,15 +138,7 @@ export async function loadTrainingDashboardData(
       // just the denormalized primary on `User.enrolledProgram`. The
       // program-filter checks against this so secondary enrollees show up
       // when the dashboard is scoped to a non-primary program.
-      courseEnrollments: {
-        orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
-        select: {
-          programSlug: true,
-          curriculumVersion: true,
-          isPrimary: true,
-          enrolledAt: true,
-        },
-      },
+      courseEnrollments: CONFIRMED_PROGRAM_ENROLLMENTS_SELECT,
       courseProgress: {
         where: { status: { in: [CourseProgressStatus.IN_PROGRESS, CourseProgressStatus.COMPLETED] } },
         orderBy: [{ lastActivityAt: 'desc' }, { lastUpdatedAt: 'desc' }],
@@ -172,42 +173,24 @@ export async function loadTrainingDashboardData(
   >();
 
   for (const m of members) {
-    const assignedEnrollment =
-      m.courseEnrollments.find((row) => row.isPrimary) ??
-      (m.enrolledProgram
-        ? m.courseEnrollments.find((row) =>
-            programSlugsEquivalent(row.programSlug, m.enrolledProgram as string),
-          )
-        : null) ??
-      m.courseEnrollments[0] ??
-      null;
-    const assignedProgramSlug =
-      assignedEnrollment?.programSlug ??
-      m.enrolledProgram ??
-      null;
+    const assignment = resolveConfirmedProgramAssignment(m);
+    const assignedProgramSlug = assignment.programSlug;
     const inferredProgramSlug =
-      m.memberProgramProgress[0]?.programSlug ??
-      m.courseProgress[0]?.programSlug ??
-      null;
+      m.courseProgress.find((row) => row.status === 'COMPLETED' || row.percentComplete > 0)?.programSlug ??
+      m.memberProgramProgress.find((row) => row.coursesCompleted > 0 || row.averagePercent > 0)?.programSlug ?? null;
     const resolvedProgramSlug = assignedProgramSlug ?? inferredProgramSlug;
     if (!resolvedProgramSlug) continue;
     const enrolledProgram = canonicalizeProgramSlug(resolvedProgramSlug);
     const program = getProgramBySlug(enrolledProgram);
     if (!program) continue;
-    const curriculumVersion =
-      assignedEnrollment &&
-      programSlugsEquivalent(assignedEnrollment.programSlug, enrolledProgram)
-        ? assignedEnrollment.curriculumVersion
-        : 'legacy-v1';
-    const assignedCourses = getProgramCoursesForCurriculumVersion(
-      program,
-      curriculumVersion,
-    );
-    if (assignedCourses.length === 0) continue;
+    const curriculumVersion = assignment.curriculumVersion ?? 'legacy-v1';
+    const assignedCourses = assignedProgramSlug
+      ? getProgramCoursesForCurriculumVersion(program, curriculumVersion) : [];
+    if (assignedProgramSlug && assignedCourses.length === 0) continue;
 
     const catalogCacheKey = `${m.organizationId}:${enrolledProgram}:${curriculumVersion}`;
     let validatedCourses = validatedCourseLists.get(catalogCacheKey);
-    if (!validatedCourses) {
+    if (!validatedCourses && assignedProgramSlug) {
       try {
         validatedCourses = (await loadValidatedProgramCourses({
           organizationId: m.organizationId,
@@ -224,6 +207,7 @@ export async function loadTrainingDashboardData(
       }
       validatedCourseLists.set(catalogCacheKey, validatedCourses);
     }
+    validatedCourses ??= [];
     // Learner activity, and nothing else. Both `lastUpdatedAt` columns in
     // play here (member_program_progress and course_progress) are Prisma
     // `@updatedAt`, so the nightly refresh rewrites them for every row it
@@ -233,8 +217,12 @@ export async function loadTrainingDashboardData(
     // "the learner did something".
     let lastTrainingActivityAt: Date | null = null;
     const matchingCourseProgress = m.courseProgress.filter((row) =>
-      programSlugsEquivalent(row.programSlug, enrolledProgram),
+      programSlugsEquivalent(row.programSlug, enrolledProgram) && !isProgramLevelCourseraId(row.courseId),
     );
+    const observedRollup = !assignedProgramSlug ? m.memberProgramProgress.find((row) =>
+      programSlugsEquivalent(row.programSlug, enrolledProgram)
+        && (row.coursesCompleted > 0 || row.averagePercent > 0),
+    ) : null;
     const reconciliation = reconcileProgramProgress({
       validatedCourses,
       localRows: matchingCourseProgress.map((row) => ({
@@ -275,7 +263,7 @@ export async function loadTrainingDashboardData(
       phone: m.phone,
       enrolledProgram,
       programTitle: program.title,
-      enrolledAt: m.enrolledAt,
+      enrolledAt: assignment.enrolledAt,
       progressPercent: reconciliation.programPercent,
       completedCount: reconciliation.completedCount,
       totalCourses: reconciliation.totalCourses,
@@ -288,26 +276,32 @@ export async function loadTrainingDashboardData(
         careerRecommendationJson: m.careerRecommendationJson,
         applications: m.applications,
         events: m.memberEvents,
-        enrolledProgram,
+        enrolledProgram: assignedProgramSlug,
         activeCourseCount,
         progressPercent: reconciliation.programPercent,
       }),
       programSlugsAll,
       noProgram: assignedProgramSlug == null,
+      ...(!assignedProgramSlug ? { observedActivity: {
+        completedRecords: matchingCourseProgress.filter((row) => row.status === 'COMPLETED').length,
+        activeRecords: matchingCourseProgress.filter((row) => row.status === 'IN_PROGRESS' && row.percentComplete > 0).length,
+        ...(observedRollup ? { rollup: { coursesCompleted: observedRollup.coursesCompleted, averagePercent: observedRollup.averagePercent } } : {}),
+      } } : {}),
     });
   }
 
-  const enrolledMembers = rows.filter((row) => !row.noProgram).length;
-  const completed = rows.filter(
+  const assignedRows = rows.filter((row) => !row.noProgram);
+  const enrolledMembers = assignedRows.length;
+  const completed = assignedRows.filter(
     (row) => row.totalCourses > 0 && row.completedCount === row.totalCourses,
   ).length;
-  const notStarted = rows.filter((row) => row.progressPercent <= 0 && row.completedCount === 0 && row.activeCourseCount === 0).length;
-  const activeInTraining = rows.filter(
+  const notStarted = assignedRows.filter((row) => row.progressPercent <= 0 && row.completedCount === 0 && row.activeCourseCount === 0).length;
+  const activeInTraining = assignedRows.filter(
     (row) => row.progressPercent > 0 && !(row.totalCourses > 0 && row.completedCount === row.totalCourses),
   ).length;
-  const stale = rows.filter((row) => isStale(row.lastTrainingActivityAt, row.enrolledAt, row.staleTrainingDetectedAt)).length;
-  const averagePercent = rows.length > 0
-    ? Math.round(rows.reduce((sum, row) => sum + row.progressPercent, 0) / rows.length)
+  const stale = assignedRows.filter((row) => isStale(row.lastTrainingActivityAt, row.enrolledAt, row.staleTrainingDetectedAt)).length;
+  const averagePercent = assignedRows.length > 0
+    ? Math.round(assignedRows.reduce((sum, row) => sum + row.progressPercent, 0) / assignedRows.length)
     : 0;
 
   rows.sort((a, b) => {

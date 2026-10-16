@@ -114,6 +114,18 @@ function lineOf(packet: PartnerOutcomePacket, key: string) {
 }
 
 describe('buildPartnerOutcomePacket', () => {
+  it('uses the same primary assignment for enrollment, completion and missing-date notes', () => {
+    const row = member(1, { enrolled: false, completed: true });
+    row.member.courseEnrollments = [{ programSlug: PROGRAM.slug, curriculumVersion: LEGACY_CURRICULUM_VERSION,
+      isPrimary: true, enrolledAt: new Date('2026-09-01T00:00:00Z') }];
+    const packet = build([row]);
+    expect(packet.rows[0]).toMatchObject({ enrolled: true, trainingCompleted: true });
+    expect(lineOf(packet, 'enrolled').count).toBe(1);
+    expect(packet.unknowns.find((unknown) => unknown.key === 'enrolledWithoutEnrolledAt')?.count).toBe(0);
+    row.member.courseEnrollments[0].isPrimary = false;
+    const unresolved = build([row]);
+    expect(unresolved.rows[0]).toMatchObject({ enrolled: false, trainingCompleted: false });
+  });
   it('(a) counts placements verified-only and shows unverified ones as pending, as X of N', () => {
     const packet = build();
     expect(packet.definitionsVersion).toBe('partner-packet-v1');

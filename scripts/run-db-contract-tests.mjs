@@ -88,6 +88,6 @@ if (rlsProofUrl) {
 
 run('real-database node:test suites', 'node', ['scripts/test-unit.mjs', ...REAL_DB_SUITES.flatMap((file) => ['--only', file])], { ...prismaEnv, TEST_REAL_DB: '1' });
 
-run('real-database email SLO and operational queue predicates', 'npm', ['exec', '--', 'vitest', 'run', 'tests/lib/slo-email-realdb.spec.ts', 'tests/api/cron-operational-queues-realdb.spec.ts'], { ...prismaEnv, TEST_REAL_DB: '1' });
+run('real-database email SLO, operational queue and assignment predicates', 'npm', ['exec', '--', 'vitest', 'run', 'tests/lib/slo-email-realdb.spec.ts', 'tests/api/cron-operational-queues-realdb.spec.ts', 'tests/lib/current-program-assignment-realdb.spec.ts'], { ...prismaEnv, TEST_REAL_DB: '1' });
 
 console.log('\n✔ database contract lane passed');

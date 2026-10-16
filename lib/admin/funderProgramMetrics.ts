@@ -1,8 +1,10 @@
 import { MEMBER_ONLY_WHERE, memberOnlyEmailSql, memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
 import type { FunderProgramSummaryRow } from '@/lib/admin/funderProgramSummaryCsv';
-import { getProgramBySlug } from '@/lib/content/programs';
+import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
+import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
+import { canonicalProgramSlugSql, confirmedCurrentProgramAssignmentsSql } from '@/lib/reporting/currentProgramAssignment';
+import { Prisma } from '@prisma/client';
 import { programDisplayTitle } from '@/lib/content/programTitle';
-import { LEGACY_CURRICULUM_VERSION } from '@/lib/content/programCurriculumManifest';
 
 import { prisma } from '@/lib/db/prisma';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
@@ -25,12 +27,21 @@ export async function getFunderProgramSummaryRows(orgId: string): Promise<{
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+  // Resolve eligibility before the export bound; cleared history cannot crowd
+  // actual current assignments out of the capped report.
+  const eligible = await prisma.$queryRaw<Array<{ id: string }>>`
+    WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
+    SELECT u.id FROM users u JOIN current_assignments ca ON ca.user_id = u.id
+    WHERE u.organization_id = ${orgId} AND u.deleted_at IS NULL
+      AND ${memberOnlyRoleSql('u')} AND ${memberOnlyEmailSql('u')}
+    ORDER BY ca.enrolled_at DESC NULLS LAST, u.id ASC LIMIT ${EXPORT_LIMIT + 1}
+  `;
   const [users, activeRows, atRiskByProgramRows] = await Promise.all([
     withTenantScope(orgId, (db) =>
       db.user.findMany({
         where: {
           deletedAt: null,
-          enrolledProgram: { not: null },
+          id: { in: eligible.slice(0, EXPORT_LIMIT).map((row) => row.id) },
           ...MEMBER_ONLY_WHERE,
         },
         orderBy: { enrolledAt: 'desc' },
@@ -38,9 +49,7 @@ export async function getFunderProgramSummaryRows(orgId: string): Promise<{
         select: {
           id: true,
           enrolledProgram: true,
-          courseEnrollments: {
-            select: { programSlug: true, curriculumVersion: true },
-          },
+          courseEnrollments: CONFIRMED_PROGRAM_ENROLLMENTS_SELECT,
           memberProgramProgress: {
             select: { programSlug: true, coursesCompleted: true },
           },
@@ -55,16 +64,17 @@ export async function getFunderProgramSummaryRows(orgId: string): Promise<{
       WHERE me.created_at >= ${thirtyDaysAgo}
     `,
     prisma.$queryRaw<Array<{ slug: string | null; cnt: number }>>`
-      SELECT u.enrolled_program AS slug, COUNT(DISTINCT a.user_id)::int AS cnt
+      WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
+      SELECT ${canonicalProgramSlugSql(Prisma.sql`ca.program_slug`)} AS slug, COUNT(DISTINCT a.user_id)::int AS cnt
       FROM at_risk_alerts a
       INNER JOIN users u ON u.id = a.user_id AND u.organization_id = ${orgId}
+      JOIN current_assignments ca ON ca.user_id = u.id
       WHERE a.status IN ('open', 'acknowledged')
         AND ${memberOnlyRoleSql('u')}
         AND a.score >= ${THRESHOLDS.HIGH}
         AND u.deleted_at IS NULL
-        AND u.enrolled_program IS NOT NULL
         AND ${memberOnlyEmailSql('u')}
-      GROUP BY u.enrolled_program
+      GROUP BY 1
     `,
   ]);
 
@@ -86,7 +96,9 @@ export async function getFunderProgramSummaryRows(orgId: string): Promise<{
   const aggBySlug = new Map<string, Agg>();
 
   for (const u of users) {
-    const slug = u.enrolledProgram!;
+    const assignment = resolveConfirmedProgramAssignment(u);
+    if (!assignment.programSlug) continue;
+    const slug = canonicalizeProgramSlug(assignment.programSlug);
     let agg = aggBySlug.get(slug);
     if (!agg) {
       agg = { totalEnrolled: 0, activeLast30d: 0, completed: 0, placed: 0 };
@@ -95,19 +107,10 @@ export async function getFunderProgramSummaryRows(orgId: string): Promise<{
     agg.totalEnrolled += 1;
     if (active30dSet.has(u.id)) agg.activeLast30d += 1;
 
-    const canonicalSlug = getProgramBySlug(slug)?.slug ?? slug;
-    const assignment = u.courseEnrollments.find(
-      (enrollment) =>
-        (getProgramBySlug(enrollment.programSlug)?.slug ?? enrollment.programSlug)
-          === canonicalSlug,
-    );
-    const completionProgramSlug = assignment?.programSlug ?? slug;
-    const completionCurriculumVersion = assignment?.curriculumVersion
-      ?? (u.courseEnrollments.length === 0 ? LEGACY_CURRICULUM_VERSION : null);
     if (
       hasValidatedProgramCompletion(
-        completionProgramSlug,
-        completionCurriculumVersion,
+        assignment.programSlug,
+        assignment.curriculumVersion,
         u.memberProgramProgress,
       )
     ) {
@@ -149,6 +152,6 @@ export async function getFunderProgramSummaryRows(orgId: string): Promise<{
 
   return {
     rows,
-    truncated: users.length >= EXPORT_LIMIT,
+    truncated: eligible.length > EXPORT_LIMIT,
   };
 }

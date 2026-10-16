@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db/prisma';
 import { resolveMemberLastActivity } from '@/lib/counselor/lastActivity';
 import { memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
 import { ACTIVE_AT_RISK_STATUSES } from '@/lib/member/atRiskStatuses';
+import { confirmedCurrentProgramAssignmentsSql } from '@/lib/reporting/currentProgramAssignment';
 
 export { ACTIVE_AT_RISK_STATUSES };
 
@@ -52,14 +53,15 @@ export async function loadPersistedAtRiskMembers(
       AND actor.organization_id = u.organization_id
   )` : Prisma.empty;
   const [result] = await prisma.$queryRaw<Array<{ total: number; rows: PersistedAtRiskMember[] }>>(Prisma.sql`
-    WITH ranked_alerts AS (
+    WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()}), ranked_alerts AS (
       SELECT a.*, ROW_NUMBER() OVER (
         PARTITION BY a.user_id ORDER BY a.score DESC, a.updated_at DESC, a.id ASC
       ) AS member_rank
       FROM at_risk_alerts a JOIN users u ON u.id = a.user_id
+      JOIN current_assignments current_program ON current_program.user_id = u.id
       ${memberOnlySqlJoin('u')}
       WHERE a.status IN (${Prisma.join(statuses)}) AND a.score >= ${threshold}
-        AND u.deleted_at IS NULL AND u.enrolled_program IS NOT NULL ${organization} ${assignment}
+        AND u.deleted_at IS NULL ${organization} ${assignment}
     ), members AS (
       SELECT * FROM ranked_alerts WHERE member_rank = 1
     ), page AS (
@@ -68,14 +70,15 @@ export async function loadPersistedAtRiskMembers(
     SELECT (SELECT COUNT(*)::int FROM members) AS total,
       COALESCE((SELECT jsonb_agg(to_jsonb(result) ORDER BY result.score DESC, result."alertUpdatedAt" DESC, result."alertId" ASC) FROM (
         SELECT a.id AS "alertId", u.id AS "userId", COALESCE(u.full_name, u.email) AS name, u.email, u.phone,
-          a.score, a.status, a.factors, u.enrolled_program AS "enrolledProgram",
-          u.enrolled_at AT TIME ZONE 'UTC' AS "enrolledAt", u.created_at AT TIME ZONE 'UTC' AS "memberSince",
+          a.score, a.status, a.factors, current_program.program_slug AS "enrolledProgram",
+          current_program.enrolled_at AT TIME ZONE 'UTC' AS "enrolledAt", u.created_at AT TIME ZONE 'UTC' AS "memberSince",
           CASE WHEN p.id IS NULL THEN NULL ELSE jsonb_build_object(
             'employmentStatus', p.employment_status, 'educationLevel', p.education_level
           ) END AS profile,
           a.created_at AT TIME ZONE 'UTC' AS "alertCreatedAt", a.updated_at AT TIME ZONE 'UTC' AS "alertUpdatedAt",
           last_event.last_at AT TIME ZONE 'UTC' AS "lastActivityAt"
         FROM page a JOIN users u ON u.id = a.user_id LEFT JOIN profiles p ON p.user_id = u.id
+        JOIN current_assignments current_program ON current_program.user_id = u.id
         LEFT JOIN LATERAL (SELECT MAX(e.created_at) AS last_at FROM member_events e WHERE e.user_id = u.id) last_event ON true
       ) result), '[]'::jsonb) AS rows
   `);

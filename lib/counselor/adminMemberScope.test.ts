@@ -7,7 +7,7 @@ test('enrolledMembersInOrganizationWhere scopes admin fallback to actor organiza
   assert.deepEqual(enrolledMembersInOrganizationWhere('org-a'), {
     organizationId: 'org-a',
     deletedAt: null,
-    enrolledProgram: { not: null },
+    OR: [{ courseEnrollments: { some: { isPrimary: true, organizationId: 'org-a' } } }, { enrolledProgram: { not: null } }],
     ...MEMBER_ONLY_WHERE,
   });
 });
@@ -20,5 +20,5 @@ test('admin fallback caseload is members only, by the one member definition', ()
     assert.ok(where.NOT.includes(entry), 'the member role predicate must survive the spread');
   }
   assert.equal(MEMBER_ONLY_ROLE_NOT.length, 2);
-  assert.equal(where.enrolledProgram.not, null);
+  assert.deepEqual(where.OR[1], { enrolledProgram: { not: null } });
 });

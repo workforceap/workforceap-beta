@@ -19,6 +19,7 @@ vi.mock('@/lib/db/prisma', () => ({
 
 import { getFunderProgramSummaryRows } from './funderProgramMetrics';
 import { MEMBER_ONLY_WHERE, memberOnlyRoleSql } from '@/lib/admin/memberOnlyWhere';
+import { matchesWhere } from '@/tests/helpers/prismaWhereMatches';
 
 function mockUser(opts: { id: string; hasPlacement: boolean; startDateVerified?: boolean }) {
   return {
@@ -93,5 +94,31 @@ describe('getFunderProgramSummaryRows — program titles', () => {
     expect(titles).toContain('Cybersecurity Google');
     expect(titles).toContain(aws!.title);
     for (const title of titles) expect(title).not.toMatch(/-[a-z]/);
+  });
+});
+
+
+describe('funder current assignment grouping', () => {
+  it('groups durable primaries and alias-matched legacy rows, keeping cleared history out of enrollment and completion denominators', async () => {
+    const ux = 'ux-design-professional-certificate-google';
+    const comptia = 'comptia-a-professional-certificate';
+    const ce = (programSlug: string, isPrimary: boolean) => ({ programSlug, isPrimary, curriculumVersion: '2026-approved-v2' });
+    const population = [
+      { ...mockUser({ id: 'primary', hasPlacement: true, startDateVerified: true }), enrolledProgram: null, courseEnrollments: [ce(ux, true)], memberProgramProgress: [{ programSlug: ux, coursesCompleted: 8 }] },
+      { ...mockUser({ id: 'alias', hasPlacement: false }), enrolledProgram: 'comptia-a-plus', courseEnrollments: [ce(comptia, false)] },
+      { ...mockUser({ id: 'legacy', hasPlacement: false }), enrolledProgram: comptia },
+      { ...mockUser({ id: 'history', hasPlacement: false }), enrolledProgram: null, courseEnrollments: [ce(ux, false)], memberProgramProgress: [{ programSlug: ux, coursesCompleted: 8 }] },
+    ].map((row) => ({ ...row, deletedAt: null, email: `${row.id}@learners.invalid`, profile: { role: 'member' }, userRoles: [{ role: { name: 'member' } }] }));
+    mockUserFindMany.mockImplementation(async ({ where }: { where: unknown }) => population.filter((row) => matchesWhere(row, where)));
+    mockQueryRaw.mockImplementation(async (strings: TemplateStringsArray, ...values: unknown[]) => {
+      const sql = Prisma.sql(strings, ...values).sql;
+      if (sql.includes('SELECT u.id FROM users')) return population.map((row) => ({ id: row.id }));
+      if (sql.includes('at_risk_alerts')) return [];
+      return [{ user_id: 'primary' }];
+    });
+    const result = await getFunderProgramSummaryRows('org-1');
+    expect(result.rows.find((row) => row.programSlug === ux)).toMatchObject({ totalEnrolled: 1, activeLast30d: 1, completed: 1, placed: 1 });
+    expect(result.rows.find((row) => row.programSlug === comptia)?.totalEnrolled).toBe(2);
+    expect(result.rows.reduce((sum, row) => sum + row.totalEnrolled, 0)).toBe(3);
   });
 });

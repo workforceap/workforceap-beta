@@ -89,6 +89,7 @@ export interface WioaScreeningKitProps {
   /** KPI: staff recorded not eligible. */
   notEligible: number;
   filterBar?: ReactNode;
+  publicScreenings?: ReactNode;
 }
 
 /** "117" for a waiting row; "—" once staff have decided or when no timestamp is usable. */
@@ -105,6 +106,7 @@ export function WioaScreeningKit({
   needDocs,
   notEligible,
   filterBar,
+  publicScreenings,
 }: WioaScreeningKitProps) {
   const kpis: KpiItem[] = [
     { label: INTAKE_STATUS_WORDS.staff.verified, value: verified },
@@ -284,6 +286,7 @@ export function WioaScreeningKit({
       >
         Showing {rows.length} of {total}
       </p>
+      {publicScreenings}
     </DesignSurface>
   );
 }

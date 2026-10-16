@@ -13,6 +13,7 @@ import {
   type CertSubmission,
 } from '@/components/portal/kit/pages/admin-subviews/CertificationsQueueKit';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
+import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -53,7 +54,7 @@ export default async function AdminCertificationsAnalyticsPage({
         certName: true,
         proofUrl: true,
         submittedAt: true,
-        user: { select: { fullName: true, email: true, enrolledProgram: true } },
+        user: { select: { fullName: true, email: true, enrolledProgram: true, courseEnrollments: CONFIRMED_PROGRAM_ENROLLMENTS_SELECT } },
       },
     }));
 
@@ -82,7 +83,7 @@ export default async function AdminCertificationsAnalyticsPage({
           id: c.id,
           credential: c.certName,
           member: c.user.fullName ?? c.user.email ?? 'Unknown member',
-          meta: `${cohortLabel(c.user.enrolledProgram)} · submitted ${submittedLabel}`,
+          meta: `${cohortLabel(resolveConfirmedProgramAssignment(c.user).programSlug)} · submitted ${submittedLabel}`,
           proofHref,
         };
       }),
@@ -113,7 +114,7 @@ export default async function AdminCertificationsAnalyticsPage({
         id: true,
         certName: true,
         earnedAt: true,
-        user: { select: { fullName: true, email: true, enrolledProgram: true } },
+        user: { select: { fullName: true, email: true, enrolledProgram: true, courseEnrollments: CONFIRMED_PROGRAM_ENROLLMENTS_SELECT } },
       },
     })),
   ]);

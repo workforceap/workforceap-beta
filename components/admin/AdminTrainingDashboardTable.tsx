@@ -23,6 +23,7 @@ function formatLastTouch(value: string | Date | null): string {
 }
 
 function statusFor(row: TrainingDashboardRow): { label: string; color: string; bg: string } {
+  if (row.noProgram) return { label: 'Needs assignment', color: 'var(--wa-gold)', bg: 'rgba(164,127,56,0.14)' };
   if (row.totalCourses > 0 && row.completedCount >= row.totalCourses) {
     return { label: 'Complete', color: '#166534', bg: 'rgba(22,163,74,0.12)' };
   }
@@ -88,6 +89,7 @@ export default function AdminTrainingDashboardTable({ rows }: { rows: TrainingDa
           <option value="">All training statuses</option>
           <option value="in_progress">In progress</option>
           <option value="not_started">Not started</option>
+          <option value="needs_assignment">Needs assignment</option>
           <option value="stale">Stale</option>
           <option value="complete">Complete</option>
         </select>
@@ -135,7 +137,7 @@ export default function AdminTrainingDashboardTable({ rows }: { rows: TrainingDa
                   ) : null}
                   <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                     {row.noProgram
-                      ? 'Coursera progress saved; enrollment needed'
+                      ? 'Recorded activity; assignment not confirmed'
                       : `Enrolled ${formatDate(row.enrolledAt)}`}
                   </div>
                 </>
@@ -169,10 +171,16 @@ export default function AdminTrainingDashboardTable({ rows }: { rows: TrainingDa
               align: 'right',
               cell: (row) => (
                 <>
-                  <strong style={{ fontVariantNumeric: 'tabular-nums' }}>{row.progressPercent}%</strong>
+                  <strong style={{ fontVariantNumeric: 'tabular-nums' }}>{row.noProgram ? '—' : `${row.progressPercent}%`}</strong>
                   <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>
-                    {row.completedCount}/{row.totalCourses} complete · {row.activeCourseCount} active
+                    {row.noProgram ? 'Assigned curriculum progress unavailable' : `${row.completedCount}/${row.totalCourses} complete · ${row.activeCourseCount} active`}
                   </div>
+                  {row.noProgram && row.observedActivity && (row.observedActivity.completedRecords > 0 || row.observedActivity.activeRecords > 0) ? (
+                    <div>{row.observedActivity.completedRecords} recorded completion{row.observedActivity.completedRecords === 1 ? '' : 's'} · {row.observedActivity.activeRecords} active record{row.observedActivity.activeRecords === 1 ? '' : 's'}</div>
+                  ) : null}
+                  {row.noProgram && row.observedActivity?.rollup ? (
+                    <div>Saved program rollup (unverified): {row.observedActivity.rollup.coursesCompleted} reported completions · {row.observedActivity.rollup.averagePercent}% reported</div>
+                  ) : null}
                 </>
               ),
             },

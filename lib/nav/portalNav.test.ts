@@ -275,6 +275,15 @@ test('admin rail: role gates are unchanged per destination', () => {
   assert.equal(gated.size, 26, 'the 26 super-admin gates from the flat rail carry over exactly');
 });
 
+test('admin rail: existing chapter and lab workflows are discoverable to org admins under their related work', () => {
+  const chapters = navChildrenOf(ADMIN_PORTAL_NAV_ITEMS, '/admin/students').find((item) => item.href === '/admin/chapters');
+  const labs = navChildrenOf(ADMIN_PORTAL_NAV_ITEMS, '/admin/training-progress').find((item) => item.href === '/counselor/lab-reviews');
+  assert.equal(chapters?.label, 'Chapters');
+  assert.equal(labs?.label, 'Lab reviews');
+  assert.ok(chapters && !chapters.requiresSuperAdminContext);
+  assert.ok(labs && !labs.requiresSuperAdminContext);
+});
+
 test('admin rail: every guided-tour anchor sits on a top-level row, and every section but Daily work starts closed', () => {
   for (const item of ADMIN_PORTAL_NAV_ITEMS) {
     if (item.tourTarget) assert.ok(!item.parentHref, `${item.href}: tour anchor must be top-level`);

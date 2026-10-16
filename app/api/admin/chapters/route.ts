@@ -65,6 +65,15 @@ async function _POST(request: NextRequest) {
     }
 
     const orgId = await getActorOrganizationId(user.id);
+    if (parsed.data.leaderId) {
+      const leader = await withTenantScope(orgId, (db) => db.user.findFirst({
+        where: { id: parsed.data.leaderId, organizationId: orgId, deletedAt: null },
+        select: { id: true },
+      }));
+      if (!leader) {
+        return NextResponse.json({ error: 'Leader user not found in your organization' }, { status: 400 });
+      }
+    }
     const chapter = await withTenantScope(orgId, (db) =>
       db.chapter.create({
         data: {

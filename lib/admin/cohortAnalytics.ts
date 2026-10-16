@@ -3,8 +3,10 @@ import { prisma } from '@/lib/db/prisma';
 import { ANALYTICS_COHORT_DETAIL_CAP, LOOKUP_CATALOG_CAP, REPORT_SAMPLE_CAP } from '@/lib/db/scanCaps';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { MEMBER_ONLY_WHERE, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
 import { MEMBER_ACTIVITY_EVENT_WHERE } from '@/lib/admin/healthScore';
+import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
 
 const VOICE_TOOL_TYPES = [
   'readiness_voice_session',
@@ -642,9 +644,12 @@ export async function getCertificationsCohortStats(orgId?: string | null): Promi
     // Member accounts only, so "N of M members earned certs" is not diluted by
     // staff in M or credited a staff certification in N (number audit F7 class).
     where: { deletedAt: null, ...MEMBER_ONLY_WHERE, ...orgUser },
-    select: { id: true, enrolledProgram: true },
+    select: { id: true, enrolledProgram: true, courseEnrollments: CONFIRMED_PROGRAM_ENROLLMENTS_SELECT },
   });
-  const byCohort = userIdsByCohort(users);
+  const byCohort = userIdsByCohort(users.map((user) => {
+    const assignment = resolveConfirmedProgramAssignment(user);
+    return { id: user.id, enrolledProgram: assignment.programSlug ? canonicalizeProgramSlug(assignment.programSlug) : null };
+  }));
 
   const certs = await prisma.userCertification.findMany({
     take: 500,

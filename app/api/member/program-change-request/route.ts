@@ -4,6 +4,8 @@ import { getUser } from '@/lib/auth/server';
 import { ensureUserInDb } from '@/lib/auth/ensureUser';
 import { prisma } from '@/lib/db/prisma';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
+import { getActorOrganizationId } from '@/lib/tenant/organization';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -51,10 +53,17 @@ export const GET = withApiGuc(_GET);async function _POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid data', details: parsed.error.flatten() }, { status: 400 });
     }
 
+    const organizationId = await getActorOrganizationId(user.id);
     const dbUser = await prisma.$transaction((tx) => tx.user.findUnique({
       where: { id: user.id },
-      select: { enrolledProgram: true },
+      select: {
+        enrolledProgram: true,
+        courseEnrollments: { ...CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, where: { organizationId } },
+      },
     }));
+    const currentProgramSlug = dbUser
+      ? resolveConfirmedProgramAssignment(dbUser).programSlug
+      : null;
 
     const pending = await prisma.$transaction((tx) => tx.programChangeRequest.findFirst({
       where: { userId: user.id, status: 'PENDING' },
@@ -69,7 +78,7 @@ export const GET = withApiGuc(_GET);async function _POST(req: NextRequest) {
     const row = await prisma.$transaction((tx) => tx.programChangeRequest.create({
       data: {
         userId: user.id,
-        currentProgramSlug: dbUser?.enrolledProgram ?? null,
+        currentProgramSlug,
         requestedProgramSlug: parsed.data.requestedProgramSlug,
         reason: parsed.data.reason,
       },

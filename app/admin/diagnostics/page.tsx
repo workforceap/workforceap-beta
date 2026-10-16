@@ -24,6 +24,7 @@ import {
   countRecentEmailFailures,
 } from '@/lib/email/failureAlert';
 import { getResendableTemplate } from '@/lib/email/resendRegistry';
+import { programSlugsEquivalent } from '@/lib/content/programSlug';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -244,24 +245,29 @@ export default async function AdminDiagnosticsPage({
       prisma.workflowDiagnostic.findMany({ where: { workflow: { startsWith: 'employer_import' } }, orderBy: { createdAt: 'desc' }, take: 10 }),
       prisma.workflowDiagnostic.findMany({ where: { workflow: { in: ['admin_job_matches', 'admin_match_suggestions'] } }, orderBy: { createdAt: 'desc' }, take: 10 }),
       withAdminPageScope(scope, (db) => db.user.findMany({
-        where: { enrolledProgram: { not: null }, deletedAt: null },
+        where: { deletedAt: null, OR: [{ enrolledProgram: { not: null } }, { courseEnrollments: { some: { isPrimary: true } } }] },
+        orderBy: { id: 'asc' },
         select: {
           id: true,
           fullName: true,
           enrolledProgram: true,
           courseEnrollments: {
             where: { isPrimary: true },
+            orderBy: [{ enrolledAt: 'desc' }, { programSlug: 'asc' }],
             select: { programSlug: true },
             take: 1,
           },
         },
-        take: 500,
+        take: 501,
       })),
     ]);
 
-    const driftRecords = enrolledUsersForDrift.filter((u) => {
+    const driftScanTruncated = enrolledUsersForDrift.length > 500;
+    const scannedEnrollmentUsers = enrolledUsersForDrift.slice(0, 500);
+    const driftRecords = scannedEnrollmentUsers.filter((u) => {
       const primary = u.courseEnrollments[0] ?? null;
-      return !primary || u.enrolledProgram !== primary.programSlug;
+      return (u.enrolledProgram !== null) !== (primary !== null)
+        || Boolean(u.enrolledProgram && primary && !programSlugsEquivalent(u.enrolledProgram, primary.programSlug));
     });
 
     const statusCounts = recentDiagnostics.reduce<Record<string, number>>((acc, d) => {
@@ -340,11 +346,13 @@ export default async function AdminDiagnosticsPage({
             <div className="portal-card portal-card--flat portal-card--padded" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <span className="material-symbols-outlined" style={{ color: 'var(--wa-success-dark)', fontSize: '1.25rem' }}>check_circle</span>
               <span style={{ fontSize: '0.875rem', color: 'var(--color-on-surface)' }}>
-                No enrollment drift detected. User.enrolledProgram and CourseEnrollment are in sync for all {enrolledUsersForDrift.length} enrolled members.
+                No enrollment drift detected in {scannedEnrollmentUsers.length} scanned accounts.
+                {driftScanTruncated ? ' This is a partial scan of the first 500 accounts; additional accounts have not been checked.' : ' Legacy program pointers and primary enrollments agree in this population.'}
               </span>
             </div>
           ) : (
             <div className="portal-card portal-card--flat" style={{ overflow: 'auto' }}>
+              {driftScanTruncated ? <p>Partial scan: these issues are from the first 500 accounts. Additional accounts have not been checked.</p> : null}
               <DataTable
                 variant="admin"
                 tableClassName="dashboard-table"
@@ -394,7 +402,7 @@ export default async function AdminDiagnosticsPage({
                           color: 'var(--wa-accent-text)',
                         }}
                       >
-                        {!u.courseEnrollments[0] ? 'No primary record' : 'Slug mismatch'}
+                        {!u.courseEnrollments[0] ? 'No primary record' : !u.enrolledProgram ? 'Missing legacy pointer' : 'Slug mismatch'}
                       </span>
                     ),
                   },

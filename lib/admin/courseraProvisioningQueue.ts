@@ -1,9 +1,12 @@
 import 'server-only';
 
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { memberProgramCompleted } from '@/lib/partner/memberProgress';
-import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
+import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
+import { confirmedCurrentProgramAssignmentsSql } from '@/lib/reporting/currentProgramAssignment';
+import { MEMBER_ONLY_WHERE, memberOnlySqlJoin } from './memberOnlyWhere';
 import {
   deriveCourseraProvisioningState,
   resolveLearnerLastActivity,
@@ -49,19 +52,23 @@ export async function loadCourseraProvisioningQueue(
   organizationId: string,
   now: Date = new Date(),
 ): Promise<CourseraProvisioningQueueData> {
-  const members = await prisma.user.findMany({
-    where: { organizationId, deletedAt: null, enrolledProgram: { not: null } },
-    orderBy: [{ fullName: 'asc' }],
-    take: 2000,
+  const eligible = await prisma.$queryRaw<Array<{ userId: string }>>(Prisma.sql`
+    WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
+    SELECT u.id AS "userId" FROM users u
+    ${memberOnlySqlJoin('u')}
+    JOIN current_assignments current_program ON current_program.user_id = u.id
+    WHERE u.organization_id = ${organizationId} AND u.deleted_at IS NULL
+    ORDER BY u.full_name ASC, u.id ASC LIMIT 2000
+  `);
+  const loadedMembers = eligible.length === 0 ? [] : await prisma.user.findMany({
+    where: { id: { in: eligible.map((member) => member.userId) }, organizationId, deletedAt: null, ...MEMBER_ONLY_WHERE },
+    orderBy: [{ fullName: 'asc' }, { id: 'asc' }],
     select: {
       id: true,
       fullName: true,
       email: true,
       enrolledProgram: true,
-      courseEnrollments: {
-        orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
-        select: { programSlug: true, curriculumVersion: true, isPrimary: true },
-      },
+      courseEnrollments: CONFIRMED_PROGRAM_ENROLLMENTS_SELECT,
       coursesCompleted: true,
       courseraEnrollmentApproved: true,
       courseraEnrollmentApprovedAt: true,
@@ -71,6 +78,9 @@ export async function loadCourseraProvisioningQueue(
       },
     },
   });
+  // Recheck the assignment after hydration in case it changed since the
+  // capped population query; a stale pointer must not manufacture a queue row.
+  const members = loadedMembers.filter((member) => resolveConfirmedProgramAssignment(member).programSlug);
 
   if (members.length === 0) {
     return {
@@ -139,8 +149,8 @@ export async function loadCourseraProvisioningQueue(
   const programSet = new Map<string, string>();
 
   const rows: CourseraProvisioningRow[] = members.map((m) => {
-    const assignment = resolveTrainingProgressAssignment(m.enrolledProgram, m.courseEnrollments);
-    const programSlug = assignment.programSlug ?? (m.enrolledProgram as string);
+    const assignment = resolveConfirmedProgramAssignment(m);
+    const programSlug = assignment.programSlug!;
     const programTitle = programDisplayTitle(programSlug);
     programSet.set(programSlug, programTitle);
 

@@ -240,7 +240,7 @@ async function _POST(request: Request) {
     const { programSlug } = resolveCurrentProgram(member);
 
     const placement = await prisma.$transaction(async (tx) => {
-      const created = await tx.$queryRaw<Array<Record<string, unknown>>>`
+      const created = await tx.$queryRaw<Array<{ id: string } & Record<string, unknown>>>`
         INSERT INTO placement_records (
           id, user_id, employer_name, job_title, start_date, salary_offered,
           placed_at, placed_by, notes, program_slug, created_at, updated_at
@@ -258,8 +258,14 @@ async function _POST(request: Request) {
           NOW(),
           NOW()
         )
+        ON CONFLICT (user_id) DO NOTHING
         RETURNING *
       `;
+
+      // A placement is one retained record per member. Existing verified or
+      // self-reported facts require an explicit review/edit, never replacement
+      // by this create-only form. The unique key also closes concurrent creates.
+      if (created.length === 0) return null;
 
       await tx.$executeRaw`
         INSERT INTO member_events (id, user_id, event_name, entity_type, metadata, created_at)
@@ -276,7 +282,13 @@ async function _POST(request: Request) {
       return created;
     });
 
-    const row = (placement as any[])[0];
+    if (!placement) {
+      return NextResponse.json({
+        code: 'PLACEMENT_ALREADY_EXISTS',
+        error: 'This member already has a placement record. Review the existing record before changing or verifying it.',
+      }, { status: 409 });
+    }
+    const row = placement[0];
 
     // Idempotent per (userId, event, entityId) — safe on retry.
     void awardPoints(userId, 'placement_recorded', row.id).catch(() => {});

@@ -2,8 +2,8 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { MEMBER_ONLY_WHERE, memberOnlySqlJoin } from '@/lib/admin/memberOnlyWhere';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
+import { confirmedCurrentProgramAssignmentsSql, canonicalProgramSlugSql, normalizedProgramStorageKeySql } from '@/lib/reporting/currentProgramAssignment';
 import {
-  validatedProgramAssignmentRowsSql,
   validatedProgramCompletionValuesSql,
 } from '@/lib/reporting/programCompletion';
 
@@ -104,8 +104,8 @@ export async function getAnalyticsOverview(organizationId?: string): Promise<Ana
   // Postgres (groupBy / a single joined COUNT) instead of materializing
   // every active/enrolled member's rows and aggregating in JS.
   const [
-    enrolled,
-    active,
+    enrolledRows,
+    activeRows,
     placed,
     inactive,
     enrolledMembers,
@@ -114,15 +114,23 @@ export async function getAnalyticsOverview(organizationId?: string): Promise<Ana
     dropOffCount,
     assignments,
   ] = await Promise.all([
-    prisma.user.count({
-      where: { deletedAt: null, enrolledProgram: { not: null }, ...memberUser },
-    }),
+    prisma.$queryRaw<Array<{ count: number }>>`
+      WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
+      SELECT COUNT(*)::int AS count FROM users u
+      ${memberJoin}
+      JOIN current_assignments ca ON ca.user_id = u.id
+      WHERE u.deleted_at IS NULL ${orgFilterSql}
+    `,
     // "Active — currently training": an active member WITH an enrolled
     // program. The status alone counted 92 never-enrolled members and 6 staff
     // as "currently training" beside "Total enrolled 37" (S23).
-    prisma.user.count({
-      where: { deletedAt: null, memberStatus: 'active', enrolledProgram: { not: null }, ...memberUser },
-    }),
+    prisma.$queryRaw<Array<{ count: number }>>`
+      WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
+      SELECT COUNT(*)::int AS count FROM users u
+      ${memberJoin}
+      JOIN current_assignments ca ON ca.user_id = u.id
+      WHERE u.deleted_at IS NULL AND u.member_status = 'active' ${orgFilterSql}
+    `,
     prisma.user.count({
       where: { deletedAt: null, memberStatus: 'placed', ...memberUser },
     }),
@@ -130,42 +138,42 @@ export async function getAnalyticsOverview(organizationId?: string): Promise<Ana
       where: { deletedAt: null, memberStatus: 'inactive', ...memberUser },
     }),
     // ── Enrollment trend (last 6 months) ──
-    prisma.user.findMany({
-      where: {
-        deletedAt: null,
-        enrolledProgram: { not: null },
-        enrolledAt: { gte: sixMonthsAgo },
-        ...memberUser,
-      },
-      select: { enrolledAt: true },
-    }),
+    prisma.$queryRaw<Array<{ enrolledAt: Date }>>`
+      WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
+      SELECT ca.enrolled_at AS "enrolledAt" FROM users u
+      ${memberJoin}
+      JOIN current_assignments ca ON ca.user_id = u.id
+      WHERE u.deleted_at IS NULL AND ca.enrolled_at >= ${sixMonthsAgo} ${orgFilterSql}
+    `,
     // ── Training progress by program (active members only) ──
     // Grouped by the rollup's stored slug AND the learner's assigned program
     // so JS can canonicalise both and keep only rollups for the program the
     // member is actually enrolled in; alias slugs (comptia-a-plus) are folded
     // onto their canonical program instead of listing it twice (S24).
     prisma.$queryRaw<Array<{ program_slug: string; enrolled_program: string; avg_percent: number | null; member_count: bigint | number }>>`
+      WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
       SELECT
         mpp.program_slug,
-        u.enrolled_program,
+        ca.program_slug AS enrolled_program,
         AVG(mpp.average_percent)::float AS avg_percent,
         COUNT(DISTINCT u.id)::bigint AS member_count
       FROM member_program_progress mpp
       INNER JOIN users u ON u.id = mpp.user_id
+      JOIN current_assignments ca ON ca.user_id = u.id
       ${memberJoin}
       WHERE u.deleted_at IS NULL
         AND u.member_status = 'active'
-        AND u.enrolled_program IS NOT NULL
+        AND ${canonicalProgramSlugSql(Prisma.sql`mpp.program_slug`)} = ${canonicalProgramSlugSql(Prisma.sql`ca.program_slug`)}
         ${orgFilterSql}
-      GROUP BY mpp.program_slug, u.enrolled_program
+      GROUP BY mpp.program_slug, ca.program_slug
     `,
     // ── Completed-training count: enrolled members whose exact completed
     // course count equals their immutable curriculum-version denominator.
     prisma.$queryRaw<Array<{ count: number }>>`
       WITH validated_programs(canonical_slug, storage_value, curriculum_version, total_courses) AS (
         VALUES ${validatedProgramCompletionValuesSql()}
-      ), learner_program_assignments(user_id, program_slug, curriculum_version) AS (
-        ${validatedProgramAssignmentRowsSql()}
+      ), learner_program_assignments AS (
+        ${confirmedCurrentProgramAssignmentsSql()}
       )
       SELECT COUNT(DISTINCT u.id)::int AS count
       FROM users u
@@ -173,21 +181,15 @@ export async function getAnalyticsOverview(organizationId?: string): Promise<Ana
       INNER JOIN learner_program_assignments ce
         ON ce.user_id = u.id
       INNER JOIN validated_programs enrolled_program
-        ON enrolled_program.storage_value = ce.program_slug
+        ON ${normalizedProgramStorageKeySql(Prisma.sql`enrolled_program.storage_value`)} = ${normalizedProgramStorageKeySql(Prisma.sql`ce.program_slug`)}
         AND enrolled_program.curriculum_version = ce.curriculum_version
       INNER JOIN member_program_progress mpp
         ON mpp.user_id = u.id
       INNER JOIN validated_programs progress_program
         ON progress_program.canonical_slug = enrolled_program.canonical_slug
-        AND progress_program.storage_value = mpp.program_slug
+        AND ${normalizedProgramStorageKeySql(Prisma.sql`progress_program.storage_value`)} = ${normalizedProgramStorageKeySql(Prisma.sql`mpp.program_slug`)}
         AND progress_program.curriculum_version = ce.curriculum_version
       WHERE u.deleted_at IS NULL
-        AND EXISTS (
-          SELECT 1
-          FROM validated_programs user_program
-          WHERE user_program.storage_value = u.enrolled_program
-            AND user_program.canonical_slug = enrolled_program.canonical_slug
-        )
         ${orgFilterSql}
         AND mpp.courses_completed = progress_program.total_courses
     `,
@@ -205,6 +207,8 @@ export async function getAnalyticsOverview(organizationId?: string): Promise<Ana
     }),
   ]);
 
+  const enrolled = Number(enrolledRows[0]?.count ?? 0);
+  const active = Number(activeRows[0]?.count ?? 0);
   const trendMap = new Map<string, EnrollmentTrend>();
   for (let i = 0; i < 6; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);

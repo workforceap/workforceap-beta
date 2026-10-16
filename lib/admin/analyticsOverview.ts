@@ -1,14 +1,16 @@
 import 'server-only';
 
-import { FundingSource } from '@prisma/client';
+import { FundingSource, Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/db/prisma';
 import { ANALYTICS_SAMPLE_CAP } from '@/lib/db/scanCaps';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { loadTrainingDashboardData } from '@/lib/admin/trainingDashboard';
 import { calculateHealthStatus, MEMBER_ACTIVITY_EVENT_WHERE, type HealthStatus } from '@/lib/admin/healthScore';
-import { MEMBER_OR_DOGFOOD_WHERE } from '@/lib/admin/memberOnlyWhere';
+import { MEMBER_OR_DOGFOOD_WHERE, memberOnlyEmailSql, memberOrDogfoodRoleSql } from '@/lib/admin/memberOnlyWhere';
+import { confirmedCurrentProgramAssignmentsSql } from '@/lib/reporting/currentProgramAssignment';
 import type { AdminPageTenantOk } from '@/lib/tenant/adminPageScope';
+import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -126,12 +128,20 @@ export async function loadAnalyticsOverview(
       by: ['userId'],
       _max: { lastActivityAt: true },
     }),
-    prisma.user.findMany({
-      where: { deletedAt: null, ...MEMBER_OR_DOGFOOD_WHERE, enrolledProgram: { not: null } },
-      take: ANALYTICS_SAMPLE_CAP,
-      orderBy: { enrolledAt: 'desc' },
-      select: { id: true, enrolledAt: true, lastLoginAt: true },
-    }),
+    (async () => {
+      const eligible = await prisma.$queryRaw<Array<{ id: string }>>`
+        WITH current_assignments AS (${confirmedCurrentProgramAssignmentsSql()})
+        SELECT u.id FROM users u JOIN current_assignments ca ON ca.user_id = u.id
+        WHERE u.deleted_at IS NULL AND ${memberOrDogfoodRoleSql('u')} AND ${memberOnlyEmailSql('u')}
+          ${scope.superAdmin ? Prisma.empty : Prisma.sql`AND u.organization_id = ${scope.orgId}`}
+        ORDER BY ca.enrolled_at DESC NULLS LAST, u.id ASC LIMIT ${ANALYTICS_SAMPLE_CAP}
+      `;
+      return prisma.user.findMany({
+        where: { id: { in: eligible.map((row) => row.id) }, deletedAt: null, ...MEMBER_OR_DOGFOOD_WHERE, ...(scope.superAdmin ? {} : { organizationId: scope.orgId }) },
+        orderBy: { enrolledAt: 'desc' },
+        select: { id: true, enrolledProgram: true, enrolledAt: true, lastLoginAt: true, courseEnrollments: CONFIRMED_PROGRAM_ENROLLMENTS_SELECT },
+      });
+    })(),
     prisma.placementRecord.count({
       where: { user: { deletedAt: null, ...MEMBER_OR_DOGFOOD_WHERE } },
     }),
@@ -201,10 +211,12 @@ export async function loadAnalyticsOverview(
   const healthCounts: Record<HealthStatus, number> = { green: 0, yellow: 0, red: 0 };
   if (membersForHealthResult.status === 'fulfilled') {
     for (const m of membersForHealthResult.value) {
+      const assignment = resolveConfirmedProgramAssignment(m);
+      if (!assignment.programSlug) continue;
       const status = calculateHealthStatus({
         lastEventAt: lastEventMap.get(m.id) ?? null,
         recentEventCount: recentEventMap.get(m.id) ?? 0,
-        enrolledAt: m.enrolledAt,
+        enrolledAt: assignment.enrolledAt,
         lastLoginAt: m.lastLoginAt,
         lastCourseActivityAt: courseActivityMap.get(m.id) ?? null,
       });

@@ -25,7 +25,7 @@
 import { SMALL_SAMPLE_THRESHOLD } from '@/lib/admin/boardOutcomes';
 import { csvEscape } from '@/lib/csv';
 import { memberProgramCompleted } from '@/lib/partner/memberProgress';
-import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
+import { resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
 import { PIPELINE_STAGE_LABELS } from '@/lib/pipeline/stage';
 import type { PipelineRow } from '@/lib/partner/referralBundle';
 
@@ -127,7 +127,7 @@ function xOfN(count: number, denominator: number): string {
 
 function toRow(p: PipelineRow): PartnerPacketRow {
   const m = p.member;
-  const assignment = resolveTrainingProgressAssignment(m.enrolledProgram, m.courseEnrollments);
+  const assignment = resolveConfirmedProgramAssignment(m);
   const trainingCompleted = memberProgramCompleted({
     enrolledProgram: assignment.programSlug,
     curriculumVersion: assignment.curriculumVersion,
@@ -146,7 +146,7 @@ function toRow(p: PipelineRow): PartnerPacketRow {
     referredAt: p.referredAt.toISOString(),
     stageLabel: PIPELINE_STAGE_LABELS[p.stage as keyof typeof PIPELINE_STAGE_LABELS] ?? p.stage,
     programTitle: p.programTitle,
-    enrolled: Boolean(m.enrolledProgram),
+    enrolled: Boolean(assignment.programSlug),
     trainingCompleted,
     credentialRecord: m.userCertifications.length > 0,
     placementStatus,
@@ -192,7 +192,7 @@ export function buildPartnerOutcomePacket({
     line(
       'enrolled',
       'Enrolled',
-      'Referred members with an enrolled program set',
+      'Referred members with a confirmed program assignment',
       '§2 Members served / enrolled',
       count((r) => r.enrolled),
     ),
@@ -226,9 +226,10 @@ export function buildPartnerOutcomePacket({
     ),
   ];
 
-  const enrolledWithoutDate = pipelineMembers.filter(
-    (p) => Boolean(p.member.enrolledProgram) && !p.member.enrolledAt,
-  ).length;
+  const enrolledWithoutDate = pipelineMembers.filter((p) => {
+    const assignment = resolveConfirmedProgramAssignment(p.member);
+    return Boolean(assignment.programSlug) && !assignment.enrolledAt;
+  }).length;
 
   const unknowns: PartnerPacketUnknown[] = [
     {
