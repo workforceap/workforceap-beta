@@ -4,8 +4,10 @@ import { Flame } from 'lucide-react';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
+import { getActorOrganizationId } from '@/lib/tenant/organization';
 import PageHeader from '@/components/portal/PageHeader';
 import CounselorRosterEmpty from '@/components/portal/counselor/CounselorRosterEmpty';
+import CounselorScopeSelector from '@/components/portal/counselor/CounselorScopeSelector';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
 import CounselorStudentsRosterClient from '@/components/portal/counselor/CounselorStudentsRosterClient';
@@ -14,8 +16,20 @@ import CounselorRosterStats from '@/components/portal/counselor/CounselorRosterS
 import { buildAttentionQueue, selectByReason, type AttentionQueue } from '@/lib/attention/evaluate';
 import { loadAttentionFacts } from '@/lib/attention/loadFacts';
 import { buildCounselorRosterStats, ROSTER_STAT_LOOKBACK_DAYS } from '@/lib/counselor/rosterStats';
+import {
+  loadCounselorScopeOptions,
+  loadRosterAssignmentsByScope,
+  selectedScopeParam,
+  type RosterAssignmentRow,
+} from '@/lib/counselor/loadRosterByScope';
+import {
+  resolveAdminRosterScope,
+  ROSTER_SCOPE_PARAM,
+  type CounselorScopeOption,
+} from '@/lib/counselor/rosterScope';
 import styles from './students.module.css';
 import { resolveTrainingProgressAssignment } from '@/lib/member/trainingProgress';
+import { COUNSELOR_ROSTER_CAP } from '@/lib/db/queryCaps';
 
 const HOT_QUEUE_LOOKBACK_DAYS = 7;
 const UPCOMING_SESSION_DAYS = 7;
@@ -103,49 +117,87 @@ function HotMemberQueue({
 export default async function CounselorStudentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; scope?: string }>;
 }) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/counselor/students');
 
-  if (!(await isCounselor(user.id)) && !(await isAdmin(user.id))) redirect('/dashboard');
+  const admin = await isAdmin(user.id);
+  if (!(await isCounselor(user.id)) && !admin) redirect('/dashboard');
 
   const counselor = await prisma.counselor.findFirst({
     where: { userId: user.id, active: true },
   });
-  if (!counselor && !(await isAdmin(user.id))) redirect('/dashboard');
+  if (!counselor && !admin) redirect('/dashboard');
 
   const t = await getTranslations('counselor');
-  const { filter } = await searchParams;
+  const query = await searchParams;
+  const { filter } = query;
 
-  const assignments = counselor
-    ? await prisma.counselorAssignment.findMany({
-      take: 500,
-        where: { counselor: { userId: user.id, active: true }, active: true },
-        include: {
-          member: {
-            select: {
-              id: true,
-              fullName: true,
-              email: true,
-              enrolledProgram: true,
-              courseEnrollments: {
-                orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
-                select: { programSlug: true, curriculumVersion: true, isPrimary: true },
-              },
-              programInterest: true,
-              assessmentScorePct: true,
-              wioaReviewStatus: true,
-              createdAt: true,
-              memberProgramProgress: {
-                select: { programSlug: true, averagePercent: true, coursesCompleted: true },
-              },
+  let assignments: RosterAssignmentRow[] = [];
+  let scopeOptions: CounselorScopeOption[] | null = null;
+  let selectedScope: string | null = null;
+  /** Admin without a counselor row used to dead-end on "No counselor record". */
+  let showNoCounselorRecord = false;
+
+  if (admin) {
+    const organizationId = await getActorOrganizationId(user.id);
+    const ownCounselorId = counselor?.id ?? null;
+    const scope = resolveAdminRosterScope(query[ROSTER_SCOPE_PARAM], ownCounselorId);
+    const [{ options }, scopedAssignments] = await Promise.all([
+      loadCounselorScopeOptions(organizationId, ownCounselorId),
+      loadRosterAssignmentsByScope(organizationId, scope),
+    ]);
+    scopeOptions = options;
+    selectedScope = selectedScopeParam(scope, ownCounselorId);
+    assignments = scopedAssignments;
+  } else if (counselor) {
+    const own = await prisma.counselorAssignment.findMany({
+      take: COUNSELOR_ROSTER_CAP,
+      where: { counselor: { userId: user.id, active: true }, active: true },
+      include: {
+        member: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            enrolledProgram: true,
+            courseEnrollments: {
+              orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
+              select: { programSlug: true, curriculumVersion: true, isPrimary: true },
+            },
+            programInterest: true,
+            assessmentScorePct: true,
+            wioaReviewStatus: true,
+            createdAt: true,
+            memberProgramProgress: {
+              select: { programSlug: true, averagePercent: true, coursesCompleted: true },
             },
           },
         },
-        orderBy: { assignedAt: 'desc' },
-      })
-    : [];
+      },
+      orderBy: { assignedAt: 'desc' },
+    });
+    assignments = own.map((a) => ({
+      id: a.id,
+      memberId: a.memberId,
+      member: {
+        ...a.member,
+        courseEnrollments: a.member.courseEnrollments.map((row) => ({
+          programSlug: row.programSlug,
+          curriculumVersion: row.curriculumVersion ?? '',
+          isPrimary: row.isPrimary,
+        })),
+        memberProgramProgress: a.member.memberProgramProgress.map((row) => ({
+          programSlug: row.programSlug,
+          averagePercent: row.averagePercent ?? 0,
+          coursesCompleted: row.coursesCompleted ?? 0,
+        })),
+      },
+    }));
+  } else {
+    showNoCounselorRecord = true;
+  }
 
   const memberIds = assignments.map((a) => a.memberId);
 
@@ -304,9 +356,16 @@ export default async function CounselorStudentsPage({
     ? buildCounselorRosterStats({ queue: attention, recentCompletions, recentPlacements, recentPlacementsUnverified })
     : null;
 
+  const emptyVariant = showNoCounselorRecord ? 'noCounselorRecord' : 'unassigned';
+  const scopeSelector =
+    scopeOptions && selectedScope ? (
+      <CounselorScopeSelector options={scopeOptions} selected={selectedScope} />
+    ) : null;
+
   return (
     <PortalPageFrame>
       <PageHeader title={t('myMembersTitle')} subtitle={t('membersAssignedForCoaching')} />
+      {scopeSelector}
       {rosterStats ? (
         <CounselorRosterStats stats={rosterStats} className={styles.statsRow} />
       ) : (
@@ -328,7 +387,7 @@ export default async function CounselorStudentsPage({
 
         {assignments.length === 0 ? (
           <div style={{ padding: '0 1rem' }}>
-            <CounselorRosterEmpty variant={counselor ? 'unassigned' : 'noCounselorRecord'} headingAs="h2" />
+            <CounselorRosterEmpty variant={emptyVariant} headingAs="h2" />
           </div>
         ) : (
           <CounselorStudentsRosterClient rows={rosterRows} filterMeta={filterMeta} initialFilter={filter} />
@@ -350,7 +409,7 @@ export default async function CounselorStudentsPage({
         ) : null}
 
         {assignments.length === 0 ? (
-          <CounselorRosterEmpty variant={counselor ? 'unassigned' : 'noCounselorRecord'} headingAs="h2" />
+          <CounselorRosterEmpty variant={emptyVariant} headingAs="h2" />
         ) : (
           <CounselorStudentsRosterClient rows={rosterRows} filterMeta={filterMeta} initialFilter={filter} />
         )}

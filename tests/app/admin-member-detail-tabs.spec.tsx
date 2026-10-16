@@ -337,7 +337,7 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     const doc = await renderPage();
     const headingsIn = (id: string) => Array.from(panel(doc, id).querySelectorAll('h2')).map((h) => h.textContent);
     expect(headingsIn('overview')).toEqual(['Admin Actions', 'Profile', 'Counselor assignment', 'Career-plan signal', 'Workspace email']);
-    expect(headingsIn('program')).toEqual(['Program', 'Coursera training', 'Saved access requests', 'Enrollment funding & workspace']);
+    expect(headingsIn('program')).toEqual(['Program', 'Coursera training', 'Benefit & Support Requests', 'Enrollment funding & workspace']);
     expect(headingsIn('eligibility')).toEqual(['Application status', 'Application review']);
     expect(headingsIn('placement')).toEqual(['Outcomes summary', 'Placement record', 'Resumes']);
     expect(headingsIn('messages')).toEqual(['Counselor conversation']);

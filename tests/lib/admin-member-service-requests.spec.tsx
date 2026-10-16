@@ -44,7 +44,7 @@ describe('staff member access request records', () => {
   });
   it('renders saved statuses and notes without claiming provider access or exposing an approval action', async () => {
     render(<MemberServiceRequests {...await loadMemberServiceRequests(scope, 'member-1', 'org-1')} />);
-    expect(screen.getByRole('heading', { name: 'Saved access requests' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Benefit & Support Requests' })).toBeVisible();
     expect(screen.getByText('pending')).toBeVisible();
     expect(screen.getByText('approved')).toBeVisible();
     expect(screen.getByText('Recorded request note')).toBeVisible();
@@ -54,6 +54,6 @@ describe('staff member access request records', () => {
   it('does not report a failed load as an empty history', () => {
     render(<MemberServiceRequests benefits={[]} training={[]} failed />);
     expect(screen.getByRole('status')).toHaveTextContent('could not be loaded');
-    expect(screen.queryByText('No saved benefit or training access request records.')).not.toBeInTheDocument();
+    expect(screen.queryByText('No benefit or support request records.')).not.toBeInTheDocument();
   });
 });
