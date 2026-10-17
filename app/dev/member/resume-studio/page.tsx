@@ -2,6 +2,11 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { ResumeStudioKit } from '@/components/portal/kit/pages/member/ResumeStudioKit';
 import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBreakdown';
+import {
+  DEV_ADVISOR,
+  DEV_RESUME_SCORE,
+  DEV_TARGET_ROLE,
+} from '@/app/dev/member/devMemberFixtures';
 
 /**
  * Credential-free proofs for resume studio (toolkit destination).
@@ -26,7 +31,7 @@ WorkforceAP — Cloud support lab
 Education
 IT Support certificate — CompTIA A+ track`;
 
-const SCORE_OUTPUT = `OVERALL SCORE: 72%
+const SCORE_OUTPUT = `OVERALL SCORE: ${DEV_RESUME_SCORE}%
 
 STRENGTHS:
 • AWS lab hours named against Cost Explorer.
@@ -40,7 +45,7 @@ QUICK WINS:
 • Lead each bullet with an action verb and a number.`;
 
 const SCORE_PAYLOAD: ResumeScorePayload = {
-  composite: 72,
+  composite: DEV_RESUME_SCORE,
   pillars: {
     structural: { score: 74, label: 'Structure & ATS basics' },
     onetCoverage: { score: 68, label: 'O*NET coverage' },
@@ -119,31 +124,31 @@ export default async function DevMemberResumeStudioPage({
         backHref="/dev/member/ai-tools"
         basePath="/dev/member/resume-studio"
         initialResume={seeded ? SEED_RESUME : ''}
-        initialJobTarget="Cloud Support Associate"
+        initialJobTarget={DEV_TARGET_ROLE.title}
         previewScoreOutput={filled && !isRewrite ? SCORE_OUTPUT : undefined}
         previewScorePayload={filled && !isRewrite ? SCORE_PAYLOAD : undefined}
         previewRewriteOutput={filled && isRewrite ? REWRITE : undefined}
-        advisor={{ name: 'Dana Reyes', firstName: 'Dana', messagingHref: '/dev/member/messages' }}
-        score={72}
-        targetListing="Cloud Support Associate"
+        advisor={DEV_ADVISOR}
+        score={DEV_RESUME_SCORE}
+        targetListing={DEV_TARGET_ROLE.title}
         keywordPct={84}
         coachName="Dana Reyes"
         clarityPct={88}
         metricsPct={64}
-        keywordsPct={72}
+        keywordsPct={DEV_RESUME_SCORE}
         fixes={[
           { title: 'Add metrics to 4 bullet points', body: 'Quantifiable outcomes on ticket resolution, uptime improvements, and user satisfaction provide verifiable competency.', tag: 'highImpact' },
           { title: 'Align skills for Cloud Support Associate', body: 'Missing keywords: Active Directory, Bash scripting basics, and incident triage protocol.', tag: 'keywordGap' },
           { title: 'Shorten the summary to 3 concise lines', body: 'Tighten the narrative to highlight foundational systems administration strengths and immediate regional readiness.', tag: 'formatting' },
         ]}
         versions={[
-          { title: 'Cloud Support Associate', saved: 'Saved · Oct 14', score: 72, href: '/dev/member/resume-studio' },
+          { title: DEV_TARGET_ROLE.title, saved: 'Saved · Oct 14', score: DEV_RESUME_SCORE, href: '/dev/member/resume-studio' },
           { title: 'IT Support Specialist', saved: 'Saved · Oct 9', score: 68, href: '/dev/member/resume-studio' },
           { title: 'Core master profile', saved: 'Saved · Oct 2', score: 62, href: '/dev/member/resume-studio' },
         ]}
         rewritePreview={{
-          targetEmployer: 'Brightline Credit Union',
-          targetRole: 'Cloud Support Associate',
+          targetEmployer: DEV_TARGET_ROLE.meta.split(' · ')[0] ?? 'Brightline Credit Union',
+          targetRole: DEV_TARGET_ROLE.title,
           previous: 'Assisted internal staff with technical tickets and reset passwords in enterprise accounts.',
           suggested: 'Resolved 45+ weekly support tickets, including account and password issues.',
           points: 14,

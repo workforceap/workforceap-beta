@@ -188,6 +188,25 @@ describe('MemberHomeKit curriculum rows', () => {
   });
 });
 
+describe('MemberHomeKit application pipeline actions', () => {
+  it('keeps the Action labels visible for every stage', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        pipeline={[
+          { role: 'IT Support Specialist', company: 'Lakeview Health System', stage: 'Interviewing', tone: 'warn', appliedLabel: 'Jun 18' },
+          { role: 'Cloud Support Associate', company: 'Brightline Credit Union', stage: 'Screening', tone: 'info', appliedLabel: 'Jun 24' },
+          { role: 'Help Desk Technician', company: 'Metro Transit Authority', stage: 'Applied', tone: 'muted', appliedLabel: 'Jun 29' },
+        ]}
+      />,
+    );
+    expect(screen.getAllByText(home.openNotes).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(home.details).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(home.review).length).toBeGreaterThan(0);
+    expect(screen.getByText(home.pipelineAction)).toBeTruthy();
+  });
+});
+
 describe('MemberHomeKit application pipeline company line', () => {
   it('hides QA / demo / sandbox employers and keeps real ones', () => {
     renderKit(

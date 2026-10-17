@@ -11,7 +11,18 @@ import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
 import PortalEntryErrorBoundary from '@/components/portal/PortalEntryErrorBoundary';
 import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
-import { DEV_ADVISOR, DEV_HOME_PIPELINE, DEV_MEMBER_FIRST_NAME, DEV_MEMBER_FULL_NAME } from '@/app/dev/member/devMemberFixtures';
+import {
+  DEV_ADVISOR,
+  DEV_CURRENT_MODULE_NUMBER,
+  DEV_CURRENT_MODULE_TITLE,
+  DEV_HOME_PIPELINE,
+  DEV_INTERVIEW_WHEN,
+  DEV_MEMBER_FIRST_NAME,
+  DEV_MEMBER_FULL_NAME,
+  DEV_NEXT_CHECK_IN,
+  DEV_PROGRAM_TITLE,
+  DEV_STREAK,
+} from '@/app/dev/member/devMemberFixtures';
 
 /**
  * Storybook-lite showcase — MemberHomeKit "Command Center" (fully populated,
@@ -218,28 +229,28 @@ export default async function DevMemberHomePage({
       activeJobs={DEV_HOME_PIPELINE.length}
       certs={2}
       points={1240}
-      programTitle={activeProgramTitle ?? 'AWS Certified Cloud Practitioner Certificate'}
+      programTitle={activeProgramTitle ?? DEV_PROGRAM_TITLE}
       programStatus="In progress"
-      nextLesson="Shared Responsibility Model"
+      nextLesson={DEV_CURRENT_MODULE_TITLE}
       nextLessonDue="Due Thursday"
       nextLessonHref="/dev/member/program"
       nextBadgePercent={60}
       nextBadgeName="Cloud Foundations"
       nextBadgeRemaining="2 modules"
-      currentStreak={12}
-      longestStreak={12}
+      currentStreak={DEV_STREAK}
+      longestStreak={DEV_STREAK}
       programHref="/dev/member/program"
       resumeHref="/dev/member/program"
       toolkitHref="/dev/member/ai-tools"
-      interviewWhen="Thursday 10:00 AM"
+      interviewWhen={DEV_INTERVIEW_WHEN}
       priorityBody="Learn the division of provider infrastructure security and customer configuration, IAM rules, and encryption controls."
       estRemainingMinutes={25}
-      resumeModuleNumber={8}
-      nextCheckIn="Thursday"
+      resumeModuleNumber={DEV_CURRENT_MODULE_NUMBER}
+      nextCheckIn={DEV_NEXT_CHECK_IN}
       curriculum={[
         { title: 'Networking, VPC and Content Delivery', state: 'done', grade: 'Completed · Grade: 98%', number: 6 },
         { title: 'Cloud Security and Identity Access (IAM)', state: 'done', grade: 'Completed · Grade: 95%', number: 7 },
-        { title: 'Shared Responsibility Model', state: 'active', due: 'In progress · Due Thursday', number: 8 },
+        { title: DEV_CURRENT_MODULE_TITLE, state: 'active', due: 'In progress · Due Thursday', number: DEV_CURRENT_MODULE_NUMBER },
         { title: 'Billing and Pricing Basics', state: 'upcoming', due: 'Unlocks after Module 8', number: 9 },
       ]}
       jobsHref="/dev/member/jobs"
@@ -250,8 +261,8 @@ export default async function DevMemberHomePage({
       youthNoticeAge={youthNoticeAge}
       doThisNext={{
         id: 'resume-module',
-        title: 'Shared Responsibility Model',
-        body: '~25 min · Module 8 of 9 · AWS Cloud Practitioner — due Thursday.',
+        title: DEV_CURRENT_MODULE_TITLE,
+        body: `~25 min · Module ${DEV_CURRENT_MODULE_NUMBER} of 9 · AWS Cloud Practitioner — due Thursday.`,
         href: '/dev/member/program',
         cta: 'Resume module',
         variant: 'urgent',

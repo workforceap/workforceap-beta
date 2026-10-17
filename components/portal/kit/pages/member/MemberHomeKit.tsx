@@ -269,9 +269,9 @@ function PipelineRoleCell({ row, roleWeight = 700 }: { row: PipelineRow; roleWei
         {initial}
       </div>
       <div style={{ minWidth: 0 }}>
-        <div style={{ fontWeight: roleWeight, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)' }}>{row.role}</div>
+        <div className="wa-kit-oneline" style={{ fontWeight: roleWeight, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)' }}>{row.role}</div>
         {company ? (
-          <div className="wa-kit-meta" style={{ fontWeight: 600, marginTop: 1 }}>{company}</div>
+          <div className="wa-kit-meta wa-kit-oneline" style={{ fontWeight: 600, marginTop: 1 }}>{company}</div>
         ) : null}
       </div>
     </div>
@@ -351,8 +351,9 @@ export function MemberHomeKit({
     {
       key: 'applied',
       header: th('pipelineDate'),
+      minWidth: '4.25rem',
       render: (row) => (
-        <span className="wa-kit-meta" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
+        <span className="wa-kit-meta" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600, whiteSpace: 'nowrap' }}>
           {row.appliedLabel ?? '—'}
         </span>
       ),
@@ -360,14 +361,16 @@ export function MemberHomeKit({
     {
       key: 'status',
       header: th('pipelineStatus'),
+      minWidth: '6.5rem',
       render: (row) => <StatusTag tone={row.tone}>{row.stage}</StatusTag>,
     },
     {
       key: 'action',
       header: th('pipelineAction'),
       align: 'right',
+      minWidth: '5.75rem',
       render: (row) => (
-        <span className="wa-kit-meta" style={{ fontWeight: 700, color: 'var(--wa-accent)' }}>
+        <span className="wa-kit-meta" style={{ fontWeight: 700, color: 'var(--wa-accent)', whiteSpace: 'nowrap' }}>
           {row.tone === 'warn' ? th('openNotes') : row.tone === 'info' ? th('details') : th('review')}
         </span>
       ),
@@ -457,7 +460,7 @@ export function MemberHomeKit({
           />
         </div>
 
-        <div className="wa-dense-grid wa-dense-grid--2">
+        <div className="wa-dense-grid wa-dense-grid--2 wa-dense-grid--home">
           <div className="wa-space-y-5">
             <section className="wa-kit-card wa-kit-cert-path" aria-labelledby="member-home-focus-heading" data-testid="member-home-focus">
               {showProgramSwitch && programSwitch ? (
@@ -561,8 +564,8 @@ export function MemberHomeKit({
             ) : null}
           </div>
 
-          <div className="wa-space-y-5">
-            <section className="wa-kit-card" aria-labelledby="member-home-applications-heading">
+          <div className="wa-space-y-5" style={{ minWidth: 0 }}>
+            <section className="wa-kit-card wa-home-pipeline" aria-labelledby="member-home-applications-heading">
               <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12, gap: 12 }}>
                 <div>
                   <h2 id="member-home-applications-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{th('pipelineTitle')}</h2>
@@ -576,7 +579,8 @@ export function MemberHomeKit({
                 rowKey={(row) => `${row.role}-${row.company}`}
                 mobile="cards"
                 cardRender={pipelineCard}
-                minWidth={560}
+                minWidth={0}
+                density="compact"
                 empty={{
                   kind: 'first',
                   title: te('activeApplications.title'),

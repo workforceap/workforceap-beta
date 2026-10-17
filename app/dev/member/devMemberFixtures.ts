@@ -124,3 +124,41 @@ export const DEV_REMAINING_OPEN_ROLES = [
 export const DEV_APPLIED_COUNT = 2;
 export const DEV_INTERVIEWING_COUNT = 1;
 export const DEV_OPEN_ROLES_TOTAL = DEV_RECOMMENDED_ROLES.length + DEV_REMAINING_OPEN_ROLES.length;
+
+export const DEV_PROGRAM_TITLE = 'AWS Certified Cloud Practitioner Certificate';
+export const DEV_CURRENT_MODULE_NUMBER = 8;
+export const DEV_CURRENT_MODULE_TITLE = 'Shared Responsibility Model';
+export const DEV_RESUME_SCORE = 72;
+export const DEV_INTERVIEW_WHEN = 'Thursday 10:00 AM';
+export const DEV_NEXT_CHECK_IN = 'Thursday';
+export const DEV_STREAK = 12;
+export const DEV_TARGET_ROLE = DEV_RECOMMENDED_ROLES[0];
+export const DEV_BRIGHTLINE_APPLICATION = DEV_APPLICATIONS[1];
+
+export function employerShortName(company: string): string {
+  return company.split(/\s+/)[0] ?? company;
+}
+
+export const DEV_AI_DRAFTS = [
+  {
+    id: 'd1',
+    title: 'Resume rewrite',
+    meta: `${DEV_TARGET_ROLE.title} · ${DEV_TARGET_ROLE.meta.split(' · ')[0]} · Score ${DEV_RESUME_SCORE}`,
+    saved: 'Saved · Oct 14',
+    href: '/dev/member/resume-studio?view=rewrite',
+  },
+  {
+    id: 'd2',
+    title: 'Cover letter draft',
+    meta: `${DEV_TARGET_ROLE.title} · ${DEV_TARGET_ROLE.meta.split(' · ')[0]}`,
+    saved: 'Saved · Oct 13',
+    href: '/dev/member/cover-letter',
+  },
+  {
+    id: 'd3',
+    title: 'Elevator pitch',
+    meta: `90-second intro for ${employerShortName(DEV_BRIGHTLINE_APPLICATION.company)}`,
+    saved: 'Saved · Oct 9',
+    href: '/dev/member/elevator-pitch',
+  },
+] as const;
