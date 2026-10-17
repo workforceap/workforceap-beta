@@ -15,7 +15,7 @@ test.describe("Member login + dashboard", () => {
     await expect(page.getByRole("heading").first()).toBeVisible({ timeout: 15000 });
     await expect(page.getByText(/welcome back|welcome to workforceap/i)).toBeVisible();
     await expect(page.getByText(/training|progress|courses/i).first()).toBeVisible();
-    await expect(page.getByText('Certification path')).toBeVisible();
+    await expect(page.getByTestId('member-home-focus')).toBeVisible();
   });
 
   test("dashboard loads on mobile viewport", async ({ page }) => {
@@ -31,7 +31,7 @@ test.describe("Member login + dashboard", () => {
   test("dashboard shows the kit home cards on mobile", async ({ page }) => {
     await page.setViewportSize(MOBILE_VIEWPORT);
     await loginMemberPortal(page);
-    await expect(page.getByText("Certification path")).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId("member-home-focus")).toBeVisible({ timeout: 10000 });
   });
 
   test("dashboard navigation links work", async ({ page }) => {

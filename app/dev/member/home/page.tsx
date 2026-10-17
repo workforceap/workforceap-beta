@@ -35,7 +35,7 @@ import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
  *     (default day_30, with the week 1 check-in answered). Built with the
  *     loader's own `buildFirst90Card`.
  *   `?youth=<age>` shows the youth notice for a member of that age (under 18).
- *   `?goals=none` empties the goals so the Next badge tile shows "Set a goal".
+ *   `?goals=none` empties the goals so the habit section shows "Set a goal".
  * The four owner-approved pieces (WAP-194), each off by default:
  *   `?onboarding=on` opens the first-login wizard (PortalEntryClient
  *     portal="member", the same mount as the live home), pre-filled with a
@@ -219,11 +219,15 @@ export default async function DevMemberHomePage({
       points={1240}
       programTitle={activeProgramTitle ?? 'AWS Certified Cloud Practitioner Certificate'}
       programStatus="In progress"
+      nextLesson="Shared Responsibility Model"
+      nextLessonDue="Due Thursday"
+      nextLessonHref="/dev/member/program"
       nextBadgePercent={60}
       nextBadgeName="Cloud Foundations"
       nextBadgeRemaining="2 modules"
       currentStreak={12}
       longestStreak={12}
+      programHref="/dev/member/program"
       resumeHref="/dev/member/program"
       toolkitHref="/dev/member/toolkit"
       jobsHref="/dev/member/jobs"

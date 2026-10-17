@@ -3054,6 +3054,83 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   background: linear-gradient(to right, transparent, var(--wa-shell-header-bg));
 }
 
+/* Desktop member home: five-link strip instead of the persistent rail.
+   Other portal pages keep the rail. Phone still uses MemberPortalTopNav. */
+.member-home-compact-nav {
+  display: none;
+}
+@media (min-width: 769px) {
+  /* Beat the persistent-rail lock in portal-main-extracted.css
+     (`.workspace-sidebar { transform: none !important }` from 769px). */
+  .workspace-shell-root[data-member-home-compact='true'] .workspace-menu-btn {
+    display: inline-flex !important;
+  }
+  .workspace-shell-root[data-member-home-compact='true'] .workspace-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(300px, 90vw);
+    transform: translateX(-100%) !important;
+    z-index: var(--z-nav-drawer);
+    flex-shrink: 0;
+  }
+  .workspace-shell-root[data-member-home-compact='true'] .workspace-sidebar.open {
+    transform: translateX(0) !important;
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.18);
+  }
+  .workspace-shell-root[data-member-home-compact='true'] .workspace-drawer-overlay.open {
+    display: block !important;
+  }
+  .workspace-shell-root[data-member-home-compact='true'] .member-home-compact-nav {
+    display: block;
+    margin: 0 0 1rem;
+  }
+  .member-home-compact-nav__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .member-home-compact-nav__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 44px;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: var(--wa-type-body);
+    font-weight: 600;
+    color: var(--wa-muted);
+    background: var(--wa-surface);
+    border: 1px solid var(--wa-control-border);
+    box-sizing: border-box;
+  }
+  .member-home-compact-nav__link:hover,
+  .member-home-compact-nav__link:focus-visible {
+    color: var(--wa-text);
+    background: color-mix(in srgb, var(--wa-accent) 8%, var(--wa-surface));
+  }
+  .member-home-compact-nav__link:focus-visible {
+    outline: 2px solid transparent;
+    box-shadow: var(--wa-focus-ring);
+  }
+  .member-home-compact-nav__link--active {
+    color: var(--wa-on-accent-control);
+    background: var(--wa-accent);
+    border-color: var(--wa-accent);
+  }
+  .member-home-compact-nav__link--active:hover,
+  .member-home-compact-nav__link--active:focus-visible {
+    color: var(--wa-on-accent-control);
+    background: var(--wa-accent-dark);
+    border-color: var(--wa-accent-dark);
+  }
+}
+
 /* After Tailwind utilities in main.css: portal/admin mobile stacking, tap targets, DataTable density.
    Lives here so public routes do not ship these rules in the global layout CSS chunk. */
 

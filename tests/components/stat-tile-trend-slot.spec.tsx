@@ -85,51 +85,12 @@ function placeholders(container: HTMLElement): HTMLElement[] {
   );
 }
 
-describe('member home stat tiles — trend slot', () => {
-  it('shows a deliberate trend slot on every tile when no series is supplied', () => {
+describe('member home no longer mounts the four stat tiles', () => {
+  it('keeps the trend-slot bug off the refreshed home', () => {
     const { container } = renderKit(<MemberHomeKit {...liveProps} />);
-
-    // The bug: the slot rendered nothing at all, at every width.
+    expect(container.querySelectorAll('[data-testid="stat-spark-tile"]')).toHaveLength(0);
     expect(sparklines(container)).toHaveLength(0);
-    expect(placeholders(container)).toHaveLength(4);
-  });
-
-  it('reserves the sparkline height so a row of tiles keeps one baseline', () => {
-    const { container } = renderKit(<MemberHomeKit {...liveProps} />);
-
-    // A 2x2 grid at 390px only reads as deliberate if the tiles match: the
-    // placeholder must occupy the 28px the sparkline would have.
-    const slots = placeholders(container);
-    // Prove the selector matched before asserting a property of every match —
-    // the loop below passes vacuously on an empty list.
-    expect(slots).toHaveLength(4);
-    for (const el of slots) {
-      expect(el.style.minHeight).toBe('28px');
-    }
-  });
-
-  it('still draws the real sparkline when a series exists', () => {
-    const series = [70, 71, 72, 74, 74, 76, 78];
-    const { container } = renderKit(
-      <MemberHomeKit {...liveProps} courseSpark={{ series, delta: '4%', direction: 'up' }} />
-    );
-
-    const drawn = sparklines(container);
-    expect(drawn).toHaveLength(1);
-    expect(drawn[0].querySelector('polyline')?.getAttribute('points')).toBeTruthy();
-    // The other three tiles still have nothing to draw.
-    expect(placeholders(container)).toHaveLength(3);
-  });
-
-  it('does not contradict a delta chip that arrives without a series', () => {
-    const { container } = renderKit(
-      <MemberHomeKit {...liveProps} pointsSpark={{ delta: '85', direction: 'up' }} />
-    );
-
-    // The chip must actually be on the page, or "no placeholder next to it" is
-    // proving nothing.
-    expect(within(container).getByText('85')).toBeTruthy();
-    expect(placeholders(container)).toHaveLength(3);
+    expect(placeholders(container)).toHaveLength(0);
   });
 });
 
