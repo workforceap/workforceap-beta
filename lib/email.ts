@@ -55,6 +55,7 @@ import {
   partnerWeeklyDigestHtml,
   counselorAssignedHtml,
   portalStaffMessageHtml,
+  portalMemberMessageHtml,
   partnerReferralInviteHtml,
   onboardingStallsDigestHtml,
   counselorAtRiskBatchHtml,
@@ -559,6 +560,64 @@ export async function sendPortalStaffMessageEmail(params: {
       return { ok: false, skipped: true, error: err.reason };
     }
     console.error('sendPortalStaffMessageEmail failed:', err);
+    return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
+  }
+}
+
+/**
+ * Notify staff by email when a member sends or replies in portal Messages.
+ *
+ * Optional `orgId` brands the subject, logo, accent, and CTA origin the same
+ * way as counselor-assigned. Callers should honor `notificationsUpdates` and
+ * treat failures as non-blocking after the Message row is committed.
+ */
+export async function sendPortalMemberMessageEmail(params: {
+  to: string;
+  staffFullName: string;
+  memberFullName: string;
+  bodyPreview: string;
+  title: string;
+  /** Relative portal path (e.g. `/counselor/messages?memberId=…`). */
+  threadPath: string;
+  orgId?: string | null;
+}): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
+  const resend = getResend();
+  if (!resend) {
+    console.warn('sendPortalMemberMessageEmail: RESEND_API_KEY not set');
+    return { ok: false, error: 'Email not configured' };
+  }
+  const branding = await getOrganizationBranding(params.orgId);
+  const first = params.staffFullName.trim().split(/\s+/)[0] || 'there';
+  const path = params.threadPath.startsWith('/') ? params.threadPath : `/${params.threadPath}`;
+  const threadUrl = `${branding.domain}${path}`;
+  const subjectTitle = params.title.trim() || 'New member message';
+  const html = brandedEmailLayout({
+    title: subjectTitle,
+    bodyHtml: portalMemberMessageHtml({
+      firstName: first,
+      memberName: params.memberFullName,
+      bodyPreview: params.bodyPreview,
+      threadUrl,
+      branding,
+    }),
+    ctaText: 'Open Messages',
+    ctaUrl: threadUrl,
+    branding,
+  });
+  try {
+    await sendBrandedEmail(resend, {
+      from: getFrom(),
+      templateKey: EMAIL_TEMPLATE_KEYS.portal_member_message,
+      to: params.to,
+      subject: sanitizeEmailSubjectLine(`${branding.name} — ${subjectTitle}`),
+      html,
+    });
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof FixtureRecipientSkippedError) {
+      return { ok: false, skipped: true, error: err.reason };
+    }
+    console.error('sendPortalMemberMessageEmail failed:', err);
     return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
   }
 }

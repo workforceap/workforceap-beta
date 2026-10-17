@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db/prisma';
 import { createNotification } from '@/lib/notifications/create';
 import { WAP_STAFF_COUNSELOR_AFFILIATION } from '@/lib/counselor/autoAssign';
 import { counselorMemberThreadLink } from '@/lib/messages/staffLinks';
+import { notifyStaffOfMemberPortalMessageEmail } from '@/lib/messages/notifyStaffOfMemberMessageEmail';
 
 export type UnassignedNotifyResult = {
   notifiedUserIds: string[];
@@ -34,6 +35,7 @@ export async function notifyUnassignedMemberMessage(input: {
     });
     const counselorUserIds = Array.from(new Set(counselors.map((row) => row.userId)));
     if (counselorUserIds.length > 0) {
+      const link = counselorMemberThreadLink(memberId);
       await Promise.all(
         counselorUserIds.map((userId) =>
           createNotification({
@@ -44,9 +46,21 @@ export async function notifyUnassignedMemberMessage(input: {
             data: {
               threadId,
               memberId,
-              link: counselorMemberThreadLink(memberId),
+              link,
               unassigned: true,
             },
+          }),
+        ),
+      );
+      await Promise.all(
+        counselorUserIds.map((userId) =>
+          notifyStaffOfMemberPortalMessageEmail({
+            staffUserId: userId,
+            organizationId,
+            memberFullName: senderLabel,
+            bodyPreview: messagePreview,
+            title,
+            threadPath: link,
           }),
         ),
       );
@@ -82,6 +96,7 @@ export async function notifyUnassignedMemberMessage(input: {
     select: { id: true },
   });
   const notifiedUserIds = adminUsers.map((row) => row.id);
+  const adminLink = '/admin/messages';
   await Promise.all(
     notifiedUserIds.map((userId) =>
       createNotification({
@@ -92,11 +107,25 @@ export async function notifyUnassignedMemberMessage(input: {
         data: {
           threadId,
           memberId,
-          link: '/admin/messages',
+          link: adminLink,
           unassigned: true,
         },
       }),
     ),
   );
+  if (organizationId) {
+    await Promise.all(
+      notifiedUserIds.map((userId) =>
+        notifyStaffOfMemberPortalMessageEmail({
+          staffUserId: userId,
+          organizationId,
+          memberFullName: senderLabel,
+          bodyPreview: messagePreview,
+          title,
+          threadPath: adminLink,
+        }),
+      ),
+    );
+  }
   return { notifiedUserIds, fallback: notifiedUserIds.length ? 'admins' : 'none' };
 }

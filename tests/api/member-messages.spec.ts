@@ -125,6 +125,10 @@ vi.mock('@/lib/messages/unassignedNotify', () => ({
   })),
 }));
 
+vi.mock('@/lib/messages/notifyStaffOfMemberMessageEmail', () => ({
+  notifyStaffOfMemberPortalMessageEmail: vi.fn(async () => undefined),
+}));
+
 // ─── Imports after mocks ───
 import { GET, POST, PATCH } from '@/app/api/member/messages/route';
 import { getUser } from '@/lib/auth/server';
@@ -137,6 +141,7 @@ import {
 import { checkMessageRateLimit } from '@/lib/messages/rateLimit';
 import { createNotification } from '@/lib/notifications/create';
 import { notifyUnassignedMemberMessage } from '@/lib/messages/unassignedNotify';
+import { notifyStaffOfMemberPortalMessageEmail } from '@/lib/messages/notifyStaffOfMemberMessageEmail';
 
 const makeRequest = (body?: Record<string, unknown>) =>
   new Request('http://localhost:3000/api/member/messages', {
@@ -268,7 +273,10 @@ describe('POST /api/member/messages', () => {
     vi.mocked(getOrCreateMemberCounselorThread).mockResolvedValue(thread as any);
     vi.mocked(assertMemberCanAccessThread).mockResolvedValue(true as any);
     // Route looks up the sender's display name for the counselor notification.
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ fullName: 'Jane Doe' } as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      fullName: 'Jane Doe',
+      organizationId: 'org-1',
+    } as any);
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: any) => {
       return fn({
         message: { create: vi.fn().mockResolvedValue(createdMsg) },
@@ -291,6 +299,14 @@ describe('POST /api/member/messages', () => {
         data: expect.objectContaining({ threadId: 'thread-1', memberId: 'user-123' }),
       })
     );
+    expect(notifyStaffOfMemberPortalMessageEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        staffUserId: 'counselor-456',
+        organizationId: 'org-1',
+        memberFullName: 'Jane Doe',
+        title: 'New message from Jane Doe',
+      }),
+    );
   });
 
   function mockAssignedSend(recipientUserId: string) {
@@ -298,7 +314,10 @@ describe('POST /api/member/messages', () => {
     const thread = { id: 'thread-1', memberId: 'user-123', counselorUserId: recipientUserId };
     vi.mocked(getOrCreateMemberCounselorThread).mockResolvedValue(thread as any);
     vi.mocked(assertMemberCanAccessThread).mockResolvedValue(true as any);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ fullName: 'Jane Doe' } as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      fullName: 'Jane Doe',
+      organizationId: 'org-1',
+    } as any);
     vi.mocked(prisma.$transaction).mockImplementation(async (fn: any) =>
       fn({
         message: {
@@ -335,6 +354,12 @@ describe('POST /api/member/messages', () => {
       }),
     );
     expect(call?.data?.link).not.toContain('/dashboard/messages');
+    expect(notifyStaffOfMemberPortalMessageEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        staffUserId: 'counselor-456',
+        threadPath: '/counselor/messages?memberId=user-123',
+      }),
+    );
   });
 
   it('links a non-counselor staff recipient (admin of record) to the admin messages inbox', async () => {
@@ -348,6 +373,12 @@ describe('POST /api/member/messages', () => {
       expect.objectContaining({
         userId: 'admin-9',
         data: expect.objectContaining({ threadId: 'thread-1', memberId: 'user-123', link: '/admin/messages' }),
+      }),
+    );
+    expect(notifyStaffOfMemberPortalMessageEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        staffUserId: 'admin-9',
+        threadPath: '/admin/messages',
       }),
     );
   });

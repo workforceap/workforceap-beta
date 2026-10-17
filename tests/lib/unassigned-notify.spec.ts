@@ -27,6 +27,12 @@ vi.mock('@/lib/notifications/create', () => ({
   createNotification,
 }));
 
+const notifyStaffOfMemberPortalMessageEmail = vi.hoisted(() => vi.fn(async () => undefined));
+
+vi.mock('@/lib/messages/notifyStaffOfMemberMessageEmail', () => ({
+  notifyStaffOfMemberPortalMessageEmail,
+}));
+
 import { notifyUnassignedMemberMessage } from '@/lib/messages/unassignedNotify';
 
 const base = {
@@ -41,6 +47,7 @@ describe('notifyUnassignedMemberMessage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     createNotification.mockResolvedValue(undefined);
+    notifyStaffOfMemberPortalMessageEmail.mockResolvedValue(undefined);
   });
 
   it('notifies active WAP counselors when the thread is still unassigned', async () => {
@@ -64,6 +71,14 @@ describe('notifyUnassignedMemberMessage', () => {
         }),
       }),
     );
+    expect(notifyStaffOfMemberPortalMessageEmail).toHaveBeenCalledTimes(2);
+    expect(notifyStaffOfMemberPortalMessageEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        staffUserId: 'counselor-1',
+        organizationId: 'org-1',
+        threadPath: '/counselor/messages?memberId=member-1',
+      }),
+    );
     expect(findManyProfiles).not.toHaveBeenCalled();
   });
 
@@ -83,6 +98,12 @@ describe('notifyUnassignedMemberMessage', () => {
         data: expect.objectContaining({ link: '/admin/messages', unassigned: true }),
       }),
     );
+    expect(notifyStaffOfMemberPortalMessageEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        staffUserId: 'admin-1',
+        threadPath: '/admin/messages',
+      }),
+    );
   });
 
   it('returns none when neither counselors nor admins exist', async () => {
@@ -95,5 +116,6 @@ describe('notifyUnassignedMemberMessage', () => {
       fallback: 'none',
     });
     expect(createNotification).not.toHaveBeenCalled();
+    expect(notifyStaffOfMemberPortalMessageEmail).not.toHaveBeenCalled();
   });
 });
