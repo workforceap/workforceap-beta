@@ -15,10 +15,16 @@ const mocks = vi.hoisted(() => ({
 }));
 
 let sequence = 0;
-const db = vi.hoisted(() => ({
+const db = vi.hoisted(() => {
+  const sendLogStatuses = new Set(['skipped', 'sending', 'sent', 'failed', 'reserved', 'gate_busy', 'gate_idle']);
+  return {
   emailSendLog: {
     async create({ data }: { data: Record<string, unknown> }) {
       const key = String(data.dedupeKey);
+      const recipientCount = Number(data.recipientCount ?? 1);
+      if (!sendLogStatuses.has(String(data.status)) || recipientCount < 0) {
+        throw Object.assign(new Error('email_send_logs check constraint'), { code: 'P2010' });
+      }
       if (key.startsWith('enrollment-template/') && mocks.failAttemptCreateOnce) {
         mocks.failAttemptCreateOnce = false; throw new Error('attempt store unavailable');
       }
@@ -52,7 +58,8 @@ const db = vi.hoisted(() => ({
       return { ...row };
     },
   },
-}));
+  };
+});
 
 vi.mock('@/lib/db/prisma', () => ({ prisma: db }));
 vi.mock('@/lib/tenant/withTenantScope', () => ({ withTenantScope: (_org: string, fn: (db: unknown) => unknown) => fn({ user: { findFirst: async () => mocks.member } }) }));
@@ -98,8 +105,11 @@ describe('approved enrollment template send', () => {
     complete({ data: { id: 'provider-1' }, error: null });
     await expect(first).resolves.toMatchObject({ alreadyAccepted: false });
     expect(mocks.send).toHaveBeenCalledTimes(1);
-    expect(mocks.rows.get(`enrollment-template-gate/${MEMBER}`)).toMatchObject({ provider: 'internal', status: 'gate_idle' });
+    expect(mocks.rows.get(`enrollment-template-gate/${MEMBER}`)).toMatchObject({
+      provider: 'internal', status: 'gate_idle', recipientCount: 0,
+    });
     expect(mocks.rows.get(`enrollment-template-gate/${MEMBER}`)).not.toHaveProperty('userId');
+    expect(mocks.rows.get(`enrollment-template/${OP1}`)).toMatchObject({ status: 'sent', recipientCount: 1 });
   });
 
   it('returns a saved provider receipt for an exact duplicate without egress', async () => {
@@ -107,6 +117,15 @@ describe('approved enrollment template send', () => {
     await expect(sendApprovedTemplate(actor, MEMBER, OP1, 'student@example.org', OP1)).resolves.toMatchObject({ alreadyAccepted: true });
     expect(mocks.send).toHaveBeenCalledTimes(1);
     expect(mocks.audit).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a send-log row that the production CHECK still forbids', async () => {
+    await expect(db.emailSendLog.create({
+      data: { dedupeKey: 'bad-status', status: 'queued', recipientCount: 1 },
+    })).rejects.toMatchObject({ code: 'P2010' });
+    await expect(db.emailSendLog.create({
+      data: { dedupeKey: 'gate', status: 'gate_busy', recipientCount: -1 },
+    })).rejects.toMatchObject({ code: 'P2010' });
   });
 
   it('rejects an address changed after staff confirmation before writing or sending', async () => {

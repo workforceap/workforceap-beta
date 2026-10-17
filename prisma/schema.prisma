@@ -978,7 +978,8 @@ model EmailSendLog {
   id                String    @id @default(uuid())
   dedupeKey         String    @unique @map("dedupe_key")
   templateKey       String?   @map("template_key")
-  /// skipped | sending | sent | failed
+  /// Provider sends: skipped | sending | sent | failed.
+  /// Enrollment-template internal locks: reserved | gate_busy | gate_idle.
   status            String
   provider          String    @default("resend")
   providerMessageId String?   @unique @map("provider_message_id")
@@ -986,6 +987,7 @@ model EmailSendLog {
   /// sha256 prefix of the first recipient (lib/email/failureRecord.ts recipientHash); never the raw address.
   recipientHash     String?   @map("recipient_hash")
   recipientDomain   String?   @map("recipient_domain")
+  /// Provider sends are >= 1; internal gate rows may be 0.
   recipientCount    Int       @default(1) @map("recipient_count")
   subject           String?
   userId            String?   @map("user_id")
