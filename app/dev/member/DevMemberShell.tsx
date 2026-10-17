@@ -8,6 +8,7 @@ import TourProviderWrapper from '@/components/onboarding/TourProviderWrapper';
 import type { MemberShellIdentity } from '@/lib/member/memberIdentity';
 import { MEMBER_PORTAL_NAV_ITEMS } from '@/lib/nav/portalNav';
 import { PRODUCT_COPY } from '@/lib/nav/workspaceCopy';
+import DevExampleDataBanner from '@/components/portal/DevExampleDataBanner';
 
 /**
  * Credential-free `/dev/member/*` chrome — same WorkspaceShell as live
@@ -26,7 +27,7 @@ const DEV_HREF: Record<string, string> = {
   '/dashboard/certifications': '/dev/member/certificates',
   '/dashboard/jobs': '/dev/member/jobs',
   '/dashboard/readiness': '/dev/member/progress',
-  '/dashboard/ai-tools': '/dev/member/toolkit',
+  '/dashboard/ai-tools': '/dev/member/ai-tools',
   '/dashboard/messages': '/dev/member/messages',
   '/dashboard/assessment': '/dev/member/assessment',
   '/dashboard/profile': '/dev/member/profile',
@@ -35,7 +36,8 @@ const DEV_HREF: Record<string, string> = {
 const DEV_ALIASES: Record<string, string[]> = {
   '/dev/member/jobs': ['/dev/member/jobs-empty'],
   '/dev/member/certificates': ['/dev/member/certificates-empty'],
-  '/dev/member/toolkit': [
+  '/dev/member/ai-tools': [
+    '/dev/member/toolkit',
     '/dev/member/interview-prep',
     '/dev/member/interview-practice',
     '/dev/member/linkedin-headline',
@@ -102,7 +104,10 @@ export default function DevMemberShell({ children }: { children: ReactNode }) {
         navHrefMap={DEV_HREF}
         footer={<DashboardFooter />}
       >
-        {children}
+        <>
+          <DevExampleDataBanner />
+          {children}
+        </>
       </WorkspaceShell>
     </TourProviderWrapper>
   );

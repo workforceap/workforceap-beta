@@ -3119,16 +3119,55 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     box-shadow: var(--wa-focus-ring);
   }
   .member-home-compact-nav__link--active {
-    color: var(--wa-on-accent-control);
-    background: var(--wa-accent);
-    border-color: var(--wa-accent);
+    color: var(--wa-accent-text);
+    background: var(--wa-accent-soft);
+    border-color: transparent;
   }
   .member-home-compact-nav__link--active:hover,
   .member-home-compact-nav__link--active:focus-visible {
-    color: var(--wa-on-accent-control);
-    background: var(--wa-accent-dark);
-    border-color: var(--wa-accent-dark);
+    color: var(--wa-accent-text);
+    background: color-mix(in srgb, var(--wa-accent) 16%, var(--wa-surface));
+    border-color: transparent;
   }
+  .member-home-compact-nav__link--tools {
+    position: relative;
+  }
+  .member-home-compact-nav__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--wa-accent);
+    flex-shrink: 0;
+  }
+}
+
+.wa-dense-grid {
+  display: grid;
+  gap: var(--wa-pad-sm);
+}
+@media (min-width: 1024px) {
+  .wa-dense-grid--2 {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+  .wa-dense-grid--2-wide-left {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr);
+  }
+  .wa-dense-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.wa-dev-example-banner {
+  margin: 0 0 1rem;
+  padding: 0.7rem 1rem;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-gold-soft);
+  color: var(--wa-gold-dark);
+  border: 1px solid color-mix(in srgb, var(--wa-gold) 28%, transparent);
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* After Tailwind utilities in main.css: portal/admin mobile stacking, tap targets, DataTable density.

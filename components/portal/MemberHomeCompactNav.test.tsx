@@ -9,12 +9,19 @@ vi.mock('next/navigation', () => ({
 }));
 
 describe('isMemberHomeCompactPath', () => {
-  it('scopes the compact strip to the live home and the member-home proof only', () => {
+  it('scopes the compact strip to the five member C screens and their proofs', () => {
     expect(isMemberHomeCompactPath('/dashboard')).toBe(true);
+    expect(isMemberHomeCompactPath('/dashboard/program')).toBe(true);
+    expect(isMemberHomeCompactPath('/dashboard/jobs')).toBe(true);
+    expect(isMemberHomeCompactPath('/dashboard/ai-tools')).toBe(true);
+    expect(isMemberHomeCompactPath('/dashboard/ai-tools/resume-studio')).toBe(true);
     expect(isMemberHomeCompactPath('/dev/member/home')).toBe(true);
-    expect(isMemberHomeCompactPath('/dashboard/jobs')).toBe(false);
-    expect(isMemberHomeCompactPath('/dashboard/program')).toBe(false);
-    expect(isMemberHomeCompactPath('/dev/member/jobs')).toBe(false);
+    expect(isMemberHomeCompactPath('/dev/member/jobs')).toBe(true);
+    expect(isMemberHomeCompactPath('/dev/member/program')).toBe(true);
+    expect(isMemberHomeCompactPath('/dev/member/ai-tools')).toBe(true);
+    expect(isMemberHomeCompactPath('/dev/member/resume-studio')).toBe(true);
+    expect(isMemberHomeCompactPath('/dashboard/messages')).toBe(false);
+    expect(isMemberHomeCompactPath('/dashboard/jobs/abc')).toBe(false);
     expect(isMemberHomeCompactPath('/dev/member/home/extra')).toBe(false);
   });
 });

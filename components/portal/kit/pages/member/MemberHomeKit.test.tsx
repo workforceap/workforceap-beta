@@ -57,22 +57,22 @@ describe('MemberHomeKit focus card', () => {
     const link = screen.getByRole('link', { name: 'Introduction to Technical Support' });
     expect(link.getAttribute('href')).toBe('/dashboard/program?course=introduction-to-technical-support');
     expect(screen.queryByText(home.noNextModule)).toBeNull();
-    expect(screen.getByRole('link', { name: home.resumeModule })).toBeTruthy();
+    expect(screen.getByRole('link', { name: home.resumeModuleN.replace('{n}', '1') })).toBeTruthy();
   });
 
   it('falls back to plain text without a module href and to the empty copy without a next lesson', () => {
     const { unmount } = renderKit(<MemberHomeKit {...base} nextLesson="Take your WIOA Preassessment (35 questions)" />);
     expect(screen.queryByRole('link', { name: 'Take your WIOA Preassessment (35 questions)' })).toBeNull();
-    expect(screen.getByText(/Next module/)).toBeTruthy();
+    expect(screen.getAllByText('Take your WIOA Preassessment (35 questions)').length).toBeGreaterThan(0);
     unmount();
 
     renderKit(<MemberHomeKit {...base} />);
-    expect(screen.getByText(home.noNextModule)).toBeTruthy();
+    expect(screen.getAllByText(home.noNextModule).length).toBeGreaterThan(0);
   });
 
   it('states remaining modules as a claim and does not call partial progress a certificate', () => {
     renderKit(<MemberHomeKit {...base} coursePercent={50} certModulesDone={1} certModulesTotal={2} />);
-    expect(screen.getByRole('heading', { name: /You are 1 module away from your IT Support Professional Certificate \(IBM\) certificate/ })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /You are 1 module away from completing your IT Support Professional Certificate \(IBM\) training/ })).toBeTruthy();
     expect(screen.getByRole('progressbar', { name: 'Modules complete, 1 of 2' })).toHaveAttribute('aria-valuenow', '50');
     expect(screen.getByText('In progress')).toBeTruthy();
     expect(screen.queryByText(/certifi(ed|cation earned)|certificate earned/i)).toBeNull();
@@ -84,7 +84,7 @@ describe('MemberHomeKit resume module CTA', () => {
     const { container } = renderKit(
       <MemberHomeKit {...base} resumeHref="/dashboard/training?program=google-it-support" />,
     );
-    const link = screen.getByRole('link', { name: home.resumeModule });
+    const link = screen.getByRole('link', { name: home.resumeModuleN.replace('{n}', '1') });
     expect(link.getAttribute('href')).toBe('/dashboard/program?program=google-it-support');
     const card = link.closest('.wa-kit-cert-path');
     expect(card).not.toBeNull();
@@ -95,11 +95,11 @@ describe('MemberHomeKit resume module CTA', () => {
 
   it('leaves a real resume destination alone and defaults to My Program', () => {
     const { unmount } = renderKit(<MemberHomeKit {...base} resumeHref="/dashboard/learning" />);
-    expect(screen.getByRole('link', { name: home.resumeModule }).getAttribute('href')).toBe('/dashboard/learning');
+    expect(screen.getByRole('link', { name: home.resumeModuleN.replace('{n}', '1') }).getAttribute('href')).toBe('/dashboard/learning');
     unmount();
 
     renderKit(<MemberHomeKit {...base} />);
-    expect(screen.getByRole('link', { name: home.resumeModule }).getAttribute('href')).toBe('/dashboard/program');
+    expect(screen.getByRole('link', { name: home.resumeModuleN.replace('{n}', '1') }).getAttribute('href')).toBe('/dashboard/program');
   });
 });
 

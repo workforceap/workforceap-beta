@@ -209,7 +209,7 @@ export default async function DevMemberHomePage({
     {placement === 'primary' ? approvalCard : null}
     <MemberHomeKit
       showStaffViewBanner={params?.staff === '1'}
-      advisor={params?.advisor === 'off' ? null : { name: 'Sample Advisor', firstName: 'Sample', messagingHref: '/dev/member/messages' }}
+      advisor={params?.advisor === 'off' ? null : { name: 'Dana Reyes', firstName: 'Dana', messagingHref: '/dev/member/messages' }}
       programSwitch={programSwitch}
       firstName="Mike"
       coursePercent={coursePercent}
@@ -229,7 +229,18 @@ export default async function DevMemberHomePage({
       longestStreak={12}
       programHref="/dev/member/program"
       resumeHref="/dev/member/program"
-      toolkitHref="/dev/member/toolkit"
+      toolkitHref="/dev/member/ai-tools"
+      interviewWhen="Thursday 10:00 AM"
+      priorityBody="Learn the division of provider infrastructure security and customer configuration, IAM rules, and encryption controls."
+      estRemainingMinutes={25}
+      resumeModuleNumber={8}
+      nextCheckIn="Thursday"
+      curriculum={[
+        { title: 'Networking, VPC and Content Delivery', state: 'done', grade: 'Completed · Grade: 98%', number: 6 },
+        { title: 'Cloud Security and Identity Access (IAM)', state: 'done', grade: 'Completed · Grade: 95%', number: 7 },
+        { title: 'Shared Responsibility Model', state: 'active', due: 'In progress · Due Thursday', number: 8 },
+        { title: 'Billing and Pricing Basics', state: 'upcoming', due: 'Unlocks after Module 8', number: 9 },
+      ]}
       jobsHref="/dev/member/jobs"
       coursesHref="/dev/member/program"
       goalsHref="/dev/member/progress"

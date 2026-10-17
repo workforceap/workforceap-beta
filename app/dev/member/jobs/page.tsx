@@ -188,23 +188,36 @@ export default async function DevMemberJobsPage({
     <MemberJobsKit
       saved={9}
       applied={4}
-      interviewing={2}
+      interviewing={1}
       offers={1}
-      syncedLabel="Synced 3m ago · 6 active applications"
+      programTitle="AWS Cloud Practitioner"
+      advisor={{ name: 'Dana Reyes', firstName: 'Dana', messagingHref: '/dev/member/messages' }}
+      scorerHref="/dev/member/job-match"
+      profileMatchPct={85}
+      syncedLabel="Jun 18 and Jun 29 filings"
       browseHref="/dev/member/jobs?state=board"
-      jobHref={() => '#'}
+      jobHref={(id) => `/dev/member/jobs?state=detail&job=${id}`}
       applications={[
-        { id: 'a1', role: 'Salesforce Administrator', company: 'Deloitte', location: 'Austin, TX', applied: 'Jun 12', stage: 'Interviewing', tone: 'warn' },
-        { id: 'a2', role: 'Agentforce Solutions Engineer', company: 'Accenture', location: 'Remote', applied: 'Jun 14', stage: 'Applied', tone: 'muted' },
-        { id: 'a3', role: 'Cloud Support Associate', company: 'Indeed', location: 'Austin, TX', applied: 'Jun 16', stage: 'Screening', tone: 'info' },
-        { id: 'a4', role: 'Junior Cloud Engineer', company: 'Oracle', location: 'Austin, TX', applied: 'Jun 18', stage: 'Applied', tone: 'muted' },
-        { id: 'a5', role: 'IT Support Specialist', company: 'Tesla', location: 'Austin, TX', applied: 'Jun 21', stage: 'Offer', tone: 'ok' },
-        { id: 'a6', role: 'Business Systems Analyst', company: 'HEB', location: 'Austin, TX', applied: 'Jun 9', stage: 'Closed', tone: 'alert' },
+        { id: 'a1', role: 'IT Support Specialist', company: 'Lakeview Health System', location: 'Remote', applied: 'Jun 18', stage: 'Interviewing', tone: 'warn' },
+        { id: 'a2', role: 'Cloud Support Associate', company: 'Brightline Credit Union', location: 'Austin, TX', applied: 'Jun 24', stage: 'Screening', tone: 'info' },
+        { id: 'a3', role: 'Help Desk Technician', company: 'Metro Transit Authority', location: 'Austin, TX', applied: 'Jun 29', stage: 'Applied', tone: 'muted' },
       ]}
+      openRoles={[
+        { id: 'r1', title: 'Cloud Support Associate', meta: 'Brightline Credit Union · Austin, TX · Hybrid', logo: 'BC', applied: true },
+        { id: 'r2', title: 'IT Support Specialist', meta: 'Lakeview Health System · Remote', logo: 'LH', applied: true },
+        { id: 'r3', title: 'Help Desk Technician', meta: 'Metro Transit Authority · Austin, TX · On-site', logo: 'MT', applied: true },
+        { id: 'r4', title: 'Junior Cloud Engineer', meta: 'Harbor City Schools · Austin, TX · On-site', logo: 'HC' },
+        { id: 'r5', title: 'Systems Administrator Trainee', meta: 'Riverside County · Austin, TX · Hybrid', logo: 'RC' },
+        { id: 'r6', title: 'Technical Support Analyst', meta: 'Northgate Logistics · Austin, TX · Hybrid', logo: 'NG' },
+      ]}
+      openRolesTotal={12}
       recommended={[
-        { id: 'r1', logo: 'DL', match: '92% match', title: 'Cloud Support Engineer', meta: 'Deloitte · Austin, TX · $58k–72k' },
-        { id: 'r2', logo: 'AC', match: '87% match', title: 'Junior Salesforce Consultant', meta: 'Accenture · Remote · $54k–66k' },
-        { id: 'r3', logo: 'TS', match: '74% match', title: 'Technical Support Associate', meta: 'Tesla · Austin, TX · $46k–52k' },
+        { id: 'r1', logo: 'BC', match: '92% match', title: 'Cloud Support Associate', meta: 'Brightline Credit Union · Austin, TX · Hybrid' },
+        { id: 'r2', logo: 'LH', match: '85% match', title: 'IT Support Specialist', meta: 'Lakeview Health System · Remote' },
+        { id: 'r3', logo: 'MT', match: '81% match', title: 'Help Desk Technician', meta: 'Metro Transit Authority · Austin, TX · On-site' },
+        { id: 'r4', logo: 'HC', match: '88% match', title: 'Junior Cloud Engineer', meta: 'Harbor City Schools · Austin, TX · On-site' },
+        { id: 'r5', logo: 'RC', match: '79% match', title: 'Systems Administrator Trainee', meta: 'Riverside County · Austin, TX · Hybrid' },
+        { id: 'r6', logo: 'NG', match: '76% match', title: 'Technical Support Analyst', meta: 'Northgate Logistics · Austin, TX · Hybrid' },
       ]}
     />
   );

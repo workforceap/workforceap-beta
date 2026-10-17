@@ -51,30 +51,39 @@ export default function MemberAiToolsCard({
   return (
     <Card>
       <VStack as="section" gap={4} aria-labelledby="member-ai-tools-heading">
-        <h2
-          id="member-ai-tools-heading"
-          className="wa-m-0"
-          style={{ fontWeight: 800, fontSize: 'clamp(1.15rem, 2.6vw, 1.5rem)', letterSpacing: '-0.02em', textWrap: 'balance' }}
-        >
-          {th('aiClaim')}
-        </h2>
+        <HStack justify="between" align="center" wrap="wrap" gap={3}>
+          <h2
+            id="member-ai-tools-heading"
+            className="wa-m-0"
+            style={{ fontWeight: 800, fontSize: 'clamp(1.15rem, 2.6vw, 1.5rem)', letterSpacing: '-0.02em', textWrap: 'balance' }}
+          >
+            {th('aiClaim')}
+          </h2>
+          <Link href={toolkitHref} className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 700, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>
+            {th('openHub')}
+          </Link>
+        </HStack>
         <p className="wa-kit-lede wa-m-0">{t('homeIntro')}</p>
+        <p className="wa-kit-meta wa-m-0">{th('aiAssistNote')}</p>
         {recommendedTool ? (
           <VStack gap={2} data-testid="recommended-tool" data-tool={recommendedTool.slug}>
             <h3 className="wa-text-base wa-font-bold wa-m-0">{t('tryNext', { title: recommendedTool.title })}</h3>
             <p className="wa-kit-lede wa-m-0">{recommendedTool.body}</p>
           </VStack>
         ) : null}
-        <div className="wa-grid wa-grid-cols-1 sm:wa-grid-cols-2 wa-gap-3">
+        <div style={{ display: 'grid', gap: 8 }}>
           {tiles.map((tile) => (
             <Link
               key={tile.slug}
               href={tile.href}
               className="wa-kit-card wa-kit-card--sm wa-kit-card--hover wa-kit-focus"
-              style={{ display: 'grid', gap: 6, textDecoration: 'none', color: 'inherit', minHeight: 44 }}
+              style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', textDecoration: 'none', color: 'inherit', minHeight: 44 }}
             >
-              <strong style={{ fontSize: 'var(--wa-type-body)', fontWeight: 800 }}>{tile.title}</strong>
-              <span className="wa-kit-meta">{tile.body}</span>
+              <span>
+                <strong style={{ display: 'block', fontSize: 'var(--wa-type-body)', fontWeight: 800 }}>{tile.title}</strong>
+                <span className="wa-kit-meta">{tile.body}</span>
+              </span>
+              <span className="wa-kit-meta" style={{ color: 'var(--wa-accent)', fontWeight: 700 }}>{th('openHub')}</span>
             </Link>
           ))}
         </div>

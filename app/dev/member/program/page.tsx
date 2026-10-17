@@ -137,25 +137,43 @@ export default async function DevMemberProgramPage({
 
   return (
     <MemberProgramKit
-      programTitle="AWS Cloud Practitioner Essentials"
+      programTitle="AWS Cloud Practitioner"
       progressPercent={78}
       modulesComplete={7}
       modulesTotal={9}
-      estRemaining="4 hrs remaining"
-      resumeHref="#"
-      modules={[
-        { title: 'Cloud Concepts', state: 'done', slug: 'cloud-concepts' },
-        { title: 'Security & Compliance', state: 'done', slug: 'security-compliance' },
-        { title: 'Shared Responsibility Model', state: 'active', slug: 'shared-responsibility', moduleHref: '/dev/member/program?state=lessons' },
-        { title: 'Billing & Pricing', state: 'locked', slug: 'billing-pricing' },
-        { title: 'Exam Readiness', state: 'locked', slug: 'exam-readiness' },
+      estRemaining="25 minutes remaining"
+      resumeHref="/dev/member/program?state=lessons"
+      advisor={{ name: 'Dana Reyes', firstName: 'Dana', messagingHref: '/dev/member/messages' }}
+      nextLesson="Shared Responsibility Model"
+      nextLessonDue="Due Thursday"
+      pointsThisWeek={85}
+      certsThisWeek={2}
+      toolkitHref="/dev/member/ai-tools"
+      resumeStudioHref="/dev/member/resume-studio"
+      interviewHref="/dev/member/interview-practice"
+      lessons={[
+        { title: 'Lesson 1: Introduction to cloud security', state: 'done', meta: '5 min · Overview' },
+        { title: 'Lesson 2: Customer vs provider responsibilities', state: 'active', meta: '9 min · Concept check' },
+        { title: 'Lesson 3: Controls and encryption', state: 'upcoming' },
+        { title: 'Lesson 4: Scenario knowledge check', state: 'upcoming', meta: '5 min · Quiz' },
       ]}
-      liveSessionTitle="AWS Exam Readiness Q&A"
-      liveSessionWhen="Thu, Jul 9 · 6:00 PM CT"
-      liveSessionStart="2026-07-09T23:00:00.000Z"
-      liveSessionDurationMinutes={60}
+      modules={[
+        { title: 'Cloud Concepts Overview', state: 'done', slug: 'cloud-concepts' },
+        { title: 'Cloud Economics and Billing Framework', state: 'done', slug: 'cloud-economics' },
+        { title: 'AWS Global Infrastructure Basics', state: 'done', slug: 'infrastructure' },
+        { title: 'Core Compute Services — EC2 and Lambda', state: 'done', slug: 'compute' },
+        { title: 'Storage and Delivery Essentials', state: 'done', slug: 'storage' },
+        { title: 'Networking, VPC and Content Delivery', state: 'done', slug: 'networking' },
+        { title: 'Cloud Security and Identity Access (IAM)', state: 'done', slug: 'security-iam' },
+        { title: 'Shared Responsibility Model', state: 'active', slug: 'shared-responsibility', moduleHref: '/dev/member/program?state=lessons' },
+        { title: 'Billing and Pricing Basics', state: 'locked', slug: 'billing-pricing' },
+      ]}
+      liveSessionTitle="Advisor check-in"
+      liveSessionWhen="Thu, Jul 9 · 10:00 AM CT"
+      liveSessionStart="2026-07-09T15:00:00.000Z"
+      liveSessionDurationMinutes={30}
       missionsSummary="3 missions ready on this path."
-      missionsHref="#"
+      missionsHref="/dev/member/missions"
     />
   );
 }

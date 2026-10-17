@@ -84,11 +84,12 @@ describe('member copy', () => {
       );
 
     renderHome({ firstName: 'Maya' });
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Welcome back, Maya');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(en.dashboard.home.focusClaimNoProgram);
+    expect(screen.getByText(en.dashboard.home.workspaceKicker.replace('{name}', 'Maya'))).toBeTruthy();
     cleanup();
 
     renderHome({});
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Home');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(en.dashboard.home.focusClaimNoProgram);
   });
 
   it('Coursera coverage notice speaks to members', () => {

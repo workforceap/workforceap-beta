@@ -23,8 +23,14 @@ function stat(label: string) {
 describe('categorical totals retain their value without status-like colors', () => {
   it.each([0, 3])('job totals remain neutral at %i and real application status stays distinct', (value) => {
     render(<NextIntlClientProvider locale="en" messages={en}><MemberJobsKit saved={value} applied={value} interviewing={value} offers={value} applications={[{ id: 'fixture', role: 'Fixture role', company: 'Fixture company', location: 'Remote', applied: 'Sep19', stage: 'Interview scheduled', tone: 'warn' }]} /></NextIntlClientProvider>);
-    for (const label of ['Saved', 'Applied', 'Interviewing', 'Offers']) {
-      expect(stat(label)).toHaveTextContent(String(value));
+    const expected: Array<[string, string]> = [
+      ['Qualified roles', String(value * 2)],
+      ['High matches (≥85%)', '0'],
+      ['Active applications', String(value * 2)],
+      ['Interview scheduled', String(value)],
+    ];
+    for (const [label, text] of expected) {
+      expect(stat(label)).toHaveTextContent(text);
       expect(stat(label).style.color).toBe('');
       expect(stat(label).closest('.wa-kit-card')!.className).not.toMatch(/wa-kit-tone--/);
     }

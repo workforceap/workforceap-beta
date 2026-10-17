@@ -107,7 +107,7 @@ export default async function DevMemberResumeStudioPage({
 }) {
   if (process.env.VERCEL_ENV === 'production') notFound();
   const { state, view } = await searchParams;
-  const filled = state === 'filled';
+  const filled = state !== 'empty';
   const isRewrite = view === 'rewrite';
   const seeded = filled || isRewrite;
 
@@ -116,13 +116,31 @@ export default async function DevMemberResumeStudioPage({
       <ResumeStudioKit
         preview
         hasResume={seeded}
-        backHref="/dev/member/toolkit"
+        backHref="/dev/member/ai-tools"
         basePath="/dev/member/resume-studio"
         initialResume={seeded ? SEED_RESUME : ''}
         initialJobTarget="Cloud Support Associate"
         previewScoreOutput={filled && !isRewrite ? SCORE_OUTPUT : undefined}
         previewScorePayload={filled && !isRewrite ? SCORE_PAYLOAD : undefined}
         previewRewriteOutput={filled && isRewrite ? REWRITE : undefined}
+        advisor={{ name: 'Dana Reyes', firstName: 'Dana', messagingHref: '/dev/member/messages' }}
+        score={72}
+        targetListing="Cloud Support Associate"
+        keywordPct={84}
+        coachName="Dana Reyes"
+        clarityPct={88}
+        metricsPct={64}
+        keywordsPct={72}
+        fixes={[
+          { title: 'Add metrics to 4 bullet points', body: 'Quantifiable outcomes on ticket resolution, uptime improvements, and user satisfaction provide verifiable competency.', tag: 'highImpact' },
+          { title: 'Align skills for Cloud Support Associate', body: 'Missing keywords: Active Directory, Bash scripting basics, and incident triage protocol.', tag: 'keywordGap' },
+          { title: 'Shorten the summary to 3 concise lines', body: 'Tighten the narrative to highlight foundational systems administration strengths and immediate regional readiness.', tag: 'formatting' },
+        ]}
+        versions={[
+          { title: 'Cloud Support Associate', saved: 'Saved · Oct 14', score: 72, href: '/dev/member/resume-studio' },
+          { title: 'IT Support Specialist', saved: 'Saved · Oct 9', score: 68, href: '/dev/member/resume-studio' },
+          { title: 'Core master profile', saved: 'Saved · Oct 2', score: 62, href: '/dev/member/resume-studio' },
+        ]}
       />
     </Suspense>
   );

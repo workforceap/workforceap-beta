@@ -7,8 +7,9 @@ import Link from 'next/link';
 import {
   DataTable,
   DesignSurface,
+  KpiStrip,
   PageOpener,
-  ProgressRing,
+  ProgressBar,
   StatusTag,
   cx,
   toneClass,
@@ -77,6 +78,14 @@ export interface WeeklyActivityPoint {
   minutes: number;
 }
 
+export interface CurriculumItem {
+  title: string;
+  state: 'done' | 'active' | 'upcoming';
+  grade?: string;
+  due?: string;
+  number?: number;
+}
+
 export interface PointsLedgerEntry {
   label: string;
   amount: number;
@@ -139,6 +148,12 @@ export interface MemberHomeKitProps {
   weeklyActivityDeltaLabel?: string;
   pointsThisWeek?: number;
   pointsLedger?: PointsLedgerEntry[];
+  curriculum?: CurriculumItem[];
+  interviewWhen?: string;
+  priorityBody?: string;
+  estRemainingMinutes?: number;
+  resumeModuleNumber?: number;
+  nextCheckIn?: string;
 }
 
 function clampPct(n: number): number {
@@ -270,7 +285,7 @@ function focusClaim(
   if (!args.programTitle) return th('focusClaimNoProgram');
   if (args.remaining === null) return th('focusClaimNoCount', { program: args.programTitle });
   if (args.remaining <= 0) return th('focusClaimDone', { program: args.programTitle });
-  return th('focusClaim', { count: args.remaining, program: args.programTitle });
+  return th('focusClaimTraining', { count: args.remaining, program: args.programTitle });
 }
 
 export function MemberHomeKit({
@@ -305,6 +320,12 @@ export function MemberHomeKit({
   certModulesDone,
   certModulesTotal,
   programCoursesNote,
+  curriculum = [],
+  interviewWhen,
+  priorityBody,
+  estRemainingMinutes,
+  resumeModuleNumber,
+  nextCheckIn,
 }: MemberHomeKitProps) {
   const th = useTranslations('dashboard.home');
   const te = useTranslations('empty');
@@ -318,18 +339,23 @@ export function MemberHomeKit({
   const ringTone: KitTone | undefined = modulePct >= 100 ? 'ok' : pct === 0 && programTitle && courseProgressStale ? 'warn' : undefined;
   const interviewSteps = upNext.filter(isInterviewAction);
   const claim = focusClaim(th, { programTitle, remaining });
-  const openerTitle = greeting && firstName ? `${greeting}, ${firstName}` : firstName ? th('welcomeBack', { name: firstName }) : th('title');
-  const openerLede = nextLesson
-    ? nextLessonDue
-      ? th('ledeNextDue', { lesson: nextLesson, due: nextLessonDue })
-      : th('ledeNext', { lesson: nextLesson })
-    : th('ledeDefault');
-
+  const openerKicker = firstName ? th('workspaceKicker', { name: firstName }) : th('workspaceKickerGuest');
+  const interviewCount = pipeline.filter((row) => row.tone === 'warn' || /interview/i.test(row.stage)).length;
+  const resumeNumber = resumeModuleNumber ?? (hasModuleRow ? (certModulesDone as number) + 1 : 8);
   const pipelineColumns: Column<PipelineRow>[] = [
     {
       key: 'role',
-      header: th('pipelineRole'),
+      header: th('pipelineRoleEmployer'),
       render: (row) => <PipelineRoleCell row={row} />,
+    },
+    {
+      key: 'applied',
+      header: th('pipelineDate'),
+      render: (row) => (
+        <span className="wa-kit-meta" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
+          {row.appliedLabel ?? '—'}
+        </span>
+      ),
     },
     {
       key: 'status',
@@ -337,17 +363,12 @@ export function MemberHomeKit({
       render: (row) => <StatusTag tone={row.tone}>{row.stage}</StatusTag>,
     },
     {
-      key: 'stageTrack',
-      header: th('pipelineStage'),
-      render: (row) => <PipelineStageTrack row={row} />,
-    },
-    {
-      key: 'applied',
-      header: th('pipelineApplied'),
+      key: 'action',
+      header: th('pipelineAction'),
       align: 'right',
       render: (row) => (
-        <span className="wa-kit-meta" style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>
-          {row.appliedLabel ?? '—'}
+        <span className="wa-kit-meta" style={{ fontWeight: 700, color: 'var(--wa-accent)' }}>
+          {row.tone === 'warn' ? th('openNotes') : row.tone === 'info' ? th('details') : th('review')}
         </span>
       ),
     },
@@ -372,93 +393,92 @@ export function MemberHomeKit({
 
   return (
     <DesignSurface surface="warm">
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
+      <div style={{ maxWidth: 1180, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-5">
         <PageOpener
-          kicker={th('kicker')}
-          title={openerTitle}
-          lede={openerLede}
+          kicker={openerKicker}
+          title={claim}
           action={
-            currentStreak > 0 ? (
-              <span className="wa-kit-streak-chip">
-                <Flame size={15} aria-hidden />
-                <span>
-                  {longestStreak > currentStreak
-                    ? th('streakBest', { count: currentStreak, best: longestStreak })
-                    : th('streak', { count: currentStreak })}
+            <div className="wa-flex wa-items-center wa-gap-2 wa-flex-wrap">
+              {currentStreak > 0 ? (
+                <span className="wa-kit-streak-chip">
+                  <Flame size={15} aria-hidden />
+                  <span>
+                    {longestStreak > currentStreak
+                      ? th('streakBest', { count: currentStreak, best: longestStreak })
+                      : th('streak', { count: currentStreak })}
+                  </span>
                 </span>
-              </span>
-            ) : null
+              ) : null}
+              {advisor ? <StatusTag tone="muted">{th('advisorChip', { name: advisor.name })}</StatusTag> : null}
+            </div>
           }
         />
 
         {showStaffViewBanner ? <StaffViewBanner page="dashboard" /> : null}
 
         {noProgram ? (
-          <div
-            className="wa-kit-card wa-flex wa-items-center wa-gap-3"
-            role="status"
-            style={{ padding: '12px 14px' }}
-          >
+          <div className="wa-kit-card wa-flex wa-items-center wa-gap-3" role="status" style={{ padding: '12px 14px' }}>
             <StatusTag tone="warn">{th('noProgramTag')}</StatusTag>
-            <span style={{ color: 'var(--wa-muted)', fontSize: 'var(--wa-type-meta)' }}>
-              {th('noProgramBody')}
-            </span>
+            <span style={{ color: 'var(--wa-muted)', fontSize: 'var(--wa-type-meta)' }}>{th('noProgramBody')}</span>
           </div>
         ) : null}
 
         {youthNoticeAge !== null && youthNoticeAge < 18 ? <YouthDashboardNotice age={youthNoticeAge} /> : null}
 
-        <section className="wa-kit-card wa-kit-cert-path" aria-labelledby="member-home-focus-heading" data-testid="member-home-focus">
-          {showProgramSwitch && programSwitch ? (
-            <div data-testid="home-program-switch" style={{ display: 'grid', gap: 6, marginBottom: 14 }}>
-              <DashboardProgramSelector
-                options={programSwitch.options}
-                activeProgramSlug={programSwitch.activeProgramSlug}
-                pathname={programSwitch.pathname}
-              />
-            </div>
-          ) : null}
-          <div className="wa-kit-cert-path-body">
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <ProgressRing
-                pct={modulePct}
-                size={120}
-                tone={ringTone}
-                showLabel={false}
-                label={hasModuleRow ? th('moduleProgressLabel', { done: certModulesDone, total: certModulesTotal }) : th('courseCompletion')}
-              />
-              <div
-                aria-hidden
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 800,
-                  fontVariantNumeric: 'tabular-nums',
-                  fontSize: 18,
-                  letterSpacing: '-0.02em',
-                  color: ringTone ? 'var(--wa-kit-tone)' : 'var(--wa-accent)',
-                }}
-              >
-                {hasModuleRow ? th('moduleProgress', { done: certModulesDone, total: certModulesTotal }) : `${pct}%`}
+        <div className="wa-kit-card">
+          <KpiStrip
+            items={[
+              {
+                label: programTitle ? programTitle : th('kpiProgramGeneric'),
+                value: hasModuleRow ? th('kpiModulesOf', { done: certModulesDone, total: certModulesTotal }) : `${pct}%`,
+                delta: hasModuleRow ? `${modulePct}%` : undefined,
+                deltaTone: 'muted',
+              },
+              {
+                label: th('kpiNextDue'),
+                value: nextLesson ?? th('noNextModule'),
+                delta: nextLessonDue ?? undefined,
+                tone: nextLessonDue ? 'warn' : undefined,
+                deltaTone: nextLessonDue ? 'warn' : 'muted',
+              },
+              {
+                label: th('kpiApplications'),
+                value: th('kpiActiveCount', { count: pipeline.length }),
+                delta: interviewCount > 0 ? th('kpiInterviewCount', { count: interviewCount }) : undefined,
+                deltaTone: interviewCount > 0 ? 'info' : 'muted',
+              },
+              {
+                label: th('kpiInterviewPrep'),
+                value: interviewWhen ?? (interviewSteps[0]?.title ?? th('interviewCta')),
+                delta: interviewWhen ? undefined : undefined,
+                tone: interviewWhen ? 'info' : undefined,
+              },
+            ]}
+          />
+        </div>
+
+        <div className="wa-dense-grid wa-dense-grid--2">
+          <div className="wa-space-y-5">
+            <section className="wa-kit-card wa-kit-cert-path" aria-labelledby="member-home-focus-heading" data-testid="member-home-focus">
+              {showProgramSwitch && programSwitch ? (
+                <div data-testid="home-program-switch" style={{ display: 'grid', gap: 6, marginBottom: 14 }}>
+                  <DashboardProgramSelector
+                    options={programSwitch.options}
+                    activeProgramSlug={programSwitch.activeProgramSlug}
+                    pathname={programSwitch.pathname}
+                  />
+                </div>
+              ) : null}
+              <div className="wa-flex wa-items-center wa-justify-between wa-gap-3 wa-flex-wrap">
+                <h2 id="member-home-focus-heading" className="wa-kit-meta" style={{ margin: 0, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  {th('currentPriority')}
+                </h2>
+                {programStatus ? <StatusTag tone="info">{programStatus}</StatusTag> : null}
               </div>
-            </div>
-            <div className="wa-kit-cert-path-copy">
-              {programStatus ? <StatusTag tone="info">{programStatus}</StatusTag> : null}
-              <h2 id="member-home-focus-heading" style={{ ...CLAIM_TITLE, marginTop: programStatus ? 8 : 0 }}>
-                {claim}
-              </h2>
               {nextLesson ? (
-                <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', marginTop: 8 }}>
-                  <span style={{ fontWeight: 700, color: 'var(--wa-text)' }}>{th('nextModuleLabel')}: </span>
+                <p style={{ fontSize: 'var(--wa-type-body)', fontWeight: 800, margin: '12px 0 0', letterSpacing: '-0.02em' }}>
                   {nextLessonHref ? (
-                    <Link
-                      href={nextLessonHref}
-                      className="wa-kit-focus"
-                      style={{ color: 'inherit', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 2 }}
-                    >
+                    <Link href={nextLessonHref} className="wa-kit-focus" style={{ color: 'inherit', textDecoration: 'underline', textUnderlineOffset: 2 }}>
                       {nextLesson}
                     </Link>
                   ) : (
@@ -467,31 +487,41 @@ export function MemberHomeKit({
                   {nextLessonDue ? (
                     <>
                       {' '}
-                      · <span style={{ color: 'var(--wa-accent)', fontWeight: 700 }}>{nextLessonDue}</span>
+                      · <span style={{ color: 'var(--wa-gold-dark)', fontWeight: 700 }}>{nextLessonDue}</span>
                     </>
                   ) : null}
                 </p>
               ) : (
-                <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', marginTop: 8 }}>
+                <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', marginTop: 12 }}>
                   {programTitle ? th('noNextModule') : th('chooseProgramHint')}
                 </p>
               )}
+              {priorityBody ? <p className="wa-kit-lede" style={{ marginTop: 8 }}>{priorityBody}</p> : null}
               {programTitle && programCoursesNote ? (
-                <p
-                  data-testid="program-courses-note"
-                  style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 6 }}
-                >
+                <p data-testid="program-courses-note" style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 6 }}>
                   {programCoursesNote}
                 </p>
               ) : null}
-              <div style={{ marginTop: 16 }} className="wa-flex wa-items-center wa-gap-4 wa-flex-wrap">
+              <div style={{ marginTop: 14 }}>
+                <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700 }}>{th('overallTrack')}</p>
+                <ProgressBar
+                  pct={modulePct}
+                  tone={ringTone}
+                  aria-label={hasModuleRow ? th('moduleProgressLabel', { done: certModulesDone, total: certModulesTotal }) : th('courseCompletion')}
+                />
+                <div className="wa-flex wa-items-center wa-justify-between" style={{ marginTop: 6 }}>
+                  <span className="wa-kit-meta">{estRemainingMinutes ? th('minutesRemaining', { minutes: estRemainingMinutes }) : null}</span>
+                  {nextLessonDue ? <span className="wa-kit-meta" style={{ color: 'var(--wa-gold-dark)', fontWeight: 700 }}>{nextLessonDue}</span> : null}
+                </div>
+              </div>
+              <div style={{ marginTop: 16 }} className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap">
                 <Link
                   href={resolveMemberProgramHref(resumeHref)}
                   className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
                 >
                   {programTitle ? (
                     <>
-                      {th('resumeModule')} <Play size={13} aria-hidden />
+                      {th('resumeModuleN', { n: resumeNumber })} <Play size={13} aria-hidden />
                     </>
                   ) : (
                     <>
@@ -499,21 +529,87 @@ export function MemberHomeKit({
                     </>
                   )}
                 </Link>
-                <a
-                  href={programHref}
-                  className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                  style={HOME_TEXT_LINK}
-                >
-                  {th('openPlan')}
+                <a href={programHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" style={{ textDecoration: 'none' }}>
+                  {th('viewSyllabus')}
                 </a>
+                <a href={programHref} className="wa-kit-focus" style={HOME_TEXT_LINK}>{th('openPlan')}</a>
               </div>
+            </section>
+
+            {curriculum.length > 0 ? (
+              <section className="wa-kit-card" aria-labelledby="member-home-curriculum-heading">
+                <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12 }}>
+                  <h2 id="member-home-curriculum-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{th('curriculumStatus')}</h2>
+                  <span className="wa-kit-meta">{th('modulesTotal', { count: certModulesTotal ?? curriculum.length })}</span>
+                </div>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
+                  {curriculum.map((item) => {
+                    const tone: KitTone = item.state === 'done' ? 'ok' : item.state === 'active' ? 'warn' : 'muted';
+                    const label = item.state === 'done' ? th('curriculumDone') : item.state === 'active' ? th('curriculumActive') : th('curriculumUpcoming');
+                    return (
+                      <li key={item.title} className={cx('wa-kit-card wa-kit-card--sm', toneClass(tone))} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+                        <div>
+                          <strong style={{ display: 'block' }}>{item.number ? `${th('nextModuleLabel')} ${item.number}: ${item.title}` : item.title}</strong>
+                          <span className="wa-kit-meta">{item.grade ?? item.due ?? ''}</span>
+                        </div>
+                        <StatusTag tone={tone}>{label}</StatusTag>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ) : null}
+          </div>
+
+          <div className="wa-space-y-5">
+            <section className="wa-kit-card" aria-labelledby="member-home-applications-heading">
+              <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12, gap: 12 }}>
+                <div>
+                  <h2 id="member-home-applications-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{th('pipelineTitle')}</h2>
+                  <p className="wa-kit-meta" style={{ margin: '4px 0 0' }}>{th('pipelineSubtitle')}</p>
+                </div>
+                <a href={jobsHref} className="wa-kit-focus" style={HOME_TEXT_LINK}>{th('viewAll')}</a>
+              </div>
+              <DataTable<PipelineRow>
+                columns={pipelineColumns}
+                rows={pipeline}
+                rowKey={(row) => `${row.role}-${row.company}`}
+                mobile="cards"
+                cardRender={pipelineCard}
+                minWidth={560}
+                empty={{
+                  kind: 'first',
+                  title: te('activeApplications.title'),
+                  description: te('activeApplications.body'),
+                  primaryAction: { label: te('activeApplications.action'), href: jobsHref },
+                }}
+              />
+            </section>
+
+            <div className="wa-dense-grid" style={{ gridTemplateColumns: '1fr' }}>
+              <MemberAiToolsCard toolkitHref={toolkitHref} recommendedTool={recommendedTool} />
+              <section className="wa-kit-card" aria-labelledby="member-home-support-heading">
+                <h2 id="member-home-support-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{th('dedicatedSupport')}</h2>
+                <MemberAdvisorCard advisor={advisor} />
+                {nextCheckIn ? <p className="wa-kit-lede" style={{ marginTop: 8 }}>{th('nextCheckIn', { when: nextCheckIn })}</p> : null}
+                {advisor ? <p className="wa-kit-meta">{th('replyTime')}</p> : null}
+                <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap" style={{ marginTop: 12 }}>
+                  {advisor ? (
+                    <Link href={advisor.messagingHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">
+                      {th('messageAdvisor', { name: advisor.firstName })}
+                    </Link>
+                  ) : null}
+                  <a href={advisor?.messagingHref ?? '/dashboard/messages'} className="wa-kit-cta wa-kit-focus" style={{ textDecoration: 'none' }}>
+                    {th('bookCheckIn')}
+                  </a>
+                  <a href={goalsHref} className="wa-kit-focus" style={HOME_TEXT_LINK}>
+                    <Target size={14} aria-hidden /> {goals.length > 0 ? th('openGoals') : th('setAGoal')}
+                  </a>
+                </div>
+              </section>
             </div>
           </div>
-        </section>
-
-        <MemberAdvisorCard advisor={advisor} />
-
-        <MemberAiToolsCard toolkitHref={toolkitHref} recommendedTool={recommendedTool} />
+        </div>
 
         {jobOffers.length > 0 ? (
           <ErrorBoundary>
@@ -528,40 +624,25 @@ export function MemberHomeKit({
 
         {!programTitle && ungatedDigitalBasicsHref ? (
           <div className="wa-kit-card" style={{ display: 'grid', gap: 10 }}>
-            <p className="wa-kit-meta" style={{ margin: 0, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              {th('digitalBasicsKicker')}
-            </p>
-            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em' }}>{th('digitalBasicsTitle')}</h3>
-            <p className="wa-kit-lede" style={{ margin: 0 }}>
-              {th('digitalBasicsBody')}
-            </p>
-            <Link
-              href={ungatedDigitalBasicsHref}
-              className="wa-kit-cta wa-kit-cta--xl wa-kit-cta--block wa-kit-focus hover:wa-opacity-90"
-            >
+            <p className="wa-kit-meta" style={{ margin: 0, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{th('digitalBasicsKicker')}</p>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>{th('digitalBasicsTitle')}</h3>
+            <p className="wa-kit-lede" style={{ margin: 0 }}>{th('digitalBasicsBody')}</p>
+            <Link href={ungatedDigitalBasicsHref} className="wa-kit-cta wa-kit-cta--xl wa-kit-cta--block wa-kit-focus hover:wa-opacity-90">
               {th('digitalBasicsCta')}
             </Link>
           </div>
         ) : null}
 
         <section className="wa-kit-card" aria-labelledby="member-home-interview-heading">
-          <h2 id="member-home-interview-heading" style={CLAIM_TITLE}>
-            {th('interviewClaim')}
-          </h2>
+          <h2 id="member-home-interview-heading" style={CLAIM_TITLE}>{th('interviewClaim')}</h2>
           {interviewSteps.length > 0 ? (
             <ol style={{ listStyle: 'none', margin: '12px 0 0', padding: 0, display: 'grid', gap: 2 }} aria-label={th('interviewClaim')}>
               {interviewSteps.map((action) => (
                 <li key={action.id}>
-                  <Link
-                    href={resolveMemberProgramHref(action.href)}
-                    className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                    style={UP_NEXT_ROW}
-                  >
+                  <Link href={resolveMemberProgramHref(action.href)} className="wa-kit-focus" style={UP_NEXT_ROW}>
                     <span style={{ minWidth: 0 }}>
-                      <span style={{ display: 'block', fontWeight: 700, color: 'var(--wa-text)' }}>{action.title}</span>
-                      <span style={{ display: 'block', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 2 }}>
-                        {action.body}
-                      </span>
+                      <span style={{ display: 'block', fontWeight: 700 }}>{action.title}</span>
+                      <span className="wa-kit-meta">{action.body}</span>
                     </span>
                     <span style={{ ...HOME_TEXT_LINK, fontSize: 'var(--wa-type-meta)' }}>
                       {action.cta} <ArrowRight size={13} aria-hidden />
@@ -571,67 +652,13 @@ export function MemberHomeKit({
               ))}
             </ol>
           ) : (
-            <div style={{ display: 'grid', gap: 12, marginTop: 12 }}>
+            <div style={{ marginTop: 12 }}>
               <p className="wa-kit-lede" style={{ margin: 0 }}>{th('interviewEmpty')}</p>
-              <Link
-                href={resolveInterviewHref(toolkitHref)}
-                className="wa-kit-cta wa-kit-focus hover:wa-opacity-90"
-              >
+              <Link href={resolveInterviewHref(toolkitHref)} className="wa-kit-focus" style={{ ...HOME_TEXT_LINK, marginTop: 8 }}>
                 {th('interviewCta')} <ArrowRight size={13} aria-hidden />
               </Link>
             </div>
           )}
-        </section>
-
-        <section className="wa-kit-card" aria-labelledby="member-home-habit-heading">
-          <h2 id="member-home-habit-heading" style={CLAIM_TITLE}>
-            {currentStreak > 0 ? th('habitClaimStreak', { count: currentStreak }) : th('habitClaim')}
-          </h2>
-          <p className="wa-kit-lede" style={{ margin: '10px 0 0' }}>{th('habitBody')}</p>
-          <div className="wa-flex wa-items-center wa-gap-4 wa-flex-wrap" style={{ marginTop: 14 }}>
-            <Link
-              href={programHref}
-              className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus hover:wa-opacity-90"
-            >
-              {th('habitOpenProgram')}
-            </Link>
-            <a
-              href={goalsHref}
-              className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-              style={HOME_TEXT_LINK}
-            >
-              <Target size={14} aria-hidden /> {goals.length > 0 ? th('openGoals') : th('setAGoal')}
-            </a>
-          </div>
-        </section>
-
-        <section className="wa-kit-card" aria-labelledby="member-home-applications-heading">
-          <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12, gap: 12 }}>
-            <h2 id="member-home-applications-heading" style={CLAIM_TITLE}>
-              {pipeline.length > 0 ? th('applicationsClaim') : th('applicationsClaimEmpty')}
-            </h2>
-            <a
-              href={jobsHref}
-              className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-              style={HOME_TEXT_LINK}
-            >
-              {th('openJobs')}
-            </a>
-          </div>
-          <DataTable<PipelineRow>
-            columns={pipelineColumns}
-            rows={pipeline}
-            rowKey={(row) => `${row.role}-${row.company}`}
-            mobile="cards"
-            cardRender={pipelineCard}
-            minWidth={560}
-            empty={{
-              kind: 'first',
-              title: te('activeApplications.title'),
-              description: te('activeApplications.body'),
-              primaryAction: { label: te('activeApplications.action'), href: jobsHref },
-            }}
-          />
         </section>
       </div>
     </DesignSurface>

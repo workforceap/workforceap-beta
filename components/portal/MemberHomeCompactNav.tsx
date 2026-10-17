@@ -18,12 +18,26 @@ const HOME_LINKS = [
   { canonical: '/dashboard', labelKey: 'dashboard' as const, Icon: Home, tourTarget: 'tour-dashboard' },
   { canonical: '/dashboard/program', labelKey: 'myProgram' as const, Icon: BookOpen, tourTarget: 'tour-programs' },
   { canonical: '/dashboard/jobs', labelKey: 'jobBoard' as const, Icon: Briefcase, tourTarget: 'tour-jobs' },
-  { canonical: '/dashboard/ai-tools', labelKey: 'careerToolkit' as const, Icon: Sparkles, tourTarget: 'tour-ai-tools' },
+  { canonical: '/dashboard/ai-tools', labelKey: 'careerToolkit' as const, Icon: Sparkles, tourTarget: 'tour-ai-tools', prominent: true },
   { canonical: '/dashboard/messages', labelKey: 'counselorChat' as const, Icon: MessageSquare, tourTarget: 'tour-messages' },
 ] as const;
 
+const COMPACT_EXACT = new Set([
+  '/dashboard',
+  '/dashboard/program',
+  '/dashboard/jobs',
+  '/dashboard/ai-tools',
+  '/dev/member/home',
+  '/dev/member/program',
+  '/dev/member/jobs',
+  '/dev/member/ai-tools',
+  '/dev/member/toolkit',
+  '/dev/member/resume-studio',
+]);
+
 export function isMemberHomeCompactPath(pathname: string): boolean {
-  return pathname === '/dashboard' || pathname === '/dev/member/home';
+  if (COMPACT_EXACT.has(pathname)) return true;
+  return pathname.startsWith('/dashboard/ai-tools/');
 }
 
 /**
@@ -48,9 +62,13 @@ export default function MemberHomeCompactNav({
     HOME_LINKS.map((tab) => {
       const rail = RAIL_LINKS.get(tab.canonical);
       const remapped = remap(tab.canonical);
+      const extra =
+        tab.canonical === '/dashboard/ai-tools'
+          ? ['/dev/member/ai-tools', '/dev/member/toolkit', '/dev/member/resume-studio']
+          : [];
       return {
         href: tab.canonical,
-        aliases: [...(remapped !== tab.canonical ? [remapped] : []), ...(rail?.aliases ?? [])],
+        aliases: [...(remapped !== tab.canonical ? [remapped] : []), ...extra, ...(rail?.aliases ?? [])],
         exact: rail?.exact,
       };
     }),
@@ -69,12 +87,15 @@ export default function MemberHomeCompactNav({
               <Link
                 href={href}
                 prefetch={false}
-                className={`member-home-compact-nav__link${active ? ' member-home-compact-nav__link--active' : ''}`}
+                className={`member-home-compact-nav__link${active ? ' member-home-compact-nav__link--active' : ''}${tab.canonical === '/dashboard/ai-tools' ? ' member-home-compact-nav__link--tools' : ''}`}
                 aria-current={active ? 'page' : undefined}
                 data-tour={tab.tourTarget}
               >
                 <Icon size={18} aria-hidden />
                 <span>{t(tab.labelKey)}</span>
+                {tab.canonical === '/dashboard/ai-tools' ? (
+                  <span className="member-home-compact-nav__dot" aria-hidden />
+                ) : null}
               </Link>
             </li>
           );
