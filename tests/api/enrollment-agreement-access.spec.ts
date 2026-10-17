@@ -27,7 +27,7 @@ vi.mock('@/lib/enrollmentAgreements/service', () => ({
 vi.mock('@/lib/rate-limit', () => ({ checkResumeUploadRateLimit: async () => ({ success: true }) }));
 vi.mock('@/lib/enrollmentAgreements/pdf', () => ({ readAgreementPdf: vi.fn() }));
 
-import { requireAgreementActor, requireAgreementArchiveActor, requireAgreementMemberAccess } from '@/lib/enrollmentAgreements/access';
+import { agreementStudentWhere, requireAgreementActor, requireAgreementArchiveActor, requireAgreementMemberAccess } from '@/lib/enrollmentAgreements/access';
 import { EnrollmentAgreementError } from '@/lib/enrollmentAgreements/errors';
 import { GET, POST } from '@/app/api/enrollment-agreements/route';
 import { GET as COVERAGE } from '@/app/api/enrollment-agreements/coverage/route';
@@ -186,5 +186,18 @@ describe('enrollment student lookup does not reveal inaccessible account state',
     mocks.findMember.mockResolvedValue({ id: OTHER, organizationId: ORG });
     mocks.notErasing.mockRejectedValue(new EnrollmentAgreementError(409, 'ACCOUNT_ERASURE_IN_PROGRESS', 'Erasing'));
     await expect(requireAgreementMemberAccess(admin, OTHER)).rejects.toMatchObject({ status: 409 });
+  });
+  it('looks up only undeleted member-role students and excludes staff or partner accounts', async () => {
+    expect(agreementStudentWhere(ORG)).toEqual({
+      organizationId: ORG,
+      deletedAt: null,
+      profile: { is: { role: 'member' } },
+      userRoles: { none: { role: { name: { in: ['super_admin', 'admin', 'case_manager', 'counselor', 'employer', 'partner'] } } } },
+    });
+    const admin = { ...actor, id: STAFF, role: 'admin' };
+    await requireAgreementMemberAccess(admin, MEMBER, 'send');
+    expect(mocks.findMember).toHaveBeenCalledWith(expect.objectContaining({
+      where: { ...agreementStudentWhere(ORG), id: MEMBER },
+    }));
   });
 });
