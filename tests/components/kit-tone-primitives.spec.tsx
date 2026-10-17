@@ -213,37 +213,25 @@ describe('AdminDashboardKit funnel bars paint from tones', () => {
   });
 });
 
-describe('MemberHomeKit stat tiles are the kit StatSparkTile', () => {
-  it('renders the four home tiles through the shared tile (kit stat label, tone hook, --wa-kit-tone line) with no literal', () => {
-    const { container } = render(
+describe('MemberHomeKit focus ring paints from state, not position', () => {
+  it('marks a finished path ok and keeps unfinished work untoned', () => {
+    const { container, unmount } = render(
       <NextIntlClientProvider locale="en" messages={messages}>
         <MemberHomeKit
           firstName="Alex" coursePercent={100} activeJobs={1} certs={0} points={100}
           programTitle="IT Support Professional Certificate (IBM)" programStatus="In progress"
           currentStreak={0} longestStreak={0} goals={[]} pipeline={[]}
-          pointsLedger={[{ label: 'Applied to a job', amount: 25 }, { label: 'Studied', amount: 5, tone: 'ok' }]}
-          certModulesDone={0} certModulesTotal={9}
+          certModulesDone={9} certModulesTotal={9}
           programHref="/dashboard/program" resumeHref="/dashboard/program" coursesHref="/dashboard/program"
-          toolkitHref="/dashboard/toolkit" jobsHref="/dashboard/jobs" doThisNext={null} ungatedDigitalBasicsHref={null}
-          pointsSpark={{ series: [10, 40, 25, 75] }}
+          toolkitHref="/dashboard/ai-tools" jobsHref="/dashboard/jobs" doThisNext={null} ungatedDigitalBasicsHref={null}
         />
       </NextIntlClientProvider>,
     );
-    // The shared tile labels through `.wa-kit-stat-label`; the retired local tile styled its label inline.
-    for (const label of ['Course', 'Active jobs', 'Certs']) {
-      expect(screen.getByText(label, { exact: true }).className, label).toContain('wa-kit-stat-label');
-    }
-    // A finished course is `ok`: the tile declares the hook and its icon chip is the kit's tone icon.
-    const courseTile = screen.getByText('Course', { exact: true }).closest('.wa-kit-tone--ok');
-    expect(courseTile).not.toBeNull();
-    expect(courseTile!.querySelector('.wa-kit-tone-icon')).not.toBeNull();
-    // The points sparkline is the kit Sparkline (accent, untoned tile), not a hand-rolled polyline.
-    const line = container.querySelector('svg[viewBox="0 0 100 28"] polyline');
-    expect(line).not.toBeNull();
-    expect(line!.getAttribute('stroke')).toBe('var(--wa-accent)');
-    // Series-less tiles keep the opt-in "No trend yet" slot.
-    expect(screen.getAllByText(messages.dashboard.noTrendYet).length).toBeGreaterThanOrEqual(3);
+    const ring = container.querySelector<HTMLElement>('[role="progressbar"]')!;
+    expect(ring.className).toMatch(/wa-kit-tone--ok/);
+    expect(container.querySelectorAll('[data-testid="stat-spark-tile"]')).toHaveLength(0);
     expect(unexpectedHex(container)).toEqual([]);
+    unmount();
   });
 });
 

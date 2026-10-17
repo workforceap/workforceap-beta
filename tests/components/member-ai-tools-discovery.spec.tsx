@@ -21,10 +21,10 @@ describe('member AI Career Tools discovery', () => {
         <MemberHomeKit recommendedTool={null} />
       </NextIntlClientProvider>,
     );
-    const tools = screen.getByRole('region', { name: 'AI Career Tools' });
+    const tools = screen.getByRole('region', { name: en.dashboard.home.aiClaim });
     expect(within(tools).getByRole('link', { name: 'Explore AI Career Tools' }))
       .toHaveAttribute('href', '/dashboard/ai-tools');
-    expect(tools.compareDocumentPosition(screen.getByText('Certification path')) & Node.DOCUMENT_POSITION_FOLLOWING)
+    expect(tools.compareDocumentPosition(screen.getByRole('heading', { name: en.dashboard.home.interviewClaim })) & Node.DOCUMENT_POSITION_FOLLOWING)
       .toBeTruthy();
   });
 
@@ -43,7 +43,7 @@ describe('member AI Career Tools discovery', () => {
         />
       </NextIntlClientProvider>,
     );
-    const tools = within(screen.getByRole('region', { name: 'AI Career Tools' }));
+    const tools = within(screen.getByRole('region', { name: en.dashboard.home.aiClaim }));
     expect(tools.getByRole('link', { name: 'Open interview prep' }))
       .toHaveAttribute('href', '/dashboard/ai-tools/interview-prep');
     expect(tools.getByRole('link', { name: 'Explore all AI Career Tools' }))

@@ -35,14 +35,14 @@ test.describe('Member Portal MVP', () => {
     await addAuthCookie(context, baseURL || 'http://localhost:3000');
     await page.goto('/dashboard');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(/welcome back|home/i, { timeout: 10000 });
-    await expect(page.getByText('Certification path')).toBeVisible();
+    await expect(page.getByTestId('member-home-focus')).toBeVisible();
   });
 
   test('signed-in member on a retired ?ui=legacy / ?tab= link lands on the one home', async ({ context, page, baseURL }) => {
     await addAuthCookie(context, baseURL || 'http://localhost:3000');
     await page.goto('/dashboard?ui=legacy&tab=learning');
     await expect(page).toHaveURL(/\/dashboard$/);
-    await expect(page.getByText('Certification path')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByTestId('member-home-focus')).toBeVisible({ timeout: 10000 });
   });
 
   test('signed-in member sees Resources page and filters', async ({ context, page, baseURL }) => {

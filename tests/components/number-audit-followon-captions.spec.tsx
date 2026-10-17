@@ -84,8 +84,7 @@ describe('1. reporting hub Overview qualifies the metrics numbers (S29 follow-on
   });
 });
 
-describe('2. member home tiles colour by state, not by column (WAP-99 / #2434)', () => {
-  /** Legacy names and brand hues written inline — the tone hook is the sanctioned path. */
+describe('2. member home paints state, not position (WAP-99 / #2434)', () => {
   const LEGACY_INLINE = /--color-|var\(--wa-(?:gold|info|success|danger)(?:-dark|-soft)?\)/;
 
   function renderHome(props: Record<string, unknown> = {}) {
@@ -98,102 +97,39 @@ describe('2. member home tiles colour by state, not by column (WAP-99 / #2434)',
           certs={1}
           points={640}
           programTitle="Google IT Support Certificate"
-          nextBadgeName="Networking basics"
-          nextBadgePercent={30}
+          certModulesDone={3}
+          certModulesTotal={7}
           {...props}
         />
       </NextIntlClientProvider>,
     );
   }
 
-  function tileFor(container: HTMLElement, label: string): HTMLElement {
-    const labelEl = Array.from(container.querySelectorAll<HTMLElement>('div')).find(
-      (el) => el.childElementCount === 0 && el.textContent === label,
-    );
-    expect(labelEl, `stat tile "${label}"`).toBeTruthy();
-    // The home tiles are the kit StatSparkTile (an Astryx Card, not `.wa-kit-card`);
-    // the marked element is the one that declares the tone hook itself.
-    return labelEl!.closest('[data-testid="stat-spark-tile"]') as HTMLElement;
-  }
-
-  /** The tile's tone hook lives on the tile element itself or a descendant. */
-  function toned(tile: HTMLElement, selector: string): Element | null {
-    return tile.matches(selector) ? tile : tile.querySelector(selector);
-  }
-
-  it('gives no tile a tone just for being in its column', () => {
+  it('does not mount the four positional stat tiles', () => {
     const { container } = renderHome();
-    // 42% course, 2 jobs, 1 cert, 640 points: only the two "you have some"
-    // states paint. Nothing is magenta-because-first or gold-because-third.
-    expect(toned(tileFor(container, 'Course'), '[class*="wa-kit-tone--"]')).toBeNull();
-    expect(toned(tileFor(container, 'Points'), '[class*="wa-kit-tone--"]')).toBeNull();
-    expect(toned(tileFor(container, 'Active jobs'), `.${toneClass('ok')}`)).not.toBeNull();
-    expect(toned(tileFor(container, 'Certs'), `.${toneClass('ok')}`)).not.toBeNull();
+    expect(container.querySelectorAll('[data-testid="stat-spark-tile"]')).toHaveLength(0);
+    expect(screen.queryByText('Course')).toBeNull();
+    expect(screen.queryByText('Active jobs')).toBeNull();
   });
 
-  it('paints the course tile from its value: ok when finished, warn only once not-started has gone stale', () => {
-    const done = renderHome({ coursePercent: 100 });
-    expect(toned(tileFor(done.container, 'Course'), `.${toneClass('ok')}`)).not.toBeNull();
+  it('paints the focus ring from its value: ok when finished, warn only once not-started has gone stale', () => {
+    const done = renderHome({ coursePercent: 100, certModulesDone: 7, certModulesTotal: 7 });
+    const okRing = done.container.querySelector<HTMLElement>('[role="progressbar"]')!;
+    expect(okRing.classList.contains(toneClass('ok')!)).toBe(true);
     cleanup();
 
-    // Enrolled and not started is only worth a nudge once the shared
-    // staleness threshold has passed; 0% an hour after enrolling is not.
-    const fresh = renderHome({ coursePercent: 0 });
-    expect(toned(tileFor(fresh.container, 'Course'), '[class*="wa-kit-tone--"]')).toBeNull();
-    cleanup();
-
-    const unstarted = renderHome({ coursePercent: 0, courseProgressStale: true });
-    expect(toned(tileFor(unstarted.container, 'Course'), `.${toneClass('warn')}`)).not.toBeNull();
-    cleanup();
-
-    // No program to be behind on, so nothing to warn about.
-    const noProgram = renderHome({ coursePercent: 0, courseProgressStale: true, programTitle: undefined });
-    expect(noProgram.container.querySelector(`.${toneClass('warn')}`)).toBeNull();
-  });
-
-  it('keeps the icon chip and trend line on the tone hook, never an inline hue', () => {
-    const { container } = renderHome({ activeJobsSpark: { series: [1, 2, 3], delta: '1' } });
-    const chips = container.querySelectorAll<HTMLElement>('.wa-kit-tone-icon');
-    // Guard the loop: with no chips in the tree it would pass vacuously.
-    expect(chips.length).toBeGreaterThan(0);
-    for (const chip of chips) {
-      expect(chip.getAttribute('style')).toBeNull();
-    }
-    const strokes = Array.from(container.querySelectorAll('polyline')).map((p) => p.getAttribute('stroke'));
-    expect(strokes.length).toBeGreaterThan(0);
-    for (const stroke of strokes) expect(stroke === 'var(--wa-kit-tone)' || stroke === 'var(--wa-accent)').toBe(true);
-  });
-
-  it('keeps every tile number neutral', () => {
-    const { container } = renderHome();
-    for (const label of ['Course', 'Active jobs', 'Certs', 'Points']) {
-      const tile = tileFor(container, label);
-      const value = tile.querySelector<HTMLElement>('div[style*="font-size: 26px"]');
-      expect(value, `value of "${label}"`).not.toBeNull();
-      expect(value!.style.color).toBe('var(--wa-text)');
-    }
-  });
-
-  it('rings and segment bars paint from the tone hook too', () => {
-    const inProgress = renderHome({ coursePercent: 42 });
-    const ring = inProgress.container.querySelector<HTMLElement>('[role="progressbar"][aria-label="Course completion"]')!;
+    const inProgress = renderHome({ coursePercent: 42, certModulesDone: 3, certModulesTotal: 7 });
+    const ring = inProgress.container.querySelector<HTMLElement>('[role="progressbar"]')!;
     expect(ring.className).not.toMatch(/wa-kit-tone--/);
     cleanup();
 
-    const finished = renderHome({ coursePercent: 100 });
-    const okRing = finished.container.querySelector<HTMLElement>('[role="progressbar"][aria-label="Course completion"]')!;
-    expect(okRing.classList.contains(toneClass('ok')!)).toBe(true);
+    const unstarted = renderHome({ coursePercent: 0, certModulesDone: 0, certModulesTotal: 7, courseProgressStale: true });
+    const warnRing = unstarted.container.querySelector<HTMLElement>('[role="progressbar"]')!;
+    expect(warnRing.classList.contains(toneClass('warn')!)).toBe(true);
+    cleanup();
 
-    const badge = finished.container.querySelector<HTMLElement>(
-      '[role="progressbar"][aria-label="Networking basics badge progress"]',
-    )!;
-    // Progress toward a badge has no good/bad state; it stays on the accent.
-    expect(badge.className).not.toMatch(/wa-kit-tone--/);
-    const badgeSegments = badge.querySelectorAll<HTMLElement>('span');
-    expect(badgeSegments.length).toBeGreaterThan(0);
-    for (const segment of badgeSegments) {
-      expect(segment.getAttribute('style')).not.toMatch(LEGACY_INLINE);
-    }
+    const noProgram = renderHome({ coursePercent: 0, courseProgressStale: true, programTitle: undefined, certModulesDone: undefined, certModulesTotal: undefined });
+    expect(noProgram.container.querySelector(`.${toneClass('warn')}`)).toBeNull();
   });
 
   it('paints the pipeline stage track from the row tone instead of a named hue', () => {

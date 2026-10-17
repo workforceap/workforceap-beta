@@ -31,6 +31,7 @@ import PortalRoleSwitcher from './PortalRoleSwitcher';
 import { SignOutButton } from './SignOutButton';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import MemberPortalTopNav from './MemberPortalTopNav';
+import MemberHomeCompactNav, { isMemberHomeCompactPath } from './MemberHomeCompactNav';
 import GlobalSearch from './GlobalSearch';
 import type { PortalSwitcherRole } from '@/lib/auth/portalRoleSwitcher';
 import type { TourKey } from '@/lib/tours/registry';
@@ -227,8 +228,10 @@ export default function WorkspaceShell({
   const [wide, setWide] = useState(false);
   const [badges, setBadges] = useState<Partial<Record<NavBadgeKey, number>>>({});
   const [badgeFetchError, setBadgeFetchError] = useState(false);
-  const isCollapsedDesktop = collapsed && wide;
-  const isMobileDrawer = drawerOpen && !wide;
+  const isMemberHomeCompact = portalRole === 'member' && isMemberHomeCompactPath(pathname);
+  const persistentRail = wide && !isMemberHomeCompact;
+  const isCollapsedDesktop = collapsed && persistentRail;
+  const isMobileDrawer = drawerOpen && !persistentRail;
   const isSuperAdmin = useIsSuperAdmin(knownSuperAdmin ?? superAdmin);
   // Admin rail sections open while a guided tour runs so every anchor is visible
   // (no-op value when no TourProvider is mounted).
@@ -497,7 +500,12 @@ export default function WorkspaceShell({
   const minimalHeader = minimalMobileHeader || (portalRole !== 'member' && !wide);
 
   return (
-    <div className="workspace-shell-root" data-workspace-role={portalRole} style={rootStyle}>
+    <div
+      className="workspace-shell-root"
+      data-workspace-role={portalRole}
+      data-member-home-compact={isMemberHomeCompact ? 'true' : undefined}
+      style={rootStyle}
+    >
       {/* Mirror the data-portal-role effect at parse time so <html>/<body> take the
           portal canvas on first paint instead of after hydration (WAP-153). The
           value is a fixed PortalRole union member, never user input. */}
@@ -665,7 +673,7 @@ export default function WorkspaceShell({
         <aside
           id="workspace-sidebar"
           ref={trapRef}
-          inert={!wide && !drawerOpen}
+          inert={!persistentRail && !drawerOpen}
           aria-hidden={!wide && !drawerOpen ? true : undefined}
           role={isMobileDrawer ? 'dialog' : undefined}
           aria-modal={isMobileDrawer ? true : undefined}
@@ -693,7 +701,7 @@ export default function WorkspaceShell({
               ) : (
                 <div className="workspace-sidebar-label">{!wide && hasTabs && activeTab ? translateLabel(NAV_TAB_META[activeTab].label) : translateLabel(workspaceLabel)}</div>
               )}
-              {wide ? (
+              {persistentRail ? (
                 <button
                   type="button"
                   className="workspace-sidebar-collapse-btn"
@@ -762,7 +770,7 @@ export default function WorkspaceShell({
                                 data-nested-under={item.nestedUnder}
                                 onClick={closeDrawer}
                                 title={isCollapsedDesktop ? translateLabel(item.label) : undefined}
-                                {...(item.tourTarget ? { 'data-tour': item.tourTarget } : {})}
+                                {...(item.tourTarget && !isMemberHomeCompact ? { 'data-tour': item.tourTarget } : {})}
                               >
                                 {Icon ? (
                                   <span className="workspace-sidebar-icon" aria-hidden>
@@ -855,6 +863,7 @@ export default function WorkspaceShell({
         </aside>
 
         <div ref={mainRef} className="workspace-shell-main workspace-shell-main--stack">
+          {isMemberHomeCompact ? <MemberHomeCompactNav hrefMap={navHrefMap} /> : null}
           {portalRole === 'member' ? <MemberPortalTopNav badgeCounts={badges} hrefMap={navHrefMap} /> : null}
           {portalRole === 'member' ? resumeUploadHint : null}
           {topBanner}

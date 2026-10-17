@@ -129,7 +129,7 @@ describe('member guided tour (wave 3)', () => {
 
   it('every registry step has exactly one real anchor in the member shell around the real home kit', () => {
     render(<Portal />);
-    expect(screen.getByRole('heading', { name: 'Certification path' })).toBeInTheDocument();
+    expect(screen.getByTestId('member-home-focus')).toBeInTheDocument();
     for (const step of TOUR.steps) {
       const anchors = document.querySelectorAll(`[data-tour="${step.target}"]`);
       expect(anchors, step.target).toHaveLength(1);
@@ -245,7 +245,11 @@ describe('member guided tour (wave 3)', () => {
     expect(document.querySelector('[data-tour="tour-help"]')).toBeNull();
     // The nav rows and header identity are pre-flag chrome and stay exactly as they were.
     expect(screen.getByTestId('workspace-shell-identity-link')).toHaveAttribute('href', '/dashboard/profile');
-    expect(screen.getByRole('link', { name: 'My program' })).toHaveAttribute('href', '/dashboard/program');
+    const programLinks = screen.getAllByRole('link', { name: 'My program' });
+    expect(programLinks.length).toBeGreaterThan(0);
+    for (const link of programLinks) {
+      expect(link).toHaveAttribute('href', '/dashboard/program');
+    }
     unmount();
 
     render(<Portal tour={{ key: 'member.home', enabled: false, offer: false }} />);

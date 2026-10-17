@@ -59,73 +59,26 @@ function sparklines(container: HTMLElement): SVGPolylineElement[] {
   return [...container.querySelectorAll('polyline')] as SVGPolylineElement[];
 }
 
-describe('the Points stat tile renders the weekly series the loader computes', () => {
-  it('draws one line, with one point per rolling week', () => {
+describe('the Points trend the loader computes stays off the refreshed home', () => {
+  it('still buckets one point per rolling week', () => {
     const trend = buildMemberPointsTrend({ transactions: LEDGER });
     const spark = memberPointsSpark(trend);
     expect(spark?.series).toHaveLength(MEMBER_TREND_WEEKS);
-
-    const { container } = renderHome({ pointsSpark: spark, pointsThisWeek: trend.thisWeek });
-    const lines = sparklines(container);
-    expect(lines).toHaveLength(1);
-    expect(lines.length).toBeGreaterThan(0);
-    for (const line of lines) {
-      const points = (line.getAttribute('points') ?? '').trim().split(/\s+/);
-      expect(points).toHaveLength(MEMBER_TREND_WEEKS);
-    }
-  });
-
-  it('is the Points tile, and the other three tiles stay blank', () => {
-    const spark = memberPointsSpark(buildMemberPointsTrend({ transactions: LEDGER }));
-    const { container } = renderHome({ pointsSpark: spark });
-
-    // The home tiles are the kit StatSparkTile (an Astryx Card, not `.wa-kit-card`).
-    const tiles = [...container.querySelectorAll('[data-testid="stat-spark-tile"]')].filter((card) =>
-      card.querySelector('polyline'),
-    );
-    expect(tiles).toHaveLength(1);
-    expect(tiles.length).toBeGreaterThan(0);
-    for (const tile of tiles) {
-      expect(tile.textContent).toContain('Points');
-      // Certifications deliberately never gets a line; the other two are a
-      // later pass, and neither may borrow this one.
-      expect(tile.textContent).not.toContain('Certifications');
-      expect(tile.textContent).not.toContain('Active jobs');
-    }
-  });
-
-  it('renders the week-over-week delta chip beside the number', () => {
-    const trend = buildMemberPointsTrend({ transactions: LEDGER });
-    const spark = memberPointsSpark(trend);
     expect(spark?.delta).toBe(String(Math.abs(trend.thisWeek - trend.previousWeek)));
-    const { container } = renderHome({ pointsSpark: spark });
-    expect(container.textContent).toContain(spark?.delta ?? 'missing delta');
   });
 
-  it('fills the Points tile trend slot and leaves the other three on the empty placeholder', () => {
-    // #2446 gave every tile without a series a muted "No trend yet" slot. The
-    // Points tile is the first to have something real to put there; the other
-    // three must keep the placeholder, not borrow this line.
+  it('does not paint a Points tile or sparkline on Home', () => {
     const spark = memberPointsSpark(buildMemberPointsTrend({ transactions: LEDGER }));
-    const { container } = renderHome({ pointsSpark: spark });
-
-    const placeholders = [...container.querySelectorAll('[data-testid="stat-trend-empty"]')];
-    expect(placeholders).toHaveLength(3);
-    expect(placeholders.length).toBeGreaterThan(0);
-    for (const placeholder of placeholders) {
-      expect(placeholder.textContent).toBe('No trend yet');
-      expect(placeholder.closest('[data-testid="stat-spark-tile"]')?.textContent).not.toContain('Points');
-    }
-    expect(sparklines(container)).toHaveLength(1);
+    const { container } = renderHome({ pointsSpark: spark, pointsThisWeek: 40 });
+    expect(container.querySelectorAll('[data-testid="stat-spark-tile"]')).toHaveLength(0);
+    expect(sparklines(container)).toHaveLength(0);
+    expect(container.querySelectorAll('[data-testid="stat-trend-empty"]')).toHaveLength(0);
   });
 
-  it('draws nothing at all for a member with no points history', () => {
+  it('draws nothing for a member with no points history', () => {
     const empty = memberPointsSpark(buildMemberPointsTrend({ transactions: [] }));
     expect(empty).toBeUndefined();
     const { container } = renderHome({ pointsSpark: empty });
     expect(sparklines(container)).toHaveLength(0);
-    // A flat rule at zero would read as a real trend sitting at zero; the tile
-    // falls back to the same empty slot its three neighbours use.
-    expect(container.querySelectorAll('[data-testid="stat-trend-empty"]')).toHaveLength(4);
   });
 });

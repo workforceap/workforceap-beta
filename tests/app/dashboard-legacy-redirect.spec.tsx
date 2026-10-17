@@ -141,7 +141,7 @@ describe('/dashboard retires ?ui=legacy and ?tab= (WAP-195)', () => {
     );
     expect(redirect).not.toHaveBeenCalled();
     expect(loadMemberDashboardHome).toHaveBeenCalledTimes(1);
-    expect(html).toContain('Certification path');
+    expect(html).toContain('member-home-focus');
     expect(html).not.toContain('data-portal-error-state');
   });
 });
