@@ -169,6 +169,25 @@ describe('MemberHomeKit interview steps + recommended tool', () => {
   });
 });
 
+describe('MemberHomeKit curriculum rows', () => {
+  it('labels finished modules as Done, not Next module', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        certModulesDone={7}
+        certModulesTotal={9}
+        curriculum={[
+          { title: 'Networking', state: 'done', grade: 'Completed · Grade: 98%', number: 6 },
+          { title: 'Shared Responsibility Model', state: 'active', due: 'Due Thursday', number: 8 },
+        ]}
+      />,
+    );
+    expect(screen.getByText(/Module 6: Networking/)).toBeTruthy();
+    expect(screen.getByText(home.curriculumDone)).toBeTruthy();
+    expect(screen.queryByText(/Next module 6/)).toBeNull();
+  });
+});
+
 describe('MemberHomeKit application pipeline company line', () => {
   it('hides QA / demo / sandbox employers and keeps real ones', () => {
     renderKit(

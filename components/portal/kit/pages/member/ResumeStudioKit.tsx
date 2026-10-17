@@ -2,6 +2,7 @@
 
 import { Layers } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import ResumeStudioClient from '@/components/portal/ResumeStudioClient';
 import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBreakdown';
@@ -32,6 +33,15 @@ export interface ResumeStudioFix {
   tag: 'highImpact' | 'keywordGap' | 'formatting';
 }
 
+export interface ResumeStudioRewritePreview {
+  previous: string;
+  suggested: string;
+  points?: number;
+  summary?: string;
+  targetEmployer?: string;
+  targetRole?: string;
+}
+
 export function ResumeStudioKit({
   hasResume = false,
   scoreHistorySlot,
@@ -54,6 +64,7 @@ export function ResumeStudioKit({
   clarityPct,
   metricsPct,
   keywordsPct,
+  rewritePreview,
 }: {
   hasResume?: boolean;
   scoreHistorySlot?: ReactNode;
@@ -76,8 +87,12 @@ export function ResumeStudioKit({
   clarityPct?: number;
   metricsPct?: number;
   keywordsPct?: number;
+  rewritePreview?: ResumeStudioRewritePreview;
 }) {
   const t = useTranslations('dashboard.resumeC');
+  const [acceptedRewrite, setAcceptedRewrite] = useState(false);
+  const [editingRewrite, setEditingRewrite] = useState(false);
+  const [draftBullet, setDraftBullet] = useState(rewritePreview?.suggested ?? '');
   const health = score ?? previewScorePayload?.composite;
   const listedTarget = targetListing ?? initialJobTarget;
   const coach = coachName ?? advisor?.name;
@@ -128,7 +143,7 @@ export function ResumeStudioKit({
             ]}
           />
         </div>
-        <div className="wa-dense-grid wa-dense-grid--3">
+        <div className="wa-dense-grid wa-dense-grid--resume">
           <section className="wa-kit-card" aria-labelledby="resume-diagnostics-heading">
             <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12 }}>
               <h2 id="resume-diagnostics-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{t('diagnostics')}</h2>
@@ -173,6 +188,54 @@ export function ResumeStudioKit({
               <h2 id="resume-draft-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{t('workingDraft')}</h2>
               <StatusTag tone={hasResume ? 'ok' : 'muted'}>{t('draftReady')}</StatusTag>
             </div>
+            {rewritePreview ? (
+              <div className="wa-space-y-3" style={{ marginBottom: 16 }}>
+                {rewritePreview.targetEmployer || rewritePreview.targetRole ? (
+                  <p className="wa-kit-meta" style={{ margin: 0 }}>
+                    {t('targetEmployer')}{' '}
+                    <strong>{[rewritePreview.targetEmployer, rewritePreview.targetRole].filter(Boolean).join(' · ')}</strong>
+                  </p>
+                ) : null}
+                <div className="wa-kit-card wa-kit-card--sm">
+                  <p className="wa-kit-meta" style={{ margin: '0 0 8px', fontWeight: 700 }}>{t('experienceBullet')}</p>
+                  <p className="wa-kit-lede" style={{ margin: 0 }}>
+                    {t('previousVersion')} {acceptedRewrite ? draftBullet : rewritePreview.previous}
+                  </p>
+                </div>
+                {!acceptedRewrite ? (
+                  <div className="wa-kit-card wa-kit-card--sm" style={{ background: 'var(--wa-success-soft)' }}>
+                    <p className="wa-kit-meta" style={{ margin: '0 0 8px', fontWeight: 700, color: 'var(--wa-success-dark)' }}>
+                      {typeof rewritePreview.points === 'number' ? t('suggestedRewritePts', { points: rewritePreview.points }) : t('suggestedRewrite')}
+                    </p>
+                    {editingRewrite ? (
+                      <textarea
+                        className="wa-kit-focus"
+                        value={draftBullet}
+                        onChange={(event) => setDraftBullet(event.target.value)}
+                        rows={3}
+                        style={{ width: '100%', minHeight: 72, resize: 'vertical', border: '1px solid var(--wa-control-border)', borderRadius: 'var(--wa-radius-sm)', padding: '0.6rem 0.75rem', background: 'var(--wa-surface)', color: 'var(--wa-text)', font: 'inherit' }}
+                      />
+                    ) : (
+                      <p className="wa-kit-lede" style={{ margin: 0 }}>{draftBullet}</p>
+                    )}
+                    <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap" style={{ marginTop: 12 }}>
+                      <button type="button" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" onClick={() => setEditingRewrite((open) => !open)}>
+                        {t('edit')}
+                      </button>
+                      <button type="button" className="wa-kit-cta wa-kit-focus" onClick={() => { setAcceptedRewrite(true); setEditingRewrite(false); }}>
+                        {t('acceptChange')}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+                {rewritePreview.summary ? (
+                  <div className="wa-kit-card wa-kit-card--sm">
+                    <p className="wa-kit-meta" style={{ margin: '0 0 8px', fontWeight: 700 }}>{t('professionalSummary')}</p>
+                    <p className="wa-kit-lede" style={{ margin: 0 }}>{rewritePreview.summary}</p>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             <ResumeStudioClient
               hasResume={hasResume}
               scoreHistorySlot={scoreHistorySlot}

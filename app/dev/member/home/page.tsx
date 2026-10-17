@@ -11,6 +11,7 @@ import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
 import PortalEntryErrorBoundary from '@/components/portal/PortalEntryErrorBoundary';
 import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
+import { DEV_ADVISOR, DEV_HOME_PIPELINE, DEV_MEMBER_FIRST_NAME, DEV_MEMBER_FULL_NAME } from '@/app/dev/member/devMemberFixtures';
 
 /**
  * Storybook-lite showcase — MemberHomeKit "Command Center" (fully populated,
@@ -134,12 +135,12 @@ export default async function DevMemberHomePage({
   const courseProgressStale = courseFixture === 'zero-stale';
   const jobOffers = params?.offer === 'off'
     ? []
-    : [{ id: 'dev-offer-1', role: 'Cloud Support Associate', company: 'Indeed · Austin, TX' }];
+    : [{ id: 'dev-offer-1', role: 'Cloud Support Associate', company: 'Brightline Credit Union · Austin, TX' }];
   const first90Stage: First90Stage | null =
     params?.first90 === 'off' ? null : params?.first90 && isFirst90Stage(params.first90) ? params.first90 : 'day_30';
   const first90 = first90Stage
     ? buildFirst90Card(
-        { placedAt: new Date(Date.now() - FIRST90_FIXTURE_DAYS[first90Stage] * DAY_MS), employerName: 'Deloitte' },
+        { placedAt: new Date(Date.now() - FIRST90_FIXTURE_DAYS[first90Stage] * DAY_MS), employerName: 'Brightline Credit Union' },
         first90Stage === 'week_1'
           ? []
           : [{ entityId: 'week_1', metadata: { response: 'going_well' }, createdAt: new Date(Date.now() - 20 * DAY_MS) }],
@@ -189,7 +190,7 @@ export default async function DevMemberHomePage({
           isSuperAdmin={false}
           tourSteps={MEMBER_PORTAL_TOUR_STEPS}
           wizardProps={{
-            initialFullName: 'Mike Brown',
+            initialFullName: DEV_MEMBER_FULL_NAME,
             initialPhone: '',
             initialAddress: '',
             initialCity: 'Austin',
@@ -209,9 +210,9 @@ export default async function DevMemberHomePage({
     {placement === 'primary' ? approvalCard : null}
     <MemberHomeKit
       showStaffViewBanner={params?.staff === '1'}
-      advisor={params?.advisor === 'off' ? null : { name: 'Dana Reyes', firstName: 'Dana', messagingHref: '/dev/member/messages' }}
+      advisor={params?.advisor === 'off' ? null : DEV_ADVISOR}
       programSwitch={programSwitch}
-      firstName="Mike"
+      firstName={DEV_MEMBER_FIRST_NAME}
       coursePercent={coursePercent}
       courseProgressStale={courseProgressStale}
       activeJobs={4}
@@ -270,7 +271,7 @@ export default async function DevMemberHomePage({
       pointsSpark={{ series: [900, 950, 1000, 1080, 1120, 1180, 1240], delta: '85', direction: 'up' }}
       certModulesDone={7}
       certModulesTotal={9}
-      programCoursesNote="9 courses: 8 on Coursera's learning path plus the WorkforceAP Lab, Project, and Test Preparation (delivered by WorkforceAP, not part of the Coursera path)."
+      programCoursesNote="9 courses: 8 on the Coursera learning path plus the WorkforceAP Lab, Project, and Test Preparation (delivered by WorkforceAP, not part of the Coursera path)."
 
       weeklyActivity={[
         { day: 'Mon', minutes: 18 },
@@ -292,44 +293,7 @@ export default async function DevMemberHomePage({
         { title: 'Finish AWS Cloud Practitioner', percent: 78 },
         { title: 'Apply to 5 cloud roles', percent: 80 },
       ]}
-      pipeline={[
-        {
-          role: 'Salesforce Administrator',
-          company: 'Deloitte',
-          stage: 'Interviewing',
-          tone: 'warn',
-          appliedLabel: 'Jun 18',
-          stageIndex: 3,
-          stageTotal: 3,
-        },
-        {
-          role: 'Agentforce Solutions Engineer',
-          company: 'Accenture · Remote',
-          stage: 'Applied',
-          tone: 'muted',
-          appliedLabel: 'Jun 29',
-          stageIndex: 1,
-          stageTotal: 3,
-        },
-        {
-          role: 'Cloud Support Associate',
-          company: 'Indeed · Austin, TX',
-          stage: 'Screening',
-          tone: 'info',
-          appliedLabel: 'Jun 24',
-          stageIndex: 2,
-          stageTotal: 3,
-        },
-        {
-          role: 'Junior Cloud Engineer',
-          company: 'Oracle · Austin, TX',
-          stage: 'Applied',
-          tone: 'muted',
-          appliedLabel: 'Jul 1',
-          stageIndex: 1,
-          stageTotal: 3,
-        },
-      ]}
+      pipeline={[...DEV_HOME_PIPELINE]}
     />
     {placement === 'demoted' ? approvalCard : null}
     </>

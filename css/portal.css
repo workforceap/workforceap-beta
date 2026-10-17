@@ -3155,6 +3155,10 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   .wa-dense-grid--3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+  .wa-dense-grid--resume {
+    grid-template-columns: minmax(15rem, 0.85fr) minmax(0, 1.7fr) minmax(14rem, 0.75fr);
+    align-items: start;
+  }
 }
 
 .wa-dev-example-banner {

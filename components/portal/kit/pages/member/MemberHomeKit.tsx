@@ -16,7 +16,7 @@ import {
   type Column,
   type KitTone,
 } from '@/components/portal/kit';
-import MemberAdvisorCard from '@/components/portal/kit/pages/member/MemberAdvisorCard';
+import { Avatar } from '@/components/portal/kit/Avatar';
 import MemberAiToolsCard from '@/components/portal/kit/pages/member/MemberAiToolsCard';
 import type { AssignedCounselor } from '@/lib/member/counselorContext';
 import First90DaysCard, { type First90DaysCardProps } from '@/components/portal/First90DaysCard';
@@ -549,7 +549,7 @@ export function MemberHomeKit({
                     return (
                       <li key={item.title} className={cx('wa-kit-card wa-kit-card--sm', toneClass(tone))} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
                         <div>
-                          <strong style={{ display: 'block' }}>{item.number ? `${th('nextModuleLabel')} ${item.number}: ${item.title}` : item.title}</strong>
+                          <strong style={{ display: 'block' }}>{item.number ? `${th('moduleLabel', { n: item.number })}: ${item.title}` : item.title}</strong>
                           <span className="wa-kit-meta">{item.grade ?? item.due ?? ''}</span>
                         </div>
                         <StatusTag tone={tone}>{label}</StatusTag>
@@ -586,11 +586,16 @@ export function MemberHomeKit({
               />
             </section>
 
-            <div className="wa-dense-grid" style={{ gridTemplateColumns: '1fr' }}>
+            <div className="wa-dense-grid wa-dense-grid--2">
               <MemberAiToolsCard toolkitHref={toolkitHref} recommendedTool={recommendedTool} />
               <section className="wa-kit-card" aria-labelledby="member-home-support-heading">
                 <h2 id="member-home-support-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{th('dedicatedSupport')}</h2>
-                <MemberAdvisorCard advisor={advisor} />
+                {advisor ? (
+                  <div className="wa-flex wa-items-center wa-gap-3" style={{ marginTop: 12 }} data-testid="member-advisor-card">
+                    <Avatar initials={advisor.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('') || '?'} size={44} src={advisor.avatar ?? undefined} />
+                    <p style={{ margin: 0, fontWeight: 800 }}>{advisor.name}</p>
+                  </div>
+                ) : null}
                 {nextCheckIn ? <p className="wa-kit-lede" style={{ marginTop: 8 }}>{th('nextCheckIn', { when: nextCheckIn })}</p> : null}
                 {advisor ? <p className="wa-kit-meta">{th('replyTime')}</p> : null}
                 <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap" style={{ marginTop: 12 }}>

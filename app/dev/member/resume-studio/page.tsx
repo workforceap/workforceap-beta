@@ -141,6 +141,14 @@ export default async function DevMemberResumeStudioPage({
           { title: 'IT Support Specialist', saved: 'Saved · Oct 9', score: 68, href: '/dev/member/resume-studio' },
           { title: 'Core master profile', saved: 'Saved · Oct 2', score: 62, href: '/dev/member/resume-studio' },
         ]}
+        rewritePreview={{
+          targetEmployer: 'Brightline Credit Union',
+          targetRole: 'Cloud Support Associate',
+          previous: 'Assisted internal staff with technical tickets and reset passwords in enterprise accounts.',
+          suggested: 'Resolved 45+ weekly support tickets, including account and password issues.',
+          points: 14,
+          summary: 'Target-oriented IT technician trained in cloud infrastructure support, Active Directory user permissions, and rapid triage workflows for high-availability environments.',
+        }}
       />
     </Suspense>
   );

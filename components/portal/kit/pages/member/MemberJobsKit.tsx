@@ -45,6 +45,7 @@ interface RecommendedJob {
   match: string;
   title: string;
   meta: string;
+  skills?: readonly string[];
 }
 
 /** One live opening on the board (`Job.status = 'live'`, not expired). */
@@ -164,9 +165,11 @@ export function MemberJobsKit({
     </div>
   );
 
+  const recommendedIds = new Set(recommended.map((job) => job.id));
+  const uniqueOpenRoles = openRoles.filter((job) => !recommendedIds.has(job.id));
   const highMatches = recommended.filter((job) => Number.parseInt(job.match, 10) >= 85).length;
   const best = recommended[0];
-  const remaining = Math.max(0, openRolesCount - Math.max(recommended.length, openRoles.length, 0));
+  const remaining = Math.max(0, openRolesCount - recommended.length - uniqueOpenRoles.length);
   const employerCount = new Set(
     recommended
       .map((job) => job.meta.split('·')[0]?.trim())
@@ -232,11 +235,18 @@ export function MemberJobsKit({
                     <h2 id="jobs-best-match-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{tj('bestMatch')}</h2>
                     <StatusTag tone="ok">{tj('topRecommendation')}</StatusTag>
                   </div>
-                  <StatusTag tone="ok">{best.match}</StatusTag>
+                  <StatusTag tone="muted">{best.match}</StatusTag>
                 </div>
                 <h3 style={{ margin: '12px 0 4px', fontWeight: 800, fontSize: 'clamp(1.15rem, 2vw, 1.4rem)' }}>{best.title}</h3>
                 <p className="wa-kit-lede" style={{ margin: 0 }}>{best.meta}</p>
                 <p className="wa-kit-meta" style={{ margin: '10px 0 0', fontWeight: 700 }}>{tj('skillsMatched')}</p>
+                {best.skills && best.skills.length > 0 ? (
+                  <div className="wa-flex wa-items-center wa-gap-2 wa-flex-wrap" style={{ marginTop: 8 }}>
+                    {best.skills.map((skill) => (
+                      <StatusTag key={skill} tone="muted">{skill}</StatusTag>
+                    ))}
+                  </div>
+                ) : null}
                 <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap" style={{ marginTop: 16 }}>
                   <JobsCta href={jobHref(best.id)} variant="secondary">{tj('saveRole')}</JobsCta>
                   <JobsCta href={jobHref(best.id)}>{tj('applyNow')}</JobsCta>
@@ -311,9 +321,9 @@ export function MemberJobsKit({
                     secondaryAction={{ label: t('openings.secondary'), href: JOBS_BOARD_EMPTY.secondaryHref }}
                   />
                 </div>
-              ) : (
+              ) : uniqueOpenRoles.length === 0 ? null : (
                 <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }} data-testid="open-roles-list">
-                  {openRoles.map((job, i) => (
+                  {uniqueOpenRoles.map((job, i) => (
                     <JobListingRow
                       key={job.id}
                       href={jobHref(job.id)}
