@@ -1,15 +1,19 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import {
+  DEFAULT_MIKE_THREAD_OWNER_EMAIL,
   DEFAULT_SOLE_COUNSELOR_EMAIL,
+  formatMikeThreadHandoffPlan,
   formatSoleCounselorPlan,
   isOpsFixtureEmail,
+  type MikeThreadHandoffPlan,
   type SoleCounselorPlan,
 } from './soleCounselorOps';
 
 describe('soleCounselorOps', () => {
-  it('keeps the confirmed dad email as the default sole counselor', () => {
+  it('keeps the confirmed dad and Mike thread-owner emails', () => {
     assert.equal(DEFAULT_SOLE_COUNSELOR_EMAIL, 'mbrowncsn@sbcglobal.net');
+    assert.equal(DEFAULT_MIKE_THREAD_OWNER_EMAIL, 'mabrown040@gmail.com');
   });
 
   it('treats portal QA and seeded fixture emails as non-caseload', () => {
@@ -78,5 +82,46 @@ describe('soleCounselorOps', () => {
     assert.match(text, /Unassigned members to assign to sole counselor: 1/);
     assert.match(text, /partner_referred: 1/);
     assert.match(text, /threadOwner=mabrown040@gmail\.com/);
+  });
+
+  it('formats a mike-threads-only handoff plan', () => {
+    const plan: MikeThreadHandoffPlan = {
+      sole: {
+        counselorId: 'c-dad',
+        userId: 'u-dad',
+        email: 'mbrowncsn@sbcglobal.net',
+        fullName: 'Michael Brown',
+        organizationId: 'org-1',
+        active: true,
+        affiliation: 'wap_staff',
+      },
+      fromOwnerEmail: 'mabrown040@gmail.com',
+      fromOwnerUserId: 'u-mike',
+      move: [
+        {
+          threadId: 't-1',
+          memberId: 'm-1',
+          email: 'member@gmail.com',
+          fullName: 'Ada Member',
+          organizationId: 'org-1',
+          action: 'assign_and_retarget',
+        },
+        {
+          threadId: 't-dad',
+          memberId: 'u-dad',
+          email: 'mbrowncsn@sbcglobal.net',
+          fullName: 'Michael Brown',
+          organizationId: 'org-1',
+          action: 'retarget_thread_only',
+          skipReason: 'self',
+        },
+      ],
+      skipped: [],
+    };
+    const text = formatMikeThreadHandoffPlan(plan);
+    assert.match(text, /From thread owner: <mabrown040@gmail\.com>/);
+    assert.match(text, /assign_and_retarget: 1/);
+    assert.match(text, /retarget_thread_only: 1/);
+    assert.match(text, /Ada Member/);
   });
 });

@@ -1,37 +1,34 @@
 /**
- * Make one WAP staff counselor the sole assignment-pool counselor (reversible).
+ * Sole-counselor ops for dad (Michael Brown <mbrowncsn@sbcglobal.net>).
  *
- * Confirmed dad identity (prod read-only, 2026-10): Michael Brown
- * <mbrowncsn@sbcglobal.net> — active wap_staff counselor.
+ * Modes (never deletes accounts):
  *
- * What this does (never deletes accounts):
- *  1. Deactivates other *active* WAP staff counselor rows (`counselors.active=false`)
- *  2. Assigns eligible unassigned members onto that counselor (updates
- *     counselor_assignments + message_threads.counselor_user_id)
+ *   # Mike-thread-only (approved narrow cut — default when --mike-threads-only):
+ *   # Retarget member threads owned by mabrown040@gmail.com onto dad, and
+ *   # create counselor_assignments for those members. Does NOT sweep the
+ *   # broader ~121 unassigned pool.
+ *   npm run db:sole-counselor-dad -- --mike-threads-only
+ *   npm run db:sole-counselor-dad -- --mike-threads-only --apply
  *
- * Skips partner-referred members, fixture/QA emails, and staff accounts.
- * Partner / community_ambassador / independent counselors are left alone.
- *
- *   # plan only (default — safe against production):
+ *   # Full pool plan (deactivate other active WAP staff + reassign unassigned):
  *   npm run db:sole-counselor-dad
- *
- *   # write the plan:
  *   npm run db:sole-counselor-dad -- --apply
- *
- *   # only one half of the plan:
  *   npm run db:sole-counselor-dad -- --apply --deactivate-only
  *   npm run db:sole-counselor-dad -- --apply --reassign-only
  *
- *   # override identity (must still be an active wap_staff counselor):
- *   npm run db:sole-counselor-dad -- --email=mbrowncsn@sbcglobal.net
- *
- * Do NOT point this at production until Mike explicitly approves the dry-run plan.
+ *   # Identities (must still resolve):
+ *   --email=mbrowncsn@sbcglobal.net
+ *   --from-owner-email=mabrown040@gmail.com   (mike-threads-only)
  */
 import { PrismaClient } from '@prisma/client';
 import {
+  DEFAULT_MIKE_THREAD_OWNER_EMAIL,
   DEFAULT_SOLE_COUNSELOR_EMAIL,
+  applyMikeThreadHandoff,
   applySoleCounselorOps,
+  formatMikeThreadHandoffPlan,
   formatSoleCounselorPlan,
+  planMikeThreadHandoff,
   planSoleCounselorOps,
 } from '../lib/counselor/soleCounselorOps';
 
@@ -45,18 +42,47 @@ function argValue(flag: string): string | null {
 
 async function main() {
   const apply = process.argv.includes('--apply');
+  const mikeThreadsOnly = process.argv.includes('--mike-threads-only');
   const deactivateOnly = process.argv.includes('--deactivate-only');
   const reassignOnly = process.argv.includes('--reassign-only');
   if (deactivateOnly && reassignOnly) {
     throw new Error('Choose at most one of --deactivate-only / --reassign-only');
+  }
+  if (mikeThreadsOnly && (deactivateOnly || reassignOnly)) {
+    throw new Error('--mike-threads-only cannot combine with --deactivate-only / --reassign-only');
   }
   if (apply && process.argv.includes('--dry-run')) {
     throw new Error('Choose exactly one mode: dry-run (default) or --apply');
   }
 
   const soleEmail = argValue('--email') ?? DEFAULT_SOLE_COUNSELOR_EMAIL;
-  const plan = await planSoleCounselorOps(prisma, { soleEmail });
 
+  if (mikeThreadsOnly) {
+    const fromOwnerEmail = argValue('--from-owner-email') ?? DEFAULT_MIKE_THREAD_OWNER_EMAIL;
+    const plan = await planMikeThreadHandoff(prisma, { soleEmail, fromOwnerEmail });
+    console.log(apply ? 'APPLY (mike-threads-only)' : 'DRY RUN (mike-threads-only)');
+    console.log(formatMikeThreadHandoffPlan(plan));
+    if (!apply) {
+      console.log('\nNo rows written. Re-run with --mike-threads-only --apply after approval.');
+      return;
+    }
+    const result = await applyMikeThreadHandoff(prisma, plan);
+    console.log(
+      JSON.stringify(
+        {
+          assigned: result.assignedMemberIds.length,
+          retargetedThreads: result.retargetedThreadIds.length,
+          errors: result.errors,
+        },
+        null,
+        2,
+      ),
+    );
+    if (result.errors.length > 0) process.exitCode = 1;
+    return;
+  }
+
+  const plan = await planSoleCounselorOps(prisma, { soleEmail });
   console.log(apply ? 'APPLY' : 'DRY RUN');
   console.log(formatSoleCounselorPlan(plan));
 

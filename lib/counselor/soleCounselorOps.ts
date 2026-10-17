@@ -17,6 +17,9 @@ import { CRON_SCOPED_LOOKUP_CAP } from '@/lib/db/scanCaps';
 /** Default dad / sole-counselor identity confirmed in prod read-only audits. */
 export const DEFAULT_SOLE_COUNSELOR_EMAIL = 'mbrowncsn@sbcglobal.net';
 
+/** Mike's super_admin account that still owns legacy member threads (no counselor row). */
+export const DEFAULT_MIKE_THREAD_OWNER_EMAIL = 'mabrown040@gmail.com';
+
 export type SoleCounselorIdentity = {
   counselorId: string;
   userId: string;
@@ -432,6 +435,224 @@ export function formatSoleCounselorPlan(plan: SoleCounselorPlan): string {
   }
   for (const [reason, count] of [...byReason.entries()].sort()) {
     lines.push(`  - ${reason}: ${count}`);
+  }
+  return lines.join('\n');
+}
+
+export type MikeThreadMoveRow = {
+  threadId: string;
+  memberId: string;
+  email: string;
+  fullName: string | null;
+  organizationId: string;
+  /** Full assignMemberCounselor handoff (caseload + thread owner). */
+  action: 'assign_and_retarget' | 'retarget_thread_only';
+  skipReason?: 'self' | 'fixture' | 'staff_account' | 'deleted' | 'wrong_org';
+};
+
+export type MikeThreadHandoffPlan = {
+  sole: SoleCounselorIdentity;
+  fromOwnerEmail: string;
+  fromOwnerUserId: string;
+  move: MikeThreadMoveRow[];
+  skipped: MikeThreadMoveRow[];
+};
+
+/**
+ * Narrow cut: only member threads still owned by Mike's admin account
+ * (`mabrown040@gmail.com` by default). Does **not** sweep the broader
+ * unassigned-member pool. Partner-referred members on Mike's threads are
+ * included (Mike asked for his threads, not a self-serve-only filter).
+ *
+ * Dad's own member thread (if Mike owns it) is retargeted only — never
+ * assigned as counselor-of-self.
+ */
+export async function planMikeThreadHandoff(
+  db: Db,
+  input: { soleEmail: string; fromOwnerEmail: string },
+): Promise<MikeThreadHandoffPlan> {
+  const sole = await resolveSoleCounselorByEmail(db, input.soleEmail);
+  if (!sole) {
+    throw new Error(
+      `No WAP staff counselor found for email ${normalizeEmail(input.soleEmail)}. Confirm dad's identity before applying.`,
+    );
+  }
+  if (!sole.active) {
+    throw new Error(
+      `Counselor ${sole.email} exists but counselors.active=false. Reactivate that row before making them sole.`,
+    );
+  }
+
+  // Email lookup for the legacy thread owner (Mike); marked for WAP-24.
+  const fromOwner = await crossTenantOK(() =>
+    db.user.findFirst({
+      where: {
+        email: { equals: normalizeEmail(input.fromOwnerEmail), mode: 'insensitive' },
+        deletedAt: null,
+      },
+      select: { id: true, email: true },
+    }),
+  );
+  if (!fromOwner) {
+    throw new Error(
+      `Thread owner not found for email ${normalizeEmail(input.fromOwnerEmail)}.`,
+    );
+  }
+
+  const threads = await crossTenantOK(() =>
+    db.messageThread.findMany({
+      where: {
+        kind: 'member',
+        counselorUserId: fromOwner.id,
+        memberId: { not: null },
+      },
+      select: {
+        id: true,
+        memberId: true,
+        member: {
+          select: {
+            id: true,
+            email: true,
+            fullName: true,
+            organizationId: true,
+            deletedAt: true,
+          },
+        },
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: CRON_SCOPED_LOOKUP_CAP,
+    }),
+  );
+
+  const move: MikeThreadMoveRow[] = [];
+  const skipped: MikeThreadMoveRow[] = [];
+
+  for (const thread of threads) {
+    const member = thread.member;
+    if (!member || !thread.memberId) continue;
+
+    const base: MikeThreadMoveRow = {
+      threadId: thread.id,
+      memberId: member.id,
+      email: member.email,
+      fullName: member.fullName,
+      organizationId: member.organizationId,
+      action: 'assign_and_retarget',
+    };
+
+    if (member.deletedAt) {
+      skipped.push({ ...base, action: 'retarget_thread_only', skipReason: 'deleted' });
+      continue;
+    }
+    if (member.organizationId !== sole.organizationId) {
+      skipped.push({ ...base, action: 'retarget_thread_only', skipReason: 'wrong_org' });
+      continue;
+    }
+    if (member.id === sole.userId) {
+      // Dad's own member thread: take Mike off ownership, do not create self-assignment.
+      move.push({ ...base, action: 'retarget_thread_only', skipReason: 'self' });
+      continue;
+    }
+    if (isOpsFixtureEmail(member.email)) {
+      skipped.push({ ...base, action: 'retarget_thread_only', skipReason: 'fixture' });
+      continue;
+    }
+    if (await isStaffAccount(db, member.id)) {
+      // Staff accounts on Mike's inbox: retarget only (no caseload row).
+      move.push({ ...base, action: 'retarget_thread_only', skipReason: 'staff_account' });
+      continue;
+    }
+
+    move.push(base);
+  }
+
+  return {
+    sole,
+    fromOwnerEmail: fromOwner.email,
+    fromOwnerUserId: fromOwner.id,
+    move,
+    skipped,
+  };
+}
+
+export type ApplyMikeThreadHandoffResult = {
+  assignedMemberIds: string[];
+  retargetedThreadIds: string[];
+  errors: Array<{ memberId?: string; threadId?: string; message: string }>;
+};
+
+/**
+ * Apply the Mike-thread-only handoff. Reversible by reassigning threads back
+ * to Mike's user id (or clearing ownership) via admin tools / SQL.
+ */
+export async function applyMikeThreadHandoff(
+  prisma: PrismaClient,
+  plan: MikeThreadHandoffPlan,
+): Promise<ApplyMikeThreadHandoffResult> {
+  const assignedMemberIds: string[] = [];
+  const retargetedThreadIds: string[] = [];
+  const errors: ApplyMikeThreadHandoffResult['errors'] = [];
+
+  for (const row of plan.move) {
+    try {
+      if (row.action === 'assign_and_retarget') {
+        await prisma.$transaction(async (tx) => {
+          await assignMemberCounselor(tx, {
+            memberId: row.memberId,
+            organizationId: row.organizationId,
+            counselorUserId: plan.sole.userId,
+          });
+        });
+        assignedMemberIds.push(row.memberId);
+        retargetedThreadIds.push(row.threadId);
+      } else {
+        await prisma.messageThread.updateMany({
+          where: {
+            id: row.threadId,
+            counselorUserId: plan.fromOwnerUserId,
+          },
+          data: { counselorUserId: plan.sole.userId },
+        });
+        retargetedThreadIds.push(row.threadId);
+      }
+    } catch (error) {
+      errors.push({
+        memberId: row.memberId,
+        threadId: row.threadId,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  return { assignedMemberIds, retargetedThreadIds, errors };
+}
+
+export function formatMikeThreadHandoffPlan(plan: MikeThreadHandoffPlan): string {
+  const lines: string[] = [];
+  lines.push(
+    `Sole counselor: ${plan.sole.fullName ?? '(no name)'} <${plan.sole.email}> ` +
+      `(userId=${plan.sole.userId})`,
+  );
+  lines.push(
+    `From thread owner: <${plan.fromOwnerEmail}> (userId=${plan.fromOwnerUserId})`,
+  );
+  lines.push(`Threads to move: ${plan.move.length}`);
+  const assignCount = plan.move.filter((r) => r.action === 'assign_and_retarget').length;
+  const retargetOnly = plan.move.filter((r) => r.action === 'retarget_thread_only').length;
+  lines.push(`  - assign_and_retarget: ${assignCount}`);
+  lines.push(`  - retarget_thread_only: ${retargetOnly}`);
+  for (const row of plan.move.slice(0, 40)) {
+    lines.push(
+      `  - [${row.action}] ${row.fullName ?? '(no name)'} <${row.email}>` +
+        (row.skipReason ? ` (${row.skipReason})` : ''),
+    );
+  }
+  if (plan.move.length > 40) lines.push(`  … ${plan.move.length - 40} more`);
+  lines.push(`Skipped (left on Mike): ${plan.skipped.length}`);
+  for (const row of plan.skipped) {
+    lines.push(
+      `  - ${row.fullName ?? '(no name)'} <${row.email}> (${row.skipReason ?? 'n/a'})`,
+    );
   }
   return lines.join('\n');
 }
