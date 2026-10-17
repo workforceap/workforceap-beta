@@ -22,3 +22,10 @@ test('apply signup limit window stays at the launch bump of 50 / 30 m', () => {
   assert.match(src, /prefix:\s*'ratelimit:apply-signup'/);
   assert.match(src, /Ratelimit\.slidingWindow\(50,\s*'30 m'\)/);
 });
+
+test('authenticated voice-session minting is 10 starts per user per hour', () => {
+  assert.match(src, /export const VOICE_SESSION_STARTS_PER_HOUR = 10/);
+  assert.match(src, /limiter:\s*Ratelimit\.slidingWindow\(VOICE_SESSION_STARTS_PER_HOUR,\s*'1 h'\)/);
+  assert.match(src, /prefix:\s*'ratelimit:voice-session'/);
+  assert.match(src, /checkVoiceSessionRateLimit[\s\S]*limit\(`voice-session:\$\{userId\}`\)/);
+});
