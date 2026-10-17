@@ -7162,6 +7162,863 @@ const SKILL_MISSION_CATALOG: SkillMissionDefinition[] = [
     ],
     estimatedMinutes: 15,
   },
+
+  // ─── AI Practitioner Professional Certificate (AWS) ─────────────────────
+  // One mission per course in shared/programSyllabi.ts for
+  // ai-practitioner-professional-certificate-aws. Titles must match the
+  // syllabus so curriculum resolution can attach them. The eight IBM
+  // developer missions under ai-professional-developer-certificate-ibm stay
+  // on that legacy key; do not retarget them here.
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-1",
+    courseSlug: "ai-practitioner-course-1",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "Introduction to Artificial Intelligence (AI)",
+    missionName: "Insight Analyst",
+    missionTagline: "Prove you can explain AI fundamentals in plain language",
+    primaryAxis: "Analytics",
+    skillLabels: ["AI fundamentals", "Prompt engineering", "Automation", "Machine learning vs deep learning", "AI roles"],
+    scenarioPrompt: "A nonprofit operations lead asks you to explain, without jargon, what artificial intelligence is and whether their team needs a prompt-writing practitioner or a model builder. Using Introduction to Artificial Intelligence (AI), cover prompt engineering, automation, the difference between machine learning and deep learning, and which AI role fits this team.",
+    evidenceHint: "A strong response defines AI in everyday language, separates a rules-based automation from machine learning and deep learning, gives one prompt-engineering example, and names the role this non-technical team actually needs.",
+    quizQuestions: [
+      {
+        text: "A clinic wants software that always routes appointment emails containing the word 'cancel' to the front desk. No examples are used to train it. Which description fits?",
+        options: [
+          "Deep learning, because email text is unstructured",
+          "Rules-based automation: a fixed instruction handles a known case, and the system is not learning from examples",
+          "Machine learning, because the word 'cancel' is data",
+          "Prompt engineering, because someone wrote the routing rule in a sentence"
+        ],
+        correctIndex: 1,
+        explanation: "A fixed rule that never learns from examples is automation. Machine learning and deep learning depend on learning from examples; prompt engineering is how a person instructs a generative model, not how this router works."
+      },
+      {
+        text: "Which contrast matches the course distinction between machine learning and deep learning?",
+        options: [
+          "Machine learning learns patterns from examples; deep learning is a machine-learning approach that uses neural networks with many layers",
+          "Machine learning only classifies images, and deep learning only writes text",
+          "Deep learning is any software that follows a written rule, and machine learning is the same thing with a new name",
+          "Machine learning requires a generative chatbot, and deep learning does not"
+        ],
+        correctIndex: 0,
+        explanation: "Deep learning is a form of machine learning built on multi-layer neural networks. Both learn from examples. A written rule with no learning is automation, not either of these."
+      },
+      {
+        text: "A team of career counselors wants help drafting outreach emails. They will review every draft before it is sent. Which AI role fits them best right now?",
+        options: [
+          "A research scientist who publishes new model architectures",
+          "A data-center engineer who trains foundation models from scratch",
+          "An AI practitioner who writes prompts, checks outputs, and applies the tool to the counselors' real work",
+          "A hardware specialist who selects graphics processors for training"
+        ],
+        correctIndex: 2,
+        explanation: "The course separates AI roles. This team is applying an existing tool to knowledge work and staying accountable for the message, which is practitioner work rather than model-building or infrastructure work."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-2",
+    courseSlug: "ai-practitioner-course-2",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "Artificial Intelligence: An Overview",
+    missionName: "Research Analyst",
+    missionTagline: "Prove you can describe how an AI system is designed and checked",
+    primaryAxis: "Research",
+    skillLabels: ["AI history", "Core AI techniques", "Neural networks", "System design", "Evaluation and deployment"],
+    scenarioPrompt: "A city department director wants a short briefing on artificial intelligence before a vendor meeting. Using Artificial Intelligence: An Overview, explain the historical context in a sentence or two, name a core technique such as neural networks, and walk through how an AI system is designed, evaluated, and deployed.",
+    evidenceHint: "A strong response places today's tools in a short historical context, names neural networks as a core technique, and separates design, evaluation, and deployment instead of treating purchase as the whole process.",
+    quizQuestions: [
+      {
+        text: "A director says, 'AI started with ChatGPT, so history does not matter.' What does this overview course expect you to correct?",
+        options: [
+          "Today's generative tools sit on decades of work in core techniques, including neural networks; the history explains what the tools can and cannot do",
+          "History only matters for academic researchers, not for people who buy tools",
+          "Neural networks were invented after chatbots and replaced every earlier technique",
+          "An overview course skips history and starts at deployment"
+        ],
+        correctIndex: 0,
+        explanation: "The course covers historical context and core techniques, including neural networks. Treating a recent chatbot as the start of AI hides why evaluation and deployment still matter."
+      },
+      {
+        text: "A vendor demo looks impressive. Where does evaluation sit in the lifecycle this course describes?",
+        options: [
+          "After deployment only, once staff have complained",
+          "Instead of design, because a demo replaces a written goal",
+          "Between design and deployment: the team checks whether the system meets the goal before it is put into daily use",
+          "Only in the historical section, as a technique from early AI research"
+        ],
+        correctIndex: 2,
+        explanation: "The course treats design, evaluation, and deployment as distinct. A demo is not an evaluation against the department's actual goal."
+      },
+      {
+        text: "Which statement about neural networks matches an overview, not a builder's lab?",
+        options: [
+          "A neural network is a core AI technique that learns patterns; a practitioner needs to know what it is for, not how to derive its math",
+          "A neural network is a filing cabinet for paper records",
+          "Neural networks only run after a system is deployed and cannot be part of design",
+          "Every AI system must be a neural network or it is not AI"
+        ],
+        correctIndex: 0,
+        explanation: "Neural networks are one core technique in the overview. The course is about recognizing how they fit design, evaluation, and deployment, not about implementing the math."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-3",
+    courseSlug: "ai-practitioner-course-3",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "Introduction to Digital Transformation Part 1",
+    missionName: "Strategy Lead",
+    missionTagline: "Prove you can name what an organization needs before an AI change",
+    primaryAxis: "Strategy",
+    skillLabels: ["Digital transformation strategy", "Customer experience", "Data readiness", "Organizational capabilities"],
+    scenarioPrompt: "A workforce-center director wants to 'add AI' to intake next quarter. Using Introduction to Digital Transformation Part 1, brief them on the strategy, the customer experience, the data they would rely on, and the organizational capabilities required to lead the change.",
+    evidenceHint: "A strong response treats AI as a change in strategy and customer experience, names the data the new experience depends on, and lists organizational capabilities such as staff skills and decision rights rather than a tool purchase alone.",
+    quizQuestions: [
+      {
+        text: "A director's plan is a single sentence: 'Buy an AI chatbot for the website.' What is missing from a digital-transformation framing?",
+        options: [
+          "The brand of chatbot",
+          "Strategy, the customer experience the chatbot would change, the data behind the answers, and whether the organization can lead the change",
+          "A longer contract with the vendor",
+          "A requirement that every staff member become a software engineer"
+        ],
+        correctIndex: 1,
+        explanation: "The course frames transformation through strategy, customer experience, data, and organizational capabilities. A purchase order is not that plan."
+      },
+      {
+        text: "Which organizational capability matters before an AI intake assistant goes live?",
+        options: [
+          "Staff who know who owns a wrong answer, how to correct it, and when a person must take over",
+          "A rule that the vendor, not the center, owns every member outcome",
+          "Replacing the intake team so no one has to learn the new workflow",
+          "Waiting until customer experience is irrelevant because the tool is automated"
+        ],
+        correctIndex: 0,
+        explanation: "Leading AI-driven change requires organizational capabilities: ownership, correction, and a human handoff. The course treats those as part of the transformation, not as leftovers."
+      },
+      {
+        text: "Why does this course put data next to customer experience?",
+        options: [
+          "Data is only a technical topic and should stay out of the strategy conversation",
+          "Customer experience can be redesigned without knowing what information the organization actually has",
+          "An AI change to the member experience is only as sound as the data the experience relies on",
+          "Data strategy replaces the need to talk to members"
+        ],
+        correctIndex: 2,
+        explanation: "The Darden framing in this course ties strategy, customer experience, data, and organizational capability together. An experience promise that the data cannot support will fail in use."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-4",
+    courseSlug: "ai-practitioner-course-4",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "AI For All",
+    missionName: "Discovery Expert",
+    missionTagline: "Prove you can tell a high-value AI use from a poor one",
+    primaryAxis: "Strategy",
+    skillLabels: ["Non-technical AI literacy", "AI limits", "Opportunity identification"],
+    scenarioPrompt: "You support a non-technical office. A supervisor asks which everyday task is a high-value AI opportunity and which task AI should not own. Using AI For All, explain what AI can and cannot do in this office and name one opportunity worth a pilot.",
+    evidenceHint: "A strong response is understandable to a non-technical colleague, states a concrete limit, and picks a high-value opportunity with a reason rather than a blanket 'use AI everywhere.'",
+    quizQuestions: [
+      {
+        text: "Which task is the strongest high-value AI opportunity for a non-technical office team?",
+        options: [
+          "First drafts of routine internal summaries that a person still reviews",
+          "Final decisions about who is hired, with no human review",
+          "Inventing facts for a grant report when the source documents are missing",
+          "Replacing the supervisor's judgment about a personnel complaint"
+        ],
+        correctIndex: 0,
+        explanation: "AI For All asks non-technical staff to find high-value work AI can assist. Drafting for human review fits. Final employment decisions, invented facts, and unsupervised personnel judgment do not."
+      },
+      {
+        text: "A coworker says, 'If AI wrote it, it must be true.' What limit should you name?",
+        options: [
+          "AI output can be fluent and still wrong; a person has to check it against a source",
+          "AI is only wrong when the prompt is longer than one sentence",
+          "AI cannot help with writing at all, so the course bans drafts",
+          "The limit only applies to engineers, not to office staff"
+        ],
+        correctIndex: 0,
+        explanation: "The course is for non-technical audiences and includes what AI cannot do. Fluency is not accuracy, so a person still checks the work."
+      },
+      {
+        text: "Why does this course start from 'what AI is' before tool shopping?",
+        options: [
+          "So the team can reject every tool without looking at the work",
+          "So people who will not train models can still recognize a useful opportunity and a poor one",
+          "Because non-technical staff are not allowed to use AI at work",
+          "Because opportunity identification is only a software-engineering skill"
+        ],
+        correctIndex: 1,
+        explanation: "AI For All is an introduction for non-technical audiences: what AI is, what it can and cannot do, and how to spot high-value opportunities."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-5",
+    courseSlug: "ai-practitioner-course-5",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "AI Concepts and Strategy",
+    missionName: "Strategy Lead",
+    missionTagline: "Prove you can frame a build-or-buy AI decision",
+    primaryAxis: "Strategy",
+    skillLabels: ["AI strategy", "Build vs buy", "ROI framing", "AI initiative management"],
+    scenarioPrompt: "Leadership asks whether the organization should build its own assistant for routine customer emails or buy one. Using AI Concepts and Strategy, frame the build-versus-buy choice, the return you would look for, and how you would manage the initiative after the decision.",
+    evidenceHint: "A strong response compares build and buy against the team's skills and timeline, names a return that is more than 'it sounds modern,' and includes how the initiative will be managed after launch.",
+    quizQuestions: [
+      {
+        text: "A five-person nonprofit has no engineers and needs email drafts next month. Which build-versus-buy framing fits?",
+        options: [
+          "Build a custom model, because owning the technology is always the higher return",
+          "Buy or subscribe to an existing tool, because building would spend time and skills the team does not have for a routine drafting need",
+          "Do neither until a research lab donates a new model",
+          "Build and buy the same system at the same time so strategy is unnecessary"
+        ],
+        correctIndex: 1,
+        explanation: "Build versus buy depends on capability, time, and the job to be done. A small team with a routine drafting need and no engineering bench is a buy case, not a custom-model case."
+      },
+      {
+        text: "Which return is a usable ROI frame for an AI initiative?",
+        options: [
+          "Hours saved on a named weekly task, checked after launch against the cost of the tool and the staff time to run it",
+          "The number of times the word 'AI' appears in the strategic plan",
+          "A promise that the tool will eliminate the need to manage the work",
+          "The vendor's slogan, copied into the budget as the return"
+        ],
+        correctIndex: 0,
+        explanation: "The course treats ROI as a business frame: value against cost. A measurable time saving compared with the cost to run the tool is a frame; a slogan is not."
+      },
+      {
+        text: "The purchase is approved. What does managing the initiative still require?",
+        options: [
+          "Nothing; a signed contract means the strategy work is finished",
+          "An owner, a review point, and a way to stop or change the tool if the return does not show up",
+          "A rule that no one may look at the outputs",
+          "Replacing the business goal with the vendor's feature list"
+        ],
+        correctIndex: 1,
+        explanation: "Managing an AI initiative continues after the build-or-buy decision. Someone owns the outcome and checks whether the framed return is real."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-6",
+    courseSlug: "ai-practitioner-course-6",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "AI for Professional Communication",
+    missionName: "Client Champion",
+    missionTagline: "Prove you can use AI and still own the message",
+    primaryAxis: "Service",
+    skillLabels: ["Professional writing", "Presentations", "Meeting support", "Stakeholder communication"],
+    scenarioPrompt: "You must update a partner on a delayed training cohort. Using AI for Professional Communication, describe how you would use an AI tool to help with the written update, a short slide, and the meeting agenda, while you remain responsible for what the partner hears.",
+    evidenceHint: "A strong response uses AI for a draft, a slide outline, or a meeting agenda, and keeps a human review so the stakeholder message is accurate, toned for the partner, and owned by the sender.",
+    quizQuestions: [
+      {
+        text: "An AI draft of a delay notice blames the partner for the slip. The facts say your team missed a handoff. What should you do?",
+        options: [
+          "Send the draft because the tool wrote it in a professional tone",
+          "Rewrite the facts, keep a respectful tone, and send only the version you can stand behind",
+          "Ask the tool to make the tone warmer and send it without reading",
+          "Skip the partner update because AI drafts are never usable"
+        ],
+        correctIndex: 1,
+        explanation: "The course is about using AI to improve communication, not about letting the tool own the facts. Stakeholder communication still requires a person to correct the record."
+      },
+      {
+        text: "Where can an AI tool help a meeting without taking it over?",
+        options: [
+          "A proposed agenda and a list of decisions to confirm, which you edit before the meeting",
+          "Deciding the partner's position for them",
+          "Replacing the meeting with an unread generated transcript",
+          "Inventing attendance so the notes look complete"
+        ],
+        correctIndex: 0,
+        explanation: "Meeting support is in scope: agendas and decision lists are drafts. The meeting itself, and the partner's position, stay with the people in the room."
+      },
+      {
+        text: "You used AI to outline three slides for a stakeholder review. What makes the presentation professionally yours?",
+        options: [
+          "Leaving the outline's placeholder numbers in the deck",
+          "Adding decorative images the tool suggested, even when they contradict the update",
+          "Checking every claim against your notes and saying only what you can explain if asked",
+          "Putting the tool's name on the title slide as the author"
+        ],
+        correctIndex: 2,
+        explanation: "AI can help shape a presentation. The presenter still has to verify the claims and be able to discuss them with the stakeholder."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-7",
+    courseSlug: "ai-practitioner-course-7",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "Understand and Apply Artificial Intelligence Fundamentals",
+    missionName: "Analytics Pro",
+    missionTagline: "Prove you can choose how a model should learn and be checked",
+    primaryAxis: "Analytics",
+    skillLabels: ["Supervised learning", "Unsupervised learning", "Model evaluation", "Deployment considerations"],
+    scenarioPrompt: "A manager has two piles of data: past applications labeled 'funded' or 'not funded,' and a pile of unlabeled comments from orientation. Using Understand and Apply Artificial Intelligence Fundamentals, say which pile fits supervised learning, which fits unsupervised learning, how you would evaluate a model before anyone relies on it, and one deployment concern.",
+    evidenceHint: "A strong response assigns labeled outcomes to supervised learning and unlabeled comments to unsupervised learning, names an evaluation check before deployment, and names a practical deployment concern such as who acts on a wrong prediction.",
+    quizQuestions: [
+      {
+        text: "Which dataset is the supervised-learning case?",
+        options: [
+          "Past applications already labeled funded or not funded, where the model learns to predict that label",
+          "A folder of comments with no categories, where the goal is to discover groupings",
+          "A blank spreadsheet with only column headers",
+          "A policy PDF that no one has turned into examples"
+        ],
+        correctIndex: 0,
+        explanation: "Supervised learning uses examples with known outcomes. Unsupervised learning looks for structure when those outcome labels are absent."
+      },
+      {
+        text: "The unlabeled orientation comments have no correct category yet. What approach fits?",
+        options: [
+          "Supervised learning, after you invent labels and pretend they were in the original data",
+          "Unsupervised learning, to group similar comments so a person can name the themes",
+          "Deployment first, then decide whether labels mattered",
+          "Skipping evaluation because there is nothing to predict"
+        ],
+        correctIndex: 1,
+        explanation: "Without outcome labels, unsupervised learning can surface groups. A person still has to interpret the groups; the course does not treat clustering as a finished decision."
+      },
+      {
+        text: "A model looks promising in a test. What deployment consideration still belongs in the plan?",
+        options: [
+          "Who reviews a wrong or contested result before it changes a person's outcome",
+          "Turning evaluation off so the launch date stays firm",
+          "Assuming test performance is permanent and needs no watch after launch",
+          "Hiding the fact that a model is involved"
+        ],
+        correctIndex: 0,
+        explanation: "The course includes practical deployment considerations along with model evaluation. A test result does not remove the need for a human path when the output affects a person."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-8",
+    courseSlug: "ai-practitioner-course-8",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "AI for Business: Generation & Prediction",
+    missionName: "Insight Analyst",
+    missionTagline: "Prove you can tell generation apart from prediction",
+    primaryAxis: "Analytics",
+    skillLabels: ["Generative AI", "Predictive AI", "Business workflows", "Text image and code generation", "Forecasts and classification"],
+    scenarioPrompt: "A small employer wants two things from AI: a forecast of which job applicants are likely to finish training, and a first draft of the offer email. Using AI for Business: Generation & Prediction, assign each request to generation or prediction and say how it would sit in the workflow.",
+    evidenceHint: "A strong response marks the completion forecast as prediction (a classification) and the offer email as generation (text), and says where a person still approves the output in the workflow.",
+    quizQuestions: [
+      {
+        text: "Which request is prediction, not generation?",
+        options: [
+          "Estimate which enrolled members are likely to miss the next milestone",
+          "Draft a welcome text message",
+          "Produce a simple icon for a flyer",
+          "Suggest starter code for a spreadsheet formula"
+        ],
+        correctIndex: 0,
+        explanation: "Prediction covers forecasts and classifications. Drafting text, images, or code is generation. The course treats them as the two foundational capabilities."
+      },
+      {
+        text: "A manager asks the generative tool to 'decide who graduates.' What should you correct?",
+        options: [
+          "Nothing; generation and prediction are the same capability",
+          "A draft is not a classification. Predicting an outcome is a different capability and still needs a defined label, an evaluation, and a person accountable for the decision",
+          "Generation cannot draft text, so the tool should be used only for icons",
+          "Prediction is only for images"
+        ],
+        correctIndex: 1,
+        explanation: "Generation produces content such as text, images, or code. Prediction classifies or forecasts. Using a draft as if it were a graduation decision mixes the two and skips accountability."
+      },
+      {
+        text: "Where should a generated offer email sit in the business workflow?",
+        options: [
+          "Sent automatically to every applicant the moment the draft appears",
+          "As a draft a staff member checks against the real offer terms before anyone receives it",
+          "As a replacement for the hiring policy",
+          "As the forecast of who will accept the job"
+        ],
+        correctIndex: 1,
+        explanation: "Generation helps the workflow by producing a draft. The business decision and the facts of the offer stay with the person who sends it."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-9",
+    courseSlug: "ai-practitioner-course-9",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "Artificial Intelligence: Ethics & Societal Challenges",
+    missionName: "Strategy Lead",
+    missionTagline: "Prove you can name bias, privacy, and accountability in a real decision",
+    primaryAxis: "Service",
+    skillLabels: ["AI ethics", "Bias and fairness", "Transparency", "Accountability", "Privacy"],
+    scenarioPrompt: "An automated screener is denying training seats more often for applicants from one neighborhood, and staff cannot explain why. Using Artificial Intelligence: Ethics & Societal Challenges, walk through bias and fairness, transparency, accountability, and privacy, including the societal impact of leaving the screener in place.",
+    evidenceHint: "A strong response names the uneven outcome as a fairness problem, says what transparency would require, names who is accountable, and treats applicant data as a privacy issue rather than only a technical glitch.",
+    quizQuestions: [
+      {
+        text: "Denial rates are much higher for one neighborhood, and no one has checked why. Which ethics issue is this first?",
+        options: [
+          "A possible bias and fairness failure in an automated decision",
+          "Proof that neighborhoods should be removed from every dataset without looking at the outcome",
+          "A privacy success, because the reason is hidden",
+          "An accountability success, because the model decided alone"
+        ],
+        correctIndex: 0,
+        explanation: "Uneven harmful outcomes are a bias and fairness concern. Hiding the reason is a transparency problem, not a privacy success, and an unowned decision is an accountability gap."
+      },
+      {
+        text: "Staff say, 'The model denied them, so it is not our decision.' What does accountability require?",
+        options: [
+          "The organization that deploys the screener still owns the outcome and must be able to review it",
+          "Accountability transfers to the software as soon as a score appears",
+          "Applicants must accept the score because a computer produced it",
+          "Transparency means publishing each applicant's private records"
+        ],
+        correctIndex: 0,
+        explanation: "Accountability stays with the people and organization using the system. Transparency does not mean exposing private applicant records; it means being able to explain the decision appropriately."
+      },
+      {
+        text: "Which handling of applicant records matches the privacy concern in this course?",
+        options: [
+          "Paste full applications into a public chatbot so the team can brainstorm denials",
+          "Use the minimum applicant data the decision needs, restrict who can see it, and do not send it to a tool that has no reason to hold it",
+          "Post denial reasons on a public webpage with names attached",
+          "Keep every field forever because more data is always fairer"
+        ],
+        correctIndex: 1,
+        explanation: "Privacy is one of the course's societal challenges. Automated decisions still require limiting collection, access, and disclosure of personal data."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-10",
+    courseSlug: "ai-practitioner-course-10",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "ChatGPT — Foundations",
+    missionName: "Tech Builder",
+    missionTagline: "Prove you can prompt ChatGPT and respect its limits",
+    primaryAxis: "Research",
+    skillLabels: ["ChatGPT capabilities", "ChatGPT limitations", "Prompting patterns", "Knowledge work"],
+    scenarioPrompt: "A colleague wants ChatGPT to summarize this week's public workshop notes into a staff briefing. They also start to paste a participant's private case notes into the same chat. Using ChatGPT — Foundations, show a prompting pattern for the public summary and explain the capability limit that makes the private paste a mistake.",
+    evidenceHint: "A strong response gives a concrete prompt pattern for a briefing (role, source, output shape) and names a limitation: ChatGPT can be wrong, and private case notes do not belong in the chat.",
+    quizQuestions: [
+      {
+        text: "Which prompt pattern best fits a knowledge-work briefing?",
+        options: [
+          "Role, the source material you are allowed to use, the readers, and the output you want, such as five bullets a supervisor can scan",
+          "'Write something professional' with no source and no reader",
+          "A request to invent attendance numbers so the briefing looks complete",
+          "The full private case file, followed by 'make this public'"
+        ],
+        correctIndex: 0,
+        explanation: "Foundations covers prompting patterns for knowledge work: purpose, source, audience, and shape. A vague prompt or a request to invent facts does not use the tool well."
+      },
+      {
+        text: "ChatGPT states a workshop date that is not in the notes. What limitation does that show?",
+        options: [
+          "A fluent answer can still be unsupported; you compare it to the notes before the briefing goes out",
+          "ChatGPT can only be wrong about images, never about dates",
+          "The tool is incapable of summaries, so the date error is expected and can be ignored",
+          "Limitations apply only when the prompt is a single word"
+        ],
+        correctIndex: 0,
+        explanation: "Capabilities and limitations are both in this course. Summaries are a real use, and unsupported details are a reason to check the output against the source."
+      },
+      {
+        text: "Why should private participant case notes stay out of the chat?",
+        options: [
+          "Because ChatGPT cannot read text",
+          "Because a public workshop summary does not require them, and pasting private case information into the tool exposes data the briefing does not need",
+          "Because prompting patterns forbid naming the audience",
+          "Because the tool only works on spreadsheets"
+        ],
+        correctIndex: 1,
+        explanation: "Practical use across knowledge work includes knowing the limit: do not feed private case data to the tool for a task that should use the public notes."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-11",
+    courseSlug: "ai-practitioner-course-11",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "ChatGPT for Beginners: Using AI for Market Research",
+    missionName: "Research Analyst",
+    missionTagline: "Prove you can turn ChatGPT research into a checked deliverable",
+    primaryAxis: "Research",
+    skillLabels: ["Market research questions", "Competitive intelligence", "Market analysis deliverables"],
+    scenarioPrompt: "A local employer asks for a one-page look at two competitors before a hiring push. Using ChatGPT for Beginners: Using AI for Market Research, describe the research questions you would give ChatGPT, how you would synthesize competitive intelligence, and what you would verify before the page counts as a deliverable.",
+    evidenceHint: "A strong response writes specific research questions, separates ChatGPT's synthesis from sources you checked, and names the deliverable (a one-page analysis) rather than an unsourced chat transcript.",
+    quizQuestions: [
+      {
+        text: "Which research question is specific enough for this guided project?",
+        options: [
+          "What are the two competitors' stated entry-level roles, locations, and training requirements, and where is each claim from?",
+          "Tell me everything about the industry",
+          "Who will win the market next year, as a fact",
+          "Write a slogan we can print without checking"
+        ],
+        correctIndex: 0,
+        explanation: "The project is about designing research questions that can become competitive intelligence. A scoped question with a source need is usable; an unbounded or unsourced request is not."
+      },
+      {
+        text: "ChatGPT blends the two competitors into one paragraph. What is the right next step before you deliver it?",
+        options: [
+          "Split the claims back apart and check each one against a source you can name",
+          "Ship the blend, because synthesis means the reader should not see the difference",
+          "Add adjectives until the page sounds decisive",
+          "Delete the research questions so the page is shorter"
+        ],
+        correctIndex: 0,
+        explanation: "Synthesizing competitive intelligence still has to keep the competitors distinct and tied to sources. The course deliverable is a market analysis, not an unchecked blend."
+      },
+      {
+        text: "What counts as the market-analysis deliverable in this project?",
+        options: [
+          "The raw chat, including your retries",
+          "A short analysis a manager can read, with the questions you asked and the claims you verified",
+          "A promise that the model performed primary interviews",
+          "A ranking of competitors by how often the model mentioned them"
+        ],
+        correctIndex: 1,
+        explanation: "The course outcome is a market-analysis deliverable: research questions, synthesized intelligence, and work a person can stand behind."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-12",
+    courseSlug: "ai-practitioner-course-12",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "AI Fundamentals with Claude",
+    missionName: "Research Analyst",
+    missionTagline: "Prove you can brief Claude on a long source and hold the line",
+    primaryAxis: "Research",
+    skillLabels: ["Claude prompting", "Long context", "Constitutional AI principles"],
+    scenarioPrompt: "Staff keep asking the same questions about a long program handbook. Using AI Fundamentals with Claude, describe how you would prompt Claude, how you would use the long context instead of pasting a fragment, and how constitutional AI principles change what you will accept as an answer.",
+    evidenceHint: "A strong response gives a prompt that points Claude at the handbook, explains why the long context matters, and says you will reject an answer that is helpful-sounding but conflicts with the handbook or with a clear principle such as not inventing policy.",
+    quizQuestions: [
+      {
+        text: "The handbook is long. Why does this course treat long context as a skill?",
+        options: [
+          "So Claude can work from the handbook you provide instead of from a short excerpt that drops the rule staff are asking about",
+          "So you can skip reading the handbook yourself",
+          "Because a longer prompt is always more accurate, even with no source",
+          "Because constitutional AI means the model already stores your private handbook"
+        ],
+        correctIndex: 0,
+        explanation: "Long context is how you keep the relevant source in the conversation. It does not replace reading, and it does not mean the model already holds your private handbook."
+      },
+      {
+        text: "Claude gives a confident answer that contradicts the handbook section you supplied. What should you do?",
+        options: [
+          "Prefer the confident answer, because confidence is a constitutional principle",
+          "Keep the handbook's rule, tighten the prompt to quote that section, and do not pass on the contradiction",
+          "Delete the handbook so the contradiction disappears",
+          "Ask Claude to invent a new policy that splits the difference"
+        ],
+        correctIndex: 1,
+        explanation: "Prompt engineering includes constraining the model to the source. A contradiction of the supplied handbook is a failed answer, not a new policy."
+      },
+      {
+        text: "Which use of constitutional AI principles fits this course?",
+        options: [
+          "Treat them as a written bound on behavior, such as being helpful without inventing rules or ignoring the source you gave",
+          "Treat them as permission to hide the handbook from staff",
+          "Treat them as a requirement to agree with every user request, including requests to fabricate policy",
+          "Treat them as a way to skip prompt writing"
+        ],
+        correctIndex: 0,
+        explanation: "The course names constitutional AI principles alongside prompting and long context. The practical bound is that a helpful answer still has to respect the source and not invent policy."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-13",
+    courseSlug: "ai-practitioner-course-13",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "Sales with AI",
+    missionName: "Analytics Pro",
+    missionTagline: "Prove you can place AI on a sales pipeline",
+    primaryAxis: "Analytics",
+    skillLabels: ["Lead scoring", "Call analysis", "Sales forecasting", "Pipeline management"],
+    scenarioPrompt: "A placement team's sales-style pipeline of employer partners is messy: some leads are cold, call notes are uneven, and the quarterly forecast is a guess. Using Sales with AI, explain how lead scoring, call analysis, forecasting, and pipeline management could help, and what a person still owns.",
+    evidenceHint: "A strong response assigns each of the four course uses to a pipeline problem and keeps a human owner for the relationship and for any forecast that will be reported as a number.",
+    quizQuestions: [
+      {
+        text: "Dozens of employer leads sit untouched, with no rank. Which course capability applies first?",
+        options: [
+          "Lead scoring, to rank which leads deserve the next human call",
+          "Call analysis, even though those leads have no calls yet",
+          "Replacing the pipeline with a single generated email",
+          "A forecast that ignores which leads exist"
+        ],
+        correctIndex: 0,
+        explanation: "Lead scoring ranks who to work next. Call analysis needs calls. Forecasting and pipeline management use the ranked pipeline; they do not replace it."
+      },
+      {
+        text: "Call notes disagree about what the employer asked for. How does call analysis help?",
+        options: [
+          "It can surface themes and missed follow-ups from the calls so a person can correct the record",
+          "It closes the deal without anyone listening",
+          "It deletes notes that mention a concern",
+          "It sets the contract price automatically"
+        ],
+        correctIndex: 0,
+        explanation: "Call analysis is for understanding conversations: themes, gaps, and follow-ups. The relationship and the correction stay with the person."
+      },
+      {
+        text: "The team wants to report a quarterly placement forecast to a funder. What is the responsible use of AI forecasting here?",
+        options: [
+          "Publish the model's number with no one checking the pipeline underneath it",
+          "Use the forecast as a scenario, name the pipeline assumptions, and have a person own the figure that goes to the funder",
+          "Skip pipeline management because the forecast makes stage updates unnecessary",
+          "Score leads only after the quarter is over"
+        ],
+        correctIndex: 1,
+        explanation: "Forecasting is one of the four sales uses, and it depends on a managed pipeline. A reported number still needs a human owner and visible assumptions."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-14",
+    courseSlug: "ai-practitioner-course-14",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "AI for Marketing",
+    missionName: "Strategy Lead",
+    missionTagline: "Prove you can use AI across a marketing campaign",
+    primaryAxis: "Strategy",
+    skillLabels: ["Audience segmentation", "Content generation", "Campaign optimization"],
+    scenarioPrompt: "A training program needs more applicants from career-changers, not from people already enrolled. Using AI for Marketing, describe how you would segment the audience, generate campaign content, and optimize the campaign after the first responses come in.",
+    evidenceHint: "A strong response names a segment (career-changers) rather than 'everyone,' uses generation for drafts aimed at that segment, and says what result you would watch in order to change the campaign.",
+    quizQuestions: [
+      {
+        text: "Which segmentation choice matches the campaign goal?",
+        options: [
+          "Career-changers who are not current members, with a message about starting a new line of work",
+          "Every person in the contact list, with one generic slogan",
+          "Only people who already completed the program",
+          "A segment defined as 'whoever the tool mentions first'"
+        ],
+        correctIndex: 0,
+        explanation: "Audience segmentation starts from the people you need to reach. Career-changers are the stated audience; current completers and an undefined 'everyone' miss the goal."
+      },
+      {
+        text: "Content generation has produced three headlines. What is still your job?",
+        options: [
+          "Pick and edit the headline that speaks to career-changers and does not promise an outcome the program does not offer",
+          "Publish all three at once so optimization is unnecessary",
+          "Accept the longest headline because length means quality",
+          "Remove the segment so the headline can address anyone"
+        ],
+        correctIndex: 0,
+        explanation: "Content generation drafts options. The marketer still chooses a claim the program can keep and that fits the segment."
+      },
+      {
+        text: "After the first week, career-changers open the email but do not click. What is campaign optimization?",
+        options: [
+          "Changing the call to action or the offer and comparing the next result, instead of repeating the same email unchanged",
+          "Declaring success because the email was sent",
+          "Deleting the segment and emailing only current members",
+          "Generating more headlines and never looking at the clicks"
+        ],
+        correctIndex: 0,
+        explanation: "Optimization uses the response to change the campaign. Opens without clicks are a signal to adjust the next step, not a reason to ignore the result."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-15",
+    courseSlug: "ai-practitioner-course-15",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "Salesforce Certified AI Associate Certification",
+    missionName: "Systems Pro",
+    missionTagline: "Prove you can tell predictive CRM AI from generative CRM AI",
+    primaryAxis: "Strategy",
+    skillLabels: ["Salesforce AI fundamentals", "Einstein AI", "Predictive CRM", "Generative CRM", "AI Associate exam objectives"],
+    scenarioPrompt: "A CRM administrator asks when to use Einstein AI to predict which employer contacts are likely to reply, and when to use generative AI inside Salesforce to draft the reply. Using Salesforce Certified AI Associate Certification, answer in CRM terms and say how you would study the exam objectives without treating the tool as the decision-maker.",
+    evidenceHint: "A strong response separates Einstein-style prediction on CRM records from generative drafting inside Salesforce, ties both to the AI Associate credential's objectives, and keeps a person responsible for the sent message and the prediction's use.",
+    quizQuestions: [
+      {
+        text: "Which Salesforce use is predictive rather than generative?",
+        options: [
+          "Ranking which employer contacts are more likely to reply, based on CRM history",
+          "Drafting the wording of the reply email",
+          "Rewriting a campaign slogan in a friendlier tone",
+          "Producing a paragraph of account-plan text from a short instruction"
+        ],
+        correctIndex: 0,
+        explanation: "The certification track distinguishes predictive AI and generative AI in CRM. Ranking likely replies is prediction. Drafting the reply is generation."
+      },
+      {
+        text: "Einstein AI suggests a contact is unlikely to reply. What should the associate do with that score?",
+        options: [
+          "Treat it as a CRM signal a person can use when choosing whom to call, not as a ban on contacting them",
+          "Delete the contact because the score is the decision",
+          "Paste the score into a public channel",
+          "Ignore CRM records and rebuild the prediction outside Salesforce for the exam"
+        ],
+        correctIndex: 0,
+        explanation: "Einstein AI in this course is AI applied inside Salesforce. A prediction informs the person working the CRM; it does not erase judgment or the record."
+      },
+      {
+        text: "How should you use the exam objectives while you prepare?",
+        options: [
+          "As the checklist of what the credential expects you to know about AI in Salesforce, including predictive versus generative uses, practiced on realistic CRM situations",
+          "As a script of answers to memorize with no CRM example",
+          "As permission to skip Einstein AI because the exam is only about email tone",
+          "As a requirement to let the model send customer messages during practice"
+        ],
+        correctIndex: 0,
+        explanation: "The course is certification-track preparation against the Salesforce AI Associate exam objectives. Practice belongs on CRM situations, with a person still owning any real message."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-16",
+    courseSlug: "ai-practitioner-course-16",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "AWS Artificial Intelligence Practitioner",
+    missionName: "Tech Builder",
+    missionTagline: "Prove you can explain SageMaker, Bedrock, and responsible AI",
+    primaryAxis: "Engineering",
+    skillLabels: ["AWS AI Practitioner", "SageMaker", "Amazon Bedrock", "Responsible AI", "Security and governance", "Prompt engineering"],
+    scenarioPrompt: "A hiring manager for an AI practitioner role asks you to explain the AWS Certified AI Practitioner path in plain language. Using AWS Artificial Intelligence Practitioner, cover machine learning and generative AI, when the team would look at SageMaker versus Amazon Bedrock, and which responsible-AI, security, governance, and prompt-engineering checks belong in the plan.",
+    evidenceHint: "A strong response names SageMaker for machine-learning model work and Bedrock for generative AI, and includes responsible AI plus security and governance rather than only naming the two services. Prompt engineering is included for the generative case.",
+    quizQuestions: [
+      {
+        text: "A team wants to call a foundation model to draft member emails, with a person reviewing each draft. Which named AWS service matches that generative use?",
+        options: [
+          "Amazon Bedrock, the generative AI service named in this learning plan",
+          "A filing cabinet, because generative AI means paper templates",
+          "SageMaker used only as a mailbox",
+          "Neither service, because the plan excludes generative AI"
+        ],
+        correctIndex: 0,
+        explanation: "The learning plan names SageMaker and Bedrock as the AWS AI/ML services and includes generative AI. Bedrock is the generative path. A person still reviews member email."
+      },
+      {
+        text: "The same team wants to train a model on its own historical completion records to flag who may need outreach. Which named service matches that machine-learning work?",
+        options: [
+          "Amazon SageMaker, for building and running the organization's own machine-learning model",
+          "Amazon Bedrock, because every prediction must be a chat draft",
+          "Prompt engineering alone, with no model and no data",
+          "A public webpage with no access control"
+        ],
+        correctIndex: 0,
+        explanation: "The plan separates machine-learning concepts from generative AI and names SageMaker among the AWS AI/ML services. Training on the organization's own outcome records is the SageMaker-shaped problem, not a chat draft."
+      },
+      {
+        text: "Which set belongs in an AWS AI Practitioner plan alongside the service choice?",
+        options: [
+          "Responsible AI, security and governance, and prompt-engineering essentials for the generative path",
+          "Only the service logo",
+          "A decision to skip security because the exam name includes AI",
+          "Prompt engineering for a paper form that never calls a model"
+        ],
+        correctIndex: 0,
+        explanation: "The learning plan aligned to the AWS Certified AI Practitioner exam includes responsible AI, security and governance, and prompt-engineering essentials together with the services."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
+
+  {
+    key: "ai-practitioner-professional-certificate-aws:mission:ai-practitioner-course-17",
+    courseSlug: "ai-practitioner-course-17",
+    programSlug: "ai-practitioner-professional-certificate-aws",
+    programTitle: "AI Practitioner Professional Certificate (AWS)",
+    courseTitle: "Lab, Project, and Test Preparation",
+    missionName: "Project Commander",
+    missionTagline: "Prove you can scope a project and a test-prep plan",
+    primaryAxis: "Strategy",
+    skillLabels: ["Applied labs", "Project scoping", "Test preparation", "Program competencies"],
+    scenarioPrompt: "You are in Lab, Project, and Test Preparation. Propose one workplace project that uses a competency from this pathway, name the lab evidence you would keep, and outline how you would spend part of these hours preparing for the AWS AI Practitioner and Salesforce AI Associate material already in the program.",
+    evidenceHint: "A strong response scopes a small project tied to a real competency (for example a checked draft, a prediction-versus-generation choice, or an ethics review), names a concrete lab artifact, and splits test preparation across the two certification-track courses already in the syllabus.",
+    quizQuestions: [
+      {
+        text: "Which project scope fits this lab module?",
+        options: [
+          "A small workplace artifact that uses a program competency, such as a reviewed AI draft plus a note on who is accountable",
+          "A new 16-course curriculum that replaces the syllabus",
+          "A research paper on a model architecture this pathway does not teach",
+          "A vendor contract signed during lab hours"
+        ],
+        correctIndex: 0,
+        explanation: "The module is hands-on lab and project work supporting the program's competencies. The project should apply those competencies, not invent a different curriculum."
+      },
+      {
+        text: "What is useful lab evidence?",
+        options: [
+          "The prompt or input you used, the output, and what you changed after checking it",
+          "A screenshot with no note of what decision it supports",
+          "A statement that the hours were completed, with no artifact",
+          "Someone else's project with your name swapped in"
+        ],
+        correctIndex: 0,
+        explanation: "Lab and project work is evidence of practice. The input, the output, and the correction show the competency; a bare claim of hours does not."
+      },
+      {
+        text: "How should test preparation use these hours?",
+        options: [
+          "Practice the AWS Artificial Intelligence Practitioner and Salesforce Certified AI Associate material already in the pathway, on the objectives those courses name",
+          "Study a cloud exam this program does not include, instead of the two certification tracks in the syllabus",
+          "Skip both certification-track courses because lab hours replace them",
+          "Memorize only the program title"
+        ],
+        correctIndex: 0,
+        explanation: "Test preparation supports the program's competencies, including the AWS AI Practitioner and Salesforce AI Associate courses already on the syllabus."
+      }
+    ],
+    estimatedMinutes: 15,
+  },
 ];
 
 export function getSkillMissionDefinitionsForProgram(programSlug: string): SkillMissionDefinition[] {
