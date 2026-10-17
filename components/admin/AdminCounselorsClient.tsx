@@ -20,6 +20,8 @@ type PartnerOpt = { id: string; name: string };
 export default function AdminCounselorsClient({ partners }: { partners: PartnerOpt[] }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -33,6 +35,29 @@ export default function AdminCounselorsClient({ partners }: { partners: PartnerO
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  const setActive = useCallback(async (row: Row, active: boolean) => {
+    setActionError(null);
+    setBusyId(row.id);
+    try {
+      const r = await fetch(`/api/admin/counselors/${row.id}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ active }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        setActionError(typeof d.error === 'string' ? d.error : 'Could not update counselor status.');
+        return;
+      }
+      await load();
+    } catch {
+      setActionError('Could not update counselor status.');
+    } finally {
+      setBusyId(null);
+    }
+  }, [load]);
 
   return (
     <div>
@@ -49,6 +74,12 @@ export default function AdminCounselorsClient({ partners }: { partners: PartnerO
           </span>
         </div>
 
+        {actionError ? (
+          <p role="alert" style={{ color: 'var(--wa-danger, #b42318)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+            {actionError}
+          </p>
+        ) : null}
+
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {[1, 2, 3].map(i => <div key={i} className="portal-skeleton" style={{ height: '4rem', borderRadius: '0.875rem' }} />)}
@@ -59,6 +90,7 @@ export default function AdminCounselorsClient({ partners }: { partners: PartnerO
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {rows.map((r) => {
               const initials = r.fullName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const toggling = busyId === r.id;
               return (
                 <div key={r.id} className="portal-activity-item" style={{ justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', flex: 1, minWidth: 0 }}>
@@ -79,6 +111,14 @@ export default function AdminCounselorsClient({ partners }: { partners: PartnerO
                     <span style={{ fontSize: '0.8125rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '9999px', background: r.active ? 'rgba(74,155,79,0.12)' : 'var(--surface-container-high)', color: r.active ? 'var(--wa-success-dark)' : 'var(--color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                       {r.active ? 'Active' : 'Inactive'}
                     </span>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      disabled={toggling || busyId !== null}
+                      onClick={() => void setActive(r, !r.active)}
+                    >
+                      {toggling ? '…' : r.active ? 'Deactivate' : 'Activate'}
+                    </button>
                   </div>
                 </div>
               );
