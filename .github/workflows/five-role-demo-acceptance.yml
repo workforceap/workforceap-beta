@@ -1,0 +1,301 @@
+name: Five-Role DEMO Acceptance
+
+# WAP-6: five-role action and persistence acceptance on the isolated DEMO
+# Preview. Each run creates FIVE disposable synthetic users
+# (wap6-qa-<run>-1-<role>@example.com: member, counselor, admin, employer,
+# partner), has each make ONE write and read it back through the app, reads
+# every written row back from the DEMO database by its recorded ID, and always
+# removes exactly the recorded IDs. Runbook, prerequisites and cleanup:
+# docs/FIVE-ROLE-DEMO-ACCEPTANCE.md.
+#
+# It writes to the DEMO project, so it is separate from the read-only
+# Authenticated Portal Smoke, has no schedule and no pull_request trigger, and
+# runs only as a first-attempt manual dispatch from trusted master. It never
+# targets production:
+#   gate 0  the target is not an exact production hostname;
+#   gate 1  the target serves this exact commit on the DEMO Supabase project,
+#           before any credential is read;
+#   gate 2  (inside the fixture CLI, before any client) the Supabase and
+#           database URLs identify the DEMO project and the organization is the
+#           exact, active portal-qa-* fixture organization;
+#   key     one read-only DEMO probe must accept the service key before any
+#           Auth write.
+#
+# Credentials: only the DEMO_QA_* secrets of the protected `demo-qa`
+# environment (required reviewer). No PREVIEW_* database URL or service key is
+# read here. The target is DEMO_QA_SITE_URL when set, otherwise
+# PREVIEW_SITE_URL, and is used only after gates 0 and 1 pass for it.
+# One dispatch is one attempt: re-runs are refused (policy job) and Playwright
+# runs with --retries=0.
+
+on:
+  workflow_dispatch:
+    inputs:
+      qa_organization_id:
+        description: "Exact ID of the dedicated portal-qa-* organization in the DEMO project"
+        required: true
+        type: string
+      qa_organization_slug:
+        description: "Its slug (must start with portal-qa-)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: five-role-demo-acceptance
+  cancel-in-progress: false
+
+jobs:
+  # UNGATED on purpose (no `if`), as in resume-demo-acceptance.yml: anything
+  # but a first-attempt workflow_dispatch on master of the trusted repository is
+  # visibly red. Every other job depends on it
+  # (scripts/five-role-demo-acceptance-workflow.test.ts).
+  policy:
+    name: Require a first-attempt master dispatch in the trusted repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Refuse anything but a first-attempt workflow_dispatch on master
+        env:
+          RUN_REPOSITORY: ${{ github.repository }}
+          RUN_REF: ${{ github.ref }}
+          RUN_EVENT: ${{ github.event_name }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          if [ "$RUN_REPOSITORY" != "workforceap/workforceap-beta" ] || [ "$RUN_REF" != "refs/heads/master" ] || [ "$RUN_EVENT" != "workflow_dispatch" ]; then
+            echo "::error::Five-Role DEMO Acceptance runs only as a workflow_dispatch on refs/heads/master of workforceap/workforceap-beta (got $RUN_EVENT on $RUN_REF in $RUN_REPOSITORY). Nothing else ran."
+            exit 1
+          fi
+          if [ "$RUN_ATTEMPT" != "1" ]; then
+            echo "::error::One dispatch is one attempt (got attempt $RUN_ATTEMPT). Re-runs are refused; review the previous receipts and dispatch again. Nothing else ran."
+            exit 1
+          fi
+          echo "Trusted first-attempt master dispatch."
+
+  mirror:
+    name: Refresh the preview mirror
+    needs: policy
+    if: github.repository == 'workforceap/workforceap-beta' && github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/mirror-master-to-preview.yml
+
+  acceptance:
+    name: Five disposable DEMO users write and read back
+    needs: [policy, mirror]
+    if: >-
+      !cancelled() && needs.policy.result == 'success' && needs.mirror.result == 'success' &&
+      github.repository == 'workforceap/workforceap-beta' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Protected environment: Mike must create it with a required reviewer and
+    # the DEMO_QA_* secrets (docs/FIVE-ROLE-DEMO-ACCEPTANCE.md).
+    environment: demo-qa
+    permissions:
+      contents: read
+      deployments: read
+    env:
+      # The marker (run ID and synthetic emails) is written before the first
+      # Auth call; the state (exact IDs, plus the write in flight) before and
+      # after every write. Neither holds a password or any secret: passwords go
+      # only to GITHUB_ENV, masked. They are uploaded at the end so a failed
+      # cleanup can be finished from the exact IDs.
+      FIVE_ROLE_QA_STATE_FILE: /tmp/five-role-qa-fixture.json
+      FIVE_ROLE_QA_MARKER_FILE: /tmp/five-role-qa-fixture.marker.json
+      FIVE_ROLE_QA_STAGE_FILE: /tmp/five-role-qa-fixture.stage.json
+      FIVE_ROLE_ACCEPTANCE_OUTPUT: test-results/five-role-demo-acceptance.json
+      FIVE_ROLE_QA_READBACK_OUTPUT: test-results/five-role-demo-readback.json
+      FIVE_ROLE_QA_CLEANUP_OUTPUT: test-results/five-role-demo-cleanup.json
+
+    steps:
+      - name: Checkout trusted master
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify trusted checkout
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          remote="$(git remote get-url origin)"
+          test "$remote" = "https://github.com/workforceap/workforceap-beta" || \
+            test "$remote" = "https://github.com/workforceap/workforceap-beta.git"
+
+      - name: Wait for the Vercel Preview build of this commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          deadline=$(( $(date +%s) + 1500 ))
+          while :; do
+            dep="$(gh api "repos/${GITHUB_REPOSITORY}/deployments?sha=${GITHUB_SHA}&environment=Preview&per_page=20" \
+              --jq '[.[] | select(.creator.login == "vercel[bot]")] | sort_by(.created_at) | last | .id // empty')"
+            state=none
+            if [ -n "$dep" ]; then
+              state="$(gh api "repos/${GITHUB_REPOSITORY}/deployments/${dep}/statuses?per_page=1" --jq '.[0].state // "none"')"
+            fi
+            echo "Vercel Preview deployment for ${GITHUB_SHA:0:9}: ${dep:-none} (${state})"
+            case "$state" in
+              success|inactive) break ;;
+              failure|error) echo "::error::Vercel's Preview build of ${GITHUB_SHA:0:9} failed (deployment ${dep})."; exit 1 ;;
+            esac
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "::error::No successful Vercel Preview deployment of ${GITHUB_SHA:0:9} after 25 minutes."
+              exit 1
+            fi
+            sleep 20
+          done
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Gate 0: not an exact production hostname (the same list the Resume
+      # lane uses). The value is never printed.
+      - name: Refuse a production target
+        env:
+          RESUME_ACCEPTANCE_TARGET_ORIGIN: ${{ secrets.DEMO_QA_SITE_URL || secrets.PREVIEW_SITE_URL }}
+        run: node scripts/verify-resume-acceptance-receipt.mjs check-target
+
+      # Gate 1, before any credential: the target serves this exact commit and
+      # its /api/health reports the DEMO Supabase project.
+      - name: Verify target SHA and DEMO Supabase scope
+        shell: bash
+        env:
+          PORTAL_AUDIT_MODE: isolated_preview
+          PORTAL_AUDIT_TARGET_ORIGIN: ${{ secrets.DEMO_QA_SITE_URL || secrets.PREVIEW_SITE_URL }}
+          PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.DEMO_QA_SITE_URL || secrets.PREVIEW_SITE_URL }}
+          PORTAL_AUDIT_TRUSTED_SHA: ${{ github.sha }}
+        run: node scripts/portal-audit-health-gate.mjs
+
+      # Gate 2 and the key probe run inside the CLI before any client exists.
+      # A step timeout (well inside the job's) so a hang ends this step and
+      # still lets cleanup run, instead of the job timing out mid-write.
+      - name: Create the five disposable synthetic users
+        id: create
+        timeout-minutes: 10
+        env:
+          PORTAL_QA_TARGET: demo
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SUPABASE_SERVICE_ROLE_KEY }}
+          POSTGRES_PRISMA_URL: ${{ secrets.DEMO_QA_POSTGRES_PRISMA_URL }}
+          PORTAL_QA_ORGANIZATION_ID: ${{ inputs.qa_organization_id }}
+          PORTAL_QA_ORGANIZATION_SLUG: ${{ inputs.qa_organization_slug }}
+        run: pnpm exec tsx scripts/five-role-demo-fixture.ts create
+
+      - name: Install Playwright Chromium
+        if: steps.create.outcome == 'success'
+        run: pnpm exec playwright install --with-deps chromium
+
+      # The first check can be several minutes old by now: re-prove the exact
+      # SHA and DEMO project immediately before any write through the Preview.
+      - name: Re-verify target SHA and DEMO Supabase scope before the writes
+        if: steps.create.outcome == 'success'
+        shell: bash
+        env:
+          PORTAL_AUDIT_MODE: isolated_preview
+          PORTAL_AUDIT_TARGET_ORIGIN: ${{ secrets.DEMO_QA_SITE_URL || secrets.PREVIEW_SITE_URL }}
+          PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: ${{ secrets.DEMO_QA_SITE_URL || secrets.PREVIEW_SITE_URL }}
+          PORTAL_AUDIT_TRUSTED_SHA: ${{ github.sha }}
+        run: node scripts/portal-audit-health-gate.mjs
+
+      - name: Run the five-role acceptance spec
+        if: steps.create.outcome == 'success'
+        timeout-minutes: 15
+        run: pnpm exec playwright test tests/e2e/five-role-demo-acceptance.spec.ts --project=chromium --retries=0 --reporter=list
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ secrets.DEMO_QA_SITE_URL || secrets.PREVIEW_SITE_URL }}
+          FIVE_ROLE_ACCEPTANCE_CONFIRMED: "1"
+          # Workflow mode: a refusal fails the step instead of skipping, and a
+          # receipt with pass:false is always written.
+          FIVE_ROLE_ACCEPTANCE_MODE: workflow
+
+      # Read-only. Runs whenever create succeeded, even if the spec failed, so
+      # every run has a readback receipt.
+      - name: Read the written rows back from the DEMO database
+        if: always() && steps.create.outcome == 'success'
+        env:
+          PORTAL_QA_TARGET: demo
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SUPABASE_SERVICE_ROLE_KEY }}
+          POSTGRES_PRISMA_URL: ${{ secrets.DEMO_QA_POSTGRES_PRISMA_URL }}
+          PORTAL_QA_ORGANIZATION_ID: ${{ inputs.qa_organization_id }}
+          PORTAL_QA_ORGANIZATION_SLUG: ${{ inputs.qa_organization_slug }}
+        run: pnpm exec tsx scripts/five-role-demo-fixture.ts readback
+
+      # Runs whenever the create step ran (even if it or the spec failed).
+      # Removes exactly the recorded IDs; a missing state after create passed
+      # the key probe fails closed with exact-email recovery steps.
+      - name: Clean up the five synthetic users
+        if: always() && steps.create.outcome != 'skipped'
+        env:
+          PORTAL_QA_TARGET: demo
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SUPABASE_SERVICE_ROLE_KEY }}
+          POSTGRES_PRISMA_URL: ${{ secrets.DEMO_QA_POSTGRES_PRISMA_URL }}
+          PORTAL_QA_ORGANIZATION_ID: ${{ inputs.qa_organization_id }}
+          PORTAL_QA_ORGANIZATION_SLUG: ${{ inputs.qa_organization_slug }}
+        run: pnpm exec tsx scripts/five-role-demo-fixture.ts cleanup
+
+      # The ONE green check: acceptance (every role wrote and read back through
+      # the app), readback (every row found in the database with its owner and
+      # value) and cleanup (every fixture verified absent) for the same run and
+      # users.
+      - name: Verify the acceptance, readback and cleanup receipts together
+        if: always()
+        run: node scripts/verify-five-role-acceptance.mjs
+
+      - name: Upload the acceptance receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: five-role-demo-acceptance-${{ github.run_id }}
+          path: test-results/five-role-demo-acceptance.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload the readback receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: five-role-demo-readback-${{ github.run_id }}
+          path: test-results/five-role-demo-readback.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload the cleanup receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: five-role-demo-cleanup-${{ github.run_id }}
+          path: test-results/five-role-demo-cleanup.json
+          if-no-files-found: error
+          retention-days: 14
+
+      # IDs and synthetic emails only (no passwords or secrets), for finishing
+      # a failed cleanup by exact ID. Absent when create never started.
+      - name: Upload the fixture state, marker and stage files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: five-role-demo-fixture-files-${{ github.run_id }}
+          path: |
+            /tmp/five-role-qa-fixture.json
+            /tmp/five-role-qa-fixture.marker.json
+            /tmp/five-role-qa-fixture.stage.json
+          if-no-files-found: ignore
+          retention-days: 14
