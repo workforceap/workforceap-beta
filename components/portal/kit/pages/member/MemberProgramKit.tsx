@@ -231,7 +231,7 @@ function MemberProgramOverview({
 
   return (
     <DesignSurface surface="warm">
-      <div style={{ maxWidth: 1180, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
+      <div className="wa-dense-page wa-space-y-5">
         <PageOpener
           kicker={tc('kicker', { program: programTitle })}
           title={tc('claim', { count: remaining, program: programTitle })}

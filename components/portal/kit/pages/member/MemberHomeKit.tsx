@@ -393,7 +393,7 @@ export function MemberHomeKit({
 
   return (
     <DesignSurface surface="warm">
-      <div style={{ maxWidth: 1180, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-5">
+      <div className="wa-dense-page wa-space-y-5">
         <PageOpener
           kicker={openerKicker}
           title={claim}
@@ -586,35 +586,33 @@ export function MemberHomeKit({
               />
             </section>
 
-            <div className="wa-dense-grid wa-dense-grid--2">
-              <MemberAiToolsCard toolkitHref={toolkitHref} recommendedTool={recommendedTool} />
-              <section className="wa-kit-card" aria-labelledby="member-home-support-heading">
-                <h2 id="member-home-support-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{th('dedicatedSupport')}</h2>
-                {advisor ? (
-                  <div className="wa-flex wa-items-center wa-gap-3" style={{ marginTop: 12 }} data-testid="member-advisor-card">
-                    <Avatar initials={advisor.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('') || '?'} size={44} src={advisor.avatar ?? undefined} />
-                    <p style={{ margin: 0, fontWeight: 800 }}>{advisor.name}</p>
-                  </div>
-                ) : null}
-                {nextCheckIn ? <p className="wa-kit-lede" style={{ marginTop: 8 }}>{th('nextCheckIn', { when: nextCheckIn })}</p> : null}
-                {advisor ? <p className="wa-kit-meta">{th('replyTime')}</p> : null}
-                <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap" style={{ marginTop: 12 }}>
-                  {advisor ? (
-                    <Link href={advisor.messagingHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">
-                      {th('messageAdvisor', { name: advisor.firstName })}
-                    </Link>
-                  ) : null}
-                  <a href={advisor?.messagingHref ?? '/dashboard/messages'} className="wa-kit-cta wa-kit-focus" style={{ textDecoration: 'none' }}>
-                    {th('bookCheckIn')}
-                  </a>
-                  <a href={goalsHref} className="wa-kit-focus" style={HOME_TEXT_LINK}>
-                    <Target size={14} aria-hidden /> {goals.length > 0 ? th('openGoals') : th('setAGoal')}
-                  </a>
+            <section className="wa-kit-card" aria-labelledby="member-home-support-heading">
+              <h2 id="member-home-support-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{th('dedicatedSupport')}</h2>
+              {advisor ? (
+                <div className="wa-flex wa-items-center wa-gap-3" style={{ marginTop: 12 }} data-testid="member-advisor-card">
+                  <Avatar initials={advisor.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('') || '?'} size={44} src={advisor.avatar ?? undefined} />
+                  <p style={{ margin: 0, fontWeight: 800 }}>{advisor.name}</p>
                 </div>
-              </section>
-            </div>
+              ) : null}
+              {nextCheckIn ? <p className="wa-kit-lede" style={{ marginTop: 8 }}>{th('nextCheckIn', { when: nextCheckIn })}</p> : null}
+              {advisor ? <p className="wa-kit-meta">{th('replyTime')}</p> : null}
+              <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap" style={{ marginTop: 12 }}>
+                {advisor ? (
+                  <Link href={advisor.messagingHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">
+                    {th('messageAdvisor', { name: advisor.firstName })}
+                  </Link>
+                ) : null}
+                <a href={advisor?.messagingHref ?? '/dashboard/messages'} className="wa-kit-cta wa-kit-focus" style={{ textDecoration: 'none' }}>
+                  {th('bookCheckIn')}
+                </a>
+                <a href={goalsHref} className="wa-kit-focus" style={HOME_TEXT_LINK}>
+                  <Target size={14} aria-hidden /> {goals.length > 0 ? th('openGoals') : th('setAGoal')}
+                </a>
+              </div>
+            </section>
           </div>
         </div>
+        <MemberAiToolsCard toolkitHref={toolkitHref} recommendedTool={recommendedTool} />
 
         {jobOffers.length > 0 ? (
           <ErrorBoundary>

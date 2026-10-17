@@ -181,7 +181,7 @@ export function MemberJobsKit({
 
   return (
     <DesignSurface surface="warm">
-      <div style={{ maxWidth: 1180, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-5">
+      <div className="wa-dense-page wa-space-y-5">
         <PageOpener
           kicker={tj('kicker')}
           title={programTitle ? tj('claim', { program: programTitle, count: openRolesCount }) : tj('claimGeneric', { count: openRolesCount })}

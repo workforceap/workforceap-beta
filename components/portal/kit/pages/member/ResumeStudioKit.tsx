@@ -102,7 +102,7 @@ export function ResumeStudioKit({
 
   return (
     <DesignSurface surface="warm">
-      <div style={{ maxWidth: 1180, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-5">
+      <div className="wa-dense-page wa-space-y-5">
         <PageOpener
           kicker={t('kicker')}
           title={t('claim', { score: health ?? '—' })}
@@ -143,129 +143,119 @@ export function ResumeStudioKit({
             ]}
           />
         </div>
-        <div className="wa-dense-grid wa-dense-grid--resume">
-          <section className="wa-kit-card" aria-labelledby="resume-diagnostics-heading">
-            <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12 }}>
-              <h2 id="resume-diagnostics-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{t('diagnostics')}</h2>
-              <StatusTag tone={fixes.length > 0 ? 'warn' : 'muted'}>{t('kpiScreening')}</StatusTag>
+        <section className="wa-kit-card" aria-labelledby="resume-diagnostics-heading">
+          <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12 }}>
+            <h2 id="resume-diagnostics-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{t('diagnostics')}</h2>
+            <StatusTag tone={fixes.length > 0 ? 'warn' : 'muted'}>{t('kpiScreening')}</StatusTag>
+          </div>
+          <div className="wa-dense-grid wa-dense-grid--3">
+            <div>
+              <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700 }}>{t('clarity')}</p>
+              <ProgressBar pct={clarityPct ?? previewScorePayload?.pillars?.structural?.score ?? 0} aria-label={t('clarity')} />
             </div>
-            <div className="wa-space-y-3">
-              <div>
-                <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700 }}>{t('clarity')}</p>
-                <ProgressBar pct={clarityPct ?? previewScorePayload?.pillars?.structural?.score ?? 0} aria-label={t('clarity')} />
-              </div>
-              <div>
-                <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700 }}>{t('metrics')}</p>
-                <ProgressBar pct={metricsPct ?? previewScorePayload?.structural?.breakdown.quantification.score ?? 0} aria-label={t('metrics')} />
-              </div>
-              <div>
-                <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700 }}>{t('keywords')}</p>
-                <ProgressBar pct={keywordsPct ?? keywordPct ?? previewScorePayload?.pillars?.marketCoverage?.score ?? 0} aria-label={t('keywords')} />
-              </div>
+            <div>
+              <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700 }}>{t('metrics')}</p>
+              <ProgressBar pct={metricsPct ?? previewScorePayload?.structural?.breakdown.quantification.score ?? 0} aria-label={t('metrics')} />
             </div>
-            {fixes.length > 0 ? (
-              <ul style={{ listStyle: 'none', margin: '16px 0 0', padding: 0, display: 'grid', gap: 10 }}>
-                {fixes.map((fix) => (
-                  <li key={fix.title}>
-                    <div className="wa-flex wa-items-center wa-justify-between wa-gap-2">
-                      <strong>{fix.title}</strong>
-                      <StatusTag tone={fix.tag === 'highImpact' ? 'warn' : fix.tag === 'keywordGap' ? 'info' : 'muted'}>
-                        {t(fix.tag)}
-                      </StatusTag>
-                    </div>
-                    <p className="wa-kit-lede" style={{ margin: '4px 0 0' }}>{fix.body}</p>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-            <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap" style={{ marginTop: 16 }}>
-              <Link href={rewriteHref} className="wa-kit-cta wa-kit-focus" style={{ textDecoration: 'none' }}>{t('rewriteFixes')}</Link>
-              <Link href={coachHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" style={{ textDecoration: 'none' }}>{t('reviewCoach')}</Link>
+            <div>
+              <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700 }}>{t('keywords')}</p>
+              <ProgressBar pct={keywordsPct ?? keywordPct ?? previewScorePayload?.pillars?.marketCoverage?.score ?? 0} aria-label={t('keywords')} />
             </div>
-          </section>
+          </div>
+          {fixes.length > 0 ? (
+            <ul className="wa-dense-grid wa-dense-grid--3" style={{ listStyle: 'none', margin: '12px 0 0', padding: 0 }}>
+              {fixes.map((fix) => (
+                <li key={fix.title} className="wa-kit-card wa-kit-card--sm">
+                  <div className="wa-flex wa-items-center wa-justify-between wa-gap-2">
+                    <strong>{fix.title}</strong>
+                    <StatusTag tone={fix.tag === 'highImpact' ? 'warn' : fix.tag === 'keywordGap' ? 'info' : 'muted'}>
+                      {t(fix.tag)}
+                    </StatusTag>
+                  </div>
+                  <p className="wa-kit-lede" style={{ margin: '6px 0 0' }}>{fix.body}</p>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap" style={{ marginTop: 12 }}>
+            <Link href={rewriteHref} className="wa-kit-cta wa-kit-focus" style={{ textDecoration: 'none' }}>{t('rewriteFixes')}</Link>
+            <Link href={coachHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" style={{ textDecoration: 'none' }}>{t('reviewCoach')}</Link>
+          </div>
+        </section>
+        <div className="wa-dense-grid wa-dense-grid--resume-stage">
           <section className="wa-kit-card" aria-labelledby="resume-draft-heading">
-            <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12 }}>
+            <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 10 }}>
               <h2 id="resume-draft-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{t('workingDraft')}</h2>
               <StatusTag tone={hasResume ? 'ok' : 'muted'}>{t('draftReady')}</StatusTag>
             </div>
             {rewritePreview ? (
-              <div className="wa-space-y-3" style={{ marginBottom: 16 }}>
+              <div className="wa-space-y-3">
                 {rewritePreview.targetEmployer || rewritePreview.targetRole ? (
                   <p className="wa-kit-meta" style={{ margin: 0 }}>
                     {t('targetEmployer')}{' '}
                     <strong>{[rewritePreview.targetEmployer, rewritePreview.targetRole].filter(Boolean).join(' · ')}</strong>
                   </p>
                 ) : null}
-                <div className="wa-kit-card wa-kit-card--sm">
-                  <p className="wa-kit-meta" style={{ margin: '0 0 8px', fontWeight: 700 }}>{t('experienceBullet')}</p>
-                  <p className="wa-kit-lede" style={{ margin: 0 }}>
-                    {t('previousVersion')} {acceptedRewrite ? draftBullet : rewritePreview.previous}
-                  </p>
-                </div>
-                {!acceptedRewrite ? (
-                  <div className="wa-kit-card wa-kit-card--sm" style={{ background: 'var(--wa-success-soft)' }}>
-                    <p className="wa-kit-meta" style={{ margin: '0 0 8px', fontWeight: 700, color: 'var(--wa-success-dark)' }}>
-                      {typeof rewritePreview.points === 'number' ? t('suggestedRewritePts', { points: rewritePreview.points }) : t('suggestedRewrite')}
+                <div className="wa-dense-grid wa-dense-grid--2">
+                  <div className="wa-kit-card wa-kit-card--sm">
+                    <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700 }}>{t('experienceBullet')}</p>
+                    <p className="wa-kit-lede" style={{ margin: 0 }}>
+                      {t('previousVersion')} {acceptedRewrite ? draftBullet : rewritePreview.previous}
                     </p>
-                    {editingRewrite ? (
-                      <textarea
-                        className="wa-kit-focus"
-                        value={draftBullet}
-                        onChange={(event) => setDraftBullet(event.target.value)}
-                        rows={3}
-                        style={{ width: '100%', minHeight: 72, resize: 'vertical', border: '1px solid var(--wa-control-border)', borderRadius: 'var(--wa-radius-sm)', padding: '0.6rem 0.75rem', background: 'var(--wa-surface)', color: 'var(--wa-text)', font: 'inherit' }}
-                      />
-                    ) : (
-                      <p className="wa-kit-lede" style={{ margin: 0 }}>{draftBullet}</p>
-                    )}
-                    <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap" style={{ marginTop: 12 }}>
-                      <button type="button" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" onClick={() => setEditingRewrite((open) => !open)}>
-                        {t('edit')}
-                      </button>
-                      <button type="button" className="wa-kit-cta wa-kit-focus" onClick={() => { setAcceptedRewrite(true); setEditingRewrite(false); }}>
-                        {t('acceptChange')}
-                      </button>
-                    </div>
                   </div>
-                ) : null}
+                  {!acceptedRewrite ? (
+                    <div className="wa-kit-card wa-kit-card--sm" style={{ background: 'var(--wa-success-soft)' }}>
+                      <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700, color: 'var(--wa-success-dark)' }}>
+                        {typeof rewritePreview.points === 'number' ? t('suggestedRewritePts', { points: rewritePreview.points }) : t('suggestedRewrite')}
+                      </p>
+                      {editingRewrite ? (
+                        <textarea
+                          className="wa-kit-focus"
+                          value={draftBullet}
+                          onChange={(event) => setDraftBullet(event.target.value)}
+                          rows={3}
+                          style={{ width: '100%', minHeight: 72, resize: 'vertical', border: '1px solid var(--wa-control-border)', borderRadius: 'var(--wa-radius-sm)', padding: '0.6rem 0.75rem', background: 'var(--wa-surface)', color: 'var(--wa-text)', font: 'inherit' }}
+                        />
+                      ) : (
+                        <p className="wa-kit-lede" style={{ margin: 0 }}>{draftBullet}</p>
+                      )}
+                      <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap" style={{ marginTop: 10 }}>
+                        <button type="button" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" onClick={() => setEditingRewrite((open) => !open)}>
+                          {t('edit')}
+                        </button>
+                        <button type="button" className="wa-kit-cta wa-kit-focus" onClick={() => { setAcceptedRewrite(true); setEditingRewrite(false); }}>
+                          {t('acceptChange')}
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
                 {rewritePreview.summary ? (
                   <div className="wa-kit-card wa-kit-card--sm">
-                    <p className="wa-kit-meta" style={{ margin: '0 0 8px', fontWeight: 700 }}>{t('professionalSummary')}</p>
+                    <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700 }}>{t('professionalSummary')}</p>
                     <p className="wa-kit-lede" style={{ margin: 0 }}>{rewritePreview.summary}</p>
                   </div>
                 ) : null}
               </div>
             ) : null}
-            <ResumeStudioClient
-              hasResume={hasResume}
-              scoreHistorySlot={scoreHistorySlot}
-              rewriteHistorySlot={rewriteHistorySlot}
-              preview={preview}
-              basePath={basePath}
-              initialResume={initialResume}
-              initialJobTarget={initialJobTarget}
-              previewScoreOutput={previewScoreOutput}
-              previewScorePayload={previewScorePayload}
-              previewRewriteOutput={previewRewriteOutput}
-            />
           </section>
           <div className="wa-space-y-5">
             <section className="wa-kit-card" aria-labelledby="resume-versions-heading">
-              <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12 }}>
+              <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 8 }}>
                 <h2 id="resume-versions-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{t('recentVersions')}</h2>
                 <span className="wa-kit-meta">{t('allVersions')}</span>
               </div>
-              <p className="wa-kit-meta" style={{ margin: '0 0 10px' }}>{t('savedIterations')}</p>
+              <p className="wa-kit-meta" style={{ margin: '0 0 8px' }}>{t('savedIterations')}</p>
               {versions.length > 0 ? (
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 10 }}>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
                   {versions.map((version) => (
                     <li key={`${version.title}-${version.saved}`} className="wa-flex wa-items-center wa-justify-between wa-gap-3">
-                      <div>
+                      <div style={{ minWidth: 0 }}>
                         <strong style={{ display: 'block' }}>{version.title}</strong>
                         <span className="wa-kit-meta">{version.saved}{typeof version.score === 'number' ? ` · ${version.score}` : ''}</span>
                       </div>
                       {version.href ? (
-                        <Link href={version.href} className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 700, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>
+                        <Link href={version.href} className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 700, minHeight: 44, display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
                           {t('viewVersion')}
                         </Link>
                       ) : null}
@@ -283,8 +273,8 @@ export function ResumeStudioKit({
                     <p className="wa-kit-meta" style={{ margin: 0 }}>{t('assignedAdvisor')}</p>
                   </div>
                 </div>
-                <p className="wa-kit-lede" style={{ margin: '10px 0 0' }}>{t('advisorPrompt')}</p>
-                <div style={{ marginTop: 12 }}>
+                <p className="wa-kit-lede" style={{ margin: '8px 0 0' }}>{t('advisorPrompt')}</p>
+                <div style={{ marginTop: 10 }}>
                   <Link href={advisor.messagingHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" style={{ textDecoration: 'none' }}>
                     {t('messageAdvisor', { name: advisor.firstName })}
                   </Link>
@@ -293,7 +283,19 @@ export function ResumeStudioKit({
             ) : null}
           </div>
         </div>
-        <p className="wa-kit-meta" style={{ textAlign: 'center' }}>{t('footerNote')}</p>
+        <ResumeStudioClient
+          hasResume={hasResume}
+          scoreHistorySlot={scoreHistorySlot}
+          rewriteHistorySlot={rewriteHistorySlot}
+          preview={preview}
+          basePath={basePath}
+          initialResume={initialResume}
+          initialJobTarget={initialJobTarget}
+          previewScoreOutput={previewScoreOutput}
+          previewScorePayload={previewScorePayload}
+          previewRewriteOutput={previewRewriteOutput}
+        />
+        <p className="wa-kit-meta" style={{ textAlign: 'center', margin: 0 }}>{t('footerNote')}</p>
       </div>
     </DesignSurface>
   );
