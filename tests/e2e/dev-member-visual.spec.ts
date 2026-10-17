@@ -13,6 +13,15 @@ test.describe('dev member visual baselines', () => {
 
       for (const view of DEV_MEMBER_VIEWS) {
         await openDevMember(page, harnessPath(view.slug, 'full'));
+        await page.evaluate(() => {
+          const id = 'dev-member-visual-overflow';
+          if (document.getElementById(id)) return;
+          const style = document.createElement('style');
+          style.id = id;
+          style.textContent =
+            'html,body,.workspace-shell-root{overflow:visible!important;height:auto!important;}';
+          document.documentElement.appendChild(style);
+        });
         await expect(page).toHaveScreenshot(`dev-member-${view.slug}-${viewport.name}.png`, {
           fullPage: true,
           animations: 'disabled',
