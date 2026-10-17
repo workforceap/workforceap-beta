@@ -177,6 +177,12 @@ describe('enrollment student lookup does not reveal inaccessible account state',
       memberId: OTHER, active: true, member: { organizationId: ORG, deletedAt: null },
       counselor: { userId: MEMBER, active: true, user: { organizationId: ORG, deletedAt: null } },
     }) }));
+    expect(mocks.findMember).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        id: OTHER, organizationId: ORG, deletedAt: null, profile: { is: { role: 'member' } },
+        userRoles: { none: { role: { name: { in: expect.arrayContaining(['admin', 'counselor', 'employer']) } } } },
+      }),
+    }));
   });
   it('still reports validation/missing/erasure distinctions to an authorized admin', async () => {
     const admin = { ...actor, id: STAFF, role: 'admin' };
