@@ -9,6 +9,7 @@ import type { MemberShellIdentity } from '@/lib/member/memberIdentity';
 import { MEMBER_PORTAL_NAV_ITEMS } from '@/lib/nav/portalNav';
 import { PRODUCT_COPY } from '@/lib/nav/workspaceCopy';
 import DevExampleDataBanner from '@/components/portal/DevExampleDataBanner';
+import { harnessNavLivePath } from '@/app/dev/member/harness/registry';
 
 /**
  * Credential-free `/dev/member/*` chrome — same WorkspaceShell as live
@@ -67,11 +68,14 @@ const DEV_MEMBER_IDENTITY: MemberShellIdentity = {
 
 export default function DevMemberShell({ children }: { children: ReactNode }) {
   const pathname = usePathname() ?? '';
+  const harnessSlug = pathname.match(/^\/dev\/member\/v\/([^/]+)$/)?.[1];
+  const harnessRailHref = harnessSlug ? DEV_HREF[harnessNavLivePath(harnessSlug)] : undefined;
   const seenHref = new Set<string>();
   const navItems = MEMBER_PORTAL_NAV_ITEMS.filter((item) => item.href in DEV_HREF)
     .map((item) => {
       const href = DEV_HREF[item.href];
-      const extra = DEV_ALIASES[href] ?? [];
+      const extra = [...(DEV_ALIASES[href] ?? [])];
+      if (harnessRailHref === href) extra.push(pathname);
       return extra.length
         ? { ...item, href, aliases: [...(item.aliases ?? []), ...extra] }
         : { ...item, href };

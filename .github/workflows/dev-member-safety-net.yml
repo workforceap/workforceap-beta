@@ -1,0 +1,160 @@
+name: Portal C safety net
+
+# B0: after a Vercel Preview succeeds, run the credential-free member harness
+# smoke, visual baselines, and logged-out redirect checks against that URL.
+# Posts a commit status named "Portal C safety net" so the stacked PR shows it.
+# Does not cancel Preview smoke (different concurrency group). Never required
+# for merge; keep the PR draft.
+
+on:
+  pull_request:
+  deployment_status:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Deployed origin to test (https://... preview)."
+        required: true
+        type: string
+      sha:
+        description: "Commit SHA to post the status on (defaults to the current ref)."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: portal-c-safety-net-${{ github.event_name }}-${{ github.event.deployment.environment || github.ref }}-${{ github.event.deployment.sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  registry-lock:
+    name: Registry and alias lock
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Registry unit test
+        run: pnpm exec vitest run tests/app/dev-member-harness-registry.test.ts
+
+  safety-net:
+    name: Dev member harness on Preview
+    if: >-
+      github.repository == 'workforceap/workforceap-beta' &&
+      (
+        github.event_name == 'workflow_dispatch' ||
+        (
+          github.event.deployment_status.state == 'success' &&
+          github.event.deployment.environment == 'Preview' &&
+          github.event.deployment.creator.login == 'vercel[bot]'
+        )
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CI: "true"
+      DEPLOY_SHA: ${{ github.event.deployment.sha || inputs.sha || github.sha }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      PLAYWRIGHT_BASE_URL: ${{ inputs.base_url || github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+
+    steps:
+      - name: Checkout the deployed commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Portal C safety-net specs
+        id: smoke
+        shell: bash
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ env.PLAYWRIGHT_BASE_URL }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PLAYWRIGHT_BASE_URL}" ]; then
+            echo "missing_preview=1" >> "$GITHUB_OUTPUT"
+            echo "::error::No preview URL. Wait for Vercel or pass base_url."
+            exit 3
+          fi
+          pnpm exec playwright test \
+            tests/e2e/dev-member-routes.spec.ts \
+            tests/e2e/dev-member-visual.spec.ts \
+            tests/e2e/member-unauth-redirects.spec.ts \
+            --project=chromium \
+            --reporter=list,html,github
+          echo "result=pass" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-c-safety-net-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Post "Portal C safety net" commit status
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RESULT: ${{ steps.smoke.outputs.result }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.smoke.outcome }}" = "success" ]; then
+            state=success
+            description="Harness smoke, visuals, and unauth redirects passed"
+          elif [ "${{ steps.smoke.outputs.missing_preview }}" = "1" ]; then
+            state=error
+            description="No preview URL to probe"
+          elif [ -z "${VERCEL_AUTOMATION_BYPASS_SECRET}" ] && [ "${{ steps.smoke.outcome }}" != "success" ]; then
+            state=error
+            description="Preview probe failed (set VERCEL_AUTOMATION_BYPASS_SECRET if protected)"
+          else
+            state=failure
+            description="Portal C safety net failed — see run"
+          fi
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${DEPLOY_SHA}" \
+            -f state="$state" \
+            -f context="Portal C safety net" \
+            -f description="${description:0:140}" \
+            -f target_url="$RUN_URL" \
+            --jq '"posted \(.context): \(.state)"'
