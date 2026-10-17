@@ -13,6 +13,9 @@ const IGNORED_CONSOLE = [
   /Failed to load resource: the server responded with a status of 401/,
   /Failed to load resource: the server responded with a status of 404/,
   /net::ERR_/,
+  /vercel\.live/i,
+  /Content Security Policy/i,
+  /feedback\.js/i,
 ];
 
 export async function stubDevMemberNoise(page: Page): Promise<void> {

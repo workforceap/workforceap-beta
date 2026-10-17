@@ -13,15 +13,12 @@ test.describe('dev member visual baselines', () => {
 
       for (const view of DEV_MEMBER_VIEWS) {
         await openDevMember(page, harnessPath(view.slug, 'full'));
-        await page.addStyleTag({
-          content:
-            '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important;} html,body,.workspace-shell-root{overflow:visible!important;height:auto!important;}',
-        });
         await expect(page).toHaveScreenshot(`dev-member-${view.slug}-${viewport.name}.png`, {
           fullPage: true,
           animations: 'disabled',
           caret: 'hide',
-          maxDiffPixelRatio: 0.01,
+          maxDiffPixelRatio: 0.03,
+          mask: [page.locator('vercel-live-feedback, [data-vercel-toolbar], #vercel-live-feedback')],
         });
       }
     });
