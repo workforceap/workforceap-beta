@@ -234,7 +234,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    return [{ source: '/favicon.ico', destination: '/images/logo-tight.svg' }];
+    return [{ source: '/favicon.ico', destination: '/favicon-32.png' }];
   },
   async redirects() {
     return [

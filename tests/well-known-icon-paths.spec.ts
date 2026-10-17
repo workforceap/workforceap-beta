@@ -47,11 +47,16 @@ describe('standard icon paths', () => {
     }
   });
 
-  it('rewrites /favicon.ico to a shipped asset', async () => {
+  it('rewrites /favicon.ico to a square brand PNG, not the old green placeholder', async () => {
     const rewrites = (await nextConfig.rewrites?.()) as Array<{ source: string; destination: string }>;
     const favicon = rewrites.find((r) => r.source === '/favicon.ico');
-    expect(favicon).toBeDefined();
-    expect(existsSync(pub(favicon!.destination.replace(/^\//, '')))).toBe(true);
+    expect(favicon?.destination).toBe('/favicon-32.png');
+    const file = pub(favicon!.destination.replace(/^\//, ''));
+    expect(existsSync(file)).toBe(true);
+    expect(pngSize(file)).toMatchObject({ width: 32, height: 32 });
+    const layout = readFileSync(path.join(root, 'app/layout.tsx'), 'utf8');
+    expect(layout).toMatch(/rel="icon"[^>]*href="\/favicon-32\.png"/);
+    expect(layout).toMatch(/rel="icon"[^>]*href="\/favicon-48\.png"/);
   });
 });
 
