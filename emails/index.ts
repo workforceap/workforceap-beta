@@ -50,6 +50,7 @@ export { counselorAtRiskAlertHtml, counselorAtRiskBatchHtml } from './counselor-
 export { placementSurveyHtml, placementSurveyEscalationHtml } from './placement-survey';
 export { counselorAssignedHtml } from './counselor-assigned';
 export { portalStaffMessageHtml } from './portal-staff-message';
+export { portalMemberMessageHtml } from './portal-member-message';
 export { partnerReferralInviteHtml } from './partner-referral-invite';
 export { employerWelcomeHtml } from './employer-welcome';
 export { employerVerifyEmailHtml } from './employer-verify-email';

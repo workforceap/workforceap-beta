@@ -12,6 +12,7 @@ import {
 import { checkMessageRateLimit } from '@/lib/messages/rateLimit';
 import { createNotification } from '@/lib/notifications/create';
 import { notifyUnassignedMemberMessage } from '@/lib/messages/unassignedNotify';
+import { notifyStaffOfMemberPortalMessageEmail } from '@/lib/messages/notifyStaffOfMemberMessageEmail';
 import { counselorMemberThreadLink } from '@/lib/messages/staffLinks';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -122,13 +123,24 @@ export const GET = withApiGuc(_GET);async function _POST(request: NextRequest) {
       .findFirst({ where: { userId: recipientId, active: true }, select: { id: true } })
       .catch(() => null);
     const link = recipientCounselor ? counselorMemberThreadLink(user.id) : '/admin/messages';
+    const title = `New message from ${senderLabel}`;
     await createNotification({
       userId: recipientId,
       type: 'message',
-      title: `New message from ${senderLabel}`,
+      title,
       body: messagePreview,
       data: { threadId: thread.id, memberId: user.id, link },
     });
+    if (sender?.organizationId) {
+      await notifyStaffOfMemberPortalMessageEmail({
+        staffUserId: recipientId,
+        organizationId: sender.organizationId,
+        memberFullName: senderLabel,
+        bodyPreview: messagePreview,
+        title,
+        threadPath: link,
+      });
+    }
   } else {
     // Assignment should have already run on thread open. If the org still
     // has no counselor of record, notify the WAP counselor pool, then admins.

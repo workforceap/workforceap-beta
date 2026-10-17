@@ -44,6 +44,7 @@ export const EMAIL_TEMPLATE_KEYS = {
   onboarding_stalls_digest: 'onboarding_stalls_digest',
   counselor_assigned: 'counselor_assigned',
   portal_staff_message: 'portal_staff_message',
+  portal_member_message: 'portal_member_message',
   invitation: 'invitation',
   invitation_accepted: 'invitation_accepted',
   partner_referral_invite: 'partner_referral_invite',
