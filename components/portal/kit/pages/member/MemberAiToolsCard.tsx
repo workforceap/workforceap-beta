@@ -55,7 +55,7 @@ export default function MemberAiToolsCard({
           aria-label={t('explore')}
           style={{ color: 'var(--wa-accent)', fontWeight: 700, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}
         >
-          {th('openHub')}
+          {th('viewAll')}
         </Link>
       </div>
       <p className="wa-kit-meta" style={{ margin: '0 0 10px' }}>{th('aiAssistNote')}</p>

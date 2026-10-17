@@ -215,7 +215,7 @@ export default async function DevMemberHomePage({
       firstName={DEV_MEMBER_FIRST_NAME}
       coursePercent={coursePercent}
       courseProgressStale={courseProgressStale}
-      activeJobs={4}
+      activeJobs={DEV_HOME_PIPELINE.length}
       certs={2}
       points={1240}
       programTitle={activeProgramTitle ?? 'AWS Certified Cloud Practitioner Certificate'}
@@ -258,15 +258,8 @@ export default async function DevMemberHomePage({
         weight: 100,
       }}
       upNext={upNext}
-      recommendedTool={{
-        slug: 'interview-prep',
-        title: 'Get ready for your interview',
-        body: 'You have an interview or screening in your tracker. Pull your resume, pitch and practice answers into one page to review before it.',
-        href: '/dev/member/interview-prep',
-        cta: 'Open interview prep',
-      }}
       courseSpark={{ series: [70, 71, 72, 74, 74, 76, 78], delta: '4%', direction: 'up' }}
-      activeJobsSpark={{ series: [2, 3, 3, 3, 4, 4, 4], delta: '1', direction: 'up' }}
+      activeJobsSpark={{ series: [2, 3, 3, 3, 3, 3, 3], delta: '1', direction: 'up' }}
       certsSpark={{ series: [1, 1, 1, 1, 1, 2, 2] }}
       pointsSpark={{ series: [900, 950, 1000, 1080, 1120, 1180, 1240], delta: '85', direction: 'up' }}
       certModulesDone={7}
