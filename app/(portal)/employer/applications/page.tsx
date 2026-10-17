@@ -11,7 +11,7 @@ import EmployerApplicationsClient from '@/components/employer/EmployerApplicatio
 import EmployerApplicationsPager from '@/components/employer/EmployerApplicationsPager';
 import MobileApplicationsClient from '@/components/employer/MobileApplicationsClient';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import EmployerEmptyState from '@/components/employer/EmployerEmptyState';
 import {
   parseEmployerApplicationStatusFilter,
   parseEmployerApplicationsSort,
@@ -115,24 +115,11 @@ export default async function EmployerApplicationsPage({
       />
       {totalCount === 0 && !statusFilter ? (
         // True empty: no applications and no filter. Filtered-zero keeps the client so chips/reset remain.
-        <PortalEmptyState
-          title={t('noApplicationsYet')}
-          description={t('postRoleToStartReceiving')}
-          icon={
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: '3rem', color: 'var(--wa-muted)' }}
-              aria-hidden="true"
-            >
-              inbox
-            </span>
-          }
-          primaryAction={{ label: t('postAJob'), href: '/employer/jobs/new' }}
-        />
+        <EmployerEmptyState variant="applications" headingAs="h2" framed />
       ) : (
         <>
           <div className="wa-block md:wa-hidden wa-pb-24">
-            <MobileApplicationsClient initialRows={initialRows} />
+            <MobileApplicationsClient initialRows={initialRows} activeStatusFilter={statusFilter} />
             <div className="wa-px-4">
               <EmployerApplicationsPager page={page} totalPages={totalPages} status={statusFilter} sort={sortOrder} />
             </div>
