@@ -51,7 +51,7 @@ describe('MemberJobsKit failed loads (WAP-261)', () => {
 
   it('everything loaded with nothing in it: honest zeros and the normal empty states', () => {
     renderKit({});
-    expect([...document.querySelectorAll('.wa-kit-stat-value')].map((el) => el.textContent)).toEqual(['0', '0', '0', '0']);
+    expect([...document.querySelectorAll('.wa-kit-stat-value')].map((el) => el.textContent)).toEqual(['0', '—', '0', '0']);
     expect(screen.getByText(en.empty.applications.title)).toBeInTheDocument();
     expect(screen.getByText(en.empty.openings.title)).toBeInTheDocument();
     expect(screen.queryByTestId('member-jobs-applications-load-failed')).toBeNull();

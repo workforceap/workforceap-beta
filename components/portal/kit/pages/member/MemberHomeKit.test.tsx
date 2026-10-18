@@ -24,7 +24,6 @@ const base = {
   coursePercent: 0,
   programTitle: 'IT Support Professional Certificate (IBM)',
   programStatus: 'In progress',
-  activeJobs: 0,
   certs: 0,
   points: 0,
   currentStreak: 0,
@@ -142,13 +141,13 @@ describe('MemberHomeKit interview steps + recommended tool', () => {
     cta: 'Open interview prep',
   };
 
-  it('lists interview-readiness steps as links and keeps other next steps off that list', () => {
+  it('lists interview-readiness steps as links and keeps other next steps in the next-steps list', () => {
     renderKit(<MemberHomeKit {...base} upNext={upNext} />);
     const list = screen.getByRole('list', { name: home.interviewClaim });
     const links = Array.from(list.querySelectorAll('a'));
     expect(links.map((a) => a.getAttribute('href'))).toEqual(['/dashboard/readiness']);
     expect(links[0]?.textContent).toContain('Build your job readiness plan');
-    expect(screen.queryByText('Add your resume')).toBeNull();
+    expect(screen.getByTestId('member-home-next-step-upload_resume')).toHaveTextContent('Add your resume');
   });
 
   it('names the recommended tool and keeps the way to every tool', () => {
@@ -166,6 +165,87 @@ describe('MemberHomeKit interview steps + recommended tool', () => {
     expect(screen.queryByRole('list', { name: home.interviewClaim })).toBeNull();
     expect(screen.queryByTestId('recommended-tool')).toBeNull();
     expect(screen.getByRole('link', { name: 'Explore AI Career Tools' })).toHaveAttribute('href', '/dashboard/ai-tools');
+  });
+});
+
+describe('MemberHomeKit next-step prompts from the loader', () => {
+  const profileReview = {
+    id: 'review_starter_profile',
+    title: 'Review your starter profile details',
+    body: 'Confirm the contact and referral details your counselor entered.',
+    href: '/dashboard/profile',
+    cta: 'Review profile',
+    variant: 'urgent' as const,
+    weight: 92,
+  };
+  const messagesPrompt = {
+    id: 'counselor_messages',
+    title: 'Message from your team',
+    body: 'You have 2 unread messages from your counselor or program team.',
+    href: '/dashboard/messages',
+    cta: 'Open messages',
+    variant: 'urgent' as const,
+    weight: 88,
+  };
+
+  it('renders the preassessment prompt when the loader says it is incomplete', () => {
+    renderKit(<MemberHomeKit {...base} doThisNext={null} preassessmentCompleted={false} />);
+    const row = screen.getByTestId('member-home-next-step-skills_assessment');
+    expect(row).toHaveTextContent(home.nextStepPreassessmentTitle);
+    expect(row.querySelector('a')?.getAttribute('href')).toBe('/dashboard/assessment');
+  });
+
+  it('renders the starter-profile review when that is the loader next step', () => {
+    renderKit(<MemberHomeKit {...base} doThisNext={profileReview} preassessmentCompleted={false} />);
+    expect(screen.getByTestId('member-home-next-step-review_starter_profile')).toHaveTextContent(profileReview.title);
+    expect(screen.getByTestId('member-home-next-step-skills_assessment')).toHaveTextContent(home.nextStepPreassessmentTitle);
+  });
+
+  it('renders unread counselor-message prompts from upNext', () => {
+    renderKit(<MemberHomeKit {...base} doThisNext={messagesPrompt} upNext={[]} />);
+    const row = screen.getByTestId('member-home-next-step-counselor_messages');
+    expect(row).toHaveTextContent('2 unread messages');
+    expect(row.querySelector('a')?.getAttribute('href')).toBe('/dashboard/messages');
+  });
+
+  it('does not invent a preassessment row when the loader marks it complete', () => {
+    renderKit(<MemberHomeKit {...base} doThisNext={null} preassessmentCompleted />);
+    expect(screen.queryByTestId('member-home-next-step-skills_assessment')).toBeNull();
+  });
+});
+
+describe('MemberHomeKit application totals', () => {
+  it('uses the loader active-application total instead of the capped pipeline list', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        activeJobs={12}
+        pipeline={[
+          { role: 'Help Desk Technician', company: 'Metro Transit Authority', stage: 'Applied', tone: 'muted' },
+          { role: 'IT Support Specialist', company: 'Lakeview Health System', stage: 'Interviewing', tone: 'warn' },
+          { role: 'Cloud Support Associate', company: 'Brightline Credit Union', stage: 'Offer', tone: 'warn' },
+          { role: 'Service Desk Analyst', company: 'Northside Clinic', stage: 'Screening', tone: 'info' },
+        ]}
+      />,
+    );
+    expect(screen.getByText(home.kpiActiveCount.replace('{count}', '12'))).toBeTruthy();
+    expect(screen.queryByText(home.kpiActiveCount.replace('{count}', '4'))).toBeNull();
+  });
+
+  it('counts interviews from interview statuses only and shows offers separately', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        interviewCount={1}
+        jobOffers={[{ id: 'o1', role: 'Cloud Support Associate', company: 'Brightline Credit Union' }]}
+        pipeline={[
+          { role: 'IT Support Specialist', company: 'Lakeview Health System', stage: 'Interviewing', tone: 'warn' },
+          { role: 'Cloud Support Associate', company: 'Brightline Credit Union', stage: 'Offer', tone: 'warn' },
+        ]}
+      />,
+    );
+    expect(screen.getByText('1 interview · 1 offer')).toBeTruthy();
+    expect(screen.queryByText(/2 interviews/)).toBeNull();
   });
 });
 

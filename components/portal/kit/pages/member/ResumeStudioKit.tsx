@@ -97,15 +97,28 @@ export function ResumeStudioKit({
   const listedTarget = targetListing ?? initialJobTarget;
   const coach = coachName ?? advisor?.name;
   const hubHref = backHref ?? '/dashboard/ai-tools';
-  const rewriteHref = `${basePath ?? '/dashboard/ai-tools/resume-studio'}?view=rewrite`;
-  const coachHref = advisor?.messagingHref ?? `${basePath ?? '/dashboard/ai-tools/resume-studio'}?view=coach`;
+  const studioBase = basePath ?? '/dashboard/ai-tools/resume-studio';
+  const rewriteHref = `${studioBase}?view=rewrite`;
+  const coachHref = advisor?.messagingHref ?? `${studioBase}?view=coach`;
+  const analyzeHref = `${studioBase}?view=score`;
+  const hasAnalysis =
+    typeof health === 'number' ||
+    previewScorePayload != null ||
+    typeof clarityPct === 'number' ||
+    typeof metricsPct === 'number' ||
+    typeof keywordsPct === 'number' ||
+    typeof keywordPct === 'number' ||
+    fixes.length > 0;
+  const clarityValue = hasAnalysis ? (clarityPct ?? previewScorePayload?.pillars?.structural?.score) : undefined;
+  const metricsValue = hasAnalysis ? (metricsPct ?? previewScorePayload?.structural?.breakdown.quantification.score) : undefined;
+  const keywordsValue = hasAnalysis ? (keywordsPct ?? keywordPct ?? previewScorePayload?.pillars?.marketCoverage?.score) : undefined;
 
   return (
     <DesignSurface surface="warm">
       <div className="wa-dense-page wa-space-y-5">
         <PageOpener
           kicker={t('kicker')}
-          title={t('claim', { score: health ?? '—' })}
+          title={hasAnalysis ? t('claim', { score: health ?? '—' }) : t('claimUnknown')}
           lede={t('lede')}
           icon={<Layers size={13} aria-hidden="true" />}
           action={
@@ -125,8 +138,8 @@ export function ResumeStudioKit({
               },
               {
                 label: t('kpiScreening'),
-                value: t('kpiFixes', { count: fixes.length || (hasResume ? 0 : 0) }),
-                tone: fixes.length > 0 ? 'warn' : undefined,
+                value: hasAnalysis ? t('kpiFixes', { count: fixes.length }) : t('kpiFixesUnknown'),
+                tone: hasAnalysis && fixes.length > 0 ? 'warn' : undefined,
               },
               {
                 label: t('kpiTarget'),
@@ -134,7 +147,7 @@ export function ResumeStudioKit({
               },
               {
                 label: t('kpiKeywords'),
-                value: typeof keywordPct === 'number' ? `${keywordPct}%` : '—',
+                value: typeof keywordPct === 'number' && hasAnalysis ? `${keywordPct}%` : '—',
               },
               {
                 label: t('kpiCoach'),
@@ -148,21 +161,28 @@ export function ResumeStudioKit({
             <h2 id="resume-diagnostics-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{t('diagnostics')}</h2>
             <StatusTag tone={fixes.length > 0 ? 'warn' : 'muted'}>{t('kpiScreening')}</StatusTag>
           </div>
+          {hasAnalysis ? (
           <div className="wa-dense-grid wa-dense-grid--3">
             <div>
               <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700 }}>{t('clarity')}</p>
-              <ProgressBar pct={clarityPct ?? previewScorePayload?.pillars?.structural?.score ?? 0} aria-label={t('clarity')} />
+              {typeof clarityValue === 'number' ? <ProgressBar pct={clarityValue} aria-label={t('clarity')} /> : <p className="wa-kit-meta">{t('kpiFixesUnknown')}</p>}
             </div>
             <div>
               <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700 }}>{t('metrics')}</p>
-              <ProgressBar pct={metricsPct ?? previewScorePayload?.structural?.breakdown.quantification.score ?? 0} aria-label={t('metrics')} />
+              {typeof metricsValue === 'number' ? <ProgressBar pct={metricsValue} aria-label={t('metrics')} /> : <p className="wa-kit-meta">{t('kpiFixesUnknown')}</p>}
             </div>
             <div>
               <p className="wa-kit-meta" style={{ margin: '0 0 6px', fontWeight: 700 }}>{t('keywords')}</p>
-              <ProgressBar pct={keywordsPct ?? keywordPct ?? previewScorePayload?.pillars?.marketCoverage?.score ?? 0} aria-label={t('keywords')} />
+              {typeof keywordsValue === 'number' ? <ProgressBar pct={keywordsValue} aria-label={t('keywords')} /> : <p className="wa-kit-meta">{t('kpiFixesUnknown')}</p>}
             </div>
           </div>
-          {fixes.length > 0 ? (
+          ) : (
+            <div data-testid="resume-studio-analysis-unknown" style={{ marginTop: 4 }}>
+              <p style={{ margin: 0, fontWeight: 800 }}>{t('analysisUnknownTitle')}</p>
+              <p className="wa-kit-lede" style={{ margin: '6px 0 0' }}>{t('analysisUnknownBody')}</p>
+            </div>
+          )}
+          {hasAnalysis && fixes.length > 0 ? (
             <ul className="wa-dense-grid wa-dense-grid--3" style={{ listStyle: 'none', margin: '12px 0 0', padding: 0 }}>
               {fixes.map((fix) => (
                 <li key={fix.title} className="wa-kit-card wa-kit-card--sm">
@@ -178,7 +198,11 @@ export function ResumeStudioKit({
             </ul>
           ) : null}
           <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap" style={{ marginTop: 12 }}>
-            <Link href={rewriteHref} className="wa-kit-cta wa-kit-focus" style={{ textDecoration: 'none' }}>{t('rewriteFixes')}</Link>
+            {hasAnalysis ? (
+              <Link href={rewriteHref} className="wa-kit-cta wa-kit-focus" style={{ textDecoration: 'none' }}>{t('rewriteFixes')}</Link>
+            ) : (
+              <Link href={analyzeHref} className="wa-kit-cta wa-kit-focus" style={{ textDecoration: 'none' }}>{t('runAnalysis')}</Link>
+            )}
             <Link href={coachHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" style={{ textDecoration: 'none' }}>{t('reviewCoach')}</Link>
           </div>
         </section>

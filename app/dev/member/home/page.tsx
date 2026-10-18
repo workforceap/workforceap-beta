@@ -101,6 +101,24 @@ const DEV_PROGRAM_SLUGS = ['aws-cloud-technology-amazon', 'comptia-a-professiona
 
 const UP_NEXT_FIXTURE: NextBestAction[] = [
   {
+    id: 'review_starter_profile',
+    title: 'Review your starter profile details',
+    body: 'Confirm the contact and referral details your counselor entered.',
+    href: '/dev/member/profile',
+    cta: 'Review profile',
+    variant: 'urgent',
+    weight: 92,
+  },
+  {
+    id: 'counselor_messages',
+    title: 'Message from your team',
+    body: 'You have 2 unread messages from your counselor or program team.',
+    href: '/dev/member/messages',
+    cta: 'Open messages',
+    variant: 'urgent',
+    weight: 88,
+  },
+  {
     id: 'interview_practice',
     title: 'Practice your interview answers',
     body: 'Use guided interview practice to prepare for recruiter screens and counselor interviews.',
@@ -135,6 +153,7 @@ export default async function DevMemberHomePage({
     program?: string;
     staff?: string;
     advisor?: string;
+    empty?: string;
   }>;
 }) {
   if (process.env.VERCEL_ENV === 'production') notFound();
@@ -159,10 +178,13 @@ export default async function DevMemberHomePage({
     : null;
   const youthAge = params?.youth ? Number.parseInt(params.youth, 10) : NaN;
   const youthNoticeAge = Number.isInteger(youthAge) && youthAge >= 0 && youthAge < 18 ? youthAge : null;
-  const upNext: NextBestAction[] = [
-    ...(courseProgressStale ? [STALE_TRAINING_COUNSELOR_ACTION] : []),
-    ...UP_NEXT_FIXTURE,
-  ].slice(0, 3);
+  const emptyHome = params?.empty === '1';
+  const upNext: NextBestAction[] = emptyHome
+    ? []
+    : [
+        ...(courseProgressStale ? [STALE_TRAINING_COUNSELOR_ACTION] : []),
+        ...UP_NEXT_FIXTURE,
+      ];
   const onboardingFixture = params?.onboarding === 'on' || params?.onboarding === 'tour' ? params.onboarding : null;
   const requestedProgram = typeof params?.program === 'string' ? params.program.trim() : '';
   const programSwitch = params?.programs === '2' || requestedProgram
@@ -226,7 +248,8 @@ export default async function DevMemberHomePage({
       firstName={DEV_MEMBER_FIRST_NAME}
       coursePercent={coursePercent}
       courseProgressStale={courseProgressStale}
-      activeJobs={DEV_HOME_PIPELINE.length}
+      activeJobs={emptyHome ? 0 : DEV_HOME_PIPELINE.length}
+      interviewCount={emptyHome ? 0 : DEV_HOME_PIPELINE.filter((row) => /interview/i.test(row.stage)).length}
       certs={2}
       points={1240}
       programTitle={activeProgramTitle ?? DEV_PROGRAM_TITLE}
@@ -256,10 +279,10 @@ export default async function DevMemberHomePage({
       jobsHref="/dev/member/jobs"
       coursesHref="/dev/member/program"
       goalsHref="/dev/member/progress"
-      jobOffers={jobOffers}
-      first90={first90}
+      jobOffers={emptyHome ? [] : jobOffers}
+      first90={emptyHome ? null : first90}
       youthNoticeAge={youthNoticeAge}
-      doThisNext={{
+      doThisNext={emptyHome ? null : {
         id: 'resume-module',
         title: DEV_CURRENT_MODULE_TITLE,
         body: `~25 min · Module ${DEV_CURRENT_MODULE_NUMBER} of 9 · AWS Cloud Practitioner — due Thursday.`,
@@ -268,6 +291,7 @@ export default async function DevMemberHomePage({
         variant: 'urgent',
         weight: 100,
       }}
+      preassessmentCompleted={!emptyHome}
       upNext={upNext}
       courseSpark={{ series: [70, 71, 72, 74, 74, 76, 78], delta: '4%', direction: 'up' }}
       activeJobsSpark={{ series: [2, 3, 3, 3, 3, 3, 3], delta: '1', direction: 'up' }}
@@ -297,7 +321,7 @@ export default async function DevMemberHomePage({
         { title: 'Finish AWS Cloud Practitioner', percent: 78 },
         { title: 'Apply to 5 cloud roles', percent: 80 },
       ]}
-      pipeline={[...DEV_HOME_PIPELINE]}
+      pipeline={emptyHome ? [] : [...DEV_HOME_PIPELINE]}
     />
     {placement === 'demoted' ? approvalCard : null}
     </>

@@ -196,6 +196,7 @@ async function renderMemberDashboard(
       programStatus={home.programStatus}
       noProgram={home.noProgram}
       activeJobs={home.activeJobs}
+      interviewCount={home.interviewCount}
       certs={home.certs}
       points={home.points}
       currentStreak={home.currentStreak}

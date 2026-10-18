@@ -115,7 +115,7 @@ function JobsCta({
 }
 
 export function MemberJobsKit({
-  saved = 0,
+  saved: _saved = 0,
   applied = 0,
   interviewing = 0,
   syncedLabel,
@@ -203,11 +203,14 @@ export function MemberJobsKit({
                 : [
                     {
                       label: tj('kpiQualified'),
-                      value: openRolesCount || saved + applied,
+                      value: openRolesCount,
                       delta: employerCount > 0 ? tj('kpiQualifiedDelta', { count: employerCount }) : undefined,
                       deltaTone: 'muted' as const,
                     },
-                    { label: tj('kpiHighMatches'), value: highMatches },
+                    {
+                      label: tj('kpiHighMatches'),
+                      value: recommendationsLoadFailed || recommended.length === 0 ? '—' : highMatches,
+                    },
                     { label: tj('kpiActiveApps'), value: applied + interviewing, delta: syncedLabel, deltaTone: 'muted' as const },
                     { label: tj('kpiInterview'), value: interviewing },
                   ]

@@ -129,18 +129,18 @@ export default async function DevMemberResumeStudioPage({
         previewScorePayload={filled && !isRewrite ? SCORE_PAYLOAD : undefined}
         previewRewriteOutput={filled && isRewrite ? REWRITE : undefined}
         advisor={DEV_ADVISOR}
-        score={DEV_RESUME_SCORE}
+        score={filled ? DEV_RESUME_SCORE : undefined}
         targetListing={DEV_TARGET_ROLE.title}
-        keywordPct={84}
+        keywordPct={filled ? 84 : undefined}
         coachName="Dana Reyes"
-        clarityPct={88}
-        metricsPct={64}
-        keywordsPct={DEV_RESUME_SCORE}
-        fixes={[
+        clarityPct={filled ? 88 : undefined}
+        metricsPct={filled ? 64 : undefined}
+        keywordsPct={filled ? DEV_RESUME_SCORE : undefined}
+        fixes={filled ? [
           { title: 'Add metrics to 4 bullet points', body: 'Quantifiable outcomes on ticket resolution, uptime improvements, and user satisfaction provide verifiable competency.', tag: 'highImpact' },
           { title: 'Align skills for Cloud Support Associate', body: 'Missing keywords: Active Directory, Bash scripting basics, and incident triage protocol.', tag: 'keywordGap' },
           { title: 'Shorten the summary to 3 concise lines', body: 'Tighten the narrative to highlight foundational systems administration strengths and immediate regional readiness.', tag: 'formatting' },
-        ]}
+        ] : []}
         versions={[
           { title: DEV_TARGET_ROLE.title, saved: 'Saved · Oct 14', score: DEV_RESUME_SCORE, href: '/dev/member/resume-studio' },
           { title: 'IT Support Specialist', saved: 'Saved · Oct 9', score: 68, href: '/dev/member/resume-studio' },

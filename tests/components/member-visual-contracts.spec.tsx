@@ -24,8 +24,8 @@ describe('categorical totals retain their value without status-like colors', () 
   it.each([0, 3])('job totals remain neutral at %i and real application status stays distinct', (value) => {
     render(<NextIntlClientProvider locale="en" messages={en}><MemberJobsKit saved={value} applied={value} interviewing={value} offers={value} applications={[{ id: 'fixture', role: 'Fixture role', company: 'Fixture company', location: 'Remote', applied: 'Sep19', stage: 'Interview scheduled', tone: 'warn' }]} /></NextIntlClientProvider>);
     const expected: Array<[string, string]> = [
-      ['Qualified roles', String(value * 2)],
-      ['High matches (≥85%)', '0'],
+      ['Open roles', '0'],
+      ['High matches (≥85%)', '—'],
       ['Active applications', String(value * 2)],
       ['Interview scheduled', String(value)],
     ];

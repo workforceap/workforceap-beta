@@ -105,6 +105,8 @@ export interface MemberHomeKitProps {
   programTitle?: string;
   programStatus?: string;
   noProgram?: boolean;
+  /** INTERVIEWING rows from the loader. Offers are not interviews. */
+  interviewCount?: number;
   nextLesson?: string;
   nextLessonDue?: string;
   nextLessonHref?: string;
@@ -182,6 +184,35 @@ function pipelineCompanyDisplay(company: string): string | null {
 function isInterviewAction(action: NextBestAction): boolean {
   const hay = `${action.id} ${action.href} ${action.title}`.toLowerCase();
   return hay.includes('interview') || hay.includes('readiness');
+}
+
+function isInterviewStage(stage: string): boolean {
+  return /interview/i.test(stage);
+}
+
+function countInterviewRows(rows: PipelineRow[]): number {
+  return rows.filter((row) => isInterviewStage(row.stage)).length;
+}
+
+const PREASSESSMENT_ACTION_ID = 'skills_assessment';
+
+function collectHomeNextSteps(args: {
+  preassessmentCompleted?: boolean;
+  doThisNext?: NextBestAction | null;
+  upNext: NextBestAction[];
+  preassessment: NextBestAction;
+}): NextBestAction[] {
+  const items: NextBestAction[] = [];
+  const seen = new Set<string>();
+  const push = (action: NextBestAction | null | undefined) => {
+    if (!action || seen.has(action.id)) return;
+    seen.add(action.id);
+    items.push(action);
+  };
+  push(args.doThisNext);
+  if (args.preassessmentCompleted === false) push(args.preassessment);
+  for (const action of args.upNext) push(action);
+  return items;
 }
 
 function resolveInterviewHref(toolkitHref: string): string {
@@ -308,14 +339,18 @@ export function MemberHomeKit({
   longestStreak = 0,
   goals = [],
   goalsHref = '/dashboard/career-brief#goals',
+  activeJobs,
+  interviewCount: interviewCountProp,
   jobOffers = [],
   first90 = null,
   youthNoticeAge = null,
   showStaffViewBanner = false,
   programSwitch = null,
   advisor = null,
+  doThisNext = null,
   upNext = [],
   recommendedTool = null,
+  preassessmentCompleted,
   ungatedDigitalBasicsHref = null,
   certModulesDone,
   certModulesTotal,
@@ -338,9 +373,31 @@ export function MemberHomeKit({
     : pct;
   const ringTone: KitTone | undefined = modulePct >= 100 ? 'ok' : pct === 0 && programTitle && courseProgressStale ? 'warn' : undefined;
   const interviewSteps = upNext.filter(isInterviewAction);
+  const nextSteps = collectHomeNextSteps({
+    preassessmentCompleted,
+    doThisNext,
+    upNext,
+    preassessment: {
+      id: PREASSESSMENT_ACTION_ID,
+      title: th('nextStepPreassessmentTitle'),
+      body: th('nextStepPreassessmentBody'),
+      href: '/dashboard/assessment',
+      cta: th('nextStepPreassessmentCta'),
+      variant: 'urgent',
+      weight: 90,
+    },
+  });
   const claim = focusClaim(th, { programTitle, remaining });
   const openerKicker = firstName ? th('workspaceKicker', { name: firstName }) : th('workspaceKickerGuest');
-  const interviewCount = pipeline.filter((row) => row.tone === 'warn' || /interview/i.test(row.stage)).length;
+  const activeApplicationCount = typeof activeJobs === 'number' ? activeJobs : pipeline.length;
+  const interviews = typeof interviewCountProp === 'number' ? interviewCountProp : countInterviewRows(pipeline);
+  const offerCount = jobOffers.length;
+  const applicationDelta = [
+    interviews > 0 ? th('kpiInterviewCount', { count: interviews }) : null,
+    offerCount > 0 ? th('kpiOfferCount', { count: offerCount }) : null,
+  ]
+    .filter((part): part is string => Boolean(part))
+    .join(' · ') || undefined;
   const resumeNumber = resumeModuleNumber ?? (hasModuleRow ? (certModulesDone as number) + 1 : 8);
   const pipelineColumns: Column<PipelineRow>[] = [
     {
@@ -446,9 +503,9 @@ export function MemberHomeKit({
               },
               {
                 label: th('kpiApplications'),
-                value: th('kpiActiveCount', { count: pipeline.length }),
-                delta: interviewCount > 0 ? th('kpiInterviewCount', { count: interviewCount }) : undefined,
-                deltaTone: interviewCount > 0 ? 'info' : 'muted',
+                value: th('kpiActiveCount', { count: activeApplicationCount }),
+                delta: applicationDelta,
+                deltaTone: interviews > 0 ? 'info' : 'muted',
               },
               {
                 label: th('kpiInterviewPrep'),
@@ -500,6 +557,27 @@ export function MemberHomeKit({
                 </p>
               )}
               {priorityBody ? <p className="wa-kit-lede" style={{ marginTop: 8 }}>{priorityBody}</p> : null}
+              {nextSteps.length > 0 ? (
+                <ol
+                  data-testid="member-home-next-steps"
+                  aria-label={th('nextSteps')}
+                  style={{ listStyle: 'none', margin: '12px 0 0', padding: 0, display: 'grid', gap: 2 }}
+                >
+                  {nextSteps.map((action) => (
+                    <li key={action.id} data-testid={`member-home-next-step-${action.id}`}>
+                      <Link href={resolveMemberProgramHref(action.href)} className="wa-kit-focus" style={UP_NEXT_ROW}>
+                        <span style={{ minWidth: 0 }}>
+                          <span style={{ display: 'block', fontWeight: 700 }}>{action.title}</span>
+                          <span className="wa-kit-meta">{action.body}</span>
+                        </span>
+                        <span style={{ ...HOME_TEXT_LINK, fontSize: 'var(--wa-type-meta)' }}>
+                          {action.cta} <ArrowRight size={13} aria-hidden />
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              ) : null}
               {programTitle && programCoursesNote ? (
                 <p data-testid="program-courses-note" style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 6 }}>
                   {programCoursesNote}
