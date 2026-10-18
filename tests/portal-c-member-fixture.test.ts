@@ -115,6 +115,11 @@ describe('portal C fixture OIDC', () => {
       ok: false,
       reason: 'wrong_repository',
     });
+    const deployed = signOidc(claims({ ref: SHA, sha: SHA, event_name: 'deployment_status' }));
+    await expect(verifyPortalCFixtureOidc(deployed, { jwks: { keys: [jwk] } })).resolves.toMatchObject({
+      ok: true,
+      claims: { ref: SHA, sha: SHA },
+    });
     const otherWorkflow = signOidc(
       claims({
         job_workflow_ref: `${PORTAL_C_FIXTURE_REPOSITORY}/.github/workflows/other.yml@refs/heads/feature/portal-c-b0-safety-net`,

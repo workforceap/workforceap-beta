@@ -8,6 +8,10 @@ export const PORTAL_C_FIXTURE_WORKFLOW = '.github/workflows/dev-member-safety-ne
 const ALLOWED_EVENTS = new Set(['pull_request', 'deployment_status', 'workflow_dispatch']);
 const CLOCK_SKEW_SECONDS = 60;
 
+export type FixtureOidcResult =
+  | { ok: true; claims: VerifiedFixtureOidc }
+  | { ok: false; reason: FixtureOidcFailure; hint?: string };
+
 export type FixtureOidcFailure =
   | 'bad_token'
   | 'bad_signature'
@@ -61,7 +65,7 @@ export async function verifyPortalCFixtureOidc(
     audience?: string;
     repository?: string;
   } = {},
-): Promise<{ ok: true; claims: VerifiedFixtureOidc } | { ok: false; reason: FixtureOidcFailure }> {
+): Promise<FixtureOidcResult> {
   const parts = token.split('.');
   if (parts.length !== 3 || parts.some((part) => part.length === 0)) {
     return { ok: false, reason: 'bad_token' };
@@ -90,11 +94,20 @@ export async function verifyPortalCFixtureOidc(
   if (typeof payload.event_name !== 'string' || !ALLOWED_EVENTS.has(payload.event_name)) {
     return { ok: false, reason: 'wrong_event' };
   }
-  if (typeof payload.ref !== 'string' || !payload.ref.startsWith('refs/')) {
-    return { ok: false, reason: 'bad_token' };
-  }
-  if (typeof payload.sha !== 'string' || !/^[0-9a-f]{40}$/.test(payload.sha)) {
-    return { ok: false, reason: 'bad_token' };
+  // pull_request refs look like refs/heads/… or refs/pull/n/merge.
+  // Vercel deployment_status sets the deployment ref to the bare commit SHA.
+  const ref = typeof payload.ref === 'string' ? payload.ref : '';
+  const refOk = ref.startsWith('refs/') || /^[0-9a-f]{40}$/.test(ref);
+  const sha =
+    typeof payload.sha === 'string' && /^[0-9a-f]{40}$/.test(payload.sha)
+      ? payload.sha
+      : /^[0-9a-f]{40}$/.test(ref)
+        ? ref
+        : '';
+  if (!refOk || !sha) {
+    const refKind = ref.startsWith('refs/') ? 'refs' : ref ? 'other' : 'missing';
+    const shaLen = typeof payload.sha === 'string' ? payload.sha.length : 0;
+    return { ok: false, reason: 'bad_token', hint: `ref=${refKind} shaLen=${shaLen}` };
   }
 
   let jwks = options.jwks;
@@ -130,8 +143,8 @@ export async function verifyPortalCFixtureOidc(
       repository,
       workflowRef: payload.job_workflow_ref,
       eventName: payload.event_name,
-      ref: payload.ref,
-      sha: payload.sha,
+      ref,
+      sha,
     },
   };
 }

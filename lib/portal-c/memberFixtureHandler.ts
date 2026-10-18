@@ -55,14 +55,18 @@ export async function handlePortalCMemberFixture(input: {
   }
 
   const header = input.authorization ?? '';
-  const match = /^Bearer\s+(\S+)$/i.exec(header);
-  if (!match || match[1].length > 8000) {
+  const match = /^Bearer\s+(\S+)$/i.exec(header.trim());
+  if (!match || match[1].length > 12_000) {
     return { status: 401, body: { error: 'bad_token' } };
   }
   const verify = input.verify ?? verifyPortalCFixtureOidc;
   const verified = await verify(match[1]);
   if (!verified.ok) {
-    return { status: 401, body: { error: verified.reason satisfies FixtureOidcFailure } };
+    const reason: FixtureOidcFailure = verified.reason;
+    return {
+      status: 401,
+      body: verified.hint ? { error: reason, detail: verified.hint } : { error: reason },
+    };
   }
 
   const classification = supabaseProjectGuard.projectForUrl(env.POSTGRES_PRISMA_URL);

@@ -39,7 +39,7 @@ export async function requestOidcToken(env = process.env, fetchImpl = fetch) {
   if (!body || typeof body.value !== 'string' || !body.value) {
     throw new Error('OIDC token response had no value.');
   }
-  return body.value;
+  return body.value.trim();
 }
 
 export function fixtureError(status, body) {
