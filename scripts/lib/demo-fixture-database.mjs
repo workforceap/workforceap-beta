@@ -26,13 +26,16 @@ export function validateDemoFixtureDatabase(env = process.env) {
       'POSTGRES_URL_NON_POOLING or POSTGRES_PRISMA_URL is required for DEMO fixture setup.',
     );
   }
-  const normalized = directDatabaseUrl.toLowerCase();
-  if (!normalized.startsWith('postgres')) {
-    throw new Error('DEMO fixture setup requires a postgres connection URL.');
+  const classification = guard.projectForUrl(directDatabaseUrl);
+  let host = 'unparsed';
+  try {
+    host = new URL(directDatabaseUrl).hostname;
+  } catch {
+    host = 'unparsed';
   }
-  if (normalized.includes(PROD_REF) || !normalized.includes(DEMO_REF)) {
+  if (classification !== 'demo') {
     throw new Error(
-      `Fixture setup is allowed only on the DEMO Supabase project (${DEMO_REF}).`,
+      `Fixture setup is allowed only on the DEMO Supabase project (${DEMO_REF}). Refused host ${host} classified as ${classification}.`,
     );
   }
   return { directDatabaseUrl, expected: 'demo' };
