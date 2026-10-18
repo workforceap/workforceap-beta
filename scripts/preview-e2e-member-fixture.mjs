@@ -11,6 +11,11 @@ import {
   verifyRestored,
 } from './lib/preview-e2e-member-fixture.cjs';
 
+function publicError(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.replace(/postgres(?:ql)?:\/\/\S+/gi, 'postgresql://***').slice(0, 500);
+}
+
 function snapshotPath(env = process.env) {
   const runId = env.GITHUB_RUN_ID ?? 'local';
   return env.PORTAL_C_E2E_FIXTURE_SNAPSHOT ?? `/tmp/portal-c-e2e-member-fixture-${runId}.json`;
@@ -72,18 +77,18 @@ async function ensureIncomplete() {
 
 const command = process.argv[2];
 if (command === 'ensure-incomplete') {
-  await ensureIncomplete().catch(() => {
-    console.error('[preview-e2e-member-fixture] ensure-incomplete failed.');
+  await ensureIncomplete().catch((error) => {
+    console.error(`[preview-e2e-member-fixture] ensure-incomplete failed: ${publicError(error)}`);
     process.exitCode = 1;
   });
 } else if (command === 'prepare') {
-  await prepare().catch(() => {
-    console.error('[preview-e2e-member-fixture] prepare failed.');
+  await prepare().catch((error) => {
+    console.error(`[preview-e2e-member-fixture] prepare failed: ${publicError(error)}`);
     process.exitCode = 1;
   });
 } else if (command === 'restore') {
-  await restore().catch(() => {
-    console.error('[preview-e2e-member-fixture] restore failed.');
+  await restore().catch((error) => {
+    console.error(`[preview-e2e-member-fixture] restore failed: ${publicError(error)}`);
     process.exitCode = 1;
   });
 } else {

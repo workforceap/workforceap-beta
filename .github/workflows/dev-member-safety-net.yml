@@ -266,6 +266,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Generate Prisma client
+        run: pnpm exec prisma generate
+
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
 
