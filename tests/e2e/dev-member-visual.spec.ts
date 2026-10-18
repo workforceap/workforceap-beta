@@ -26,7 +26,8 @@ test.describe('dev member visual baselines', () => {
         await page.evaluate(async () => {
           if (document.fonts?.ready) await document.fonts.ready;
         });
-        await expect(page).toHaveScreenshot(`dev-member-${view.slug}-${viewport.name}.png`, {
+        // Collect every view's diff; each mismatch still fails this test.
+        await expect.soft(page).toHaveScreenshot(`dev-member-${view.slug}-${viewport.name}.png`, {
           fullPage: true,
           animations: 'disabled',
           caret: 'hide',
