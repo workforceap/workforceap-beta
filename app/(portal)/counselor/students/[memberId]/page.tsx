@@ -157,15 +157,6 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
   });
   if (!member) notFound();
 
-  if (counselor) {
-    const assign = await prisma.counselorAssignment.findFirst({
-      where: { counselorId: counselor.id, memberId, active: true },
-    });
-    if (!assign) notFound();
-  } else if (!adminUser) {
-    notFound();
-  }
-
   const serviceRequests = await loadMemberServiceRequestsForStaff(member.id, member.organizationId).catch(
     (error: unknown) => {
       console.error('[counselor/student-detail] service requests failed', error);
