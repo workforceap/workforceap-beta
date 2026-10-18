@@ -190,6 +190,7 @@ export function MemberJobsKit({
         />
         <div className="wa-kit-card">
           <KpiStrip
+            responsive="member"
             items={
               pipelineLoadFailed
                 ? (

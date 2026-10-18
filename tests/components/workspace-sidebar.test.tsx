@@ -687,7 +687,7 @@ describe('AI Career Tools contextual tool row', () => {
     // WAP-189: five always-visible rows (was seven under PR #2322).
     expect(counts.hub).toBe(5);
     expect(counts.dashboard).toBe(5);
-    // One extra row on a tool page — not 18.
+    // One extra row on a tool page â€” not 18.
     expect(counts.tool).toBe(6);
   });
 
@@ -923,5 +923,22 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     expect(sectionButtons(container)).toHaveLength(6);
     expect(container.querySelector('.workspace-sidebar-section-label[data-section="dailyWork"]')).not.toBeNull();
     expect(visibleRows(container).length).toBeLessThanOrEqual(20);
+  });
+});
+
+
+describe('member C role isolation', () => {
+  it.each(['admin', 'counselor', 'employer', 'partner', 'group'] as const)('keeps %s on the staff shell even at a member compact pathname', (role) => {
+    location.pathname = '/dashboard/program';
+    const view = render(<NextIntlClientProvider locale="en" messages={messages}>
+      <WorkspaceShell portalRole={role} navItems={EMPLOYER_PORTAL_NAV_ITEMS} workspaceLabel="Staff portal" contextLabel="Test staff" readOnlyAudit>
+        <h1>Staff content</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>);
+    const shell = view.container.querySelector('.workspace-shell-root')!;
+    expect(shell).toHaveAttribute('data-workspace-role', role);
+    expect(shell).not.toHaveAttribute('data-member-home-compact');
+    expect(view.container.querySelector('.member-home-compact-nav')).toBeNull();
+    expect(view.getByRole('heading', { name: 'Staff content' })).toBeVisible();
   });
 });

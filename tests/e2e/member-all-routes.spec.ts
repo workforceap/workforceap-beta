@@ -1,117 +1,83 @@
-/**
- * Visits every canonical member dashboard path and asserts we are not stuck on /login.
- * Run with: PLAYWRIGHT_MEMBER_EMAIL, PLAYWRIGHT_PORTAL_PASSWORD
- * Optional: PLAYWRIGHT_BASE_URL (default http://localhost:3000)
- */
+/** Complete canonical routes and real alias destinations; missing fixtures fail explicitly. */
 import { test, expect, type Page } from '@playwright/test';
+import { DEV_MEMBER_VIEWS, DEV_MEMBER_ALIASES } from '../../app/dev/member/harness/registry';
+import { loginPortalRole, hasPortalRoleCredentials } from './auth-helpers';
+import { resolveMemberPortalCredentials } from '../../scripts/lib/portal-audit-auth.mjs';
 
-const PASSWORD = process.env.PLAYWRIGHT_PORTAL_PASSWORD ?? '';
-const EMAIL = process.env.PLAYWRIGHT_MEMBER_EMAIL ?? '';
+test.use({ trace: 'off', video: 'off', screenshot: 'off' });
+const overrides: Record<string, string> = JSON.parse(process.env.PORTAL_C_MEMBER_ROUTE_FIXTURES ?? '{}');
+const parents: Record<string, string> = {
+  'job-detail': '/dashboard/jobs', 'learning-module': '/dashboard/learning', lab: '/dashboard/learning',
+  'counselor-detail': '/dashboard/counselor', 'mentor-profile': '/dashboard/mentors',
+  'career-brief-detail': '/dashboard/career-brief', 'career-library-detail': '/dashboard/career-library',
+};
 
-const MEMBER_PATHS = [
-  '/dashboard',
-  '/dashboard/account',
-  '/dashboard/ai-tools',
-  '/dashboard/ai-tools/career-business-coach',
-  '/dashboard/ai-tools/cover-letter',
-  '/dashboard/ai-tools/elevator-pitch',
-  '/dashboard/ai-tools/gap-analyzer',
-  '/dashboard/ai-tools/history',
-  '/dashboard/ai-tools/interview-coach',
-  '/dashboard/ai-tools/interview-practice',
-  '/dashboard/ai-tools/job-match-scorer',
-  '/dashboard/ai-tools/linkedin-about',
-  '/dashboard/ai-tools/linkedin-headline',
-  '/dashboard/ai-tools/resume-studio?view=score',
-  '/dashboard/ai-tools/resume-studio?view=coach',
-  '/dashboard/ai-tools/resume-studio?view=rewrite',
-  '/dashboard/ai-tools/benefits-cliff',
-  '/dashboard/ai-tools/interview-prep',
-  '/dashboard/ai-tools/salary-negotiation',
-  '/dashboard/ai-tools/skill-checkpoints',
-  '/dashboard/ai-tools/skill-mapper',
-  '/dashboard/ai-tools/studio?tab=session&agent=readiness',
-  '/dashboard/ai-tools/training-bridge',
-  '/dashboard/ai-tools/voice-interview',
-  '/dashboard/assessment',
-  '/dashboard/career-brief',
-  '/dashboard/career-brief/dev-placeholder',
-  '/dashboard/career-library',
-  '/dashboard/career-library/dev-placeholder',
-  '/dashboard/certifications',
-  '/dashboard/counselor',
-  '/dashboard/counselor/dev-placeholder',
-  '/dashboard/documents',
-  '/dashboard/eligibility',
-  '/dashboard/guide',
-  '/dashboard/help',
-  '/dashboard/job-applications',
-  '/dashboard/jobs',
-  '/dashboard/jobs/dev-placeholder',
-  '/dashboard/learning',
-  '/dashboard/learning/find-your-career',
-  '/dashboard/learning/interest-profiler',
-  '/dashboard/learning/labs/dev-placeholder',
-  '/dashboard/learning/modules/dev-placeholder',
-  '/dashboard/learning/wioa-qualification',
-  '/dashboard/mentor',
-  '/dashboard/mentors',
-  '/dashboard/mentors/dev-placeholder',
-  '/dashboard/messages',
-  '/dashboard/missions',
-  '/dashboard/points',
-  '/dashboard/profile',
-  '/dashboard/program',
-  '/dashboard/program/coursera-enrollment',
-  '/dashboard/program/employer-screening',
-  '/dashboard/program/start',
-  '/dashboard/readiness',
-  '/dashboard/referrals',
-  '/dashboard/resources',
-  '/dashboard/resume',
-  '/dashboard/survey',
-  '/dashboard/weekly-recap',
-  '/dashboard/assessments',
-  '/dashboard/skills-assessment',
-  '/dashboard/ai-tools/application-tracker',
-  '/dashboard/ai-tools/resume-analysis',
-  '/dashboard/ai-tools/resume-coach',
-  '/dashboard/ai-tools/resume-rewriter',
-  '/dashboard/toolkit',
-  '/dashboard/settings',
-  '/dashboard/program/change',
-  '/dashboard/coursera',
-  '/dashboard/training',
-  '/account',
-  '/applications',
-  '/certifications',
-] as const;
-
-async function login(page: Page, baseURL: string) {
-  await page.goto(`${baseURL}/login?redirectTo=${encodeURIComponent('/dashboard')}`);
-  await page.getByLabel(/institutional id/i).fill(EMAIL);
-  await page.getByLabel(/access key/i).fill(PASSWORD);
-  await page.getByRole('button', { name: /authenticate access/i }).click();
-  await expect(page).not.toHaveURL(/\/login/, { timeout: 15000 });
+function matchesFixture(href: string, pattern: string) {
+  if (!href.startsWith('/') || href.startsWith('//') || /[\\?#]/.test(href)) return false;
+  const parts = href.split('/');
+  const expected = pattern.split('/');
+  return parts.length === expected.length && parts.every((part, i) => expected[i].startsWith('[')
+    ? /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(part)
+    : part === expected[i]);
 }
 
-test.describe('member routes — auth and load', () => {
-  test.skip(!EMAIL || !PASSWORD, 'Set PLAYWRIGHT_MEMBER_EMAIL and PLAYWRIGHT_PORTAL_PASSWORD');
+async function concretePath(page: Page, slug: string, pattern: string) {
+  if (!pattern.includes('[')) return pattern;
+  const supplied = overrides[slug];
+  if (supplied) {
+    if (!matchesFixture(supplied, pattern)) throw new Error(`Invalid synthetic fixture path for ${slug}`);
+    return supplied;
+  }
+  const parent = parents[slug];
+  if (!parent) throw new Error(`Missing fixture resolver for ${slug}`);
+  await page.goto(parent, { waitUntil: 'domcontentloaded' });
+  const links = await page.locator('a[href]').evaluateAll(anchors => anchors.map(a => a.getAttribute('href') ?? ''));
+  const found = links.find(href => matchesFixture(href, pattern));
+  if (!found) throw new Error(`No authorized synthetic fixture for ${slug}; provide PORTAL_C_MEMBER_ROUTE_FIXTURES or seed a reversible DEMO fixture.`);
+  return found;
+}
 
-  test('every canonical member path leaves login', async ({ page, baseURL }) => {
-    const origin = baseURL ?? 'http://localhost:3000';
-    await login(page, origin);
-
-    const rows: { path: string; finalUrl: string; title: string }[] = [];
-
-    for (const path of MEMBER_PATHS) {
-      await page.goto(`${origin}${path}`, { waitUntil: 'domcontentloaded' });
-      await expect(page).not.toHaveURL(/\/login/, { timeout: 10000 });
-      const finalUrl = page.url();
-      const title = await page.title();
-      rows.push({ path, finalUrl, title });
-    }
-
-    console.log(JSON.stringify(rows, null, 2));
+test.describe('member routes — authenticated inventory', () => {
+  test.beforeEach(() => {
+    if (process.env.PORTAL_C_REQUIRED === '1' && !hasPortalRoleCredentials('member')) throw new Error('Dedicated member credentials are required.');
+    test.skip(!hasPortalRoleCredentials('member'), 'Dedicated member credentials are unavailable.');
   });
+  for (const width of [1440, 390]) {
+    test(`member inventory, mentor access gate, and aliases at ${width}`, async ({ page, baseURL }) => {
+      test.setTimeout(900_000);
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+      if (resolveMemberPortalCredentials(process.env).email.toLowerCase() !== 'member-test@workforceap.org') throw new Error('Dedicated synthetic member credentials are required.');
+      const auditToken = process.env.PORTAL_AUDIT_READ_ONLY_TOKEN ?? '';
+      if (auditToken.length < 32) throw new Error('Read-only audit capability is required for the inventory sweep.');
+      await page.context().addCookies([{ name: 'wap-read-only-portal-audit-token', value: auditToken, url: new URL(baseURL ?? '').origin, httpOnly: true, secure: true, sameSite: 'Lax' }]);
+      await loginPortalRole(page, 'member');
+      await expect(page.locator('[data-portal-audit-suppressed="workspace-nav-badges-and-notification-polling"]')).toHaveCount(1);
+      await page.route('**/*', route => ['GET', 'HEAD', 'OPTIONS'].includes(route.request().method()) ? route.continue() : route.abort('blockedbyclient'));
+      const failures: string[] = [];
+      for (const view of DEV_MEMBER_VIEWS) {
+        try {
+          const path = await concretePath(page, view.slug, view.livePath);
+          const response = await page.goto(path, { waitUntil: 'domcontentloaded' });
+          expect(response?.status(), view.slug).toBeLessThan(400);
+          await expect(page).not.toHaveURL(/\/login(?:[?#]|$)/);
+          // This inventory entry serves mentors, not ordinary members. Prove the
+          // member access gate here; mentor content requires its own staff fixture.
+          const expectedPath = view.slug === 'mentor' ? '/mentor/apply' : path;
+          expect(new URL(page.url()).pathname.replace(/^\/(en|es|fr|pt)(?=\/)/, '')).toBe(expectedPath);
+          await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+          await expect(page.locator('[data-portal-error-state]')).toHaveCount(0);
+        } catch (error) { failures.push(`${view.slug}: ${error instanceof Error ? error.message : String(error)}`); }
+      }
+      for (const alias of DEV_MEMBER_ALIASES) {
+        const expected = new URL(alias.path === '/pwa-start' ? '/dashboard' : alias.path.endsWith('/readiness-coach') ? '/dashboard/ai-tools?tab=session&agent=readiness' : alias.target, 'https://fixture.invalid');
+        await page.goto(alias.path, { waitUntil: 'domcontentloaded' });
+        await expect(page).not.toHaveURL(/\/login(?:[?#]|$)/);
+        const final = new URL(page.url());
+        expect(final.pathname.replace(/^\/(en|es|fr|pt)(?=\/)/, '')).toBe(expected.pathname);
+        for (const [key, value] of expected.searchParams) expect(final.searchParams.get(key)).toBe(value);
+        if (expected.hash) expect(final.hash).toBe(expected.hash);
+      }
+      expect(failures, `Missing or failing authenticated views: ${failures.join(', ')}`).toEqual([]);
+    });
+  }
 });

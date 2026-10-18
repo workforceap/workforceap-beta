@@ -27,7 +27,7 @@ permissions:
 
 concurrency:
   group: portal-c-safety-net-${{ github.event_name }}-${{ github.event.deployment.environment || github.ref }}-${{ github.event.deployment.sha || github.sha }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   registry-lock:
@@ -179,7 +179,6 @@ jobs:
       github.repository == 'workforceap/workforceap-beta' &&
       (
         github.event_name == 'workflow_dispatch' ||
-        github.event_name == 'pull_request' ||
         (
           github.event.deployment_status.state == 'success' &&
           github.event.deployment.environment == 'Preview' &&
@@ -192,6 +191,7 @@ jobs:
       CI: "true"
       HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.deployment.sha || github.sha }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      PORTAL_C_REQUIRED: "1"
       PLAYWRIGHT_TRACE: "off"
       PLAYWRIGHT_VIDEO: ""
       PLAYWRIGHT_SCREENSHOT: ""
@@ -337,6 +337,7 @@ jobs:
 
       - name: Run signed-in C route specs
         env:
+          PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PREVIEW_PORTAL_AUDIT_READ_ONLY_TOKEN }}
           PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
           PLAYWRIGHT_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
           PLAYWRIGHT_PORTAL_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
@@ -345,6 +346,7 @@ jobs:
         run: |
           pnpm exec playwright test \
             tests/e2e/member-signed-in-c-routes.spec.ts \
+            tests/e2e/member-all-routes.spec.ts \
             --project=chromium \
             --reporter=list,html,github \
             --trace=off

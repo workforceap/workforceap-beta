@@ -1,0 +1,85 @@
+name: Portal C staff protection
+on:
+  pull_request:
+    branches: [master, 'feature/portal-*']
+permissions:
+  contents: read
+  deployments: read
+concurrency:
+  group: portal-c-staff-protection-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+jobs:
+  staff:
+    name: Staff pixels against master
+    if: github.repository == 'workforceap/workforceap-beta' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.head.ref, 'feature/portal-c-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: portal-c-signed-in-e2e-member
+      cancel-in-progress: false
+    env:
+      CI: 'true'
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PORTAL_C_TRUSTED_SHA: ${{ github.event.pull_request.head.sha }}
+      PORTAL_C_TRUSTED_BRANCH: ${{ github.event.pull_request.head.ref }}
+      PORTAL_C_STAFF_BASELINE_URL: https://workforceap-beta-64x99g521-mabrown040-5207s-projects.vercel.app
+      PORTAL_C_STAFF_BASELINE_SHA: fc68f346f4e50b364cadb44fe06417dc0da6f53c
+      PORTAL_C_STAFF_BASELINE_SOURCE_SHA: efc27e4a4ebeba09b5261e7b1c36463d01925017
+      PLAYWRIGHT_TRACE: 'off'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Wait for exact candidate Preview
+        id: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "origin=$(node scripts/portal-c-preview-origin.mjs)" >> "$GITHUB_OUTPUT"
+      - name: Verify both targets through Vercel API and DEMO health before exposing login credentials
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          PLAYWRIGHT_BASE_URL: ${{ steps.candidate.outputs.origin }}
+        run: |
+          set -euo pipefail
+          master=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/master" --jq .object.sha)
+          test "$master" = "$PORTAL_C_STAFF_BASELINE_SOURCE_SHA" || { echo '::error::Refresh the master baseline before testing staff'; exit 1; }
+          gh api "repos/${GITHUB_REPOSITORY}/compare/${PORTAL_C_STAFF_BASELINE_SOURCE_SHA}...${PORTAL_C_STAFF_BASELINE_SHA}" > "$RUNNER_TEMP/staff-baseline-compare.json"
+          node -e 'const c=require(process.env.RUNNER_TEMP+"/staff-baseline-compare.json");const allowed=new Set(["docs/PORTAL_C_STAFF_BASELINE.md","scripts/audit-tenant-scoping.cjs","scripts/audit-tenant-scoping.test.cjs"]);if(c.behind_by!==0||c.ahead_by!==1||!c.files?.length||c.files.some(f=>!allowed.has(f.filename)))throw Error("Staff baseline differs from master application code")'
+          node scripts/portal-c-signed-in-guard.mjs
+          PLAYWRIGHT_BASE_URL="$PORTAL_C_STAFF_BASELINE_URL" PORTAL_C_TRUSTED_SHA="$PORTAL_C_STAFF_BASELINE_SHA" PORTAL_C_TRUSTED_BRANCH=feature/portal-c-staff-baseline node scripts/portal-c-signed-in-guard.mjs
+      - name: Compare read-only staff pages at 1440, 1024 and 390
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.candidate.outputs.origin }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PREVIEW_PORTAL_AUDIT_READ_ONLY_TOKEN }}
+          E2E_ADMIN_EMAIL: ${{ secrets.PREVIEW_E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.PREVIEW_E2E_ADMIN_PASSWORD }}
+          E2E_COUNSELOR_EMAIL: ${{ secrets.PREVIEW_E2E_COUNSELOR_EMAIL }}
+          E2E_COUNSELOR_PASSWORD: ${{ secrets.PREVIEW_E2E_COUNSELOR_PASSWORD }}
+          E2E_EMPLOYER_EMAIL: ${{ secrets.PREVIEW_E2E_EMPLOYER_EMAIL }}
+          E2E_EMPLOYER_PASSWORD: ${{ secrets.PREVIEW_E2E_EMPLOYER_PASSWORD }}
+          E2E_PARTNER_EMAIL: ${{ secrets.PREVIEW_E2E_PARTNER_EMAIL }}
+          E2E_PARTNER_PASSWORD: ${{ secrets.PREVIEW_E2E_PARTNER_PASSWORD }}
+          E2E_MENTOR_EMAIL: ${{ secrets.PREVIEW_E2E_MENTOR_EMAIL }}
+          E2E_MENTOR_PASSWORD: ${{ secrets.PREVIEW_E2E_MENTOR_PASSWORD }}
+        run: pnpm exec playwright test tests/e2e/staff-portal-protection.spec.ts --project=chromium --reporter=list,html,github --trace=off
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: portal-c-staff-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/**/*.png
+          if-no-files-found: ignore
+          retention-days: 14

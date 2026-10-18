@@ -2,9 +2,10 @@
 /**
  * CLI for signed-in Preview fixture prepare/restore. Never logs credentials.
  */
-import { readFileSync, writeFileSync, unlinkSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 import { validateDemoFixtureDatabase } from './lib/demo-fixture-database.mjs';
 import {
+  snapshotMember,
   ensureIncompleteBaseline,
   prepareMemberForSignedInRoutes,
   restoreMemberSnapshot,
@@ -38,8 +39,11 @@ async function withPrisma(fn) {
 
 async function prepare() {
   const path = snapshotPath();
-  const snapshot = await withPrisma(async (prisma) => prepareMemberForSignedInRoutes(prisma));
-  writeFileSync(path, `${JSON.stringify(snapshot)}\n`, { mode: 0o600 });
+  if (!existsSync(path)) {
+    const original = await withPrisma(snapshotMember);
+    writeFileSync(path, `${JSON.stringify(original)}\n`, { mode: 0o600, flag: 'wx' });
+  }
+  const snapshot = await withPrisma(prepareMemberForSignedInRoutes);
   console.log(
     `[preview-e2e-member-fixture] prepared (${snapshot.applied ? 'temporarily ungated' : 'already complete'}).`,
   );
@@ -50,7 +54,8 @@ async function restore() {
   let snapshot;
   try {
     snapshot = loadSnapshot(path);
-  } catch {
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
     console.log(
       '[preview-e2e-member-fixture] restore skipped — prepare did not write a snapshot.',
     );
@@ -69,6 +74,8 @@ async function restore() {
 }
 
 async function ensureIncomplete() {
+  const original = await withPrisma(snapshotMember);
+  writeFileSync(snapshotPath(), `${JSON.stringify(original)}\n`, { mode: 0o600, flag: 'wx' });
   const result = await withPrisma(async (prisma) => ensureIncompleteBaseline(prisma));
   console.log(
     `[preview-e2e-member-fixture] preassessment baseline ${result.changed ? 'reset to incomplete' : 'already incomplete'}.`,

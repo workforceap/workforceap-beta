@@ -3,7 +3,7 @@
  * Ask the preview deployment to adjust the DEMO test member.
  * Uses a GitHub Actions OIDC token. Does not read database URLs.
  */
-import { readFileSync, writeFileSync, unlinkSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 export const FIXTURE_AUDIENCE = 'workforceap-portal-c-fixture';
@@ -61,6 +61,7 @@ async function callFixture(action, snapshot) {
     method: 'POST',
     headers,
     body: JSON.stringify(snapshot ? { action, snapshot } : { action }),
+    redirect: 'error',
     signal: AbortSignal.timeout(30_000),
   });
   let body = null;
@@ -75,30 +76,38 @@ async function callFixture(action, snapshot) {
   return body;
 }
 
-async function ensureIncomplete() {
+export async function ensureIncomplete() {
+  const original = await callFixture('snapshot');
+  if (!original?.snapshot?.userId) throw new Error('Fixture baseline returned no original snapshot.');
+  writeFileSync(snapshotPath(), `${JSON.stringify(original.snapshot)}\n`, { mode: 0o600, flag: 'wx' });
   const body = await callFixture('ensure-incomplete');
   console.log(
     `[portal-c-fixture] preassessment baseline ${body?.changed ? 'reset to incomplete' : 'already incomplete'}.`,
   );
 }
 
-async function prepare() {
+export async function prepare() {
+  if (!existsSync(snapshotPath())) {
+    const original = await callFixture('snapshot');
+    if (!original?.snapshot?.userId) throw new Error('Fixture baseline returned no original snapshot.');
+    writeFileSync(snapshotPath(), `${JSON.stringify(original.snapshot)}\n`, { mode: 0o600, flag: 'wx' });
+  }
   const body = await callFixture('prepare');
   if (!body?.snapshot?.userId) {
     throw new Error('fixture prepare returned no snapshot.');
   }
-  writeFileSync(snapshotPath(), `${JSON.stringify(body.snapshot)}\n`, { mode: 0o600 });
   console.log(
     `[portal-c-fixture] prepared (${body.snapshot.applied ? 'temporarily ungated' : 'already complete'}).`,
   );
 }
 
-async function restore() {
+export async function restore() {
   const path = snapshotPath();
   let snapshot;
   try {
     snapshot = JSON.parse(readFileSync(path, 'utf8'));
-  } catch {
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
     console.log('[portal-c-fixture] restore skipped — prepare did not write a snapshot.');
     return;
   }

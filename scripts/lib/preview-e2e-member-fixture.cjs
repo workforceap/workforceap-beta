@@ -10,12 +10,10 @@ const PORTAL_QA_ORG_SLUG = 'portal-qa-september-smoke';
 const FIXTURE_ADVISORY_LOCK_KEY = 902_901;
 
 async function withFixtureLock(prisma, fn) {
-  await prisma.$executeRawUnsafe(`SELECT pg_advisory_lock(${FIXTURE_ADVISORY_LOCK_KEY})`);
-  try {
-    return await fn();
-  } finally {
-    await prisma.$executeRawUnsafe(`SELECT pg_advisory_unlock(${FIXTURE_ADVISORY_LOCK_KEY})`);
-  }
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe(`SELECT pg_advisory_xact_lock(${FIXTURE_ADVISORY_LOCK_KEY})`);
+    return fn(tx);
+  });
 }
 
 async function findFixtureMember(prisma) {
@@ -27,11 +25,14 @@ async function findFixtureMember(prisma) {
     throw new Error(`Fixture organization ${PORTAL_QA_ORG_SLUG} was not found on DEMO.`);
   }
   const user = await prisma.user.findFirst({
-    where: { email: { equals: E2E_MEMBER_EMAIL, mode: 'insensitive' }, organizationId: org.id },
+    where: { email: { equals: E2E_MEMBER_EMAIL, mode: 'insensitive' }, organizationId: org.id, deletedAt: null, profile: { role: 'member' } },
     select: {
       id: true,
       assessmentCompleted: true,
       assessmentCompletedAt: true,
+      notificationsUpdates: true,
+      profile: { select: { city: true } },
+      messageThreadsAsMember: { select: { id: true, memberLastReadAt: true } },
     },
   });
   if (!user) {
@@ -40,19 +41,28 @@ async function findFixtureMember(prisma) {
   return user;
 }
 
+function snapshotOf(user) {
+  return { userId: user.id, before: {
+    assessmentCompleted: user.assessmentCompleted,
+    assessmentCompletedAt: user.assessmentCompletedAt?.toISOString() ?? null,
+    notificationsUpdates: user.notificationsUpdates,
+    city: user.profile?.city ?? null,
+    threads: (user.messageThreadsAsMember ?? []).map((t) => ({ id: t.id, memberLastReadAt: t.memberLastReadAt?.toISOString() ?? null })),
+  } };
+}
+
+async function snapshotMember(prisma) {
+  return withFixtureLock(prisma, async (tx) => snapshotOf(await findFixtureMember(tx)));
+}
+
 /**
  * @param {import('@prisma/client').PrismaClient} prisma
  * @returns {Promise<{ userId: string, before: { assessmentCompleted: boolean, assessmentCompletedAt: string | null }, applied: boolean }>}
  */
 async function prepareMemberForSignedInRoutes(prisma) {
-  return withFixtureLock(prisma, async () => {
+  return withFixtureLock(prisma, async (prisma) => {
   const user = await findFixtureMember(prisma);
-  const before = {
-    assessmentCompleted: user.assessmentCompleted,
-    assessmentCompletedAt: user.assessmentCompletedAt
-      ? user.assessmentCompletedAt.toISOString()
-      : null,
-  };
+  const { before } = snapshotOf(user);
   if (user.assessmentCompleted) {
     return { userId: user.id, before, applied: false };
   }
@@ -72,10 +82,12 @@ async function prepareMemberForSignedInRoutes(prisma) {
  * @param {{ userId: string, before: { assessmentCompleted: boolean, assessmentCompletedAt: string | null } }} snapshot
  */
 async function restoreMemberSnapshot(prisma, snapshot) {
-  return withFixtureLock(prisma, async () => {
+  return withFixtureLock(prisma, async (prisma) => {
   if (!snapshot?.userId || !snapshot.before) {
     throw new Error('Fixture restore snapshot is missing.');
   }
+  const member = await findFixtureMember(prisma);
+  if (member.id !== snapshot.userId) throw new Error('Restore target is not the synthetic test member.');
   await prisma.user.update({
     where: { id: snapshot.userId },
     data: {
@@ -85,15 +97,21 @@ async function restoreMemberSnapshot(prisma, snapshot) {
         : null,
     },
   });
+  if (typeof snapshot.before.notificationsUpdates === 'boolean') {
+    await prisma.user.update({ where: { id: member.id }, data: { notificationsUpdates: snapshot.before.notificationsUpdates } });
+    await prisma.profile.update({ where: { userId: member.id }, data: { city: snapshot.before.city } });
+    const allowed = new Set((member.messageThreadsAsMember ?? []).map((t) => t.id));
+    for (const thread of snapshot.before.threads) {
+      if (!allowed.has(thread.id)) throw new Error('Restore thread does not belong to the test member.');
+      await prisma.messageThread.update({ where: { id: thread.id, memberId: member.id }, data: { memberLastReadAt: thread.memberLastReadAt ? new Date(thread.memberLastReadAt) : null } });
+    }
+  }
   await verifyRestored(prisma, snapshot);
   });
 }
 
 async function verifyRestored(prisma, snapshot) {
-  const user = await prisma.user.findUnique({
-    where: { id: snapshot.userId },
-    select: { assessmentCompleted: true, assessmentCompletedAt: true },
-  });
+  const user = await findFixtureMember(prisma);
   if (!user) {
     throw new Error('Fixture member disappeared during restore verification.');
   }
@@ -102,6 +120,7 @@ async function verifyRestored(prisma, snapshot) {
   if (user.assessmentCompleted !== snapshot.before.assessmentCompleted || actualAt !== expectedAt) {
     throw new Error('Fixture member preassessment state did not restore cleanly.');
   }
+  if (typeof snapshot.before.notificationsUpdates === 'boolean' && JSON.stringify(snapshotOf(user).before) !== JSON.stringify(snapshot.before)) throw new Error('Fixture profile, notifications or thread state did not restore cleanly.');
 }
 
 /**
@@ -110,20 +129,22 @@ async function verifyRestored(prisma, snapshot) {
  * @param {import('@prisma/client').PrismaClient} prisma
  */
 async function ensureIncompleteBaseline(prisma) {
-  return withFixtureLock(prisma, async () => {
+  return withFixtureLock(prisma, async (prisma) => {
     const user = await findFixtureMember(prisma);
+    const snapshot = snapshotOf(user);
     if (!user.assessmentCompleted && user.assessmentCompletedAt == null) {
-      return { userId: user.id, changed: false };
+      return { userId: user.id, changed: false, snapshot };
     }
     await prisma.user.update({
       where: { id: user.id },
       data: { assessmentCompleted: false, assessmentCompletedAt: null },
     });
-    return { userId: user.id, changed: true };
+    return { userId: user.id, changed: true, snapshot };
   });
 }
 
 module.exports = {
+  snapshotMember,
   E2E_MEMBER_EMAIL,
   PORTAL_QA_ORG_SLUG,
   findFixtureMember,

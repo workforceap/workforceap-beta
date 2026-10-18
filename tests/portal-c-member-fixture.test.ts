@@ -18,14 +18,15 @@ const PROD_URL =
 const SHA = '7f72d403ea4a772da90d664ef1d3e6d2f6c64a31';
 
 function previewEnv(url: string): NodeJS.ProcessEnv {
-  return { VERCEL_ENV: 'preview', POSTGRES_PRISMA_URL: url } as unknown as NodeJS.ProcessEnv;
+  return { VERCEL_ENV: 'preview', POSTGRES_PRISMA_URL: url, VERCEL_GIT_COMMIT_SHA: SHA } as unknown as NodeJS.ProcessEnv;
 }
 
 function memberPrisma(initial = { assessmentCompleted: false, assessmentCompletedAt: null as Date | null }) {
-  const stored = { ...initial };
+  const stored = { ...initial, notificationsUpdates: false, profile: { city: null as string | null }, messageThreadsAsMember: [] };
   return {
     stored,
     prisma: {
+      async $transaction(fn: (tx: unknown) => Promise<unknown>) { return fn(this); },
       $executeRawUnsafe: async () => 1,
       organization: { findFirst: async () => ({ id: 'org-qa' }) },
       user: {
@@ -34,12 +35,12 @@ function memberPrisma(initial = { assessmentCompleted: false, assessmentComplete
         update: async ({
           data,
         }: {
-          data: { assessmentCompleted: boolean; assessmentCompletedAt: Date | null };
+          data: Partial<typeof stored>;
         }) => {
-          stored.assessmentCompleted = data.assessmentCompleted;
-          stored.assessmentCompletedAt = data.assessmentCompletedAt;
+          Object.assign(stored, data);
         },
       },
+      profile: { update: async ({ data }: { data: { city: string | null } }) => Object.assign(stored.profile, data) },
     },
   };
 }
@@ -138,6 +139,46 @@ describe('portal C fixture OIDC', () => {
   });
 });
 
+describe('fixture deployment and target binding', () => {
+  const verify = async () => ({ ok: true as const, claims: {
+    repository: PORTAL_C_FIXTURE_REPOSITORY, workflowRef: 'workflow', eventName: 'deployment_status', ref: SHA, sha: SHA,
+  } });
+
+  it('refuses a token for a different deployment before acquiring a database client', async () => {
+    let opened = false;
+    const result = await handlePortalCMemberFixture({ authorization: 'Bearer token', payload: { action: 'prepare' },
+      env: { ...previewEnv(DEMO_URL), VERCEL_GIT_COMMIT_SHA: 'b'.repeat(40) }, verify,
+      getPrisma: () => { opened = true; throw new Error('must not connect'); },
+    });
+    expect(result).toMatchObject({ status: 403, body: { error: 'deployment_sha_mismatch' } });
+    expect(opened).toBe(false);
+  });
+
+  it('refuses a restore snapshot naming another user', async () => {
+    const { prisma, stored } = memberPrisma();
+    const result = await handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma,
+      payload: { action: 'restore', snapshot: { userId: 'another-user-id', before: { assessmentCompleted: true, assessmentCompletedAt: null } } },
+    });
+    expect(result.status).toBe(500);
+    expect(stored.assessmentCompleted).toBe(false);
+  });
+
+  it('captures the original state before the gate reset and restores that state after preparation', async () => {
+    const original = new Date('2026-01-01T00:00:00.000Z');
+    const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: original });
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    const captured = await call({ action: 'snapshot' });
+    expect(stored.assessmentCompleted).toBe(true);
+    await call({ action: 'ensure-incomplete' });
+    expect(stored.assessmentCompleted).toBe(false);
+    await call({ action: 'prepare' });
+    expect(stored.assessmentCompleted).toBe(true);
+    const result = await call({ action: 'restore', snapshot: captured.body.snapshot });
+    expect(result.status).toBe(200);
+    expect(stored.assessmentCompletedAt).toEqual(original);
+  });
+});
+
 describe('portal C member fixture handler', () => {
   it('does not touch the database unless the deployment is a DEMO preview', async () => {
     const { prisma } = memberPrisma();
@@ -202,7 +243,7 @@ describe('portal C member fixture handler', () => {
       prisma,
       verify,
     });
-    expect(reset).toEqual({ status: 200, body: { ok: true, changed: true } });
+    expect(reset).toMatchObject({ status: 200, body: { ok: true, changed: true } });
     expect(stored.assessmentCompleted).toBe(false);
 
     const prepared = await handlePortalCMemberFixture({
@@ -231,6 +272,7 @@ describe('portal C member fixture handler', () => {
 
   it('redacts database URLs from fixture failures', async () => {
     const prisma = {
+      async $transaction(fn: (tx: unknown) => Promise<unknown>) { return fn(this); },
       $executeRawUnsafe: async () => 1,
       organization: {
         findFirst: async () => {

@@ -34,6 +34,7 @@ async function loginSignedInMember(page: Page) {
   if (!email || !password) {
     throw new Error('Set PLAYWRIGHT_MEMBER_EMAIL and PLAYWRIGHT_PORTAL_PASSWORD');
   }
+  if (email.toLowerCase() !== 'member-test@workforceap.org') throw new Error('Dedicated synthetic member credentials are required.');
   await page.goto('/login?redirectTo=%2Fdashboard', { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: /decline/i }).click().catch(() => {});
   await page.locator('#email').fill(email);

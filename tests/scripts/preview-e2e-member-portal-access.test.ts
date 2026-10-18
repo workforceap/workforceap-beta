@@ -58,6 +58,7 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
     };
     const lockCalls: string[] = [];
     const prisma = {
+      $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma),
       $executeRawUnsafe: async (sql: string) => {
         lockCalls.push(sql);
       },
@@ -90,7 +91,7 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
     const prepared = await fixture.prepareMemberForSignedInRoutes(prisma);
     expect(prepared.applied).toBe(true);
     expect(stored.assessmentCompleted).toBe(true);
-    expect(lockCalls.some((sql) => sql.includes('pg_advisory_lock'))).toBe(true);
+    expect(lockCalls.some((sql) => sql.includes('pg_advisory_xact_lock'))).toBe(true);
 
     await fixture.restoreMemberSnapshot(prisma, prepared);
     expect(stored.assessmentCompleted).toBe(false);
@@ -101,6 +102,7 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
   it('does not mutate when the fixture member is already assessment-complete', async () => {
     let updates = 0;
     const prisma = {
+      $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma),
       $executeRawUnsafe: async () => {},
       organization: { findFirst: async () => ({ id: 'org-qa' }) },
       user: {
@@ -128,6 +130,7 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
       assessmentCompletedAt: new Date('2026-02-02T00:00:00.000Z'),
     };
     const prisma = {
+      $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma),
       $executeRawUnsafe: async () => {},
       organization: { findFirst: async () => ({ id: 'org-qa' }) },
       user: {
