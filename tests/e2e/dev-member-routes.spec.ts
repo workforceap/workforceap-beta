@@ -3,6 +3,7 @@ import { DEV_MEMBER_STATES, DEV_MEMBER_VIEWS, harnessPath } from '../../app/dev/
 import {
   DEV_MEMBER_VIEWPORTS,
   collectPageErrors,
+  expectCScreenPhoneLayout,
   expectDevMemberSmoke,
   openDevMember,
   stubDevMemberNoise,
@@ -23,6 +24,9 @@ test.describe('dev member harness smoke', () => {
           await expect(page.locator('[data-dev-member-harness]')).toHaveAttribute('data-dev-member-harness', view.slug);
           await expect(page.locator('[data-dev-member-harness]')).toHaveAttribute('data-dev-member-state', state);
           await expectDevMemberSmoke(page, errors);
+          if (viewport.width === 390 && view.kind === 'c-kit') {
+            await expectCScreenPhoneLayout(page);
+          }
         }
       }
     });

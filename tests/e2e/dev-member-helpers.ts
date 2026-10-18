@@ -82,6 +82,64 @@ export async function expectPrimaryCtasNotInfoBlue(page: Page): Promise<void> {
   expect(blueLabels, 'primary CTAs must not use --wa-info blue').toEqual([]);
 }
 
+const C_NAV_LABELS = ['Home', 'My program', 'Job board', 'AI Career Tools', 'Messages'];
+
+/**
+ * Phone pass for the five direction-C screens: the page does not scroll
+ * sideways, KPI and card text stay inside their boxes, the five-link nav
+ * keeps its labels, and tables are stacked cards.
+ */
+export async function expectCScreenPhoneLayout(page: Page): Promise<void> {
+  const result = await page.evaluate(() => {
+    const root = document.documentElement;
+    const clipped: string[] = [];
+    for (const el of document.querySelectorAll('.wa-kit-stat-label, .wa-kit-stat-tile__value')) {
+      if (el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > el.clientHeight + 2) {
+        clipped.push((el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 60));
+      }
+    }
+    for (const card of document.querySelectorAll('.wa-kit-card')) {
+      const box = card.getBoundingClientRect();
+      if (box.width < 2 || box.height < 2) continue;
+      for (const child of card.querySelectorAll('h1, h2, h3, p, strong')) {
+        const style = getComputedStyle(child);
+        if (style.display === 'none' || style.visibility === 'hidden') continue;
+        const r = child.getBoundingClientRect();
+        if (r.width < 2 || r.height < 2) continue;
+        if (r.right > box.right + 2 || r.left < box.left - 2) {
+          clipped.push((child.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 60));
+        }
+      }
+    }
+    const nav = document.querySelector('.member-home-compact-nav');
+    const top = document.querySelector('.member-portal-top-nav');
+    const labels = nav
+      ? [...nav.querySelectorAll('.member-home-compact-nav__link')].map((link) =>
+          (link.textContent ?? '').replace(/\s+/g, ' ').trim(),
+        )
+      : [];
+    const tables = [...document.querySelectorAll('table')].filter((table) => {
+      const r = table.getBoundingClientRect();
+      return r.width > 2 && r.height > 2 && getComputedStyle(table).display !== 'none';
+    }).length;
+    return {
+      overflow: root.scrollWidth - root.clientWidth,
+      clipped: [...new Set(clipped)].slice(0, 8),
+      navDisplay: nav ? getComputedStyle(nav).display : 'missing',
+      topDisplay: top ? getComputedStyle(top).display : 'missing',
+      labels,
+      tables,
+    };
+  });
+
+  expect(result.overflow, 'phone page scrolls sideways').toBeLessThanOrEqual(1);
+  expect(result.clipped, 'text past its card or KPI tile').toEqual([]);
+  expect(result.navDisplay, 'labeled C nav is hidden').toBe('block');
+  expect(result.topDisplay, 'icon strip is still showing').toBe('none');
+  expect(result.labels).toEqual(C_NAV_LABELS);
+  expect(result.tables, 'a table is still showing on the phone').toBe(0);
+}
+
 export async function expectDevMemberSmoke(page: Page, errors: string[]): Promise<void> {
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await expectExampleDataBanner(page);
