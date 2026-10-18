@@ -237,7 +237,9 @@ async function revertibleProfileLocation(page: Page) {
 
 async function revertibleNotificationToggle(page: Page) {
   await page.goto('/dashboard/profile', { waitUntil: 'domcontentloaded' });
-  const checkbox = page.getByRole('checkbox', { name: /updates from workforceap/i });
+  const label = /updates from workforceap/i;
+  const checkbox = page.getByRole('checkbox', { name: label });
+  const toggle = page.locator('label.wa-kit-toggle').filter({ hasText: label });
   await expect(
     checkbox,
     'Profile must expose the WorkforceAP updates notification control',
@@ -246,8 +248,11 @@ async function revertibleNotificationToggle(page: Page) {
   try {
     const saved = page.waitForResponse(
       (res) => res.url().includes('/api/member/settings') && res.request().method() === 'PATCH',
+      { timeout: 20_000 },
     );
-    await checkbox.click();
+    // The kit checkbox is clipped to 1px. Click the visible label, which is
+    // what a member uses and what actually fires the settings PATCH.
+    await toggle.click();
     const response = await saved;
     expect(response.ok(), `notification settings PATCH failed (HTTP ${response.status()})`).toBeTruthy();
     await expect(page.getByRole('checkbox', { name: /updates from workforceap/i })).toBeChecked({
@@ -262,8 +267,9 @@ async function revertibleNotificationToggle(page: Page) {
     if ((await current.isChecked()) !== original) {
       const restored = page.waitForResponse(
         (res) => res.url().includes('/api/member/settings') && res.request().method() === 'PATCH',
+        { timeout: 20_000 },
       );
-      await current.click();
+      await page.locator('label.wa-kit-toggle').filter({ hasText: /updates from workforceap/i }).click();
       const response = await restored;
       expect(response.ok(), `notification restore PATCH failed (HTTP ${response.status()})`).toBeTruthy();
     }
