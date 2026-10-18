@@ -162,6 +162,9 @@ jobs:
 
   signed-in-member:
     name: Signed-in member C routes
+    concurrency:
+      group: portal-c-signed-in-e2e-member
+      cancel-in-progress: false
     # After the Vercel Preview for this PR head exists, log in as the DEMO
     # test member and exercise the five live C routes. Secrets stay in
     # repository secrets; the job aborts before login if SHA or Supabase
@@ -266,10 +269,12 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Refuse login unless preview SHA and DEMO Supabase match
+      - name: Refuse login unless Vercel provenance and DEMO health match
         env:
           PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
           PORTAL_C_TRUSTED_SHA: ${{ steps.preview.outputs.sha }}
+          PORTAL_C_TRUSTED_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: node scripts/portal-c-signed-in-guard.mjs
 
@@ -285,6 +290,32 @@ jobs:
             exit 1
           fi
 
+      - name: Reset leftover build-time preassessment mark on the DEMO test member
+        env:
+          POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+          POSTGRES_URL_NON_POOLING: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+        run: node scripts/preview-e2e-member-fixture.mjs ensure-incomplete
+
+      - name: Prove preassessment gate blocks without fixture setup
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
+          PLAYWRIGHT_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
+          PLAYWRIGHT_PORTAL_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          PLAYWRIGHT_TRACE: "off"
+        run: |
+          pnpm exec playwright test \
+            tests/e2e/member-signed-in-preassessment-gate.spec.ts \
+            --project=chromium \
+            --reporter=list,github \
+            --trace=off
+
+      - name: Prepare DEMO test member fixture for signed-in C routes
+        env:
+          POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+          POSTGRES_URL_NON_POOLING: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+        run: node scripts/preview-e2e-member-fixture.mjs prepare
+
       - name: Run signed-in C route specs
         env:
           PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
@@ -298,6 +329,13 @@ jobs:
             --project=chromium \
             --reporter=list,html,github \
             --trace=off
+
+      - name: Restore DEMO test member fixture
+        if: always()
+        env:
+          POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+          POSTGRES_URL_NON_POOLING: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+        run: node scripts/preview-e2e-member-fixture.mjs restore
 
       - name: Upload signed-in screenshots (no traces)
         if: always()

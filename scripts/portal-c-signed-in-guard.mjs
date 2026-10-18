@@ -11,11 +11,12 @@ import {
 } from './lib/portal-audit-health-gate.mjs';
 import {
   DEMO_SUPABASE_REF,
+  describeDestinationGuardFailure,
   describeGuardConfigError,
-  describeHealthGateFailure,
   resolveTargetOrigin,
+  resolveTrustedBranch,
   resolveTrustedSha,
-  runSignedInHealthGuard,
+  runSignedInDestinationGuard,
 } from './lib/portal-c-signed-in-guard.mjs';
 
 function positiveInteger(value, fallback) {
@@ -35,6 +36,12 @@ if (!origin) {
   process.exit(2);
 }
 
+const trustedBranch = resolveTrustedBranch(process.env);
+if (!trustedBranch) {
+  console.error(`[signed-in-guard] ${describeDestinationGuardFailure({ ok: false, stage: 'config', reason: 'missing_branch' })}`);
+  process.exit(2);
+}
+
 const timeoutMs = positiveInteger(
   process.env.PORTAL_C_HEALTH_TIMEOUT_MS,
   DEFAULT_HEALTH_GATE_TIMEOUT_MS,
@@ -49,22 +56,26 @@ console.log(
     `window=${timeoutMs}ms interval=${intervalMs}ms`,
 );
 
-const outcome = await runSignedInHealthGuard({
+const outcome = await runSignedInDestinationGuard({
   origin,
   trustedSha,
+  trustedBranch,
+  vercelToken: process.env.VERCEL_TOKEN ?? '',
   bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? '',
   timeoutMs,
   intervalMs,
 });
 
 if (outcome.ok) {
+  const health = outcome.health;
   console.log(
-    `[signed-in-guard] OK — target serves ${outcome.version ?? 'n/a'} on Supabase project ` +
-      `${outcome.supabaseRef ?? 'n/a'} with Prisma ${outcome.prismaProject ?? 'n/a'} ` +
-      `after ${outcome.attempts} attempt(s).`,
+    `[signed-in-guard] OK — Vercel provenance verified for branch ${trustedBranch}; ` +
+      `health serves ${health.version ?? 'n/a'} on Supabase project ` +
+      `${health.supabaseRef ?? 'n/a'} with Prisma ${health.prismaProject ?? 'n/a'} ` +
+      `after ${health.attempts} attempt(s).`,
   );
   process.exit(0);
 }
 
-console.error(`[signed-in-guard] FAILED — ${describeHealthGateFailure(outcome)}`);
+console.error(`[signed-in-guard] FAILED — ${describeDestinationGuardFailure(outcome)}`);
 process.exit(1);

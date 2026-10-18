@@ -238,10 +238,18 @@ async function revertibleProfileLocation(page: Page) {
 async function revertibleNotificationToggle(page: Page) {
   await page.goto('/dashboard/profile', { waitUntil: 'domcontentloaded' });
   const checkbox = page.getByRole('checkbox', { name: /updates from workforceap/i });
-  if ((await checkbox.count()) === 0) return;
+  await expect(
+    checkbox,
+    'Profile must expose the WorkforceAP updates notification control',
+  ).toBeVisible({ timeout: 15_000 });
   const original = await checkbox.isChecked();
   try {
+    const saved = page.waitForResponse(
+      (res) => res.url().includes('/api/member/settings') && res.request().method() === 'PATCH',
+    );
     await checkbox.click();
+    const response = await saved;
+    expect(response.ok(), `notification settings PATCH failed (HTTP ${response.status()})`).toBeTruthy();
     await expect(page.getByRole('checkbox', { name: /updates from workforceap/i })).toBeChecked({
       checked: !original,
     });
@@ -252,7 +260,12 @@ async function revertibleNotificationToggle(page: Page) {
   } finally {
     const current = page.getByRole('checkbox', { name: /updates from workforceap/i });
     if ((await current.isChecked()) !== original) {
+      const restored = page.waitForResponse(
+        (res) => res.url().includes('/api/member/settings') && res.request().method() === 'PATCH',
+      );
       await current.click();
+      const response = await restored;
+      expect(response.ok(), `notification restore PATCH failed (HTTP ${response.status()})`).toBeTruthy();
     }
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('checkbox', { name: /updates from workforceap/i })).toBeChecked({
@@ -263,11 +276,12 @@ async function revertibleNotificationToggle(page: Page) {
 
 async function markCounselorThreadRead(page: Page) {
   const patch = await page.request.patch('/api/member/messages');
-  if (!patch.ok()) {
-    // No thread / not provisioned — do not fail the suite on a missing inbox.
-    return;
-  }
+  expect(
+    patch.ok(),
+    `mark-read PATCH must succeed (HTTP ${patch.status()}) for the DEMO test member`,
+  ).toBeTruthy();
   await page.goto('/dashboard/messages', { waitUntil: 'domcontentloaded' });
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page).not.toHaveURL(/\/login([?#]|$)/);
   const read = await page.request.get('/api/member/messages');
   expect(read.ok()).toBeTruthy();

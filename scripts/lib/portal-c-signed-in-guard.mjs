@@ -15,6 +15,11 @@ import {
   normalizeTrustedSha,
   waitForTrustedHealth,
 } from './portal-audit-health-gate.mjs';
+import {
+  describeVercelProvenanceFailure,
+  parseHttpsOrigin,
+  runVercelProvenanceGuard,
+} from './portal-c-vercel-provenance.mjs';
 
 export const DEMO_SUPABASE_REF = 'esbdrgaonplpvzmtrdhw';
 export const PORTAL_C_SIGNED_IN_MODE = 'isolated_preview';
@@ -55,6 +60,15 @@ export function resolveTargetOrigin(env = process.env) {
   return normalizeOrigin(env.PLAYWRIGHT_BASE_URL ?? env.PORTAL_AUDIT_TARGET_ORIGIN ?? '');
 }
 
+export function resolveTrustedBranch(env = process.env) {
+  const branch =
+    env.PORTAL_C_TRUSTED_BRANCH ??
+    env.GITHUB_HEAD_REF ??
+    env.GITHUB_REF_NAME ??
+    '';
+  return typeof branch === 'string' ? branch.trim() : '';
+}
+
 export function describeGuardConfigError(kind) {
   switch (kind) {
     case 'missing_sha':
@@ -88,4 +102,57 @@ export async function runSignedInHealthGuard({
   });
 }
 
-export { describeHealthGateFailure };
+export async function runSignedInDestinationGuard({
+  origin,
+  trustedSha,
+  trustedBranch,
+  vercelToken = '',
+  bypassSecret = '',
+  timeoutMs = DEFAULT_HEALTH_GATE_TIMEOUT_MS,
+  intervalMs = DEFAULT_HEALTH_GATE_INTERVAL_MS,
+  fetchImpl = globalThis.fetch,
+  log = (line) => console.log(line),
+}) {
+  const https = parseHttpsOrigin(origin);
+  if (!https.ok) {
+    return { ok: false, stage: 'origin', ...https };
+  }
+  if (!trustedBranch) {
+    return { ok: false, stage: 'config', reason: 'missing_branch' };
+  }
+  const vercel = await runVercelProvenanceGuard({
+    origin,
+    trustedSha,
+    trustedBranch,
+    vercelToken,
+    fetchImpl,
+  });
+  if (!vercel.ok) {
+    return { ok: false, stage: 'vercel', ...vercel };
+  }
+  const health = await runSignedInHealthGuard({
+    origin,
+    trustedSha,
+    bypassSecret,
+    timeoutMs,
+    intervalMs,
+    fetchImpl,
+    log,
+  });
+  if (!health.ok) {
+    return { ok: false, stage: 'health', ...health };
+  }
+  return { ok: true, stage: 'complete', vercel, health };
+}
+
+export function describeDestinationGuardFailure(outcome) {
+  if (outcome.stage === 'origin' || outcome.stage === 'vercel') {
+    return describeVercelProvenanceFailure(outcome);
+  }
+  if (outcome.stage === 'config' && outcome.reason === 'missing_branch') {
+    return 'PORTAL_C_TRUSTED_BRANCH (or GITHUB_HEAD_REF) must name the PR head branch.';
+  }
+  return describeHealthGateFailure(outcome);
+}
+
+export { describeHealthGateFailure, describeVercelProvenanceFailure, parseHttpsOrigin };

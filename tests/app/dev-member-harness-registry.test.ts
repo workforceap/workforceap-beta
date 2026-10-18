@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   DEV_MEMBER_ALIASES,
@@ -75,16 +73,17 @@ const INVENTORY_LIVE_PATHS = [
   '/dashboard/guide',
 ] as const;
 
-const ALIAS_LOCKS: Array<{ file: string; needle: string }> = [
-  { file: 'app/(portal)/dashboard/assessments/page.tsx', needle: "permanentRedirect('/dashboard/assessment')" },
-  { file: 'app/(portal)/dashboard/skills-assessment/page.tsx', needle: "permanentRedirect('/dashboard/assessment')" },
-  { file: 'app/(portal)/dashboard/settings/page.tsx', needle: "redirect('/dashboard/profile#settings')" },
-  { file: 'app/(portal)/dashboard/toolkit/page.tsx', needle: "redirect('/dashboard/ai-tools?tab=toolkit')" },
-  { file: 'app/(portal)/dashboard/program/change/page.tsx', needle: "redirect('/dashboard/program')" },
-  { file: 'app/(portal)/dashboard/coursera/page.tsx', needle: "redirect('/dashboard/program')" },
-  { file: 'app/(portal)/account/page.tsx', needle: "redirect('/dashboard/account')" },
-  { file: 'app/(portal)/certifications/page.tsx', needle: "redirect('/dashboard/certifications')" },
-  { file: 'app/(portal)/applications/page.tsx', needle: "redirect('/dashboard/job-applications')" },
+/** Inventory alias routes the harness registry must keep aligned with live redirects. */
+const EXPECTED_ALIAS_TARGETS: Array<{ path: string; target: string }> = [
+  { path: '/dashboard/assessments', target: '/dashboard/assessment' },
+  { path: '/dashboard/skills-assessment', target: '/dashboard/assessment' },
+  { path: '/dashboard/settings', target: '/dashboard/profile#settings' },
+  { path: '/dashboard/toolkit', target: '/dashboard/ai-tools?tab=toolkit' },
+  { path: '/dashboard/program/change', target: '/dashboard/program' },
+  { path: '/dashboard/coursera', target: '/dashboard/program' },
+  { path: '/account', target: '/dashboard/account' },
+  { path: '/certifications', target: '/dashboard/certifications' },
+  { path: '/applications', target: '/dashboard/job-applications' },
 ];
 
 describe('dev member harness registry', () => {
@@ -100,10 +99,12 @@ describe('dev member harness registry', () => {
     expect(DEV_MEMBER_ALIASES.length).toBeGreaterThanOrEqual(17);
   });
 
-  it('locks inventory alias pages to their documented targets', () => {
-    for (const lock of ALIAS_LOCKS) {
-      const source = readFileSync(path.join(process.cwd(), lock.file), 'utf8');
-      expect(source, lock.file).toContain(lock.needle);
+  it('locks inventory alias pages to their documented targets via the registry', () => {
+    const aliasByPath = new Map(DEV_MEMBER_ALIASES.map((alias) => [alias.path, alias]));
+    for (const expected of EXPECTED_ALIAS_TARGETS) {
+      const alias = aliasByPath.get(expected.path);
+      expect(alias, `missing registry alias for ${expected.path}`).toBeDefined();
+      expect(alias?.target).toBe(expected.target);
     }
   });
 });

@@ -61,24 +61,152 @@ describe('preview assessment-attempts schema bootstrap', () => {
   });
 
   it('does not apply when the columns are already present', async () => {
-    const applied = [];
-    const prisma = {
-      $queryRawUnsafe: async () =>
-        preview.REQUIRED_COLUMNS.map((column_name: string) => ({ column_name })),
-      $executeRawUnsafe: async (sql: string) => {
-        applied.push(sql);
-      },
-      $disconnect: async () => {},
-    };
+    const applied: string[] = [];
+    const prisma = fullProtectionPrisma({ applied });
     const result = await preview.ensurePreviewSchema(
       { directDatabaseUrl: DEMO_DIRECT },
-      { PrismaClient: class {
-        constructor() {
-          return prisma;
-        }
-      } },
+      {
+        PrismaClient: class {
+          constructor() {
+            return prisma;
+          }
+        },
+      },
     );
     expect(result).toEqual({ applied: false });
     expect(applied).toEqual([]);
   });
+
+  it('fails loudly when post-check finds missing constraint or trigger', async () => {
+    const prisma = partialProtectionPrisma({
+      columns: new Set(preview.REQUIRED_COLUMNS),
+      constraint: false,
+      trigger: false,
+      function: true,
+    });
+    await expect(preview.assertAssessmentAttemptProtections(prisma)).rejects.toThrow(
+      /incomplete.*constraint|trigger/i,
+    );
+  });
+
+  it('recovers from an interrupted partial apply on the next run', async () => {
+    const state: ProtectionState = {
+      columns: new Set<string>(preview.REQUIRED_COLUMNS),
+      constraint: false,
+      trigger: false,
+      function: false,
+    };
+    const applied: string[] = [];
+    type PrismaMock = {
+      $queryRawUnsafe: (sql: string) => Promise<unknown>;
+      $executeRawUnsafe: (sql: string) => Promise<void>;
+      $transaction: (fn: (tx: PrismaMock) => Promise<void>) => Promise<void>;
+      $disconnect: () => Promise<void>;
+    };
+    const prisma: PrismaMock = {
+      $queryRawUnsafe: async (sql: string) => queryProtectionState(sql, state),
+      $executeRawUnsafe: async (sql: string) => {
+        applied.push(sql);
+        if (sql.includes('ADD CONSTRAINT')) state.constraint = true;
+        if (sql.includes('CREATE OR REPLACE FUNCTION')) state.function = true;
+        if (sql.includes('CREATE TRIGGER')) state.trigger = true;
+      },
+      $transaction: async (fn) => fn(prisma),
+      $disconnect: async () => {},
+    };
+    const result = await preview.ensurePreviewSchema(
+      { directDatabaseUrl: DEMO_DIRECT },
+      {
+        PrismaClient: class {
+          constructor() {
+            return prisma;
+          }
+        },
+      },
+    );
+    expect(result.applied).toBe(true);
+    expect(preview.protectionsReady(state)).toBe(true);
+    expect(applied.length).toBeGreaterThan(0);
+  });
+
+  it('fails loudly when an apply is interrupted before protections exist', async () => {
+    const state: ProtectionState = {
+      columns: new Set<string>(),
+      constraint: false,
+      trigger: false,
+      function: false,
+    };
+    type PrismaMock = {
+      $queryRawUnsafe: (sql: string) => Promise<unknown>;
+      $executeRawUnsafe: (sql: string) => Promise<void>;
+      $transaction: (fn: (tx: PrismaMock) => Promise<void>) => Promise<void>;
+      $disconnect: () => Promise<void>;
+    };
+    const prisma: PrismaMock = {
+      $queryRawUnsafe: async (sql: string) => queryProtectionState(sql, state),
+      $executeRawUnsafe: async () => {
+        throw new Error('connection reset');
+      },
+      $transaction: async (fn) => fn(prisma),
+      $disconnect: async () => {},
+    };
+    await expect(
+      preview.ensurePreviewSchema(
+        { directDatabaseUrl: DEMO_DIRECT },
+        {
+          PrismaClient: class {
+            constructor() {
+              return prisma;
+            }
+          },
+        },
+      ),
+    ).rejects.toThrow(/connection reset/);
+    expect(preview.protectionsReady(state)).toBe(false);
+  });
 });
+
+type ProtectionState = {
+  columns: Set<string>;
+  constraint: boolean;
+  trigger: boolean;
+  function: boolean;
+};
+
+function fullProtectionPrisma({ applied }: { applied: string[] }) {
+  const state: ProtectionState = {
+    columns: new Set<string>(preview.REQUIRED_COLUMNS),
+    constraint: true,
+    trigger: true,
+    function: true,
+  };
+  return {
+    $queryRawUnsafe: async (sql: string) => queryProtectionState(sql, state),
+    $executeRawUnsafe: async (sql: string) => {
+      applied.push(sql);
+    },
+    $disconnect: async () => {},
+  };
+}
+
+function partialProtectionPrisma(state: ProtectionState) {
+  return {
+    $queryRawUnsafe: async (sql: string) => queryProtectionState(sql, state),
+  };
+}
+
+function queryProtectionState(sql: string, state: ProtectionState) {
+  if (sql.includes('column_name')) {
+    return [...state.columns].map((column_name) => ({ column_name }));
+  }
+  if (sql.includes('pg_constraint')) {
+    return state.constraint ? [{ conname: preview.REQUIRED_CONSTRAINT }] : [];
+  }
+  if (sql.includes('pg_trigger')) {
+    return state.trigger ? [{ tgname: preview.REQUIRED_TRIGGER }] : [];
+  }
+  if (sql.includes('pg_proc')) {
+    return state.function ? [{ proname: preview.REQUIRED_FUNCTION }] : [];
+  }
+  return [];
+}
