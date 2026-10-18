@@ -91,7 +91,8 @@ const SCOPE_MARKERS = [
 ];
 
 function shouldSkipPath(filePath) {
-  return SKIP_PATHS.some((p) => filePath.includes(p));
+  const normalized = filePath.replace(/\\/g, '/');
+  return SKIP_PATHS.some((p) => normalized.includes(p));
 }
 
 function listSourceFiles(dir, out = []) {
@@ -135,7 +136,7 @@ function buildDynamicPattern() {
 }
 
 function scanFile(filePath) {
-  const rel = path.relative(REPO_ROOT, filePath);
+  const rel = path.relative(REPO_ROOT, filePath).replace(/\\/g, '/');
   const src = fs.readFileSync(filePath, 'utf8');
   const lines = src.split('\n');
   const pattern = buildPattern();
@@ -327,4 +328,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { evaluateRatchet, parseMaxUnscoped };
+module.exports = { evaluateRatchet, parseMaxUnscoped, shouldSkipPath };
