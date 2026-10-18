@@ -275,6 +275,8 @@ jobs:
           PORTAL_C_TRUSTED_SHA: ${{ steps.preview.outputs.sha }}
           PORTAL_C_TRUSTED_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: node scripts/portal-c-signed-in-guard.mjs
 

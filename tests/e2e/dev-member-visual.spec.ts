@@ -10,6 +10,7 @@ test.describe('dev member visual baselines', () => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await stubDevMemberNoise(page);
       await page.emulateMedia({ colorScheme: 'light' });
+      await page.route(/elevenlabs|PortalVoiceSession/i, (route) => route.abort());
 
       for (const view of DEV_MEMBER_VIEWS) {
         await openDevMember(page, harnessPath(view.slug, 'full'));
@@ -25,13 +26,6 @@ test.describe('dev member visual baselines', () => {
         await page.evaluate(async () => {
           if (document.fonts?.ready) await document.fonts.ready;
         });
-        let previousHeight = -1;
-        for (let attempt = 0; attempt < 8; attempt += 1) {
-          const height = await page.evaluate(() => document.documentElement.scrollHeight);
-          if (height > 0 && height === previousHeight) break;
-          previousHeight = height;
-          await page.waitForTimeout(100);
-        }
         await expect(page).toHaveScreenshot(`dev-member-${view.slug}-${viewport.name}.png`, {
           fullPage: true,
           animations: 'disabled',
