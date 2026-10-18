@@ -22,6 +22,16 @@ test.describe('dev member visual baselines', () => {
             'html,body,.workspace-shell-root{overflow:visible!important;height:auto!important;}';
           document.documentElement.appendChild(style);
         });
+        await page.evaluate(async () => {
+          if (document.fonts?.ready) await document.fonts.ready;
+        });
+        let previousHeight = -1;
+        for (let attempt = 0; attempt < 8; attempt += 1) {
+          const height = await page.evaluate(() => document.documentElement.scrollHeight);
+          if (height > 0 && height === previousHeight) break;
+          previousHeight = height;
+          await page.waitForTimeout(100);
+        }
         await expect(page).toHaveScreenshot(`dev-member-${view.slug}-${viewport.name}.png`, {
           fullPage: true,
           animations: 'disabled',

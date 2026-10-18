@@ -137,6 +137,23 @@ async function readVercelResponse(response) {
   return { ok: true, payload: await response.json() };
 }
 
+function normalizeVercelToken(token) {
+  let value = typeof token === 'string' ? token.trim() : '';
+  if (/^bearer\s+/i.test(value)) value = value.replace(/^bearer\s+/i, '').trim();
+  return value;
+}
+
+function deploymentListUrl({ projectId, teamId, slug, trustedSha, trustedBranch }) {
+  const url = new URL('https://api.vercel.com/v7/deployments');
+  url.searchParams.set('projectId', projectId);
+  url.searchParams.set('limit', '20');
+  if (teamId) url.searchParams.set('teamId', teamId);
+  if (slug) url.searchParams.set('slug', slug);
+  if (trustedSha) url.searchParams.set('sha', trustedSha);
+  if (trustedBranch) url.searchParams.set('branch', trustedBranch);
+  return url;
+}
+
 export async function fetchVercelDeploymentForHost({
   hostname,
   token,
@@ -146,48 +163,69 @@ export async function fetchVercelDeploymentForHost({
   trustedBranch = '',
   fetchImpl = globalThis.fetch,
 }) {
-  const trimmed = typeof token === 'string' ? token.trim() : '';
+  const trimmed = normalizeVercelToken(token);
   if (!trimmed) {
     return { ok: false, reason: 'vercel_token_missing' };
   }
   const headers = { Authorization: `Bearer ${trimmed}` };
-  const listUrl = new URL('https://api.vercel.com/v7/deployments');
-  listUrl.searchParams.set('projectId', projectId);
-  listUrl.searchParams.set('teamId', teamId);
-  listUrl.searchParams.set('limit', '20');
-  if (trustedSha) listUrl.searchParams.set('sha', trustedSha);
-  if (trustedBranch) listUrl.searchParams.set('branch', trustedBranch);
+  const wanted = hostname.toLowerCase();
+  const queries = [
+    { label: 'v7-team-sha-branch', ...{ projectId, teamId, trustedSha, trustedBranch } },
+    { label: 'v7-team-sha', projectId, teamId, trustedSha, trustedBranch: '' },
+    { label: 'v7-team', projectId, teamId, trustedSha: '', trustedBranch: '' },
+    {
+      label: 'v7-slug-sha',
+      projectId,
+      slug: 'mabrown040-5207s-projects',
+      trustedSha,
+      trustedBranch,
+    },
+    { label: 'v7-sha', projectId, trustedSha, trustedBranch: '' },
+  ];
+  const attempts = [];
+  let lastFailure = { ok: false, reason: 'deployment_not_found', attempts: '' };
 
-  const listed = await readVercelResponse(
-    await fetchImpl(listUrl.toString(), { headers }),
-  );
-  if (listed.ok) {
-    const deployments = listedDeployments(listed.payload);
-    const match = deployments.find((deployment) =>
-      deploymentHostnames(deployment).has(hostname.toLowerCase()),
-    );
-    if (!match) {
-      return {
-        ok: false,
-        reason: deployments.length > 0 ? 'hostname_mismatch' : 'deployment_not_found',
-      };
+  for (const query of queries) {
+    const response = await fetchImpl(deploymentListUrl(query).toString(), { headers });
+    attempts.push(`${query.label}:${response.status}`);
+    const listed = await readVercelResponse(response);
+    if (!listed.ok) {
+      lastFailure = { ...listed, attempts: attempts.join(' ') };
+      if (listed.status === 401) break;
+      continue;
     }
-    return { ok: true, deployment: match };
+    const deployments = listedDeployments(listed.payload).filter((deployment) => {
+      if (!trustedSha) return true;
+      const sha = String(
+        deployment?.meta?.githubCommitSha ?? deployment?.gitSource?.sha ?? '',
+      ).toLowerCase();
+      return !sha || sha === trustedSha.toLowerCase();
+    });
+    const match = deployments.find((deployment) => deploymentHostnames(deployment).has(wanted));
+    if (match) return { ok: true, deployment: match };
+    if (deployments.length > 0) {
+      return { ok: false, reason: 'hostname_mismatch', attempts: attempts.join(' ') };
+    }
+    lastFailure = { ok: false, reason: 'deployment_not_found', attempts: attempts.join(' ') };
   }
 
-  // Some tokens can read a deployment by id/url but not the list, or the reverse.
-  if (listed.status !== 403 && listed.status !== 404) {
-    return listed;
+  const directUrls = [
+    ['v13-team', teamId],
+    ['v13', ''],
+  ];
+  for (const [label, directTeam] of directUrls) {
+    const byUrl = new URL(
+      `https://api.vercel.com/v13/deployments/${encodeURIComponent(hostname)}`,
+    );
+    if (directTeam) byUrl.searchParams.set('teamId', directTeam);
+    const response = await fetchImpl(byUrl.toString(), { headers });
+    attempts.push(`${label}:${response.status}`);
+    const direct = await readVercelResponse(response);
+    if (direct.ok) return { ok: true, deployment: direct.payload };
+    lastFailure = { ...direct, attempts: attempts.join(' ') };
   }
-  const byUrl = new URL(
-    `https://api.vercel.com/v13/deployments/${encodeURIComponent(hostname)}`,
-  );
-  byUrl.searchParams.set('teamId', teamId);
-  const direct = await readVercelResponse(await fetchImpl(byUrl.toString(), { headers }));
-  if (!direct.ok) {
-    return listed.status === 403 ? listed : direct;
-  }
-  return { ok: true, deployment: direct.payload };
+
+  return { ...lastFailure, attempts: attempts.join(' ') };
 }
 
 export function describeVercelProvenanceFailure(result) {
@@ -203,7 +241,7 @@ export function describeVercelProvenanceFailure(result) {
     case 'deployment_not_found':
       return 'Vercel API did not return a deployment for the preview hostname.';
     case 'vercel_api_error':
-      return `Vercel API returned HTTP ${result.status ?? 'unknown'}${result.code ? ` (${result.code})` : ''}.`;
+      return `Vercel API returned HTTP ${result.status ?? 'unknown'}${result.code ? ` (${result.code})` : ''}${result.attempts ? ` [${result.attempts}]` : ''}.`;
     case 'deployment_missing':
       return 'Vercel deployment payload was empty.';
     case 'wrong_vercel_project':
