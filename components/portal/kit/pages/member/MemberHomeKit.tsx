@@ -280,7 +280,7 @@ function PipelineRoleCell({ row, roleWeight = 700 }: { row: PipelineRow; roleWei
   const markSource = company ?? row.role;
   const initial = markSource.trim().charAt(0).toUpperCase() || '?';
   return (
-    <div className="wa-flex wa-items-center wa-gap-3">
+    <div className="wa-flex wa-items-center wa-gap-3" style={{ minWidth: 0 }}>
       <div
         aria-hidden
         style={{
@@ -436,8 +436,8 @@ export function MemberHomeKit({
 
   const pipelineCard = (row: PipelineRow) => (
     <div className="wa-kit-card wa-kit-card--sm">
-      <div className="wa-flex wa-flex-col wa-items-start wa-gap-2 md:wa-flex-row md:wa-justify-between md:wa-gap-3">
-        <div style={{ minWidth: 0 }}>
+      <div className="wa-flex wa-flex-col wa-items-start wa-gap-2 md:wa-flex-row md:wa-flex-wrap md:wa-justify-between md:wa-gap-3">
+        <div style={{ minWidth: 0, flex: '1 1 12rem' }}>
           <PipelineRoleCell row={row} roleWeight={800} />
         </div>
         <StatusTag tone={row.tone}>{row.stage}</StatusTag>
@@ -628,7 +628,7 @@ export function MemberHomeKit({
                     const tone: KitTone = item.state === 'done' ? 'ok' : item.state === 'active' ? 'warn' : 'muted';
                     const label = item.state === 'done' ? th('curriculumDone') : item.state === 'active' ? th('curriculumActive') : th('curriculumUpcoming');
                     return (
-                      <li key={item.title} className={cx('wa-kit-card wa-kit-card--sm', toneClass(tone))} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+                      <li key={item.title} className={cx('wa-kit-card wa-kit-card--sm wa-kit-phone-row', toneClass(tone))}>
                         <div>
                           <strong style={{ display: 'block' }}>{item.number ? `${th('moduleLabel', { n: item.number })}: ${item.title}` : item.title}</strong>
                           <span className="wa-kit-meta">{item.grade ?? item.due ?? ''}</span>

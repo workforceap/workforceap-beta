@@ -33,6 +33,11 @@ const COMPACT_EXACT = new Set([
   '/dev/member/ai-tools',
   '/dev/member/toolkit',
   '/dev/member/resume-studio',
+  '/dev/member/v/home',
+  '/dev/member/v/program',
+  '/dev/member/v/jobs',
+  '/dev/member/v/ai-tools',
+  '/dev/member/v/resume-studio',
 ]);
 
 export function isMemberHomeCompactPath(pathname: string): boolean {
@@ -63,9 +68,21 @@ export default function MemberHomeCompactNav({
       const rail = RAIL_LINKS.get(tab.canonical);
       const remapped = remap(tab.canonical);
       const extra =
-        tab.canonical === '/dashboard/ai-tools'
-          ? ['/dev/member/ai-tools', '/dev/member/toolkit', '/dev/member/resume-studio']
-          : [];
+        tab.canonical === '/dashboard'
+          ? ['/dev/member/v/home']
+          : tab.canonical === '/dashboard/program'
+            ? ['/dev/member/v/program']
+            : tab.canonical === '/dashboard/jobs'
+              ? ['/dev/member/v/jobs']
+              : tab.canonical === '/dashboard/ai-tools'
+                ? [
+                    '/dev/member/ai-tools',
+                    '/dev/member/toolkit',
+                    '/dev/member/resume-studio',
+                    '/dev/member/v/ai-tools',
+                    '/dev/member/v/resume-studio',
+                  ]
+                : [];
       return {
         href: tab.canonical,
         aliases: [...(remapped !== tab.canonical ? [remapped] : []), ...extra, ...(rail?.aliases ?? [])],

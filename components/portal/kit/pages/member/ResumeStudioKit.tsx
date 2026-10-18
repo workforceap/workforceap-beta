@@ -186,8 +186,8 @@ export function ResumeStudioKit({
             <ul className="wa-dense-grid wa-dense-grid--3" style={{ listStyle: 'none', margin: '12px 0 0', padding: 0 }}>
               {fixes.map((fix) => (
                 <li key={fix.title} className="wa-kit-card wa-kit-card--sm">
-                  <div className="wa-flex wa-items-center wa-justify-between wa-gap-2">
-                    <strong>{fix.title}</strong>
+                  <div className="wa-flex wa-items-center wa-justify-between wa-flex-wrap wa-gap-2">
+                    <strong style={{ minWidth: 0, overflowWrap: 'anywhere' }}>{fix.title}</strong>
                     <StatusTag tone={fix.tag === 'highImpact' ? 'warn' : fix.tag === 'keywordGap' ? 'info' : 'muted'}>
                       {t(fix.tag)}
                     </StatusTag>

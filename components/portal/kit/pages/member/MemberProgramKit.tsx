@@ -358,7 +358,7 @@ function MemberProgramOverview({
                         const tone: KitTone = lesson.state === 'done' ? 'ok' : lesson.state === 'active' ? 'info' : 'muted';
                         const label = lesson.state === 'done' ? tc('lessonCompleted') : lesson.state === 'active' ? tc('lessonInProgress') : tc('lessonUpcoming');
                         return (
-                          <li key={lesson.title} className="wa-flex wa-items-center wa-justify-between wa-gap-3">
+                          <li key={lesson.title} className="wa-kit-phone-row">
                             <div>
                               <strong style={{ display: 'block' }}>{lesson.title}</strong>
                               {lesson.meta ? <span className="wa-kit-meta">{lesson.meta}</span> : null}
@@ -432,7 +432,7 @@ function MemberProgramOverview({
                     >
                       <Icon size={meta.iconSize} aria-hidden="true" />
                     </div>
-                    <span style={{ fontWeight: 600, fontSize: 'var(--wa-type-body)', flex: 1, color: dim ? 'var(--wa-muted)' : 'var(--wa-text)' }}>
+                    <span style={{ fontWeight: 600, fontSize: 'var(--wa-type-body)', flex: '1 1 12rem', minWidth: 0, overflowWrap: 'anywhere', color: dim ? 'var(--wa-muted)' : 'var(--wa-text)' }}>
                       {m.title}
                     </span>
                     {isActive && m.launchHref ? (

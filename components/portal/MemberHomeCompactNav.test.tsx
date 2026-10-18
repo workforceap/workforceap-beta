@@ -20,6 +20,11 @@ describe('isMemberHomeCompactPath', () => {
     expect(isMemberHomeCompactPath('/dev/member/program')).toBe(true);
     expect(isMemberHomeCompactPath('/dev/member/ai-tools')).toBe(true);
     expect(isMemberHomeCompactPath('/dev/member/resume-studio')).toBe(true);
+    expect(isMemberHomeCompactPath('/dev/member/v/home')).toBe(true);
+    expect(isMemberHomeCompactPath('/dev/member/v/jobs')).toBe(true);
+    expect(isMemberHomeCompactPath('/dev/member/v/program')).toBe(true);
+    expect(isMemberHomeCompactPath('/dev/member/v/ai-tools')).toBe(true);
+    expect(isMemberHomeCompactPath('/dev/member/v/resume-studio')).toBe(true);
     expect(isMemberHomeCompactPath('/dashboard/messages')).toBe(false);
     expect(isMemberHomeCompactPath('/dashboard/jobs/abc')).toBe(false);
     expect(isMemberHomeCompactPath('/dev/member/home/extra')).toBe(false);

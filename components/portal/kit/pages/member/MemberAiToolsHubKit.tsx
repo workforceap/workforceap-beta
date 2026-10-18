@@ -315,10 +315,10 @@ export function MemberAiToolsHubKit({
                   <Link
                     href={step.href}
                     className="wa-kit-card wa-kit-card--sm wa-kit-focus"
-                    style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', textDecoration: 'none', color: 'inherit' }}
+                    style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', textDecoration: 'none', color: 'inherit', flexWrap: 'wrap', minWidth: 0 }}
                   >
-                    <div style={{ minWidth: 0 }}>
-                      <strong style={{ display: 'block' }}>{t('planStepLabel', { n: step.n, title: step.title })}</strong>
+                    <div style={{ minWidth: 0, flex: '1 1 12rem' }}>
+                      <strong style={{ display: 'block', overflowWrap: 'anywhere' }}>{t('planStepLabel', { n: step.n, title: step.title })}</strong>
                       <span className="wa-kit-meta">{step.body}</span>
                     </div>
                     <StatusTag tone={tag.tone}>{tag.label}</StatusTag>
@@ -348,7 +348,7 @@ export function MemberAiToolsHubKit({
                       <h3 style={{ margin: '8px 0 0', fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{tile.title}</h3>
                       <p className="wa-kit-lede wa-ai-hub-tile-body" style={{ margin: '6px 0 0' }}>{tile.body}</p>
                       {tile.usedForHref ? (
-                        <Link href={tile.usedForHref} className="wa-kit-meta wa-kit-focus" style={{ ...TEXT_LINK, minHeight: 36, fontSize: 'var(--wa-type-meta)' }}>
+                        <Link href={tile.usedForHref} className="wa-kit-meta wa-kit-focus" style={{ ...TEXT_LINK, fontSize: 'var(--wa-type-meta)' }}>
                           {tile.usedFor}
                         </Link>
                       ) : (
@@ -375,8 +375,8 @@ export function MemberAiToolsHubKit({
             {drafts.length > 0 ? (
               <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
                 {drafts.map((draft) => (
-                  <li key={draft.id} className="wa-flex wa-items-center wa-justify-between wa-gap-3">
-                    <div style={{ minWidth: 0 }}>
+                  <li key={draft.id} className="wa-flex wa-items-center wa-justify-between wa-flex-wrap wa-gap-3">
+                    <div style={{ minWidth: 0, flex: '1 1 12rem' }}>
                       <strong style={{ display: 'block' }}>{draft.title}</strong>
                       <span className="wa-kit-meta">{draft.saved} · {draft.meta}</span>
                     </div>

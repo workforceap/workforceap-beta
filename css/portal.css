@@ -3054,10 +3054,69 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   background: linear-gradient(to right, transparent, var(--wa-shell-header-bg));
 }
 
-/* Desktop member home: five-link strip instead of the persistent rail.
-   Other portal pages keep the rail. Phone still uses MemberPortalTopNav. */
+/* Five-link C nav (Home, My program, Job board, AI Career Tools, Messages).
+   Desktop replaces the persistent rail. Phone replaces the icon-only
+   MemberPortalTopNav so every destination keeps a visible label. */
 .member-home-compact-nav {
   display: none;
+}
+.member-home-compact-nav__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.member-home-compact-nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: var(--wa-type-body);
+  font-weight: 600;
+  color: var(--wa-muted);
+  background: var(--wa-surface);
+  border: 1px solid var(--wa-control-border);
+  box-sizing: border-box;
+}
+.member-home-compact-nav__link:hover,
+.member-home-compact-nav__link:focus-visible {
+  color: var(--wa-text);
+  background: color-mix(in srgb, var(--wa-accent) 8%, var(--wa-surface));
+}
+.member-home-compact-nav__link:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--wa-focus-ring);
+}
+.member-home-compact-nav__link--active {
+  color: var(--wa-accent-text);
+  background: var(--wa-accent-soft);
+  border-color: transparent;
+}
+.member-home-compact-nav__link--active:hover,
+.member-home-compact-nav__link--active:focus-visible {
+  color: var(--wa-accent-text);
+  background: color-mix(in srgb, var(--wa-accent) 16%, var(--wa-surface));
+  border-color: transparent;
+}
+.member-home-compact-nav__link--tools {
+  position: relative;
+  color: var(--wa-accent-text);
+  border-color: color-mix(in srgb, var(--wa-accent) 40%, var(--wa-control-border));
+}
+.member-home-compact-nav__link--tools.member-home-compact-nav__link--active {
+  border-color: transparent;
+}
+.member-home-compact-nav__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--wa-accent);
+  flex-shrink: 0;
 }
 @media (min-width: 769px) {
   /* Beat the persistent-rail lock in portal-main-extracted.css
@@ -3086,78 +3145,73 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     display: block;
     margin: 0 0 1rem;
   }
-  .member-home-compact-nav__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
+}
+@media (max-width: 768px) {
+  /* C screens: labeled pills, not the 13-icon strip. Compact scroll chrome
+     must not hide these labels. */
+  .workspace-shell-root[data-member-home-compact='true'] .member-portal-top-nav {
+    display: none;
   }
-  .member-home-compact-nav__link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    min-height: 44px;
-    padding: 0.5rem 0.9rem;
-    border-radius: 999px;
-    text-decoration: none;
-    font-size: var(--wa-type-body);
-    font-weight: 600;
-    color: var(--wa-muted);
-    background: var(--wa-surface);
-    border: 1px solid var(--wa-control-border);
-    box-sizing: border-box;
+  .workspace-shell-root[data-member-home-compact='true'] .member-home-compact-nav {
+    display: block;
+    position: sticky;
+    top: var(--workspace-header-h, 3.25rem);
+    z-index: 30;
+    margin: 0 -1rem 0.75rem;
+    padding: 0.35rem 0 0.15rem;
+    min-width: 0;
+    max-width: none;
+    background: color-mix(in srgb, var(--wa-bg) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
-  .member-home-compact-nav__link:hover,
-  .member-home-compact-nav__link:focus-visible {
-    color: var(--wa-text);
-    background: color-mix(in srgb, var(--wa-accent) 8%, var(--wa-surface));
+  .workspace-shell-root[data-member-home-compact='true'] .member-home-compact-nav__list {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    min-width: 0;
+    max-width: 100%;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    padding: 0.15rem 1rem 0.35rem;
+    gap: 0.5rem;
   }
-  .member-home-compact-nav__link:focus-visible {
-    outline: 2px solid transparent;
-    box-shadow: var(--wa-focus-ring);
+  .workspace-shell-root[data-member-home-compact='true'] .member-home-compact-nav__list::-webkit-scrollbar {
+    display: none;
   }
-  .member-home-compact-nav__link--active {
-    color: var(--wa-accent-text);
-    background: var(--wa-accent-soft);
-    border-color: transparent;
+  .workspace-shell-root[data-member-home-compact='true'] .member-home-compact-nav__list:has(.member-home-compact-nav__link:focus-visible) {
+    scroll-snap-type: none;
   }
-  .member-home-compact-nav__link--active:hover,
-  .member-home-compact-nav__link--active:focus-visible {
-    color: var(--wa-accent-text);
-    background: color-mix(in srgb, var(--wa-accent) 16%, var(--wa-surface));
-    border-color: transparent;
-  }
-  .member-home-compact-nav__link--tools {
-    position: relative;
-  }
-  .member-home-compact-nav__dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 999px;
-    background: var(--wa-accent);
+  .workspace-shell-root[data-member-home-compact='true'] .member-home-compact-nav__link {
     flex-shrink: 0;
+    white-space: nowrap;
+    scroll-snap-align: start;
   }
 }
 
 .wa-dense-grid {
   display: grid;
   gap: var(--wa-pad-sm);
+  min-width: 0;
+}
+.wa-dense-grid > * {
+  min-width: 0;
 }
 .wa-dense-page {
   max-width: 82.5rem;
   margin: 0 auto;
   padding: var(--wa-pad-sm);
+  min-width: 0;
 }
 .wa-kit-oneline {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 100%;
 }
 @media (min-width: 768px) {
   .wa-dense-grid--3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 .wa-ai-hub-catalog {
