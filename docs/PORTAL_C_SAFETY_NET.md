@@ -42,6 +42,7 @@ Registry lock (no browser): `npx vitest run tests/app/dev-member-harness-registr
 | `dev-member-visual.spec.ts` | no | 1440 and 390 | `toHaveScreenshot` of **full** state (`maxDiffPixelRatio` 0.05; Vercel toolbar masked / skipped) |
 | `member-unauth-redirects.spec.ts` | no | n/a | every inventory `/dashboard` path (and `/coach`, `/account/privacy`) redirects to login; aliases redirect to their target or to login when the layout auth-gates first |
 | `member-all-routes.spec.ts` | yes (`PLAYWRIGHT_MEMBER_EMAIL` + `PLAYWRIGHT_PORTAL_PASSWORD`) | n/a | logged-in visit of canonical paths plus the ~30 that were missing, plus inventory aliases. Skips without those secrets. Dynamic `[id]` placeholders may 404 after login; that is OK as long as the member does not bounce to `/login`. |
+| `member-signed-in-c-routes.spec.ts` | yes (same secrets; CI maps `PREVIEW_E2E_MEMBER_*`) | n/a | After a SHA + DEMO Supabase pre-login guard: Home, Job board, My program, Resume Studio, and AI tools load with `h1`, no console errors, and honest-state rules. Then a profile location edit, a notification toggle, and a counselor-thread mark-read — each reloads, asserts persistence, and restores (mark-read only advances `memberLastReadAt`; it does not send mail). Traces are off so auth bodies are never captured. |
 
 Banned-word and CTA checks are scoped to `[data-dev-member-harness]`. Shell chrome and i18n catalogs are out of scope so “Partner portal” copy elsewhere cannot fail a member screen.
 
@@ -53,6 +54,7 @@ Banned-word and CTA checks are scoped to `[data-dev-member-harness]`. Shell chro
 - If previews are protected, set repository secret `VERCEL_AUTOMATION_BYPASS_SECRET`.
 - Posts a commit status **Portal C safety net**.
 - `workflow_dispatch` can point the same specs at any https origin.
+- **Signed-in member C routes** runs on `pull_request` (after the Preview of the PR head SHA exists) and on Preview `deployment_status`. It maps `PLAYWRIGHT_MEMBER_EMAIL` / `PLAYWRIGHT_PORTAL_PASSWORD` from `PREVIEW_E2E_MEMBER_*`, refuses to type those credentials unless `/api/health` serves that exact SHA on DEMO `esbdrgaonplpvzmtrdhw`, then uploads the Playwright HTML report plus PNG screenshots (no traces).
 
 Existing CI (`ci-gate.yml`) is unchanged. Authenticated portal smoke stays nightly / dispatch.
 

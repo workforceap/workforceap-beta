@@ -23,6 +23,7 @@ on:
 permissions:
   contents: read
   statuses: write
+  deployments: read
 
 concurrency:
   group: portal-c-safety-net-${{ github.event_name }}-${{ github.event.deployment.environment || github.ref }}-${{ github.event.deployment.sha || github.sha }}
@@ -158,3 +159,153 @@ jobs:
             -f description="${description:0:140}" \
             -f target_url="$RUN_URL" \
             --jq '"posted \(.context): \(.state)"'
+
+  signed-in-member:
+    name: Signed-in member C routes
+    # After the Vercel Preview for this PR head exists, log in as the DEMO
+    # test member and exercise the five live C routes. Secrets stay in
+    # repository secrets; the job aborts before login if SHA or Supabase
+    # project do not match. Never required for merge; keep the PR draft.
+    if: >-
+      github.repository == 'workforceap/workforceap-beta' &&
+      (
+        github.event_name == 'workflow_dispatch' ||
+        github.event_name == 'pull_request' ||
+        (
+          github.event.deployment_status.state == 'success' &&
+          github.event.deployment.environment == 'Preview' &&
+          github.event.deployment.creator.login == 'vercel[bot]'
+        )
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: "true"
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.deployment.sha || github.sha }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      PLAYWRIGHT_TRACE: "off"
+      PLAYWRIGHT_VIDEO: ""
+      PLAYWRIGHT_SCREENSHOT: ""
+
+    steps:
+      - name: Resolve preview origin
+        id: preview
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DISPATCH_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.base_url || '' }}
+          DEPLOY_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
+        run: |
+          set -euo pipefail
+          sha="${HEAD_SHA}"
+          if ! printf '%s' "$sha" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::HEAD_SHA is not a full 40-hex commit; refusing to sign in."
+            exit 2
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+          if [ -n "${DISPATCH_URL:-}" ]; then
+            echo "base_url=$DISPATCH_URL" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -n "${DEPLOY_URL:-}" ]; then
+            echo "base_url=$DEPLOY_URL" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          deadline=$(( $(date +%s) + 1500 ))
+          while :; do
+            dep="$(gh api "repos/${GITHUB_REPOSITORY}/deployments?sha=${sha}&environment=Preview&per_page=20" \
+              --jq '[.[] | select(.creator.login == "vercel[bot]")] | sort_by(.created_at) | last | .id // empty')"
+            state=none
+            url=""
+            if [ -n "$dep" ]; then
+              state="$(gh api "repos/${GITHUB_REPOSITORY}/deployments/${dep}/statuses?per_page=5" --jq '.[0].state // "none"')"
+              url="$(gh api "repos/${GITHUB_REPOSITORY}/deployments/${dep}/statuses?per_page=5" \
+                --jq '[.[] | .environment_url // .target_url // empty] | map(select(length > 0)) | first // empty')"
+            fi
+            echo "Vercel Preview for ${sha:0:9}: ${dep:-none} (${state})"
+            case "$state" in
+              success)
+                if [ -n "$url" ]; then
+                  echo "base_url=$url" >> "$GITHUB_OUTPUT"
+                  exit 0
+                fi
+                ;;
+              failure|error)
+                echo "::error::Vercel Preview of ${sha:0:9} failed (deployment ${dep}). Refusing to sign in."
+                exit 1
+                ;;
+            esac
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "::error::No successful Vercel Preview of ${sha:0:9} after 25 minutes. Refusing to sign in."
+              exit 1
+            fi
+            sleep 20
+          done
+
+      - name: Checkout the deployed commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.preview.outputs.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Refuse login unless preview SHA and DEMO Supabase match
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
+          PORTAL_C_TRUSTED_SHA: ${{ steps.preview.outputs.sha }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: node scripts/portal-c-signed-in-guard.mjs
+
+      - name: Require mapped member secrets without printing them
+        shell: bash
+        env:
+          PLAYWRIGHT_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
+          PLAYWRIGHT_PORTAL_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${PLAYWRIGHT_MEMBER_EMAIL:-}" ] || [ -z "${PLAYWRIGHT_PORTAL_PASSWORD:-}" ]; then
+            echo "::error::PREVIEW_E2E_MEMBER_EMAIL / PREVIEW_E2E_MEMBER_PASSWORD are not mapped."
+            exit 1
+          fi
+
+      - name: Run signed-in C route specs
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
+          PLAYWRIGHT_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
+          PLAYWRIGHT_PORTAL_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          PLAYWRIGHT_TRACE: "off"
+        run: |
+          pnpm exec playwright test \
+            tests/e2e/member-signed-in-c-routes.spec.ts \
+            --project=chromium \
+            --reporter=list,html,github \
+            --trace=off
+
+      - name: Upload signed-in screenshots (no traces)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-c-signed-in-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/**/*.png
+          if-no-files-found: ignore
+          retention-days: 14

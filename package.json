@@ -50,6 +50,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:portal-hubs": "playwright test tests/e2e/portal-hub-smoke.spec.ts",
     "test:e2e:portal-c": "playwright test tests/e2e/dev-member-routes.spec.ts tests/e2e/dev-member-visual.spec.ts tests/e2e/member-unauth-redirects.spec.ts --project=chromium",
+    "test:e2e:portal-c-signed-in": "playwright test tests/e2e/member-signed-in-c-routes.spec.ts --project=chromium --trace=off",
     "test:e2e:portal-c:update": "playwright test tests/e2e/dev-member-visual.spec.ts --project=chromium --update-snapshots",
     "repo:sync-master": "powershell -ExecutionPolicy Bypass -File scripts/auto-sync-master.ps1",
     "test:unit": "node scripts/test-unit.mjs",
