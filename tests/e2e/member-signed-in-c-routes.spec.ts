@@ -72,13 +72,15 @@ test.describe('signed-in C member routes', () => {
       await expect(page, `${route.path} bounced to login`).not.toHaveURL(/\/login([?#]|$)/, {
         timeout: 20_000,
       });
+      await assertNotPreassessmentGated(page, route.path);
 
       const heading = page.getByRole('heading', { level: 1 });
-      if ((await heading.count()) === 0) {
+      try {
+        await expect(heading.first()).toBeVisible({ timeout: 20_000 });
+      } catch {
         untested.push(`${route.path} (no h1)`);
         continue;
       }
-      await expect(heading.first()).toBeVisible({ timeout: 15_000 });
 
       await assertHonestState(page, route.name);
       expect(errors, `${route.path} console errors:\n${errors.join('\n')}`).toEqual([]);
@@ -126,12 +128,21 @@ async function gotoMember(page: Page, path: string) {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
       await page.goto(path, { waitUntil: 'domcontentloaded' });
+      await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {});
       return;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (!/ERR_ABORTED|interrupted/i.test(message) || attempt === 2) throw error;
     }
   }
+}
+
+async function assertNotPreassessmentGated(page: Page, path: string) {
+  expect(
+    page.url(),
+    `${path} redirected to the WIOA preassessment gate — PREVIEW_E2E member must have assessmentCompleted in portal-qa on DEMO`,
+  ).not.toMatch(/\/dashboard\/assessment(\?|$)/);
+  await expect(page.getByTestId('preassessment-required-notice')).toHaveCount(0);
 }
 
 async function assertHonestState(page: Page, route: (typeof C_ROUTES)[number]['name']) {
