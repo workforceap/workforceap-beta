@@ -170,7 +170,11 @@ describe('member lab preview schema bootstrap', () => {
 
   it('follows workspace setup only in preview and preserves the migration transaction/advisory lock', () => {
     const pkg = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
-    expect(pkg.scripts['build:preview']).toContain('apply-preview-training-workspace-schema.cjs && node scripts/apply-preview-member-lab-schema.cjs && next build');
+    expect(pkg.scripts['build:preview']).toContain(
+      'apply-preview-training-workspace-schema.cjs && node scripts/apply-preview-member-lab-schema.cjs && node scripts/apply-preview-assessment-attempts-schema.cjs && next build',
+    );
+    expect(pkg.scripts['build:preview']).not.toContain('preview-e2e-member');
+    expect(pkg.scripts['build:preview']).not.toContain('apply-preview-e2e-member');
     expect(pkg.scripts['build:with-migrate']).not.toContain('apply-preview-member-lab-schema');
     const sql = readFileSync(path.join(root, 'prisma/migrations', bootstrap.MIGRATION_NAME, 'migration.sql'), 'utf8');
     expect(sql).toContain('BEGIN;'); expect(sql).toContain('pg_advisory_xact_lock'); expect(sql.trimEnd()).toMatch(/COMMIT;$/);

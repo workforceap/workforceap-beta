@@ -26,6 +26,8 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000';
 /** Staging/prod URL — do not boot `npm run dev`. */
 const isRemoteBase =
   /^https?:\/\//i.test(baseURL) && !/localhost|127\.0\.0\.1/i.test(baseURL);
+const vercelBypass = (process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? '').trim();
+const isVercelPreview = /\.vercel\.app$/i.test(new URL(baseURL).hostname);
 
 type TraceSetting =
   | 'off'
@@ -62,6 +64,14 @@ export default defineConfig({
   reporter: 'html',
   use: {
     baseURL,
+    ...((vercelBypass || isVercelPreview)
+      ? {
+          extraHTTPHeaders: {
+            ...(vercelBypass ? { 'x-vercel-protection-bypass': vercelBypass } : {}),
+            ...(isVercelPreview ? { 'x-vercel-skip-toolbar': '1' } : {}),
+          },
+        }
+      : {}),
     trace: parseTraceSetting(process.env.PLAYWRIGHT_TRACE) ?? 'on-first-retry',
     video: process.env.PLAYWRIGHT_VIDEO ? 'on' : 'off',
     screenshot: process.env.PLAYWRIGHT_SCREENSHOT ? 'on' : 'off',
@@ -74,7 +84,7 @@ export default defineConfig({
       ? undefined
       : {
           command: 'npm run dev',
-          url: 'http://localhost:3000',
+          url: 'http://localhost:3000/en/login',
           reuseExistingServer: !process.env.CI,
         },
 });
