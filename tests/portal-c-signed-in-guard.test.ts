@@ -190,6 +190,32 @@ describe('portal-c signed-in guard', () => {
     expect(judged).toMatchObject({ ok: false, reason: 'supabase_ref_mismatch' });
   });
 
+  it('refuses a listed deployment that claims the SHA on a different host', async () => {
+    const calls: string[] = [];
+    const outcome = await runVercelProvenanceGuard({
+      origin: 'https://evil-host.example.com',
+      trustedSha: TRUSTED_SHA,
+      trustedBranch: TRUSTED_BRANCH,
+      vercelToken: 'token',
+      expectedProjectId: WORKFORCEAP_VERCEL_PROJECT_ID,
+      fetchImpl: (async (url: string) => {
+        calls.push(url);
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ deployments: [readyDeployment()] }),
+        };
+      }) as unknown as typeof fetch,
+    });
+    expect(outcome.ok).toBe(false);
+    expect(outcome.reason).toBe('hostname_mismatch');
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toContain('/v7/deployments');
+    expect(calls[0]).toContain(`projectId=${WORKFORCEAP_VERCEL_PROJECT_ID}`);
+    expect(calls[0]).toContain(`sha=${TRUSTED_SHA}`);
+    expect(calls[0]).toContain('teamId=team_zTfMkbIIH6ADgy5Hy43MCM5K');
+  });
+
   it('refuses login when Vercel provenance fails before health', async () => {
     const origin = 'https://workforceap-beta-git-feature.vercel.app';
     const vercel = await runVercelProvenanceGuard({

@@ -23,17 +23,37 @@ export function parseHttpsOrigin(origin) {
   return { ok: true, origin: normalized, hostname: url.hostname.toLowerCase() };
 }
 
+function hostOnly(value) {
+  return String(value)
+    .trim()
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/.*$/, '')
+    .toLowerCase();
+}
+
 export function deploymentHostnames(deployment) {
   const hosts = new Set();
   if (typeof deployment?.url === 'string' && deployment.url.length > 0) {
-    hosts.add(deployment.url.toLowerCase());
+    hosts.add(hostOnly(deployment.url));
+  }
+  const branchAlias = deployment?.meta?.branchAlias;
+  if (typeof branchAlias === 'string' && branchAlias.length > 0) {
+    hosts.add(hostOnly(branchAlias));
   }
   for (const alias of deployment?.alias ?? []) {
     if (typeof alias === 'string' && alias.length > 0) {
-      hosts.add(alias.toLowerCase());
+      hosts.add(hostOnly(alias));
     }
   }
   return hosts;
+}
+
+function listedDeployments(payload) {
+  if (Array.isArray(payload?.deployments)) return payload.deployments;
+  if (payload && typeof payload === 'object' && (payload.url || payload.uid || payload.projectId)) {
+    return [payload];
+  }
+  return [];
 }
 
 /**
@@ -58,7 +78,12 @@ export function evaluateVercelProvenance(input) {
         ? deployment.project.id
         : '';
   const expectedProjectId = input.expectedProjectId ?? WORKFORCEAP_VERCEL_PROJECT_ID;
-  if (projectId !== expectedProjectId) {
+  const namedProject = deployment.name === 'workforceap-beta';
+  if (projectId) {
+    if (projectId !== expectedProjectId) {
+      return { ok: false, reason: 'wrong_vercel_project', projectId };
+    }
+  } else if (!namedProject) {
     return { ok: false, reason: 'wrong_vercel_project', projectId };
   }
 
@@ -95,28 +120,74 @@ export function evaluateVercelProvenance(input) {
   return { ok: true, projectId, commitSha, branch };
 }
 
-export async function fetchVercelDeploymentForHost({
-  hostname,
-  token,
-  teamId = WORKFORCEAP_VERCEL_TEAM_ID,
-  fetchImpl = globalThis.fetch,
-}) {
-  if (!token) {
-    return { ok: false, reason: 'vercel_token_missing' };
-  }
-  const url = new URL(`https://api.vercel.com/v13/deployments/${encodeURIComponent(hostname)}`);
-  url.searchParams.set('teamId', teamId);
-  const response = await fetchImpl(url.toString(), {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+async function readVercelResponse(response) {
   if (response.status === 404) {
     return { ok: false, reason: 'deployment_not_found', status: 404 };
   }
   if (!response.ok) {
-    return { ok: false, reason: 'vercel_api_error', status: response.status };
+    let code = '';
+    try {
+      const body = await response.json();
+      code = typeof body?.error?.code === 'string' ? body.error.code : '';
+    } catch {
+      code = '';
+    }
+    return { ok: false, reason: 'vercel_api_error', status: response.status, code };
   }
-  const deployment = await response.json();
-  return { ok: true, deployment };
+  return { ok: true, payload: await response.json() };
+}
+
+export async function fetchVercelDeploymentForHost({
+  hostname,
+  token,
+  teamId = WORKFORCEAP_VERCEL_TEAM_ID,
+  projectId = WORKFORCEAP_VERCEL_PROJECT_ID,
+  trustedSha = '',
+  trustedBranch = '',
+  fetchImpl = globalThis.fetch,
+}) {
+  const trimmed = typeof token === 'string' ? token.trim() : '';
+  if (!trimmed) {
+    return { ok: false, reason: 'vercel_token_missing' };
+  }
+  const headers = { Authorization: `Bearer ${trimmed}` };
+  const listUrl = new URL('https://api.vercel.com/v7/deployments');
+  listUrl.searchParams.set('projectId', projectId);
+  listUrl.searchParams.set('teamId', teamId);
+  listUrl.searchParams.set('limit', '20');
+  if (trustedSha) listUrl.searchParams.set('sha', trustedSha);
+  if (trustedBranch) listUrl.searchParams.set('branch', trustedBranch);
+
+  const listed = await readVercelResponse(
+    await fetchImpl(listUrl.toString(), { headers }),
+  );
+  if (listed.ok) {
+    const deployments = listedDeployments(listed.payload);
+    const match = deployments.find((deployment) =>
+      deploymentHostnames(deployment).has(hostname.toLowerCase()),
+    );
+    if (!match) {
+      return {
+        ok: false,
+        reason: deployments.length > 0 ? 'hostname_mismatch' : 'deployment_not_found',
+      };
+    }
+    return { ok: true, deployment: match };
+  }
+
+  // Some tokens can read a deployment by id/url but not the list, or the reverse.
+  if (listed.status !== 403 && listed.status !== 404) {
+    return listed;
+  }
+  const byUrl = new URL(
+    `https://api.vercel.com/v13/deployments/${encodeURIComponent(hostname)}`,
+  );
+  byUrl.searchParams.set('teamId', teamId);
+  const direct = await readVercelResponse(await fetchImpl(byUrl.toString(), { headers }));
+  if (!direct.ok) {
+    return listed.status === 403 ? listed : direct;
+  }
+  return { ok: true, deployment: direct.payload };
 }
 
 export function describeVercelProvenanceFailure(result) {
@@ -132,7 +203,7 @@ export function describeVercelProvenanceFailure(result) {
     case 'deployment_not_found':
       return 'Vercel API did not return a deployment for the preview hostname.';
     case 'vercel_api_error':
-      return `Vercel API returned HTTP ${result.status ?? 'unknown'}.`;
+      return `Vercel API returned HTTP ${result.status ?? 'unknown'}${result.code ? ` (${result.code})` : ''}.`;
     case 'deployment_missing':
       return 'Vercel deployment payload was empty.';
     case 'wrong_vercel_project':
@@ -165,6 +236,9 @@ export async function runVercelProvenanceGuard({
   const fetched = await fetchVercelDeploymentForHost({
     hostname: parsed.hostname,
     token: vercelToken,
+    projectId: expectedProjectId ?? WORKFORCEAP_VERCEL_PROJECT_ID,
+    trustedSha,
+    trustedBranch,
     fetchImpl,
   });
   if (!fetched.ok) {

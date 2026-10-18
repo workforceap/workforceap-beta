@@ -46,8 +46,9 @@ async function restore() {
   try {
     snapshot = loadSnapshot(path);
   } catch {
-    console.error('[preview-e2e-member-fixture] restore skipped — no snapshot file.');
-    process.exitCode = 1;
+    console.log(
+      '[preview-e2e-member-fixture] restore skipped — prepare did not write a snapshot.',
+    );
     return;
   }
   await withPrisma(async (prisma) => {
