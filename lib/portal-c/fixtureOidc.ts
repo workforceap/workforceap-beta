@@ -94,16 +94,16 @@ export async function verifyPortalCFixtureOidc(
   if (typeof payload.event_name !== 'string' || !ALLOWED_EVENTS.has(payload.event_name)) {
     return { ok: false, reason: 'wrong_event' };
   }
-  // pull_request refs look like refs/heads/… or refs/pull/n/merge.
-  // Vercel deployment_status sets the deployment ref to the bare commit SHA.
+  // pull_request tokens carry refs/heads/… or refs/pull/n/merge.
+  // deployment_status tokens from this repository omit `ref` and keep `sha`.
   const ref = typeof payload.ref === 'string' ? payload.ref : '';
-  const refOk = ref.startsWith('refs/') || /^[0-9a-f]{40}$/.test(ref);
   const sha =
     typeof payload.sha === 'string' && /^[0-9a-f]{40}$/.test(payload.sha)
       ? payload.sha
       : /^[0-9a-f]{40}$/.test(ref)
         ? ref
         : '';
+  const refOk = ref.length === 0 || ref.startsWith('refs/') || /^[0-9a-f]{40}$/.test(ref);
   if (!refOk || !sha) {
     const refKind = ref.startsWith('refs/') ? 'refs' : ref ? 'other' : 'missing';
     const shaLen = typeof payload.sha === 'string' ? payload.sha.length : 0;
@@ -143,7 +143,7 @@ export async function verifyPortalCFixtureOidc(
       repository,
       workflowRef: payload.job_workflow_ref,
       eventName: payload.event_name,
-      ref,
+      ref: ref || sha,
       sha,
     },
   };
