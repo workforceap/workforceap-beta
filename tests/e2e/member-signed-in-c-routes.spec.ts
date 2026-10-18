@@ -9,7 +9,8 @@
  * on DEMO Supabase before this file runs.
  */
 import { expect, test, type Page } from '@playwright/test';
-import { hasProdE2ECredentials, loginMemberPortal } from './auth-helpers';
+import { resolveMemberPortalCredentials } from '../../scripts/lib/portal-audit-auth.mjs';
+import { hasProdE2ECredentials } from './auth-helpers';
 
 const LIVE_IGNORED_CONSOLE = [
   /\/api\/tours\//i,
@@ -60,15 +61,14 @@ test.describe('signed-in C member routes', () => {
     page,
   }, testInfo) => {
     test.setTimeout(180_000);
-    await loginMemberPortal(page);
-    await expect(page).not.toHaveURL(/\/login([?#]|$)/);
+    await loginSignedInMember(page);
 
     const untested: string[] = [];
     const errors = collectLivePageErrors(page);
 
     for (const route of C_ROUTES) {
       errors.length = 0;
-      await page.goto(route.path, { waitUntil: 'domcontentloaded' });
+      await gotoMember(page, route.path);
       await expect(page, `${route.path} bounced to login`).not.toHaveURL(/\/login([?#]|$)/, {
         timeout: 20_000,
       });
@@ -101,7 +101,7 @@ test.describe('signed-in C member routes', () => {
 
   test('reversible member actions persist after reload, then restore', async ({ page }) => {
     test.setTimeout(180_000);
-    await loginMemberPortal(page);
+    await loginSignedInMember(page);
 
     await revertibleProfileLocation(page);
     await revertibleNotificationToggle(page);
@@ -109,7 +109,33 @@ test.describe('signed-in C member routes', () => {
   });
 });
 
+async function loginSignedInMember(page: Page) {
+  const { email, password } = resolveMemberPortalCredentials(process.env);
+  if (!email || !password) {
+    throw new Error('Set PLAYWRIGHT_MEMBER_EMAIL and PLAYWRIGHT_PORTAL_PASSWORD');
+  }
+  await page.goto('/login?redirectTo=%2Fdashboard', { waitUntil: 'domcontentloaded' });
+  await page.getByRole('button', { name: /decline/i }).click().catch(() => {});
+  await page.locator('#email').fill(email);
+  await page.locator('#password').fill(password);
+  await page.getByRole('button', { name: /sign in/i }).click();
+  await page.waitForURL((url) => /\/dashboard(\/|$|\?)/.test(url.pathname), { timeout: 60_000 });
+}
+
+async function gotoMember(page: Page, path: string) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      await page.goto(path, { waitUntil: 'domcontentloaded' });
+      return;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!/ERR_ABORTED|interrupted/i.test(message) || attempt === 2) throw error;
+    }
+  }
+}
+
 async function assertHonestState(page: Page, route: (typeof C_ROUTES)[number]['name']) {
+  await expect(page.getByRole('heading', { name: /unexpected error/i })).toHaveCount(0);
   const body = (await page.locator('main, [data-wa-kit], body').first().innerText()).replace(/\s+/g, ' ');
   expect(body, `${route} must not claim Qualified roles`).not.toMatch(/qualified roles/i);
 

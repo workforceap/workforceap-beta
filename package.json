@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "node scripts/check-supabase-env.mjs && node scripts/verify-material-symbols-font-size.mjs && node scripts/prisma-env.js prisma generate && next build",
-    "build:preview": "node scripts/check-supabase-env.mjs && node scripts/verify-material-symbols-font-size.mjs && node scripts/prisma-env.js prisma generate && node scripts/apply-preview-approved-curriculum-schema.cjs && node scripts/apply-preview-training-workspace-schema.cjs && node scripts/apply-preview-member-lab-schema.cjs && next build",
+    "build:preview": "node scripts/check-supabase-env.mjs && node scripts/verify-material-symbols-font-size.mjs && node scripts/prisma-env.js prisma generate && node scripts/apply-preview-approved-curriculum-schema.cjs && node scripts/apply-preview-training-workspace-schema.cjs && node scripts/apply-preview-member-lab-schema.cjs && node scripts/apply-preview-assessment-attempts-schema.cjs && next build",
     "build:vercel": "node scripts/vercel-build.cjs",
     "build:with-migrate": "node scripts/check-supabase-env.mjs && node scripts/verify-material-symbols-font-size.mjs && node scripts/safe-migrate.cjs && node scripts/prisma-env.js prisma generate && next build",
     "postinstall": "node scripts/prisma-env.js prisma generate",
