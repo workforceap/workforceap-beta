@@ -39,7 +39,7 @@ Registry lock (no browser): `npx vitest run tests/app/dev-member-harness-registr
 | Spec | Needs login | Viewports | Checks |
 |---|---|---|---|
 | `dev-member-routes.spec.ts` | no | 1440 and 390 | every view × state: `h1`, EXAMPLE DATA banner, no console errors, no `partner` / `portfolio` / `exam voucher` in the harness root, primary `.wa-kit-cta` is not `--wa-info` blue |
-| `dev-member-visual.spec.ts` | no | 1440 and 390 | `toHaveScreenshot` of **full** state (`maxDiffPixelRatio` 0.03; Vercel toolbar masked / skipped) |
+| `dev-member-visual.spec.ts` | no | 1440 and 390 | `toHaveScreenshot` of **full** state (`maxDiffPixelRatio` 0.05; Vercel toolbar masked / skipped) |
 | `member-unauth-redirects.spec.ts` | no | n/a | every inventory `/dashboard` path (and `/coach`, `/account/privacy`) redirects to login; aliases redirect to their target or to login when the layout auth-gates first |
 | `member-all-routes.spec.ts` | yes (`PLAYWRIGHT_MEMBER_EMAIL` + `PLAYWRIGHT_PORTAL_PASSWORD`) | n/a | logged-in visit of canonical paths plus the ~30 that were missing, plus inventory aliases. Skips without those secrets. Dynamic `[id]` placeholders may 404 after login; that is OK as long as the member does not bounce to `/login`. |
 

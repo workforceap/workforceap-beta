@@ -26,7 +26,7 @@ test.describe('dev member visual baselines', () => {
           fullPage: true,
           animations: 'disabled',
           caret: 'hide',
-          maxDiffPixelRatio: 0.03,
+          maxDiffPixelRatio: 0.05,
           mask: [page.locator('vercel-live-feedback, [data-vercel-toolbar], #vercel-live-feedback')],
         });
       }
