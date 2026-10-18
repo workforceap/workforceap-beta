@@ -107,6 +107,8 @@ export async function runSignedInDestinationGuard({
   trustedSha,
   trustedBranch,
   vercelToken = '',
+  githubToken = '',
+  repository = '',
   bypassSecret = '',
   timeoutMs = DEFAULT_HEALTH_GATE_TIMEOUT_MS,
   intervalMs = DEFAULT_HEALTH_GATE_INTERVAL_MS,
@@ -125,6 +127,8 @@ export async function runSignedInDestinationGuard({
     trustedSha,
     trustedBranch,
     vercelToken,
+    githubToken,
+    repository,
     fetchImpl,
   });
   if (!vercel.ok) {

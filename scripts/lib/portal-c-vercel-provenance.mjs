@@ -5,6 +5,8 @@
  */
 export const WORKFORCEAP_VERCEL_PROJECT_ID = 'prj_pfOpwxedCID96oF2hlaE5J7kbNid';
 export const WORKFORCEAP_VERCEL_TEAM_ID = 'team_zTfMkbIIH6ADgy5Hy43MCM5K';
+export const WORKFORCEAP_VERCEL_TEAM_SLUG = 'mabrown040-5207s-projects';
+export const WORKFORCEAP_VERCEL_PROJECT_NAME = 'workforceap-beta';
 
 export function parseHttpsOrigin(origin) {
   const normalized = typeof origin === 'string' ? origin.trim().replace(/\/+$/, '') : '';
@@ -242,6 +244,16 @@ export function describeVercelProvenanceFailure(result) {
       return 'Vercel API did not return a deployment for the preview hostname.';
     case 'vercel_api_error':
       return `Vercel API returned HTTP ${result.status ?? 'unknown'}${result.code ? ` (${result.code})` : ''}${result.attempts ? ` [${result.attempts}]` : ''}.`;
+    case 'github_token_missing':
+      return 'GITHUB_TOKEN is required to read the Vercel GitHub App status when the Vercel API rejects the token.';
+    case 'vercel_status_missing':
+      return 'No successful Vercel commit status was found for the trusted SHA.';
+    case 'vercel_status_untrusted':
+      return 'The Vercel commit status does not point at the expected team and project on vercel.com.';
+    case 'preview_deployment_missing':
+      return 'No successful vercel[bot] Preview deployment was found for the trusted SHA.';
+    case 'preview_host_mismatch':
+      return 'The vercel[bot] Preview deployment is not served at the expected host.';
     case 'deployment_missing':
       return 'Vercel deployment payload was empty.';
     case 'wrong_vercel_project':
@@ -259,11 +271,113 @@ export function describeVercelProvenanceFailure(result) {
   }
 }
 
+/**
+ * The Vercel GitHub App writes this status. It is not the page's own health JSON.
+ * Expected shape: https://vercel.com/<team-slug>/<project-name>/<deployment-id>
+ */
+export function evaluateVercelStatusUrl(targetUrl) {
+  let url;
+  try {
+    url = new URL(String(targetUrl ?? ''));
+  } catch {
+    return { ok: false, reason: 'vercel_status_untrusted' };
+  }
+  if (url.protocol !== 'https:' || url.hostname !== 'vercel.com') {
+    return { ok: false, reason: 'vercel_status_untrusted' };
+  }
+  const [slug, project, deploymentId] = url.pathname.split('/').filter(Boolean);
+  if (
+    slug !== WORKFORCEAP_VERCEL_TEAM_SLUG ||
+    project !== WORKFORCEAP_VERCEL_PROJECT_NAME ||
+    !deploymentId
+  ) {
+    return { ok: false, reason: 'wrong_vercel_project', slug, project };
+  }
+  return { ok: true, slug, project, deploymentId };
+}
+
+async function githubJson(url, token, fetchImpl) {
+  const response = await fetchImpl(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    },
+  });
+  if (!response.ok) {
+    return { ok: false, reason: 'vercel_status_missing', status: response.status };
+  }
+  return { ok: true, payload: await response.json() };
+}
+
+export async function verifyGitHubVercelApp({
+  repository,
+  trustedSha,
+  originHostname,
+  githubToken,
+  fetchImpl = globalThis.fetch,
+}) {
+  const token = typeof githubToken === 'string' ? githubToken.trim() : '';
+  if (!token || !repository) {
+    return { ok: false, reason: 'github_token_missing' };
+  }
+  const status = await githubJson(
+    `https://api.github.com/repos/${repository}/commits/${trustedSha}/status`,
+    token,
+    fetchImpl,
+  );
+  if (!status.ok) return status;
+  const vercelStatus = (status.payload.statuses ?? []).find(
+    (entry) => entry?.context === 'Vercel' && entry?.state === 'success' && entry?.target_url,
+  );
+  if (!vercelStatus) return { ok: false, reason: 'vercel_status_missing' };
+  const parsedStatus = evaluateVercelStatusUrl(vercelStatus.target_url);
+  if (!parsedStatus.ok) return parsedStatus;
+
+  const deployments = await githubJson(
+    `https://api.github.com/repos/${repository}/deployments?sha=${trustedSha}&environment=Preview&per_page=20`,
+    token,
+    fetchImpl,
+  );
+  if (!deployments.ok) return { ok: false, reason: 'preview_deployment_missing' };
+  const owned = (Array.isArray(deployments.payload) ? deployments.payload : []).filter(
+    (deployment) => deployment?.creator?.login === 'vercel[bot]',
+  );
+  for (const deployment of owned) {
+    const statuses = await githubJson(
+      `https://api.github.com/repos/${repository}/deployments/${deployment.id}/statuses?per_page=5`,
+      token,
+      fetchImpl,
+    );
+    if (!statuses.ok) continue;
+    const match = (Array.isArray(statuses.payload) ? statuses.payload : []).find((entry) => {
+      if (entry?.state !== 'success' || typeof entry.environment_url !== 'string') return false;
+      try {
+        return new URL(entry.environment_url).hostname.toLowerCase() === originHostname.toLowerCase();
+      } catch {
+        return false;
+      }
+    });
+    if (match) {
+      return {
+        ok: true,
+        via: 'github-vercel-app',
+        project: parsedStatus.project,
+        slug: parsedStatus.slug,
+        deploymentId: parsedStatus.deploymentId,
+      };
+    }
+  }
+  return { ok: false, reason: owned.length ? 'preview_host_mismatch' : 'preview_deployment_missing' };
+}
+
 export async function runVercelProvenanceGuard({
   origin,
   trustedSha,
   trustedBranch,
   vercelToken,
+  githubToken = '',
+  repository = '',
   expectedProjectId,
   fetchImpl = globalThis.fetch,
 }) {
@@ -279,14 +393,25 @@ export async function runVercelProvenanceGuard({
     trustedBranch,
     fetchImpl,
   });
-  if (!fetched.ok) {
-    return fetched;
+  if (fetched.ok) {
+    return evaluateVercelProvenance({
+      deployment: fetched.deployment,
+      trustedSha,
+      trustedBranch,
+      expectedProjectId,
+      originHostname: parsed.hostname,
+    });
   }
-  return evaluateVercelProvenance({
-    deployment: fetched.deployment,
-    trustedSha,
-    trustedBranch,
-    expectedProjectId,
-    originHostname: parsed.hostname,
-  });
+  if (fetched.status === 403) {
+    const github = await verifyGitHubVercelApp({
+      repository,
+      trustedSha,
+      originHostname: parsed.hostname,
+      githubToken,
+      fetchImpl,
+    });
+    if (!github.ok) return { ...github, attempts: fetched.attempts };
+    return github;
+  }
+  return fetched;
 }

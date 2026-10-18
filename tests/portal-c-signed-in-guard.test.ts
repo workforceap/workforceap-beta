@@ -216,6 +216,152 @@ describe('portal-c signed-in guard', () => {
     expect(calls[0]).toContain('teamId=team_zTfMkbIIH6ADgy5Hy43MCM5K');
   });
 
+  it('uses the Vercel GitHub App status when the API token is forbidden', async () => {
+    const origin = 'https://workforceap-beta-git-feature.vercel.app';
+    const calls: string[] = [];
+    const outcome = await runVercelProvenanceGuard({
+      origin,
+      trustedSha: TRUSTED_SHA,
+      trustedBranch: TRUSTED_BRANCH,
+      vercelToken: 'token',
+      githubToken: 'gh',
+      repository: 'workforceap/workforceap-beta',
+      expectedProjectId: WORKFORCEAP_VERCEL_PROJECT_ID,
+      fetchImpl: (async (url: string) => {
+        calls.push(url);
+        if (url.includes('api.vercel.com')) {
+          return { ok: false, status: 403, json: async () => ({ error: { code: 'forbidden' } }) };
+        }
+        if (url.includes('/commits/') && url.endsWith('/status')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              statuses: [
+                {
+                  context: 'Vercel',
+                  state: 'success',
+                  target_url:
+                    'https://vercel.com/mabrown040-5207s-projects/workforceap-beta/dpl_example',
+                },
+              ],
+            }),
+          };
+        }
+        if (url.includes('/deployments?')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => [{ id: 42, creator: { login: 'vercel[bot]' } }],
+          };
+        }
+        if (url.includes('/deployments/42/statuses')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => [
+              { state: 'success', environment_url: origin },
+            ],
+          };
+        }
+        throw new Error(`unexpected ${url}`);
+      }) as unknown as typeof fetch,
+    });
+    expect(outcome.ok).toBe(true);
+    expect(outcome.via).toBe('github-vercel-app');
+    expect(calls.some((url) => url.includes('/login'))).toBe(false);
+  });
+
+  it('refuses a forbidden token when the Vercel status names another project', async () => {
+    const outcome = await runVercelProvenanceGuard({
+      origin: 'https://workforceap-beta-git-feature.vercel.app',
+      trustedSha: TRUSTED_SHA,
+      trustedBranch: TRUSTED_BRANCH,
+      vercelToken: 'token',
+      githubToken: 'gh',
+      repository: 'workforceap/workforceap-beta',
+      expectedProjectId: WORKFORCEAP_VERCEL_PROJECT_ID,
+      fetchImpl: (async (url: string) => {
+        if (url.includes('api.vercel.com')) {
+          return { ok: false, status: 403, json: async () => ({ error: { code: 'forbidden' } }) };
+        }
+        if (url.endsWith('/status')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              statuses: [
+                {
+                  context: 'Vercel',
+                  state: 'success',
+                  target_url: 'https://vercel.com/other-team/other-project/dpl_example',
+                },
+              ],
+            }),
+          };
+        }
+        throw new Error(`unexpected ${url}`);
+      }) as unknown as typeof fetch,
+    });
+    expect(outcome.ok).toBe(false);
+    expect(outcome.reason).toBe('wrong_vercel_project');
+  });
+
+  it('refuses a forbidden token when the Preview host belongs to a different deployment', async () => {
+    const outcome = await runVercelProvenanceGuard({
+      origin: 'https://evil-host.example.com',
+      trustedSha: TRUSTED_SHA,
+      trustedBranch: TRUSTED_BRANCH,
+      vercelToken: 'token',
+      githubToken: 'gh',
+      repository: 'workforceap/workforceap-beta',
+      expectedProjectId: WORKFORCEAP_VERCEL_PROJECT_ID,
+      fetchImpl: (async (url: string) => {
+        if (url.includes('api.vercel.com')) {
+          return { ok: false, status: 403, json: async () => ({ error: { code: 'forbidden' } }) };
+        }
+        if (url.endsWith('/status')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              statuses: [
+                {
+                  context: 'Vercel',
+                  state: 'success',
+                  target_url:
+                    'https://vercel.com/mabrown040-5207s-projects/workforceap-beta/dpl_example',
+                },
+              ],
+            }),
+          };
+        }
+        if (url.includes('/deployments?')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => [{ id: 7, creator: { login: 'vercel[bot]' } }],
+          };
+        }
+        if (url.includes('/deployments/7/statuses')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => [
+              {
+                state: 'success',
+                environment_url: 'https://workforceap-beta-real.vercel.app',
+              },
+            ],
+          };
+        }
+        throw new Error(`unexpected ${url}`);
+      }) as unknown as typeof fetch,
+    });
+    expect(outcome.ok).toBe(false);
+    expect(outcome.reason).toBe('preview_host_mismatch');
+  });
+
   it('refuses login when Vercel provenance fails before health', async () => {
     const origin = 'https://workforceap-beta-git-feature.vercel.app';
     const vercel = await runVercelProvenanceGuard({

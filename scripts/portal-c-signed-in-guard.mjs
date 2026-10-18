@@ -61,6 +61,8 @@ const outcome = await runSignedInDestinationGuard({
   trustedSha,
   trustedBranch,
   vercelToken: process.env.VERCEL_TOKEN ?? '',
+  githubToken: process.env.GITHUB_TOKEN ?? '',
+  repository: process.env.GITHUB_REPOSITORY ?? '',
   bypassSecret: process.env.VERCEL_AUTOMATION_BYPASS_SECRET ?? '',
   timeoutMs,
   intervalMs,
@@ -69,7 +71,8 @@ const outcome = await runSignedInDestinationGuard({
 if (outcome.ok) {
   const health = outcome.health;
   console.log(
-    `[signed-in-guard] OK — Vercel provenance verified for branch ${trustedBranch}; ` +
+    `[signed-in-guard] OK — Vercel provenance verified for branch ${trustedBranch}` +
+      `${outcome.vercel?.via ? ` via ${outcome.vercel.via}` : ''}; ` +
       `health serves ${health.version ?? 'n/a'} on Supabase project ` +
       `${health.supabaseRef ?? 'n/a'} with Prisma ${health.prismaProject ?? 'n/a'} ` +
       `after ${health.attempts} attempt(s).`,
