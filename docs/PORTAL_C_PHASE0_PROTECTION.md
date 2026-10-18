@@ -17,6 +17,7 @@ not authorize merging, marking a PR ready, or enabling a production rollout.
 | Deployment API 403 fell back to weaker evidence | Require HTTPS and Vercel API project/commit/branch/host proof plus DEMO health. Remove GitHub fallback and unscoped queries. | Guard denial tests, including API 403. |
 | Schema presence checks could accept partial protections | Apply DDL under a transaction lock, check column definitions and table/function/trigger binding before commit, and repeat the check afterwards. | Schema bootstrap tests. |
 | Local Windows checks differed from CI | Normalize audit and header-inventory paths without widening allowlists; preserve hashed historical SQL bytes. | Cross-platform audit test and unchanged migration-history guards. |
+| Phone helper and job metadata were clipped | Keep member tool descriptions and company/location text readable; extend browser clipping assertions. | Live 390px inspection and member component tests. |
 | Jobs lede claimed unsupported matching | Replace it with factual browsing/application copy in all four catalogs. | Review member screenshot changes before accepting baselines. |
 
 ## Staff reference
