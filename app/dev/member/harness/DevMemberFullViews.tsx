@@ -67,6 +67,7 @@ export function DevMemberFullViews({ view }: { view: DevMemberView }) {
           firstName={DEV_MEMBER_FIRST_NAME}
           coursePercent={78}
           activeJobs={DEV_HOME_PIPELINE.length}
+          interviewCount={DEV_HOME_PIPELINE.filter((row) => /interview/i.test(row.stage)).length}
           certs={2}
           points={1240}
           programTitle={DEV_PROGRAM_TITLE}
@@ -105,6 +106,27 @@ export function DevMemberFullViews({ view }: { view: DevMemberView }) {
             variant: 'urgent',
             weight: 100,
           }}
+          upNext={[
+            {
+              id: 'review_starter_profile',
+              title: 'Review your starter profile details',
+              body: 'Confirm the contact and referral details your counselor entered.',
+              href: '/dev/member/v/profile',
+              cta: 'Review profile',
+              variant: 'urgent',
+              weight: 92,
+            },
+            {
+              id: 'counselor_messages',
+              title: 'Message from your team',
+              body: 'You have 2 unread messages from your counselor or program team.',
+              href: '/dev/member/v/messages',
+              cta: 'Open messages',
+              variant: 'urgent',
+              weight: 88,
+            },
+          ]}
+          preassessmentCompleted
           certModulesDone={7}
           certModulesTotal={9}
           goals={[
