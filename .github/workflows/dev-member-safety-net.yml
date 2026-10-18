@@ -162,13 +162,19 @@ jobs:
 
   signed-in-member:
     name: Signed-in member C routes
+    permissions:
+      contents: read
+      deployments: read
+      pull-requests: read
+      id-token: write
     concurrency:
       group: portal-c-signed-in-e2e-member
       cancel-in-progress: false
     # After the Vercel Preview for this PR head exists, log in as the DEMO
-    # test member and exercise the five live C routes. Secrets stay in
-    # repository secrets; the job aborts before login if SHA or Supabase
-    # project do not match. Never required for merge; keep the PR draft.
+    # test member and exercise the five live C routes. The job aborts before
+    # login unless the preview SHA, branch, and DEMO health match. Fixture
+    # writes go through that preview's own database (OIDC), never through
+    # PREVIEW_POSTGRES_* which classify as production. Keep the PR draft.
     if: >-
       github.repository == 'workforceap/workforceap-beta' &&
       (
@@ -191,11 +197,29 @@ jobs:
       PLAYWRIGHT_SCREENSHOT: ""
 
     steps:
+      - name: Checkout the deployed commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.event.deployment.sha || github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
       - name: Resolve preview origin
         id: preview
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          PORTAL_C_EVENT_NAME: ${{ github.event_name }}
+          PORTAL_C_EVENT_BRANCH: ${{ github.event.pull_request.head.ref }}
           DISPATCH_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.base_url || '' }}
           DEPLOY_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
         run: |
@@ -206,6 +230,12 @@ jobs:
             exit 2
           fi
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          branch="$(node scripts/portal-c-resolve-branch.mjs)"
+          if [ -z "$branch" ]; then
+            echo "::error::Could not resolve the PR head branch. Refusing to sign in."
+            exit 2
+          fi
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
           if [ -n "${DISPATCH_URL:-}" ]; then
             echo "base_url=$DISPATCH_URL" >> "$GITHUB_OUTPUT"
@@ -247,22 +277,6 @@ jobs:
             sleep 20
           done
 
-      - name: Checkout the deployed commit
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.preview.outputs.sha }}
-          fetch-depth: 1
-          persist-credentials: false
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-          cache: "pnpm"
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
@@ -276,7 +290,7 @@ jobs:
         env:
           PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
           PORTAL_C_TRUSTED_SHA: ${{ steps.preview.outputs.sha }}
-          PORTAL_C_TRUSTED_BRANCH: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          PORTAL_C_TRUSTED_BRANCH: ${{ steps.preview.outputs.branch }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -297,10 +311,9 @@ jobs:
 
       - name: Reset leftover build-time preassessment mark on the DEMO test member
         env:
-          POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
-          POSTGRES_URL_NON_POOLING: ${{ secrets.PREVIEW_DATABASE_URL }}
-          DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
-        run: node scripts/preview-e2e-member-fixture.mjs ensure-incomplete
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: node scripts/portal-c-member-fixture-call.mjs ensure-incomplete
 
       - name: Prove preassessment gate blocks without fixture setup
         env:
@@ -318,10 +331,9 @@ jobs:
 
       - name: Prepare DEMO test member fixture for signed-in C routes
         env:
-          POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
-          POSTGRES_URL_NON_POOLING: ${{ secrets.PREVIEW_DATABASE_URL }}
-          DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
-        run: node scripts/preview-e2e-member-fixture.mjs prepare
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: node scripts/portal-c-member-fixture-call.mjs prepare
 
       - name: Run signed-in C route specs
         env:
@@ -340,10 +352,9 @@ jobs:
       - name: Restore DEMO test member fixture
         if: always()
         env:
-          POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
-          POSTGRES_URL_NON_POOLING: ${{ secrets.PREVIEW_DATABASE_URL }}
-          DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
-        run: node scripts/preview-e2e-member-fixture.mjs restore
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: node scripts/portal-c-member-fixture-call.mjs restore
 
       - name: Upload signed-in screenshots (no traces)
         if: always()

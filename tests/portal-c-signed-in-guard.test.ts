@@ -208,7 +208,7 @@ describe('portal-c signed-in guard', () => {
       }) as unknown as typeof fetch,
     });
     expect(outcome.ok).toBe(false);
-    expect(outcome.reason).toBe('hostname_mismatch');
+    expect((outcome as { reason?: string }).reason).toBe('hostname_mismatch');
     expect(calls).toHaveLength(1);
     expect(calls[0]).toContain('/v7/deployments');
     expect(calls[0]).toContain(`projectId=${WORKFORCEAP_VERCEL_PROJECT_ID}`);
@@ -268,7 +268,7 @@ describe('portal-c signed-in guard', () => {
       }) as unknown as typeof fetch,
     });
     expect(outcome.ok).toBe(true);
-    expect(outcome.via).toBe('github-vercel-app');
+    expect((outcome as { via?: string }).via).toBe('github-vercel-app');
     expect(calls.some((url) => url.includes('/login'))).toBe(false);
   });
 
@@ -304,7 +304,7 @@ describe('portal-c signed-in guard', () => {
       }) as unknown as typeof fetch,
     });
     expect(outcome.ok).toBe(false);
-    expect(outcome.reason).toBe('wrong_vercel_project');
+    expect((outcome as { reason?: string }).reason).toBe('wrong_vercel_project');
   });
 
   it('refuses a forbidden token when the Preview host belongs to a different deployment', async () => {
@@ -359,7 +359,7 @@ describe('portal-c signed-in guard', () => {
       }) as unknown as typeof fetch,
     });
     expect(outcome.ok).toBe(false);
-    expect(outcome.reason).toBe('preview_host_mismatch');
+    expect((outcome as { reason?: string }).reason).toBe('preview_host_mismatch');
   });
 
   it('refuses login when Vercel provenance fails before health', async () => {
@@ -377,6 +377,6 @@ describe('portal-c signed-in guard', () => {
       })) as unknown as typeof fetch,
     });
     expect(vercel.ok).toBe(false);
-    expect(vercel.reason).toBe('wrong_vercel_project');
+    expect((vercel as { reason?: string }).reason).toBe('wrong_vercel_project');
   });
 });
