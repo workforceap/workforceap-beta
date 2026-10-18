@@ -17,10 +17,8 @@ const auditToken = process.env.PORTAL_AUDIT_READ_ONLY_TOKEN ?? '';
 test.use({ trace: 'off', video: 'off', screenshot: 'off' });
 
 async function signedInPage(browser: Browser, origin: string, role: PortalSmokeRole, fixture = role as string) {
-  const credential = fixture === 'mentor'
-    ? { email: process.env.E2E_MENTOR_EMAIL ?? '', password: process.env.E2E_MENTOR_PASSWORD ?? '' }
-    : resolvePortalRoleCredentials(role, process.env);
-  if (credential.email?.toLowerCase() !== `${fixture}-test@workforceap.org` || !credential.password) {
+  const credential = resolvePortalRoleCredentials(role, process.env);
+  if (credential.email?.toLowerCase() !== `${role}-test@workforceap.org` || !credential.password) {
     throw new Error(`Dedicated synthetic ${fixture} credentials are required; refusing a personal account.`);
   }
   if (!origin || auditToken.length < 32) throw new Error('Verified baseline URL and read-only audit capability are required.');
@@ -45,7 +43,7 @@ async function signedInPage(browser: Browser, origin: string, role: PortalSmokeR
   const claims = await page.request.get('/api/auth/me');
   const actor = await claims.json();
   expect(actor.availablePortals?.some((portal: { role: string }) => portal.role === role), 'Dedicated account must have the actual portal entitlement').toBe(true);
-  expect(actor.role).toBe(role === 'employer' || role === 'partner' ? 'member' : role);
+  expect(actor.role).toBe(role);
   expect(actor.superAdmin).toBe(false);
   // After login, no test action may submit a form, send a message, or invoke a provider.
   await page.route('**/*', route => ['GET', 'HEAD', 'OPTIONS'].includes(route.request().method()) ? route.continue() : route.abort('blockedbyclient'));

@@ -2,9 +2,9 @@ import supabaseProjectGuard from '@/scripts/lib/supabase-project-guard.cjs';
 import fixture from '@/scripts/lib/preview-e2e-member-fixture.cjs';
 import { verifyPortalCFixtureOidc, type FixtureOidcFailure } from '@/lib/portal-c/fixtureOidc';
 
-const ACTIONS = new Set(['snapshot', 'ensure-incomplete', 'prepare', 'restore']);
+const ACTIONS = new Set(['snapshot', 'ensure-incomplete', 'prepare', 'prepare-mentor', 'restore']);
 
-type FixtureAction = 'snapshot' | 'ensure-incomplete' | 'prepare' | 'restore';
+type FixtureAction = 'snapshot' | 'ensure-incomplete' | 'prepare' | 'prepare-mentor' | 'restore';
 
 export type FixtureSnapshot = {
   userId: string;
@@ -34,11 +34,12 @@ function isSnapshot(value: unknown): value is FixtureSnapshot {
   if (!snapshot.before || typeof snapshot.before !== 'object' || Array.isArray(snapshot.before)) {
     return false;
   }
-  const before = snapshot.before as { assessmentCompleted?: unknown; assessmentCompletedAt?: unknown; notificationsUpdates?: unknown; city?: unknown; threads?: unknown };
+  const before = snapshot.before as { assessmentCompleted?: unknown; assessmentCompletedAt?: unknown; notificationsUpdates?: unknown; city?: unknown; threads?: unknown; mentorId?: unknown };
   if (typeof before.assessmentCompleted !== 'boolean') return false;
   if (before.assessmentCompletedAt !== null && typeof before.assessmentCompletedAt !== 'string') {
     return false;
   }
+  if (before.mentorId !== undefined && before.mentorId !== null && typeof before.mentorId !== 'string') return false;
   const validDate = (value: unknown) => value === null || (typeof value === 'string' && Number.isFinite(Date.parse(value)));
   if (!validDate(before.assessmentCompletedAt)) return false;
   if (before.notificationsUpdates !== undefined) {
@@ -108,6 +109,7 @@ export async function handlePortalCMemberFixture(input: {
       const snapshot = await fixture.prepareMemberForSignedInRoutes(prisma);
       return { status: 200, body: { ok: true, snapshot } };
     }
+    if (action === 'prepare-mentor') return { status: 200, body: { ok: true, ...await fixture.prepareMentorFixture(prisma) } };
     if (!isSnapshot(payload.snapshot)) {
       return { status: 400, body: { error: 'invalid_snapshot' } };
     }

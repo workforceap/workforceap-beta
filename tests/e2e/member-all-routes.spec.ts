@@ -77,6 +77,8 @@ test.describe('member routes — authenticated inventory', () => {
         for (const [key, value] of expected.searchParams) expect(final.searchParams.get(key)).toBe(value);
         if (expected.hash) expect(final.hash).toBe(expected.hash);
       }
+      const unknown = await page.goto('/dashboard/portal-c-route-does-not-exist', { waitUntil: 'domcontentloaded' });
+      expect(unknown?.status(), 'The dashboard catch-all must preserve notFound').toBe(404);
       expect(failures, `Missing or failing authenticated views: ${failures.join(', ')}`).toEqual([]);
     });
   }

@@ -8,6 +8,7 @@ const E2E_MEMBER_EMAIL = 'member-test@workforceap.org';
 const PORTAL_QA_ORG_SLUG = 'portal-qa-september-smoke';
 /** Serializes fixture writes for the shared DEMO test member across concurrent jobs. */
 const FIXTURE_ADVISORY_LOCK_KEY = 902_901;
+const MENTOR_FIXTURE_MARKER = 'Portal C temporary mentor fixture; restored by the serialized CI job.';
 
 async function withFixtureLock(prisma, fn) {
   return prisma.$transaction(async (tx) => {
@@ -32,7 +33,8 @@ async function findFixtureMember(prisma) {
       assessmentCompletedAt: true,
       notificationsUpdates: true,
       profile: { select: { city: true } },
-      messageThreadsAsMember: { select: { id: true, memberLastReadAt: true } },
+      mentorProfile: { select: { id: true, bio: true, isActive: true, approvedAt: true, _count: { select: { sessions: true, specialties: true } } } },
+      messageThreadsAsMember: { orderBy: { id: 'asc' }, select: { id: true, memberLastReadAt: true } },
     },
   });
   if (!user) {
@@ -47,8 +49,20 @@ function snapshotOf(user) {
     assessmentCompletedAt: user.assessmentCompletedAt?.toISOString() ?? null,
     notificationsUpdates: user.notificationsUpdates,
     city: user.profile?.city ?? null,
+    mentorId: user.mentorProfile?.id ?? null,
     threads: (user.messageThreadsAsMember ?? []).map((t) => ({ id: t.id, memberLastReadAt: t.memberLastReadAt?.toISOString() ?? null })),
   } };
+}
+
+async function prepareMentorFixture(prisma) {
+  return withFixtureLock(prisma, async (tx) => {
+    const member = await findFixtureMember(tx);
+    if (member.mentorProfile) return { created: false };
+    await tx.mentor.create({ data: { userId: member.id, fullName: 'Portal QA mentor fixture',
+      title: 'Synthetic test fixture', company: 'Portal QA', industry: 'Testing', bio: MENTOR_FIXTURE_MARKER,
+      isActive: false, approvedAt: null, availableHours: 0 } });
+    return { created: true };
+  });
 }
 
 async function snapshotMember(prisma) {
@@ -106,6 +120,13 @@ async function restoreMemberSnapshot(prisma, snapshot) {
       await prisma.messageThread.update({ where: { id: thread.id, memberId: member.id }, data: { memberLastReadAt: thread.memberLastReadAt ? new Date(thread.memberLastReadAt) : null } });
     }
   }
+  if (snapshot.before.mentorId === null && member.mentorProfile) {
+    const mentor = member.mentorProfile;
+    if (mentor.bio !== MENTOR_FIXTURE_MARKER || mentor.isActive || mentor.approvedAt || mentor._count.sessions || mentor._count.specialties) {
+      throw new Error('Temporary mentor has unexpected state; refusing to delete it.');
+    }
+    await prisma.mentor.delete({ where: { id: mentor.id, userId: member.id } });
+  }
   await verifyRestored(prisma, snapshot);
   });
 }
@@ -145,6 +166,7 @@ async function ensureIncompleteBaseline(prisma) {
 
 module.exports = {
   snapshotMember,
+  prepareMentorFixture,
   E2E_MEMBER_EMAIL,
   PORTAL_QA_ORG_SLUG,
   findFixtureMember,

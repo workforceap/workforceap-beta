@@ -351,6 +351,38 @@ jobs:
             --reporter=list,html,github \
             --trace=off
 
+      - name: Verify master reference for the mentor staff comparison
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          PLAYWRIGHT_BASE_URL: https://workforceap-beta-64x99g521-mabrown040-5207s-projects.vercel.app
+          PORTAL_C_TRUSTED_SHA: fc68f346f4e50b364cadb44fe06417dc0da6f53c
+          PORTAL_C_TRUSTED_BRANCH: feature/portal-c-staff-baseline
+        run: |
+          set -euo pipefail
+          master=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/master" --jq .object.sha)
+          test "$master" = efc27e4a4ebeba09b5261e7b1c36463d01925017 || { echo '::error::Refresh the master staff reference'; exit 1; }
+          gh api "repos/${GITHUB_REPOSITORY}/compare/${master}...${PORTAL_C_TRUSTED_SHA}" > "$RUNNER_TEMP/mentor-baseline.json"
+          node -e 'const c=require(process.env.RUNNER_TEMP+"/mentor-baseline.json");const a=new Set(["docs/PORTAL_C_STAFF_BASELINE.md","scripts/audit-tenant-scoping.cjs","scripts/audit-tenant-scoping.test.cjs"]);if(c.behind_by!==0||c.ahead_by!==1||!c.files?.length||c.files.some(f=>!a.has(f.filename)))throw Error("Master reference application changed")'
+          node scripts/portal-c-signed-in-guard.mjs
+
+      - name: Prepare inactive temporary mentor record on the synthetic member
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: node scripts/portal-c-member-fixture-call.mjs prepare-mentor
+
+      - name: Compare the mentor staff workspace against master
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
+          PORTAL_C_STAFF_BASELINE_URL: https://workforceap-beta-64x99g521-mabrown040-5207s-projects.vercel.app
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PREVIEW_PORTAL_AUDIT_READ_ONLY_TOKEN }}
+          PLAYWRIGHT_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
+          PLAYWRIGHT_PORTAL_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
+        run: pnpm exec playwright test tests/e2e/staff-portal-protection.spec.ts --project=chromium --grep "mentor staff" --reporter=list,html,github --trace=off
+
       - name: Restore DEMO test member fixture
         if: always()
         env:

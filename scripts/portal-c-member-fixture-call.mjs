@@ -101,6 +101,13 @@ export async function prepare() {
   );
 }
 
+export async function prepareMentor() {
+  const original = JSON.parse(readFileSync(snapshotPath(), 'utf8'));
+  if (!original?.userId || !Object.hasOwn(original.before ?? {}, 'mentorId')) throw new Error('Original mentor state must be captured before mentor fixture preparation.');
+  await callFixture('prepare-mentor');
+  console.log('[portal-c-fixture] synthetic mentor workspace prepared; original snapshot retained.');
+}
+
 export async function restore() {
   const path = snapshotPath();
   let snapshot;
@@ -135,13 +142,18 @@ if (isDirectRun) {
       console.error(`[portal-c-fixture] ${error instanceof Error ? error.message : 'prepare failed'}`);
       process.exitCode = 1;
     });
+  } else if (command === 'prepare-mentor') {
+    await prepareMentor().catch((error) => {
+      console.error(`[portal-c-fixture] ${error instanceof Error ? error.message : 'mentor preparation failed'}`);
+      process.exitCode = 1;
+    });
   } else if (command === 'restore') {
     await restore().catch((error) => {
       console.error(`[portal-c-fixture] ${error instanceof Error ? error.message : 'restore failed'}`);
       process.exitCode = 1;
     });
   } else {
-    console.error('Usage: node scripts/portal-c-member-fixture-call.mjs ensure-incomplete|prepare|restore');
+    console.error('Usage: node scripts/portal-c-member-fixture-call.mjs ensure-incomplete|prepare|prepare-mentor|restore');
     process.exitCode = 2;
   }
 }

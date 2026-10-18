@@ -41,11 +41,14 @@ actual screenshot differences; do not weaken the threshold to make CI pass.
 ## Required fixture access
 
 Use Actions secrets only. The existing five role pairs are already mapped.
-The new mentor check requires `PREVIEW_E2E_MENTOR_EMAIL` and
-`PREVIEW_E2E_MENTOR_PASSWORD`, for a synthetic mentor fixture in the same QA
-organization on DEMO. A live read on 2026-10-18 found no mentor fixture there.
-Mentor is a member-authenticated staff workflow; an ordinary member's redirect
-to `/mentor/apply` proves only its access gate.
+For the mentor comparison, the serialized member job temporarily creates an
+inactive, unapproved mentor record on the synthetic member. Its original
+absence is captured before any write. Restore removes only that marked record,
+refuses unexpected sessions or specialties, and verifies the original state.
+No extra login is needed. Staff navigation and the mentor comparison run with
+the read-only audit capability and block non-read browser requests after login.
+An ordinary member's `/mentor/apply` redirect is checked separately as an access
+gate and never counts as a mentor content pass.
 
 `VERCEL_TOKEN` must read the known project/deployments within the existing
 Vercel team. The inherited Actions token returned HTTP 403. The strict guard

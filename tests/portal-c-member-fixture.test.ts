@@ -22,7 +22,7 @@ function previewEnv(url: string): NodeJS.ProcessEnv {
 }
 
 function memberPrisma(initial = { assessmentCompleted: false, assessmentCompletedAt: null as Date | null }) {
-  const stored = { ...initial, notificationsUpdates: false, profile: { city: null as string | null }, messageThreadsAsMember: [] };
+  const stored = { ...initial, notificationsUpdates: false, profile: { city: null as string | null }, messageThreadsAsMember: [], mentorProfile: null as null | { id: string; bio: string; isActive: boolean; approvedAt: null; _count: { sessions: number; specialties: number } } };
   return {
     stored,
     prisma: {
@@ -39,6 +39,10 @@ function memberPrisma(initial = { assessmentCompleted: false, assessmentComplete
         }) => {
           Object.assign(stored, data);
         },
+      },
+      mentor: {
+        create: async ({ data }: { data: { bio: string } }) => { stored.mentorProfile = { id: 'synthetic-mentor', bio: data.bio, isActive: false, approvedAt: null, _count: { sessions: 0, specialties: 0 } }; },
+        delete: async () => { stored.mentorProfile = null; },
       },
       profile: { update: async ({ data }: { data: { city: string | null } }) => Object.assign(stored.profile, data) },
     },
@@ -143,6 +147,26 @@ describe('fixture deployment and target binding', () => {
   const verify = async () => ({ ok: true as const, claims: {
     repository: PORTAL_C_FIXTURE_REPOSITORY, workflowRef: 'workflow', eventName: 'deployment_status', ref: SHA, sha: SHA,
   } });
+
+  it('creates an inactive mentor workspace only for the synthetic member and removes it on verified restore', async () => {
+    const { prisma, stored } = memberPrisma();
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    const original = await call({ action: 'snapshot' });
+    expect((await call({ action: 'prepare-mentor' })).status).toBe(200);
+    expect(stored.mentorProfile).toMatchObject({ isActive: false, approvedAt: null });
+    expect((await call({ action: 'restore', snapshot: original.body.snapshot })).status).toBe(200);
+    expect(stored.mentorProfile).toBeNull();
+  });
+
+  it('refuses to delete a temporary mentor if unexpected sessions appear', async () => {
+    const { prisma, stored } = memberPrisma();
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    const original = await call({ action: 'snapshot' });
+    await call({ action: 'prepare-mentor' });
+    stored.mentorProfile!._count.sessions = 1;
+    expect((await call({ action: 'restore', snapshot: original.body.snapshot })).status).toBe(500);
+    expect(stored.mentorProfile).not.toBeNull();
+  });
 
   it('refuses a token for a different deployment before acquiring a database client', async () => {
     let opened = false;
