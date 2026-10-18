@@ -9,13 +9,24 @@ const { DEMO_REF, PROD_REF } = guard;
 
 export { DEMO_REF, PROD_REF };
 
+function candidateUrls(env = process.env) {
+  return [env.POSTGRES_URL_NON_POOLING, env.POSTGRES_PRISMA_URL, env.DATABASE_URL]
+    .map((value) => (typeof value === 'string' ? value.trim() : ''))
+    .filter(Boolean);
+}
+
 export function resolveDemoFixtureDatabaseUrl(env = process.env) {
-  return (
-    env.POSTGRES_URL_NON_POOLING?.trim() ||
-    env.POSTGRES_PRISMA_URL?.trim() ||
-    env.DATABASE_URL?.trim() ||
-    ''
-  );
+  const urls = candidateUrls(env);
+  const demo = urls.find((value) => guard.projectForUrl(value) === 'demo');
+  return demo || urls[0] || '';
+}
+
+function hostOf(value) {
+  try {
+    return new URL(value).hostname;
+  } catch {
+    return 'unparsed';
+  }
 }
 
 /** @returns {{ directDatabaseUrl: string, expected: 'demo' }} */
@@ -27,15 +38,12 @@ export function validateDemoFixtureDatabase(env = process.env) {
     );
   }
   const classification = guard.projectForUrl(directDatabaseUrl);
-  let host = 'unparsed';
-  try {
-    host = new URL(directDatabaseUrl).hostname;
-  } catch {
-    host = 'unparsed';
-  }
   if (classification !== 'demo') {
+    const refused = candidateUrls(env)
+      .map((value) => `${hostOf(value)}=${guard.projectForUrl(value)}`)
+      .join(', ');
     throw new Error(
-      `Fixture setup is allowed only on the DEMO Supabase project (${DEMO_REF}). Refused host ${host} classified as ${classification}.`,
+      `Fixture setup is allowed only on the DEMO Supabase project (${DEMO_REF}). Refused ${refused || `host ${hostOf(directDatabaseUrl)} classified as ${classification}`}.`,
     );
   }
   return { directDatabaseUrl, expected: 'demo' };

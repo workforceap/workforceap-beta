@@ -298,7 +298,8 @@ jobs:
       - name: Reset leftover build-time preassessment mark on the DEMO test member
         env:
           POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
-          POSTGRES_URL_NON_POOLING: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+          POSTGRES_URL_NON_POOLING: ${{ secrets.PREVIEW_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
         run: node scripts/preview-e2e-member-fixture.mjs ensure-incomplete
 
       - name: Prove preassessment gate blocks without fixture setup
@@ -318,7 +319,8 @@ jobs:
       - name: Prepare DEMO test member fixture for signed-in C routes
         env:
           POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
-          POSTGRES_URL_NON_POOLING: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+          POSTGRES_URL_NON_POOLING: ${{ secrets.PREVIEW_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
         run: node scripts/preview-e2e-member-fixture.mjs prepare
 
       - name: Run signed-in C route specs
@@ -339,7 +341,8 @@ jobs:
         if: always()
         env:
           POSTGRES_PRISMA_URL: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
-          POSTGRES_URL_NON_POOLING: ${{ secrets.PREVIEW_POSTGRES_PRISMA_URL }}
+          POSTGRES_URL_NON_POOLING: ${{ secrets.PREVIEW_DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.PREVIEW_DATABASE_URL }}
         run: node scripts/preview-e2e-member-fixture.mjs restore
 
       - name: Upload signed-in screenshots (no traces)

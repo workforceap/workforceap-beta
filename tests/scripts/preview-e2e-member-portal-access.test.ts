@@ -39,6 +39,13 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
         POSTGRES_URL_NON_POOLING: PROD_DIRECT,
       } as unknown as NodeJS.ProcessEnv),
     ).toThrow(/DEMO|wrong Supabase project/i);
+
+    expect(
+      validateDemoFixtureDatabase({
+        POSTGRES_PRISMA_URL: PROD_DIRECT,
+        POSTGRES_URL_NON_POOLING: DEMO_DIRECT,
+      } as unknown as NodeJS.ProcessEnv).directDatabaseUrl,
+    ).toBe(DEMO_DIRECT);
   });
 
   it('prepares and restores preassessment state for the portal-qa test member', async () => {
