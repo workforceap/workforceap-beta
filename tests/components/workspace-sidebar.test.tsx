@@ -928,6 +928,18 @@ describe('admin grouped rail (sidebar consolidation)', () => {
 
 
 describe('member C role isolation', () => {
+  it.each(['/dashboard/mentor', '/dev/member/v/mentor'])('marks %s as a staff workflow inside the member shell', (pathname) => {
+    location.pathname = pathname;
+    const view = render(<NextIntlClientProvider locale="en" messages={messages}>
+      <WorkspaceShell portalRole="member" navItems={EMPLOYER_PORTAL_NAV_ITEMS} workspaceLabel="Mentor portal" contextLabel="Test mentor" readOnlyAudit>
+        <h1>Mentor workspace</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>);
+    const shell = view.container.querySelector('.workspace-shell-root')!;
+    expect(shell).toHaveAttribute('data-member-staff-view', 'mentor');
+    expect(shell).not.toHaveAttribute('data-member-home-compact');
+  });
+
   it.each(['admin', 'counselor', 'employer', 'partner', 'group'] as const)('keeps %s on the staff shell even at a member compact pathname', (role) => {
     location.pathname = '/dashboard/program';
     const view = render(<NextIntlClientProvider locale="en" messages={messages}>

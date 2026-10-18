@@ -8,7 +8,7 @@ not authorize merging, marking a PR ready, or enabling a production rollout.
 
 | Finding | Change | Evidence |
 | --- | --- | --- |
-| Shared kit changes could alter staff pages | Restore master kit CSS; apply C overrides only inside the member compact shell. KpiStrip member responsiveness is explicit opt-in. | KPI rendering tests; strict staff screenshot comparison. |
+| Shared kit changes could alter staff pages | Restore master kit CSS; apply C overrides only inside the ordinary member shell, excluding its marked mentor staff view. KpiStrip member responsiveness is explicit opt-in. | KPI rendering tests; strict staff screenshot comparison. |
 | Member compact chrome must not affect staff roles | Add role tests for admin, counselor, employer, partner and group. Mentor keeps the ordinary shell. | WorkspaceShell behavior tests and mentor visual gate. |
 | Incomplete route coverage could miss failures | Enumerate the full member registry and aliases; resolve real authorized detail links and fail when a fixture is missing. Verify final destinations. | Authenticated inventory suite at 1440 and 390. |
 | Missing route states and behavior coverage | Add 16 loading boundaries plus behavioral tests for benefits, training bridge, counselor detail and lab access/load states. | Component and server-page tests; existing lab save/submit tests retained. |
