@@ -3,7 +3,11 @@ import { test, expect, type Page } from '@playwright/test';
 import { DEV_MEMBER_VIEWS, DEV_MEMBER_ALIASES } from '../../app/dev/member/harness/registry';
 import { loginPortalRole, hasPortalRoleCredentials } from './auth-helpers';
 import { resolveMemberPortalCredentials } from '../../scripts/lib/portal-audit-auth.mjs';
-import { installReadOnlyAuditCookie } from '../../scripts/lib/portal-audit-cookie.mjs';
+import {
+  assertDeploymentAcceptedReadOnlyAudit,
+  assertReadOnlyAuditCookieInstalled,
+  installReadOnlyAuditCookie,
+} from '../../scripts/lib/portal-audit-cookie.mjs';
 
 test.use({ trace: 'off', video: 'off', screenshot: 'off' });
 const overrides: Record<string, string> = JSON.parse(process.env.PORTAL_C_MEMBER_ROUTE_FIXTURES ?? '{}');
@@ -50,8 +54,14 @@ test.describe('member routes — authenticated inventory', () => {
       if (resolveMemberPortalCredentials(process.env).email.toLowerCase() !== 'member-test@workforceap.org') throw new Error('Dedicated synthetic member credentials are required.');
       const auditToken = process.env.PORTAL_AUDIT_READ_ONLY_TOKEN ?? '';
       if (auditToken.length < 32) throw new Error('Read-only audit capability is required for the inventory sweep.');
-      await installReadOnlyAuditCookie(page.context(), new URL(baseURL ?? '').origin, auditToken);
+      const trustedOrigin = new URL(baseURL ?? '').origin;
+      await installReadOnlyAuditCookie(page.context(), trustedOrigin, auditToken);
+      await assertReadOnlyAuditCookieInstalled(page.context(), trustedOrigin);
       await loginPortalRole(page, 'member');
+      await installReadOnlyAuditCookie(page.context(), trustedOrigin, auditToken);
+      await assertReadOnlyAuditCookieInstalled(page.context(), trustedOrigin);
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await assertDeploymentAcceptedReadOnlyAudit(page);
       await expect(page.locator('[data-portal-audit-suppressed="workspace-nav-badges-and-notification-polling"]')).toHaveCount(1);
       await page.route('**/*', route => ['GET', 'HEAD', 'OPTIONS'].includes(route.request().method()) ? route.continue() : route.abort('blockedbyclient'));
       const failures: string[] = [];

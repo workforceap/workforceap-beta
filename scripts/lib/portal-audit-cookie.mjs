@@ -22,6 +22,28 @@ export async function installReadOnlyAuditCookie(context, trustedOrigin, token) 
   }]);
 }
 
+/** Confirms the capability cookie is in the jar without reading its value. */
+export async function assertReadOnlyAuditCookieInstalled(context, trustedOrigin) {
+  const target = new URL(trustedOrigin);
+  if (target.origin !== trustedOrigin) throw new Error('read_only_audit_cookie_origin_invalid');
+  const cookie = (await context.cookies(trustedOrigin)).find((entry) => entry.name === PORTAL_AUDIT_TOKEN_COOKIE_NAME);
+  if (!cookie) throw new Error('read_only_audit_cookie_missing_in_browser');
+  if (cookie.path !== '/' || cookie.sameSite !== 'Strict' || cookie.httpOnly !== true) {
+    throw new Error('read_only_audit_cookie_transport_invalid');
+  }
+}
+
+/**
+ * The deployment must mint `data-portal-read-only-audit` after an authenticated
+ * request that already carries the cookie. Missing that attribute means the
+ * target does not hold a matching PORTAL_AUDIT_READ_ONLY_TOKEN.
+ */
+export async function assertDeploymentAcceptedReadOnlyAudit(page) {
+  if (await page.locator('[data-portal-read-only-audit="1"]').count() === 0) {
+    throw new Error('read_only_audit_capability_rejected_by_deployment');
+  }
+}
+
 /** Role storage state may be copied in memory, but must not carry the secret. */
 export function stripReadOnlyAuditCookieFromStorageState(storageState) {
   return {

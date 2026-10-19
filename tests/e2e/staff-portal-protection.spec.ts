@@ -3,7 +3,11 @@ import { dirname } from 'node:path';
 import { expect, test, type Browser, type Page, type TestInfo } from '@playwright/test';
 import { loginPortalRole, type PortalSmokeRole } from './auth-helpers';
 import { resolvePortalRoleCredentials } from '../../scripts/lib/portal-audit-auth.mjs';
-import { installReadOnlyAuditCookie } from '../../scripts/lib/portal-audit-cookie.mjs';
+import {
+  assertDeploymentAcceptedReadOnlyAudit,
+  assertReadOnlyAuditCookieInstalled,
+  installReadOnlyAuditCookie,
+} from '../../scripts/lib/portal-audit-cookie.mjs';
 
 const PAGES = {
   admin: ['/admin', '/admin/overview', '/admin/students', '/admin/members/:member', '/admin/reporting', '/admin/jobs?filter=all'],
@@ -29,6 +33,7 @@ async function signedInPage(browser: Browser, origin: string, role: PortalSmokeR
     ...(process.env.VERCEL_AUTOMATION_BYPASS_SECRET ? { 'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET } : {}),
   } });
   await installReadOnlyAuditCookie(context, trustedOrigin, auditToken);
+  await assertReadOnlyAuditCookieInstalled(context, trustedOrigin);
   await context.addInitScript(() => { if (!localStorage.getItem('wap-theme')) localStorage.setItem('wap-theme', 'light'); });
   const page = await context.newPage();
   if (fixture === 'mentor') {
@@ -39,6 +44,8 @@ async function signedInPage(browser: Browser, origin: string, role: PortalSmokeR
     await page.getByRole('button', { name: /sign in/i }).click();
     await expect(page).not.toHaveURL(/\/login(?:[?#]|$)/, { timeout: 60_000 });
   } else await loginPortalRole(page, role);
+  await installReadOnlyAuditCookie(context, trustedOrigin, auditToken);
+  await assertReadOnlyAuditCookieInstalled(context, trustedOrigin);
   const identity = await page.request.get('/api/member/profile');
   const body = await identity.json();
   if (!identity.ok() || body.user?.email?.toLowerCase() !== credential.email.toLowerCase()) throw new Error('Server did not confirm the dedicated fixture identity.');
@@ -59,6 +66,7 @@ async function settle(page: Page, path: string, width: number, theme = 'light') 
   expect(response?.status(), `${path} must render successfully`).toBeLessThan(400);
   await expect(page).not.toHaveURL(/\/login(?:[?#]|$)/);
   await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+  await assertDeploymentAcceptedReadOnlyAudit(page);
   await expect(page.locator('[data-portal-audit-suppressed="workspace-nav-badges-and-notification-polling"]')).toHaveCount(1);
   await expect(page.locator('[data-workspace-role]:not([data-workspace-role="member"])[data-member-home-compact]')).toHaveCount(0);
   await expect(page.locator('[data-portal-error-state]')).toHaveCount(0);

@@ -58,6 +58,13 @@ replaces that secret, the guard uses the Vercel GitHub App status plus a
 That path still fails closed: a 403 without those proofs never exposes login
 credentials.
 
+Authenticated staff and member inventory jobs also need the Preview deployment
+to hold `PORTAL_AUDIT_READ_ONLY_TOKEN`. Vercel currently scopes that variable
+to the `preview` mirror branch only. Feature-branch Previews therefore reject
+the read-only audit cookie and fail closed. Do not weaken the marker check.
+Mike can attach the same Preview token to all Preview deployments, or at least
+`feature/portal-*`, without pasting the value into this draft.
+
 The direct database URL used by the fixture endpoint must identify DEMO and
 use a direct/session connection. Existing production-classified Actions
 database URLs must not be substituted. No fixture writes occur during builds.
@@ -70,6 +77,9 @@ Fixture cleanup runs in `always()` and corrupt snapshots fail loudly.
 - Run the full preview harness and inspect legitimate member screenshot changes.
 - Run authenticated route/action/save/reload checks and verify fixture restoration.
 - Run all staff/mentor comparisons against the pinned master application baseline.
+- Attach `PORTAL_AUDIT_READ_ONLY_TOKEN` to feature-branch Preview deployments so
+  authenticated staff/member jobs can enter read-only audit mode. Until then
+  those jobs fail closed on `read_only_audit_capability_rejected_by_deployment`.
 - Supply screenshots and a click-path recording after authenticated access works.
 - Review the historical assessment backfill separately before assessment acceptance:
   a DEMO read found eight completed users with zero recorded attempts. This DDL
