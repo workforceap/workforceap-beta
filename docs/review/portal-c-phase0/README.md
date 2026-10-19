@@ -12,8 +12,10 @@ Captured from the verified immutable Preview at application commit
 
 All 20 captures loaded successfully and passed the recorded geometry checks.
 These assets show public EXAMPLE DATA fixtures. No login credentials were
-entered or recorded. Authenticated member actions and staff comparisons remain
-blocked before login by the Vercel API credential returning HTTP 403.
+entered or recorded. Authenticated member actions and staff comparisons stay
+behind the destination guard. When the Vercel API token is forbidden, that
+guard still requires vercel[bot] Preview plus Vercel GitHub App proof before
+any login credential is sent.
 
 The recording is click-path.webm; the representative images are home-phone.png
 and jobs-phone.png. The manifest records the source deployment and capture time. Full captures are retained in the task's

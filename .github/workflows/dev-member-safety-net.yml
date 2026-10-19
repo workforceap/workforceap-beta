@@ -166,6 +166,7 @@ jobs:
       contents: read
       deployments: read
       pull-requests: read
+      statuses: read
       id-token: write
     concurrency:
       group: portal-c-signed-in-e2e-member
@@ -354,6 +355,8 @@ jobs:
       - name: Verify master reference for the mentor staff comparison
         env:
           GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
           PLAYWRIGHT_BASE_URL: https://workforceap-beta-64x99g521-mabrown040-5207s-projects.vercel.app

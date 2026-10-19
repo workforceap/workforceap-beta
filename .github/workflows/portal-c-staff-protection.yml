@@ -5,6 +5,7 @@ on:
 permissions:
   contents: read
   deployments: read
+  statuses: read
 concurrency:
   group: portal-c-staff-protection-${{ github.event.pull_request.number }}
   cancel-in-progress: false
@@ -47,6 +48,8 @@ jobs:
       - name: Verify both targets through Vercel API and DEMO health before exposing login credentials
         env:
           GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
           PLAYWRIGHT_BASE_URL: ${{ steps.candidate.outputs.origin }}

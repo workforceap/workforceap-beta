@@ -14,7 +14,7 @@ not authorize merging, marking a PR ready, or enabling a production rollout.
 | Missing route states and behavior coverage | Add 16 loading boundaries plus behavioral tests for benefits, training bridge, counselor detail and lab access/load states. | Component and server-page tests; existing lab save/submit tests retained. |
 | Session advisory locks did not protect pooled writes | Use a dedicated DEMO direct/session Prisma client and transaction advisory locks. Bind OIDC to the deployed commit. | Fixture endpoint tests. |
 | Recovery could lose the original completed state | Persist the recovery snapshot before the first write, preserve it across reset/prepare, reject foreign targets, restore profile/notification/thread fields and verify readback. | Endpoint and recovery-client tests. |
-| Deployment API 403 fell back to weaker evidence | Require HTTPS and Vercel API project/commit/branch/host proof plus DEMO health. Remove GitHub fallback and unscoped queries. | Guard denial tests, including API 403. |
+| Deployment API 403 fell back to weaker evidence | Prefer Vercel API project/commit/branch/host proof. If that token is forbidden, require independent vercel[bot] Preview + Vercel GitHub App status for this SHA, branch tip, team/project, and host, then DEMO health. Missing any piece still denies login. | Guard denial tests, including API 403 without GitHub proof. |
 | Schema presence checks could accept partial protections | Apply DDL under a transaction lock, check column definitions and table/function/trigger binding before commit, and repeat the check afterwards. | Schema bootstrap tests. |
 | Local Windows checks differed from CI | Normalize audit and header-inventory paths without widening allowlists; preserve hashed historical SQL bytes. | Cross-platform audit test and unchanged migration-history guards. |
 | Phone helper and job metadata were clipped | Keep member tool descriptions and company/location text readable; extend browser clipping assertions. | Live 390px inspection and member component tests. |
@@ -51,9 +51,12 @@ the read-only audit capability and block non-read browser requests after login.
 An ordinary member's `/mentor/apply` redirect is checked separately as an access
 gate and never counts as a mentor content pass.
 
-`VERCEL_TOKEN` must read the known project/deployments within the existing
-Vercel team. The inherited Actions token returned HTTP 403. The strict guard
-deliberately blocks signed-in acceptance until that secret works.
+`VERCEL_TOKEN` should read the known project/deployments within the existing
+Vercel team. The inherited Actions token still returns HTTP 403. Until Mike
+replaces that secret, the guard uses the Vercel GitHub App status plus a
+`vercel[bot]` Preview for the trusted SHA, branch tip, team/project, and host.
+That path still fails closed: a 403 without those proofs never exposes login
+credentials.
 
 The direct database URL used by the fixture endpoint must identify DEMO and
 use a direct/session connection. Existing production-classified Actions
