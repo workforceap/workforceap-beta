@@ -10,8 +10,10 @@ to Windows and POSIX paths.
 
 The preview must pass the Vercel project/team/commit/branch/host guard and
 DEMO health check before synthetic staff credentials are used. Screenshots
-run under the read-only audit capability. No staff mutations, notifications
-or production release are part of this branch.
+run under the read-only audit capability. Rebuild this Preview after the
+shared `PORTAL_AUDIT_READ_ONLY_TOKEN` is attached to every Preview
+deployment; an older unique URL will reject the audit cookie. No staff
+mutations, notifications or production release are part of this branch.
 
 Keep this PR draft. Refresh the reference when master changes; never accept
 candidate screenshots as their own staff baseline.
