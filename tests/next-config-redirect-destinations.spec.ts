@@ -50,9 +50,16 @@ function appRouteExists(urlPath: string): boolean {
   const staticSegments = segments.filter((seg) => !seg.startsWith(':'));
   const rel = staticSegments.join('/');
   const appDir = path.join(root, 'app');
+  const pageDirs = [
+    path.join(appDir, rel),
+    ...['(portal)', '(auth)', '(decision-journey)'].map((group) => path.join(appDir, group, rel)),
+  ];
+  if (pageDirs.some((dir) => {
+    if (existsSync(path.join(dir, 'page.tsx'))) return true;
+    if (!existsSync(dir)) return false;
+    return readdirSync(dir).some((entry) => /^\([^/]+\)$/.test(entry) && existsSync(path.join(dir, entry, 'page.tsx')));
+  })) return true;
   const candidates = [
-    path.join(appDir, rel, 'page.tsx'),
-    ...['(portal)', '(auth)', '(decision-journey)'].map((group) => path.join(appDir, group, rel, 'page.tsx')),
     path.join(root, 'marketing/src/pages', `${rel}.astro`),
     path.join(root, 'marketing/src/pages', rel, 'index.astro'),
   ];

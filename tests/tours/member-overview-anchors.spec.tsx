@@ -40,7 +40,7 @@ vi.mock('@/lib/member/loadMemberDashboardHome', () => ({ loadMemberDashboardHome
 vi.mock('@/components/portal/MemberApprovalStatusCard', () => ({ default: () => null }));
 vi.mock('@/components/onboarding/PortalEntryClient', () => ({ default: () => null }));
 
-import DashboardPage from '@/app/(portal)/dashboard/page';
+import DashboardPage from '@/app/(portal)/dashboard/(home)/page';
 import { getUser } from '@/lib/auth/server';
 import { getMemberDashboardAccess } from '@/lib/auth/memberDashboardAccess';
 import { loadMemberDashboardHome } from '@/lib/member/loadMemberDashboardHome';
