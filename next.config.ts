@@ -417,6 +417,14 @@ const nextConfig: NextConfig = {
       { source: '/training', destination: '/dashboard/program', permanent: true },
       { source: '/dashboard/plan', destination: '/dashboard/career-brief', permanent: true },
       { source: '/dashboard/weekly-focus', destination: '/dashboard/weekly-recap', permanent: true },
+
+      // Training Preassessment aliases. Page-level permanentRedirect() is kept
+      // as a backup, but the signed-in inventory blocks non-GET after login so
+      // an RSC hop never updates the document URL. These 308s resolve first.
+      { source: '/dashboard/assessments', destination: '/dashboard/assessment', permanent: true },
+      { source: '/dashboard/assessments/', destination: '/dashboard/assessment', permanent: true },
+      { source: '/dashboard/skills-assessment', destination: '/dashboard/assessment', permanent: true },
+      { source: '/dashboard/skills-assessment/', destination: '/dashboard/assessment', permanent: true },
     ];
   },
 };

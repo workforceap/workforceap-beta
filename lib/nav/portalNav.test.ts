@@ -123,6 +123,9 @@ test('legacy skills-assessment URL redirects to Training Preassessment, not AI t
 test('plural assessments alias redirects to Training Preassessment', () => {
   const page = source('app/(portal)/dashboard/assessments/page.tsx');
   assert.match(page, /permanentRedirect\(['"]\/dashboard\/assessment['"]\)/);
+  const config = source('next.config.ts');
+  assert.match(config, /source: '\/dashboard\/assessments',\s*destination: '\/dashboard\/assessment'/);
+  assert.match(config, /source: '\/dashboard\/skills-assessment',\s*destination: '\/dashboard\/assessment'/);
 });
 
 test('labeled preassessment CTAs use the assessment page', () => {

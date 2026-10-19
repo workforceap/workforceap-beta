@@ -104,6 +104,8 @@ const STALE_ROUTES: Array<{ source: string; destination: string }> = [
   { source: '/portal/training', destination: '/dashboard/program' },
   { source: '/dashboard/plan', destination: '/dashboard/career-brief' },
   { source: '/dashboard/weekly-focus', destination: '/dashboard/weekly-recap' },
+  { source: '/dashboard/assessments', destination: '/dashboard/assessment' },
+  { source: '/dashboard/skills-assessment', destination: '/dashboard/assessment' },
   { source: '/my-group', destination: '/dashboard' },
   { source: '/employer/dashboard', destination: '/employer' },
   { source: '/partner/signup', destination: '/partners#partner-signup' },
