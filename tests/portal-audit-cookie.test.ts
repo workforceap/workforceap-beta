@@ -65,6 +65,6 @@ describe('portal audit cookie transport', () => {
 
   it('rejects a page that never minted the deployment audit marker', async () => {
     const page = { locator: () => ({ count: async () => 0 }) };
-    await expect(assertDeploymentAcceptedReadOnlyAudit(page)).rejects.toThrow('read_only_audit_capability_rejected_by_deployment');
+    await expect(assertDeploymentAcceptedReadOnlyAudit(page)).rejects.toThrow(/read_only_audit_capability_rejected_by_deployment origin=/);
   });
 });

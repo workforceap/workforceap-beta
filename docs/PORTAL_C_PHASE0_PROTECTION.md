@@ -23,13 +23,13 @@ not authorize merging, marking a PR ready, or enabling a production rollout.
 ## Staff reference
 
 The baseline is draft #2832, commit
-`fc68f346f4e50b364cadb44fe06417dc0da6f53c`, whose parent is master
-`efc27e4a4ebeba09b5261e7b1c36463d01925017`. Only documentation and the audit
-path-normalization tooling differ from that master. Application source and
-styles are identical. Vercel ignores master-branch Preview builds, so this
+`406ec351b3ca719fa469cedefb57c6d18b4109eb`, whose first parent chain reaches
+master `efc27e4a4ebeba09b5261e7b1c36463d01925017`. Only documentation and the
+audit path-normalization tooling differ from that master. Application source
+and styles are identical. Vercel ignores master-branch Preview builds, so this
 allowed `feature/portal-*` branch supplies the master application baseline.
-
-Preview: <https://workforceap-beta-64x99g521-mabrown040-5207s-projects.vercel.app>
+The staff workflow waits for a vercel[bot] Preview of that SHA instead of
+pinning a unique URL that can go stale when Preview env vars change.
 
 The staff workflow refuses to continue when master moves or the baseline has
 other changes. Both baseline and candidate pass the Vercel API and DEMO guard
@@ -58,12 +58,10 @@ replaces that secret, the guard uses the Vercel GitHub App status plus a
 That path still fails closed: a 403 without those proofs never exposes login
 credentials.
 
-Authenticated staff and member inventory jobs also need the Preview deployment
-to hold `PORTAL_AUDIT_READ_ONLY_TOKEN`. Vercel currently scopes that variable
-to the `preview` mirror branch only. Feature-branch Previews therefore reject
-the read-only audit cookie and fail closed. Do not weaken the marker check.
-Mike can attach the same Preview token to all Preview deployments, or at least
-`feature/portal-*`, without pasting the value into this draft.
+Authenticated staff and member inventory jobs need the Preview deployment to
+hold `PORTAL_AUDIT_READ_ONLY_TOKEN`. Mike attached that token to every Preview
+deployment. Rebuild both the candidate and the staff-baseline Preview after
+that change; an older unique URL still rejects the cookie and fails closed.
 
 The direct database URL used by the fixture endpoint must identify DEMO and
 use a direct/session connection. Existing production-classified Actions
@@ -77,9 +75,6 @@ Fixture cleanup runs in `always()` and corrupt snapshots fail loudly.
 - Run the full preview harness and inspect legitimate member screenshot changes.
 - Run authenticated route/action/save/reload checks and verify fixture restoration.
 - Run all staff/mentor comparisons against the pinned master application baseline.
-- Attach `PORTAL_AUDIT_READ_ONLY_TOKEN` to feature-branch Preview deployments so
-  authenticated staff/member jobs can enter read-only audit mode. Until then
-  those jobs fail closed on `read_only_audit_capability_rejected_by_deployment`.
 - Supply screenshots and a click-path recording after authenticated access works.
 - Review the historical assessment backfill separately before assessment acceptance:
   a DEMO read found eight completed users with zero recorded attempts. This DDL

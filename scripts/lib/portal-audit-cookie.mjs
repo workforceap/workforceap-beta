@@ -40,7 +40,13 @@ export async function assertReadOnlyAuditCookieInstalled(context, trustedOrigin)
  */
 export async function assertDeploymentAcceptedReadOnlyAudit(page) {
   if (await page.locator('[data-portal-read-only-audit="1"]').count() === 0) {
-    throw new Error('read_only_audit_capability_rejected_by_deployment');
+    let origin = 'unknown';
+    try {
+      origin = new URL(page.url()).origin;
+    } catch {
+      /* keep unknown when the page never reached a trusted origin */
+    }
+    throw new Error(`read_only_audit_capability_rejected_by_deployment origin=${origin}`);
   }
 }
 
