@@ -3,6 +3,7 @@ import { dirname } from 'node:path';
 import { expect, test, type Browser, type Page, type TestInfo } from '@playwright/test';
 import { loginPortalRole, type PortalSmokeRole } from './auth-helpers';
 import { resolvePortalRoleCredentials } from '../../scripts/lib/portal-audit-auth.mjs';
+import { installReadOnlyAuditCookie } from '../../scripts/lib/portal-audit-cookie.mjs';
 
 const PAGES = {
   admin: ['/admin', '/admin/overview', '/admin/students', '/admin/members/:member', '/admin/reporting', '/admin/jobs?filter=all'],
@@ -11,7 +12,7 @@ const PAGES = {
   partner: ['/partner', '/partner/referred-members', '/partner/outcomes', '/partner/attention'],
 } as const;
 const widths = [1440, 1024, 390];
-const baselineOrigin = process.env.PORTAL_C_STAFF_BASELINE_URL ?? '';
+const baselineOrigin = (process.env.PORTAL_C_STAFF_BASELINE_URL ?? '').replace(/\/+$/, '');
 const auditToken = process.env.PORTAL_AUDIT_READ_ONLY_TOKEN ?? '';
 
 test.use({ trace: 'off', video: 'off', screenshot: 'off' });
@@ -22,11 +23,12 @@ async function signedInPage(browser: Browser, origin: string, role: PortalSmokeR
     throw new Error(`Dedicated synthetic ${fixture} credentials are required; refusing a personal account.`);
   }
   if (!origin || auditToken.length < 32) throw new Error('Verified baseline URL and read-only audit capability are required.');
-  const context = await browser.newContext({ baseURL: origin, extraHTTPHeaders: {
+  const trustedOrigin = new URL(origin).origin;
+  const context = await browser.newContext({ baseURL: trustedOrigin, extraHTTPHeaders: {
     'x-vercel-skip-toolbar': '1',
     ...(process.env.VERCEL_AUTOMATION_BYPASS_SECRET ? { 'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET } : {}),
   } });
-  await context.addCookies([{ name: 'wap-read-only-portal-audit-token', value: auditToken, url: origin, httpOnly: true, secure: true, sameSite: 'Lax' }]);
+  await installReadOnlyAuditCookie(context, trustedOrigin, auditToken);
   await context.addInitScript(() => { if (!localStorage.getItem('wap-theme')) localStorage.setItem('wap-theme', 'light'); });
   const page = await context.newPage();
   if (fixture === 'mentor') {
