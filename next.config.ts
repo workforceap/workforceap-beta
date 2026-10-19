@@ -418,13 +418,26 @@ const nextConfig: NextConfig = {
       { source: '/dashboard/plan', destination: '/dashboard/career-brief', permanent: true },
       { source: '/dashboard/weekly-focus', destination: '/dashboard/weekly-recap', permanent: true },
 
-      // Training Preassessment aliases. Page-level permanentRedirect() is kept
-      // as a backup, but the signed-in inventory blocks non-GET after login so
-      // an RSC hop never updates the document URL. These 308s resolve first.
+      // Member inventory aliases. Page-level redirect() is kept as a backup,
+      // but the signed-in inventory blocks non-GET after login so an RSC hop
+      // never updates the document URL. These 308s resolve first.
       { source: '/dashboard/assessments', destination: '/dashboard/assessment', permanent: true },
       { source: '/dashboard/assessments/', destination: '/dashboard/assessment', permanent: true },
       { source: '/dashboard/skills-assessment', destination: '/dashboard/assessment', permanent: true },
       { source: '/dashboard/skills-assessment/', destination: '/dashboard/assessment', permanent: true },
+      { source: '/dashboard/ai-tools/application-tracker', destination: '/dashboard/job-applications', permanent: true },
+      { source: '/dashboard/ai-tools/resume-analysis', destination: '/dashboard/ai-tools/resume-studio?view=score', permanent: true },
+      { source: '/dashboard/ai-tools/resume-coach', destination: '/dashboard/ai-tools/resume-studio?view=coach', permanent: true },
+      { source: '/dashboard/ai-tools/resume-rewriter', destination: '/dashboard/ai-tools/resume-studio?view=rewrite', permanent: true },
+      { source: '/dashboard/ai-tools/studio', destination: '/dashboard/ai-tools', permanent: true },
+      { source: '/dashboard/ai-tools/readiness-coach', destination: '/dashboard/ai-tools?tab=session&agent=readiness', permanent: true },
+      { source: '/dashboard/toolkit', destination: '/dashboard/ai-tools?tab=toolkit', permanent: true },
+      { source: '/dashboard/settings', destination: '/dashboard/profile#settings', permanent: true },
+      { source: '/dashboard/program/change', destination: '/dashboard/program', permanent: true },
+      { source: '/dashboard/coursera', destination: '/dashboard/program', permanent: true },
+      { source: '/dashboard/training', destination: '/dashboard/program', permanent: true },
+      { source: '/applications', destination: '/dashboard/job-applications', permanent: true },
+      { source: '/certifications', destination: '/dashboard/certifications', permanent: true },
     ];
   },
 };

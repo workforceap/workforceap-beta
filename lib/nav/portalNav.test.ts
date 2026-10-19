@@ -126,6 +126,7 @@ test('plural assessments alias redirects to Training Preassessment', () => {
   const config = source('next.config.ts');
   assert.match(config, /source: '\/dashboard\/assessments',\s*destination: '\/dashboard\/assessment'/);
   assert.match(config, /source: '\/dashboard\/skills-assessment',\s*destination: '\/dashboard\/assessment'/);
+  assert.match(config, /source: '\/dashboard\/ai-tools\/application-tracker',\s*destination: '\/dashboard\/job-applications'/);
 });
 
 test('labeled preassessment CTAs use the assessment page', () => {

@@ -121,7 +121,10 @@ async function compare(baseline: Page, candidate: Page, info: TestInfo, path: st
   const image = await baseline.screenshot({ fullPage: true, animations: 'disabled', mask: masks(baseline) });
   writeFileSync(target, image);
   await info.attach(`master-${name}`, { body: image, contentType: 'image/png' });
-  await expect(candidate).toHaveScreenshot(name, { fullPage: true, animations: 'disabled', mask: masks(candidate), maxDiffPixels: 0, threshold: 0 });
+  // Keep maxDiffPixels at 0 so a real layout shift still fails. A 0.02
+  // color threshold absorbs 1-channel antialias on the same crimson
+  // buttons across two live Previews (counselor Message / Start session).
+  await expect(candidate).toHaveScreenshot(name, { fullPage: true, animations: 'disabled', mask: masks(candidate), maxDiffPixels: 0, threshold: 0.02 });
 }
 
 for (const role of Object.keys(PAGES) as Array<keyof typeof PAGES>) {
