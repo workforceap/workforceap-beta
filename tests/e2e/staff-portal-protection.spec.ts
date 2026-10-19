@@ -8,6 +8,7 @@ import {
   assertReadOnlyAuditCookieInstalled,
   installReadOnlyAuditCookie,
 } from '../../scripts/lib/portal-audit-cookie.mjs';
+import { resolveStaffMemberDetailPath } from '../../scripts/lib/portal-c-staff-compare.mjs';
 
 const PAGES = {
   admin: ['/admin', '/admin/overview', '/admin/students', '/admin/members/:member', '/admin/reporting', '/admin/jobs?filter=all'],
@@ -84,7 +85,12 @@ async function settle(page: Page, path: string, width: number, theme = 'light') 
 }
 
 function masks(page: Page) {
-  return [page.locator('time, [data-dynamic-time]'), page.getByText(/^\d{1,2}:\d{2}(?:\s*[AP]M)?$/i)];
+  return [
+    page.locator('time, [data-dynamic-time]'),
+    page.getByText(/^\d{1,2}:\d{2}(?:\s*[AP]M)?$/i),
+    // Roster cards print "7m ago" / "8m ago" in ordinary text, not <time>.
+    page.getByText(/\b(?:just now|\d+\s*[smhd]\s*ago)\b/i),
+  ];
 }
 
 async function shellState(page: Page, width: number, state: 'expanded' | 'collapsed' | 'drawer') {
@@ -96,9 +102,12 @@ async function shellState(page: Page, width: number, state: 'expanded' | 'collap
     return;
   }
   const collapsed = state === 'collapsed';
-  const toggle = page.getByRole('button', { name: collapsed ? 'Collapse sidebar' : 'Expand sidebar', exact: true });
-  if (await toggle.isVisible()) await toggle.click();
-  await expect(page.getByRole('button', { name: collapsed ? 'Expand sidebar' : 'Collapse sidebar', exact: true })).toBeVisible();
+  const target = page.getByRole('button', { name: collapsed ? 'Expand sidebar' : 'Collapse sidebar', exact: true });
+  const current = page.getByRole('button', { name: collapsed ? 'Collapse sidebar' : 'Expand sidebar', exact: true });
+  await expect(target.or(current)).toBeVisible();
+  if (await target.isVisible()) return;
+  await current.click();
+  await expect(target).toBeVisible();
 }
 
 async function compare(baseline: Page, candidate: Page, info: TestInfo, path: string, width: number, theme = 'light', state: 'expanded' | 'collapsed' | 'drawer' = 'expanded') {
@@ -124,10 +133,10 @@ for (const role of Object.keys(PAGES) as Array<keyof typeof PAGES>) {
       for (const pattern of PAGES[role]) {
         let path: string = pattern;
         if (pattern.includes(':member')) {
-          const parent = pattern.split('/:member')[0];
+          const parent = pattern.split('/:member')[0] ?? '';
           await settle(baseline, parent, 1440);
-          const links = await baseline.locator(`a[href^="${parent}/"]`).evaluateAll(anchors => anchors.map(a => a.getAttribute('href') ?? ''));
-          const href = links.find(href => href.startsWith(`${parent}/`) && /^[a-zA-Z0-9_-]+$/.test(href.slice(parent.length + 1)) && !/\/(new|merge|duplicates|training)$/.test(href));
+          const hrefs = await baseline.locator('a[href]').evaluateAll((anchors) => anchors.map((anchor) => anchor.getAttribute('href') ?? ''));
+          const href = resolveStaffMemberDetailPath(parent, hrefs, await baseline.content());
           if (!href) throw new Error('A synthetic member detail link is required for staff protection.');
           path = href;
         }
