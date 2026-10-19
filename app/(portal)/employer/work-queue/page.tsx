@@ -37,7 +37,21 @@ export default async function EmployerWorkQueuePage({
   const initialFocus =
     focusRaw === 'review' || focusRaw === 'stale' || focusRaw === 'interview' ? focusRaw : 'all';
 
-  const slices = await getEmployerWorkQueueSlices(ctx.employerId);
+  // A failed queue read is its own state (unavailable/danger + retry) rather
+  // than the route error boundary or, worse, three "all clear" sections.
+  let slices: Awaited<ReturnType<typeof getEmployerWorkQueueSlices>> = {
+    needsReviewTodayApps: [],
+    jobsAwaitingPublish: [],
+    staleApps: [],
+    interviewPending: [],
+  };
+  let queueLoadFailed = false;
+  try {
+    slices = await getEmployerWorkQueueSlices(ctx.employerId);
+  } catch (error) {
+    queueLoadFailed = true;
+    console.error('[employer/work-queue] queue slices failed to load', error);
+  }
   const rawEvents = await listEmployerWorkflowEvents(ctx.employerId, 40);
 
   const events = rawEvents.map((e) => ({
@@ -81,6 +95,7 @@ export default async function EmployerWorkQueuePage({
           staleApps={slices.staleApps.map(toApp)}
           interviewPending={slices.interviewPending.map(toApp)}
           initialFocus={initialFocus}
+          loadFailed={queueLoadFailed}
         />
 
         <EmployerWorkflowTimeline events={events} />

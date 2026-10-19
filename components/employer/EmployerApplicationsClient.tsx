@@ -6,7 +6,8 @@ import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import type { JobPostingApplicationStatus } from '@prisma/client';
 import EmployerApplicationChatClient from '@/components/portal/EmployerApplicationChatClient';
-import PortalEmptyState from '@/components/portal/PortalEmptyState';
+import { ListFilter } from 'lucide-react';
+import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 import DataTable from '@/components/portal/ui/DataTable';
 import { employerApplicationsListHref, type EmployerApplicationsSort } from '@/lib/employer/employerApplicationsListQuery';
 import { employerJobPostingApplicationStatusLabel } from '@/lib/employer/jobPostingApplicationStatus';
@@ -46,6 +47,7 @@ export default function EmployerApplicationsClient({
   activeSort: EmployerApplicationsSort;
 }) {
   const tCommon = useTranslations('common');
+  const tEmpty = useTranslations('empty');
   const [rows, setRows] = useState(initialRows);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -179,7 +181,8 @@ export default function EmployerApplicationsClient({
   }, [someVisibleSelected, rows]);
 
   if (rows.length === 0) {
-    const filtered = !!activeStatusFilter;
+    const stage = activeStatusFilter ? employerJobPostingApplicationStatusLabel(activeStatusFilter) : null;
+    const filtered = stage !== null;
     return (
       <div className="employer-applications-root">
         <div className="employer-applications-toolbar" role="search" aria-label="Filter applicants by hiring stage">
@@ -238,19 +241,24 @@ export default function EmployerApplicationsClient({
             </div>
           </div>
         </div>
-        <PortalEmptyState
-          title={filtered ? 'No applicants match this filter' : 'No applications yet'}
-          description={
-            filtered
-              ? 'Adjust the pipeline filter above or reset to view all applicants in your funnel.'
-              : 'When candidates apply to your jobs, they will appear here with status and messaging.'
-          }
-          icon={<span className="material-symbols-outlined" style={{ fontSize: 48, color: 'var(--color-on-surface-variant)' }} aria-hidden>badge</span>}
-          primaryAction={
-            filtered
-              ? { label: 'Show all applicants', href: employerApplicationsListHref({ sort: activeSort }) }
-              : { label: 'Post a role', href: '/employer/jobs/new' }
-          }
+        {/* The page renders this client only when applications exist or a stage
+            filter is set, so zero rows here means the stage chip matched none,
+            or the URL page is past the last applicant — both `filtered`, both
+            answered by the unfiltered first page. A true "no applications yet"
+            is the page's own state. */}
+        <KitEmptyState
+          framed
+          kind="filtered"
+          headingAs="h2"
+          data-testid="employer-applications-empty"
+          data-variant={filtered ? 'applicationsFiltered' : 'applicationsPage'}
+          icon={<ListFilter size={13} aria-hidden="true" />}
+          title={stage !== null ? tEmpty('employer.applicationsFiltered.title', { stage }) : tEmpty('employer.applicationsPage.title')}
+          description={filtered ? tEmpty('employer.applicationsFiltered.body') : tEmpty('employer.applicationsPage.body')}
+          primaryAction={{
+            label: filtered ? tEmpty('employer.applicationsFiltered.action') : tEmpty('employer.applicationsPage.action'),
+            href: employerApplicationsListHref({ sort: activeSort }),
+          }}
         />
       </div>
     );
