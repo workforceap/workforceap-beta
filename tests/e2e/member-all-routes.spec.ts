@@ -1,8 +1,11 @@
 /** Complete canonical routes and real alias destinations; missing fixtures fail explicitly. */
 import { test, expect, type Page } from '@playwright/test';
 import { DEV_MEMBER_VIEWS, DEV_MEMBER_ALIASES } from '../../app/dev/member/harness/registry';
+import { getPracticeLab } from '../../lib/content/itSupportLabs';
 import { loginPortalRole, hasPortalRoleCredentials } from './auth-helpers';
 import { resolveMemberPortalCredentials } from '../../scripts/lib/portal-audit-auth.mjs';
+import { MEMBER_ROUTE_PARENTS, memberRouteFixturePath, parseMemberRouteFixtures } from '../../scripts/lib/portal-c-member-routes.mjs';
+import { navigateMemberInventoryRoute } from '../../scripts/lib/portal-c-browser-readiness.mjs';
 import {
   assertDeploymentAcceptedReadOnlyAudit,
   assertReadOnlyAuditCookieInstalled,
@@ -10,35 +13,23 @@ import {
 } from '../../scripts/lib/portal-audit-cookie.mjs';
 
 test.use({ trace: 'off', video: 'off', screenshot: 'off' });
-const overrides: Record<string, string> = JSON.parse(process.env.PORTAL_C_MEMBER_ROUTE_FIXTURES ?? '{}');
-const parents: Record<string, string> = {
-  'job-detail': '/dashboard/jobs', 'learning-module': '/dashboard/learning', lab: '/dashboard/learning',
-  'counselor-detail': '/dashboard/counselor', 'mentor-profile': '/dashboard/mentors',
-  'career-brief-detail': '/dashboard/career-brief', 'career-library-detail': '/dashboard/career-library',
-};
+const overrides = parseMemberRouteFixtures(process.env.PORTAL_C_MEMBER_ROUTE_FIXTURES, DEV_MEMBER_VIEWS);
+const staticPaths = DEV_MEMBER_VIEWS.filter(view => !view.livePath.includes('[')).map(view => view.livePath);
+const dynamicPatterns = DEV_MEMBER_VIEWS.filter(view => view.livePath.includes('[')).map(view => view.livePath);
 
-function matchesFixture(href: string, pattern: string) {
-  if (!href.startsWith('/') || href.startsWith('//') || /[\\?#]/.test(href)) return false;
-  const parts = href.split('/');
-  const expected = pattern.split('/');
-  return parts.length === expected.length && parts.every((part, i) => expected[i].startsWith('[')
-    ? /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(part)
-    : part === expected[i]);
-}
-
-async function concretePath(page: Page, slug: string, pattern: string) {
+async function concretePath(page: Page, slug: string, pattern: string, trustedOrigin: string) {
   if (!pattern.includes('[')) return pattern;
   const supplied = overrides[slug];
-  if (supplied) {
-    if (!matchesFixture(supplied, pattern)) throw new Error(`Invalid synthetic fixture path for ${slug}`);
-    return supplied;
-  }
-  const parent = parents[slug];
+  if (supplied) return supplied;
+  const parent = MEMBER_ROUTE_PARENTS[slug as keyof typeof MEMBER_ROUTE_PARENTS];
   if (!parent) throw new Error(`Missing fixture resolver for ${slug}`);
-  await page.goto(parent, { waitUntil: 'domcontentloaded' });
-  const links = await page.locator('a[href]').evaluateAll(anchors => anchors.map(a => a.getAttribute('href') ?? ''));
-  const found = links.find(href => matchesFixture(href, pattern));
-  if (!found) throw new Error(`No authorized synthetic fixture for ${slug}; provide PORTAL_C_MEMBER_ROUTE_FIXTURES or seed a reversible DEMO fixture.`);
+  await navigateMemberInventoryRoute(page, parent, { trustedOrigin, dynamicPatterns });
+  let found: string | null = null;
+  await expect.poll(async () => {
+    const links = await page.locator('a[href]:visible').evaluateAll(anchors => anchors.map(a => a.getAttribute('href') ?? ''));
+    found = links.map(href => memberRouteFixturePath(href, pattern, staticPaths)).find(Boolean) ?? null;
+    return found;
+  }, { timeout: 15_000, message: `No authorized fixture for ${slug}; supply existing scoped records through PORTAL_C_MEMBER_ROUTE_FIXTURES.` }).not.toBeNull();
   return found;
 }
 
@@ -67,21 +58,25 @@ test.describe('member routes — authenticated inventory', () => {
       const failures: string[] = [];
       for (const view of DEV_MEMBER_VIEWS) {
         try {
-          const path = await concretePath(page, view.slug, view.livePath);
-          const response = await page.goto(path, { waitUntil: 'domcontentloaded' });
-          expect(response?.status(), view.slug).toBeLessThan(400);
-          await expect(page).not.toHaveURL(/\/login(?:[?#]|$)/);
+          const path = await concretePath(page, view.slug, view.livePath, trustedOrigin);
+          if (!path) throw new Error(`No authorized fixture for ${view.slug}.`);
           // This inventory entry serves mentors, not ordinary members. Prove the
           // member access gate here; mentor content requires its own staff fixture.
           const expectedPath = view.slug === 'mentor' ? '/mentor/apply' : path;
-          expect(new URL(page.url()).pathname.replace(/^\/(en|es|fr|pt)(?=\/)/, '')).toBe(expectedPath);
+          await navigateMemberInventoryRoute(page, path, { trustedOrigin, expectedPath, dynamicPatterns });
+          await expect(page).not.toHaveURL(/\/login(?:[?#]|$)/);
           await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+          if (view.slug === 'lab') {
+            const lab = getPracticeLab(new URL(path, trustedOrigin).pathname.split('/').at(-1) ?? '');
+            if (!lab) throw new Error('The fixture does not name a published practice lab.');
+            await expect(page.getByRole('heading', { level: 1, name: lab.title, exact: true })).toBeVisible();
+          }
           await expect(page.locator('[data-portal-error-state]')).toHaveCount(0);
         } catch (error) { failures.push(`${view.slug}: ${error instanceof Error ? error.message : String(error)}`); }
       }
       for (const alias of DEV_MEMBER_ALIASES) {
         const expected = new URL(alias.path === '/pwa-start' ? '/dashboard' : alias.path.endsWith('/readiness-coach') ? '/dashboard/ai-tools?tab=session&agent=readiness' : alias.target, 'https://fixture.invalid');
-        await page.goto(alias.path, { waitUntil: 'domcontentloaded' });
+        await navigateMemberInventoryRoute(page, alias.path, { trustedOrigin, expectedPath: `${expected.pathname}${expected.search}${expected.hash}`, dynamicPatterns });
         await expect(page).not.toHaveURL(/\/login(?:[?#]|$)/);
         const final = new URL(page.url());
         expect(final.pathname.replace(/^\/(en|es|fr|pt)(?=\/)/, '')).toBe(expected.pathname);

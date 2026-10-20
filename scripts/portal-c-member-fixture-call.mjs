@@ -3,7 +3,7 @@
  * Ask the preview deployment to adjust the DEMO test member.
  * Uses a GitHub Actions OIDC token. Does not read database URLs.
  */
-import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 export const FIXTURE_AUDIENCE = 'workforceap-portal-c-fixture';
@@ -108,6 +108,18 @@ export async function prepareMentor() {
   console.log('[portal-c-fixture] synthetic mentor workspace prepared; original snapshot retained.');
 }
 
+export async function resolveRouteFixtures() {
+  const body = await callFixture('route-fixtures');
+  if (!body?.fixtures || typeof body.fixtures !== 'object' || Array.isArray(body.fixtures) || !Array.isArray(body.missing)) {
+    throw new Error('Fixture discovery returned no authorized route manifest.');
+  }
+  const serialized = JSON.stringify(body.fixtures);
+  if (process.env.GITHUB_ENV) appendFileSync(process.env.GITHUB_ENV, `PORTAL_C_MEMBER_ROUTE_FIXTURES=${serialized}\n`);
+  console.log(`[portal-c-fixture] resolved ${Object.keys(body.fixtures).length} existing authorized detail routes.`);
+  if (body.missing.length) console.log(`[portal-c-fixture] unavailable detail fixtures: ${body.missing.join(', ')}. Inventory remains required.`);
+  return body.fixtures;
+}
+
 export async function restore() {
   const path = snapshotPath();
   let snapshot;
@@ -147,13 +159,18 @@ if (isDirectRun) {
       console.error(`[portal-c-fixture] ${error instanceof Error ? error.message : 'mentor preparation failed'}`);
       process.exitCode = 1;
     });
+  } else if (command === 'route-fixtures') {
+    await resolveRouteFixtures().catch((error) => {
+      console.error(`[portal-c-fixture] ${error instanceof Error ? error.message : 'route discovery failed'}`);
+      process.exitCode = 1;
+    });
   } else if (command === 'restore') {
     await restore().catch((error) => {
       console.error(`[portal-c-fixture] ${error instanceof Error ? error.message : 'restore failed'}`);
       process.exitCode = 1;
     });
   } else {
-    console.error('Usage: node scripts/portal-c-member-fixture-call.mjs ensure-incomplete|prepare|prepare-mentor|restore');
+    console.error('Usage: node scripts/portal-c-member-fixture-call.mjs ensure-incomplete|prepare|prepare-mentor|route-fixtures|restore');
     process.exitCode = 2;
   }
 }

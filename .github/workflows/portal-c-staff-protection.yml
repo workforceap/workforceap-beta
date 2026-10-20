@@ -4,8 +4,9 @@ on:
     branches: [master, 'feature/portal-*']
 permissions:
   contents: read
+  actions: read
   deployments: read
-  statuses: read
+  statuses: write
 concurrency:
   group: portal-c-staff-protection-${{ github.event.pull_request.number }}
   cancel-in-progress: false
@@ -37,6 +38,11 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      - name: Refresh acceptance when the staff run starts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PORTAL_C_STATUS_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/portal-c-acceptance-status.mjs
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm exec playwright install --with-deps chromium
       - name: Wait for exact candidate Preview
@@ -91,3 +97,10 @@ jobs:
             test-results/**/*.png
           if-no-files-found: ignore
           retention-days: 14
+      - name: Refresh aggregate acceptance after the staff comparison
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PORTAL_C_STATUS_SHA: ${{ github.event.pull_request.head.sha }}
+          PORTAL_C_STAFF_RESULT: ${{ job.status }}
+        run: node scripts/portal-c-acceptance-status.mjs

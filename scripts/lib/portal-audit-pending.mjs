@@ -1,10 +1,9 @@
 import { readdirSync } from 'node:fs';
-import { dirname, join, relative, resolve, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname, join, relative, sep } from 'node:path';
+import API_ROOT from './portal-audit-api-root.cjs';
 import { sanitizedRequestPath } from './portal-audit-environment.mjs';
 import { safeHydrationRoute } from './portal-hydration-log.mjs';
 
-const API_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../app/api');
 const ROUTE_FILE = /^route\.(?:js|jsx|ts|tsx)$/;
 const METHODS = new Set(['GET', 'HEAD', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']);
 let apiTemplates;

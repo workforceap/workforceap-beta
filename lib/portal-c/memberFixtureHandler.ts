@@ -1,10 +1,11 @@
 import supabaseProjectGuard from '@/scripts/lib/supabase-project-guard.cjs';
 import fixture from '@/scripts/lib/preview-e2e-member-fixture.cjs';
 import { verifyPortalCFixtureOidc, type FixtureOidcFailure } from '@/lib/portal-c/fixtureOidc';
+import { resolvePortalCMemberRouteFixtures } from '@/lib/portal-c/memberRouteFixtures';
 
-const ACTIONS = new Set(['snapshot', 'ensure-incomplete', 'prepare', 'prepare-mentor', 'restore']);
+const ACTIONS = new Set(['snapshot', 'ensure-incomplete', 'prepare', 'prepare-mentor', 'route-fixtures', 'restore']);
 
-type FixtureAction = 'snapshot' | 'ensure-incomplete' | 'prepare' | 'prepare-mentor' | 'restore';
+type FixtureAction = 'snapshot' | 'ensure-incomplete' | 'prepare' | 'prepare-mentor' | 'route-fixtures' | 'restore';
 
 export type FixtureSnapshot = {
   userId: string;
@@ -110,6 +111,7 @@ export async function handlePortalCMemberFixture(input: {
       return { status: 200, body: { ok: true, snapshot } };
     }
     if (action === 'prepare-mentor') return { status: 200, body: { ok: true, ...await fixture.prepareMentorFixture(prisma) } };
+    if (action === 'route-fixtures') return { status: 200, body: { ok: true, ...await resolvePortalCMemberRouteFixtures(prisma) } };
     if (!isSnapshot(payload.snapshot)) {
       return { status: 400, body: { error: 'invalid_snapshot' } };
     }

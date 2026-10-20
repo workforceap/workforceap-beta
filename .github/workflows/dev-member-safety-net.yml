@@ -2,7 +2,8 @@ name: Portal C safety net
 
 # B0: after a Vercel Preview succeeds, run the credential-free member harness
 # smoke, visual baselines, and logged-out redirect checks against that URL.
-# Posts a commit status named "Portal C safety net" so the stacked PR shows it.
+# The aggregate "Portal C safety net" status also requires authenticated member,
+# mentor, and master staff comparisons; a harness-only pass cannot satisfy it.
 # Does not cancel Preview smoke (different concurrency group). Never required
 # for merge; keep the PR draft.
 
@@ -22,6 +23,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   statuses: write
   deployments: read
 
@@ -32,13 +34,17 @@ concurrency:
 jobs:
   registry-lock:
     name: Registry and alias lock
-    if: github.event_name == 'pull_request'
+    if: >-
+      github.repository == 'workforceap/workforceap-beta' &&
+      (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview' && github.event.deployment.creator.login == 'vercel[bot]'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.event.deployment.sha || inputs.sha || github.sha }}
           persist-credentials: false
 
       - name: Setup pnpm
@@ -49,6 +55,13 @@ jobs:
         with:
           node-version-file: ".nvmrc"
           cache: "pnpm"
+
+      - name: Refresh acceptance when this run starts
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PORTAL_C_STATUS_SHA: ${{ github.event.pull_request.head.sha || github.event.deployment.sha || inputs.sha || github.sha }}
+        run: node scripts/portal-c-acceptance-status.mjs
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -114,6 +127,7 @@ jobs:
             exit 3
           fi
           pnpm exec playwright test \
+            tests/e2e/portal-c-readiness.spec.ts \
             tests/e2e/dev-member-routes.spec.ts \
             tests/e2e/dev-member-visual.spec.ts \
             tests/e2e/member-unauth-redirects.spec.ts \
@@ -132,7 +146,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Post "Portal C safety net" commit status
+      - name: Post "Portal C harness" commit status
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
@@ -155,7 +169,7 @@ jobs:
           fi
           gh api --method POST "repos/${GITHUB_REPOSITORY}/statuses/${DEPLOY_SHA}" \
             -f state="$state" \
-            -f context="Portal C safety net" \
+            -f context="Portal C harness" \
             -f description="${description:0:140}" \
             -f target_url="$RUN_URL" \
             --jq '"posted \(.context): \(.state)"'
@@ -190,7 +204,7 @@ jobs:
     timeout-minutes: 45
     env:
       CI: "true"
-      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.deployment.sha || github.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.deployment.sha || inputs.sha || github.sha }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       PORTAL_C_REQUIRED: "1"
       PLAYWRIGHT_TRACE: "off"
@@ -201,7 +215,7 @@ jobs:
       - name: Checkout the deployed commit
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.event.deployment.sha || github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.event.deployment.sha || inputs.sha || github.sha }}
           fetch-depth: 1
           persist-credentials: false
 
@@ -336,6 +350,12 @@ jobs:
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: node scripts/portal-c-member-fixture-call.mjs prepare
 
+      - name: Resolve existing authorized member detail fixtures
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: node scripts/portal-c-member-fixture-call.mjs route-fixtures
+
       - name: Run signed-in C route specs
         env:
           PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PREVIEW_PORTAL_AUDIT_READ_ONLY_TOKEN }}
@@ -410,3 +430,27 @@ jobs:
             test-results/**/*.png
           if-no-files-found: ignore
           retention-days: 14
+
+  acceptance-status:
+    name: Report complete Portal C acceptance
+    needs: [registry-lock, safety-net, signed-in-member]
+    if: >-
+      always() && github.repository == 'workforceap/workforceap-beta' &&
+      ((github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Preview' && github.event.deployment.creator.login == 'vercel[bot]'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.event.deployment.sha || inputs.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Publish aggregate status for this exact head
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PORTAL_C_STATUS_SHA: ${{ github.event.pull_request.head.sha || github.event.deployment.sha || inputs.sha || github.sha }}
+        run: node scripts/portal-c-acceptance-status.mjs

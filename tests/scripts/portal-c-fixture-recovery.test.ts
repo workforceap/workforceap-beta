@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { prepare, ensureIncomplete, restore } from '../../scripts/portal-c-member-fixture-call.mjs';
+import { prepare, ensureIncomplete, restore, resolveRouteFixtures } from '../../scripts/portal-c-member-fixture-call.mjs';
 
 const original = { userId: 'synthetic-member', before: { assessmentCompleted: true, assessmentCompletedAt: '2026-01-01T00:00:00.000Z' } };
 let directory: string;
@@ -50,5 +50,19 @@ describe('fixture recovery record', () => {
     writeFileSync(path, 'corrupt');
     await expect(restore()).rejects.toThrow();
     expect(actions).toEqual([]);
+  });
+  it('passes the read-only authorized route manifest to the browser job without replacing recovery state', async () => {
+    const envFile = join(directory, 'github-env');
+    vi.stubEnv('GITHUB_ENV', envFile);
+    writeFileSync(path, JSON.stringify(original));
+    const fixtures = { 'counselor-detail': '/dashboard/counselor/synthetic-session' };
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).startsWith('https://oidc.invalid')) return Response.json({ value: 'synthetic-oidc' });
+      expect(JSON.parse(String(init?.body))).toEqual({ action: 'route-fixtures' });
+      return Response.json({ fixtures, missing: ['lab', 'mentor-profile'] });
+    }));
+    await expect(resolveRouteFixtures()).resolves.toEqual(fixtures);
+    expect(readFileSync(envFile, 'utf8')).toBe(`PORTAL_C_MEMBER_ROUTE_FIXTURES=${JSON.stringify(fixtures)}\n`);
+    expect(JSON.parse(readFileSync(path, 'utf8'))).toEqual(original);
   });
 });
