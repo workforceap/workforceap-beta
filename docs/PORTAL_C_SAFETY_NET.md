@@ -42,11 +42,13 @@ Registry lock (no browser): `npx vitest run tests/app/dev-member-harness-registr
 | `dev-member-visual.spec.ts` | no | 1440 and 390 | `toHaveScreenshot` of **full** state (`maxDiffPixelRatio` 0.05; Vercel toolbar masked / skipped) |
 | `member-unauth-redirects.spec.ts` | no | n/a | every inventory `/dashboard` path (and `/coach`, `/account/privacy`) redirects to login; aliases redirect to their target or to login when the layout auth-gates first |
 | `member-all-routes.spec.ts` | yes (`PLAYWRIGHT_MEMBER_EMAIL` + `PLAYWRIGHT_PORTAL_PASSWORD`) | 1440 and 390 | Every canonical view and alias must reach a healthy exact destination. Dynamic routes require authorized concrete fixtures; a missing fixture or 404 fails. Module links retain their required `program` query. The mentor access gate must finish at `/mentor/apply` before the next navigation. `PORTAL_C_REQUIRED=1` fails if credentials are missing. |
-| `portal-c-readiness.spec.ts` | no | desktop | Local disposable HTTP fixtures prove delayed mentor redirects, completed staff data, malformed/failed response refusal, and missing-response failure in the actual browser. |
+| `portal-c-readiness.spec.ts` | no | desktop | Local disposable HTTP fixtures cover delayed mentor redirects, HTTP-200 streamed not-found refusal, completed staff data, malformed/failed response refusal, and missing-header or stalled-body deadline failures in the actual browser. |
 | `staff-portal-protection.spec.ts` | yes, dedicated role fixtures | 1440, 1024, 390 | Same-account candidate/master comparison, including themes and shell states. Required queue and resume responses must complete successfully before screenshots. `maxDiffPixels: 0` and `threshold: 0.02` are unchanged. |
 | `member-signed-in-c-routes.spec.ts` | yes (same secrets; CI maps `PREVIEW_E2E_MEMBER_*`) | n/a | After a SHA + DEMO Supabase pre-login guard: Home, Job board, My program, Resume Studio, and AI tools load with `h1`, no console errors, and honest-state rules. Then a profile location edit, a notification toggle, and a counselor-thread mark-read — each reloads, asserts persistence, and restores (mark-read only advances `memberLastReadAt`; it does not send mail). Traces are off so auth bodies are never captured. |
 
 Banned-word and CTA checks are scoped to `[data-dev-member-harness]`. Shell chrome and i18n catalogs are out of scope so “Partner portal” copy elsewhere cannot fail a member screen.
+
+Inventory navigation rejects the application's visible not-found heading even when streaming has already committed HTTP 200. Staff readiness uses one deadline, starting before navigation, for required response headers, JSON bodies and loaded UI. Abandoned navigation disposes the response listeners and timer; late body completion cannot turn a timeout into acceptance. The focused `portal-c-browser-readiness.test.ts` suite also checks deadline sharing and cleanup without hosted services.
 
 ## CI
 

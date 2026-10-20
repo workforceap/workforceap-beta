@@ -91,7 +91,7 @@ async function settle(page: Page, path: string, width: number, theme = 'light') 
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
       expect(overflow, `${path} overflows the phone viewport`).toBe(false);
     }
-  } finally { data.detach(); }
+  } finally { ready.dispose(); data.detach(); }
 }
 
 function masks(page: Page) {

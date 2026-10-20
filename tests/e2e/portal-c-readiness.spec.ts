@@ -20,6 +20,13 @@ test.beforeAll(async () => {
     if (url.pathname === '/dashboard/mentor') return html('<h1>Previous member page</h1>', "setTimeout(() => location.replace('/mentor/apply'), 100)");
     if (url.pathname === '/mentor/apply') return html('<h1>Mentor with WorkforceAP</h1>', "fetch('/api/member-ready').then(() => document.body.dataset.ready = 'true')");
     if (url.pathname === '/dashboard/help') return html('<h1>Help</h1><p>Reach your advisor for help with your program.</p>');
+    if (url.pathname === '/dashboard/counselor/missing-record') {
+      response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+      response.write('<!doctype html><html><body><p>Loading counselor session…</p>');
+      response.flushHeaders();
+      setTimeout(() => response.end('<div class="app-system-page"><p>404</p><h1 class="app-system-page__title">Page not found</h1><p>The link may be broken or the page may have moved.</p></div></body></html>'), 50);
+      return;
+    }
     if (url.pathname === '/partner/attention') return html('<h1>Attention</h1><p>Loading…</p><button disabled>Refresh queue</button>', `
       Promise.all(['members/needs-attention', 'outreach', 'referral-members', 'team-assign'].map(path =>
         fetch('/api/partner/' + path + '?case=${scenario}').then(response => response.json())
@@ -40,6 +47,13 @@ test.beforeAll(async () => {
       '/api/counselor/members/fixture-member/resume': { hasOriginal: false, hasEnhanced: false },
     };
     if (url.pathname in bodies) {
+      if (scenario === 'stalled-body') {
+        response.writeHead(200, { 'content-type': 'application/json' });
+        response.flushHeaders();
+        response.write('{"hasOriginal":false,');
+        heldResponses.push(() => response.end('"hasEnhanced":false}'));
+        return;
+      }
       const status = scenario === 'failed' ? 500 : 200;
       const delay = url.pathname.endsWith('/outreach') || url.pathname.endsWith('/resume') ? 250 : 50;
       const send = () => {
@@ -67,6 +81,17 @@ test('waits for the streamed mentor redirect before navigating to Help', async (
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await navigateMemberInventoryRoute(page, `${origin}/dashboard/help`, { trustedOrigin: origin, expectedPath: '/dashboard/help' });
   await expect(page.getByRole('heading', { name: 'Help' })).toBeVisible();
+});
+
+test('rejects an application not-found page streamed after HTTP 200 headers', async ({ page }) => {
+  const path = '/dashboard/counselor/missing-record';
+  const headers = page.waitForResponse(response => response.url() === origin + path);
+  await expect(navigateMemberInventoryRoute(page, origin + path, { trustedOrigin: origin, expectedPath: path }))
+    .rejects.toThrow('inventory route rendered a not-found page');
+  expect((await headers).status()).toBe(200);
+  await expect(page).toHaveURL(origin + path);
+  await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
+  await expect(page.locator('[data-portal-error-state]')).toHaveCount(0);
 });
 
 test('waits for every partner response and loaded UI before a screenshot', async ({ page }, info) => {
@@ -114,4 +139,23 @@ test('fails when the expected staff response never starts', async ({ page }) => 
   const ready = beginStaffDataReadiness(page, '/counselor/students/fixture-member', origin, 500);
   await page.goto(`${origin}/dashboard/help`);
   await expect(ready()).rejects.toThrow('member resume response did not complete');
+});
+
+test('bounds an unfinished response body after successful headers arrive', async ({ page }) => {
+  test.setTimeout(5_000);
+  const path = '/counselor/students/fixture-member';
+  const headers = page.waitForResponse(response => response.url().includes('/api/counselor/members/fixture-member/resume'));
+  const started = Date.now();
+  const ready = beginStaffDataReadiness(page, path, origin, 500);
+  try {
+    await page.goto(`${origin}${path}?case=stalled-body`, { waitUntil: 'domcontentloaded' });
+    expect((await headers).status()).toBe(200);
+    expect(heldResponses).toHaveLength(1);
+    await expect(ready()).rejects.toThrow('member resume response did not complete');
+    expect(Date.now() - started).toBeLessThan(2_000);
+    await expect(page.getByText('Loading resume…', { exact: true })).toBeVisible();
+  } finally {
+    ready.dispose();
+    heldResponses.forEach(send => send());
+  }
 });

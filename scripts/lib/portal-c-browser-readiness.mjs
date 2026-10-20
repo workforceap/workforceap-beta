@@ -26,6 +26,11 @@ export async function navigateMemberInventoryRoute(page, path, {
       await page.getByRole('heading', { level: 1, name: 'Mentor with WorkforceAP' }).waitFor({ state: 'visible', timeout });
     } else await page.getByRole('heading', { level: 1 }).first().waitFor({ state: 'visible', timeout });
     await data.waitForSettlement(5_000);
+    // Next can stream its notFound() UI after successful document headers.
+    // The application fallback has no data-portal-error-state marker.
+    if (await page.getByRole('heading', { level: 1, name: /^(?:Page not found|404)$/i }).count()) {
+      throw new Error('The inventory route rendered a not-found page.');
+    }
     if (documentStatus === null || documentStatus >= 400) throw new Error('The final inventory document did not load successfully.');
     if (data.errors.length) throw new Error(`Inventory data did not settle successfully: ${data.errors.join('; ')}`);
   } finally {
@@ -58,31 +63,81 @@ export function staffReadinessRequirements(path) {
 /** Call before goto: a fast cached response must not race registration of the readiness probe. */
 export function beginStaffDataReadiness(page, path, trustedOrigin, timeout = 30_000) {
   const requirements = staffReadinessRequirements(path);
-  // Convert each rejection immediately so an earlier navigation error cannot leave an unhandled promise.
-  const responses = Promise.all(requirements.map(async requirement => {
-    try {
-      const response = await page.waitForResponse(candidate => {
-        const url = new URL(candidate.url());
-        return candidate.request().method() === 'GET' && url.origin === trustedOrigin && url.pathname === requirement.path;
-      }, { timeout });
-      if (response.status() !== 200 || !requirement.valid(await response.json())) return `${requirement.id} response was not healthy`;
-      return null;
-    } catch { return `${requirement.id} response did not complete`; }
-  }));
-  return async () => {
+  if (!requirements.length) return Object.assign(async () => {}, { dispose() {} });
+  if (!Number.isFinite(timeout) || timeout <= 0) throw new Error('Staff readiness requires a positive finite timeout.');
+  const deadline = Date.now() + timeout;
+  const pending = new Map();
+  const seen = new Set();
+  const responses = Promise.all(requirements.map(requirement => new Promise(resolve => {
+    pending.set(requirement.path, { ...requirement, resolve });
+  })));
+  let stopped = null;
+  let disposed = false;
+  let timer;
+  let resolveStopped;
+  // Resolve with an error value: disposal before ready() must not reject an orphan promise.
+  const stoppedResult = new Promise(resolve => { resolveStopped = resolve; });
+  const cleanup = () => {
+    disposed = true;
+    clearTimeout(timer);
+    page.off('response', onResponse);
+    page.off('close', onClose);
+  };
+  const finish = (responsePath, failure) => {
+    const requirement = pending.get(responsePath);
+    if (!requirement) return; // Ignore late body completion after timeout/disposal.
+    pending.delete(responsePath);
+    requirement.resolve(failure);
+    if (!pending.size) page.off('response', onResponse);
+  };
+  const stop = (reason) => {
+    if (disposed) return;
+    const failures = [...pending.values()].map(requirement => `${requirement.id} response did not complete`);
+    stopped = new Error(`Staff content is not ready: ${failures.length ? failures.join('; ') : reason}.`);
+    resolveStopped(stopped);
+    for (const [responsePath, requirement] of pending) finish(responsePath, `${requirement.id} response did not complete`);
+    cleanup();
+  };
+  const onClose = () => stop('page closed before readiness completed');
+  const onResponse = response => {
+    let url;
+    try { url = new URL(response.url()); } catch { return; }
+    const requirement = pending.get(url.pathname);
+    if (!requirement || seen.has(url.pathname) || url.origin !== trustedOrigin || response.request().method() !== 'GET') return;
+    seen.add(url.pathname);
+    // A response event only proves headers arrived. The same deadline must also
+    // cover json(), and both late resolution and rejection must remain observed.
+    Promise.resolve().then(async () => response.status() === 200 && requirement.valid(await response.json())
+      ? null : `${requirement.id} response was not healthy`)
+      .then(failure => finish(url.pathname, failure), () => finish(url.pathname, `${requirement.id} response did not complete`));
+  };
+  page.on('response', onResponse);
+  page.on('close', onClose);
+  timer = setTimeout(() => stop('rendering did not complete before the readiness deadline'), timeout);
+  const remaining = () => {
+    const value = deadline - Date.now();
+    if (value <= 0) throw new Error('Staff content is not ready: readiness deadline expired.');
+    return value;
+  };
+  const inspect = async () => {
+    if (stopped) throw stopped;
     const failures = (await responses).filter(Boolean);
     if (failures.length) throw new Error(`Staff content is not ready: ${failures.join('; ')}.`);
-    if (!requirements.length) return;
     await page.waitForFunction(() => ![...document.querySelectorAll('p')].some(element =>
-      /^Loading(?: resume| preview)?…$/.test(element.textContent?.trim() ?? '')), undefined, { timeout });
+      /^Loading(?: resume| preview)?…$/.test(element.textContent?.trim() ?? '')), undefined, { timeout: remaining() });
     if (new URL(path, trustedOrigin).pathname === '/partner/attention') {
       await page.waitForFunction(() => {
         const refresh = [...document.querySelectorAll('button')].find(button => button.textContent?.trim() === 'Refresh queue');
         return refresh && !refresh.disabled;
-      }, undefined, { timeout });
+      }, undefined, { timeout: remaining() });
     }
     if (await page.getByRole('alert').filter({ hasText: /could not load|no access|unavailable/i }).count()) {
       throw new Error('Staff content rendered a data-load error.');
     }
   };
+  let readiness;
+  const ready = () => readiness ??= Promise.race([
+    inspect().then(() => null, error => error), stoppedResult,
+  ]).then(error => { if (error) throw error; }).finally(cleanup);
+  return Object.assign(ready, { dispose: () => stop('readiness was disposed before completion') });
 }
