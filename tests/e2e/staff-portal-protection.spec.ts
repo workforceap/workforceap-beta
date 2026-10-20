@@ -9,6 +9,8 @@ import {
   installReadOnlyAuditCookie,
 } from '../../scripts/lib/portal-audit-cookie.mjs';
 import { resolveStaffMemberDetailPath } from '../../scripts/lib/portal-c-staff-compare.mjs';
+import { beginStaffDataReadiness } from '../../scripts/lib/portal-c-browser-readiness.mjs';
+import { trackSameOriginDataRequests } from '../../scripts/lib/portal-audit-data-requests.mjs';
 
 const PAGES = {
   admin: ['/admin', '/admin/overview', '/admin/students', '/admin/members/:member', '/admin/reporting', '/admin/jobs?filter=all'],
@@ -63,25 +65,33 @@ async function signedInPage(browser: Browser, origin: string, role: PortalSmokeR
 async function settle(page: Page, path: string, width: number, theme = 'light') {
   await page.setViewportSize({ width, height: width === 390 ? 844 : width === 1024 ? 768 : 900 });
   await page.evaluate(theme => localStorage.setItem('wap-theme', theme), theme);
-  const response = await page.goto(path, { waitUntil: 'domcontentloaded' });
-  expect(response?.status(), `${path} must render successfully`).toBeLessThan(400);
-  await expect(page).not.toHaveURL(/\/login(?:[?#]|$)/);
-  await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
-  await assertDeploymentAcceptedReadOnlyAudit(page);
-  await expect(page.locator('[data-portal-audit-suppressed="workspace-nav-badges-and-notification-polling"]')).toHaveCount(1);
-  await expect(page.locator('[data-workspace-role]:not([data-workspace-role="member"])[data-member-home-compact]')).toHaveCount(0);
-  await expect(page.locator('[data-portal-error-state]')).toHaveCount(0);
-  const workspaceRole = path.startsWith('/dashboard/') ? 'member' : path.split('/')[1];
-  await expect(page.locator(`.workspace-shell-root[data-workspace-role="${workspaceRole}"]`)).toHaveCount(1);
-  if (path === '/dashboard/mentor') {
-    expect(new URL(page.url()).pathname).toBe('/dashboard/mentor');
-    await expect(page.locator('[data-member-home-compact]')).toHaveCount(0);
-  }
-  await page.evaluate(() => document.fonts.ready);
-  if (width === 390) {
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
-    expect(overflow, `${path} overflows the phone viewport`).toBe(false);
-  }
+  const trustedOrigin = new URL(page.url()).origin;
+  const ready = beginStaffDataReadiness(page, path, trustedOrigin);
+  const data = trackSameOriginDataRequests(page, { trustedOrigin, dynamicPatterns: ['/counselor/students/[memberId]', '/admin/members/[memberId]'] });
+  try {
+    const response = await page.goto(path, { waitUntil: 'domcontentloaded' });
+    expect(response?.status(), `${path} must render successfully`).toBeLessThan(400);
+    await expect(page).not.toHaveURL(/\/login(?:[?#]|$)/);
+    await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+    await ready();
+    await data.waitForSettlement(5_000);
+    expect(data.errors, `${path} data must finish successfully before comparison`).toEqual([]);
+    await assertDeploymentAcceptedReadOnlyAudit(page);
+    await expect(page.locator('[data-portal-audit-suppressed="workspace-nav-badges-and-notification-polling"]')).toHaveCount(1);
+    await expect(page.locator('[data-workspace-role]:not([data-workspace-role="member"])[data-member-home-compact]')).toHaveCount(0);
+    await expect(page.locator('[data-portal-error-state]')).toHaveCount(0);
+    const workspaceRole = path.startsWith('/dashboard/') ? 'member' : path.split('/')[1];
+    await expect(page.locator(`.workspace-shell-root[data-workspace-role="${workspaceRole}"]`)).toHaveCount(1);
+    if (path === '/dashboard/mentor') {
+      expect(new URL(page.url()).pathname).toBe('/dashboard/mentor');
+      await expect(page.locator('[data-member-home-compact]')).toHaveCount(0);
+    }
+    await page.evaluate(() => document.fonts.ready);
+    if (width === 390) {
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
+      expect(overflow, `${path} overflows the phone viewport`).toBe(false);
+    }
+  } finally { data.detach(); }
 }
 
 function masks(page: Page) {

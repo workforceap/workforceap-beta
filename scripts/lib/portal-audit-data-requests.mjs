@@ -71,7 +71,7 @@ function failedSameOriginDataRequest(request, trustedOrigin, dynamicPatterns) {
 }
 
 /** The runner's real Playwright collector; gate bodies and resource URLs are never persisted. */
-export function trackSameOriginDataRequests(page, { trustedOrigin, dynamicPatterns = [] }) {
+export function trackSameOriginDataRequests(page, { trustedOrigin, dynamicPatterns = /** @type {string[]} */ ([]) }) {
   const inFlight = new Set();
   const errors = [];
   const pendingResponseChecks = new Set();

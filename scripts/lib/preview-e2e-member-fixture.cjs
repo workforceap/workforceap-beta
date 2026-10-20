@@ -29,6 +29,7 @@ async function findFixtureMember(prisma) {
     where: { email: { equals: E2E_MEMBER_EMAIL, mode: 'insensitive' }, organizationId: org.id, deletedAt: null, profile: { role: 'member' } },
     select: {
       id: true,
+      organizationId: true,
       assessmentCompleted: true,
       assessmentCompletedAt: true,
       notificationsUpdates: true,
