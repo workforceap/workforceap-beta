@@ -1,0 +1,20 @@
+{
+  "baseSha": "efc27e4a4ebeba09b5261e7b1c36463d01925017",
+  "routeCount": 156,
+  "targetCount": 156,
+  "schemaFamilies": 133,
+  "missing": [],
+  "extra": [],
+  "sourcePathsVerified": 382,
+  "primaryActionsVerified": 156,
+  "rowsValidated": 354,
+  "passwordExamples": 0,
+  "applicationOrProviderRequests": 0,
+  "sourceAndSchemaChecks": "PASS",
+  "sha256": "f51a80e163316c56a5042c1adfdacf804005d2dbd4a4c05b007efa7481a10e7f",
+  "limitations": [
+    "This is proposed display metadata and local synthetic content, not implemented application screens or authenticated route acceptance.",
+    "Field required flags and labels must be reconciled with the concrete form implementation before application work; this generator does not execute those forms.",
+    "No production counts, financial amounts, performance outcomes, identities or credentials were loaded."
+  ]
+}

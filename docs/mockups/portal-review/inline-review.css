@@ -1,0 +1,45 @@
+#wap-voice-review { position: relative; isolation: isolate; width: 100%; color-scheme: light dark; }
+#wap-voice-review[data-theme="light"] { color-scheme: light; }
+#wap-voice-review[data-theme="dark"] { color-scheme: dark; }
+#wap-voice-review .shell { min-height: 0; }
+#wap-voice-review .main { padding: 30px 28px; }
+#wap-voice-review .opener h1 { font-size: clamp(28px, 3.4vw, 38px); }
+#wap-voice-review .reviewbar { gap: 12px; padding: 16px 22px; }
+#wap-voice-review .reviewlabel { margin-left: auto; }
+#wap-voice-review .reviewcontrols { width: 100%; flex-wrap: wrap; justify-content: flex-start; }
+#wap-voice-review .rail { padding-top: 28px; }
+#wap-voice-review .railbottom { margin-top: 40px; }
+#wap-voice-review .toast { position: absolute; top: 100px; right: 20px; bottom: auto; left: auto; transform: none; width: min(400px, calc(100% - 40px)); z-index: 15; }
+#wap-voice-review .toast:not(.visible) { display: none; }
+#wap-voice-review .toast.visible { display: block; }
+#wap-voice-review .reviewdrawer { position: static; width: 100%; max-width: none; max-height: none; margin: 0; z-index: 30; border: 0; border-radius: 0; }
+#wap-voice-review .reviewdrawer[open] { display: block; }
+#wap-voice-review:has(> .reviewdrawer[open]) > #app { display: none; }
+#wap-voice-review .inline-catalog-pages { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 18px 0; }
+#wap-voice-review .dialogbody { max-height: none; overflow: visible; }
+#wap-voice-review .dialoghead { position: static; }
+#wap-voice-review .chatlog { max-height: none; overflow: visible; }
+#wap-voice-review .voice-transcript-scroll { max-height: none; overflow: visible; }
+#wap-voice-review .catalogresults { max-height: none; overflow: visible; }
+#wap-voice-review .mobilebottom { position: static; }
+#wap-voice-review .routetail { margin-top: 30px; }
+#wap-voice-review [data-lucide] { width: 18px; height: 18px; display: inline-block; flex-shrink: 0; }
+@media(max-width:1050px) {
+  #wap-voice-review .shell { grid-template-columns: 196px minmax(0,1fr); }
+  #wap-voice-review .main { padding: 26px 22px; }
+  #wap-voice-review .rail { padding-left: 16px; padding-right: 16px; }
+  #wap-voice-review .brand { gap: 8px; }
+  #wap-voice-review .railnav a { padding: 12px 10px; }
+}
+@media(max-width:767px) {
+  #wap-voice-review .shell { display: block; }
+  #wap-voice-review .main { padding: 24px 18px; }
+  #wap-voice-review .reviewbar { padding: 14px 16px; }
+  #wap-voice-review .reviewbrand { width: 100%; }
+  #wap-voice-review .reviewlabel { margin: 0; }
+  #wap-voice-review .reviewcontrols { gap: 8px; }
+  #wap-voice-review .reviewcontrols .control { flex: 1 1 120px; }
+  #wap-voice-review .reviewcontrols select { width: 100%; }
+  #wap-voice-review .reviewdrawer { width: 100%; }
+  #wap-voice-review .mobilebottom { position: static; }
+}

@@ -1,0 +1,76 @@
+{
+  "kind": "independent-standalone-model-review",
+  "modelSha256": "928fcdbeead6ae7bb3f4e1fdce0a94cc81da58289236b217710303a5c51686f9",
+  "node": "v22.23.3",
+  "passed": 16,
+  "failed": 0,
+  "applicationTests": false,
+  "browserTests": false,
+  "liveAcceptance": false,
+  "results": [
+    {
+      "name": "all proposed primary navigation destinations resolve",
+      "result": "pass"
+    },
+    {
+      "name": "all non-not-found fixture paths resolve to their own route template",
+      "result": "pass"
+    },
+    {
+      "name": "unknown dashboard route is not treated as a loaded page",
+      "result": "pass"
+    },
+    {
+      "name": "known job detail retains a specific source route",
+      "result": "pass"
+    },
+    {
+      "name": "identical request key does not duplicate a sample message",
+      "result": "pass"
+    },
+    {
+      "name": "same key with different payload is rejected as a mismatch",
+      "result": "pass"
+    },
+    {
+      "name": "stale profile version preserves the saved profile",
+      "result": "pass"
+    },
+    {
+      "name": "staff cannot review private lab draft before submission",
+      "result": "pass"
+    },
+    {
+      "name": "submitted lab copy survives subsequent private edits",
+      "result": "pass"
+    },
+    {
+      "name": "uncertain sample request reconciles without duplicate persistence",
+      "result": "pass"
+    },
+    {
+      "name": "duplicate application for the same member and job is refused",
+      "result": "pass"
+    },
+    {
+      "name": "application for an unknown job is refused",
+      "result": "pass"
+    },
+    {
+      "name": "application for a draft job is refused",
+      "result": "pass"
+    },
+    {
+      "name": "editing a job preserves its identity and publication state",
+      "result": "pass"
+    },
+    {
+      "name": "stale job edit does not replace a newer version",
+      "result": "pass"
+    },
+    {
+      "name": "malformed encoded route parameter does not crash navigation",
+      "result": "pass"
+    }
+  ]
+}

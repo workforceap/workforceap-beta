@@ -1,0 +1,39 @@
+{
+  "baseSha": "efc27e4a4ebeba09b5261e7b1c36463d01925017",
+  "pageFiles": 266,
+  "checks": 6,
+  "fixtures": [
+    {
+      "fixture": "valid exact-master inventory",
+      "expected": "pass",
+      "passed": true,
+      "issues": []
+    },
+    {
+      "fixture": "missing route",
+      "expected": "fail",
+      "rejected": true,
+      "issues": [
+        "missing route source: app/wioa-qualification/page.tsx"
+      ]
+    },
+    {
+      "fixture": "duplicate route",
+      "expected": "fail",
+      "rejected": true,
+      "issues": [
+        "duplicate source files",
+        "duplicate public routes"
+      ]
+    },
+    {
+      "fixture": "invented path",
+      "expected": "fail",
+      "rejected": true,
+      "issues": [
+        "wrong normalized route: app/(auth)/forgot-password/page.tsx"
+      ]
+    }
+  ],
+  "scope": "Static artifact provenance/coverage only; no browser or hosted acceptance"
+}
