@@ -23,6 +23,15 @@ function supabaseAnonJwt(ref: string) {
   return `${header}.${payload}.test-signature`;
 }
 
+function mentorFixtureDelegate() {
+  return {
+    findUnique: async () => null,
+    create: async () => ({ id: 'synthetic-browse-mentor' }),
+    update: async () => ({ id: 'synthetic-browse-mentor' }),
+    delete: async () => ({}),
+  };
+}
+
 function counselorFixtureDelegate() {
   const sessions: Array<{
     id: string;
@@ -93,15 +102,18 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
         lockCalls.push(sql);
       },
       aIToolResult: counselor.aIToolResult,
+      mentor: mentorFixtureDelegate(),
       organization: {
         findFirst: async () => ({ id: 'org-qa' }),
       },
       user: {
         findFirst: async () => ({
           id: 'user-fixture',
+          organizationId: 'org-qa',
           assessmentCompleted: stored.assessmentCompleted,
           assessmentCompletedAt: stored.assessmentCompletedAt,
         }),
+        create: async () => ({ id: 'browse-mentor-user' }),
         findUnique: async () => ({
           assessmentCompleted: stored.assessmentCompleted,
           assessmentCompletedAt: stored.assessmentCompletedAt,
@@ -137,13 +149,16 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
       $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma),
       $executeRawUnsafe: async () => {},
       aIToolResult: counselor.aIToolResult,
+      mentor: mentorFixtureDelegate(),
       organization: { findFirst: async () => ({ id: 'org-qa' }) },
       user: {
         findFirst: async () => ({
           id: 'user-fixture',
+          organizationId: 'org-qa',
           assessmentCompleted: true,
           assessmentCompletedAt: new Date('2026-01-01T00:00:00.000Z'),
         }),
+        create: async () => ({ id: 'browse-mentor-user' }),
         update: async () => {
           updates += 1;
         },

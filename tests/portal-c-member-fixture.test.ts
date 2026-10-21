@@ -27,7 +27,9 @@ function memberPrisma(initial = { assessmentCompleted: false, assessmentComplete
     notificationsUpdates: false,
     profile: { city: null as string | null },
     messageThreadsAsMember: [],
-    mentorProfile: null as null | { id: string; bio: string; isActive: boolean; approvedAt: null; _count: { sessions: number; specialties: number } },
+    mentorProfile: null as null | { id: string; bio: string; isActive: boolean; approvedAt: Date | null; _count: { sessions: number; specialties: number } },
+    browseMentorUserId: null as string | null,
+    browseMentor: null as null | { id: string; bio: string; isActive: boolean; approvedAt: Date | null; _count: { sessions: number; specialties: number } },
     counselorSessions: [] as Array<{
       id: string;
       toolType: string;
@@ -43,8 +45,18 @@ function memberPrisma(initial = { assessmentCompleted: false, assessmentComplete
       $executeRawUnsafe: async () => 1,
       organization: { findFirst: async () => ({ id: 'org-qa' }) },
       user: {
-        findFirst: async () => ({ id: 'user-fixture-1', ...stored }),
+        findFirst: async ({ where }: { where?: { email?: string | { equals?: string } } } = {}) => {
+          const email = typeof where?.email === 'string' ? where.email : where?.email?.equals;
+          if (email === 'portal-c-browse-mentor@workforceap.org') {
+            return stored.browseMentorUserId ? { id: stored.browseMentorUserId } : null;
+          }
+          return { id: 'user-fixture-1', organizationId: 'org-qa', ...stored };
+        },
         findUnique: async () => ({ ...stored }),
+        create: async () => {
+          stored.browseMentorUserId = 'browse-mentor-user';
+          return { id: stored.browseMentorUserId };
+        },
         update: async ({
           data,
         }: {
@@ -54,8 +66,24 @@ function memberPrisma(initial = { assessmentCompleted: false, assessmentComplete
         },
       },
       mentor: {
-        create: async ({ data }: { data: { bio: string } }) => { stored.mentorProfile = { id: 'synthetic-mentor', bio: data.bio, isActive: false, approvedAt: null, _count: { sessions: 0, specialties: 0 } }; },
-        delete: async () => { stored.mentorProfile = null; },
+        findUnique: async ({ where }: { where: { userId?: string } }) => {
+          if (where.userId === stored.browseMentorUserId) return stored.browseMentor;
+          return stored.mentorProfile;
+        },
+        create: async ({ data }: { data: { bio: string; isActive?: boolean; approvedAt?: Date | null; userId?: string } }) => {
+          const row = { id: data.bio.includes('browse') ? 'synthetic-browse-mentor' : 'synthetic-mentor', bio: data.bio, isActive: Boolean(data.isActive), approvedAt: data.approvedAt ?? null, _count: { sessions: 0, specialties: 0 } };
+          if (data.userId === stored.browseMentorUserId || data.bio.includes('browse')) stored.browseMentor = row;
+          else stored.mentorProfile = row;
+          return row;
+        },
+        update: async ({ data }: { data: { isActive?: boolean; approvedAt?: Date | null } }) => {
+          if (stored.browseMentor) Object.assign(stored.browseMentor, data);
+          return stored.browseMentor;
+        },
+        delete: async ({ where }: { where: { userId?: string } }) => {
+          if (where.userId === stored.browseMentorUserId) stored.browseMentor = null;
+          else stored.mentorProfile = null;
+        },
       },
       aIToolResult: {
         findFirst: async () => stored.counselorSessions[0] ?? null,
@@ -195,6 +223,19 @@ describe('fixture deployment and target binding', () => {
     expect(stored.mentorProfile).toBeNull();
     const leftoverSnapshot = prepared.body as { snapshot: { before: { mentorId: string | null } } };
     expect(leftoverSnapshot.snapshot.before.mentorId).toBeNull();
+  });
+
+  it('prepare deletes a leftover mentor even when the relation is missing and adds a browse mentor', async () => {
+    const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: new Date('2026-01-01T00:00:00Z') });
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    stored.mentorProfile = { id: 'orphan-mentor', bio: 'Portal C temporary mentor fixture; restored by the serialized CI job.', isActive: false, approvedAt: null, _count: { sessions: 0, specialties: 0 } };
+    const prepared = await call({ action: 'prepare' });
+    expect(prepared.status).toBe(200);
+    expect(stored.mentorProfile).toBeNull();
+    expect(stored.browseMentor).toMatchObject({ isActive: true });
+    const orphanSnapshot = (prepared.body as { snapshot: unknown }).snapshot;
+    expect((await call({ action: 'restore', snapshot: orphanSnapshot })).status).toBe(200);
+    expect(stored.browseMentor).toBeNull();
   });
 
   it('prepare adds a marked counselor session when none exist and restore removes it', async () => {

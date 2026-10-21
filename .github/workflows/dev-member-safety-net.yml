@@ -356,7 +356,7 @@ jobs:
         id: staff-baseline
         env:
           GH_TOKEN: ${{ github.token }}
-          HEAD_SHA: 406ec351b3ca719fa469cedefb57c6d18b4109eb
+          HEAD_SHA: 3f5186a87cbed0b962c94c195fddcf873cce8d27
         run: echo "origin=$(node scripts/portal-c-preview-origin.mjs)" >> "$GITHUB_OUTPUT"
 
       - name: Verify master reference for the mentor staff comparison
@@ -367,12 +367,12 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
           PLAYWRIGHT_BASE_URL: ${{ steps.staff-baseline.outputs.origin }}
-          PORTAL_C_TRUSTED_SHA: 406ec351b3ca719fa469cedefb57c6d18b4109eb
+          PORTAL_C_TRUSTED_SHA: 3f5186a87cbed0b962c94c195fddcf873cce8d27
           PORTAL_C_TRUSTED_BRANCH: feature/portal-c-staff-baseline
         run: |
           set -euo pipefail
           master=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/master" --jq .object.sha)
-          test "$master" = efc27e4a4ebeba09b5261e7b1c36463d01925017 || { echo '::error::Refresh the master staff reference'; exit 1; }
+          test "$master" = f8a12f527810ba8c1e08840a762358b0fd86e4f1 || { echo '::error::Refresh the master staff reference'; exit 1; }
           gh api "repos/${GITHUB_REPOSITORY}/compare/${master}...${PORTAL_C_TRUSTED_SHA}" > "$RUNNER_TEMP/mentor-baseline.json"
           node -e 'const c=require(process.env.RUNNER_TEMP+"/mentor-baseline.json");const a=new Set(["docs/PORTAL_C_STAFF_BASELINE.md","scripts/audit-tenant-scoping.cjs","scripts/audit-tenant-scoping.test.cjs"]);if(c.behind_by!==0||c.ahead_by!==2||!c.files?.length||c.files.some(f=>!a.has(f.filename)))throw Error("Master reference application changed")'
           node scripts/portal-c-signed-in-guard.mjs

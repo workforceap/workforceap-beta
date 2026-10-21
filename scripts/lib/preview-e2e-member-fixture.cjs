@@ -9,6 +9,8 @@ const PORTAL_QA_ORG_SLUG = 'portal-qa-september-smoke';
 /** Serializes fixture writes for the shared DEMO test member across concurrent jobs. */
 const FIXTURE_ADVISORY_LOCK_KEY = 902_901;
 const MENTOR_FIXTURE_MARKER = 'Portal C temporary mentor fixture; restored by the serialized CI job.';
+const BROWSE_MENTOR_EMAIL = 'portal-c-browse-mentor@workforceap.org';
+const BROWSE_MENTOR_MARKER = 'Portal C temporary browse mentor fixture; restored by the serialized CI job.';
 const COUNSELOR_FIXTURE_MARKER = 'Portal C temporary counselor session fixture; restored by the serialized CI job.';
 
 async function withFixtureLock(prisma, fn) {
@@ -30,6 +32,7 @@ async function findFixtureMember(prisma) {
     where: { email: { equals: E2E_MEMBER_EMAIL, mode: 'insensitive' }, organizationId: org.id, deletedAt: null, profile: { role: 'member' } },
     select: {
       id: true,
+      organizationId: true,
       assessmentCompleted: true,
       assessmentCompletedAt: true,
       notificationsUpdates: true,
@@ -66,13 +69,83 @@ function isRemovableMentorFixture(mentor) {
   );
 }
 
+async function loadMemberMentor(prisma, memberId) {
+  return prisma.mentor.findUnique({
+    where: { userId: memberId },
+    select: { id: true, bio: true, isActive: true, approvedAt: true, _count: { select: { sessions: true, specialties: true } } },
+  });
+}
+
 async function removeLeftoverMentorFixture(prisma, member) {
-  const mentor = member.mentorProfile;
+  const mentor = member.mentorProfile ?? await loadMemberMentor(prisma, member.id);
   if (!mentor) return false;
-  if (!isRemovableMentorFixture(mentor)) {
+  // The synthetic member must stay a plain member for /mentor/apply. Delete a
+  // leftover fixture, and also any session-free mentor row the relation miss.
+  if (mentor._count?.sessions || mentor._count?.specialties) {
     throw new Error('Temporary mentor has unexpected state; refusing to delete it.');
   }
+  if (!isRemovableMentorFixture(mentor) && mentor.bio !== MENTOR_FIXTURE_MARKER && mentor.bio !== BROWSE_MENTOR_MARKER) {
+    // Still removable when the leftover lost its marker but has no dependents.
+    if (mentor.isActive || mentor.approvedAt) {
+      throw new Error('Temporary mentor has unexpected state; refusing to delete it.');
+    }
+  }
   await prisma.mentor.delete({ where: { id: mentor.id, userId: member.id } });
+  return true;
+}
+
+async function ensureBrowseMentorFixture(prisma, organizationId) {
+  let user = await prisma.user.findFirst({
+    where: { email: { equals: BROWSE_MENTOR_EMAIL, mode: 'insensitive' }, organizationId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!user) {
+    user = await prisma.user.create({
+      data: { organizationId, email: BROWSE_MENTOR_EMAIL, fullName: 'Portal QA browse mentor' },
+      select: { id: true },
+    });
+  }
+  const existing = await loadMemberMentor(prisma, user.id);
+  if (existing) {
+    if (existing.bio !== BROWSE_MENTOR_MARKER || existing._count?.sessions || existing._count?.specialties) {
+      throw new Error('Browse mentor has unexpected state; refusing to reuse it.');
+    }
+    if (!existing.isActive || !existing.approvedAt) {
+      await prisma.mentor.update({
+        where: { id: existing.id, userId: user.id },
+        data: { isActive: true, approvedAt: existing.approvedAt ?? new Date() },
+      });
+    }
+    return { created: false, mentorId: existing.id };
+  }
+  const created = await prisma.mentor.create({
+    data: {
+      userId: user.id,
+      fullName: 'Portal QA browse mentor',
+      title: 'Synthetic browse fixture',
+      company: 'Portal QA',
+      industry: 'Testing',
+      bio: BROWSE_MENTOR_MARKER,
+      isActive: true,
+      approvedAt: new Date(),
+      availableHours: 0,
+    },
+  });
+  return { created: true, mentorId: created.id };
+}
+
+async function removeBrowseMentorFixture(prisma, organizationId) {
+  const user = await prisma.user.findFirst({
+    where: { email: { equals: BROWSE_MENTOR_EMAIL, mode: 'insensitive' }, organizationId, deletedAt: null },
+    select: { id: true },
+  });
+  if (!user) return false;
+  const mentor = await loadMemberMentor(prisma, user.id);
+  if (!mentor) return false;
+  if (mentor.bio !== BROWSE_MENTOR_MARKER || mentor._count?.sessions || mentor._count?.specialties) {
+    throw new Error('Browse mentor has unexpected state; refusing to delete it.');
+  }
+  await prisma.mentor.delete({ where: { id: mentor.id, userId: user.id } });
   return true;
 }
 
@@ -146,10 +219,13 @@ async function snapshotMember(prisma) {
 async function prepareMemberForSignedInRoutes(prisma) {
   return withFixtureLock(prisma, async (prisma) => {
   let user = await findFixtureMember(prisma);
+  user = { ...user, mentorProfile: user.mentorProfile ?? await loadMemberMentor(prisma, user.id) };
   if (user.mentorProfile) {
     await removeLeftoverMentorFixture(prisma, user);
     user = await findFixtureMember(prisma);
+    user = { ...user, mentorProfile: user.mentorProfile ?? await loadMemberMentor(prisma, user.id) };
   }
+  await ensureBrowseMentorFixture(prisma, user.organizationId);
   await ensureCounselorSessionFixture(prisma, user.id);
   const { before } = snapshotOf(user);
   if (user.assessmentCompleted) {
@@ -195,9 +271,11 @@ async function restoreMemberSnapshot(prisma, snapshot) {
       await prisma.messageThread.update({ where: { id: thread.id, memberId: member.id }, data: { memberLastReadAt: thread.memberLastReadAt ? new Date(thread.memberLastReadAt) : null } });
     }
   }
-  if (snapshot.before.mentorId === null && member.mentorProfile) {
-    await removeLeftoverMentorFixture(prisma, member);
+  const currentMentor = member.mentorProfile ?? await loadMemberMentor(prisma, member.id);
+  if (snapshot.before.mentorId === null && currentMentor) {
+    await removeLeftoverMentorFixture(prisma, { ...member, mentorProfile: currentMentor });
   }
+  await removeBrowseMentorFixture(prisma, member.organizationId);
   await removeMarkedCounselorFixtures(prisma, member.id);
   await verifyRestored(prisma, snapshot);
   });

@@ -23,8 +23,8 @@ jobs:
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       PORTAL_C_TRUSTED_SHA: ${{ github.event.pull_request.head.sha }}
       PORTAL_C_TRUSTED_BRANCH: ${{ github.event.pull_request.head.ref }}
-      PORTAL_C_STAFF_BASELINE_SHA: 406ec351b3ca719fa469cedefb57c6d18b4109eb
-      PORTAL_C_STAFF_BASELINE_SOURCE_SHA: efc27e4a4ebeba09b5261e7b1c36463d01925017
+      PORTAL_C_STAFF_BASELINE_SHA: 3f5186a87cbed0b962c94c195fddcf873cce8d27
+      PORTAL_C_STAFF_BASELINE_SOURCE_SHA: f8a12f527810ba8c1e08840a762358b0fd86e4f1
       PLAYWRIGHT_TRACE: 'off'
     steps:
       - uses: actions/checkout@v4

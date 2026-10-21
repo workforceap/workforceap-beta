@@ -23,8 +23,8 @@ not authorize merging, marking a PR ready, or enabling a production rollout.
 ## Staff reference
 
 The baseline is draft #2832, commit
-`406ec351b3ca719fa469cedefb57c6d18b4109eb`, whose first parent chain reaches
-master `efc27e4a4ebeba09b5261e7b1c36463d01925017`. Only documentation and the
+`3f5186a87cbed0b962c94c195fddcf873cce8d27`, whose first parent chain reaches
+master `f8a12f527810ba8c1e08840a762358b0fd86e4f1`. Only documentation and the
 audit path-normalization tooling differ from that master. Application source
 and styles are identical. Vercel ignores master-branch Preview builds, so this
 allowed `feature/portal-*` branch supplies the master application baseline.
