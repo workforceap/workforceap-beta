@@ -216,6 +216,43 @@ describe('portal-c signed-in guard', () => {
     expect(calls[0]).toContain('teamId=team_zTfMkbIIH6ADgy5Hy43MCM5K');
   });
 
+  it('refuses GitHub provenance from a different repository', async () => {
+    const outcome = await runVercelProvenanceGuard({
+      origin: 'https://workforceap-beta-git-feature.vercel.app',
+      trustedSha: TRUSTED_SHA,
+      trustedBranch: TRUSTED_BRANCH,
+      vercelToken: 'token',
+      githubToken: 'gh',
+      repository: 'other/workforceap-beta',
+      expectedProjectId: WORKFORCEAP_VERCEL_PROJECT_ID,
+      fetchImpl: (async (url: string) => {
+        if (url.includes('api.vercel.com')) {
+          return { ok: false, status: 403, json: async () => ({}) };
+        }
+        throw new Error(`unexpected ${url}`);
+      }) as unknown as typeof fetch,
+    });
+    expect(outcome.ok).toBe(false);
+    expect((outcome as { reason?: string }).reason).toBe('untrusted_repository');
+  });
+
+  it('fails closed on API 403 when GitHub proof is missing', async () => {
+    const calls: string[] = [];
+    const result = await runVercelProvenanceGuard({
+      origin: 'https://workforceap-beta-git-feature.vercel.app',
+      trustedSha: TRUSTED_SHA,
+      trustedBranch: TRUSTED_BRANCH,
+      vercelToken: 'token',
+      expectedProjectId: WORKFORCEAP_VERCEL_PROJECT_ID,
+      fetchImpl: (async (url: string) => {
+        calls.push(url);
+        return { ok: false, status: 403, json: async () => ({}) };
+      }) as unknown as typeof fetch,
+    });
+    expect(result).toMatchObject({ ok: false, reason: 'github_token_missing' });
+    expect(calls.every((url) => url.startsWith('https://api.vercel.com/'))).toBe(true);
+  });
+
   it('uses the Vercel GitHub App status when the API token is forbidden', async () => {
     const origin = 'https://workforceap-beta-git-feature.vercel.app';
     const calls: string[] = [];
@@ -248,20 +285,33 @@ describe('portal-c signed-in guard', () => {
             }),
           };
         }
+        if (url.includes('/git/ref/heads/')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({ object: { sha: TRUSTED_SHA } }),
+          };
+        }
         if (url.includes('/deployments?')) {
           return {
             ok: true,
             status: 200,
-            json: async () => [{ id: 42, creator: { login: 'vercel[bot]' } }],
+            json: async () => [
+              {
+                id: 42,
+                sha: TRUSTED_SHA,
+                ref: TRUSTED_BRANCH,
+                environment: 'Preview',
+                creator: { login: 'vercel[bot]' },
+              },
+            ],
           };
         }
         if (url.includes('/deployments/42/statuses')) {
           return {
             ok: true,
             status: 200,
-            json: async () => [
-              { state: 'success', environment_url: origin },
-            ],
+            json: async () => [{ state: 'success', environment_url: origin }],
           };
         }
         throw new Error(`unexpected ${url}`);
@@ -336,11 +386,26 @@ describe('portal-c signed-in guard', () => {
             }),
           };
         }
+        if (url.includes('/git/ref/heads/')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({ object: { sha: TRUSTED_SHA } }),
+          };
+        }
         if (url.includes('/deployments?')) {
           return {
             ok: true,
             status: 200,
-            json: async () => [{ id: 7, creator: { login: 'vercel[bot]' } }],
+            json: async () => [
+              {
+                id: 7,
+                sha: TRUSTED_SHA,
+                ref: TRUSTED_SHA,
+                environment: 'Preview',
+                creator: { login: 'vercel[bot]' },
+              },
+            ],
           };
         }
         if (url.includes('/deployments/7/statuses')) {
@@ -362,21 +427,50 @@ describe('portal-c signed-in guard', () => {
     expect((outcome as { reason?: string }).reason).toBe('preview_host_mismatch');
   });
 
-  it('refuses login when Vercel provenance fails before health', async () => {
-    const origin = 'https://workforceap-beta-git-feature.vercel.app';
-    const vercel = await runVercelProvenanceGuard({
-      origin,
+  it('refuses a forbidden token when the Preview belongs to another branch', async () => {
+    const outcome = await runVercelProvenanceGuard({
+      origin: 'https://workforceap-beta-git-feature.vercel.app',
       trustedSha: TRUSTED_SHA,
       trustedBranch: TRUSTED_BRANCH,
       vercelToken: 'token',
+      githubToken: 'gh',
+      repository: 'workforceap/workforceap-beta',
       expectedProjectId: WORKFORCEAP_VERCEL_PROJECT_ID,
-      fetchImpl: (async () => ({
-        ok: true,
-        status: 200,
-        json: async () => readyDeployment({ projectId: 'prj_foreign' }),
-      })) as unknown as typeof fetch,
+      fetchImpl: (async (url: string) => {
+        if (url.includes('api.vercel.com')) {
+          return { ok: false, status: 403, json: async () => ({ error: { code: 'forbidden' } }) };
+        }
+        if (url.endsWith('/status')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              statuses: [
+                {
+                  context: 'Vercel',
+                  state: 'success',
+                  target_url:
+                    'https://vercel.com/mabrown040-5207s-projects/workforceap-beta/dpl_example',
+                },
+              ],
+            }),
+          };
+        }
+        if (url.includes('/git/ref/heads/')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({ object: { sha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' } }),
+          };
+        }
+        throw new Error(`unexpected ${url}`);
+      }) as unknown as typeof fetch,
     });
-    expect(vercel.ok).toBe(false);
-    expect((vercel as { reason?: string }).reason).toBe('wrong_vercel_project');
+    expect(outcome.ok).toBe(false);
+    expect((outcome as { reason?: string }).reason).toBe('branch_mismatch');
   });
+
+  it.each(['https://user:password@example.vercel.app', 'https://example.vercel.app/path', 'https://example.vercel.app?next=other', 'https://example.vercel.app#fragment'])(
+    'rejects credentials and non-origin input: %s', (origin) => { expect(parseHttpsOrigin(origin).ok).toBe(false); },
+  );
 });

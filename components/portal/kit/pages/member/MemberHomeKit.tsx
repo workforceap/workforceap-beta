@@ -487,6 +487,7 @@ export function MemberHomeKit({
 
         <div className="wa-kit-card">
           <KpiStrip
+            responsive="member"
             items={[
               {
                 label: programTitle ? programTitle : th('kpiProgramGeneric'),

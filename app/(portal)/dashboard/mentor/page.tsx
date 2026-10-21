@@ -34,6 +34,8 @@ export default async function MentorDashboardPage() {
     },
   });
 
+  // No route-level loading.tsx: that streamed HTTP 200 before this redirect, so
+  // the signed-in inventory never left /dashboard/mentor for a plain member.
   if (!mentor) redirect('/mentor/apply');
 
   const sessionRows = (maxWidth: string) => (

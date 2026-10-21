@@ -240,6 +240,7 @@ function MemberProgramOverview({
         />
         <div className="wa-kit-card">
           <KpiStrip
+            responsive="member"
             items={[
               {
                 label: tc('kpiCompleted'),

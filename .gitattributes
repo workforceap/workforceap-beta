@@ -1,1 +1,6 @@
 docs/knowledge-base/generated/** linguist-generated=true
+
+# Guards hash the reviewed Git bytes; Windows checkouts must preserve each original blob.
+scripts/migration-collision-baseline.json -text
+prisma/migrations/**/migration.sql -text
+supabase/** -text

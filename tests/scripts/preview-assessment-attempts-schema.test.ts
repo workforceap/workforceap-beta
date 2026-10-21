@@ -197,7 +197,7 @@ function partialProtectionPrisma(state: ProtectionState) {
 
 function queryProtectionState(sql: string, state: ProtectionState) {
   if (sql.includes('column_name')) {
-    return [...state.columns].map((column_name) => ({ column_name }));
+    return [...state.columns].map((column_name) => ({ column_name, ...(column_name === 'assessment_attempt_count' ? { data_type: 'integer', is_nullable: 'NO', column_default: '0' } : column_name === 'assessment_history' ? { data_type: 'jsonb', is_nullable: 'NO', column_default: "'[]'::jsonb" } : { data_type: 'timestamp without time zone', is_nullable: 'YES', column_default: null }) }));
   }
   if (sql.includes('pg_constraint')) {
     return state.constraint ? [{ conname: preview.REQUIRED_CONSTRAINT }] : [];
@@ -210,3 +210,9 @@ function queryProtectionState(sql: string, state: ProtectionState) {
   }
   return [];
 }
+
+
+it('rejects named columns with an incompatible type or missing default', () => {
+  expect(preview.columnDefinitionReady({ column_name: 'assessment_attempt_count', data_type: 'text', is_nullable: 'NO', column_default: '0' })).toBe(false);
+  expect(preview.columnDefinitionReady({ column_name: 'assessment_history', data_type: 'jsonb', is_nullable: 'YES', column_default: null })).toBe(false);
+});

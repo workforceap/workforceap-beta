@@ -288,6 +288,7 @@ export function MemberAiToolsHubKit({
         />
         <div className="wa-kit-card">
           <KpiStrip
+            responsive="member"
             items={[
               { label: t('kpiResumeScore'), value: `${resumeScore} / 100`, tone: 'warn' },
               { label: t('kpiTargetRole'), value: roleLabel || t('targetRoleFallback') },

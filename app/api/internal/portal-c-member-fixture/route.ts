@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db/prisma';
+import { getPortalCFixtureDatabase } from '@/lib/portal-c/fixtureDatabase';
 import { handlePortalCMemberFixture } from '@/lib/portal-c/memberFixtureHandler';
 
 export const runtime = 'nodejs';
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   const result = await handlePortalCMemberFixture({
     authorization: request.headers.get('authorization'),
     payload,
-    prisma,
+    getPrisma: getPortalCFixtureDatabase,
   });
   return NextResponse.json(result.body, { status: result.status });
 }

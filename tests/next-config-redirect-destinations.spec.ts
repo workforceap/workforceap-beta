@@ -6,6 +6,7 @@ import { getRedirectUrl, unstable_getResponseFromNextConfig } from 'next/experim
 import { getPublishedPosts } from '../marketing/src/data/blog';
 import { getProgramBySlug } from '../lib/content/programs';
 import nextConfig from '../next.config';
+import { DEV_MEMBER_ALIASES } from '../app/dev/member/harness/registry';
 
 type Redirect = { source: string; destination: string; permanent: boolean };
 
@@ -49,9 +50,16 @@ function appRouteExists(urlPath: string): boolean {
   const staticSegments = segments.filter((seg) => !seg.startsWith(':'));
   const rel = staticSegments.join('/');
   const appDir = path.join(root, 'app');
+  const pageDirs = [
+    path.join(appDir, rel),
+    ...['(portal)', '(auth)', '(decision-journey)'].map((group) => path.join(appDir, group, rel)),
+  ];
+  if (pageDirs.some((dir) => {
+    if (existsSync(path.join(dir, 'page.tsx'))) return true;
+    if (!existsSync(dir)) return false;
+    return readdirSync(dir).some((entry) => /^\([^/]+\)$/.test(entry) && existsSync(path.join(dir, entry, 'page.tsx')));
+  })) return true;
   const candidates = [
-    path.join(appDir, rel, 'page.tsx'),
-    ...['(portal)', '(auth)', '(decision-journey)'].map((group) => path.join(appDir, group, rel, 'page.tsx')),
     path.join(root, 'marketing/src/pages', `${rel}.astro`),
     path.join(root, 'marketing/src/pages', rel, 'index.astro'),
   ];
@@ -104,6 +112,21 @@ const STALE_ROUTES: Array<{ source: string; destination: string }> = [
   { source: '/portal/training', destination: '/dashboard/program' },
   { source: '/dashboard/plan', destination: '/dashboard/career-brief' },
   { source: '/dashboard/weekly-focus', destination: '/dashboard/weekly-recap' },
+  { source: '/dashboard/assessments', destination: '/dashboard/assessment' },
+  { source: '/dashboard/skills-assessment', destination: '/dashboard/assessment' },
+  { source: '/dashboard/ai-tools/application-tracker', destination: '/dashboard/job-applications' },
+  { source: '/dashboard/ai-tools/resume-analysis', destination: '/dashboard/ai-tools/resume-studio?view=score' },
+  { source: '/dashboard/ai-tools/resume-coach', destination: '/dashboard/ai-tools/resume-studio?view=coach' },
+  { source: '/dashboard/ai-tools/resume-rewriter', destination: '/dashboard/ai-tools/resume-studio?view=rewrite' },
+  { source: '/dashboard/ai-tools/studio', destination: '/dashboard/ai-tools' },
+  { source: '/dashboard/ai-tools/readiness-coach', destination: '/dashboard/ai-tools?tab=session&agent=readiness' },
+  { source: '/dashboard/toolkit', destination: '/dashboard/ai-tools?tab=toolkit' },
+  { source: '/dashboard/settings', destination: '/dashboard/profile#settings' },
+  { source: '/dashboard/program/change', destination: '/dashboard/program' },
+  { source: '/dashboard/coursera', destination: '/dashboard/program' },
+  { source: '/dashboard/training', destination: '/dashboard/program' },
+  { source: '/applications', destination: '/dashboard/job-applications' },
+  { source: '/certifications', destination: '/dashboard/certifications' },
   { source: '/my-group', destination: '/dashboard' },
   { source: '/employer/dashboard', destination: '/employer' },
   { source: '/partner/signup', destination: '/partners#partner-signup' },
@@ -150,6 +173,20 @@ describe('stale routes keep redirecting to destinations that exist (WAP-40)', ()
       .filter((r) => !appRouteExists(r.destination))
       .map((r) => `${r.source} → ${r.destination}`);
     expect(missing).toEqual([]);
+  });
+
+  it('gives every signed-in inventory alias an HTTP hop before RSC', async () => {
+    const redirects = (await nextConfig.redirects?.()) as Redirect[];
+    const bySource = new Map(redirects.map((redirect) => [redirect.source, redirect]));
+    const inventoryHttpTarget: Record<string, string> = {
+      '/dashboard/ai-tools/readiness-coach': '/dashboard/ai-tools?tab=session&agent=readiness',
+    };
+    for (const alias of DEV_MEMBER_ALIASES) {
+      if (alias.path === '/pwa-start') continue;
+      const redirect = bySource.get(alias.path);
+      expect(redirect, `${alias.path} must 308 before the signed-in inventory blocks non-GET`).toBeDefined();
+      expect(redirect!.destination).toBe(inventoryHttpTarget[alias.path] ?? alias.target);
+    }
   });
 });
 

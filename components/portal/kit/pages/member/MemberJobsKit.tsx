@@ -190,6 +190,7 @@ export function MemberJobsKit({
         />
         <div className="wa-kit-card">
           <KpiStrip
+            responsive="member"
             items={
               pipelineLoadFailed
                 ? (
@@ -328,6 +329,7 @@ export function MemberJobsKit({
                 <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }} data-testid="open-roles-list">
                   {uniqueOpenRoles.map((job, i) => (
                     <JobListingRow
+                      wrapMeta
                       key={job.id}
                       href={jobHref(job.id)}
                       title={job.title}
@@ -398,6 +400,7 @@ export function MemberJobsKit({
                 <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }}>
                   {recommended.map((job, i) => (
                     <JobListingRow
+                      wrapMeta
                       key={job.id}
                       href={jobHref(best && i === 0 ? job.id : job.id)}
                       title={job.title}

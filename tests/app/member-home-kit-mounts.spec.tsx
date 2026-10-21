@@ -50,7 +50,7 @@ vi.mock('@/components/onboarding/PortalEntryClient', () => ({
 }));
 vi.mock('@/components/pwa/PWAInstallPrompt', () => ({ default: () => <div data-testid="pwa-install-prompt" /> }));
 
-import DashboardPage from '@/app/(portal)/dashboard/page';
+import DashboardPage from '@/app/(portal)/dashboard/(home)/page';
 import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import { getUser } from '@/lib/auth/server';
