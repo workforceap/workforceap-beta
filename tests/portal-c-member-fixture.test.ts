@@ -22,7 +22,20 @@ function previewEnv(url: string): NodeJS.ProcessEnv {
 }
 
 function memberPrisma(initial = { assessmentCompleted: false, assessmentCompletedAt: null as Date | null }) {
-  const stored = { ...initial, notificationsUpdates: false, profile: { city: null as string | null }, messageThreadsAsMember: [], mentorProfile: null as null | { id: string; bio: string; isActive: boolean; approvedAt: null; _count: { sessions: number; specialties: number } } };
+  const stored = {
+    ...initial,
+    notificationsUpdates: false,
+    profile: { city: null as string | null },
+    messageThreadsAsMember: [],
+    mentorProfile: null as null | { id: string; bio: string; isActive: boolean; approvedAt: null; _count: { sessions: number; specialties: number } },
+    counselorSessions: [] as Array<{
+      id: string;
+      toolType: string;
+      inputSummary: string;
+      parentToolResultId: null;
+      _count: { childResults: number; primaryForApplicationFeedbacks: number };
+    }>,
+  };
   return {
     stored,
     prisma: {
@@ -43,6 +56,20 @@ function memberPrisma(initial = { assessmentCompleted: false, assessmentComplete
       mentor: {
         create: async ({ data }: { data: { bio: string } }) => { stored.mentorProfile = { id: 'synthetic-mentor', bio: data.bio, isActive: false, approvedAt: null, _count: { sessions: 0, specialties: 0 } }; },
         delete: async () => { stored.mentorProfile = null; },
+      },
+      aIToolResult: {
+        findFirst: async () => stored.counselorSessions[0] ?? null,
+        findMany: async () => stored.counselorSessions.filter((session) => session.inputSummary.startsWith('Portal C temporary counselor session fixture')),
+        create: async ({ data }: { data: { inputSummary: string; toolType: string } }) => {
+          stored.counselorSessions.push({
+            id: 'synthetic-counselor-session',
+            toolType: data.toolType,
+            inputSummary: data.inputSummary,
+            parentToolResultId: null,
+            _count: { childResults: 0, primaryForApplicationFeedbacks: 0 },
+          });
+        },
+        delete: async () => { stored.counselorSessions = []; },
       },
       profile: { update: async ({ data }: { data: { city: string | null } }) => Object.assign(stored.profile, data) },
     },
@@ -156,6 +183,40 @@ describe('fixture deployment and target binding', () => {
     expect(stored.mentorProfile).toMatchObject({ isActive: false, approvedAt: null });
     expect((await call({ action: 'restore', snapshot: original.body.snapshot })).status).toBe(200);
     expect(stored.mentorProfile).toBeNull();
+  });
+
+  it('prepare removes a leftover marked mentor so inventory sees a plain member', async () => {
+    const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: new Date('2026-01-01T00:00:00Z') });
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    expect((await call({ action: 'prepare-mentor' })).status).toBe(200);
+    expect(stored.mentorProfile).not.toBeNull();
+    const prepared = await call({ action: 'prepare' });
+    expect(prepared.status).toBe(200);
+    expect(stored.mentorProfile).toBeNull();
+    const leftoverSnapshot = prepared.body as { snapshot: { before: { mentorId: string | null } } };
+    expect(leftoverSnapshot.snapshot.before.mentorId).toBeNull();
+  });
+
+  it('prepare adds a marked counselor session when none exist and restore removes it', async () => {
+    const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: new Date('2026-01-01T00:00:00Z') });
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    const prepared = await call({ action: 'prepare' });
+    expect(prepared.status).toBe(200);
+    expect(stored.counselorSessions).toHaveLength(1);
+    expect(stored.counselorSessions[0]?.inputSummary).toMatch(/temporary counselor session fixture/);
+    const sessionSnapshot = (prepared.body as { snapshot: unknown }).snapshot;
+    expect((await call({ action: 'restore', snapshot: sessionSnapshot })).status).toBe(200);
+    expect(stored.counselorSessions).toHaveLength(0);
+  });
+
+  it('refuses to delete a temporary counselor session if unexpected children appear', async () => {
+    const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: new Date('2026-01-01T00:00:00Z') });
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    const prepared = await call({ action: 'prepare' });
+    stored.counselorSessions[0]!._count.childResults = 1;
+    const blockedSnapshot = (prepared.body as { snapshot: unknown }).snapshot;
+    expect((await call({ action: 'restore', snapshot: blockedSnapshot })).status).toBe(500);
+    expect(stored.counselorSessions).toHaveLength(1);
   });
 
   it('refuses to delete a temporary mentor if unexpected sessions appear', async () => {
@@ -304,6 +365,7 @@ describe('portal C member fixture handler', () => {
         },
       },
       user: { findFirst: async () => null, findUnique: async () => null, update: async () => ({}) },
+      aIToolResult: { findFirst: async () => null, findMany: async () => [], create: async () => ({}), delete: async () => ({}) },
     };
     const result = await handlePortalCMemberFixture({
       authorization: 'Bearer header.payload.sig',

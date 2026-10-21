@@ -67,6 +67,10 @@ async function settle(page: Page, path: string, width: number, theme = 'light') 
   expect(response?.status(), `${path} must render successfully`).toBeLessThan(400);
   await expect(page).not.toHaveURL(/\/login(?:[?#]|$)/);
   await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
+  // Client queues (partner attention) and counselor resume fetch after the
+  // document. Snapshotting the "Loading…" copy is not a staff-shell leak.
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 30_000 });
+  await expect(page.getByText(/^Loading(?: resume)?…$/)).toHaveCount(0, { timeout: 30_000 });
   await assertDeploymentAcceptedReadOnlyAudit(page);
   await expect(page.locator('[data-portal-audit-suppressed="workspace-nav-badges-and-notification-polling"]')).toHaveCount(1);
   await expect(page.locator('[data-workspace-role]:not([data-workspace-role="member"])[data-member-home-compact]')).toHaveCount(0);

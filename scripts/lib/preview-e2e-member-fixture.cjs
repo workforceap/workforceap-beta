@@ -9,6 +9,7 @@ const PORTAL_QA_ORG_SLUG = 'portal-qa-september-smoke';
 /** Serializes fixture writes for the shared DEMO test member across concurrent jobs. */
 const FIXTURE_ADVISORY_LOCK_KEY = 902_901;
 const MENTOR_FIXTURE_MARKER = 'Portal C temporary mentor fixture; restored by the serialized CI job.';
+const COUNSELOR_FIXTURE_MARKER = 'Portal C temporary counselor session fixture; restored by the serialized CI job.';
 
 async function withFixtureLock(prisma, fn) {
   return prisma.$transaction(async (tx) => {
@@ -54,6 +55,75 @@ function snapshotOf(user) {
   } };
 }
 
+function isRemovableMentorFixture(mentor) {
+  return Boolean(
+    mentor
+    && mentor.bio === MENTOR_FIXTURE_MARKER
+    && !mentor.isActive
+    && !mentor.approvedAt
+    && !mentor._count?.sessions
+    && !mentor._count?.specialties,
+  );
+}
+
+async function removeLeftoverMentorFixture(prisma, member) {
+  const mentor = member.mentorProfile;
+  if (!mentor) return false;
+  if (!isRemovableMentorFixture(mentor)) {
+    throw new Error('Temporary mentor has unexpected state; refusing to delete it.');
+  }
+  await prisma.mentor.delete({ where: { id: mentor.id, userId: member.id } });
+  return true;
+}
+
+function isRemovableCounselorFixture(session) {
+  return Boolean(
+    session
+    && session.toolType === 'career_counselor'
+    && session.inputSummary === COUNSELOR_FIXTURE_MARKER
+    && !session.parentToolResultId
+    && !session._count?.childResults
+    && !session._count?.primaryForApplicationFeedbacks,
+  );
+}
+
+async function removeMarkedCounselorFixtures(prisma, memberId) {
+  const sessions = await prisma.aIToolResult.findMany({
+    where: { userId: memberId, toolType: 'career_counselor', inputSummary: COUNSELOR_FIXTURE_MARKER },
+    select: {
+      id: true,
+      toolType: true,
+      inputSummary: true,
+      parentToolResultId: true,
+      _count: { select: { childResults: true, primaryForApplicationFeedbacks: true } },
+    },
+  });
+  for (const session of sessions) {
+    if (!isRemovableCounselorFixture(session)) {
+      throw new Error('Temporary counselor session has unexpected state; refusing to delete it.');
+    }
+    await prisma.aIToolResult.delete({ where: { id: session.id, userId: memberId } });
+  }
+  return sessions.length;
+}
+
+async function ensureCounselorSessionFixture(prisma, memberId) {
+  const existing = await prisma.aIToolResult.findFirst({
+    where: { userId: memberId, toolType: 'career_counselor' },
+    select: { id: true },
+  });
+  if (existing) return { created: false };
+  await prisma.aIToolResult.create({
+    data: {
+      userId: memberId,
+      toolType: 'career_counselor',
+      inputSummary: COUNSELOR_FIXTURE_MARKER,
+      output: 'Portal QA session\n\nAction plan\n1. Review the signed-in inventory fixture.\nTranscript\n',
+    },
+  });
+  return { created: true };
+}
+
 async function prepareMentorFixture(prisma) {
   return withFixtureLock(prisma, async (tx) => {
     const member = await findFixtureMember(tx);
@@ -75,7 +145,12 @@ async function snapshotMember(prisma) {
  */
 async function prepareMemberForSignedInRoutes(prisma) {
   return withFixtureLock(prisma, async (prisma) => {
-  const user = await findFixtureMember(prisma);
+  let user = await findFixtureMember(prisma);
+  if (user.mentorProfile) {
+    await removeLeftoverMentorFixture(prisma, user);
+    user = await findFixtureMember(prisma);
+  }
+  await ensureCounselorSessionFixture(prisma, user.id);
   const { before } = snapshotOf(user);
   if (user.assessmentCompleted) {
     return { userId: user.id, before, applied: false };
@@ -121,12 +196,9 @@ async function restoreMemberSnapshot(prisma, snapshot) {
     }
   }
   if (snapshot.before.mentorId === null && member.mentorProfile) {
-    const mentor = member.mentorProfile;
-    if (mentor.bio !== MENTOR_FIXTURE_MARKER || mentor.isActive || mentor.approvedAt || mentor._count.sessions || mentor._count.specialties) {
-      throw new Error('Temporary mentor has unexpected state; refusing to delete it.');
-    }
-    await prisma.mentor.delete({ where: { id: mentor.id, userId: member.id } });
+    await removeLeftoverMentorFixture(prisma, member);
   }
+  await removeMarkedCounselorFixtures(prisma, member.id);
   await verifyRestored(prisma, snapshot);
   });
 }

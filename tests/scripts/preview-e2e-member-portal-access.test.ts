@@ -23,6 +23,35 @@ function supabaseAnonJwt(ref: string) {
   return `${header}.${payload}.test-signature`;
 }
 
+function counselorFixtureDelegate() {
+  const sessions: Array<{
+    id: string;
+    toolType: string;
+    inputSummary: string;
+    parentToolResultId: null;
+    _count: { childResults: number; primaryForApplicationFeedbacks: number };
+  }> = [];
+  return {
+    sessions,
+    aIToolResult: {
+      findFirst: async () => sessions[0] ?? null,
+      findMany: async () => sessions,
+      create: async ({ data }: { data: { inputSummary: string; toolType: string } }) => {
+        sessions.push({
+          id: 'synthetic-counselor-session',
+          toolType: data.toolType,
+          inputSummary: data.inputSummary,
+          parentToolResultId: null,
+          _count: { childResults: 0, primaryForApplicationFeedbacks: 0 },
+        });
+      },
+      delete: async () => {
+        sessions.length = 0;
+      },
+    },
+  };
+}
+
 describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
   it('allows fixture database access only on DEMO direct URLs', () => {
     expect(() =>
@@ -57,11 +86,13 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
       assessmentCompletedAt: null,
     };
     const lockCalls: string[] = [];
+    const counselor = counselorFixtureDelegate();
     const prisma = {
       $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma),
       $executeRawUnsafe: async (sql: string) => {
         lockCalls.push(sql);
       },
+      aIToolResult: counselor.aIToolResult,
       organization: {
         findFirst: async () => ({ id: 'org-qa' }),
       },
@@ -101,9 +132,11 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
 
   it('does not mutate when the fixture member is already assessment-complete', async () => {
     let updates = 0;
+    const counselor = counselorFixtureDelegate();
     const prisma = {
       $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma),
       $executeRawUnsafe: async () => {},
+      aIToolResult: counselor.aIToolResult,
       organization: { findFirst: async () => ({ id: 'org-qa' }) },
       user: {
         findFirst: async () => ({
