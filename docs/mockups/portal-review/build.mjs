@@ -2,6 +2,7 @@
 import {readFileSync,writeFileSync,existsSync,mkdirSync} from 'node:fs';
 import {resolve,dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {createRequire} from 'node:module';
 import {REVIEW_BASE_SHA} from './review-model.mjs';
 const here=dirname(fileURLToPath(import.meta.url));
 const root=resolve(here,'../../..');
@@ -21,9 +22,11 @@ for(const [weight,name] of [[400,'inter-latin-400-normal.27ae72da.woff2'],[600,'
  if(!existsSync(file))throw Error('Pinned Inter font not found; install the existing lockfile dependencies before building the review.');
  fonts+=`@font-face{font-family:Inter;font-style:normal;font-weight:${weight};font-display:swap;src:url(data:font/woff2;base64,${readFileSync(file).toString('base64')}) format('woff2');}`;
 }
-const css=fonts+'\n'+tokens+'\n'+readFileSync(resolve(here,'review.css'),'utf8');
+const css=fonts+'\n'+tokens+'\n'+readFileSync(resolve(here,'review.css'),'utf8')+'\n'+readFileSync(resolve(here,'voice-review.css'),'utf8');
 const model=readFileSync(resolve(here,'review-model.mjs'),'utf8').replace(/^export /gm,'');
-const script=model+'\n'+readFileSync(resolve(here,'review.js'),'utf8');
+const {Mic,Headphones,Target,AudioLines,MicOff,Pause}=createRequire(import.meta.url)('lucide-react');
+const libraryIconNodes=Object.fromEntries(Object.entries({mic:Mic,headphones:Headphones,target:Target,audio:AudioLines,'mic-off':MicOff,pause:Pause}).map(([key,component])=>[key,component.render({},null).props.iconNode]));
+const script='const libraryIconNodes='+safeJSON(libraryIconNodes)+';\n'+model+'\n'+readFileSync(resolve(here,'review.js'),'utf8').replace(/\nnavigate\(\);\s*$/,'')+'\n'+readFileSync(resolve(here,'voice-review.js'),'utf8')+'\ninstallVoiceReview();\nnavigate();';
 if(/<\/script/i.test(script))throw Error('Embedded script must not contain a closing script token.');
 const html=`<!doctype html>
 <html lang="en" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; font-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'"><title>WorkforceAP · Complete portal review</title><style>${css}</style></head><body>

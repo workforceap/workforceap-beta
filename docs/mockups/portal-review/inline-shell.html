@@ -1,0 +1,29 @@
+<div id="wap-voice-review" data-theme="light">
+<style>
+/*__WAP_REVIEW_STYLE__*/
+</style>
+<header class="reviewbar" aria-label="Design review controls">
+  <div class="reviewbrand">WorkforceAP <span>/ Portal & voice review</span></div>
+  <span class="reviewlabel">Interactive mockup · synthetic data</span>
+  <div class="reviewcontrols">
+    <label class="control"><span>Workspace</span><select id="role-select" aria-label="Review workspace"><option value="member">Member</option><option value="counselor">Counselor</option><option value="employer">Employer</option><option value="partner">Partner</option><option value="admin">Admin</option><option value="shared">Group & shared</option><option value="entry">Entry & handoffs</option></select></label>
+    <label class="control statecontrol"><span>Data state</span><select id="state-select" aria-label="Review data state"><option value="ready">Ready</option><option value="loading">Loading</option><option value="empty">Confirmed empty</option><option value="unavailable">Unavailable</option><option value="denied">No access</option><option value="saved">Saved receipt</option><option value="conflict">Changed record</option><option value="uncertain">Unconfirmed send</option></select></label>
+    <button id="theme-button" data-action="theme" aria-label="Switch theme">Theme</button>
+    <button data-action="catalog">All 266 screens</button>
+    <button data-action="source">Source & data</button>
+  </div>
+</header>
+<div id="app"></div>
+<dialog id="review-dialog" class="reviewdrawer" aria-labelledby="dialog-title">
+  <div class="dialoghead"><h2 id="dialog-title"></h2><button class="button small" data-action="close-dialog">Close</button></div>
+  <div class="dialogbody" id="dialog-body"></div>
+</dialog>
+<div id="toast" class="toast" aria-hidden="true"></div>
+<div id="announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+<script type="application/json" id="route-data">__WAP_ROUTE_DATA__</script>
+<script type="application/json" id="journey-data">__WAP_JOURNEY_DATA__</script>
+<script type="application/json" id="screen-definitions">__WAP_SCREEN_DATA__</script>
+<script>
+/*__WAP_REVIEW_SCRIPT__*/
+</script>
+</div>

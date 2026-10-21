@@ -2,6 +2,12 @@
 
 This directory contains a portable, offline design review of WorkforceAP’s portal routes. Build and open `index.html` to navigate the proposed member, counselor, employer, partner, admin, group/shared and entry experiences. Every displayed identity and record is synthetic. The review does not authenticate, contact application APIs, send messages, publish content or change production.
 
+## Voice is part of the workspace
+
+The review includes the source application's voice-first AI Career Tools workspace, with Coaches, Practice, Resume and All Tools views. Readiness, résumé coaching, mock interviews and Lilley each have a session surface and a purpose-specific companion panel. Career & Business is the broader legacy entry to Lilley, not an additional independent agent. Staff, employer and partner assistants stay in their own workspaces; no admin assistant is invented.
+
+Voice sessions are explicitly simulated. Consent, session state, transcripts, interruption, mute, text fallback, reconnecting and résumé-suggestion decisions operate in local memory. The review never opens the microphone, acquires video, calls an AI provider, submits session completion or sends email. `VOICE-REVIEW.md` maps the screens and explains the source-specific retention boundaries.
+
 ## Source identity and coverage
 
 The route inventory, source links, journey contracts and model are pinned to [`workforceap/workforceap-beta` at `efc27e4a4ebeba09b5261e7b1c36463d01925017`](https://github.com/workforceap/workforceap-beta/commit/efc27e4a4ebeba09b5261e7b1c36463d01925017). The inventory was recovered and checked against that repository source. It is not derived from the dated GBrain mirror.
@@ -42,12 +48,21 @@ From the repository root:
 node docs/mockups/portal-review/build.mjs
 ```
 
+For the in-conversation presentation, build the same route and interaction model as a scoped fragment:
+
+```sh
+node docs/mockups/portal-review/build-inline.mjs --output=/absolute/path/wap-portal-voice-review.html
+```
+
+The inline build uses the conversation's supplied icon runtime, fits its frame without a fixed viewport shell, and pages the full screen catalog. It keeps all 266 route contracts and the same synthetic data model. Its default view is AI Career Tools so the voice experience is visible immediately.
+
 The generated HTML and screenshot output are intentionally untracked; the portable HTML is delivered as a review attachment. Open the generated `docs/mockups/portal-review/index.html` directly in a browser. The optional `--output=/absolute/path/review.html` argument writes an additional portable copy.
 
 With the repository Playwright dependency and Chromium available:
 
 ```sh
 node docs/mockups/portal-review/verify-model.mjs
+node docs/mockups/portal-review/verify-voice.mjs
 WAP_REVIEW_EVIDENCE_DIR=/tmp/wap-portal-review-smoke node docs/mockups/portal-review/verify.mjs --smoke
 WAP_REVIEW_EVIDENCE_DIR=/tmp/wap-portal-review-full node docs/mockups/portal-review/verify.mjs --capture
 ```
@@ -57,6 +72,9 @@ The full verifier checks every route at 1440, 768 and 375 pixels in light and da
 Rebuild after changing source, definitions or styles. Review the actual results for the exact generated artifact; a previous passing report is not evidence for later edits.
 
 ## What the evidence establishes
+
+See `VOICE-VERIFICATION.md` for the voice extension's exact artifact hashes,
+full and focused browser results, and the boundary between this review and live acceptance.
 
 | Layer | Meaning |
 | --- | --- |
