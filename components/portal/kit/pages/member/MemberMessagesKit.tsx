@@ -19,6 +19,8 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
  * Real wiring: when `memberUserId` is supplied, the composer POSTs to the
  * existing legacy member↔counselor endpoint (`/api/member/messages`), the
  * same mechanism `MemberCounselorChatClient` uses. No new backend.
+ * Saved server/realtime timestamps remain intact. Optimistic rows are marked
+ * pending, and a realtime echo is reconciled with its POST response by saved ID.
  */
 
 interface Conversation {
@@ -90,6 +92,16 @@ const DEFAULT_CONVERSATIONS: Conversation[] = [];
 
 const DEFAULT_MESSAGES: ChatMessage[] = [];
 
+function chronological(messages: ChatMessage[]): ChatMessage[] {
+  const time = (message: ChatMessage) => {
+    const value = message.createdAt && !message.pending ? Date.parse(message.createdAt) : NaN;
+    return Number.isFinite(value) ? value : Infinity;
+  };
+  // A delayed realtime insert belongs at its persisted time. Undated kit
+  // fixtures and optimistic sends retain their input order after saved rows.
+  return [...messages].sort((left, right) => time(left) === time(right) ? 0 : time(left) - time(right));
+}
+
 export function MemberMessagesKit({
   conversations = DEFAULT_CONVERSATIONS,
   activeName = 'Counselor',
@@ -105,7 +117,7 @@ export function MemberMessagesKit({
 }: MemberMessagesKitProps) {
   const t = useTranslations('empty');
   const tm = useTranslations('messages');
-  const [messages, setMessages] = useState<ChatMessage[]>(messagesProp);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => chronological(messagesProp));
   const [error, setError] = useState<string | null>(null);
   // Mobile single-pane navigation: on phones the list and thread cannot sit
   // side-by-side, so we show one pane at a time with a back button. Desktop
@@ -164,7 +176,7 @@ export function MemberMessagesKit({
       setError(null);
       // Optimistic append so the thread feels responsive; reconcile on response.
       const tempId = `temp-${Date.now()}`;
-      setMessages((prev) => [...prev, { id: tempId, from: 'self', text }]);
+      setMessages((prev) => [...prev, { id: tempId, from: 'self', text, pending: true }]);
       try {
         const r = await fetch('/api/member/messages', {
           method: 'POST',
@@ -174,7 +186,7 @@ export function MemberMessagesKit({
         });
         const data = (await r.json().catch(() => ({}))) as {
           error?: string;
-          message?: { id: string; body: string };
+          message?: { id: string; body: string; createdAt?: string };
         };
         if (!r.ok || !data.message) {
           setMessages((prev) => prev.filter((m) => m.id !== tempId));
@@ -182,9 +194,16 @@ export function MemberMessagesKit({
           return false;
         }
         const saved = data.message;
-        setMessages((prev) =>
-          prev.map((m) => (m.id === tempId ? { id: saved.id, from: 'self', text: saved.body } : m)),
-        );
+        setMessages((prev) => {
+          const received = prev.find((message) => message.id === saved.id);
+          // Realtime may beat the HTTP response. Keep one persisted row and
+          // retain its real timestamp if an older response omits that field.
+          const persisted: ChatMessage = {
+            id: saved.id, from: 'self', text: saved.body,
+            createdAt: saved.createdAt ?? received?.createdAt,
+          };
+          return chronological([...prev.filter((message) => message.id !== tempId && message.id !== saved.id), persisted]);
+        });
         try {
           window.dispatchEvent(new CustomEvent('wa-nav-badges-refresh'));
         } catch {
@@ -237,15 +256,16 @@ export function MemberMessagesKit({
             const id = String(row.id ?? '');
             const authorId = String(row.author_id ?? '');
             const body = String(row.body ?? '');
+            const createdAt = typeof row.created_at === 'string' ? row.created_at : undefined;
             if (!id) return;
             const mine = authorId === memberUserId;
             setMessages((prev) => {
               // Dedupe against optimistic/sent (and already-received) messages by id.
               if (prev.some((m) => m.id === id)) return prev;
               const incoming: ChatMessage = mine
-                ? { id, from: 'self', text: body }
-                : { id, from: 'other', text: body, author: otherInitialsRef.current };
-              return [...prev, incoming];
+                ? { id, from: 'self', text: body, createdAt }
+                : { id, from: 'other', text: body, author: otherInitialsRef.current, createdAt };
+              return chronological([...prev, incoming]);
             });
             // Counselor reply arrived while the thread is open: mark it read
             // (which also refreshes the nav unread badge).
@@ -271,13 +291,13 @@ export function MemberMessagesKit({
         <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }}>
           <div
             className="wa-grid wa-grid-cols-1 md:wa-grid-cols-3"
-            style={{ overflow: 'hidden', minHeight: 520 }}
+            style={{ overflow: 'hidden', height: 'clamp(32rem, 72dvh, 48rem)', minHeight: 0 }}
           >
           {/* Conversation list — single pane on mobile (hidden when a thread is
               open), always visible alongside the thread on md+. */}
           <div
             className={`${mobileView === 'list' ? 'wa-block' : 'wa-hidden'} md:wa-block`}
-            style={{ borderRight: '1px solid var(--wa-border)' }}
+            style={{ borderRight: '1px solid var(--wa-border)', minHeight: 0, overflowY: 'auto' }}
           >
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--wa-border)' }}>
               <h2 style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}>{tm('conversations')}</h2>
@@ -346,7 +366,7 @@ export function MemberMessagesKit({
               classes (not inline) so the mobile hide/show can win over flex. */}
           <div
             className={`${mobileView === 'thread' ? 'wa-flex' : 'wa-hidden'} md:wa-flex md:wa-col-span-2`}
-            style={{ flexDirection: 'column' }}
+            style={{ flexDirection: 'column', minHeight: 0, minWidth: 0 }}
           >
             <div className="wa-flex wa-items-center wa-gap-3" style={{ padding: '16px 20px', borderBottom: '1px solid var(--wa-border)' }}>
               {/* Mobile-only back button → return to the conversation list. */}
@@ -382,7 +402,7 @@ export function MemberMessagesKit({
                 </div>
               </div>
             </div>
-            <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, minHeight: 0, padding: 20, display: 'flex', flexDirection: 'column' }}>
               {feedbackDraft ? <p className="wa-kit-lede">{tm('feedbackDraftNotice')}</p> : feedbackNotice ? <p role="status" className="wa-kit-lede">{feedbackNotice}</p> : null}
               {error ? (
                 <p role="alert" className="wa-kit-lede" style={{ margin: '0 0 12px', color: 'var(--wa-danger)' }}>
@@ -397,6 +417,7 @@ export function MemberMessagesKit({
                 initialText={feedbackDraft?.text}
                 multiline={Boolean(feedbackDraft)}
                 empty={{ title: t('thread.title'), description: t('thread.body'), action: t('thread.action') }}
+                labels={{ newMessage: tm('showLatestMessage'), pending: tm('sending'), send: tm('sendMessageLabel'), sending: tm('sendingMessage'), history: tm('messageHistory') }}
               />
             </div>
           </div>

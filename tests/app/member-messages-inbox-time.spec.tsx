@@ -19,7 +19,11 @@ vi.mock('@/lib/messages/counselorThread', () => ({
 vi.mock('@/lib/member/loadTrainingWorkspace', () => ({ loadTrainingWorkspace: vi.fn() }));
 vi.mock('next-intl/server', () => ({ getTranslations: vi.fn(async () => (key: string) => key) }));
 vi.mock('@/components/portal/PageHeader', () => ({ default: () => null }));
-vi.mock('@/components/portal/kit/pages/member/MemberMessagesKit', () => ({ MemberMessagesKit: () => null }));
+vi.mock('@/components/portal/kit/pages/member/MemberMessagesKit', () => ({
+  MemberMessagesKit: ({ messages }: { messages: Array<{ id: string; createdAt?: string }> }) => (
+    <div>{messages.map((message) => <time key={message.id} dateTime={message.createdAt}>{message.createdAt}</time>)}</div>
+  ),
+}));
 vi.mock('@/components/portal/MemberCounselorChatClient', () => ({ default: () => null }));
 // Surface the server-computed inbox preview time so the assertion can see it.
 vi.mock('@/components/portal/MemberMessagesMobileClient', () => ({
@@ -50,5 +54,11 @@ describe('MemberMessagesPage inbox preview time', () => {
     expect(html).toContain('9:30 PM CDT');
     expect(html).not.toContain('02:30');
     expect(html).not.toContain('2:30 AM');
+  });
+
+  it('retains the persisted instant in the default kit instead of dropping it', async () => {
+    const html = renderToStaticMarkup(await MemberMessagesPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain('dateTime="2026-09-19T02:30:00.000Z"');
+    expect(html).toContain('2026-09-19T02:30:00.000Z');
   });
 });

@@ -1217,7 +1217,12 @@
     "networkError": "Erreur réseau",
     "composerPlaceholder": "Écrire à {name}…",
     "feedbackDraftNotice": "Vérifiez les détails du cours et tout lien de projet enregistré avant d’envoyer. Vos notes privées ne sont pas partagées.",
-    "feedbackUnavailable": "Nous n’avons pas pu charger ce cours assigné. Vous pouvez tout de même écrire votre message ci-dessous."
+    "feedbackUnavailable": "Nous n’avons pas pu charger ce cours assigné. Vous pouvez tout de même écrire votre message ci-dessous.",
+    "showLatestMessage": "Nouveau message — voir le dernier",
+    "sending": "Envoi en cours…",
+    "sendingMessage": "Envoi du message en cours",
+    "messageHistory": "Historique des messages",
+    "sendMessageLabel": "Envoyer le message"
   },
   "profile": {
     "edit": "Modifier le profil",

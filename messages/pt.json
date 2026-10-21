@@ -1217,7 +1217,12 @@
     "networkError": "Erro de rede",
     "composerPlaceholder": "Escreva para {name}…",
     "feedbackDraftNotice": "Revise os detalhes do curso e qualquer link de projeto salvo antes de enviar. Suas notas privadas não são compartilhadas.",
-    "feedbackUnavailable": "Não conseguimos carregar esse curso atribuído. Você ainda pode escrever sua mensagem abaixo."
+    "feedbackUnavailable": "Não conseguimos carregar esse curso atribuído. Você ainda pode escrever sua mensagem abaixo.",
+    "showLatestMessage": "Nova mensagem — ver a mais recente",
+    "sending": "Enviando…",
+    "sendingMessage": "Enviando mensagem",
+    "messageHistory": "Histórico de mensagens",
+    "sendMessageLabel": "Enviar mensagem"
   },
   "profile": {
     "edit": "Editar perfil",

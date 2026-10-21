@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { KitEmptyState } from './KitEmptyState';
+import { formatPortalDate, formatPortalDateTime, formatPortalTime } from '@/lib/formatDate';
 
 export interface ChatMessage {
   id: string;
@@ -11,6 +12,9 @@ export interface ChatMessage {
   text: string;
   /** Label/avatar content for "other" messages (e.g. initials). */
   author?: ReactNode;
+  /** Persisted server timestamp. Omit for optimistic/undated messages. */
+  createdAt?: string;
+  pending?: boolean;
 }
 
 interface ChatThreadProps {
@@ -26,6 +30,8 @@ interface ChatThreadProps {
    * `empty.*` strings (MemberMessagesKit does); the defaults are kit English.
    */
   empty?: { title: string; description?: string; action?: string };
+  /** Surface-owned translations; kit previews retain English defaults. */
+  labels?: { newMessage: string; pending: string; send: string; sending: string; history: string };
 }
 
 function authorLabel(author: ReactNode | undefined): string {
@@ -39,36 +45,82 @@ function authorLabel(author: ReactNode | undefined): string {
  * inbox and AI advisor surfaces. Uses `--wa-*` bubbles so messages read as
  * the same product as the rest of the member portal. Optional contextual drafts
  * are editable; asynchronous send failures preserve the current composer text.
+ * Persisted timestamps use the portal timezone; pending sends have no invented
+ * timestamp. Follow the inner log only while near its end or after an explicit
+ * send. Incoming messages never move a reader away from older history.
  */
-export function ChatThread({ messages, placeholder = 'Type a message…', onSend, initialText = '', multiline = false, empty }: ChatThreadProps) {
+export function ChatThread({ messages, placeholder = 'Type a message…', onSend, initialText = '', multiline = false, empty, labels }: ChatThreadProps) {
   const [text, setText] = useState(initialText);
   const [sending, setSending] = useState(false);
-  const endRef = useRef<HTMLDivElement>(null);
+  const [hasNewMessages, setHasNewMessages] = useState(false);
+  const logRef = useRef<HTMLDivElement>(null);
+  const followLatestRef = useRef(true);
+  const previousIdsRef = useRef<Set<string>>(new Set());
+  const sendingRef = useRef(false);
+  const draftRevisionRef = useRef(0);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
   const canSend = Boolean(onSend);
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: 'end' });
-  }, [messages.length]);
+    const log = logRef.current;
+    const hasAddedMessages = messages.some((message) => !previousIdsRef.current.has(message.id));
+    previousIdsRef.current = new Set(messages.map((message) => message.id));
+    if (!log) return;
+    if (followLatestRef.current) {
+      // Assign only the inner scroller, with no smooth animation or ancestor
+      // scroll. This also respects reduced motion without a second code path.
+      log.scrollTop = log.scrollHeight;
+      setHasNewMessages(false);
+    } else if (hasAddedMessages) {
+      setHasNewMessages(true);
+    }
+  }, [messages]);
+
+  const showLatest = () => {
+    const log = logRef.current;
+    if (!log) return;
+    log.scrollTop = log.scrollHeight;
+    followLatestRef.current = true;
+    setHasNewMessages(false);
+  };
 
   const send = async () => {
     const t = text.trim();
-    if (!t || !onSend || sending) return;
-    const submitted = text;
+    if (!t || !onSend || sendingRef.current) return;
+    const submittedRevision = draftRevisionRef.current;
+    sendingRef.current = true;
+    // Choosing Send is an explicit request to follow this new contribution.
+    // Subsequent manual scrolling can turn following off again while pending.
+    showLatest();
     setSending(true);
     try {
       const accepted = await onSend(t);
-      if (accepted !== false) setText((current) => current === submitted ? '' : current);
+      if (accepted !== false && draftRevisionRef.current === submittedRevision) setText('');
     } catch {
       // The caller owns error presentation; a retry must retain the draft.
     } finally {
+      sendingRef.current = false;
       setSending(false);
     }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }} role="log" aria-live="polite" aria-relevant="additions">
+      <div
+        ref={logRef}
+        style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain' }}
+        className="wa-kit-focus"
+        role="log"
+        tabIndex={0}
+        aria-label={labels?.history ?? 'Message history'}
+        aria-live="polite"
+        aria-relevant="additions"
+        onScroll={(event) => {
+          const log = event.currentTarget;
+          followLatestRef.current = log.scrollHeight - log.scrollTop - log.clientHeight <= 48;
+          if (followLatestRef.current) setHasNewMessages(false);
+        }}
+      >
         {messages.length === 0 ? (
           <KitEmptyState
             kind="first"
@@ -78,43 +130,64 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
           />
         ) : (
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {messages.map((m) => {
+            {messages.map((m, index) => {
               const mine = m.from === 'self';
+              const day = m.createdAt && !m.pending ? formatPortalDate(m.createdAt) : '';
+              const previousDate = messages[index - 1]?.createdAt;
+              const previousDay = previousDate ? formatPortalDate(previousDate) : '';
+              const time = m.createdAt && !m.pending ? formatPortalTime(m.createdAt) : '';
               return (
                 <li
                   key={m.id}
-                  style={{
-                    display: 'flex',
-                    justifyContent: mine ? 'flex-end' : 'flex-start',
-                    alignItems: 'flex-end',
-                    gap: 8,
-                  }}
+                  data-message-id={m.id}
                 >
-                  {mine ? null : <Avatar initials={authorLabel(m.author).slice(0, 2)} size={28} />}
-                  <p
+                  {day && day !== previousDay ? <p className="wa-kit-meta" style={{ textAlign: 'center', margin: 'var(--wa-pad-sm) 0' }}>{day}</p> : null}
+                  <div
                     style={{
-                      margin: 0,
-                      maxWidth: '80%',
-                      padding: '10px 14px',
-                      borderRadius: mine
-                        ? 'var(--wa-radius-sm) var(--wa-radius-sm) 4px var(--wa-radius-sm)'
-                        : 'var(--wa-radius-sm) var(--wa-radius-sm) var(--wa-radius-sm) 4px',
-                      background: mine ? 'var(--wa-accent-soft)' : 'var(--wa-bg)',
-                      border: mine ? 'none' : '1px solid var(--wa-border)',
-                      color: 'var(--wa-text)',
-                      fontSize: 'var(--wa-type-body)',
-                      lineHeight: 1.45,
+                      display: 'flex',
+                      justifyContent: mine ? 'flex-end' : 'flex-start',
+                      alignItems: 'flex-end',
+                      gap: 8,
                     }}
                   >
-                    {m.text}
-                  </p>
+                    {mine ? null : <Avatar initials={authorLabel(m.author).slice(0, 2)} size={28} />}
+                    <div style={{ maxWidth: '80%', minWidth: 0 }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          padding: '10px 14px',
+                          borderRadius: mine
+                            ? 'var(--wa-radius-sm) var(--wa-radius-sm) 4px var(--wa-radius-sm)'
+                            : 'var(--wa-radius-sm) var(--wa-radius-sm) var(--wa-radius-sm) 4px',
+                          background: mine ? 'var(--wa-accent-soft)' : 'var(--wa-bg)',
+                          border: mine ? 'none' : '1px solid var(--wa-border)',
+                          color: 'var(--wa-text)',
+                          fontSize: 'var(--wa-type-body)',
+                          lineHeight: 1.45,
+                          whiteSpace: 'pre-wrap',
+                          overflowWrap: 'anywhere',
+                        }}
+                      >
+                        {m.text}
+                      </p>
+                      {m.pending ? <span className="wa-kit-meta">{labels?.pending ?? 'Sending…'}</span> : time ? (
+                        <time className="wa-kit-meta" dateTime={m.createdAt} title={formatPortalDateTime(m.createdAt!)} style={{ display: 'block', textAlign: mine ? 'right' : 'left' }}>
+                          {time}
+                        </time>
+                      ) : null}
+                    </div>
+                  </div>
                 </li>
               );
             })}
           </ul>
         )}
-        <div ref={endRef} />
       </div>
+      {hasNewMessages ? (
+        <button type="button" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" onClick={() => { showLatest(); logRef.current?.focus({ preventScroll: true }); }} style={{ alignSelf: 'center', flexShrink: 0 }}>
+          {labels?.newMessage ?? 'New message — show latest'}
+        </button>
+      ) : null}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -131,7 +204,7 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
           ref={(el) => { inputRef.current = el; }}
           className="wa-kit-focus"
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => { draftRevisionRef.current += 1; setText(e.target.value); }}
           placeholder={placeholder}
           disabled={!canSend}
           rows={8}
@@ -140,14 +213,14 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
             flex: 1, minWidth: 0, padding: 'var(--wa-pad-sm)',
             border: '1px solid var(--wa-border)', borderRadius: 'var(--wa-radius-sm)',
             background: 'var(--wa-bg)', color: 'var(--wa-text)',
-            fontSize: 'var(--wa-type-body)', lineHeight: 1.5, resize: 'vertical',
+            fontSize: 'var(--wa-type-body)', lineHeight: 1.5, resize: 'vertical', maxHeight: 'min(16rem, 24dvh)',
           }}
         /> : <input
           id="wa-kit-chat-input"
           ref={(el) => { inputRef.current = el; }}
           className="wa-kit-focus"
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => { draftRevisionRef.current += 1; setText(e.target.value); }}
           placeholder={placeholder}
           disabled={!canSend}
           autoComplete="off"
@@ -168,7 +241,7 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
           type="submit"
           className="wa-kit-focus hover:wa-opacity-90"
           disabled={!canSend || !text.trim() || sending}
-          aria-label={sending ? 'Sending message' : 'Send message'}
+          aria-label={sending ? labels?.sending ?? 'Sending message' : labels?.send ?? 'Send message'}
           style={{
             width: 44,
             height: 44,
