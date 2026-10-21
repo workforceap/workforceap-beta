@@ -39,7 +39,7 @@ function j5(overrides: Partial<J5QuoteVoucherRequestFacts> = {}): J5QuoteVoucher
     classEndDate: '2027-03-30',
     tuitionCents: 750_000,
     tuitionLabel: 'Tuition & Fees',
-    title: 'Quote / Voucher Request',
+    title: 'Quote/Bid Letter/Voucher Request',
     signer: { name: 'Michael A. Brown, PMP, ChE', title: 'Executive Director' },
     letterhead: {
       logoPng,
@@ -108,6 +108,7 @@ describe('two-stage WAP billing PDFs', () => {
       });
       const { text, positions } = await extract(new Uint8Array(bytes));
       assert.match(text, /PREVIEW - NOT SIGNED/u);
+      assert.ok(text.includes(stage === 'j5' ? 'Quote/Bid Letter/Voucher Request' : 'Invoice / Voucher Cover Letter'));
       assert.match(text, /\[Not provided\]/u);
       assert.match(text, /Signature \(blank for preview\)/u);
       assert.doesNotMatch(text, /September 30|160 hours|March 30|student began class|requests payment|received, signed training voucher/u);
@@ -201,7 +202,7 @@ describe('two-stage WAP billing PDFs', () => {
     assert.deepEqual(pdf.getPage(0).getSize(), { width: 612, height: 792 });
     const { text } = await extract(bytes);
     assert.match(text, /\bJ5\b/u);
-    assert.match(text, /Quote \/ Voucher Request/u);
+    assert.match(text, /Quote\/Bid Letter\/Voucher Request/u);
     assert.match(text, /DRAFT - SIGNATURE REQUIRED/u);
     assert.match(text, /Casey Counselor \| casey@example\.test/u);
     assert.match(text, /Jordan Example \| jordan@example\.test/u);

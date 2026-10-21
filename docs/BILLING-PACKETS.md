@@ -4,8 +4,13 @@
 current WorkforceAP process. Authorized POST requests to create or send one now
 return `410 LEGACY_BILLING_FLOW_RETIRED`; the admin page shows existing records
 only. GET history and protected PDF downloads remain available. The separate
-J5 Quote/Voucher Request and later J6 Invoice/Voucher Cover Letter with the
+J5 Quote/Bid Letter/Voucher Request and later J6 Invoice/Voucher Cover Letter with the
 received signed board voucher use the separate two-stage routes below.
+
+The J5 heading is **Quote/Bid Letter/Voucher Request** (Mike, 2026-10-21).
+New and explicitly re-saved drafts use this heading, as do unsigned member
+previews and the admin workbench. Saved drafts keep their frozen title until
+re-saved; signed documents retain their archived bytes.
 
 ## Release reconciliation (2026-10-10)
 
@@ -131,7 +136,7 @@ legitimately runs to two pages, with real content on the second.
 Requested by Mike Brown on 2026-09-27. Two separate stages, each with its own
 primary action, signature and send:
 
-1. **J5 Quote / Voucher Request**, before any voucher exists. It goes to the
+1. **J5 Quote/Bid Letter/Voucher Request**, before any voucher exists. It goes to the
    counselor and the student (exactly 2 recipients) and is archived in the
    student's file.
 2. **J6 Invoice / Voucher Cover Letter**, only after the board-signed voucher
@@ -179,7 +184,7 @@ rebuilds and hashes the complete draft; signed archived bytes stay unchanged.
   date or a Net term, and there is no overdue state. It becomes `received`
   only when staff record the date and evidence.
 - Printed wording frozen in content matches the approved reference layouts:
-  titles `Quote / Voucher Request` and `Invoice / Voucher Cover Letter`; the J6
+  titles `Quote/Bid Letter/Voucher Request` and `Invoice / Voucher Cover Letter`; the J6
   payment sentences `Please arrange payment by check or wire to Workforce
   Advancement Project and confirm the expected remittance date.` and `We will
   follow up in 10 to 14 days if payment has not been recorded.`; the
@@ -545,7 +550,7 @@ the reference PDFs themselves are not committed.
 | Printed on the PDF | Frozen content field |
 | --- | --- |
 | `DRAFT - SIGNATURE REQUIRED` badge, stage label `J5` / `J6` | fixed label; stage from `kind` |
-| Title (`Quote / Voucher Request`, `Invoice / Voucher Cover Letter`) | `title` |
+| Title (`Quote/Bid Letter/Voucher Request`, `Invoice / Voucher Cover Letter`) | `title` |
 | Issue date | `issueDate` (the server's date at save; never caller-supplied) |
 | J5: TO counselor name \| email, PHONE, BOARD, RE student | `counselor.name`, `counselor.email`, `counselor.phone`, `boardName`, `student.name` |
 | J6: TO finance name \| email, BOARD, COPY counselor; student (names only), RE "Payment for {student} training" | `finance.*`, `boardName`, `counselor.name`, `student.name` |
@@ -576,7 +581,7 @@ separators. Changing a bound value changes the page; adding hard-coded text
 fails the test. A third test renders real M1 content and compares the whole
 page, in reading order, with the reference fixture, including the Sep 30 →
 Mar 30 end date (start + 6 calendar months, clamped); a fourth pins M1's
-frozen strings (titles `Quote / Voucher Request` / `Invoice / Voucher Cover
+frozen strings (titles `Quote/Bid Letter/Voucher Request` / `Invoice / Voucher Cover
 Letter`, organization, website, phone `(512) 825-2896`, address, signer,
 payment instruction and follow-up wording) to the fixture.
 

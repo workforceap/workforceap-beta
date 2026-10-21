@@ -21,7 +21,7 @@ export function stageForKind(kind: BillingDocumentKind): BillingStage {
 }
 
 export const DOCUMENT_TITLES: Readonly<Record<BillingDocumentKind, string>> = {
-  [J5_KIND]: 'Quote / Voucher Request',
+  [J5_KIND]: 'Quote/Bid Letter/Voucher Request',
   [J6_KIND]: 'Invoice / Voucher Cover Letter',
 };
 

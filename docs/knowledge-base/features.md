@@ -136,7 +136,10 @@ The two-stage billing editor normalizes complete US phone numbers to
 `(512) 555-0123` for new drafts and unsigned previews through
 [the billing formatter](../../lib/billing/twoStage/phone.ts). Extensions and
 international or incomplete input are preserved. Saved draft and signed PDF
-snapshots render their stored values exactly.
+snapshots render their stored values exactly. The J5 heading is
+`Quote/Bid Letter/Voucher Request` for new or explicitly re-saved drafts,
+unsigned member previews and the admin workbench. Existing frozen titles and
+archived signed PDFs are preserved.
 
 Admin program displays use the saved primary or alias-matched legacy assignment;
 unmarked historical rows and observed learning do not create an active assignment.
