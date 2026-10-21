@@ -1,0 +1,949 @@
+{
+  "schemaVersion": 1,
+  "repository": "workforceap/workforceap-beta",
+  "baseSha": "efc27e4a4ebeba09b5261e7b1c36463d01925017",
+  "evidenceBoundary": "Journey specifications grounded in source. This file is not a record of executed UI, authorization, provider, or live acceptance tests.",
+  "fixturesPolicy": "Synthetic identities and records only. No participant data, secret values, provider egress, database connection, or live mutation in standalone review.",
+  "portalTimezone": "America/Chicago",
+  "reportTimezone": "America/New_York",
+  "routeCount": 266,
+  "scenarioCount": 15,
+  "scenarios": [
+    {
+      "id": "J01",
+      "title": "Sign in, reach the right workspace, return safely",
+      "roles": [
+        "member",
+        "counselor",
+        "employer",
+        "partner",
+        "admin"
+      ],
+      "steps": [
+        {
+          "route": "/login",
+          "action": "Sign in with one synthetic identity per role",
+          "expected": "Return to the authorized requested destination; reject external redirect targets.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard",
+          "action": "Open a member deep link as a member and a staff-only identity",
+          "expected": "Member renders; staff baseline member row does not grant member entitlement.",
+          "actor": "member"
+        },
+        {
+          "route": "/counselor",
+          "action": "Switch to the assigned counselor workspace",
+          "expected": "Only server-resolved available roles are offered.",
+          "actor": "counselor"
+        },
+        {
+          "route": "/employer",
+          "action": "Open an employer link with and without an account association",
+          "expected": "Associated employer opens; unlinked user gets the established access destination.",
+          "actor": "employer"
+        },
+        {
+          "route": "/partner",
+          "action": "Open a partner link with and without an account association",
+          "expected": "Associated partner opens; denied redirects terminate without a loop.",
+          "actor": "partner"
+        },
+        {
+          "route": "/admin",
+          "action": "Return through the role switcher and browser Back",
+          "expected": "The active role and navigation remain correct; no unauthorized data flashes.",
+          "actor": "admin"
+        }
+      ],
+      "fixtures": [
+        "signed-out",
+        "active-member",
+        "staff-with-baseline-member-role",
+        "same-org-admin",
+        "other-org-admin",
+        "unlinked-employer",
+        "unlinked-partner",
+        "deleted-user"
+      ],
+      "assertions": [
+        "Verify content-level authorization, not just HTTP 200.",
+        "Unknown routes must show not-found, not a home skeleton.",
+        "Keep requested query/tab when safe; no redirect loops."
+      ],
+      "sourcePaths": [
+        "lib/auth/memberDashboardAccess.ts",
+        "lib/auth/portalRoleSwitcher.ts",
+        "lib/auth/portalGuards.ts",
+        "lib/auth/safeRedirectPath.ts",
+        "tests/app/portal-root-denial-redirects.spec.tsx"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J02",
+      "title": "Member home \u2192 readiness \u2192 program next step",
+      "roles": [
+        "member"
+      ],
+      "steps": [
+        {
+          "route": "/dashboard",
+          "action": "Read current next action",
+          "expected": "Next action reflects saved readiness and enrollment, not fixture scores.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/readiness",
+          "action": "Review required steps",
+          "expected": "Completed, pending, unavailable, and locked steps have distinct labels.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/eligibility",
+          "action": "Open eligibility review",
+          "expected": "Server-owned status and saved answers remain authoritative.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/assessment",
+          "action": "Resume the allowed assessment step",
+          "expected": "Attempt and retake rules are preserved; unsupported access is refused.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/program",
+          "action": "Continue into the assigned program",
+          "expected": "The primary enrollment and allowed catalog control the destination.",
+          "actor": "member"
+        }
+      ],
+      "fixtures": [
+        "new-member",
+        "partially-ready",
+        "assessment-complete",
+        "retake-not-authorized",
+        "catalog-load-error",
+        "no-enrollment"
+      ],
+      "assertions": [
+        "Do not infer completion from route visits.",
+        "No fictional readiness score, counselor, employer, or weekly plan appears as live data.",
+        "A data failure must not reset completed steps."
+      ],
+      "sourcePaths": [
+        "lib/member/loadMemberDashboardHome.ts",
+        "lib/auth/memberDashboardAccess.ts",
+        "app/(portal)/dashboard/readiness/page.tsx",
+        "app/(portal)/dashboard/assessment/page.tsx",
+        "docs/PRODUCT_STAKES.md"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J03",
+      "title": "Program overview \u2192 secondary program \u2192 change request",
+      "roles": [
+        "member"
+      ],
+      "steps": [
+        {
+          "route": "/dashboard/program",
+          "action": "Open My program",
+          "expected": "Show the enrollment curriculum version and actual completion denominator.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/program?program=sample-secondary-program",
+          "action": "Select a fixture secondary enrollment",
+          "expected": "The selected program changes the view, not the primary enrollment.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/program/change",
+          "action": "Review a program change request",
+          "expected": "Existing pending requests and counselor-driven reassignment boundaries remain visible.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/messages",
+          "action": "Ask the assigned team for help",
+          "expected": "Return link preserves the relevant program context.",
+          "actor": "member"
+        }
+      ],
+      "fixtures": [
+        "two-enrollments",
+        "primary-pointer-drift",
+        "unassigned-program-query",
+        "pending-program-change",
+        "inactive-only-catalog",
+        "catalog-unavailable"
+      ],
+      "assertions": [
+        "Unknown or foreign program query cannot create an enrollment.",
+        "Course launch uses the program on screen.",
+        "An empty explicit catalog never silently expands assignment options."
+      ],
+      "sourcePaths": [
+        "app/(portal)/dashboard/program/page.tsx",
+        "lib/member/getActiveProgramForDashboard.ts",
+        "lib/member/curriculumAssignment.ts",
+        "app/api/member/program-change-request/route.ts",
+        "tests/api/member-program-change-assignment.spec.ts"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J04",
+      "title": "Course \u2192 saved study work \u2192 lab \u2192 feedback",
+      "roles": [
+        "member",
+        "counselor"
+      ],
+      "steps": [
+        {
+          "route": "/dashboard/program",
+          "action": "Choose an assigned course",
+          "expected": "Course choice has a stable deep link and visible focus.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/learning/modules/[courseSlug]",
+          "action": "Read the lesson and save fixture study work",
+          "expected": "Only assigned curriculum accepts the change; save confirmation requires persisted response.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/learning/labs/[labId]",
+          "action": "Save a draft and submit a fixture lab",
+          "expected": "Draft, submitted, reviewed, and unavailable are distinct.",
+          "actor": "member"
+        },
+        {
+          "route": "/counselor/lab-reviews",
+          "action": "Open the assigned review queue",
+          "expected": "Only authorized member submissions are returned.",
+          "actor": "counselor"
+        },
+        {
+          "route": "/counselor/lab-reviews/[submissionId]",
+          "action": "Review and return fixture feedback",
+          "expected": "Review action remains staff-scoped.",
+          "actor": "counselor"
+        },
+        {
+          "route": "/dashboard/program",
+          "action": "Return to the selected course",
+          "expected": "Real feedback and saved study work survive reload.",
+          "actor": "member"
+        }
+      ],
+      "fixtures": [
+        "saved-draft",
+        "no-work",
+        "course-not-assigned",
+        "curriculum-changed",
+        "save-fails",
+        "already-submitted",
+        "reviewed",
+        "reduced-motion"
+      ],
+      "assertions": [
+        "Keep unsaved work after failure.",
+        "CURRICULUM_CHANGED asks for reload; never silently overwrites new assignment.",
+        "Test double-submit and refresh/replay at the endpoint contract.",
+        "Use reduced-motion scroll behavior while preserving focus."
+      ],
+      "sourcePaths": [
+        "app/api/member/training-workspace/route.ts",
+        "lib/member/loadTrainingWorkspace.ts",
+        "app/api/member/labs/[labId]/route.ts",
+        "app/api/member/labs/[labId]/submit/route.ts",
+        "app/api/staff/lab-reviews/[submissionId]/route.ts",
+        "tests/api/member-training-workspace.spec.ts",
+        "tests/components/member-training-workspace.test.tsx",
+        "tests/components/member-lab-workspace.test.tsx"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J05",
+      "title": "Resume Studio \u2192 truthful recovery \u2192 return",
+      "roles": [
+        "member"
+      ],
+      "steps": [
+        {
+          "route": "/dashboard/ai-tools?tab=studio",
+          "action": "Open the Studio tab",
+          "expected": "Available, confirmed absent, unavailable, and audit-suppressed are distinguishable.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/resume",
+          "action": "Inspect the fixture saved resume",
+          "expected": "Ownership checks control access to original and enhanced files.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/ai-tools/resume-studio",
+          "action": "Retry a simulated load failure",
+          "expected": "Retry rechecks the current route without changing files or starting provider work.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/ai-tools/history",
+          "action": "Return to saved tool results",
+          "expected": "Saved artifacts remain separate from unsaved/generated drafts.",
+          "actor": "member"
+        }
+      ],
+      "fixtures": [
+        "resume-readable",
+        "confirmed-no-resume",
+        "profile-query-fails",
+        "storage-fails",
+        "extraction-fails",
+        "foreign-path",
+        "missing-admin-client",
+        "read-only-audit"
+      ],
+      "assertions": [
+        "No resume on file appears only when absence is confirmed.",
+        "Read-only audit makes zero Storage/provider requests.",
+        "Retry preserves selected Studio tab and user draft.",
+        "No voice session, generation, upload, or email starts during navigation/retry."
+      ],
+      "sourcePaths": [
+        "lib/member/getMemberResumePlainText.ts",
+        "app/(portal)/dashboard/ai-tools/page.tsx",
+        "app/(portal)/dashboard/ai-tools/resume-studio/page.tsx",
+        "components/portal/kit/pages/VoiceStudioKit.tsx",
+        "tests/api/get-member-resume-plain-text.spec.ts",
+        "tests/api/member-data-access-boundaries.spec.ts"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J06",
+      "title": "Find a job \u2192 apply or track \u2192 inspect the real status",
+      "roles": [
+        "member"
+      ],
+      "steps": [
+        {
+          "route": "/dashboard/jobs",
+          "action": "Filter and open a fixture job",
+          "expected": "Search, pagination, and filters remain in the URL.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/jobs/[id]",
+          "action": "Review the job and application prerequisites",
+          "expected": "Closed or missing jobs show a truthful unavailable state.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/job-applications",
+          "action": "Track a fixture application",
+          "expected": "Personal tracker and posted-job application remain distinct records.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/messages",
+          "action": "Ask for support and return to the job",
+          "expected": "The help destination does not lose the job context.",
+          "actor": "member"
+        }
+      ],
+      "fixtures": [
+        "open-posting",
+        "closed-posting",
+        "already-applied",
+        "resume-required",
+        "curated-external-job",
+        "manual-tracker-entry",
+        "provider-timeout"
+      ],
+      "assertions": [
+        "A click on an external job is not an application.",
+        "A saved tracker entry is not employer acceptance.",
+        "Do not silently resubmit an application on ambiguous response.",
+        "Validate resume snapshot and authenticated member ownership."
+      ],
+      "sourcePaths": [
+        "app/api/(portal)/dashboard/jobs/[id]/apply/route.ts",
+        "app/api/member/job-applications/route.ts",
+        "app/api/member/job-applications/track-curated/route.ts",
+        "app/api/member/job-applications/log-external/route.ts",
+        "tests/api/job-application-resume-snapshot.spec.ts"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J07",
+      "title": "Member message \u2192 correct staff thread \u2192 reply",
+      "roles": [
+        "member",
+        "counselor",
+        "admin"
+      ],
+      "steps": [
+        {
+          "route": "/dashboard/messages",
+          "action": "Read history and write a fixture draft",
+          "expected": "Use server timestamps; keep the draft and reading position.",
+          "actor": "member"
+        },
+        {
+          "route": "/counselor/messages",
+          "action": "Open the assigned member conversation",
+          "expected": "Counselor sees the current assignment and correct unread count.",
+          "actor": "counselor"
+        },
+        {
+          "route": "/counselor/students/[memberId]?tab=messages",
+          "action": "Open the same thread from a member record",
+          "expected": "The query opens Messages; browser Back returns to the prior list.",
+          "actor": "counselor"
+        },
+        {
+          "route": "/admin/messages",
+          "action": "Review an explicitly authorized staff route",
+          "expected": "Staff message links never send staff to the member inbox.",
+          "actor": "admin"
+        },
+        {
+          "route": "/dashboard/messages",
+          "action": "Receive a fixture reply while reading history",
+          "expected": "New message affordance appears without pulling a reader away.",
+          "actor": "member"
+        }
+      ],
+      "fixtures": [
+        "no-thread",
+        "unassigned-member",
+        "staff-handoff",
+        "assignment-revoked",
+        "unread-messages",
+        "pending-send",
+        "send-fails",
+        "out-of-order-realtime"
+      ],
+      "assertions": [
+        "DB createdAt is carried through each UI mapper; format in America/Chicago.",
+        "Only persisted response is sent; email delivery is a separate state.",
+        "Reconcile an ambiguous POST before retrying; no universal idempotency guarantee exists.",
+        "GET /api/member/messages may create and assign; block it in standalone mockups."
+      ],
+      "sourcePaths": [
+        "app/api/member/messages/route.ts",
+        "lib/messages/counselorThread.ts",
+        "lib/messages/staffLinks.ts",
+        "components/portal/kit/ChatThread.tsx",
+        "components/portal/kit/pages/member/MemberMessagesKit.tsx",
+        "tests/api/counselor-handoff-atomicity.spec.ts",
+        "tests/components/member-messages-presence-and-read.spec.tsx"
+      ],
+      "boundary": "The standalone review simulates threads; the live GET can create a thread and assign staff. Do not use an unrestricted live crawler or real send for this journey.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J08",
+      "title": "Counselor queue \u2192 student \u2192 session \u2192 follow-up",
+      "roles": [
+        "counselor"
+      ],
+      "steps": [
+        {
+          "route": "/counselor/today",
+          "action": "Review the actionable queue",
+          "expected": "Use observed queue size/age; show partial scan honestly.",
+          "actor": "counselor"
+        },
+        {
+          "route": "/counselor/students",
+          "action": "Filter the assigned roster",
+          "expected": "Only authorized members are listed.",
+          "actor": "counselor"
+        },
+        {
+          "route": "/counselor/students/[memberId]?tab=training",
+          "action": "Open a student training tab",
+          "expected": "The selected tab, member, and roster return context are stable.",
+          "actor": "counselor"
+        },
+        {
+          "route": "/counselor/sessions/[memberId]/run",
+          "action": "Run a fixture advising session",
+          "expected": "Private notes and files remain limited to authorized staff.",
+          "actor": "counselor"
+        },
+        {
+          "route": "/counselor/students/[memberId]?tab=notes",
+          "action": "Return to session notes",
+          "expected": "Confirmed saved note appears with actual author/time.",
+          "actor": "counselor"
+        }
+      ],
+      "fixtures": [
+        "assigned-counselor",
+        "same-org-admin-with-counselor",
+        "unassigned-staff",
+        "assignment-removed-mid-session",
+        "foreign-member",
+        "limited-roster",
+        "save-failure"
+      ],
+      "assertions": [
+        "Recheck access for every mutation and document download.",
+        "Roster link fix is owned by open PR #2831; do not duplicate it.",
+        "Never display a successful follow-up solely because notification helper returned.",
+        "No real email packet, nudge, or walk-in provisioning in review."
+      ],
+      "sourcePaths": [
+        "lib/counselor/staffMemberAccess.ts",
+        "app/(portal)/counselor/students/[memberId]/page.tsx",
+        "app/api/counselor/members/[memberId]/session-notes/route.ts",
+        "app/api/counselor/sessions/email-packet/route.ts",
+        "tests/api/member-data-access-boundaries.spec.ts"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J09",
+      "title": "Employer work queue \u2192 applicant \u2192 interview \u2192 return",
+      "roles": [
+        "employer"
+      ],
+      "steps": [
+        {
+          "route": "/employer/work-queue",
+          "action": "Choose the next applicant needing review",
+          "expected": "Queue counts retain their scope, age, and partial-scan labels.",
+          "actor": "employer"
+        },
+        {
+          "route": "/employer/applications",
+          "action": "Filter applications for the selected employer",
+          "expected": "Pagination and filters remain navigable.",
+          "actor": "employer"
+        },
+        {
+          "route": "/employer/applications/[id]",
+          "action": "Review a fixture candidate and change status",
+          "expected": "Only applications to owned jobs can be accessed.",
+          "actor": "employer"
+        },
+        {
+          "route": "/employer/messages",
+          "action": "Read the corresponding application conversation",
+          "expected": "Message state and interview state remain separate.",
+          "actor": "employer"
+        },
+        {
+          "route": "/employer/jobs/[id]/applicants",
+          "action": "Return to the job\u2019s applicants",
+          "expected": "The just-confirmed fixture change is visible without losing list context.",
+          "actor": "employer"
+        }
+      ],
+      "fixtures": [
+        "owned-job",
+        "foreign-employer-job",
+        "no-linked-employer",
+        "no-applicants",
+        "interview-scheduled",
+        "closed-job-with-response-queue",
+        "update-failure"
+      ],
+      "assertions": [
+        "Status changes do not imply email delivery.",
+        "Candidate data derives from the scoped application, not arbitrary student ID.",
+        "Preserve existing PR #2513 empty-state ownership.",
+        "No billing checkout, real message, job publication, or settings change during review."
+      ],
+      "sourcePaths": [
+        "app/(portal)/employer/applications/[id]/page.tsx",
+        "app/api/employer/applications/[id]/route.ts",
+        "app/api/employer/applications/[id]/messages/route.ts",
+        "lib/auth/portalGuards.ts",
+        "lib/cron/operationalQueue.ts"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J10",
+      "title": "Partner attention \u2192 referred member \u2192 scoped export",
+      "roles": [
+        "partner"
+      ],
+      "steps": [
+        {
+          "route": "/partner",
+          "action": "Read the partner overview",
+          "expected": "Totals apply the same partner visibility as the detail and export.",
+          "actor": "partner"
+        },
+        {
+          "route": "/partner/attention",
+          "action": "Open members who need attention",
+          "expected": "Attention is derived from real status, not invented scores.",
+          "actor": "partner"
+        },
+        {
+          "route": "/partner/referred-members",
+          "action": "Select a visible referral",
+          "expected": "Partner association, tenant, tier, and minor visibility all apply.",
+          "actor": "partner"
+        },
+        {
+          "route": "/partner/referred-members/[memberId]",
+          "action": "Inspect progress and outcome",
+          "expected": "Restricted partners receive status-only fields; hidden minors remain unavailable.",
+          "actor": "partner"
+        },
+        {
+          "route": "/partner/exports",
+          "action": "Preview the authorized export shape",
+          "expected": "Export omits fields forbidden in the corresponding screen.",
+          "actor": "partner"
+        }
+      ],
+      "fixtures": [
+        "community-partner",
+        "restricted-payout-partner",
+        "school-partner",
+        "minor-no-consent",
+        "minor-consented",
+        "foreign-partner",
+        "no-referrals"
+      ],
+      "assertions": [
+        "Do not merely hide forbidden columns in CSS; omit them server-side.",
+        "A restricted partner cannot download salary/contact data.",
+        "Unlinked access uses the established destination, not a dead-end redirect loop.",
+        "No real payout, invite, outreach, or export of participant data."
+      ],
+      "sourcePaths": [
+        "lib/partner/dataAccess.ts",
+        "app/(portal)/partner/referred-members/[memberId]/page.tsx",
+        "app/api/partner/export/referrals/route.ts",
+        "lib/partner/partnerVisibility.realdb.test.ts"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J11",
+      "title": "Mentor directory \u2192 request \u2192 mentor dashboard",
+      "roles": [
+        "member",
+        "mentor-identity",
+        "admin"
+      ],
+      "steps": [
+        {
+          "route": "/dashboard/mentors",
+          "action": "Browse approved active fixture mentors",
+          "expected": "Unapproved/inactive mentor profiles are absent.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/mentors/[mentorId]",
+          "action": "Review profile and request a fixture session",
+          "expected": "Date/topic validation is visible; request status is PENDING.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/mentor",
+          "action": "Open as a separately authenticated mentor identity",
+          "expected": "Resolve Mentor.userId, list that mentor\u2019s sessions; unlinked identity goes to /mentor/apply.",
+          "actor": "mentor-identity"
+        },
+        {
+          "route": "/admin/mentors",
+          "action": "Inspect the held fixture mentor record",
+          "expected": "Review distinguishes pending approval from publication.",
+          "actor": "admin"
+        }
+      ],
+      "fixtures": [
+        "approved-active-mentor",
+        "pending-mentor",
+        "inactive-mentor",
+        "invalid-date",
+        "other-member-session",
+        "unlinked-mentor-identity"
+      ],
+      "assertions": [
+        "There is no standalone /mentor role-home; the actual mentor dashboard is /dashboard/mentor.",
+        "A session request is not a confirmed appointment.",
+        "No real mentor approval, profile publication, provisioning, or session request.",
+        "Test double-click/ambiguous response; current session POST has no universal idempotency key."
+      ],
+      "sourcePaths": [
+        "app/(portal)/dashboard/mentor/page.tsx",
+        "app/(portal)/dashboard/mentors/[mentorId]/page.tsx",
+        "app/api/mentors/route.ts",
+        "app/api/mentors/[id]/sessions/route.ts",
+        "tests/api/mentor-session-topic.spec.ts",
+        "tests/app/mentor-dashboard-page.spec.tsx"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J12",
+      "title": "Admin member \u2192 assignment \u2192 private agreement review",
+      "roles": [
+        "admin"
+      ],
+      "steps": [
+        {
+          "route": "/admin/members",
+          "action": "Find a synthetic member",
+          "expected": "List reflects actor organization and the member-only filter.",
+          "actor": "admin"
+        },
+        {
+          "route": "/admin/members/[id]",
+          "action": "Review enrollment and service requests",
+          "expected": "Canonical enrollment and active exact catalog slugs govern available choices.",
+          "actor": "admin"
+        },
+        {
+          "route": "/admin/members/[id]/readiness",
+          "action": "Review saved evidence",
+          "expected": "Unavailable evidence cannot be presented as missing or approved.",
+          "actor": "admin"
+        },
+        {
+          "route": "/admin/enrollment-agreements",
+          "action": "Open a fixture private agreement review",
+          "expected": "Revision, review status, ownership, and download boundaries are visible.",
+          "actor": "admin"
+        },
+        {
+          "route": "/admin/members/[id]/billing",
+          "action": "Inspect billing status without executing it",
+          "expected": "Agreement review, J5/J6 signing, funding, and training activation remain separate.",
+          "actor": "admin"
+        }
+      ],
+      "fixtures": [
+        "same-org-admin",
+        "cross-org-admin",
+        "super-admin-explicit-context",
+        "alias-only-catalog",
+        "inactive-only-catalog",
+        "private-agreement",
+        "agreement-load-fails"
+      ],
+      "assertions": [
+        "Do not alter the locked program-assignment policy.",
+        "No live provisioning, funding changes, signing, agreement email, or hosted migration.",
+        "A successful PDF response is not a completed review or accepted billing delivery."
+      ],
+      "sourcePaths": [
+        "lib/admin/assignableProgramOptions.ts",
+        "lib/counselor/staffMemberAccess.ts",
+        "app/api/admin/programs/catalog/route.ts",
+        "app/api/enrollment-agreements/[id]/download/route.ts",
+        "docs/ENROLLMENT-AGREEMENTS.md",
+        "tests/api/enrollment-agreement-access.spec.ts"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J13",
+      "title": "Outcome summary \u2192 methodology \u2192 source detail",
+      "roles": [
+        "admin",
+        "partner"
+      ],
+      "steps": [
+        {
+          "route": "/admin/reporting",
+          "action": "Choose a reporting task",
+          "expected": "Each figure names population, period, denominator, and source.",
+          "actor": "admin"
+        },
+        {
+          "route": "/admin/outcomes",
+          "action": "Inspect the aggregate",
+          "expected": "Verified placement/retention and self-reported data remain distinguishable.",
+          "actor": "admin"
+        },
+        {
+          "route": "/admin/outcomes/methodology",
+          "action": "Read methodology",
+          "expected": "Definitions and limitations are available beside claims.",
+          "actor": "admin"
+        },
+        {
+          "route": "/admin/placements",
+          "action": "Inspect the authorized source records",
+          "expected": "Summary and detail use consistent filters.",
+          "actor": "admin"
+        },
+        {
+          "route": "/partner/outcomes",
+          "action": "View the corresponding partner-scoped outcome",
+          "expected": "Only permitted referred-member data contributes.",
+          "actor": "partner"
+        }
+      ],
+      "fixtures": [
+        "verified-placement",
+        "self-reported-placement",
+        "retention-pending",
+        "empty-period",
+        "partial-history",
+        "restricted-partner"
+      ],
+      "assertions": [
+        "Unknown is not zero.",
+        "Do not call a member placed merely because a job status changed.",
+        "A filter or export cannot broaden tenant scope.",
+        "All displayed mock totals are labeled synthetic; no fabricated program impact."
+      ],
+      "sourcePaths": [
+        "docs/OUTCOMES-METHODOLOGY.md",
+        "lib/admin/reportingOutcomes.ts",
+        "lib/partner/dataAccess.ts",
+        "app/api/admin/analytics/placements/_placementsAnalytics.ts",
+        "tests/components/admin-placements-member-reported.spec.tsx"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J14",
+      "title": "Leader chapter \u2192 scoped roster \u2192 chapter administration",
+      "roles": [
+        "leader",
+        "admin"
+      ],
+      "steps": [
+        {
+          "route": "/leader/dashboard",
+          "action": "Open the assigned chapter view",
+          "expected": "Chapter, roster, meetings, and curriculum come from leader-scoped data.",
+          "actor": "leader"
+        },
+        {
+          "route": "/admin/chapters",
+          "action": "Inspect chapter administration in a separate admin fixture",
+          "expected": "Admin entry is separately authorized; navigation does not grant role access.",
+          "actor": "admin"
+        },
+        {
+          "route": "/leader/dashboard",
+          "action": "Return to the leader view",
+          "expected": "No other chapter or private staff field leaks.",
+          "actor": "leader"
+        }
+      ],
+      "fixtures": [
+        "assigned-leader",
+        "no-chapter",
+        "foreign-chapter",
+        "empty-roster",
+        "load-failure"
+      ],
+      "assertions": [
+        "Do not conflate Chapter/ChapterMember with Subgroup/SubgroupLeader.",
+        "The current dashboard selects the first returned chapter; multi-chapter navigation is an explicit remaining design decision.",
+        "No chapter, roster, or role mutation occurs during review."
+      ],
+      "sourcePaths": [
+        "app/(portal)/leader/dashboard/page.tsx",
+        "app/api/leader/chapters/route.ts",
+        "app/(portal)/admin/chapters/page.tsx",
+        "app/api/subgroup/members/route.ts"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    },
+    {
+      "id": "J15",
+      "title": "Account \u2192 privacy \u2192 help \u2192 safe return",
+      "roles": [
+        "member"
+      ],
+      "steps": [
+        {
+          "route": "/dashboard/account",
+          "action": "Open account preferences",
+          "expected": "Account information comes from the authenticated identity.",
+          "actor": "member"
+        },
+        {
+          "route": "/account/privacy",
+          "action": "Read privacy and export controls",
+          "expected": "Sensitive actions explain scope and require the existing authorization/confirmation.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard/help",
+          "action": "Open the appropriate support entry",
+          "expected": "Support retains the current portal and route context.",
+          "actor": "member"
+        },
+        {
+          "route": "/dashboard",
+          "action": "Return home with browser Back and navigation",
+          "expected": "No dead-end, draft loss, or unintended settings mutation.",
+          "actor": "member"
+        }
+      ],
+      "fixtures": [
+        "active-member",
+        "expired-session",
+        "export-error",
+        "delete-confirmation-cancel",
+        "network-offline"
+      ],
+      "assertions": [
+        "No live data export, account deletion, password reset, or notification setting change.",
+        "Cancel is safe and returns focus to the initiating control.",
+        "Session expiry preserves safe navigation without exposing protected content."
+      ],
+      "sourcePaths": [
+        "app/(portal)/account/privacy/page.tsx",
+        "app/api/member/export-data/route.ts",
+        "app/(portal)/dashboard/help/page.tsx",
+        "tests/api/member-data-access-boundaries.spec.ts"
+      ],
+      "boundary": "All mutations are simulated in the review experience; provider egress is blocked.",
+      "executionStatus": "specified-not-executed",
+      "liveAcceptance": "not-verified"
+    }
+  ]
+}

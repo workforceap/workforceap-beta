@@ -1,0 +1,12 @@
+{
+  "kind": "artifact-contract-validation",
+  "applicationTestsExecuted": false,
+  "liveTestsExecuted": false,
+  "baseSha": "efc27e4a4ebeba09b5261e7b1c36463d01925017",
+  "routes": 266,
+  "scenarios": 15,
+  "steps": 70,
+  "missingStepRoutes": [],
+  "uniqueScenarioIds": true,
+  "note": "Validates journey-to-inventory references only; does not execute application behavior."
+}
