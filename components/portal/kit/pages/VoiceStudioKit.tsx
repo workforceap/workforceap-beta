@@ -20,6 +20,8 @@
  * the `session` tab. Page chrome is PageOpener + SegmentedControl on the shared
  * `--wa-bg-wave` wash (same as other member kits). Live-session panels stay dark
  * on purpose (`--wa-sidebar-*` / session tokens — not a second app header).
+ * Text-bearing Resume Studio gradients use fixed deep hero colors so their
+ * foregrounds stay readable independently of the selected app theme.
  *
  * Animations (orb pulse, expanding rings, equalizer) are gated behind
  * prefers-reduced-motion: reduce. Focus rings use wa-kit-focus where on light
@@ -1350,10 +1352,10 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
       <div
         className="wa-flex-col md:wa-flex-row"
         style={{
-          background: 'linear-gradient(to bottom right, var(--wa-accent), var(--wa-accent-dark))',
+          background: 'linear-gradient(to bottom right, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))',
           borderRadius: 24,
           padding: 'clamp(20px, 5vw, 28px)',
-          color: 'var(--wa-on-accent)',
+          color: 'var(--wa-on-hero)',
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
@@ -1369,7 +1371,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
               fontWeight: 700,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.7)',
+              color: 'var(--wa-on-hero)',
               display: 'flex',
               alignItems: 'center',
               gap: 8,
@@ -1382,7 +1384,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
           <h2 className="h-font" style={{ fontSize: 'clamp(22px, 6vw, 30px)', marginTop: 4, fontWeight: 800, letterSpacing: '-0.03em' }}>
             Resume Studio
           </h2>
-          <p style={{ fontSize: 'var(--wa-type-body)', color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>
+          <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-on-hero)', marginTop: 4 }}>
             {hasResume
               ? 'Your instant structural read and top fixes — then full AI scoring, rewrites, and voice coaching.'
               : 'Add your resume to get an instant structural read, full AI scoring, and rewrites.'}
@@ -1490,8 +1492,8 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
               className="wa-kit-focus vs-hero-card"
               style={{
                 textAlign: 'left',
-                background: 'linear-gradient(to bottom right, var(--wa-accent), var(--wa-accent-dark))',
-                color: 'var(--wa-on-accent)',
+                background: 'linear-gradient(to bottom right, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))',
+                color: 'var(--wa-on-hero)',
                 borderRadius: 24,
                 padding: 'clamp(20px, 5vw, 28px)',
                 display: 'flex',
@@ -1508,7 +1510,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
                   <Sparkles size={20} aria-hidden="true" />
                 </div>
                 <h3 style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em', marginTop: 16 }}>Resume coach</h3>
-                <p style={{ fontSize: 'var(--wa-type-meta)', color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>
+                <p style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-on-hero)', marginTop: 4 }}>
                   Voice session with this resume loaded.
                 </p>
               </div>

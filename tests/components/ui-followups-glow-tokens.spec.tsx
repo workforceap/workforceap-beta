@@ -530,14 +530,14 @@ describe('VoiceStudioKit cards cast their shadow from tokens (were rgba(120,20,3
       expectNoLiteralShadows(container, `${scheme} Coaches tab`);
     });
 
-    it(`${scheme}: the Resume Studio banner and the "Resume coach" card tint --wa-accent under their --wa-accent gradient`, () => {
+    it(`${scheme}: the Resume Studio banner and the "Resume coach" card keep deep crimson gradients with accent shadows that follow the theme`, () => {
       // The "Resume coach" card renders once a resume is on file and scored.
       const { container } = renderIn(scheme, <NextIntlClientProvider locale="en" messages={en}><VoiceStudioKit initialTab="studio" resumeStudio={{ hasResume: true, structuralScore: 72, issues: [] }} /></NextIntlClientProvider>);
       const banner = shadowHost(screen.getByRole('heading', { name: 'Resume Studio' }));
-      expect(computed(banner, 'background')).toContain('var(--wa-accent)');
+      expect(gradientStops(computed(banner, 'background'))).toEqual(['var(--wa-hero-crimson)', 'var(--wa-hero-crimson-dark)']);
       expect(computed(banner, 'box-shadow')).toBe(ACCENT_SHADOW);
       const coach = screen.getByText('Resume coach').closest('a') as HTMLElement;
-      expect(computed(coach, 'background')).toContain('var(--wa-accent)');
+      expect(gradientStops(computed(coach, 'background'))).toEqual(['var(--wa-hero-crimson)', 'var(--wa-hero-crimson-dark)']);
       expect(computed(coach, 'box-shadow')).toBe(ACCENT_SHADOW);
       expectTokensResolve(ACCENT_SHADOW, scheme, 'accent card shadow');
       const tokens = tokensFor(scheme);
