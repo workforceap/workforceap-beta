@@ -891,9 +891,16 @@ export default async function AdminMemberDetailPage({
                   <p className={styles.statLabel}>Assessment</p>
                   <p className={styles.statValue}>{member.assessmentScorePct != null ? `${member.assessmentScorePct}%` : '—'}</p>
                   <p className={styles.statNote}>{member.assessmentCompleted ? 'completed' : 'not completed'}</p>
+                  {member.assessmentAttemptCount === 1 ? (
+                    <p className={styles.statNote}>
+                      {member.assessmentRetakeRequestedAt ? 'Final retake authorized' : 'Final retake needs staff authorization'}
+                    </p>
+                  ) : member.assessmentAttemptCount >= 2 ? (
+                    <p className={styles.statNote}>Both preassessment attempts used</p>
+                  ) : null}
                   {member.assessmentCompleted || member.assessmentAttemptCount > 0 ? (
                     <a href="#admin-member-preassessment" className={styles.inlineLink}>
-                      Review answers & retake
+                      Review answers & retake permission
                     </a>
                   ) : null}
                 </div>
