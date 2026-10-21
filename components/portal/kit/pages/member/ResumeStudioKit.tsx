@@ -6,10 +6,12 @@ import ResumeStudioClient from '@/components/portal/ResumeStudioClient';
 import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBreakdown';
 import styles from '@/components/portal/ResumeStudio.module.css';
 import type { ReactElement, ReactNode } from 'react';
+import type { MemberResumeLoadStatus } from '@/lib/member/getMemberResumePlainText';
 
 /**
  * Member Portal — resume studio (score / rewrite / coach).
  * Title and return action frame ResumeStudioClient. History is omitted in preview.
+ * Explicit loadStatus keeps failures and audit suppression distinct from absence.
  *
  * Target route: app/(portal)/dashboard/ai-tools/resume-studio
  * Proof: /dev/member/resume-studio
@@ -18,6 +20,7 @@ import type { ReactElement, ReactNode } from 'react';
 
 export function ResumeStudioKit({
   hasResume = false,
+  loadStatus,
   filesSlot,
   scoreHistorySlot,
   rewriteHistorySlot,
@@ -32,6 +35,7 @@ export function ResumeStudioKit({
   previewRewriteOutput,
 }: {
   hasResume?: boolean;
+  loadStatus?: MemberResumeLoadStatus;
   filesSlot?: ReactElement<{ active?: boolean }>;
   scoreHistorySlot?: ReactNode;
   rewriteHistorySlot?: ReactNode;
@@ -61,6 +65,7 @@ export function ResumeStudioKit({
         />
         <ResumeStudioClient
           hasResume={hasResume}
+          loadStatus={loadStatus}
           filesSlot={filesSlot}
           scoreHistorySlot={scoreHistorySlot}
           rewriteHistorySlot={rewriteHistorySlot}

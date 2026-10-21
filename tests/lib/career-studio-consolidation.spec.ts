@@ -26,7 +26,7 @@ describe('Career Studio consolidation', () => {
     const studio = source('components/portal/kit/pages/VoiceStudioKit.tsx');
 
     expect(page).toContain("initialTab === 'studio'");
-    expect(page).toContain("{ hasResume: false }");
+    expect(page).toContain("{ hasResume: false, loadStatus: 'not-loaded' }");
     expect(studio).toContain("new URLSearchParams(searchParams?.toString() ?? '')");
     expect(studio).toContain("router.replace(`${pathname}${query ? `?${query}` : ''}`, { scroll: false })");
     expect(studio).toContain("selectTab(v as StudioTab)");
