@@ -2,6 +2,24 @@
 
 This directory contains a portable, offline design review of WorkforceAP’s portal routes. Build and open `index.html` to navigate the proposed member, counselor, employer, partner, admin, group/shared and entry experiences. Every displayed identity and record is synthetic. The review does not authenticate, contact application APIs, send messages, publish content or change production.
 
+## Appearance and clarity
+
+The appearance pass keeps WorkforceAP’s crimson, gold and Inter typography while
+reducing the canvas wash and giving content a solid reading surface. Warm member
+pages and denser staff workspaces keep their existing structure. Text, form
+outlines and sticky navigation have stronger separation from their backgrounds.
+
+Use **Appearance → Light, System or Dark** in the review toolbar. System is the
+default and follows operating-system changes. The choice persists independently
+of the real application’s preference and synchronizes across open review tabs.
+Switching appearance changes the palette without rebuilding the workspace, so
+unsaved fields, text selections and simulated voice-session state stay intact.
+If storage is unavailable, the picker continues to work for the current view.
+The inline build scopes appearance to its own root instead of changing its host.
+
+`THEME-VERIFICATION.md` records the exact tested artifacts, rendered checks and
+the distinction between this proposal and the companion application CSS fix.
+
 ## Voice is part of the workspace
 
 The review includes the source application's voice-first AI Career Tools workspace, with Coaches, Practice, Resume and All Tools views. Readiness, résumé coaching, mock interviews and Lilley each have a session surface and a purpose-specific companion panel. Career & Business is the broader legacy entry to Lilley, not an additional independent agent. Staff, employer and partner assistants stay in their own workspaces; no admin assistant is invented.
@@ -63,11 +81,18 @@ With the repository Playwright dependency and Chromium available:
 ```sh
 node docs/mockups/portal-review/verify-model.mjs
 node docs/mockups/portal-review/verify-voice.mjs
+node docs/mockups/portal-review/verify-theme.mjs
 WAP_REVIEW_EVIDENCE_DIR=/tmp/wap-portal-review-smoke node docs/mockups/portal-review/verify.mjs --smoke
 WAP_REVIEW_EVIDENCE_DIR=/tmp/wap-portal-review-full node docs/mockups/portal-review/verify.mjs --capture
 ```
 
 The full verifier checks every route at 1440, 768 and 375 pixels in light and dark themes, with reduced motion. It checks titles, route resolution, overflow, control names and page errors, then exercises the defined local interaction regressions. `--capture` saves desktop and mobile screenshots for each route in the light theme. JSON results and screenshots go to the selected evidence directory. The verifier blocks unexpected network requests and fails when a checked assertion fails.
+
+Build both HTML variants before running `verify-theme.mjs`. That suite checks
+appearance persistence, system changes, tab synchronization, unavailable storage,
+draft/session continuity, targeted contrast and inline scope at 1440 and 375
+pixels. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` when using an existing Chromium
+binary instead of Playwright’s installed browser.
 
 Rebuild after changing source, definitions or styles. Review the actual results for the exact generated artifact; a previous passing report is not evidence for later edits.
 

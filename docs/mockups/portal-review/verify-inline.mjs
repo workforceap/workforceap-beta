@@ -21,7 +21,7 @@ const port=server.address().port;
 const report={inlineSha256:createHash('sha256').update(readFileSync(resolve(here,'inline.html'))).digest('hex'),routeCount:inventory.routes.length,routeChecks:[],screenChecks:[],interactions:[],pageErrors:[],hostRuntimeRequests:[],externalRequests:[],failures:[],screenshots:[]};
 // These exact scripts belong to the supplied conversation wrapper, not the prototype.
 const hostRuntime=new Set(['https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js','https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js','https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js']);
-const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH}:{})});
 const page=await browser.newPage({viewport:{width:1056,height:900},reducedMotion:'reduce',colorScheme:'light'});
 page.on('pageerror',e=>report.pageErrors.push(e.message));
 page.on('response',response=>{if(hostRuntime.has(response.url()))report.hostRuntimeResponses=(report.hostRuntimeResponses||[]).concat([{url:response.url(),status:response.status()}]);});

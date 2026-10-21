@@ -8,6 +8,8 @@ const here=dirname(fileURLToPath(import.meta.url));
 const standalone=readFileSync(resolve(here,'index.html'),'utf8');
 const rootId='wap-voice-review';
 const root='#'+rootId;
+const appearanceBootstrap=standalone.match(/<script id="wap-review-theme-init">([\s\S]*?)<\/script>/)?.[1];
+if(!appearanceBootstrap)throw Error('Appearance bootstrap missing; rebuild the standalone review.');
 const style=standalone.match(/<style>([\s\S]*?)<\/style>/)?.[1];
 if(!style)throw Error('Build the standalone review before the inline view.');
 const parsed=postcss.parse(style);
@@ -31,7 +33,6 @@ script=script.replaceAll('document.querySelectorAll(', 'reviewRoot.querySelector
 script=script.replaceAll('document.getElementById(', 'reviewElement(').replaceAll('document.addEventListener(', 'reviewRoot.addEventListener(');
 script=script.replaceAll('document.documentElement.dataset.', 'reviewRoot.dataset.');
 script=script.replace('reviewRoot.dataset.role=role;', 'reviewRoot.dataset.role=role;reviewRoot.dataset.path=currentPath;');
-script=script.replace("let theme = 'light';", "let theme = matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'; reviewRoot.dataset.theme=theme;");
 script=script.replace(/currentPath=raw\.startsWith\('\/'\)\?raw:'\/dashboard'/g,"currentPath=raw.startsWith('/')?raw:'/dashboard/ai-tools'");
 script=script.replaceAll('window.scrollTo(0,0);', '');
 script=script.replaceAll(' tabindex="-1"','');
@@ -43,7 +44,10 @@ script=script.replace('function openDialog(title,body){', 'function openDialog(t
 script=script.replace('installVoiceReview();','installVoiceReview(reviewRoot);');
 script=script.replace(/\nnavigate\(\);\s*$/,'')+'\n'+readFileSync(resolve(here,'inline-behavior.js'),'utf8')+'\nnavigate();';
 script='(()=>{\nconst reviewRoot=document.getElementById("'+rootId+'");\nconst reviewElement=(id)=>reviewRoot.querySelector("#"+id);\n'+script+'\n})();';
-let html=readFileSync(resolve(here,'inline-shell.html'),'utf8').replace('/*__WAP_REVIEW_STYLE__*/',()=>css).replace('/*__WAP_REVIEW_SCRIPT__*/',()=>script);
+let html=readFileSync(resolve(here,'inline-shell.html'),'utf8')
+  .replace('/*__WAP_REVIEW_STYLE__*/',()=>css)
+  .replace('/*__WAP_REVIEW_APPEARANCE__*/',()=>appearanceBootstrap.replaceAll('document.documentElement',`document.getElementById("${rootId}")`))
+  .replace('/*__WAP_REVIEW_SCRIPT__*/',()=>script);
 for(const [placeholder,id]of[['__WAP_ROUTE_DATA__','route-data'],['__WAP_JOURNEY_DATA__','journey-data'],['__WAP_SCREEN_DATA__','screen-definitions']]){
   const data=standalone.match(new RegExp('<script type="application/json" id="'+id+'">([\\s\\S]*?)<\\/script>'))?.[1];
   if(!data)throw Error('Missing inline dataset: '+id);

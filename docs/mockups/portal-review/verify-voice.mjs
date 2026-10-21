@@ -17,7 +17,7 @@ mkdirSync(resolve(out,'screens'),{recursive:true});
 writeFileSync(resolve(out,'mockup-under-test.html'),artifactBytes);
 const url=pathToFileURL(resolve(out,'mockup-under-test.html')).href;
 const report={baseSha:REVIEW_BASE_SHA,artifactSha256:createHash('sha256').update(artifactBytes).digest('hex'),kind:'local-synthetic-voice-review',liveAcceptance:false,tests:[],pageErrors:[],externalRequests:[],mediaCalls:[],screenshots:[]};
-const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH}:{})});
 
 async function runAtWidth(width){
   const context=await browser.newContext({viewport:{width,height:1000},reducedMotion:'reduce'});
@@ -255,7 +255,7 @@ async function runAtWidth(width){
   });
   await test('Dark theme retains the voice workspace and responsive geometry',async()=>{
     await go('/dashboard/ai-tools?tab=session&agent=counselor');
-    await page.getByRole('button',{name:'Switch to dark theme',exact:true}).click();
+    await page.getByLabel('Appearance',{exact:true}).selectOption('dark');
     await fit();await shot('lilley-dark','/dashboard/ai-tools?tab=session&agent=counselor');
   });
   await context.close();
