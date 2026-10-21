@@ -14,6 +14,12 @@ test.describe('dev member visual baselines', () => {
 
       for (const view of DEV_MEMBER_VIEWS) {
         await openDevMember(page, harnessPath(view.slug, 'full'));
+        if (viewport.width >= 769) {
+          // WorkspaceShell hydrates wide=false, so the first paint still puts
+          // identity in the rail. Wait for the desktop collapse control so
+          // fullPage captures the settled 1440 chrome, not that flash.
+          await expect(page.locator('.workspace-sidebar-collapse-btn')).toBeVisible();
+        }
         await page.evaluate(() => {
           const id = 'dev-member-visual-overflow';
           if (document.getElementById(id)) return;
@@ -25,14 +31,7 @@ test.describe('dev member visual baselines', () => {
         });
         await page.evaluate(async () => {
           if (document.fonts?.ready) await document.fonts.ready;
-          await new Promise((resolve) => {
-            requestAnimationFrame(() => requestAnimationFrame(resolve));
-          });
         });
-        await expect.poll(
-          () => page.evaluate(() => document.documentElement.scrollHeight),
-          { timeout: 10_000 },
-        ).toBeGreaterThan(0);
         // Collect every view's diff; each mismatch still fails this test.
         await expect.soft(page).toHaveScreenshot(`dev-member-${view.slug}-${viewport.name}.png`, {
           fullPage: true,
