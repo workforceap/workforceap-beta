@@ -1,5 +1,5 @@
 {
-  "_comment": "Printed text of Mike Brown's synthetic, unsigned J5/J6 DRAFT layout references (2026-09-28), in reading order (top to bottom, left to right). Fictional example.test contacts. {className} is the approved syllabus title of the synthetic program; the reference used a placeholder class. Dates updated for the six-month rule (2026-10-06). Layout parity only; not a real document.",
+  "_comment": "Printed text of Mike Brown's synthetic, unsigned J5/J6 DRAFT layout references (2026-09-28), in reading order (top to bottom, left to right). Fictional example.test contacts. {className} is the approved syllabus title of the synthetic program; the reference used a placeholder class. Dates updated for the six-month rule (2026-10-06). J5 heading updated at Mike's request (2026-10-21). Layout parity only; not a real document.",
   "contacts": {
     "student": { "name": "Jordan Example", "email": "jordan.example@example.test" },
     "counselor": { "name": "Casey Counselor", "email": "casey.counselor@example.test", "phone": "(555) 010-0201" },
@@ -8,7 +8,7 @@
     "voucherReference": "SYNTH-PO-001"
   },
   "approvedFrozenStrings": {
-    "titleJ5": "Quote / Voucher Request",
+    "titleJ5": "Quote/Bid Letter/Voucher Request",
     "titleJ6": "Invoice / Voucher Cover Letter",
     "organizationName": "Workforce Advancement Project",
     "website": "www.WorkforceAP.org",
@@ -22,7 +22,7 @@
   "j5": [
     "DRAFT - SIGNATURE REQUIRED",
     "J5", "September 27, 2026",
-    "Quote / Voucher Request",
+    "Quote/Bid Letter/Voucher Request",
     "TO", "Casey Counselor | casey.counselor@example.test",
     "PHONE", "(555) 010-0201",
     "BOARD", "Workforce Solutions Capital",

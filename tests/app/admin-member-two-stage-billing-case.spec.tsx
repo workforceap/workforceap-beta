@@ -47,7 +47,7 @@ function renderCase(enrolledPrograms = programs) {
 }
 
 async function openEditor(stage: 'j5' | 'j6' = 'j5') {
-  const name = stage === 'j5' ? 'Create J5 Quote / Voucher Request' : 'Create J6 Invoice / Voucher Cover Letter';
+  const name = stage === 'j5' ? 'Create J5 Quote/Bid Letter/Voucher Request' : 'Create J6 Invoice / Voucher Cover Letter';
   await waitFor(() => expect(screen.getByRole('button', { name })).toBeEnabled());
   fireEvent.click(screen.getByRole('button', { name }));
   return screen.findByRole('region', { name: `${stage.toUpperCase()} draft` });
@@ -180,7 +180,7 @@ describe('two-stage billing container (route integration)', () => {
     mockRoutes((c) => c.url === `${BASE}/cases` ? jsonResponse({ cases: [caseItem] })
       : c.url.endsWith('/draft/review') ? jsonResponse(reviewDto()) : jsonResponse(j5DraftSummary()));
     renderCase();
-    const edit = await screen.findByRole('button', { name: 'Edit J5 Quote / Voucher Request draft' });
+    const edit = await screen.findByRole('button', { name: 'Edit J5 Quote/Bid Letter/Voucher Request draft' });
     fireEvent.click(edit);
     const editor = within(await screen.findByRole('region', { name: 'J5 draft' }));
     const facts = editor.getByRole('region', { name: 'J5 class and cost summary' });
@@ -266,7 +266,7 @@ describe('two-stage billing container (route integration)', () => {
     } });
     mockRoutes((c) => c.url === `${BASE}/cases` ? jsonResponse({ cases: [caseItem] }) : jsonResponse(summary));
     renderCase();
-    await screen.findByRole('button', { name: 'Create J5 Quote / Voucher Request' });
+    await screen.findByRole('button', { name: 'Create J5 Quote/Bid Letter/Voucher Request' });
     expect(screen.queryByRole('region', { name: 'J5 document review' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'Download signed J5 PDF' })).toBeNull();
   });
@@ -452,7 +452,7 @@ describe('two-stage billing container (route integration)', () => {
     renderCase();
 
     expect(await screen.findByRole('heading', { name: 'J5/J6 billing isn’t enabled here yet' })).toBeInTheDocument();
-    const j5 = screen.getByRole('button', { name: 'Create J5 Quote / Voucher Request' });
+    const j5 = screen.getByRole('button', { name: 'Create J5 Quote/Bid Letter/Voucher Request' });
     expect(j5).toBeDisabled();
     expect(j5).toHaveAccessibleDescription(message);
     expect(screen.getByRole('button', { name: 'Create J6 Invoice / Voucher Cover Letter' })).toBeDisabled();
@@ -674,7 +674,7 @@ describe('two-stage billing container (route integration)', () => {
     });
     expect(link).toHaveAttribute('href', `${CASE}/j5/draft/preview?recordId=${j5Draft().recordId}&versionHash=${HASH_A}`);
     // The summary is reloaded after the save.
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Edit J5 Quote / Voucher Request draft' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Edit J5 Quote/Bid Letter/Voucher Request draft' })).toBeInTheDocument());
   });
 
   it('J5 editor: shows the fields of a 422 DRAFT_INCOMPLETE and saves nothing locally', async () => {

@@ -110,7 +110,7 @@ describe('J5: allowed before any voucher exists', () => {
     const built = buildJ5Content({ logoSha256: LOGO_SHA, documentNumber: 'WAP-Q-2026-0001', issueDate: '2026-09-15', programSlug: IT_SUPPORT, readiness, ...people });
     assert.ok(built.ok);
     const c = built.content;
-    assert.equal(c.title, 'Quote / Voucher Request');
+    assert.equal(c.title, 'Quote/Bid Letter/Voucher Request');
     assert.equal(c.contentVersion, 2);
     assert.deepEqual(c.training, {
       programSlug: IT_SUPPORT,

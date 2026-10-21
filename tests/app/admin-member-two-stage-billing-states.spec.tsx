@@ -25,7 +25,7 @@ function renderSummary(summary: CaseSummaryDto, extra: Partial<Parameters<typeof
   );
 }
 
-const card = (stage: 'j5' | 'j6') => screen.getByRole('region', { name: stage === 'j5' ? 'Quote / Voucher Request' : 'Invoice / Voucher Cover Letter' });
+const card = (stage: 'j5' | 'j6') => screen.getByRole('region', { name: stage === 'j5' ? 'Quote/Bid Letter/Voucher Request' : 'Invoice / Voucher Cover Letter' });
 const row = (stage: 'j5' | 'j6', label: string) => within(card(stage)).getByText(label).closest('li') as HTMLElement;
 
 afterEach(() => {
@@ -56,7 +56,7 @@ describe('two-stage billing workbench states (M4)', () => {
     expect(within(card('j6')).getByText('A sent J5 quote or an approved external quote must be on file first.')).toBeInTheDocument();
     expect(screen.getByText(/Contacts on file:/).closest('p')).toHaveTextContent('Counselor Assigned Counselor (assigned counselor)');
     expect(screen.getByText(/Contacts on file:/).closest('p')).toHaveTextContent('phone not on file');
-    expect(screen.getByRole('button', { name: 'Create J5 Quote / Voucher Request' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Create J5 Quote/Bid Letter/Voucher Request' })).toBeEnabled();
     expect(screen.getAllByText('No draft saved yet.')).toHaveLength(2);
   });
 
@@ -157,12 +157,12 @@ describe('two-stage billing workbench states (M4)', () => {
   it('shows the saved draft on its card and switches the button to editing', () => {
     renderSummary(j5DraftSummary());
     expect(within(card('j5')).getByText(/v1 · WAP-Q-2026-0001/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Edit J5 Quote / Voucher Request draft' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Edit J5 Quote/Bid Letter/Voucher Request draft' })).toBeEnabled();
   });
 
   it('keeps disabled buttons shaped like buttons, with the gate reason', () => {
     render(<TwoStageBillingWorkbench {...shell} unavailableReason="J5/J6 billing is not available in this environment yet (its database migration is not applied)." />);
-    const j5 = screen.getByRole('button', { name: 'Create J5 Quote / Voucher Request' });
+    const j5 = screen.getByRole('button', { name: 'Create J5 Quote/Bid Letter/Voucher Request' });
     expect(j5).toBeDisabled();
     expect(j5.className).toMatch(/primaryButton/);
     expect(j5).toHaveAccessibleDescription('J5/J6 billing is not available in this environment yet (its database migration is not applied).');
