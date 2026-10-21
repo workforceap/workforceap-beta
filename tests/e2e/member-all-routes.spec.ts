@@ -102,7 +102,15 @@ test.describe('member routes — authenticated inventory', () => {
       await page.reload({ waitUntil: 'domcontentloaded' });
       await assertDeploymentAcceptedReadOnlyAudit(page);
       await expect(page.locator('[data-portal-audit-suppressed="workspace-nav-badges-and-notification-polling"]')).toHaveCount(1);
-      await page.route('**/*', route => ['GET', 'HEAD', 'OPTIONS'].includes(route.request().method()) ? route.continue() : route.abort('blockedbyclient'));
+      await page.route('**/*', (route) => {
+        const method = route.request().method();
+        if (['GET', 'HEAD', 'OPTIONS'].includes(method)) return route.continue();
+        const headers = route.request().headers();
+        // Next.js can finish a server redirect() as an RSC flight. Allow that
+        // read; keep blocking mutations (next-action / form POST).
+        if (headers.rsc === '1' && !headers['next-action']) return route.continue();
+        return route.abort('blockedbyclient');
+      });
       const failures: string[] = [];
       for (const view of DEV_MEMBER_VIEWS) {
         try {
@@ -113,7 +121,10 @@ test.describe('member routes — authenticated inventory', () => {
           // This inventory entry serves mentors, not ordinary members. Prove the
           // member access gate here; mentor content requires its own staff fixture.
           const expectedPath = view.slug === 'mentor' ? '/mentor/apply' : fixturePathname(path);
-          expect(new URL(page.url()).pathname.replace(/^\/(en|es|fr|pt)(?=\/)/, '')).toBe(expectedPath);
+          await expect.poll(
+            () => new URL(page.url()).pathname.replace(/^\/(en|es|fr|pt)(?=\/)/, ''),
+            { timeout: 30_000 },
+          ).toBe(expectedPath);
           await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
           await expect(page.locator('[data-portal-error-state]')).toHaveCount(0);
         } catch (error) { failures.push(`${view.slug}: ${error instanceof Error ? error.message : String(error)}`); }

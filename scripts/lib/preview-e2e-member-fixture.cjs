@@ -222,8 +222,11 @@ async function prepareMemberForSignedInRoutes(prisma) {
   user = { ...user, mentorProfile: user.mentorProfile ?? await loadMemberMentor(prisma, user.id) };
   if (user.mentorProfile) {
     await removeLeftoverMentorFixture(prisma, user);
-    user = await findFixtureMember(prisma);
-    user = { ...user, mentorProfile: user.mentorProfile ?? await loadMemberMentor(prisma, user.id) };
+  }
+  user = await findFixtureMember(prisma);
+  user = { ...user, mentorProfile: await loadMemberMentor(prisma, user.id) };
+  if (user.mentorProfile) {
+    throw new Error('Synthetic member still has a mentor row; inventory would skip /mentor/apply.');
   }
   await ensureBrowseMentorFixture(prisma, user.organizationId);
   await ensureCounselorSessionFixture(prisma, user.id);

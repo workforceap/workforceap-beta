@@ -25,7 +25,14 @@ test.describe('dev member visual baselines', () => {
         });
         await page.evaluate(async () => {
           if (document.fonts?.ready) await document.fonts.ready;
+          await new Promise((resolve) => {
+            requestAnimationFrame(() => requestAnimationFrame(resolve));
+          });
         });
+        await expect.poll(
+          () => page.evaluate(() => document.documentElement.scrollHeight),
+          { timeout: 10_000 },
+        ).toBeGreaterThan(0);
         // Collect every view's diff; each mismatch still fails this test.
         await expect.soft(page).toHaveScreenshot(`dev-member-${view.slug}-${viewport.name}.png`, {
           fullPage: true,

@@ -22,5 +22,6 @@ describe('dashboard catch-all preserves HTTP notFound', () => {
     expect(() => CatchAll()).toThrow('NOT_FOUND');
     expect(existsSync(join(root, 'app/(portal)/dashboard/(home)/loading.tsx'))).toBe(true);
     expect(existsSync(join(root, 'app/(portal)/dashboard/loading.tsx'))).toBe(false);
+    expect(existsSync(join(root, 'app/(portal)/dashboard/mentor/loading.tsx'))).toBe(false);
   });
 });

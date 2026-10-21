@@ -225,6 +225,18 @@ describe('fixture deployment and target binding', () => {
     expect(leftoverSnapshot.snapshot.before.mentorId).toBeNull();
   });
 
+  it('prepare fails closed when a leftover mentor is still present after cleanup', async () => {
+    const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: new Date('2026-01-01T00:00:00Z') });
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    stored.mentorProfile = { id: 'stuck-mentor', bio: 'Portal C temporary mentor fixture; restored by the serialized CI job.', isActive: false, approvedAt: null, _count: { sessions: 0, specialties: 0 } };
+    prisma.mentor.delete = async () => undefined;
+    const prepared = await call({ action: 'prepare' });
+    expect(prepared.status).toBe(500);
+    expect(prepared.body).toMatchObject({ error: 'fixture_failed' });
+    expect(String(prepared.body.detail)).toMatch(/still has a mentor row/);
+    expect(stored.mentorProfile).not.toBeNull();
+  });
+
   it('prepare deletes a leftover mentor even when the relation is missing and adds a browse mentor', async () => {
     const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: new Date('2026-01-01T00:00:00Z') });
     const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
