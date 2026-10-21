@@ -198,6 +198,14 @@ explains the remaining chance and links to counselor messages; after authorizati
 the portal offers the final attempt. Completed results are retained.
 The member's Eligibility tab also places the same capped control beside the
 assessment answers; the Overview assessment card links directly to that block.
+The Overview card separately states whether the final retake still needs staff
+authorization or has been authorized. Its review link is staff navigation, not a
+member permission or an instruction to take the assessment. Staff must confirm
+the Request final retake action; its client requires an explicit `ok: true`
+acknowledgement before showing success. An unconfirmed HTTP success refreshes
+the server-owned status and keeps the uncertainty visible until permission is
+confirmed. After authorization, a member with an already-open assessment page
+should refresh it to load the final-attempt prompt.
 
 The three `User` fields `assessmentAttemptCount`, `assessmentRetakeRequestedAt`
 and `assessmentHistory` record completed attempts, pending staff authorization

@@ -87,7 +87,7 @@ export default async function AssessmentPage({
               {dbUser.assessmentAttemptCount === 1 ? (
                 <p role="status">
                   You have one final attempt available. Ask your counselor or administrator to authorize it.
-                  {' '}Once approved, your portal will show a prompt to start attempt 2 of 2.
+                  {' '}After they authorize it, refresh this page to see the prompt to start attempt 2 of 2.
                   {' '}<Link href="/dashboard/messages">Message your counselor about a retake</Link>.
                 </p>
               ) : null}

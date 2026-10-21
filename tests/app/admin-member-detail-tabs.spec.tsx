@@ -402,7 +402,7 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     const section = screen.getByRole('region', { name: 'Preassessment retake' });
     expect(section.closest('[role="tabpanel"]')?.id).toBe(`${BASE}-panel-eligibility`);
     expect(section.previousElementSibling).toHaveAttribute('data-panel', 'assessment');
-    expect(screen.getByRole('link', { name: 'Review answers & retake', hidden: true })).toHaveAttribute('href', '#admin-member-preassessment');
+    expect(screen.getByRole('link', { name: 'Review answers & retake permission', hidden: true })).toHaveAttribute('href', '#admin-member-preassessment');
     fireEvent.click(within(section).getByRole('button', { name: 'Request final retake' }));
     expect(request).not.toHaveBeenCalled();
     const dialog = within(section).getByRole('dialog', { name: 'Request final retake for Fixture Member?' });
@@ -421,7 +421,7 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
       ...(await baseUser(args) as object), assessmentCompleted: true, assessmentAttemptCount: 1,
     });
     render(await AdminMemberDetailPage({ params: Promise.resolve({ id: 'member-1' }), searchParams: Promise.resolve({ tab: 'overview' }) }));
-    fireEvent.click(screen.getByRole('link', { name: 'Review answers & retake' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Review answers & retake permission' }));
     await waitFor(() => expect(screen.getByRole('region', { name: 'Preassessment retake' })).toBeVisible());
     expect(screen.getByRole('tab', { name: 'Eligibility' })).toHaveAttribute('aria-selected', 'true');
     window.history.replaceState({}, '', '/');
