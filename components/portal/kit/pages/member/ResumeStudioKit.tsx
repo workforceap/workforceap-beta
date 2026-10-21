@@ -1,12 +1,14 @@
 import { Layers } from 'lucide-react';
 import ResumeStudioClient from '@/components/portal/ResumeStudioClient';
 import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBreakdown';
+import type { MemberResumeLoadStatus } from '@/lib/member/getMemberResumePlainText';
 import { ToolkitToolChrome } from './ToolkitToolChrome';
 import type { ReactNode } from 'react';
 
 /**
  * Member Portal — resume studio (score / rewrite / coach).
  * PageOpener chrome around ResumeStudioClient. History is omitted in preview.
+ * Explicit loadStatus keeps failed/audit reads distinct from a missing resume.
  *
  * Target route: app/(portal)/dashboard/ai-tools/resume-studio
  * Proof: /dev/member/resume-studio
@@ -15,6 +17,7 @@ import type { ReactNode } from 'react';
 
 export function ResumeStudioKit({
   hasResume = false,
+  loadStatus,
   scoreHistorySlot,
   rewriteHistorySlot,
   preview = false,
@@ -27,6 +30,7 @@ export function ResumeStudioKit({
   previewRewriteOutput,
 }: {
   hasResume?: boolean;
+  loadStatus?: MemberResumeLoadStatus;
   scoreHistorySlot?: ReactNode;
   rewriteHistorySlot?: ReactNode;
   preview?: boolean;
@@ -48,6 +52,7 @@ export function ResumeStudioKit({
     >
       <ResumeStudioClient
         hasResume={hasResume}
+        loadStatus={loadStatus}
         scoreHistorySlot={scoreHistorySlot}
         rewriteHistorySlot={rewriteHistorySlot}
         preview={preview}

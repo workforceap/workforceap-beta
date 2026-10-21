@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
-import { getMemberResumePlainText } from '@/lib/member/getMemberResumePlainText';
+import { getMemberResumeLoadResult } from '@/lib/member/getMemberResumePlainText';
 import { withDbRetry } from '@/lib/db/withDbRetry';
 import { scoreStructural } from '@/lib/ai/resumeScore';
 import {
@@ -53,15 +53,18 @@ export default async function CareerStudioPage({
     ? (requestedAgent as VoiceStudioAgentKey)
     : undefined;
 
-  const resumeStudio =
+  const resumeStudio: ResumeStudioData =
     initialTab === 'studio'
       ? await loadResumeStudioData(user.id, readOnlyAudit)
-      : { hasResume: false };
+      : { hasResume: false, loadStatus: 'not-loaded' };
 
   return (
     <>
       {readOnlyAudit && initialTab === 'studio' && (
         <span hidden data-portal-audit-suppressed="career-studio-resume-storage-provider" />
+      )}
+      {resumeStudio.loadStatus === 'unavailable' && (
+        <span hidden data-portal-error-state="career-studio-resume-load" />
       )}
       <VoiceStudioKit initialTab={initialTab} initialAgent={initialAgent} resumeStudio={resumeStudio} />
     </>
@@ -81,19 +84,20 @@ const DIMENSION_LABEL: Record<string, string> = {
  * Computes the Resume Studio tab's REAL data from the member's actual resume:
  * a deterministic structural score (instant — no LLM / external calls) plus the
  * real issue notes from the weakest dimensions. Returns hasResume:false when
- * there's nothing on file. Never throws — the tab degrades to the empty state.
+ * metadata confirms nothing on file. Failures and audit suppression stay distinct
+ * from absence; the client can retry the same route without discarding its state.
  */
 async function loadResumeStudioData(
   userId: string,
   readOnlyAudit = false,
 ): Promise<ResumeStudioData> {
   try {
-    const text = await withDbRetry(() =>
-      getMemberResumePlainText(userId, 8000, { readOnlyAudit }),
+    const result = await withDbRetry(() =>
+      getMemberResumeLoadResult(userId, 8000, { readOnlyAudit }),
     );
-    if (text.trim().length === 0) return { hasResume: false };
+    if (result.status !== 'available') return { hasResume: false, loadStatus: result.status };
 
-    const structural = scoreStructural(text);
+    const structural = scoreStructural(result.text);
     const issues: ResumeStudioIssue[] = Object.entries(structural.breakdown)
       .map(([key, sub]) => ({ key, score: sub.score, detail: sub.notes[0] ?? '' }))
       .filter((d) => d.score < 85 && d.detail)
@@ -101,9 +105,9 @@ async function loadResumeStudioData(
       .slice(0, 3)
       .map((d) => ({ title: DIMENSION_LABEL[d.key] ?? 'Resume fix', detail: d.detail }));
 
-    return { hasResume: true, structuralScore: structural.composite, issues };
+    return { hasResume: true, loadStatus: 'available', structuralScore: structural.composite, issues };
   } catch (err) {
     console.error('[studio page] resume data load failed', err);
-    return { hasResume: false };
+    return { hasResume: false, loadStatus: 'unavailable' };
   }
 }

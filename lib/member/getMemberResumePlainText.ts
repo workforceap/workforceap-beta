@@ -44,6 +44,19 @@ function extFromPath(path: string): string {
   return i >= 0 ? base.slice(i + 1) : 'txt';
 }
 
+type ResumeReadOptions = {
+  preferOriginal?: boolean;
+  originalOnly?: boolean;
+  enhancedOnly?: boolean;
+  readOnlyAudit?: boolean;
+};
+
+export type MemberResumeLoadResult =
+  | { status: 'available'; text: string }
+  | { status: 'absent' | 'unavailable' | 'audit-suppressed' };
+
+export type MemberResumeLoadStatus = MemberResumeLoadResult['status'];
+
 /**
  * Best-effort plain text from the member's stored resume.
  * By default prefers enhanced resume (for voice/context consumers).
@@ -56,26 +69,44 @@ function extFromPath(path: string): string {
 export async function getMemberResumePlainText(
   userId: string,
   maxChars = 8000,
-  opts?: { preferOriginal?: boolean; originalOnly?: boolean; enhancedOnly?: boolean; readOnlyAudit?: boolean }
+  opts?: ResumeReadOptions,
 ): Promise<string> {
-  if (opts?.readOnlyAudit) return '';
+  const result = await getMemberResumeLoadResult(userId, maxChars, opts);
+  return result.status === 'available' ? result.text : '';
+}
+
+/**
+ * The same owned-object reader with an explicit outcome for member-facing UI.
+ * Only an empty metadata result confirms absence. A stored but unreadable or
+ * unowned reference is unavailable; audit suppression never implies absence.
+ * Database errors still propagate so existing callers retain their retry policy.
+ * No storage paths or provider errors are returned to the client.
+ */
+export async function getMemberResumeLoadResult(
+  userId: string,
+  maxChars = 8000,
+  opts?: ResumeReadOptions,
+): Promise<MemberResumeLoadResult> {
+  if (opts?.readOnlyAudit) return { status: 'audit-suppressed' };
   const profile = await prisma.profile.findUnique({
     where: { userId },
   });
-  if (!profile) return '';
+  if (!profile) return { status: 'absent' };
 
-  const paths = (opts?.originalOnly
+  const candidates = (opts?.originalOnly
     ? [profile.resumeOriginalPath]
     : opts?.enhancedOnly
       ? [profile.resumeEnhancedPath]
     : opts?.preferOriginal
       ? [profile.resumeOriginalPath, profile.resumeEnhancedPath]
       : [profile.resumeEnhancedPath, profile.resumeOriginalPath]
-  ).filter((p): p is string => Boolean(p) && isResumeObjectPathOwnedByUser(userId, p as string));
-  if (paths.length === 0) return '';
+  ).filter((p): p is string => Boolean(p));
+  if (candidates.length === 0) return { status: 'absent' };
+  const paths = candidates.filter((path) => isResumeObjectPathOwnedByUser(userId, path));
+  if (paths.length === 0) return { status: 'unavailable' };
 
   const supabase = tryGetSupabaseAdmin();
-  if (!supabase) return '';
+  if (!supabase) return { status: 'unavailable' };
 
   for (const path of paths) {
     try {
@@ -86,7 +117,7 @@ export async function getMemberResumePlainText(
       const ext = extFromPath(path);
       const text = sanitizeResumePlainText(await extractTextFromResumeBuffer(buf, ext));
       if (hasSubstantiveResumeText(text)) {
-        return text.slice(0, maxChars);
+        return { status: 'available', text: text.slice(0, maxChars) };
       }
     } catch (err) {
       // Storage or extraction failures are best-effort too: try the next path.
@@ -94,5 +125,5 @@ export async function getMemberResumePlainText(
     }
   }
 
-  return '';
+  return { status: 'unavailable' };
 }
