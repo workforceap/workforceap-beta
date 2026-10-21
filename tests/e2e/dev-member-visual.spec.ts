@@ -16,9 +16,9 @@ test.describe('dev member visual baselines', () => {
         await openDevMember(page, harnessPath(view.slug, 'full'));
         if (viewport.width >= 769) {
           // WorkspaceShell hydrates wide=false, so the first paint still puts
-          // identity in the rail. Wait for the desktop collapse control so
-          // fullPage captures the settled 1440 chrome, not that flash.
-          await expect(page.locator('.workspace-sidebar-collapse-btn')).toBeVisible();
+          // identity in the rail. Compact C screens never grow a collapse
+          // control; the rail identity leaving is the settled 1440 signal.
+          await expect(page.locator('.workspace-sidebar-identity')).toHaveCount(0);
         }
         await page.evaluate(() => {
           const id = 'dev-member-visual-overflow';
