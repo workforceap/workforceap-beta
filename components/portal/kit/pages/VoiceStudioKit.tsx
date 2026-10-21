@@ -26,6 +26,8 @@
  * backgrounds; dark panels use a self-contained dark focus ring class.
  *
  * Spec: docs/PORTING_GUIDE.md
+ * Resume load failures and audit suppression remain distinct from absence;
+ * retry refreshes this route without selecting another tab or starting a coach.
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
@@ -76,6 +78,8 @@ import { KitEmptyState } from '../KitEmptyState';
 import { StatusTag } from '../StatusTag';
 import { VoiceOrb } from '../VoiceOrb';
 import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
+import { ResumeLoadNotice } from '@/components/portal/ResumeLoadNotice';
+import type { MemberResumeLoadStatus } from '@/lib/member/getMemberResumePlainText';
 
 type StudioTab = 'coaches' | 'session' | 'studio' | 'toolkit';
 export type VoiceStudioAgentKey = 'readiness' | 'resume' | 'mock' | 'counselor' | 'business';
@@ -192,6 +196,8 @@ export type ResumeStudioIssue = { title: string; detail: string };
 export type ResumeStudioData = {
   /** Whether the member has a resume on file. */
   hasResume: boolean;
+  /** Missing only for legacy proof callers; live loaders always supply a status. */
+  loadStatus?: MemberResumeLoadStatus | 'not-loaded';
   /** Deterministic structural score 0–100 (instant; not the full AI composite). */
   structuralScore?: number;
   /** Real issues derived from the weakest structural dimensions. */
@@ -1331,7 +1337,10 @@ function scoreBand(score: number): { color: string; label: string } {
 }
 
 function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; onResumeCoachNavigate: () => void }) {
-  const hasResume = data.hasResume;
+  const t = useTranslations('empty.resumeLoad');
+  const loadStatus = data.loadStatus ?? (data.hasResume ? 'available' : 'absent');
+  const hasResume = loadStatus === 'available';
+  const confirmedAbsent = loadStatus === 'absent';
   const score =
     typeof data.structuralScore === 'number'
       ? Math.max(0, Math.min(100, Math.round(data.structuralScore)))
@@ -1385,17 +1394,21 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
           <p style={{ fontSize: 'var(--wa-type-body)', color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>
             {hasResume
               ? 'Your instant structural read and top fixes — then full AI scoring, rewrites, and voice coaching.'
-              : 'Add your resume to get an instant structural read, full AI scoring, and rewrites.'}
+              : confirmedAbsent
+                ? 'Add your resume to get an instant structural read, full AI scoring, and rewrites.'
+                : t('hubDescription')}
           </p>
         </div>
         <KitLinkButton
           href={hasResume ? TOOL_HREF['resume-studio'] + '?view=score' : TOOL_HREF['resume-studio']}
-          label={hasResume ? 'Open full analysis' : 'Add résumé'}
+          label={hasResume ? 'Open full analysis' : confirmedAbsent ? 'Add résumé' : t('openStudio')}
           variant="primary"
           size="sm"
           icon={<Upload size={14} aria-hidden="true" />}
         />
       </div>
+
+      <ResumeLoadNotice status={loadStatus} headingAs="h3" />
 
       {hasResume && score !== null ? (
         <>
@@ -1519,7 +1532,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
             </Link>
           </div>
         </>
-      ) : (
+      ) : confirmedAbsent ? (
         /* no resume on file — honest empty state */
         <div className="wa-kit-card">
           <KitEmptyState
@@ -1533,7 +1546,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
             }
           />
         </div>
-      )}
+      ) : null}
     </section>
   );
 }

@@ -3941,6 +3941,24 @@
     }
   },
   "empty": {
+    "resumeLoad": {
+      "unavailable": {
+        "title": "No pudimos comprobar tu currículum en este momento.",
+        "description": "Inténtalo de nuevo para comprobar tu currículum guardado. El texto que escribas aquí se conservará."
+      },
+      "audit": {
+        "title": "Comprobación del currículum pausada para esta revisión",
+        "description": "Los archivos del currículum no se comprobaron en esta revisión de solo lectura."
+      },
+      "loading": {
+        "title": "Comprobando tu currículum",
+        "description": "El estado de tu currículum guardado aparecerá aquí."
+      },
+      "retry": "Intentar de nuevo",
+      "retrying": "Comprobando currículum…",
+      "hubDescription": "Evalúa, reescribe o conversa sobre tu currículum.",
+      "openStudio": "Abrir Resume Studio"
+    },
     "activeApplications": {
       "title": "No hay solicitudes activas",
       "body": "Los empleos que guardas o a los que postulas aparecen aquí hasta que los marques como aceptados o cerrados. Explora las ofertas para agregar la primera.",

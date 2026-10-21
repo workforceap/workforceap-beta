@@ -9,6 +9,8 @@ import ResumeStrengthForm from '@/components/portal/tools/ResumeStrengthForm';
 import ResumeRewriterForm from '@/components/portal/tools/ResumeRewriterForm';
 import ResumeRewriterClient from '@/app/(portal)/dashboard/ai-tools/resume-rewriter/ResumeRewriterClient';
 import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBreakdown';
+import type { MemberResumeLoadStatus } from '@/lib/member/getMemberResumePlainText';
+import { ResumeLoadNotice } from '@/components/portal/ResumeLoadNotice';
 
 const ResumeCoachWorkspace = dynamic(() => import('@/components/portal/ResumeCoachWorkspace'), {
   ssr: false,
@@ -71,6 +73,7 @@ const kitBtnOutline: CSSProperties = {
 
 type Props = {
   hasResume: boolean;
+  loadStatus?: MemberResumeLoadStatus;
   scoreHistorySlot?: ReactNode;
   rewriteHistorySlot?: ReactNode;
   /** View-switch base. Proofs use `/dev/member/resume-studio`. */
@@ -85,6 +88,7 @@ type Props = {
 
 export default function ResumeStudioClient({
   hasResume,
+  loadStatus,
   scoreHistorySlot,
   rewriteHistorySlot,
   basePath = '/dashboard/ai-tools/resume-studio',
@@ -99,6 +103,7 @@ export default function ResumeStudioClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const view = normalizeStudioView(searchParams?.get('view') ?? undefined);
+  const resumeStatus = loadStatus ?? (hasResume ? 'available' : 'absent');
 
   const setView = useCallback(
     (next: ResumeStudioView) => {
@@ -130,9 +135,11 @@ export default function ResumeStudioClient({
         })}
       </div>
 
+      <ResumeLoadNotice status={resumeStatus} />
+
       {view === 'score' ? (
         <div className="wa-kit-card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {!hasResume ? (
+          {resumeStatus === 'absent' ? (
             <div>
               <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: 'var(--wa-text)' }}>
                 {t('emptyTitle')}

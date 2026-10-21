@@ -3884,6 +3884,24 @@
     }
   },
   "empty": {
+    "resumeLoad": {
+      "unavailable": {
+        "title": "Não foi possível verificar seu currículo agora.",
+        "description": "Tente novamente para verificar seu currículo salvo. O texto que você digitar aqui será mantido."
+      },
+      "audit": {
+        "title": "Verificação do currículo pausada nesta revisão",
+        "description": "Os arquivos do currículo não foram consultados nesta revisão somente de leitura."
+      },
+      "loading": {
+        "title": "Verificando seu currículo",
+        "description": "O status do seu currículo salvo aparecerá aqui."
+      },
+      "retry": "Tentar novamente",
+      "retrying": "Verificando currículo…",
+      "hubDescription": "Avalie, reescreva ou converse sobre seu currículo.",
+      "openStudio": "Abrir Resume Studio"
+    },
     "activeApplications": {
       "title": "Nenhuma candidatura ativa",
       "body": "As vagas que você salva ou às quais se candidata aparecem aqui até você marcá-las como aceitas ou encerradas. Veja as vagas abertas para adicionar a primeira.",

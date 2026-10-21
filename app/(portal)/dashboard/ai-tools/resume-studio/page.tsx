@@ -5,7 +5,7 @@ import { Suspense } from 'react';
 import { headers } from 'next/headers';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
-import { getMemberResumePlainText } from '@/lib/member/getMemberResumePlainText';
+import { getMemberResumeLoadResult, type MemberResumeLoadStatus } from '@/lib/member/getMemberResumePlainText';
 import ToolHistoryPanel from '@/components/portal/ToolHistoryPanel';
 import { ResumeStudioKit } from '@/components/portal/kit/pages/member/ResumeStudioKit';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
@@ -26,13 +26,11 @@ export default async function ResumeStudioPage() {
 
   const t = await getTranslations('resumeStudio');
 
-  let hasResume = false;
-  let resumeLoadFailed = false;
+  let loadStatus: MemberResumeLoadStatus = 'unavailable';
   try {
-    const plain = await getMemberResumePlainText(user.id, 200, { readOnlyAudit });
-    hasResume = plain.trim().length > 0;
+    const result = await getMemberResumeLoadResult(user.id, 200, { readOnlyAudit });
+    loadStatus = result.status;
   } catch (err) {
-    resumeLoadFailed = true;
     console.error('[resume-studio page] resume check failed', err);
   }
 
@@ -42,9 +40,10 @@ export default async function ResumeStudioPage() {
         {readOnlyAudit && (
           <span hidden data-portal-audit-suppressed="resume-studio-storage-provider" />
         )}
-        {resumeLoadFailed ? <span hidden data-portal-error-state="resume-studio-resume-load" /> : null}
+        {loadStatus === 'unavailable' ? <span hidden data-portal-error-state="resume-studio-resume-load" /> : null}
         <ResumeStudioKit
-          hasResume={hasResume}
+          hasResume={loadStatus === 'available'}
+          loadStatus={loadStatus}
           scoreHistorySlot={<ToolHistoryPanel userId={user.id} toolType="resume_analysis" />}
           rewriteHistorySlot={
             <ToolHistoryPanel userId={user.id} toolType="resume_rewriter" title={t('rewriteHistoryTitle')} />
