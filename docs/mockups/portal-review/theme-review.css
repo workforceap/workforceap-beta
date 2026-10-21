@@ -1,0 +1,189 @@
+/*
+ * Clarity pass for the isolated design review.
+ * Keep WorkforceAP's crimson, gold, Inter, warm/member and dense/staff language.
+ * The canvas and header match the companion application token proposal; all
+ * route, record, voice and permission models remain owned by the review model.
+ */
+:root {
+  --wa-bg-wave:
+    radial-gradient(circle at 38% -8%, color-mix(in srgb, var(--wa-accent) 5%, transparent) 0, transparent 32rem),
+    radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--wa-gold) 3%, transparent) 0, transparent 26rem),
+    var(--wa-bg);
+  --wa-shell-header-bg: color-mix(in srgb, var(--wa-bg) 96%, transparent);
+}
+
+/* Match the application's existing warm member canvas, including its dark pair. */
+html[data-role="member"] {
+  --wa-bg: light-dark(#fcf9f8, #130d0f);
+}
+
+.reviewbar {
+  min-height: 76px;
+  gap: 20px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--wa-border);
+  color: var(--wa-text);
+  background: var(--wa-surface);
+}
+.reviewbrand { font-size: 15px; }
+.reviewbrand span,
+.reviewlabel { color: var(--wa-muted-strong); }
+.reviewlabel { max-width: 21ch; }
+.reviewcontrols { align-items: end; gap: 10px; }
+.reviewcontrols .control {
+  display: grid;
+  align-items: start;
+  gap: 5px;
+  min-width: 0;
+}
+.reviewcontrols label > span {
+  display: inline;
+  color: var(--wa-muted-strong);
+  font-size: var(--wa-type-meta);
+  font-weight: 600;
+}
+.reviewcontrols button,
+.reviewcontrols select {
+  min-height: 44px;
+  border-color: var(--wa-control-border);
+  background: var(--wa-surface);
+  color: var(--wa-text);
+  font-size: var(--wa-type-meta);
+}
+.reviewcontrols select option { background: var(--wa-surface); color: var(--wa-text); }
+.reviewcontrols button:hover { background: var(--wa-surface-2); }
+.reviewcontrols .themecontrol { min-width: 108px; }
+.shell { min-height: calc(100dvh - 76px); }
+.appheader { background: var(--wa-shell-header-bg); }
+.crumbs a,
+.crumbs span { color: var(--wa-muted-strong); }
+.opener { margin-bottom: 26px; }
+.opener p,
+.sampleline,
+.meta,
+.muted { color: var(--wa-muted-strong); }
+
+/* A solid reading surface separates content from the restrained brand wash. */
+.section,
+.leadwork,
+.voice-hero,
+.voice-panel,
+.voice-transcript,
+.voice-coach {
+  box-shadow: var(--wa-shadow);
+}
+.section.flat { box-shadow: none; }
+.voice-hero {
+  background: var(--wa-surface);
+  background-image: none;
+  border-color: var(--wa-border);
+  border-radius: var(--wa-radius-sm);
+}
+.voice-description,
+.leadwork p,
+.voice-coach p,
+.voice-coach small,
+.voice-context-item small,
+.voice-context-item span,
+.voice-entry p { color: var(--wa-muted-strong); }
+.voice-eyebrow { letter-spacing: .06em; }
+.voice-coach .voice-meta { color: var(--voice-ink); }
+.voice-entry { border-left-width: 1px; }
+.voice-stage .voice-description { color: var(--wa-sidebar-muted); }
+
+/* Form outlines communicate an editable control in either palette. */
+.voice-panel input,
+.voice-panel select,
+.voice-panel textarea,
+.voice-agent-choice select,
+.voice-text-form textarea {
+  border-color: var(--wa-control-border);
+}
+.voice-stage .voice-text-form textarea {
+  border-color: var(--wa-control-border);
+}
+.field input::placeholder,
+.field textarea::placeholder,
+.search input::placeholder,
+.voice-panel textarea::placeholder {
+  color: var(--wa-muted);
+  opacity: 1;
+}
+.search:focus-within {
+  border-color: var(--wa-accent-text);
+}
+
+/* Hierarchy comes from type, space and selected state, not extra gradients. */
+.metric strong { font-weight: 600; }
+.metric small,
+.rowmain small,
+.table th,
+.table td small,
+.formhelp,
+.tablecaption,
+.routeitem small { color: var(--wa-muted-strong); }
+.railnav a[aria-current="page"] { font-weight: 600; }
+.railnav a:hover,
+.railnav a:focus-visible { color: var(--wa-sidebar-text); }
+.railnav a[aria-current="page"]:hover { color: var(--wa-sidebar-text); }
+.button,
+.reviewcontrols button,
+.reviewcontrols select,
+.voice-tab {
+  transition: background-color var(--wa-dur-fast) var(--wa-ease),
+    border-color var(--wa-dur-fast) var(--wa-ease),
+    color var(--wa-dur-fast) var(--wa-ease);
+}
+.button.primary:hover { filter: none; }
+.button.primary:active { box-shadow: inset 0 0 0 2px currentColor; }
+.button.text:hover { text-decoration: underline; }
+.voice-stage .button.primary:not(:disabled):hover { filter: brightness(1.06); }
+.mobilebottom { background: var(--wa-surface); }
+.mobilebottom a { color: var(--wa-muted-strong); }
+.mobilebottom a[aria-current="page"] { color: var(--wa-accent-text); font-weight: 600; }
+
+@media (max-width: 1050px) {
+  .reviewbar { gap: 14px; padding: 14px 20px; }
+  .reviewcontrols { flex: 1 1 100%; margin-left: 0; }
+  .reviewcontrols .control { flex: 1 1 120px; }
+  .reviewcontrols select { width: 100%; }
+}
+
+@media (max-width: 767px) {
+  .reviewbar { padding: 14px 16px; gap: 12px; }
+  .reviewbrand { font-size: 15px; }
+  .reviewcontrols {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: end;
+    width: 100%;
+    gap: 10px 8px;
+  }
+  .reviewcontrols .control,
+  .reviewcontrols .statecontrol { display: grid; min-width: 0; }
+  .reviewcontrols .themecontrol { min-width: 0; }
+  .reviewcontrols button,
+  .reviewcontrols select { min-height: 44px; padding-inline: 8px; }
+  .reviewcontrols button[data-action="catalog"] { grid-column: 1 / -1; }
+  .reviewcontrols button[data-action="source"] { display: none; }
+  .main { padding-top: 26px; }
+  .voice-coaches { grid-template-columns: 1fr; gap: 12px; }
+  .voice-coach { padding: 18px; }
+  .voice-coach strong,
+  .voice-coach h3 { font-size: var(--wa-type-body); }
+  .voice-coach p { font-size: 14px; line-height: 1.6; }
+  .voice-stage .voice-controls .button { min-height: 48px; }
+  .voice-title-row { gap: 12px; }
+}
+
+@media (forced-colors: active) {
+  .reviewcontrols select,
+  .reviewcontrols button,
+  .button,
+  .voice-panel textarea,
+  .voice-agent-choice select { border: 1px solid ButtonText; }
+  .voice-coach[aria-pressed="true"],
+  .voice-coach[data-selected="true"],
+  .railnav a[aria-current="page"],
+  .mobilebottom a[aria-current="page"] { outline: 2px solid Highlight; }
+}
