@@ -1,0 +1,333 @@
+{
+  "kind": "workforceap-portal-feature-preservation-verification",
+  "recordedAt": "2026-10-22T00:10:54.697709+00:00",
+  "liveAcceptance": false,
+  "featureSourceSha": "f8a12f527810ba8c1e08840a762358b0fd86e4f1",
+  "routeInventorySha": "efc27e4a4ebeba09b5261e7b1c36463d01925017",
+  "coverage": {
+    "routes": 266,
+    "families": 120,
+    "obligations": 319,
+    "uncoveredRoutes": 0,
+    "missingCitedSources": 0,
+    "previewStatuses": {
+      "mixed": 41,
+      "structural": 73,
+      "simulated": 6
+    },
+    "meaning": "Source-backed workflow requirements, not end-to-end feature acceptance counts."
+  },
+  "applicationPatch": {
+    "baseSha": "f8a12f527810ba8c1e08840a762358b0fd86e4f1",
+    "headSha": "0f0ba157740a4dd8142614477efadc142eaf1069",
+    "checks": [
+      {
+        "path": "components/portal/ReadinessCoachReturnButton.tsx",
+        "verified": "AST unchanged outside literal JSX background/color values and comments"
+      },
+      {
+        "path": "components/portal/kit/pages/VoiceStudioKit.tsx",
+        "verified": "AST unchanged outside literal JSX background/color values and comments"
+      },
+      {
+        "path": "css/portal-kit.css",
+        "verified": "Non-paint declarations, at-rules, resource URLs, selectors and enclosing conditions unchanged"
+      },
+      {
+        "path": "css/portal-tokens.css",
+        "verified": "Non-paint declarations, at-rules, resource URLs, selectors and enclosing conditions unchanged"
+      },
+      {
+        "path": "css/portal.css",
+        "verified": "Non-paint declarations, at-rules, resource URLs, selectors and enclosing conditions unchanged"
+      }
+    ],
+    "otherTrackedFiles": "Unchanged outside listed runtime files and docs/tests",
+    "liveAcceptance": false,
+    "limits": "This proves a bounded code change, not authenticated deployment health or complete visual accessibility."
+  },
+  "applicationRegression": {
+    "files": 20,
+    "passed": 366,
+    "failed": 0,
+    "skipped": 0,
+    "scope": "Existing component/API regressions with controlled dependencies; no authenticated live provider or database acceptance.",
+    "testFiles": [
+      "tests/api/counselor-assessment-retake.spec.ts",
+      "tests/api/counselor-handoff-atomicity.spec.ts",
+      "tests/api/counselor-thread-access-gate.spec.ts",
+      "tests/api/employer-application-status-transitions.spec.ts",
+      "tests/api/export-download-authz-matrix.spec.ts",
+      "tests/api/job-application-resume-snapshot.spec.ts",
+      "tests/api/partner-employer-authz-matrix.spec.ts",
+      "tests/api/partner-hidden-member-routes.spec.ts",
+      "tests/api/skill-assessment-source.spec.ts",
+      "tests/api/staff-mutation-authz-matrix.spec.ts",
+      "tests/components/assessment-retake.spec.tsx",
+      "tests/components/employer-application-status-updater.spec.tsx",
+      "tests/components/employer-interview-details-form.spec.tsx",
+      "tests/components/member-resume-build-failure.spec.tsx",
+      "tests/components/member-resume-upload-failure.spec.tsx",
+      "tests/components/partner-attention-pagination.spec.tsx",
+      "tests/components/partner-milestones-placement-verification.spec.tsx",
+      "tests/components/session-run-resume-source.spec.tsx",
+      "tests/components/theme-selector-activation.spec.tsx",
+      "tests/components/voice-studio-navigation.spec.tsx"
+    ]
+  },
+  "artifacts": [
+    {
+      "file": "index.html",
+      "bytes": 994885,
+      "sha256": "abc9a2e1538956fcf2c6338ae745e8813081f58754cf81870b178c2fc8437b13"
+    },
+    {
+      "file": "inline.html",
+      "bytes": 999515,
+      "sha256": "ec5d6b39056d1e7740926bd398233032c9357a2ed116147cffeef5319bc0e48f"
+    }
+  ],
+  "routeRendering": {
+    "routePass": 1596,
+    "routeFail": 0,
+    "interactionPass": 21,
+    "interactionFail": 0,
+    "pageErrors": 0,
+    "externalRequests": 0,
+    "screenshots": 0
+  },
+  "appearance": {
+    "passed": 26,
+    "failed": 0,
+    "pageErrors": 0,
+    "externalRequests": 0,
+    "mediaCalls": 0
+  },
+  "assembledInteractions": {
+    "routeSweepSkipped": true,
+    "routePass": 0,
+    "routeFail": 0,
+    "interactionPass": 25,
+    "interactionFail": 0,
+    "pageErrors": 0,
+    "externalRequests": 0,
+    "screenshots": 0,
+    "checks": [
+      {
+        "name": "All 266 route contracts are discoverable in the catalog",
+        "result": "pass"
+      },
+      {
+        "name": "Skip link preserves selected counselor route",
+        "result": "pass"
+      },
+      {
+        "name": "Specific job links retain selected record identity",
+        "result": "pass"
+      },
+      {
+        "name": "Specific member links retain selected record identity",
+        "result": "pass"
+      },
+      {
+        "name": "Keep editing cannot submit a profile or discard its unsaved fields",
+        "result": "pass"
+      },
+      {
+        "name": "Profile updates are reflected in subsequent workspace identity",
+        "result": "pass"
+      },
+      {
+        "name": "Résumé failure state retains draft and saved preview updates",
+        "result": "pass"
+      },
+      {
+        "name": "Empty and unavailable remain distinct and recoverable",
+        "result": "pass"
+      },
+      {
+        "name": "Lab sharing requires explicit review and freezes the submitted copy",
+        "result": "pass"
+      },
+      {
+        "name": "Unconfirmed sample send preserves draft and reconciles the original request once",
+        "result": "pass"
+      },
+      {
+        "name": "Unknown route renders not found rather than home",
+        "result": "pass"
+      },
+      {
+        "name": "All seven standard data states render without page errors",
+        "result": "pass"
+      },
+      {
+        "name": "Route-local record filters recover when cleared",
+        "result": "pass"
+      },
+      {
+        "name": "Nested record routes and their parent keep member-002 identity",
+        "result": "pass"
+      },
+      {
+        "name": "Domain schemas retain their role and purpose",
+        "result": "pass"
+      },
+      {
+        "name": "Staff job review does not expose member-only application navigation",
+        "result": "pass"
+      },
+      {
+        "name": "Editing a selected job retains the row and publication state",
+        "result": "pass"
+      },
+      {
+        "name": "Unconfirmed-send recovery blocks a second request and preserves newer edits",
+        "result": "pass"
+      },
+      {
+        "name": "Sensitive domain forms remain read-only and never collect passwords",
+        "result": "pass"
+      },
+      {
+        "name": "Malformed record links recover without crashing or revealing a draft job",
+        "result": "pass"
+      },
+      {
+        "name": "Mobile navigation dialog supports keyboard focus and Escape",
+        "result": "pass"
+      },
+      {
+        "name": "Feature catalog exposes 120 families and searches O*NET and human workspace labels",
+        "result": "pass"
+      },
+      {
+        "name": "Every portal group exposes concrete feature obligations and pinned implementation links",
+        "result": "pass"
+      },
+      {
+        "name": "Skill Mapper occupation search renders a radar, six exact axes and a member comparison",
+        "result": "pass"
+      },
+      {
+        "name": "Skill Mapper retains query and target across appearance and navigation, and global reset clears both",
+        "result": "pass"
+      }
+    ]
+  },
+  "skillMapperModule": {
+    "kind": "isolated-synthetic-skill-mapper-module-check",
+    "timestamp": "2026-10-21T23:57:55.622Z",
+    "passed": 12,
+    "cases": [
+      {
+        "inline": false,
+        "width": 375,
+        "theme": "light",
+        "result": "pass"
+      },
+      {
+        "inline": false,
+        "width": 375,
+        "theme": "dark",
+        "result": "pass"
+      },
+      {
+        "inline": false,
+        "width": 768,
+        "theme": "light",
+        "result": "pass"
+      },
+      {
+        "inline": false,
+        "width": 768,
+        "theme": "dark",
+        "result": "pass"
+      },
+      {
+        "inline": false,
+        "width": 1440,
+        "theme": "light",
+        "result": "pass"
+      },
+      {
+        "inline": false,
+        "width": 1440,
+        "theme": "dark",
+        "result": "pass"
+      },
+      {
+        "inline": true,
+        "width": 375,
+        "theme": "light",
+        "result": "pass"
+      },
+      {
+        "inline": true,
+        "width": 375,
+        "theme": "dark",
+        "result": "pass"
+      },
+      {
+        "inline": true,
+        "width": 768,
+        "theme": "light",
+        "result": "pass"
+      },
+      {
+        "inline": true,
+        "width": 768,
+        "theme": "dark",
+        "result": "pass"
+      },
+      {
+        "inline": true,
+        "width": 1440,
+        "theme": "light",
+        "result": "pass"
+      },
+      {
+        "inline": true,
+        "width": 1440,
+        "theme": "dark",
+        "result": "pass"
+      }
+    ],
+    "checks": "Search validation/empty/results; painted radar; exact comparison/gaps; course detail; JSON/CSV contents; copy fallback; keyboard tabs; theme draft and selection continuity; route rerender continuity; reset; no overflow/errors/network",
+    "limitations": "This fixture checks the module with actual repository CSS. It does not exercise the assembled hosted artifact, production O*NET, provider/API health, or real user data.",
+    "inputs": {
+      "docs/mockups/portal-review/skill-mapper-review.js": "c9db3feb878ebed5f13fa2430868142262f447ef241839802551af5d81b3a0c2",
+      "css/wa-brand-tokens.css": "08a210ffeba645834cbf1daf1ebe58277cdcf84649fc095c5bbf446237a23ab5",
+      "css/portal-tokens.css": "f8559e9358b8289d9c75990701e5bc5092ec2425d1ec66926621cdeb0f90ee34",
+      "docs/mockups/portal-review/review.css": "7a19e4a139d17a44306cf9b6d10b8adc658035bca55adc78a22548d6973f6fe1",
+      "docs/mockups/portal-review/theme-review.css": "6b372d441ab4e7ed64ab84ea8553e7fae99b64e8c4dee2963ec8a660670a30fc",
+      "docs/mockups/portal-review/skill-mapper-review.css": "e981d11e7eeb45d5aff22535f386244e5779199ed91bf06e2119feff5de22a03"
+    }
+  },
+  "managedSitesBrowser": {
+    "passed": true,
+    "artifactSha256": "abc9a2e1538956fcf2c6338ae745e8813081f58754cf81870b178c2fc8437b13",
+    "scope": "Supported managed preview of the assembled document; publication is tracked separately.",
+    "scenarios": [
+      "All seven portal groups and 120 feature families in the catalog",
+      "O*NET requirement search returns relevant source families",
+      "Skill Mapper preservation dialog shows source obligations and offline limits",
+      "Occupation selection and painted six-axis radar",
+      "Member-versus-target overlay and Engineering gap of 26 in the IT support fixture",
+      "Light/dark switching retains selected occupation and current draft",
+      "Copyable report identifies sample=true and liveOnet=false"
+    ]
+  },
+  "inventoryRoundTrip": {
+    "routes": 266,
+    "sourceUrlsUnchanged": true,
+    "titleProvenanceUnchanged": true,
+    "method": "Lossless shared title-label pooling and reconstruction compared with the original inventory."
+  },
+  "limits": [
+    "The ChatGPT Site is an offline design review with synthetic examples, not the authenticated application.",
+    "Catalog coverage is not proof that every requirement is implemented in the static review or exercised end to end.",
+    "Production O*NET, AI/voice providers, persisted user data, tenant boundaries and delivery require authenticated exact-deployment acceptance.",
+    "The appearance patch remains a separate draft PR; no production application merge or deployment is represented by these checks."
+  ]
+}
