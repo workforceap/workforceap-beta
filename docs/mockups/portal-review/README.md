@@ -20,6 +20,36 @@ The inline build scopes appearance to its own root instead of changing its host.
 `THEME-VERIFICATION.md` records the exact tested artifacts, rendered checks and
 the distinction between this proposal and the companion application CSS fix.
 
+## Preserve the whole feature set
+
+Every review screen now exposes **View existing features**, with concrete
+obligations and links to the actual implementation. **All screens & journeys →
+Feature preservation** searches the requirements across member, counselor,
+employer, partner, admin, shared and entry workspaces. The two
+`*-feature-contracts.json` files supply this contract. The builder rejects
+unmapped routes, duplicate family IDs, unsupported statuses and missing source
+evidence at the pinned application revision.
+
+The current application feature baseline is
+`f8a12f527810ba8c1e08840a762358b0fd86e4f1`; the original route/schema inventory
+keeps its older provenance below. A family checklist documents source behavior.
+It does not establish that every field, server branch or provider was executed.
+See [FEATURE-PRESERVATION.md](FEATURE-PRESERVATION.md) for the patch boundary,
+functional regression results and remaining acceptance work.
+
+### Skill Mapper
+
+The dedicated Skill Mapper review includes occupation search, six-axis radar,
+member-versus-target overlay, exact score tables, skill bars, gaps, training
+suggestions, recent lookups and JSON/CSV sample exports. Search covers ten local
+occupation examples. All scores are synthetic; history lasts for the current
+open review. A copyable report remains available if downloads are blocked.
+
+The actual application's O*NET search, profile construction, résumé extraction,
+saved tool history and PDF export remain in their existing components and APIs.
+The static review does not call those services. Theme switching repaints the
+chart without replacing the selected occupation or the search input.
+
 ## Voice is part of the workspace
 
 The review includes the source application's voice-first AI Career Tools workspace, with Coaches, Practice, Resume and All Tools views. Readiness, résumé coaching, mock interviews and Lilley each have a session surface and a purpose-specific companion panel. Career & Business is the broader legacy entry to Lilley, not an additional independent agent. Staff, employer and partner assistants stay in their own workspaces; no admin assistant is invented.
@@ -82,6 +112,7 @@ With the repository Playwright dependency and Chromium available:
 node docs/mockups/portal-review/verify-model.mjs
 node docs/mockups/portal-review/verify-voice.mjs
 node docs/mockups/portal-review/verify-theme.mjs
+node docs/mockups/portal-review/verify-skill-mapper.mjs
 WAP_REVIEW_EVIDENCE_DIR=/tmp/wap-portal-review-smoke node docs/mockups/portal-review/verify.mjs --smoke
 WAP_REVIEW_EVIDENCE_DIR=/tmp/wap-portal-review-full node docs/mockups/portal-review/verify.mjs --capture
 ```
@@ -95,6 +126,29 @@ pixels. Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` when using an existing Chromiu
 binary instead of Playwright’s installed browser.
 
 Rebuild after changing source, definitions or styles. Review the actual results for the exact generated artifact; a previous passing report is not evidence for later edits.
+
+For the companion appearance-only application patch, run its bounded parsed-code
+check against the application worktree (not against this documentation branch):
+
+```sh
+node docs/mockups/portal-review/verify-app-preservation.mjs \
+  --app=/absolute/path/to/application-worktree \
+  --base=f8a12f527810ba8c1e08840a762358b0fd86e4f1 \
+  --head=0f0ba157740a4dd8142614477efadc142eaf1069
+```
+
+This guard compares JSX syntax outside literal color/background values and CSS
+outside paint properties. It also retains imports, at-rules and resource URLs,
+and rejects other runtime file changes. It complements the actual behavioral
+suites and rendered appearance checks; it does not establish live service health.
+
+`verify-skill-mapper.mjs` exercises the dedicated module at 375, 768 and 1440
+pixels in both themes and both root modes. It checks search, both chart views,
+numeric gaps, history, downloaded report contents, keyboard tabs, reset and
+draft continuity while rejecting network requests. The assembled review's
+interaction suite also checks the feature catalog and assembled preview module
+wiring. Run `verify.mjs --interactions-only` to exercise those interactions
+without repeating the route sweep.
 
 ## What the evidence establishes
 

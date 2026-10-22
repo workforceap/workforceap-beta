@@ -1,0 +1,2103 @@
+[
+  {
+    "id": "member-home",
+    "title": "Dashboard and next steps",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard"
+    ],
+    "features": [
+      {
+        "label": "Preserve the selected enrollment, reconciled course progress and the next assigned course.",
+        "source": "lib/member/loadMemberDashboardHome.ts"
+      },
+      {
+        "label": "Keep approval state, assigned-counselor context, measured waiting state and authorized-retake prompts distinct.",
+        "source": "app/(portal)/dashboard/page.tsx"
+      },
+      {
+        "label": "Retain goals, points/streaks, application pipeline, placement confirmation and First 90 Days check-ins.",
+        "source": "components/portal/kit/pages/member/MemberHomeKit.tsx"
+      },
+      {
+        "label": "Keep first-login intake, onboarding/tour entry and recovery paths around the dashboard.",
+        "source": "app/(portal)/dashboard/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/page.tsx",
+      "lib/member/loadMemberDashboardHome.ts",
+      "components/portal/kit/pages/member/MemberHomeKit.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member dashboard loader",
+      "CourseEnrollment / training progress"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview has synthetic dashboard metrics, navigation and a simulated coach entry. It does not reproduce the complete approval/intake, multi-enrollment, goals or post-placement workflows."
+  },
+  {
+    "id": "member-program",
+    "title": "Program, curriculum and training workspace",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/program",
+      "/dashboard/program/start",
+      "/dashboard/training",
+      "/dashboard/coursera",
+      "/dashboard/program/change"
+    ],
+    "features": [
+      {
+        "label": "Resolve primary or owned secondary enrollment consistently; keep initial program choice and staff-mediated later change requests.",
+        "source": "app/(portal)/dashboard/program/page.tsx"
+      },
+      {
+        "label": "Launch the displayed assigned course through Coursera or the in-platform module destination; preserve locked and unavailable states.",
+        "source": "components/portal/kit/pages/member/MemberProgramKit.tsx"
+      },
+      {
+        "label": "Retain the weekly study plan, course-specific notes/artifact drafts, saved-work filters and recovery without awarding course completion for saved notes.",
+        "source": "components/portal/kit/pages/member/MemberTrainingWorkspace.tsx"
+      },
+      {
+        "label": "Keep curriculum-version-aware course counts and the certification path; an empty curriculum is not completed training.",
+        "source": "app/(portal)/dashboard/program/start/page.tsx"
+      },
+      {
+        "label": "Preserve training/Coursera/change handoffs to the canonical program workspace.",
+        "source": "app/(portal)/dashboard/training/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/coursera/page.tsx",
+      "app/(portal)/dashboard/program/change/page.tsx",
+      "app/(portal)/dashboard/program/page.tsx",
+      "app/(portal)/dashboard/program/start/page.tsx",
+      "app/(portal)/dashboard/training/page.tsx",
+      "components/portal/kit/pages/member/MemberProgramKit.tsx",
+      "components/portal/kit/pages/member/MemberTrainingWorkspace.tsx",
+      "lib/member/getActiveProgramForDashboard.ts",
+      "lib/member/memberProgramTrainingView.ts",
+      "lib/member/curriculumAssignment.ts"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Coursera Enterprise / B4B progress and course launch",
+      "Member training-workspace API"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview shows an IT Support fixture and sample modules. It omits the actual curriculum-sized workspace, enrollment selection, study-plan persistence and provider launch. Legacy/redirect routes remain explicit handoffs."
+  },
+  {
+    "id": "member-course-access",
+    "title": "Assigned course access and employer screening",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/program/coursera-enrollment",
+      "/dashboard/program/employer-screening"
+    ],
+    "features": [
+      {
+        "label": "List only the selected member enrollment’s assigned courses and their actual access destinations.",
+        "source": "app/(portal)/dashboard/program/coursera-enrollment/page.tsx"
+      },
+      {
+        "label": "Preserve program-specific employer-screening packs, progress prerequisites and unavailable/redirect states.",
+        "source": "app/(portal)/dashboard/program/employer-screening/page.tsx"
+      },
+      {
+        "label": "Keep training access and screening evidence separate from intake, funding approval and a course completion claim.",
+        "source": "lib/member/employerScreeningRoute.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/program/coursera-enrollment/page.tsx",
+      "app/(portal)/dashboard/program/employer-screening/page.tsx",
+      "lib/member/employerScreeningRoute.ts"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Coursera course-access resolver",
+      "Employer screening packs"
+    ],
+    "previewStatus": "structural",
+    "notes": "Both routes currently use read-only synthetic access/screening schemas. Neither proves provider access or screening completion."
+  },
+  {
+    "id": "member-learning-hub",
+    "title": "Learning hub",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/learning"
+    ],
+    "features": [
+      {
+        "label": "Retain assigned courses, curriculum delivery type and the same course-progress interpretation as My Program.",
+        "source": "app/(portal)/dashboard/learning/page.tsx"
+      },
+      {
+        "label": "Keep pathway navigation, skillsets, skill missions, career exploration and voice-coach entry points.",
+        "source": "app/(portal)/dashboard/learning/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/learning/page.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Coursera skillset progress",
+      "WorkforceAP learning content"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview reuses the generic program renderer; course/pathway/skillset/mission behavior remains an application obligation."
+  },
+  {
+    "id": "member-modules",
+    "title": "WorkforceAP modules",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/learning/modules/*"
+    ],
+    "features": [
+      {
+        "label": "Show the authorized course’s authored lessons, reading/watch links and usable fallback links.",
+        "source": "app/(portal)/dashboard/learning/modules/[courseSlug]/page.tsx"
+      },
+      {
+        "label": "Keep completion as an explicit authenticated course action, separate from a practice draft.",
+        "source": "components/portal/WorkforceApModuleCompleteButton.tsx"
+      },
+      {
+        "label": "Preserve assigned curriculum checks and a return path to the relevant course.",
+        "source": "app/(portal)/dashboard/learning/modules/[courseSlug]/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/learning/modules/[courseSlug]/page.tsx",
+      "components/portal/WorkforceApModuleCompleteButton.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "POST /api/member/courses/complete",
+      "WorkforceAP authored curriculum"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The current preview routes modules through its generic lab/practice renderer. Authored lessons and real course completion are not implemented there."
+  },
+  {
+    "id": "member-labs",
+    "title": "Private lab work and evidence submission",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/learning/labs/*"
+    ],
+    "features": [
+      {
+        "label": "Keep lab instructions, source material, rubric, deliverables and optional safe artifact links.",
+        "source": "components/portal/MemberLabWorkspace.tsx"
+      },
+      {
+        "label": "Save private drafts independently; require completed evidence and explicit sharing before an immutable submission is visible to staff.",
+        "source": "components/portal/MemberLabWorkspace.tsx"
+      },
+      {
+        "label": "Preserve newer typing, stale-revision conflicts, deliberate reload and retry after failed saves.",
+        "source": "components/portal/MemberLabWorkspace.tsx"
+      },
+      {
+        "label": "Show versioned submissions, rubric feedback and requested revisions without awarding external credentials.",
+        "source": "components/portal/MemberLabWorkspace.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/learning/labs/[labId]/page.tsx",
+      "components/portal/MemberLabWorkspace.tsx",
+      "lib/member/labWorkspace.ts",
+      "app/api/member/labs/[labId]/route.ts"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member lab draft/submission API",
+      "Staff lab review API"
+    ],
+    "previewStatus": "simulated",
+    "notes": "The preview meaningfully simulates private draft → explicit frozen submission → staff feedback in local memory. Its simplified single-text/rubric fixture is not the full application lab workspace."
+  },
+  {
+    "id": "member-missions",
+    "title": "Skill missions",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/missions"
+    ],
+    "features": [
+      {
+        "label": "Build missions from the active assigned program and real member evidence; preserve the unassigned empty state.",
+        "source": "app/(portal)/dashboard/missions/page.tsx"
+      },
+      {
+        "label": "Keep mission-specific actions and saved-evidence progress rather than treating a click as completion.",
+        "source": "components/portal/SkillMissionPanel.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/missions/page.tsx",
+      "components/portal/SkillMissionPanel.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member skill-mission rules"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview has read-only sample mission rows; actual mission derivation and evidence checks remain source-only."
+  },
+  {
+    "id": "member-assessment",
+    "title": "Skills check, final attempt and interview steps",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/assessment",
+      "/dashboard/assessments",
+      "/dashboard/skills-assessment"
+    ],
+    "features": [
+      {
+        "label": "Preserve the 35-question assessment, question navigation, saved progress and answer-quality confirmation.",
+        "source": "components/portal/AssessmentForm.tsx"
+      },
+      {
+        "label": "Keep the two-attempt ceiling and staff authorization for the final attempt; authorization must be consumed atomically by the server.",
+        "source": "lib/assessment/attempts.ts"
+      },
+      {
+        "label": "Show previous results and a pending final-attempt prompt without deleting prior assessment history.",
+        "source": "app/(portal)/dashboard/assessment/page.tsx"
+      },
+      {
+        "label": "After assessment completion, retain pre-screening draft recovery, submitted-answer protection and interview request/status steps.",
+        "source": "components/portal/MemberPreScreeningForm.tsx"
+      },
+      {
+        "label": "Preserve the interview-request action and redirects from the legacy assessment URLs.",
+        "source": "components/portal/MemberInterviewRequestButton.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/assessment/page.tsx",
+      "app/(portal)/dashboard/assessments/page.tsx",
+      "app/(portal)/dashboard/skills-assessment/page.tsx",
+      "components/portal/AssessmentForm.tsx",
+      "lib/assessment/attempts.ts",
+      "components/portal/MemberPreScreeningForm.tsx",
+      "components/portal/MemberInterviewRequestButton.tsx",
+      "app/api/member/assessment/submit/route.ts",
+      "app/api/counselor/assessment-retake/route.ts"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "POST /api/member/assessment/submit",
+      "Member pre-screening draft/submission API",
+      "Member interview-request API"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview is a read-only assessment-step schema and handoff links. It does not implement questions, attempt authorization, scoring, pre-screening or interview requests."
+  },
+  {
+    "id": "member-readiness",
+    "title": "Career readiness and progress",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/readiness"
+    ],
+    "features": [
+      {
+        "label": "Retain real score categories, milestones, evidence-backed next actions and the distinction between load failure and a measured zero.",
+        "source": "app/(portal)/dashboard/readiness/page.tsx"
+      },
+      {
+        "label": "Preserve factual recap, optional generated explanation and checklist progress from the same underlying score.",
+        "source": "components/portal/ReadinessProgressSummary.tsx"
+      },
+      {
+        "label": "Keep readiness coaching accessible with its own completion/checkpoint and disclosure contract.",
+        "source": "components/portal/CompactReadinessCoach.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/readiness/page.tsx",
+      "components/portal/ReadinessProgressSummary.tsx",
+      "components/portal/CompactReadinessCoach.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Readiness score/checklist loaders",
+      "POST /api/member/readiness/summary",
+      "ElevenLabs session gateway; no live connection verified"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview combines a simulated readiness coach with a generic synthetic report. It does not calculate the application score or persist readiness/coaching receipts."
+  },
+  {
+    "id": "member-documents",
+    "title": "Agreements and training documents",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/documents"
+    ],
+    "features": [
+      {
+        "label": "Retain agreement-template download, signed-PDF upload, revision archive and the current review status.",
+        "source": "components/enrollment/EnrollmentAgreementCard.tsx"
+      },
+      {
+        "label": "Keep member-visible billing invoice/cover-letter packets scoped to the member; document visibility is not staff approval authority.",
+        "source": "app/(portal)/dashboard/documents/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/documents/page.tsx",
+      "components/enrollment/EnrollmentAgreementCard.tsx",
+      "lib/billing/packetAccess.ts"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Enrollment agreement APIs",
+      "Private document storage",
+      "Billing packet access"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview contains read-only document rows, not private downloads, PDF upload, signed revisions or agreement verification."
+  },
+  {
+    "id": "member-certifications",
+    "title": "Certifications and credential evidence",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/certifications"
+    ],
+    "features": [
+      {
+        "label": "Preserve credential details, roadmap/reference material and curriculum-derived progress.",
+        "source": "app/(portal)/dashboard/certifications/page.tsx"
+      },
+      {
+        "label": "Retain certification metadata and supported evidence upload, validation and pending-review status.",
+        "source": "components/portal/CertificationAddForm.tsx"
+      },
+      {
+        "label": "Keep certificate viewing and CSV record export; an export is not a newly issued credential.",
+        "source": "components/portal/CertificationVaultActions.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/certifications/page.tsx",
+      "components/portal/CertificationAddForm.tsx",
+      "components/portal/CertificationVaultActions.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member certification APIs",
+      "Private certificate evidence storage"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic certificate records only; uploads, review status changes and exports are not connected."
+  },
+  {
+    "id": "member-resume-files",
+    "title": "My resume: source documents and previews",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/resume"
+    ],
+    "features": [
+      {
+        "label": "Keep original upload, validated enhanced/build variants, loading/retry states and safe handling of quarantined or unreadable files.",
+        "source": "app/(portal)/dashboard/resume/ResumeClient.tsx"
+      },
+      {
+        "label": "Retain original/enhanced previews and downloads without replacing the member’s original evidence.",
+        "source": "app/(portal)/dashboard/resume/ResumeClient.tsx"
+      },
+      {
+        "label": "Preserve source identity and factuality rules when generating a resume from saved member facts.",
+        "source": "app/api/member/resume/generate/route.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/resume/page.tsx",
+      "app/(portal)/dashboard/resume/ResumeClient.tsx",
+      "app/api/member/resume/generate/route.ts"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member resume APIs",
+      "Private resume storage",
+      "Resume extraction / generation"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview permits local text editing and a sample save. It does not upload files, build a real document, fetch signed previews or download the member’s saved original."
+  },
+  {
+    "id": "member-voice-studio",
+    "title": "AI Career Tools and voice hub",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools",
+      "/dashboard/ai-tools/studio",
+      "/dashboard/ai-tools/readiness-coach",
+      "/dashboard/toolkit"
+    ],
+    "features": [
+      {
+        "label": "Retain Coaches, Practice, Resume and All Tools navigation, deep links, Back/Forward behavior and the chosen coach.",
+        "source": "components/portal/kit/pages/VoiceStudioKit.tsx"
+      },
+      {
+        "label": "Preserve consent, startup/recovery, transcript, mute, interruption, text fallback and unsaved setup across same-coach navigation.",
+        "source": "components/portal/PortalVoiceSession.tsx"
+      },
+      {
+        "label": "Keep resume/readiness/mock-interview/Lilley agent identity and endpoint-specific context boundaries.",
+        "source": "components/portal/kit/pages/VoiceStudioKit.tsx"
+      },
+      {
+        "label": "Keep canonical Studio history/retention wording separate from dedicated coach entry points with completion endpoints.",
+        "source": "components/portal/kit/pages/VoiceStudioKit.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/page.tsx",
+      "app/(portal)/dashboard/ai-tools/readiness-coach/page.tsx",
+      "app/(portal)/dashboard/ai-tools/studio/page.tsx",
+      "app/(portal)/dashboard/toolkit/page.tsx",
+      "components/portal/kit/pages/VoiceStudioKit.tsx",
+      "components/portal/PortalVoiceSession.tsx",
+      "lib/elevenlabs/agentRegistry.ts"
+    ],
+    "integrations": [
+      "ElevenLabs session gateway; no live connection verified",
+      "Member voice-session endpoints",
+      "Resume-context loader"
+    ],
+    "previewStatus": "simulated",
+    "notes": "The preview has a purpose-built local session model and coach tabs; microphone/provider requests, durable conversation history and completion receipts never run. Application aliases and query parameters remain obligations."
+  },
+  {
+    "id": "member-resume-studio",
+    "title": "Resume Studio: score, rewrite and coach",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/resume-studio",
+      "/dashboard/ai-tools/resume-analysis",
+      "/dashboard/ai-tools/resume-rewriter",
+      "/dashboard/ai-tools/resume-coach"
+    ],
+    "features": [
+      {
+        "label": "Preserve Score, Rewrite and Coach modes and the legacy view-specific redirects.",
+        "source": "components/portal/ResumeStudioClient.tsx"
+      },
+      {
+        "label": "Score and rewrite the correct original/member-entered source; show saved results and a clear next action.",
+        "source": "components/portal/ResumeStudioClient.tsx"
+      },
+      {
+        "label": "Keep the editable coach document, explicit accept/reject decisions, stale-suggestion protection and save recovery.",
+        "source": "components/portal/ResumeCoachWorkspace.tsx"
+      },
+      {
+        "label": "Retain persisted resume plain text and source-specific extraction quality/error states.",
+        "source": "lib/member/getMemberResumePlainText.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/resume-analysis/page.tsx",
+      "app/(portal)/dashboard/ai-tools/resume-coach/page.tsx",
+      "app/(portal)/dashboard/ai-tools/resume-rewriter/page.tsx",
+      "app/(portal)/dashboard/ai-tools/resume-studio/page.tsx",
+      "components/portal/ResumeStudioClient.tsx",
+      "components/portal/ResumeCoachWorkspace.tsx",
+      "lib/member/getMemberResumePlainText.ts",
+      "app/(portal)/dashboard/ai-tools/resume-rewriter/ResumeRewriterClient.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Resume score/rewrite APIs",
+      "Member resume plain-text API",
+      "ElevenLabs session gateway; no live connection verified"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The static dedicated route currently emphasizes a simulated voice editor with accept/reject suggestions. The full score/rewrite/history/file workflow is not reproduced; aliases must keep their intended view parameter."
+  },
+  {
+    "id": "member-lilley",
+    "title": "Lilley coaching and saved sessions",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/counselor",
+      "/dashboard/counselor/*",
+      "/dashboard/ai-tools/career-business-coach"
+    ],
+    "features": [
+      {
+        "label": "Preserve the student career coach and the broader Career & Business entry; do not substitute the staff counselor assistant.",
+        "source": "components/portal/tools/CareerCounselor.tsx"
+      },
+      {
+        "label": "Keep the member’s recent saved action-plan sessions and owner-scoped session-detail view.",
+        "source": "app/(portal)/dashboard/counselor/[id]/page.tsx"
+      },
+      {
+        "label": "Preserve each dedicated entry’s completion/history/context disclosure and failure behavior.",
+        "source": "components/portal/kit/pages/member/CareerBusinessCoachKit.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/career-business-coach/page.tsx",
+      "app/(portal)/dashboard/counselor/[id]/page.tsx",
+      "app/(portal)/dashboard/counselor/page.tsx",
+      "components/portal/tools/CareerCounselor.tsx",
+      "components/portal/kit/pages/member/CareerBusinessCoachKit.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "ElevenLabs session gateway; no live connection verified",
+      "Career counselor session / feedback APIs"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview simulates Lilley/business conversations and a structural saved-result detail. It does not save action-plan history. /dashboard/counselor is AI coaching; assigned human staff conversations are /dashboard/messages."
+  },
+  {
+    "id": "member-voice-interview",
+    "title": "Voice and optional video interview",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/voice-interview"
+    ],
+    "features": [
+      {
+        "label": "Keep role/type/language setup, microphone consent, session feedback and transcript completion.",
+        "source": "components/portal/tools/VoiceInterviewScaffold.tsx"
+      },
+      {
+        "label": "Preserve optional camera/recording controls and explicit recording download/save behavior.",
+        "source": "components/portal/tools/MockInterviewVideoRecorder.tsx"
+      },
+      {
+        "label": "Retain saved recording history and startup/permission recovery.",
+        "source": "app/(portal)/dashboard/ai-tools/voice-interview/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/voice-interview/page.tsx",
+      "components/portal/tools/VoiceInterviewScaffold.tsx",
+      "components/portal/tools/MockInterviewVideoRecorder.tsx"
+    ],
+    "integrations": [
+      "ElevenLabs session gateway; no live connection verified",
+      "Member voice-interview session/transcript APIs",
+      "Browser media recording"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview simulates the interview session and setup only. It does not request audio/video, record media or save history."
+  },
+  {
+    "id": "member-interview-coach",
+    "title": "Conversational interview coach",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/interview-coach"
+    ],
+    "features": [
+      {
+        "label": "Preserve interview setup, session start/turn progression, microphone recovery and feedback.",
+        "source": "components/portal/tools/InterviewCoach.tsx"
+      },
+      {
+        "label": "Keep recent interview history and saved session results separate from ordinary AI-tool drafts.",
+        "source": "components/portal/tools/InterviewCoach.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/interview-coach/page.tsx",
+      "components/portal/tools/InterviewCoach.tsx"
+    ],
+    "integrations": [
+      "ElevenLabs session gateway; no live connection verified",
+      "AI completion gateway (lib/ai/groq.ts); provider configuration unverified",
+      "/api/interview/session and /api/interview/history"
+    ],
+    "previewStatus": "mixed",
+    "notes": "This route currently uses the generic static tool form; it is not the application’s conversational interview coach."
+  },
+  {
+    "id": "member-interview-practice",
+    "title": "Interview questions and answer practice",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/interview-practice"
+    ],
+    "features": [
+      {
+        "label": "Retain target role, resume context, experience and focus choices when generating questions.",
+        "source": "components/portal/tools/InterviewPracticeForm.tsx"
+      },
+      {
+        "label": "Preserve answer/STAR drafting, copy and text download, saved practice results and follow-through.",
+        "source": "components/portal/tools/InterviewPracticeForm.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/interview-practice/page.tsx",
+      "components/portal/tools/InterviewPracticeForm.tsx"
+    ],
+    "integrations": [
+      "AI completion gateway (lib/ai/groq.ts); provider configuration unverified",
+      "POST /api/ai/interview-practice",
+      "Prisma / PostgreSQL"
+    ],
+    "previewStatus": "mixed",
+    "notes": "A generic local prompt and fixed example response are available. The actual focus controls, questions, STAR editors and saved results are not reproduced."
+  },
+  {
+    "id": "member-interview-prep",
+    "title": "Interview prep bundle",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/interview-prep"
+    ],
+    "features": [
+      {
+        "label": "Load the member’s saved resume/letter/pitch/practice outputs and let them choose the bundle contents.",
+        "source": "components/portal/InterviewPrepBundle.tsx"
+      },
+      {
+        "label": "Retain explicit copy or email actions, loading/empty/error states and links to create missing tools.",
+        "source": "components/portal/InterviewPrepBundle.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/interview-prep/page.tsx",
+      "components/portal/InterviewPrepBundle.tsx",
+      "app/api/member/prep-bundle/send/route.ts"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member prep-bundle read/send APIs",
+      "Resend email gateway"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview uses a generic tool form, not bundle selection or sending. No email is sent."
+  },
+  {
+    "id": "member-cover-letter",
+    "title": "Cover letter",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/cover-letter"
+    ],
+    "features": [
+      {
+        "label": "Keep company, tone, job-description and resume inputs with saved-member prefill.",
+        "source": "components/portal/tools/CoverLetterForm.tsx"
+      },
+      {
+        "label": "Retain generated letter review, copy/output actions, tool history and follow-through.",
+        "source": "components/portal/tools/CoverLetterForm.tsx"
+      },
+      {
+        "label": "Keep authenticated generation and result persistence, with provider failures distinct from a successful result.",
+        "source": "app/api/ai/cover-letter/route.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/cover-letter/page.tsx",
+      "components/portal/tools/CoverLetterForm.tsx",
+      "app/api/ai/cover-letter/route.ts"
+    ],
+    "integrations": [
+      "AI completion gateway (lib/ai/groq.ts); provider configuration unverified",
+      "/api/ai/cover-letter",
+      "Prisma / PostgreSQL"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview uses a shared editable prompt and fixed sample response. The tool-specific inputs, output schema and saved history above are preservation obligations, not implemented live behavior."
+  },
+  {
+    "id": "member-elevator-pitch",
+    "title": "Elevator pitch",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/elevator-pitch"
+    ],
+    "features": [
+      {
+        "label": "Keep name, target role, strengths, certifications and industry, including member prefill.",
+        "source": "components/portal/tools/ElevatorPitchClient.tsx"
+      },
+      {
+        "label": "Retain editable generated pitch, copy, saved results and practice follow-through.",
+        "source": "components/portal/tools/ElevatorPitchClient.tsx"
+      },
+      {
+        "label": "Keep authenticated generation and result persistence, with provider failures distinct from a successful result.",
+        "source": "app/api/ai/elevator-pitch/route.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/elevator-pitch/page.tsx",
+      "components/portal/tools/ElevatorPitchClient.tsx",
+      "app/api/ai/elevator-pitch/route.ts"
+    ],
+    "integrations": [
+      "AI completion gateway (lib/ai/groq.ts); provider configuration unverified",
+      "/api/ai/elevator-pitch",
+      "Prisma / PostgreSQL"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview uses a shared editable prompt and fixed sample response. The tool-specific inputs, output schema and saved history above are preservation obligations, not implemented live behavior."
+  },
+  {
+    "id": "member-gap-analyzer",
+    "title": "Resume gap analysis",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/gap-analyzer"
+    ],
+    "features": [
+      {
+        "label": "Keep pasted or extracted PDF/DOCX/TXT resume input and the job requirements being compared.",
+        "source": "components/portal/tools/GapAnalyzerForm.tsx"
+      },
+      {
+        "label": "Retain structured gap findings, copy, result history and next steps.",
+        "source": "components/portal/tools/GapAnalyzerForm.tsx"
+      },
+      {
+        "label": "Keep authenticated generation and result persistence, with provider failures distinct from a successful result.",
+        "source": "app/api/ai/gap-analyzer/route.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/gap-analyzer/page.tsx",
+      "components/portal/tools/GapAnalyzerForm.tsx",
+      "app/api/ai/gap-analyzer/route.ts"
+    ],
+    "integrations": [
+      "AI completion gateway (lib/ai/groq.ts); provider configuration unverified",
+      "/api/ai/gap-analyzer",
+      "Prisma / PostgreSQL"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview uses a shared editable prompt and fixed sample response. The tool-specific inputs, output schema and saved history above are preservation obligations, not implemented live behavior."
+  },
+  {
+    "id": "member-job-match",
+    "title": "Job match scorer",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/job-match-scorer"
+    ],
+    "features": [
+      {
+        "label": "Keep optional job URL, job-description text, resume text/upload and validation.",
+        "source": "components/portal/tools/JobMatchScorerForm.tsx"
+      },
+      {
+        "label": "Retain match analysis and its methodology/limitations, saved result history and follow-through.",
+        "source": "components/portal/tools/JobMatchScorerForm.tsx"
+      },
+      {
+        "label": "Keep authenticated generation and result persistence, with provider failures distinct from a successful result.",
+        "source": "app/api/ai/job-match-scorer/route.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/job-match-scorer/page.tsx",
+      "components/portal/tools/JobMatchScorerForm.tsx",
+      "app/api/ai/job-match-scorer/route.ts"
+    ],
+    "integrations": [
+      "AI completion gateway (lib/ai/groq.ts); provider configuration unverified",
+      "/api/ai/job-match-scorer",
+      "Prisma / PostgreSQL"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview uses a shared editable prompt and fixed sample response. The tool-specific inputs, output schema and saved history above are preservation obligations, not implemented live behavior."
+  },
+  {
+    "id": "member-linkedin-about",
+    "title": "LinkedIn About",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/linkedin-about"
+    ],
+    "features": [
+      {
+        "label": "Keep target role, resume hydration and editable highlights; distinguish missing resume from failed loading.",
+        "source": "components/portal/tools/LinkedInAboutForm.tsx"
+      },
+      {
+        "label": "Retain generated About copy, history and next steps.",
+        "source": "components/portal/tools/LinkedInAboutForm.tsx"
+      },
+      {
+        "label": "Keep authenticated generation and result persistence, with provider failures distinct from a successful result.",
+        "source": "app/api/ai/linkedin-about/route.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/linkedin-about/page.tsx",
+      "components/portal/tools/LinkedInAboutForm.tsx",
+      "app/api/ai/linkedin-about/route.ts"
+    ],
+    "integrations": [
+      "AI completion gateway (lib/ai/groq.ts); provider configuration unverified",
+      "/api/ai/linkedin-about",
+      "Prisma / PostgreSQL"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview uses a shared editable prompt and fixed sample response. The tool-specific inputs, output schema and saved history above are preservation obligations, not implemented live behavior."
+  },
+  {
+    "id": "member-linkedin-headline",
+    "title": "LinkedIn headline",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/linkedin-headline"
+    ],
+    "features": [
+      {
+        "label": "Keep target role, skills and optional experience inputs.",
+        "source": "components/portal/tools/LinkedInHeadlineForm.tsx"
+      },
+      {
+        "label": "Retain multiple headline options, per-option copy and saved history.",
+        "source": "components/portal/tools/LinkedInHeadlineForm.tsx"
+      },
+      {
+        "label": "Keep authenticated generation and result persistence, with provider failures distinct from a successful result.",
+        "source": "app/api/ai/linkedin-headline/route.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/linkedin-headline/page.tsx",
+      "components/portal/tools/LinkedInHeadlineForm.tsx",
+      "app/api/ai/linkedin-headline/route.ts"
+    ],
+    "integrations": [
+      "AI completion gateway (lib/ai/groq.ts); provider configuration unverified",
+      "/api/ai/linkedin-headline",
+      "Prisma / PostgreSQL"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview uses a shared editable prompt and fixed sample response. The tool-specific inputs, output schema and saved history above are preservation obligations, not implemented live behavior."
+  },
+  {
+    "id": "member-salary-negotiation",
+    "title": "Salary negotiation",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/salary-negotiation"
+    ],
+    "features": [
+      {
+        "label": "Keep offer, target salary, role, company and phone/email delivery choice.",
+        "source": "components/portal/tools/SalaryNegotiationForm.tsx"
+      },
+      {
+        "label": "Retain the generated negotiation script, output actions, history and follow-through.",
+        "source": "components/portal/tools/SalaryNegotiationForm.tsx"
+      },
+      {
+        "label": "Keep authenticated generation and result persistence, with provider failures distinct from a successful result.",
+        "source": "app/api/ai/salary-negotiation/route.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/salary-negotiation/page.tsx",
+      "components/portal/tools/SalaryNegotiationForm.tsx",
+      "app/api/ai/salary-negotiation/route.ts"
+    ],
+    "integrations": [
+      "AI completion gateway (lib/ai/groq.ts); provider configuration unverified",
+      "/api/ai/salary-negotiation",
+      "Prisma / PostgreSQL"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview uses a shared editable prompt and fixed sample response. The tool-specific inputs, output schema and saved history above are preservation obligations, not implemented live behavior."
+  },
+  {
+    "id": "member-benefits-cliff",
+    "title": "Benefits cliff estimator",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/benefits-cliff"
+    ],
+    "features": [
+      {
+        "label": "Retain household size, benefit programs, current earnings/benefits and proposed wage/hours.",
+        "source": "components/portal/BenefitsCliffClient.tsx"
+      },
+      {
+        "label": "Keep the versioned local calculation, program breakdown, source links and estimate limitations; do not imply a benefits decision.",
+        "source": "lib/content/benefitsCliff.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/benefits-cliff/page.tsx",
+      "components/portal/BenefitsCliffClient.tsx",
+      "lib/content/benefitsCliff.ts"
+    ],
+    "integrations": [
+      "Versioned local benefits-cliff model; no AI call required"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview currently uses a generic tool response. It does not run the source estimator; source rules and official benefit determinations are not validated by this audit."
+  },
+  {
+    "id": "member-skill-mapper",
+    "title": "Skill Mapper",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/skill-mapper"
+    ],
+    "features": [
+      {
+        "label": "Preserve occupation search/detail, occupational skill radar, skill descriptions and program matches.",
+        "source": "components/portal/tools/SkillMapperClient.tsx"
+      },
+      {
+        "label": "Keep the member skill profile, resume-skill extraction, gap comparison and PDF report actions.",
+        "source": "components/portal/tools/SkillMapperClient.tsx"
+      },
+      {
+        "label": "Retain recorded occupation lookups for history and Training Bridge; keep unavailable O*NET/provider state explicit.",
+        "source": "app/api/ai/skill-mapper/route.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/skill-mapper/page.tsx",
+      "components/portal/tools/SkillMapperClient.tsx",
+      "app/api/ai/skill-mapper/route.ts"
+    ],
+    "integrations": [
+      "O*NET occupation/skill API",
+      "Member skill-profile and resume extraction APIs",
+      "AI PDF export",
+      "Prisma / PostgreSQL"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The dedicated static Skill Mapper module now supports ten occupation fixtures, search, occupational/member radars, gaps, training, local history and JSON/CSV export. Live O*NET search, saved-profile extraction and the application PDF API remain source-only; local fixture edits are not saved member skills."
+  },
+  {
+    "id": "member-training-bridge",
+    "title": "Training Bridge",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/training-bridge"
+    ],
+    "features": [
+      {
+        "label": "Read the latest owned Skill Mapper lookup, excluding other skill-assessment result types.",
+        "source": "app/(portal)/dashboard/ai-tools/training-bridge/page.tsx"
+      },
+      {
+        "label": "Keep occupation/program mapping, explained skill coverage and program/application links without silently changing enrollment.",
+        "source": "components/portal/TrainingBridgeClient.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/training-bridge/page.tsx",
+      "components/portal/TrainingBridgeClient.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Saved Skill Mapper results",
+      "WorkforceAP course-skill map"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The generic route preview does not reproduce the saved-assessment Training Bridge flow. Skill Mapper’s new local training section is a fixture illustration, not a saved enrollment or live bridge lookup."
+  },
+  {
+    "id": "member-skill-checkpoints",
+    "title": "Course skill checkpoints",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/skill-checkpoints"
+    ],
+    "features": [
+      {
+        "label": "Keep program/course selection and question-by-question scenario practice with feedback.",
+        "source": "components/portal/SkillCheckpointsClient.tsx"
+      },
+      {
+        "label": "Preserve recorded checkpoint results and retry/other-course navigation; practice is distinct from provider course credit.",
+        "source": "components/portal/SkillCheckpointsClient.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/skill-checkpoints/page.tsx",
+      "components/portal/SkillCheckpointsClient.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member skill-checkpoints API",
+      "Course checkpoint content"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview uses a generic tool form, not the checkpoint question/feedback flow."
+  },
+  {
+    "id": "member-ai-history",
+    "title": "Saved AI results",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/ai-tools/history"
+    ],
+    "features": [
+      {
+        "label": "Load only the member’s saved AI results, newest first, with a failure state distinct from an empty history.",
+        "source": "app/(portal)/dashboard/ai-tools/history/page.tsx"
+      },
+      {
+        "label": "Keep tool-type filters, expandable result content and result-specific copy/render actions.",
+        "source": "components/portal/AIHistoryList.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/history/page.tsx",
+      "components/portal/AIHistoryList.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "AIToolResult history"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The current dispatcher treats this URL as a generic tool form. It does not implement the application’s saved-result list. Skill Mapper local history is separate and is not a substitute for all-tool history."
+  },
+  {
+    "id": "member-jobs",
+    "title": "Job board, detail and application",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/jobs",
+      "/dashboard/jobs/*"
+    ],
+    "features": [
+      {
+        "label": "Keep open/eligible-job filtering, age-group rules, search/pagination and closed/inactive-employer exclusions.",
+        "source": "app/(portal)/dashboard/jobs/page.tsx"
+      },
+      {
+        "label": "Retain the selected job’s detail, truthful pay/location data, referral and application context.",
+        "source": "app/(portal)/dashboard/jobs/[id]/page.tsx"
+      },
+      {
+        "label": "Preserve explicit resume-sharing consent and an immutable owned resume snapshot before application submission.",
+        "source": "app/api/(portal)/dashboard/jobs/[id]/apply/route.ts"
+      },
+      {
+        "label": "Keep job-specific resume tailoring and before/after match estimates separate from employer decisions.",
+        "source": "components/portal/JobTailorPanel.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/jobs/[id]/page.tsx",
+      "app/(portal)/dashboard/jobs/page.tsx",
+      "app/api/(portal)/dashboard/jobs/[id]/apply/route.ts",
+      "components/portal/JobTailorPanel.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member jobs/apply APIs",
+      "Private resume snapshot storage",
+      "Job tailoring AI"
+    ],
+    "previewStatus": "simulated",
+    "notes": "The preview supports local job search/detail and a confirmed sample application. It does not execute age/tenant eligibility, resume snapshot storage, tailoring or live submission."
+  },
+  {
+    "id": "member-application-tracker",
+    "title": "Personal job application tracker",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/job-applications",
+      "/dashboard/ai-tools/application-tracker"
+    ],
+    "features": [
+      {
+        "label": "Keep personal application creation and status updates in the kanban workflow, including validation and failed-save feedback.",
+        "source": "components/portal/JobApplicationsTracker.tsx"
+      },
+      {
+        "label": "Keep personal tracker records distinct from applications submitted to employer postings and optional AI-use feedback.",
+        "source": "components/portal/JobApplicationsTracker.tsx"
+      },
+      {
+        "label": "Preserve the legacy application-tracker redirect to the canonical personal tracker.",
+        "source": "app/(portal)/dashboard/ai-tools/application-tracker/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/ai-tools/application-tracker/page.tsx",
+      "app/(portal)/dashboard/job-applications/page.tsx",
+      "components/portal/JobApplicationsTracker.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member job-applications APIs"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows read-only personal-application rows and the legacy handoff; it is not the personal kanban/add/edit workflow."
+  },
+  {
+    "id": "member-messages",
+    "title": "Assigned human counselor messages",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/messages"
+    ],
+    "features": [
+      {
+        "label": "Retain assigned-staff thread scope, unavailable/provisioning states and contextual training-feedback drafts.",
+        "source": "app/(portal)/dashboard/messages/page.tsx"
+      },
+      {
+        "label": "Keep send/retry and newer draft text while earlier requests finish, with real-time thread updates.",
+        "source": "components/portal/MemberCounselorChatClient.tsx"
+      },
+      {
+        "label": "Only clear unread state after the mark-read API succeeds; retain mobile inbox navigation and accurate presence labels.",
+        "source": "components/portal/MemberMessagesMobileClient.tsx"
+      },
+      {
+        "label": "Keep optional counselor-booking email links with the existing message fallback; do not invent an in-portal appointment system.",
+        "source": "lib/counselor/bookingLink.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/messages/page.tsx",
+      "components/portal/MemberCounselorChatClient.tsx",
+      "components/portal/MemberMessagesMobileClient.tsx",
+      "lib/counselor/bookingLink.ts",
+      "emails/member-stuck.ts"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Supabase realtime",
+      "Member messages API",
+      "Configured counselor calendar link / Resend nudge"
+    ],
+    "previewStatus": "simulated",
+    "notes": "The preview has a shared synthetic member/counselor conversation, local send/retry and uncertain-result reconciliation. No staff receives a message, no presence is verified and no booking is created."
+  },
+  {
+    "id": "member-profile",
+    "title": "Profile, settings and privacy actions",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/profile",
+      "/dashboard/settings"
+    ],
+    "features": [
+      {
+        "label": "Keep contact and intake fields, profile-photo controls, existing values and cleared-field save semantics.",
+        "source": "components/portal/kit/pages/member/MemberProfileKit.tsx"
+      },
+      {
+        "label": "Retain notification preferences, language, appearance and push-subscription controls.",
+        "source": "app/(portal)/dashboard/profile/page.tsx"
+      },
+      {
+        "label": "Keep guided-tour restart, feedback, account-data export and explicit account-deletion flows.",
+        "source": "app/(portal)/dashboard/profile/page.tsx"
+      },
+      {
+        "label": "Preserve /dashboard/settings → /dashboard/profile#settings.",
+        "source": "app/(portal)/dashboard/settings/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/profile/page.tsx",
+      "app/(portal)/dashboard/settings/page.tsx",
+      "components/portal/kit/pages/member/MemberProfileKit.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Dashboard profile/settings APIs",
+      "Push subscription API",
+      "Member export/delete-account APIs"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview saves four synthetic profile fields and has its own appearance picker. It does not reproduce real preferences, photos, push, data export or deletion; the preview theme preference is isolated from the application preference."
+  },
+  {
+    "id": "member-account",
+    "title": "Sign-in account",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/account"
+    ],
+    "features": [
+      {
+        "label": "Keep the signed-in email and account/password recovery links without confusing identity with editable profile data.",
+        "source": "app/(portal)/dashboard/account/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/account/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth",
+      "Password recovery routes"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview exposes sample email and recovery navigation; it never changes identity or sends recovery email."
+  },
+  {
+    "id": "member-resources",
+    "title": "Assigned program resources",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/resources"
+    ],
+    "features": [
+      {
+        "label": "Retain resources selected for the active program, resource/category browsing and external learning links.",
+        "source": "app/(portal)/dashboard/resources/page.tsx"
+      },
+      {
+        "label": "Keep program-specific empty states and counselor/support paths when resources are unavailable.",
+        "source": "app/(portal)/dashboard/resources/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/resources/page.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Program resource catalog",
+      "External learning links"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview uses generic resource navigation rather than the assigned-program resource catalog and filters."
+  },
+  {
+    "id": "member-career-library",
+    "title": "Career library and reading progress",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/career-library",
+      "/dashboard/career-library/*"
+    ],
+    "features": [
+      {
+        "label": "Keep the resource catalog, readable Markdown detail and ownership-aware resource access.",
+        "source": "app/(portal)/dashboard/career-library/[id]/page.tsx"
+      },
+      {
+        "label": "Retain view/progress actions and authorized downloads with their recorded result states.",
+        "source": "components/portal/ResourceProgressActions.tsx"
+      },
+      {
+        "label": "Keep download failure handling distinct from a successful resource download.",
+        "source": "components/portal/ResourceDownloadButton.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/career-library/[id]/page.tsx",
+      "app/(portal)/dashboard/career-library/page.tsx",
+      "components/portal/ResourceProgressActions.tsx",
+      "components/portal/ResourceDownloadButton.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member resource progress/download APIs"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview offers generic navigation links. Resource body content, progress tracking and downloads are source-only."
+  },
+  {
+    "id": "member-career-discovery",
+    "title": "Career exploration and Interest Profiler",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/learning/find-your-career",
+      "/dashboard/learning/interest-profiler"
+    ],
+    "features": [
+      {
+        "label": "Preserve career-exploration destinations and the authenticated Interest Profiler question/answer flow.",
+        "source": "components/portal/InterestProfilerClient.tsx"
+      },
+      {
+        "label": "Keep scoring, saved/browser context, program links and PDF report actions with service-unavailable recovery.",
+        "source": "components/portal/InterestProfilerClient.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/learning/find-your-career/page.tsx",
+      "app/(portal)/dashboard/learning/interest-profiler/page.tsx",
+      "components/portal/InterestProfilerClient.tsx"
+    ],
+    "integrations": [
+      "O*NET Interest Profiler",
+      "Member interest-profiler APIs",
+      "AI PDF export",
+      "Prisma / PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview contains read-only exploration/interest rows. It does not load questions, score interests or retrieve live career matches."
+  },
+  {
+    "id": "member-eligibility",
+    "title": "Eligibility and WIOA screening",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/eligibility",
+      "/dashboard/learning/wioa-qualification"
+    ],
+    "features": [
+      {
+        "label": "Retain member eligibility/intake answers and validated save/update behavior.",
+        "source": "app/(portal)/dashboard/eligibility/EligibilityForm.tsx"
+      },
+      {
+        "label": "Keep saved WIOA screening answers, form/voice modes and member-specific endpoints.",
+        "source": "components/portal/WioaQualificationClient.tsx"
+      },
+      {
+        "label": "Keep self-reported screening separate from official eligibility/funding decisions and staff review.",
+        "source": "lib/wioa/wioaQualification.ts"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/eligibility/page.tsx",
+      "app/(portal)/dashboard/learning/wioa-qualification/page.tsx",
+      "app/(portal)/dashboard/eligibility/EligibilityForm.tsx",
+      "components/portal/WioaQualificationClient.tsx",
+      "lib/wioa/wioaQualification.ts"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member eligibility/WIOA APIs",
+      "ElevenLabs session gateway; no live connection verified"
+    ],
+    "previewStatus": "mixed",
+    "notes": "Eligibility is a read-only form schema; WIOA adds a simulated voice entry. Neither creates screening evidence, determines funding or verifies a live provider."
+  },
+  {
+    "id": "member-mentorship",
+    "title": "Mentor directory, booking and mentor role",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/mentors",
+      "/dashboard/mentors/*",
+      "/dashboard/mentor"
+    ],
+    "features": [
+      {
+        "label": "Keep mentor directory/profile information and member session requests with separate topic, date/time and notes semantics.",
+        "source": "components/portal/MentorSessionForm.tsx"
+      },
+      {
+        "label": "Retain request/session status and the authenticated linked-Mentor requirement for /dashboard/mentor.",
+        "source": "app/(portal)/dashboard/mentor/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/mentor/page.tsx",
+      "app/(portal)/dashboard/mentors/[mentorId]/page.tsx",
+      "app/(portal)/dashboard/mentors/page.tsx",
+      "components/portal/MentorSessionForm.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "POST /api/mentors/[mentorId]/sessions"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview has synthetic directory/profile/session schemas. No mentor booking is created, and a member preview does not grant mentor access."
+  },
+  {
+    "id": "member-points-referrals",
+    "title": "Points, streaks and referrals",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/points",
+      "/dashboard/referrals"
+    ],
+    "features": [
+      {
+        "label": "Retain the recorded points ledger, levels/streaks and actual reward rules.",
+        "source": "app/(portal)/dashboard/points/page.tsx"
+      },
+      {
+        "label": "Keep personal referral sharing, conversion status and evidence-backed reward state.",
+        "source": "app/(portal)/dashboard/referrals/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/points/page.tsx",
+      "app/(portal)/dashboard/referrals/page.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member points/referral rules"
+    ],
+    "previewStatus": "structural",
+    "notes": "Points currently use a generic synthetic report; referrals use read-only rows. No points, conversions or rewards are granted by the preview."
+  },
+  {
+    "id": "member-survey",
+    "title": "Placement and experience survey",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/survey"
+    ],
+    "features": [
+      {
+        "label": "Keep the actual survey questions, optional salary and explicit testimonial-consent choice.",
+        "source": "app/(portal)/dashboard/survey/SurveyClient.tsx"
+      },
+      {
+        "label": "Retain authenticated submission, saved confirmation and validation/error recovery.",
+        "source": "app/(portal)/dashboard/survey/SurveyClient.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/survey/page.tsx",
+      "app/(portal)/dashboard/survey/SurveyClient.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "POST /api/placement-survey"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview has a small read-only survey schema and never submits feedback or records consent."
+  },
+  {
+    "id": "member-career-brief",
+    "title": "Career brief and goals",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/career-brief",
+      "/dashboard/career-brief/*"
+    ],
+    "features": [
+      {
+        "label": "Retain member progress context and editable goals with their recorded action steps.",
+        "source": "app/(portal)/dashboard/career-brief/page.tsx"
+      },
+      {
+        "label": "Keep the selected brief’s content, personalization and source/failed-load distinction.",
+        "source": "app/(portal)/dashboard/career-brief/[slug]/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/career-brief/[slug]/page.tsx",
+      "app/(portal)/dashboard/career-brief/page.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member goals",
+      "Career brief personalization / AI"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview provides sample brief/section rows, not personalized content generation or the goals editor."
+  },
+  {
+    "id": "member-weekly-recap",
+    "title": "Weekly recap",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/weekly-recap"
+    ],
+    "features": [
+      {
+        "label": "Retain the member/week-specific recap, goals/wins/next steps and calendar-date labeling.",
+        "source": "app/(portal)/dashboard/weekly-recap/page.tsx"
+      },
+      {
+        "label": "Keep generated/stored recap, opened state and unavailable versus not-ready states distinct.",
+        "source": "app/(portal)/dashboard/weekly-recap/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/weekly-recap/page.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Weekly recap generation"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview reuses a generic synthetic report; it does not load or generate the member’s recap."
+  },
+  {
+    "id": "member-help",
+    "title": "Help and program guide",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/help",
+      "/dashboard/guide"
+    ],
+    "features": [
+      {
+        "label": "Keep the program/curriculum-specific guide and links to the real next training or support step.",
+        "source": "app/(portal)/dashboard/guide/page.tsx"
+      },
+      {
+        "label": "Retain human-support requests and organization-sourced contact information.",
+        "source": "app/(portal)/dashboard/help/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/guide/page.tsx",
+      "app/(portal)/dashboard/help/page.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Member help-request routing",
+      "Organization support contacts"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview offers generic help/navigation. It does not submit a help request or establish live contact details."
+  },
+  {
+    "id": "member-not-found",
+    "title": "Unknown member address",
+    "portals": [
+      "member"
+    ],
+    "routePatterns": [
+      "/dashboard/[...slug]"
+    ],
+    "features": [
+      {
+        "label": "Keep unrecognized dashboard paths as not-found responses with recovery navigation.",
+        "source": "app/(portal)/dashboard/[...slug]/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/dashboard/[...slug]/page.tsx"
+    ],
+    "integrations": [
+      "Next.js route boundary"
+    ],
+    "previewStatus": "structural",
+    "notes": "An explicit not-found contract is retained; wildcard coverage is not a new valid application screen."
+  },
+  {
+    "id": "counselor-home",
+    "title": "Counselor Today and overview",
+    "portals": [
+      "counselor"
+    ],
+    "routePatterns": [
+      "/counselor",
+      "/counselor/today",
+      "/counselor/overview"
+    ],
+    "features": [
+      {
+        "label": "Keep counselor/admin entry routing, authorized caseload scope and the Today attention groups.",
+        "source": "app/(portal)/counselor/today/page.tsx"
+      },
+      {
+        "label": "Retain every awaiting approval, age/priority ordering and member-review handoff; partial load failures stay visible.",
+        "source": "components/portal/kit/pages/counselor/CounselorTodayKit.tsx"
+      },
+      {
+        "label": "Keep overview/command-center statistics, priorities and explicit bulk-follow-up actions.",
+        "source": "app/(portal)/counselor/overview/page.tsx"
+      },
+      {
+        "label": "Keep the staff counselor voice assistant separate from student Lilley.",
+        "source": "components/portal/CounselorPortalVoiceBlock.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/counselor/overview/page.tsx",
+      "app/(portal)/counselor/page.tsx",
+      "app/(portal)/counselor/today/page.tsx",
+      "components/portal/kit/pages/counselor/CounselorTodayKit.tsx",
+      "components/portal/CounselorPortalVoiceBlock.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Counselor attention / approval queues",
+      "Bulk follow-up messaging",
+      "ElevenLabs session gateway; no live connection verified"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview has a synthetic staff home, member links and simulated assistant. It omits the complete Today queues, approval actions, staff telemetry and bulk-send behavior."
+  },
+  {
+    "id": "counselor-roster",
+    "title": "Counselor member roster",
+    "portals": [
+      "counselor"
+    ],
+    "routePatterns": [
+      "/counselor/students"
+    ],
+    "features": [
+      {
+        "label": "Retain permitted caseload/scope selection, search, filters and pagination.",
+        "source": "components/portal/counselor/CounselorStudentsRosterClient.tsx"
+      },
+      {
+        "label": "Keep real enrollment/progress, risk/activity and placement counts with failed-load states distinct from an empty roster.",
+        "source": "app/(portal)/counselor/students/page.tsx"
+      },
+      {
+        "label": "Preserve selected-member handoffs to profile, training, messages and sessions.",
+        "source": "app/(portal)/counselor/students/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/counselor/students/page.tsx",
+      "components/portal/counselor/CounselorStudentsRosterClient.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Counselor assignment / roster loaders"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview offers local search and links over a few synthetic members. Actual caseload scope, filters, pagination and all real roster facts remain application behavior."
+  },
+  {
+    "id": "counselor-member-record",
+    "title": "Member record, intake and casework",
+    "portals": [
+      "counselor"
+    ],
+    "routePatterns": [
+      "/counselor/students/*"
+    ],
+    "features": [
+      {
+        "label": "Keep staff/member access checks and the selected member in all four Profile, Training, Career and Messages panels.",
+        "source": "app/(portal)/counselor/students/[memberId]/page.tsx"
+      },
+      {
+        "label": "Retain intake/WIOA/assessment evidence, prior results and the authorized final-attempt control.",
+        "source": "app/(portal)/counselor/students/[memberId]/page.tsx"
+      },
+      {
+        "label": "Keep curriculum progress, resume access, agreements/billing packets, skillsets, service requests and points separate by evidence source.",
+        "source": "app/(portal)/counselor/students/[memberId]/page.tsx"
+      },
+      {
+        "label": "Preserve case notes and advisor-session notes, including newer drafts, retry and deliberate deletion.",
+        "source": "app/(portal)/counselor/students/[memberId]/CounselorNotesPanel.tsx"
+      },
+      {
+        "label": "Keep contextual messages and employment/placement status without promoting a reported outcome to verified.",
+        "source": "app/(portal)/counselor/students/[memberId]/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/counselor/students/[memberId]/page.tsx",
+      "app/(portal)/counselor/students/[memberId]/CounselorNotesPanel.tsx",
+      "app/(portal)/counselor/students/[memberId]/AdvisorSessionNotesPanel.tsx",
+      "lib/counselor/staffMemberAccess.ts"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Staff member access gate",
+      "Counselor notes/session-notes APIs",
+      "Assessment-retake API",
+      "Private document / enrollment APIs"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview has a synthetic overview, placeholder tabs and a sample review decision. It does not reproduce the four application panels, real retake authorization, notes persistence or document access."
+  },
+  {
+    "id": "counselor-attention-queues",
+    "title": "Work queues, risk and inactivity",
+    "portals": [
+      "counselor"
+    ],
+    "routePatterns": [
+      "/counselor/queue",
+      "/counselor/triage",
+      "/counselor/inbox",
+      "/counselor/at-risk",
+      "/counselor/inactive-members"
+    ],
+    "features": [
+      {
+        "label": "Keep work-queue member/reason/priority context and explicit load-error states.",
+        "source": "app/(portal)/counselor/queue/page.tsx"
+      },
+      {
+        "label": "Retain triage reasons and template nudges with authorized member scope and send/error feedback.",
+        "source": "components/portal/counselor/TriageNudgePanel.tsx"
+      },
+      {
+        "label": "Keep Inbox Zero filters, bulk templates/reassignment and deliberate dismissal notes.",
+        "source": "components/portal/counselor/InboxZeroClient.tsx"
+      },
+      {
+        "label": "Keep risk severity/status/program filters, acknowledgement/review actions and evidence freshness.",
+        "source": "components/portal/counselor/AtRiskDashboard.tsx"
+      },
+      {
+        "label": "Retain inactive-member evidence and supported follow-up actions; inactivity is not a verified outcome.",
+        "source": "app/(portal)/counselor/inactive-members/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/counselor/at-risk/page.tsx",
+      "app/(portal)/counselor/inactive-members/page.tsx",
+      "app/(portal)/counselor/inbox/page.tsx",
+      "app/(portal)/counselor/queue/page.tsx",
+      "app/(portal)/counselor/triage/page.tsx",
+      "components/portal/counselor/TriageNudgePanel.tsx",
+      "components/portal/counselor/InboxZeroClient.tsx",
+      "components/portal/counselor/AtRiskDashboard.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Counselor work/triage/inbox APIs",
+      "Member risk APIs",
+      "Nudge and bulk follow-up"
+    ],
+    "previewStatus": "structural",
+    "notes": "These preview routes have separate read-only risk/inactivity/inbox/work-item schemas. Bulk actions, reassignment, dismissal and notification delivery are not executed."
+  },
+  {
+    "id": "counselor-messages",
+    "title": "Counselor conversations",
+    "portals": [
+      "counselor"
+    ],
+    "routePatterns": [
+      "/counselor/messages"
+    ],
+    "features": [
+      {
+        "label": "Keep the scoped inbox and selected-member query contract; unauthorized member access must fail before thread creation.",
+        "source": "app/(portal)/counselor/messages/page.tsx"
+      },
+      {
+        "label": "Retain thread loading, sent-message/read state and shared chat recovery without discarding the draft.",
+        "source": "components/portal/CounselorMessagesInboxClient.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/counselor/messages/page.tsx",
+      "components/portal/CounselorMessagesInboxClient.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Supabase realtime",
+      "Counselor member-messages API"
+    ],
+    "previewStatus": "simulated",
+    "notes": "The preview shares a local synthetic thread with the member view. It does not implement actual thread provisioning, authorization, delivery or realtime updates."
+  },
+  {
+    "id": "counselor-notifications",
+    "title": "Counselor notification center",
+    "portals": [
+      "counselor"
+    ],
+    "routePatterns": [
+      "/counselor/notifications"
+    ],
+    "features": [
+      {
+        "label": "Retain member/type/read filters and the scoped notification list.",
+        "source": "components/portal/counselor/CounselorNotificationCenter.tsx"
+      },
+      {
+        "label": "Keep mark-one/read-all and delete actions tied to confirmed API outcomes.",
+        "source": "components/portal/counselor/CounselorNotificationCenter.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/counselor/notifications/page.tsx",
+      "components/portal/counselor/CounselorNotificationCenter.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Counselor notifications read API",
+      "Member notification mutation APIs"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview has read-only notification examples; read/delete actions are source-only."
+  },
+  {
+    "id": "counselor-sessions",
+    "title": "Staff-assisted sessions and walk-ins",
+    "portals": [
+      "counselor"
+    ],
+    "routePatterns": [
+      "/counselor/sessions",
+      "/counselor/sessions/*/run",
+      "/counselor/sessions/walk-in"
+    ],
+    "features": [
+      {
+        "label": "Keep sessions index, selected-member access and stable session identifiers; admin/counselor handoffs remain explicit.",
+        "source": "app/(portal)/counselor/sessions/[memberId]/run/page.tsx"
+      },
+      {
+        "label": "Retain walk-in contact/target-role intake and creation error feedback.",
+        "source": "components/portal/sessions/WalkInSessionClient.tsx"
+      },
+      {
+        "label": "Use the selected member’s original/uploaded resume for rewriting; keep other tool contexts independent.",
+        "source": "components/portal/sessions/SessionRunClient.tsx"
+      },
+      {
+        "label": "Retain resume, letter, interview, analysis, gaps, matching, LinkedIn, salary and pitch tools with staff/member identity preserved.",
+        "source": "components/portal/sessions/SessionRunClient.tsx"
+      },
+      {
+        "label": "Keep explicit email-packet delivery and staff voice walkthrough; a session screen is not a delivery receipt.",
+        "source": "components/portal/sessions/SessionRunClient.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/counselor/sessions/[memberId]/run/page.tsx",
+      "app/(portal)/counselor/sessions/page.tsx",
+      "app/(portal)/counselor/sessions/walk-in/page.tsx",
+      "components/portal/sessions/WalkInSessionClient.tsx",
+      "components/portal/sessions/SessionRunClient.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Counselor session and upload APIs",
+      "AI tool APIs",
+      "Resend packet email",
+      "ElevenLabs session gateway; no live connection verified"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview supplies session/walk-in schemas only. It does not create staff sessions, upload a resume, run tools for a member or send the packet."
+  },
+  {
+    "id": "counselor-lab-review",
+    "title": "Submitted lab review",
+    "portals": [
+      "counselor"
+    ],
+    "routePatterns": [
+      "/counselor/lab-reviews",
+      "/counselor/lab-reviews/*"
+    ],
+    "features": [
+      {
+        "label": "Keep the submitted-evidence queue and scoped immutable submission; private member drafts stay outside staff view.",
+        "source": "components/portal/counselor/LabReviewQueue.tsx"
+      },
+      {
+        "label": "Retain rubric scores, criterion feedback and reviewed versus revision-requested decisions.",
+        "source": "components/portal/counselor/LabEvidenceReview.tsx"
+      },
+      {
+        "label": "Preserve local review drafts after failures or competing saved reviews and require a complete valid review.",
+        "source": "components/portal/counselor/LabEvidenceReview.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/counselor/lab-reviews/[submissionId]/page.tsx",
+      "app/(portal)/counselor/lab-reviews/page.tsx",
+      "components/portal/counselor/LabReviewQueue.tsx",
+      "components/portal/counselor/LabEvidenceReview.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Staff lab-review APIs"
+    ],
+    "previewStatus": "simulated",
+    "notes": "The preview exercises local member submission → staff feedback. The full rubric, assignment boundary, immutable storage and concurrent-review behavior remain application obligations."
+  },
+  {
+    "id": "counselor-placements",
+    "title": "Placement records",
+    "portals": [
+      "counselor"
+    ],
+    "routePatterns": [
+      "/counselor/placements"
+    ],
+    "features": [
+      {
+        "label": "Retain member selection, employer, role, start date, annual salary and notes when creating a placement.",
+        "source": "app/(portal)/counselor/placements/page.tsx"
+      },
+      {
+        "label": "Keep recorded placement metrics and source/confirmation state distinct from an unverified report.",
+        "source": "app/(portal)/counselor/placements/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/counselor/placements/page.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "GET/POST /api/counselor/placements"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview has read-only placement rows; it does not create, confirm or verify employment."
+  },
+  {
+    "id": "counselor-profile",
+    "title": "Counselor profile",
+    "portals": [
+      "counselor"
+    ],
+    "routePatterns": [
+      "/counselor/profile"
+    ],
+    "features": [
+      {
+        "label": "Keep staff display name, phone and public title edits with pending/error/success state.",
+        "source": "app/(portal)/counselor/profile/CounselorProfileForm.tsx"
+      },
+      {
+        "label": "Preserve counselor/admin authorization and the member-facing staff identity relationship.",
+        "source": "app/(portal)/counselor/profile/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/counselor/profile/page.tsx",
+      "app/(portal)/counselor/profile/CounselorProfileForm.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Counselor profile API"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview profile currently falls back to a generic organization-settings layout. The actual counselor-specific fields must be retained in application work."
+  },
+  {
+    "id": "counselor-help",
+    "title": "Counselor guide and resources",
+    "portals": [
+      "counselor"
+    ],
+    "routePatterns": [
+      "/counselor/guide",
+      "/counselor/resources"
+    ],
+    "features": [
+      {
+        "label": "Keep the role-specific guide, caseload context and links to counselor workflows.",
+        "source": "app/(portal)/counselor/guide/page.tsx"
+      },
+      {
+        "label": "Preserve staff resource destinations and forms/support links.",
+        "source": "app/(portal)/counselor/resources/page.tsx"
+      }
+    ],
+    "sources": [
+      "app/(portal)/counselor/guide/page.tsx",
+      "app/(portal)/counselor/resources/page.tsx"
+    ],
+    "integrations": [
+      "Prisma / PostgreSQL",
+      "Counselor guide / resource catalog"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview supplies generic resource navigation rather than the complete staff guide content."
+  }
+]

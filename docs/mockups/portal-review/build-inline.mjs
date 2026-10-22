@@ -42,13 +42,14 @@ script=script.replace(" document.title=", " if(globalThis.lucide)lucide.createIc
 script=script.replace('dialog.showModal()', 'dialog.show()');
 script=script.replace('function openDialog(title,body){', 'function openDialog(title,body){');
 script=script.replace('installVoiceReview();','installVoiceReview(reviewRoot);');
+script=script.replace('window.bindSkillMapperReview(document);','window.bindSkillMapperReview(reviewRoot);');
 script=script.replace(/\nnavigate\(\);\s*$/,'')+'\n'+readFileSync(resolve(here,'inline-behavior.js'),'utf8')+'\nnavigate();';
 script='(()=>{\nconst reviewRoot=document.getElementById("'+rootId+'");\nconst reviewElement=(id)=>reviewRoot.querySelector("#"+id);\n'+script+'\n})();';
 let html=readFileSync(resolve(here,'inline-shell.html'),'utf8')
   .replace('/*__WAP_REVIEW_STYLE__*/',()=>css)
   .replace('/*__WAP_REVIEW_APPEARANCE__*/',()=>appearanceBootstrap.replaceAll('document.documentElement',`document.getElementById("${rootId}")`))
   .replace('/*__WAP_REVIEW_SCRIPT__*/',()=>script);
-for(const [placeholder,id]of[['__WAP_ROUTE_DATA__','route-data'],['__WAP_JOURNEY_DATA__','journey-data'],['__WAP_SCREEN_DATA__','screen-definitions']]){
+for(const [placeholder,id]of[['__WAP_ROUTE_DATA__','route-data'],['__WAP_JOURNEY_DATA__','journey-data'],['__WAP_SCREEN_DATA__','screen-definitions'],['__WAP_FEATURE_DATA__','feature-contracts']]){
   const data=standalone.match(new RegExp('<script type="application/json" id="'+id+'">([\\s\\S]*?)<\\/script>'))?.[1];
   if(!data)throw Error('Missing inline dataset: '+id);
   html=html.replace(placeholder,()=>data);

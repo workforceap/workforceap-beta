@@ -15,9 +15,11 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox'],...(pro
 const url=pathToFileURL(resolve(here,'index.html')).href;
 const smoke=process.argv.includes('--smoke');
 const capture=process.argv.includes('--capture');
+const interactionsOnly=process.argv.includes('--interactions-only');
+report.routeSweepSkipped=interactionsOnly;
 const chosen=smoke?source.routes.filter(r=>['/dashboard','/counselor/today','/employer','/partner','/admin','/dashboard/ai-tools/resume-studio','/dashboard/messages','/admin/students','/leader/dashboard','/login'].includes(r.route)):source.routes;
 try{
- for(const width of smoke?[1440,375]:[1440,768,375])for(const theme of ['light','dark']){
+ for(const width of interactionsOnly?[]:smoke?[1440,375]:[1440,768,375])for(const theme of ['light','dark']){
   const context=await browser.newContext({viewport:{width,height:width===375?900:1000},reducedMotion:'reduce'});
   const page=await context.newPage();
   await context.route('**/*',route=>{const requestURL=route.request().url();if(!requestURL.startsWith('file:')&&!requestURL.startsWith('data:')){report.externalRequests.push(requestURL);return route.abort();}return route.continue();});
@@ -68,5 +70,80 @@ try{
  await test('Sensitive domain forms remain read-only and never collect passwords',async()=>{await goto('/apply/create-account');const passwords=page.locator('input[type=password]');assert.equal(await passwords.count(),2);for(const input of await passwords.all()){assert.equal(await input.inputValue(),'');assert.equal(await input.getAttribute('readonly'),'');}assert.equal(await page.locator('#screen-content form').count(),0);await goto('/consent/sample-token');assert.equal(await page.locator('input[type=checkbox]').isDisabled(),true);});
  await test('Malformed record links recover without crashing or revealing a draft job',async()=>{await goto('/dashboard/jobs/%E0%A4%A');assert.ok((await page.locator('#screen-content').innerText()).includes('not found'));await goto('/dashboard/jobs/sample-003');assert.ok((await page.locator('#screen-content').innerText()).includes('not found'));});
  await test('Mobile navigation dialog supports keyboard focus and Escape',async()=>{await page.setViewportSize({width:375,height:900});await goto('/dashboard');await page.getByRole('button',{name:'Open navigation',exact:true}).click();assert.equal(await page.locator('dialog').evaluate(d=>d.open),true);await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.closest('dialog')!==null),true);await page.keyboard.press('Escape');assert.equal(await page.locator('dialog').evaluate(d=>d.open),false);assert.equal(await page.getByRole('button',{name:'Open navigation',exact:true}).evaluate(e=>e===document.activeElement),true);});
+ await test('Feature catalog exposes 120 families and searches O*NET and human workspace labels',async()=>{
+  await page.setViewportSize({width:1440,height:1000});await goto('/dashboard');
+  await page.getByRole('button',{name:'All screens & journeys',exact:true}).click();
+  await page.getByRole('button',{name:'Feature preservation',exact:true}).click();
+  assert.equal(await page.locator('.feature-entry:visible').count(),120);
+  assert.ok((await page.locator('.feature-intro').innerText()).includes('not a claim that every workflow runs'));
+  const search=page.getByRole('searchbox',{name:'Find an existing feature',exact:true});
+  await search.fill('O*NET');
+  assert.ok((await page.locator('.feature-entry:visible > summary strong').allTextContents()).includes('Skill Mapper'));
+  for(const [query,label,count] of [['Group','Group & shared',4],['handoffs','Entry & handoffs',10]]){
+   await search.fill(query);
+   const workspaces=await page.locator('.feature-entry:visible > summary span').allTextContents();
+   assert.equal(workspaces.filter(text=>text.includes(label)).length,count,query+' workspace search');
+  }
+  await search.fill('');assert.equal(await page.locator('.feature-entry:visible').count(),120);
+  await page.getByRole('button',{name:'Close',exact:true}).click();
+ });
+ await test('Every portal group exposes concrete feature obligations and pinned implementation links',async()=>{
+  const baseline='https://github.com/workforceap/workforceap-beta/blob/f8a12f527810ba8c1e08840a762358b0fd86e4f1/';
+  for(const path of ['/dashboard/ai-tools/skill-mapper','/counselor/today','/employer/jobs','/partner/attention','/admin/command-center','/leader/dashboard','/login']){
+   await goto(path);await page.getByRole('button',{name:'View existing features',exact:true}).click();
+   assert.equal(await page.getByRole('heading',{name:'Existing features to preserve',exact:true}).count(),1);
+   assert.ok(await page.locator('.feature-obligations li:visible').count()>0,path+' has no obligations');
+   assert.equal(await page.locator('#dialog-body .routecode').innerText(),path);
+   await page.locator('.feature-evidence > summary').first().click();
+   const links=await page.locator('.feature-evidence a:visible').evaluateAll(nodes=>nodes.map(node=>node.href));
+   assert.ok(links.length>0,path+' has no implementation links');
+   assert.ok(links.every(href=>href.startsWith(baseline)),path+' has an unpinned implementation link');
+   assert.ok((await page.locator('#dialog-body').innerText()).includes('live integrations and authorization still need authenticated acceptance'));
+   await page.getByRole('button',{name:'Close',exact:true}).click();
+  }
+ });
+ await test('Skill Mapper occupation search renders a radar, six exact axes and a member comparison',async()=>{
+  await goto('/dashboard/ai-tools/skill-mapper');
+  assert.ok((await page.locator('.sm-boundary').innerText()).includes('no live O*NET'));
+  await page.getByRole('searchbox',{name:'Search sample occupations',exact:true}).fill('IT support');
+  await page.getByRole('button',{name:'Search occupations',exact:true}).click();
+  await page.locator('.sm-search-results').getByRole('button',{name:/Computer User Support Specialists/}).click();
+  assert.equal(await page.locator('#sm-occupation-title').innerText(),'Computer User Support Specialists');
+  const scores=page.getByRole('table',{name:'Exact sample axis scores',exact:true});
+  assert.deepEqual(await scores.locator('tbody th').allTextContents(),['Analytics','Engineering','Design','Strategy','Service','Research']);
+  assert.deepEqual(await scores.locator('tbody td').allTextContents(),['66','74','34','46','82','64']);
+  const radar=page.getByRole('img',{name:/Sample occupation skill emphasis/});
+  assert.equal(await radar.isVisible(),true);
+  assert.ok(await radar.evaluate(canvas=>canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some((value,index)=>index%4===3&&value>0)),'occupation radar is blank');
+  await page.getByRole('button',{name:'Compare with sample profile',exact:true}).click();
+  const comparison=page.getByRole('table',{name:'Exact sample comparison scores',exact:true});
+  assert.equal(await comparison.locator('tbody tr').count(),6);
+  assert.deepEqual(await comparison.locator('tbody tr').filter({hasText:'Engineering'}).locator('td').allTextContents(),['48','74','+26']);
+  assert.equal(await page.getByRole('img',{name:/Sample member profile and target occupation/}).isVisible(),true);
+  assert.equal(await page.getByRole('heading',{name:'Skill gaps to explore',exact:true}).count(),1);
+ });
+ await test('Skill Mapper retains query and target across appearance and navigation, and global reset clears both',async()=>{
+  await goto('/dashboard/ai-tools/skill-mapper');
+  await page.getByRole('tab',{name:'Occupation search',exact:true}).click();
+  await page.getByRole('searchbox',{name:'Search sample occupations',exact:true}).fill('security');
+  await page.getByRole('button',{name:'Search occupations',exact:true}).click();
+  await page.locator('.sm-search-results').getByRole('button',{name:/Information Security Analysts/}).click();
+  await page.getByRole('searchbox',{name:'Search sample occupations',exact:true}).fill('Unsaved network exploration');
+  for(const theme of ['light','dark']){
+   await page.getByLabel('Appearance',{exact:true}).selectOption(theme);
+   assert.equal(await page.getByRole('searchbox',{name:'Search sample occupations',exact:true}).inputValue(),'Unsaved network exploration');
+   assert.equal(await page.locator('#sm-occupation-title').innerText(),'Information Security Analysts');
+  }
+  await goto('/dashboard');await goto('/dashboard/ai-tools/skill-mapper');
+  assert.equal(await page.getByRole('searchbox',{name:'Search sample occupations',exact:true}).inputValue(),'Unsaved network exploration');
+  assert.equal(await page.locator('#sm-occupation-title').innerText(),'Information Security Analysts');
+  assert.ok(await page.locator('.sm-history li').count()>0);
+  await page.getByRole('button',{name:'Source & data',exact:true}).click();
+  await page.getByRole('button',{name:'Reset all sample data',exact:true}).click();
+  assert.equal(await page.getByRole('searchbox',{name:'Search sample occupations',exact:true}).inputValue(),'');
+  assert.equal(await page.locator('#sm-occupation-title').count(),0);
+  assert.equal(await page.locator('.sm-history li').count(),0);
+  assert.equal(await page.getByRole('button',{name:'Try IT support',exact:true}).isVisible(),true);
+ });
  await ctx.close();
 }finally{await browser.close();report.summary={routePass:report.routeChecks.filter(x=>x.result==='pass').length,routeFail:report.routeChecks.filter(x=>x.result==='fail').length,interactionPass:report.interactions.filter(x=>x.result==='pass').length,interactionFail:report.interactions.filter(x=>x.result==='fail').length,pageErrors:report.errors.length,externalRequests:report.externalRequests.length,screenshots:report.screenshots.length};writeFileSync(resolve(out,'review-results.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report.summary,null,2));if(report.summary.routeFail||report.summary.interactionFail||report.errors.length||report.externalRequests.length){console.log(JSON.stringify({routes:report.routeChecks.filter(x=>x.result==='fail').slice(0,20),interactions:report.interactions.filter(x=>x.result==='fail'),errors:report.errors.slice(0,10)},null,2));process.exitCode=1;}}

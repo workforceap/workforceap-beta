@@ -1,0 +1,27 @@
+/* Review-only source obligations; never injected into the actual product UI. */
+.feature-strip { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 18px; margin: 18px 0 24px; border: 1px solid var(--wa-border); border-radius: 10px; background: var(--wa-surface); }
+.feature-strip strong { font-size: 14px; }
+.feature-strip p { margin: 4px 0 0; color: var(--wa-muted); font-size: 13px; }
+.feature-strip .button { flex-shrink: 0; }
+.feature-intro { margin-top: 0; line-height: 1.65; }
+.feature-family { padding: 18px 0; border-top: 1px solid var(--wa-border); }
+.feature-family h3 { margin: 0 0 8px; font-size: 18px; }
+.feature-family p { font-size: 14px; line-height: 1.65; }
+.feature-obligations { padding-left: 22px; line-height: 1.6; }
+.feature-obligations li { margin: 10px 0; }
+.feature-limit { color: var(--wa-muted); }
+.feature-evidence summary { cursor: pointer; padding: 10px 0; min-height: 44px; font-size: 14px; }
+.feature-evidence ul { padding-left: 22px; }
+.feature-evidence li { padding: 5px 0; font-size: 13px; overflow-wrap: anywhere; }
+.feature-evidence small { display: block; color: var(--wa-muted); }
+.feature-coverage { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 14px 0 20px; }
+.feature-coverage span { font-size: 13px; color: var(--wa-muted); }
+.feature-coverage strong { color: var(--wa-text); }
+.feature-entry { border-top: 1px solid var(--wa-border); }
+.feature-entry > summary { display: list-item; cursor: pointer; min-height: 48px; padding: 14px 4px; }
+.feature-entry > summary span { display: block; font-size: 13px; color: var(--wa-muted); padding-top: 4px; }
+.feature-entry .feature-family { padding-top: 8px; border-top: 0; }
+.feature-entry .feature-family h3 { display: none; }
+.feature-catalog [hidden] { display: none; }
+.feature-catalog .search { margin-top: 4px; }
+@media (max-width: 767px) { .feature-strip { align-items: stretch; flex-direction: column; } .feature-strip .button { width: 100%; } }

@@ -16,6 +16,25 @@ semantics from scratch.
    composing from a blank file.
 4. If you change kit behavior, update the file's header comment and this guide in the same change.
 
+### Feature continuity during a visual redesign
+
+The existing React components, route handlers, access checks and domain workflows
+remain the feature contract. Apply appearance changes to those implementations;
+a simplified static review is not permission to replace them with generic forms.
+
+The [portal feature-preservation review](mockups/portal-review/FEATURE-PRESERVATION.md)
+maps every route in the 266-route review to source-backed feature obligations.
+Check the affected family before redesigning a screen, including its integrations,
+exports, history, record identity, authorization, drafts and failure recovery.
+The review exposes these obligations through **View existing features** and its
+cross-portal **Feature preservation** catalog. Layout-only and synthetic actions
+are labeled; neither establishes authenticated feature parity.
+
+Refresh that source baseline when the application changes. Exercise the actual
+component/API behavior and the affected light/dark mobile layouts before release.
+The appearance-only patch has a parsed-code preservation check; a behavioral
+change needs its own implementation review and regression coverage.
+
 The admin Agent Inbox's "Needs review" count includes both unexpired drafts
 awaiting approval and approved cascades with incomplete delivery. Delivery
 rows stay visible for retry or staff reconciliation; provider acceptance is

@@ -1,0 +1,2499 @@
+[
+  {
+    "id": "admin-command-center",
+    "title": "Staff overview and work queues",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin",
+      "/admin/overview",
+      "/admin/dashboard",
+      "/admin/command-center"
+    ],
+    "features": [
+      {
+        "label": "Keep queue selection, paging, application triage, unanswered conversations and direct links to the owning member record.",
+        "sources": [
+          "app/admin/command-center/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep headline totals, detailed overview, executive trends and explicit unavailable-data notices.",
+        "sources": [
+          "app/admin/overview/page.tsx",
+          "app/admin/dashboard/page.tsx"
+        ]
+      },
+      {
+        "label": "Preserve the authenticated admin shell, role switcher and tenant scope for every queue and metric.",
+        "sources": [
+          "app/admin/layout.tsx",
+          "lib/tenant/adminPageScope.ts"
+        ]
+      },
+      {
+        "label": "Keep page-scoped bulk selection, eligibility attestation, partial-result recovery and retry of failed rows only.",
+        "sources": [
+          "components/admin/AdminCommandCenterClient.tsx",
+          "tests/components/admin-command-center-workflows.spec.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/page.tsx",
+      "app/admin/overview/page.tsx",
+      "app/admin/dashboard/page.tsx",
+      "app/admin/command-center/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth",
+      "PostgreSQL"
+    ],
+    "previewStatus": "mixed",
+    "notes": "Sample queues and navigation work locally. Live totals, authorization and staff decisions are not exercised by the static review."
+  },
+  {
+    "id": "admin-member-rosters",
+    "title": "Member rosters and onboarding",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/students",
+      "/admin/members",
+      "/admin/members/new",
+      "/admin/members/training",
+      "/admin/members/job-ready",
+      "/admin/members/interview-ready"
+    ],
+    "features": [
+      {
+        "label": "Preserve search, status/program/health and enrollment filters, pagination, roster counts and links to the selected member.",
+        "sources": [
+          "app/admin/members/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep student focus views and separate training, job-ready and interview-ready populations.",
+        "sources": [
+          "app/admin/students/page.tsx",
+          "app/admin/members/job-ready/page.tsx",
+          "app/admin/members/interview-ready/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep the multi-step add-member flow, eligibility fields and partner/subgroup assignment.",
+        "sources": [
+          "app/admin/members/new/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/students/page.tsx",
+      "app/admin/members/page.tsx",
+      "app/admin/members/new/page.tsx",
+      "app/admin/members/training/page.tsx",
+      "app/admin/members/job-ready/page.tsx",
+      "app/admin/members/interview-ready/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth",
+      "PostgreSQL"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-member-record",
+    "title": "Member case record and readiness",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/members/[id]",
+      "/admin/members/[id]/readiness",
+      "/admin/members/[id]/stakeholder",
+      "/admin/members/[id]/lifecycle"
+    ],
+    "features": [
+      {
+        "label": "Keep program/training, enrollment funding, consent, WIOA review, service requests and exact assessment history in the member record.",
+        "sources": [
+          "app/admin/members/[id]/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep counselor/partner/subgroup assignment, private notes, counselor conversation, résumé access, token-link actions and Coursera approval/diagnostics.",
+        "sources": [
+          "app/admin/members/[id]/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep assessment-retake authorization, skill checkpoints, recorded placement evidence and readiness review.",
+        "sources": [
+          "app/admin/members/[id]/page.tsx",
+          "app/admin/members/[id]/readiness/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep the stakeholder view and lifecycle redirect attached to the same member identity.",
+        "sources": [
+          "app/admin/members/[id]/stakeholder/page.tsx",
+          "app/admin/members/[id]/lifecycle/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/members/[id]/page.tsx",
+      "app/admin/members/[id]/readiness/page.tsx",
+      "app/admin/members/[id]/stakeholder/page.tsx",
+      "app/admin/members/[id]/lifecycle/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth and private storage",
+      "PostgreSQL",
+      "Coursera",
+      "Email"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview retains sample identity/navigation and a sample review receipt; its generic record tabs do not implement the complete casework workspace."
+  },
+  {
+    "id": "admin-member-merge",
+    "title": "Duplicate detection and member merge",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/members/duplicates",
+      "/admin/members/merge"
+    ],
+    "features": [
+      {
+        "label": "Keep duplicate-member discovery and selection of primary and secondary identities.",
+        "sources": [
+          "app/admin/members/duplicates/page.tsx"
+        ]
+      },
+      {
+        "label": "Preview transferred records before a separately confirmed merge and preserve conflict/error feedback.",
+        "sources": [
+          "components/admin/MemberMergeClient.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/members/duplicates/page.tsx",
+      "app/admin/members/merge/page.tsx",
+      "components/admin/MemberMergeClient.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-counselors",
+    "title": "Counselor management",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/counselors"
+    ],
+    "features": [
+      {
+        "label": "Keep staff, partner-affiliated and independent counselor roster views with pagination and unavailable-data recovery.",
+        "sources": [
+          "app/admin/counselors/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep counselor creation and activation controls, plus roster caseload information.",
+        "sources": [
+          "components/admin/AddCounselorForm.tsx",
+          "components/admin/AdminCounselorsClient.tsx",
+          "app/admin/counselors/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/counselors/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Email"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-mentors-chapters",
+    "title": "Mentors and chapters",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/mentors",
+      "/admin/chapters"
+    ],
+    "features": [
+      {
+        "label": "Keep mentor roster profiles, specialties and approval/status information.",
+        "sources": [
+          "app/admin/mentors/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep chapter listings with leader/member information and authorized chapter scope.",
+        "sources": [
+          "app/(portal)/admin/chapters/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/mentors/page.tsx",
+      "app/(portal)/admin/chapters/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-partners",
+    "title": "Partner organizations and schools",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/partners",
+      "/admin/partners/new",
+      "/admin/partners/[id]",
+      "/admin/partners/[id]/quarterly-outcomes",
+      "/admin/partner-signups"
+    ],
+    "features": [
+      {
+        "label": "Keep partner creation, approval, invitations, organization details and partner-signup review.",
+        "sources": [
+          "app/admin/partners/[id]/page.tsx",
+          "app/admin/partner-signups/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep school configuration, referral/enrollment funnel, linked subgroups and scoped quarterly outcomes.",
+        "sources": [
+          "app/admin/partners/[id]/page.tsx",
+          "app/admin/partners/[id]/quarterly-outcomes/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep eligible-partner payout records and deactivate/reassign workflows with their existing confirmations.",
+        "sources": [
+          "components/admin/PartnerPayoutsPanel.tsx",
+          "components/admin/PartnerDetailActions.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/partners/page.tsx",
+      "app/admin/partners/new/page.tsx",
+      "app/admin/partners/[id]/page.tsx",
+      "app/admin/partners/[id]/quarterly-outcomes/page.tsx",
+      "app/admin/partner-signups/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Email",
+      "Stripe Connect"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-subgroups",
+    "title": "Subgroups and leaders",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/subgroups",
+      "/admin/subgroups/new",
+      "/admin/subgroups/[id]",
+      "/admin/subgroups/[id]/edit"
+    ],
+    "features": [
+      {
+        "label": "Keep subgroup creation/editing, type, leader and partner relationships.",
+        "sources": [
+          "app/admin/subgroups/new/page.tsx",
+          "app/admin/subgroups/[id]/edit/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep member lists and progress tied to the selected subgroup with existing privacy restrictions.",
+        "sources": [
+          "app/admin/subgroups/[id]/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/subgroups/page.tsx",
+      "app/admin/subgroups/new/page.tsx",
+      "app/admin/subgroups/[id]/page.tsx",
+      "app/admin/subgroups/[id]/edit/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-employers",
+    "title": "Employer administration",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/employers",
+      "/admin/employers/[id]"
+    ],
+    "features": [
+      {
+        "label": "Keep employer account creation, approval/status controls, subscription tier and portal-context selection.",
+        "sources": [
+          "app/admin/employers/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep employer job, applicant, placement and hiring-relationship context in its detail record.",
+        "sources": [
+          "app/admin/employers/[id]/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/employers/page.tsx",
+      "app/admin/employers/[id]/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth",
+      "PostgreSQL",
+      "Stripe"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-job-review",
+    "title": "Job moderation and matching",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/jobs",
+      "/admin/jobs/[id]"
+    ],
+    "features": [
+      {
+        "label": "Keep filtered job lists, posting details and import provenance.",
+        "sources": [
+          "app/admin/jobs/page.tsx",
+          "components/admin/AdminJobReview.tsx"
+        ]
+      },
+      {
+        "label": "Keep approve/reject actions, required rejection reasons, applications and AI candidate-match generation/review.",
+        "sources": [
+          "components/admin/AdminJobReview.tsx"
+        ]
+      },
+      {
+        "label": "Keep tenant-bound job and member access and distinct match-email delivery states.",
+        "sources": [
+          "components/admin/AdminJobReview.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/jobs/page.tsx",
+      "app/admin/jobs/[id]/page.tsx",
+      "components/admin/AdminJobReview.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "AI matching",
+      "Email"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-placement-pipeline",
+    "title": "Placement pipeline and follow-up",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/pipeline",
+      "/admin/placements",
+      "/admin/placements/new",
+      "/admin/placements/retention",
+      "/admin/placement-surveys"
+    ],
+    "features": [
+      {
+        "label": "Keep the application funnel, stale-application queue and placement-entry handoff.",
+        "sources": [
+          "app/admin/pipeline/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep placement creation and review with member-reported outcomes distinct from verified records.",
+        "sources": [
+          "app/admin/placements/new/page.tsx",
+          "app/admin/placements/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep 90/180-day retention decisions and survey responses linked to the actual placement/member.",
+        "sources": [
+          "app/admin/placements/retention/page.tsx",
+          "app/admin/placement-surveys/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/pipeline/page.tsx",
+      "app/admin/placements/page.tsx",
+      "app/admin/placements/new/page.tsx",
+      "app/admin/placements/retention/page.tsx",
+      "app/admin/placement-surveys/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Email"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-outcomes-reports",
+    "title": "Reporting, exports and outcome methodology",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/reporting",
+      "/admin/exports",
+      "/admin/outcomes",
+      "/admin/outcomes/methodology",
+      "/admin/reports/quarterly-outcomes",
+      "/admin/board",
+      "/admin/board/print",
+      "/admin/metrics",
+      "/admin/analytics"
+    ],
+    "features": [
+      {
+        "label": "Keep the reporting hub, outcome definitions, source periods and scoped population/denominator distinctions.",
+        "sources": [
+          "app/admin/reporting/page.tsx",
+          "app/admin/outcomes/methodology/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep quarter/year selection, enrollments, completions, placements, salary and AI usage reporting with export.",
+        "sources": [
+          "app/admin/reports/quarterly-outcomes/QuarterlyOutcomesClient.tsx"
+        ]
+      },
+      {
+        "label": "Keep board print views and administrative data/eligibility exports with server authorization and CSV protections.",
+        "sources": [
+          "app/admin/board/print/page.tsx",
+          "app/admin/exports/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/reporting/page.tsx",
+      "app/admin/exports/page.tsx",
+      "app/admin/outcomes/page.tsx",
+      "app/admin/outcomes/methodology/page.tsx",
+      "app/admin/reports/quarterly-outcomes/page.tsx",
+      "app/admin/board/page.tsx",
+      "app/admin/board/print/page.tsx",
+      "app/admin/metrics/page.tsx",
+      "app/admin/analytics/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "Preview charts and counts are fixed examples. They do not reproduce the live report formulas, filters, exports or source populations."
+  },
+  {
+    "id": "admin-weekly-growth",
+    "title": "Weekly activity and acquisition",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/weekly-recap",
+      "/admin/growth"
+    ],
+    "features": [
+      {
+        "label": "Keep scoped weekly scoreboard/recap records and the distinction between saved member activity and current totals.",
+        "sources": [
+          "app/admin/weekly-recap/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep application/acquisition breakdowns and UTM attribution views.",
+        "sources": [
+          "app/admin/growth/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/weekly-recap/page.tsx",
+      "app/admin/growth/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Marketing attribution"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-ai-mapping",
+    "title": "AI usage and career mappings",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/ai-tools",
+      "/admin/analytics/ai-efficacy",
+      "/admin/career-mappings"
+    ],
+    "features": [
+      {
+        "label": "Keep AI tool usage/results and efficacy analysis with organization scope.",
+        "sources": [
+          "app/admin/ai-tools/page.tsx",
+          "app/admin/analytics/ai-efficacy/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep O*NET occupation search/sync, manual program mapping, AI suggestion approval, recommendation type/experience band/priority and change history.",
+        "sources": [
+          "components/admin/CareerMappingEditor.tsx",
+          "app/admin/career-mappings/CareerMappingsClient.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/ai-tools/page.tsx",
+      "app/admin/analytics/ai-efficacy/page.tsx",
+      "app/admin/career-mappings/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "O*NET occupation mappings",
+      "AI result records"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-programs-training",
+    "title": "Programs and training progress",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/programs",
+      "/admin/program-change-requests",
+      "/admin/training-progress"
+    ],
+    "features": [
+      {
+        "label": "Keep program catalog/enrollment management and validated completion definitions.",
+        "sources": [
+          "app/admin/programs/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep program-change approval/denial, optional review note, request history and the approved enrollment update.",
+        "sources": [
+          "app/admin/program-change-requests/ProgramChangeRequestsAdminClient.tsx"
+        ]
+      },
+      {
+        "label": "Keep curriculum-version-aware progress and actual enrolled-member assignment.",
+        "sources": [
+          "app/admin/training-progress/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/programs/page.tsx",
+      "app/admin/program-change-requests/page.tsx",
+      "app/admin/training-progress/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Coursera"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-coursera-operations",
+    "title": "Coursera enrollment, identity and progress",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/coursera",
+      "/admin/coursera/csv-import",
+      "/admin/coursera/enrollment",
+      "/admin/coursera/health",
+      "/admin/coursera/learners/[userId]",
+      "/admin/coursera/learners/unmatched/[externalEmail]/events",
+      "/admin/coursera/learners/unmatched/[externalEmail]",
+      "/admin/coursera/provisioning"
+    ],
+    "features": [
+      {
+        "label": "Keep course/program mappings, B4B discovery, reconciliation, sync controls and provider self-tests.",
+        "sources": [
+          "app/admin/coursera/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep enrollment and provisioning queues, learner inspection and explicit unmatched identity mapping.",
+        "sources": [
+          "app/admin/coursera/enrollment/page.tsx",
+          "app/admin/coursera/provisioning/page.tsx",
+          "app/admin/coursera/learners/unmatched/[externalEmail]/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep CSV import, xAPI event history, health/drift diagnostics and wrong-program/out-of-catalog exceptions.",
+        "sources": [
+          "app/admin/coursera/csv-import/page.tsx",
+          "app/admin/coursera/health/page.tsx",
+          "app/admin/coursera/learners/unmatched/[externalEmail]/events/page.tsx"
+        ]
+      },
+      {
+        "label": "Do not equate portal approval, provider enrollment, provider progress and course completion.",
+        "sources": [
+          "app/admin/coursera/provisioning/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/coursera/page.tsx",
+      "app/admin/coursera/csv-import/page.tsx",
+      "app/admin/coursera/enrollment/page.tsx",
+      "app/admin/coursera/health/page.tsx",
+      "app/admin/coursera/learners/[userId]/page.tsx",
+      "app/admin/coursera/learners/unmatched/[externalEmail]/events/page.tsx",
+      "app/admin/coursera/learners/unmatched/[externalEmail]/page.tsx",
+      "app/admin/coursera/provisioning/page.tsx"
+    ],
+    "integrations": [
+      "Coursera for Business",
+      "xAPI",
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-assessment-certification",
+    "title": "Assessment and certification review",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/assessments",
+      "/admin/certifications"
+    ],
+    "features": [
+      {
+        "label": "Keep assessment answers/results and counselor export.",
+        "sources": [
+          "app/admin/assessments/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep certification proof access and review state separate from a member upload; preserve the read-only audit mode.",
+        "sources": [
+          "app/admin/certifications/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/assessments/page.tsx",
+      "app/admin/certifications/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Supabase private storage"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-screening-packs",
+    "title": "Employer screening packs",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/employer-screening-packs"
+    ],
+    "features": [
+      {
+        "label": "Keep program-bound pack creation, question management and active-pack selection for near-completion members.",
+        "sources": [
+          "app/admin/employer-screening-packs/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep the existing management controls and member screening handoff.",
+        "sources": [
+          "app/admin/employer-screening-packs/EmployerScreeningPacksAdmin.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/employer-screening-packs/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-wioa",
+    "title": "Eligibility screening and review",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/wioa-screening"
+    ],
+    "features": [
+      {
+        "label": "Keep public and member screening populations, review-status filters, evidence and oldest-first queue ordering.",
+        "sources": [
+          "app/admin/wioa-screening/page.tsx"
+        ]
+      },
+      {
+        "label": "Preserve distinctions among self-reported eligibility, staff review and verified training eligibility; link decisions to the member record.",
+        "sources": [
+          "app/admin/wioa-screening/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/wioa-screening/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-billing",
+    "title": "J5/J6 billing and archived documents",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/members/[id]/billing",
+      "/admin/billing/preview"
+    ],
+    "features": [
+      {
+        "label": "Keep separate J5 and J6 draft/preparation stages, readiness blockers, recipient details and version history.",
+        "sources": [
+          "app/admin/members/[id]/billing/TwoStageBillingWorkbench.tsx"
+        ]
+      },
+      {
+        "label": "Keep designated-signer authorization, J6 holds/matches, archive state and server release gates.",
+        "sources": [
+          "app/admin/members/[id]/billing/TwoStageBillingWorkbench.tsx"
+        ]
+      },
+      {
+        "label": "Keep earlier billing documents and the separate mock preview; opening a preview does not create or authorize a case.",
+        "sources": [
+          "app/admin/members/[id]/billing/page.tsx",
+          "app/admin/billing/preview/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/members/[id]/billing/page.tsx",
+      "app/admin/billing/preview/page.tsx",
+      "app/admin/members/[id]/billing/TwoStageBillingWorkbench.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Private document storage",
+      "Email"
+    ],
+    "previewStatus": "structural",
+    "notes": "Billing contract inspected against f8a12f527810ba8c1e08840a762358b0fd86e4f1, including the later J5 wording. Static review does not sign, create or send billing documents."
+  },
+  {
+    "id": "admin-enrollment-agreements",
+    "title": "Enrollment agreement coverage and archive",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/enrollment-agreements",
+      "/admin/enrollment-agreements/archive"
+    ],
+    "features": [
+      {
+        "label": "Keep gated missing-agreement coverage and links to the owning student record.",
+        "sources": [
+          "app/admin/enrollment-agreements/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep private archived agreement revisions and review/download behavior under the existing collection/review gates.",
+        "sources": [
+          "components/enrollment/EnrollmentAgreementArchiveClient.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/enrollment-agreements/page.tsx",
+      "app/admin/enrollment-agreements/archive/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Supabase private storage"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-messages",
+    "title": "Staff conversation oversight",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/messages"
+    ],
+    "features": [
+      {
+        "label": "Keep the super-admin access boundary and original thread ownership.",
+        "sources": [
+          "app/admin/messages/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep unanswered-thread counts, SLA context, thread selection and message history/reply workflows.",
+        "sources": [
+          "app/admin/messages/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/messages/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Email notifications"
+    ],
+    "previewStatus": "mixed",
+    "notes": "Only sample conversation state and local receipts operate in the preview. The production super-admin access rule and notification delivery remain server responsibilities."
+  },
+  {
+    "id": "admin-agent-inbox",
+    "title": "Milestone agent inbox",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/agent-inbox"
+    ],
+    "features": [
+      {
+        "label": "Keep review of proposed milestone cascades with separate approval and dismissal actions.",
+        "sources": [
+          "app/admin/agent-inbox/AgentInboxClient.tsx"
+        ]
+      },
+      {
+        "label": "Keep accepted, failed and unconfirmed dispatch results distinct; preserve the cascade metrics and receipt context.",
+        "sources": [
+          "app/admin/agent-inbox/AgentInboxClient.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/agent-inbox/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Email"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-sessions",
+    "title": "Staff-assisted and walk-in sessions",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/sessions",
+      "/admin/sessions/walk-in",
+      "/admin/sessions/[memberId]/run"
+    ],
+    "features": [
+      {
+        "label": "Keep the selected-member session workspace, résumé upload, member context and saved session output.",
+        "sources": [
+          "components/portal/sessions/SessionRunClient.tsx"
+        ]
+      },
+      {
+        "label": "Keep voice walkthrough plus résumé, cover-letter, interview, gap, job-match, LinkedIn, pitch and salary tools.",
+        "sources": [
+          "components/portal/sessions/SessionRunClient.tsx"
+        ]
+      },
+      {
+        "label": "Keep the email-packet handoff and separate walk-in account-creation journey.",
+        "sources": [
+          "components/portal/sessions/SessionRunClient.tsx",
+          "app/admin/sessions/walk-in/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/sessions/page.tsx",
+      "app/admin/sessions/walk-in/page.tsx",
+      "app/admin/sessions/[memberId]/run/page.tsx",
+      "components/portal/sessions/SessionRunClient.tsx"
+    ],
+    "integrations": [
+      "AI providers",
+      "ElevenLabs voice",
+      "Email",
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-health-diagnostics",
+    "title": "System health and diagnostics",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/health",
+      "/admin/diagnostics"
+    ],
+    "features": [
+      {
+        "label": "Keep subsystem health checks, refresh/error states and separate database, cache, cron, webhook, xAPI, AI, email and push facts.",
+        "sources": [
+          "app/admin/health/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep diagnostics and email failure detail with evidence-backed status rather than synthetic success.",
+        "sources": [
+          "app/admin/diagnostics/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/health/page.tsx",
+      "app/admin/diagnostics/page.tsx"
+    ],
+    "integrations": [
+      "Database",
+      "Redis",
+      "Coursera/xAPI",
+      "AI",
+      "Email",
+      "Web push"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-crons-email",
+    "title": "Scheduled jobs and email operations",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/crons",
+      "/admin/email-crons",
+      "/admin/email-templates"
+    ],
+    "features": [
+      {
+        "label": "Keep cron schedule, freshness, execution history, and existing enable/disable/trigger controls.",
+        "sources": [
+          "app/admin/crons/page.tsx",
+          "app/admin/email-crons/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep template preview, variable editing, save and explicit test-send controls.",
+        "sources": [
+          "components/admin/EmailTemplatesClient.tsx"
+        ]
+      },
+      {
+        "label": "Keep unconfirmed test-send recovery tied to the original request and provider receipt.",
+        "sources": [
+          "components/admin/EmailTemplatesClient.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/crons/page.tsx",
+      "app/admin/email-crons/page.tsx",
+      "app/admin/email-templates/page.tsx"
+    ],
+    "integrations": [
+      "Scheduled application jobs",
+      "Email provider",
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-observability",
+    "title": "Activity, webhooks and CSP reports",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/audit-logs",
+      "/admin/webhook-events",
+      "/admin/csp-report"
+    ],
+    "features": [
+      {
+        "label": "Keep paginated member activity logs separate from security audit records and preserve the super-admin boundary.",
+        "sources": [
+          "app/admin/audit-logs/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep webhook failures, retries and delivery status with their existing access controls.",
+        "sources": [
+          "app/admin/webhook-events/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep persisted CSP violation reporting and retention context.",
+        "sources": [
+          "app/admin/csp-report/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/audit-logs/page.tsx",
+      "app/admin/webhook-events/page.tsx",
+      "app/admin/csp-report/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Webhook providers"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-data-retention",
+    "title": "Data retention controls",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/data-retention"
+    ],
+    "features": [
+      {
+        "label": "Keep per-table retention policies, cutoff/storage information and cleanup controls.",
+        "sources": [
+          "app/admin/data-retention/page.tsx"
+        ]
+      },
+      {
+        "label": "Preserve super-admin authorization and distinguish a preview or policy display from destructive cleanup.",
+        "sources": [
+          "app/admin/data-retention/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/data-retention/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-settings-flags",
+    "title": "Organization settings and feature flags",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/settings",
+      "/admin/feature-flags"
+    ],
+    "features": [
+      {
+        "label": "Keep organization branding/settings edits and their organization-wide change notice.",
+        "sources": [
+          "app/admin/settings/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep feature-flag state and mutation controls, with scope and unknown/loading states intact.",
+        "sources": [
+          "app/admin/feature-flags/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/settings/page.tsx",
+      "app/admin/feature-flags/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-user-lifecycle",
+    "title": "User access and invitations",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/users",
+      "/admin/users/deleted",
+      "/admin/invites",
+      "/admin/invites/new"
+    ],
+    "features": [
+      {
+        "label": "Keep user search/role filters, account creation, email updates, password resets and access controls.",
+        "sources": [
+          "app/admin/users/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep deleted-account handling and existing self/privilege/tenant guards.",
+        "sources": [
+          "app/admin/users/deleted/page.tsx",
+          "components/admin/AdminUsersManager.tsx"
+        ]
+      },
+      {
+        "label": "Keep invitation creation, resend and separately confirmed revoke, with original organization and recipient identity.",
+        "sources": [
+          "app/admin/invites/new/page.tsx",
+          "components/admin/InviteRowActions.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/users/page.tsx",
+      "app/admin/users/deleted/page.tsx",
+      "app/admin/invites/page.tsx",
+      "app/admin/invites/new/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth",
+      "PostgreSQL",
+      "Email"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-blog",
+    "title": "Blog editing and publishing",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/blog",
+      "/admin/blog/[id]/edit",
+      "/admin/blog/ai",
+      "/admin/blog/new",
+      "/admin/blog/preview/[slug]"
+    ],
+    "features": [
+      {
+        "label": "Keep new/edit article content, slug, status and publication controls.",
+        "sources": [
+          "app/admin/blog/BlogPostEditor.tsx"
+        ]
+      },
+      {
+        "label": "Keep AI-assisted drafting and separately navigable article preview.",
+        "sources": [
+          "app/admin/blog/ai/page.tsx",
+          "app/admin/blog/preview/[slug]/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep scheduled publication, AI review and separately confirmed deletion, with validation before save/publish.",
+        "sources": [
+          "app/admin/blog/BlogPostEditor.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/blog/page.tsx",
+      "app/admin/blog/[id]/edit/page.tsx",
+      "app/admin/blog/ai/page.tsx",
+      "app/admin/blog/new/page.tsx",
+      "app/admin/blog/preview/[slug]/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "AI provider"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-feedback-testimonials",
+    "title": "Feedback and success stories",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/feedback",
+      "/admin/testimonials"
+    ],
+    "features": [
+      {
+        "label": "Keep member feedback review with category/status and source-member context.",
+        "sources": [
+          "app/admin/feedback/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep testimonial approval, rejection, publication, reset-to-pending and confirmed soft-delete actions.",
+        "sources": [
+          "components/admin/TestimonialsAdminClient.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/feedback/page.tsx",
+      "app/admin/testimonials/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-public-inquiries",
+    "title": "Public inquiry review",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/public-inquiries"
+    ],
+    "features": [
+      {
+        "label": "Keep contact, sponsorship and career inquiries with their source details and status.",
+        "sources": [
+          "app/admin/public-inquiries/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep organization scoping and the public-lead retention boundary.",
+        "sources": [
+          "app/admin/public-inquiries/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/public-inquiries/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "admin-guidance",
+    "title": "Staff workflow guidance",
+    "portals": [
+      "admin"
+    ],
+    "routePatterns": [
+      "/admin/guide",
+      "/admin/what-workforceap-does"
+    ],
+    "features": [
+      {
+        "label": "Keep the staff guide and its real workflow destinations.",
+        "sources": [
+          "app/admin/guide/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep the explanation of WorkforceAP services and operating responsibilities.",
+        "sources": [
+          "app/admin/what-workforceap-does/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/admin/guide/page.tsx",
+      "app/admin/what-workforceap-does/page.tsx"
+    ],
+    "integrations": [],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "employer-overview",
+    "title": "Employer overview and hiring intent",
+    "portals": [
+      "employer"
+    ],
+    "routePatterns": [
+      "/employer",
+      "/employer/guide"
+    ],
+    "features": [
+      {
+        "label": "Keep organization-scoped hiring totals, jobs, review queues and honest empty states.",
+        "sources": [
+          "app/(portal)/employer/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep hiring-intent controls, guided entry and voice assistance with its service/error states.",
+        "sources": [
+          "app/(portal)/employer/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep linked-employer authentication and the employer workflow guide.",
+        "sources": [
+          "app/(portal)/employer/layout.tsx",
+          "app/(portal)/employer/guide/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/employer/page.tsx",
+      "app/(portal)/employer/guide/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth",
+      "PostgreSQL",
+      "ElevenLabs voice"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "employer-jobs",
+    "title": "Employer job lifecycle",
+    "portals": [
+      "employer"
+    ],
+    "routePatterns": [
+      "/employer/jobs",
+      "/employer/jobs/new",
+      "/employer/jobs/post",
+      "/employer/jobs/import",
+      "/employer/jobs/[id]",
+      "/employer/jobs/[id]/edit"
+    ],
+    "features": [
+      {
+        "label": "Keep job search/status/location filters, pagination and existing quick actions.",
+        "sources": [
+          "app/(portal)/employer/jobs/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep complete create/edit fields, program requirements, readiness feedback and publication-state rules.",
+        "sources": [
+          "components/employer/JobForm.tsx",
+          "app/(portal)/employer/jobs/[id]/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep job import review/provenance and the separate employer posting form.",
+        "sources": [
+          "app/(portal)/employer/jobs/import/ImportJobClient.tsx",
+          "app/(portal)/employer/jobs/post/page.tsx"
+        ]
+      },
+      {
+        "label": "Restrict every edit and applicant view to the linked employer and selected job.",
+        "sources": [
+          "app/(portal)/employer/jobs/[id]/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/employer/jobs/page.tsx",
+      "app/(portal)/employer/jobs/new/page.tsx",
+      "app/(portal)/employer/jobs/post/page.tsx",
+      "app/(portal)/employer/jobs/import/page.tsx",
+      "app/(portal)/employer/jobs/[id]/page.tsx",
+      "app/(portal)/employer/jobs/[id]/edit/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Job import service"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview can save/edit a synthetic job draft, but does not implement all posting fields, moderation, import or publication actions."
+  },
+  {
+    "id": "employer-applicants",
+    "title": "Applications, interviews and candidate records",
+    "portals": [
+      "employer"
+    ],
+    "routePatterns": [
+      "/employer/applications",
+      "/employer/applications/[id]",
+      "/employer/jobs/[id]/applicants",
+      "/employer/candidates/[studentId]"
+    ],
+    "features": [
+      {
+        "label": "Keep filtered/paginated application and job-applicant lists attached to the correct role and employer.",
+        "sources": [
+          "app/(portal)/employer/applications/page.tsx",
+          "app/(portal)/employer/jobs/[id]/applicants/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep allowed application-status transitions and interview date/time/location/notes with failure recovery.",
+        "sources": [
+          "components/employer/ApplicationStatusUpdater.tsx",
+          "components/employer/InterviewDetailsForm.tsx"
+        ]
+      },
+      {
+        "label": "Keep the submitted résumé snapshot, applicant details, employer notes, message history and authorized candidate evidence.",
+        "sources": [
+          "app/(portal)/employer/applications/[id]/page.tsx",
+          "app/(portal)/employer/candidates/[studentId]/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/employer/applications/page.tsx",
+      "app/(portal)/employer/applications/[id]/page.tsx",
+      "app/(portal)/employer/jobs/[id]/applicants/page.tsx",
+      "app/(portal)/employer/candidates/[studentId]/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Private résumé storage",
+      "Email notifications"
+    ],
+    "previewStatus": "structural",
+    "notes": "Sample list/detail navigation works; application transitions, interview scheduling and résumé downloads are existing app features outside the current static simulation."
+  },
+  {
+    "id": "employer-matching",
+    "title": "Candidate matches and work queue",
+    "portals": [
+      "employer"
+    ],
+    "routePatterns": [
+      "/employer/pipeline",
+      "/employer/matches",
+      "/employer/work-queue"
+    ],
+    "features": [
+      {
+        "label": "Keep match score/reasons and the matched-candidate Kanban/status controls with optimistic rollback on failure.",
+        "sources": [
+          "components/employer/EmployerKanban.tsx"
+        ]
+      },
+      {
+        "label": "Keep matching history and source job/member links.",
+        "sources": [
+          "app/(portal)/employer/matches/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep actionable job/application work-queue slices and the workflow event timeline.",
+        "sources": [
+          "components/employer/EmployerWorkQueueClient.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/employer/pipeline/page.tsx",
+      "app/(portal)/employer/matches/page.tsx",
+      "app/(portal)/employer/work-queue/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "AI match records"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "employer-messaging",
+    "title": "Employer conversations",
+    "portals": [
+      "employer"
+    ],
+    "routePatterns": [
+      "/employer/messages"
+    ],
+    "features": [
+      {
+        "label": "Keep employer-scoped inbox/thread selection, candidate/job context and history.",
+        "sources": [
+          "app/(portal)/employer/messages/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep message drafts, submit/error recovery and notification behavior attached to the correct recipient.",
+        "sources": [
+          "app/(portal)/employer/messages/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/employer/messages/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Email notifications"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "employer-settings-billing",
+    "title": "Employer profile and subscription",
+    "portals": [
+      "employer"
+    ],
+    "routePatterns": [
+      "/employer/settings",
+      "/employer/billing"
+    ],
+    "features": [
+      {
+        "label": "Keep company/contact fields and logo upload with validation and save-error feedback.",
+        "sources": [
+          "components/employer/EmployerSettingsForm.tsx"
+        ]
+      },
+      {
+        "label": "Keep the current subscription/tier information and authorized checkout flow.",
+        "sources": [
+          "app/(portal)/employer/billing/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/employer/settings/page.tsx",
+      "app/(portal)/employer/billing/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Private/public logo storage",
+      "Stripe Checkout"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "employer-commitments-outcomes",
+    "title": "Hiring commitments and employer outcomes",
+    "portals": [
+      "employer"
+    ],
+    "routePatterns": [
+      "/employer/loi",
+      "/employer/outcomes",
+      "/employer/thank-you"
+    ],
+    "features": [
+      {
+        "label": "Keep letter-of-intent submission and its own completion destination.",
+        "sources": [
+          "components/employer/EmployerLoiForm.tsx",
+          "app/employer/thank-you/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep employer outcome data, stage labels and organization scope.",
+        "sources": [
+          "components/employer/EmployerOutcomesDashboard.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/employer/loi/page.tsx",
+      "app/employer/outcomes/page.tsx",
+      "app/employer/thank-you/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "partner-overview",
+    "title": "Partner overview, referrals and payouts",
+    "portals": [
+      "partner"
+    ],
+    "routePatterns": [
+      "/partner"
+    ],
+    "features": [
+      {
+        "label": "Keep referral link/share tools, member funnel, attention counts and scoped member/progress summaries.",
+        "sources": [
+          "app/(portal)/partner/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep pending-approval states, voice assistance and eligible-partner Stripe connection/payout ledger.",
+        "sources": [
+          "app/(portal)/partner/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep partner-type data tiers and minor/FERPA visibility rules in both counts and detail projections.",
+        "sources": [
+          "lib/partner/dataAccess.ts"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/partner/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth",
+      "PostgreSQL",
+      "Stripe Connect",
+      "ElevenLabs voice"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "partner-members",
+    "title": "Referred member records",
+    "portals": [
+      "partner"
+    ],
+    "routePatterns": [
+      "/partner/referred-members",
+      "/partner/referred-members/[memberId]",
+      "/partner/members",
+      "/partner/members/[id]"
+    ],
+    "features": [
+      {
+        "label": "Keep member search/filter, invitations, mobile list and canonical legacy redirects.",
+        "sources": [
+          "app/(portal)/partner/referred-members/page.tsx",
+          "app/(portal)/partner/members/[id]/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep the member journey, curriculum-aware training/skillset progress, contextual conversation and verified-placement detail.",
+        "sources": [
+          "app/(portal)/partner/referred-members/[memberId]/page.tsx"
+        ]
+      },
+      {
+        "label": "Preserve referral ownership, tier-specific field visibility and minor/FERPA consent filtering.",
+        "sources": [
+          "lib/partner/dataAccess.ts"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/partner/referred-members/page.tsx",
+      "app/(portal)/partner/referred-members/[memberId]/page.tsx",
+      "app/(portal)/partner/members/page.tsx",
+      "app/(portal)/partner/members/[id]/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Coursera progress",
+      "Email"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "partner-attention",
+    "title": "Partner attention and outreach",
+    "portals": [
+      "partner"
+    ],
+    "routePatterns": [
+      "/partner/attention"
+    ],
+    "features": [
+      {
+        "label": "Keep priority filters, pagination, member search and attention/error/empty states.",
+        "sources": [
+          "components/partner/PartnerAttentionClient.tsx"
+        ]
+      },
+      {
+        "label": "Keep outreach logging by channel, recent outreach history and referral assignee changes.",
+        "sources": [
+          "components/partner/PartnerAttentionClient.tsx"
+        ]
+      },
+      {
+        "label": "Keep the partner workflow timeline and partner-scoped accessible records.",
+        "sources": [
+          "app/(portal)/partner/attention/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/partner/attention/page.tsx",
+      "components/partner/PartnerAttentionClient.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "partner-results",
+    "title": "Partner milestones, outcomes and exports",
+    "portals": [
+      "partner"
+    ],
+    "routePatterns": [
+      "/partner/milestones",
+      "/partner/outcomes",
+      "/partner/exports"
+    ],
+    "features": [
+      {
+        "label": "Keep milestone feed/filtering with verified and pending placement states distinguished.",
+        "sources": [
+          "app/(portal)/partner/milestones/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep outcome KPIs, pending review and the real outcome populations.",
+        "sources": [
+          "app/(portal)/partner/outcomes/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep referral, outcomes, demographics and outcome-packet exports, including recorded unknowns and the original data tier/consent rules.",
+        "sources": [
+          "app/(portal)/partner/exports/page.tsx",
+          "lib/partner/dataAccess.ts"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/partner/milestones/page.tsx",
+      "app/(portal)/partner/outcomes/page.tsx",
+      "app/(portal)/partner/exports/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "partner-messages",
+    "title": "Partner team conversations",
+    "portals": [
+      "partner"
+    ],
+    "routePatterns": [
+      "/partner/messages"
+    ],
+    "features": [
+      {
+        "label": "Keep thread history and contextual member conversations with WorkforceAP.",
+        "sources": [
+          "app/(portal)/partner/messages/page.tsx"
+        ]
+      },
+      {
+        "label": "Preserve linked partner identity and member-sharing restrictions for reads and messages.",
+        "sources": [
+          "app/(portal)/partner/messages/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/partner/messages/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Email notifications"
+    ],
+    "previewStatus": "mixed",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "partner-settings",
+    "title": "Partner contact and notifications",
+    "portals": [
+      "partner"
+    ],
+    "routePatterns": [
+      "/partner/settings"
+    ],
+    "features": [
+      {
+        "label": "Keep organization/referral information, editable primary contact and notification preferences.",
+        "sources": [
+          "app/(portal)/partner/settings/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep enrollment, course, certification and placement preferences separate from the underlying member events.",
+        "sources": [
+          "app/(portal)/partner/settings/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/partner/settings/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Email preferences"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "partner-resources-entry",
+    "title": "Partner referral toolkit and entry",
+    "portals": [
+      "partner"
+    ],
+    "routePatterns": [
+      "/partner/guide",
+      "/partner/resources",
+      "/partner/signup"
+    ],
+    "features": [
+      {
+        "label": "Keep referral-link sharing, partner toolkit and member-support resources.",
+        "sources": [
+          "app/(portal)/partner/guide/page.tsx",
+          "app/(portal)/partner/resources/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep the existing partner signup handoff/redirect and partner portal access rules.",
+        "sources": [
+          "app/(portal)/partner/signup/page.tsx",
+          "app/(portal)/partner/layout.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/partner/guide/page.tsx",
+      "app/(portal)/partner/resources/page.tsx",
+      "app/(portal)/partner/signup/page.tsx"
+    ],
+    "integrations": [],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "shared-canonical-handoffs",
+    "title": "Shared account and resource handoffs",
+    "portals": [
+      "shared"
+    ],
+    "routePatterns": [
+      "/account",
+      "/applications",
+      "/certifications",
+      "/help",
+      "/profile",
+      "/resources",
+      "/resources/[id]"
+    ],
+    "features": [
+      {
+        "label": "Keep canonical destinations for existing shared URLs, including locale-prefixed fallback pages.",
+        "sources": [
+          "app/(portal)/account/page.tsx",
+          "app/(portal)/resources/page.tsx"
+        ]
+      },
+      {
+        "label": "Preserve the selected resource identifier and destination rather than introducing a disconnected duplicate screen.",
+        "sources": [
+          "app/(portal)/resources/[id]/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/account/page.tsx",
+      "app/(portal)/applications/page.tsx",
+      "app/(portal)/certifications/page.tsx",
+      "app/(portal)/help/page.tsx",
+      "app/(portal)/profile/page.tsx",
+      "app/(portal)/resources/page.tsx",
+      "app/(portal)/resources/[id]/page.tsx"
+    ],
+    "integrations": [],
+    "previewStatus": "structural",
+    "notes": "These inventory entries are redirects or role routers. Their contract is destination preservation, not an additional product workspace."
+  },
+  {
+    "id": "shared-privacy",
+    "title": "Personal data and privacy",
+    "portals": [
+      "shared"
+    ],
+    "routePatterns": [
+      "/account/privacy"
+    ],
+    "features": [
+      {
+        "label": "Keep personal data export and current communication-consent controls, including rollback when saving consent fails.",
+        "sources": [
+          "app/(portal)/account/privacy/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep account deletion confirmation and server reauthentication; a design sample must never trigger deletion.",
+        "sources": [
+          "app/(portal)/account/privacy/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/account/privacy/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth",
+      "PostgreSQL",
+      "Private file storage"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "shared-chapter-leader",
+    "title": "Chapter leader dashboard",
+    "portals": [
+      "shared"
+    ],
+    "routePatterns": [
+      "/leader/dashboard"
+    ],
+    "features": [
+      {
+        "label": "Keep authorized chapter summary and member roster with training/status context.",
+        "sources": [
+          "app/(portal)/leader/dashboard/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep chapter meetings and curriculum sections, and unavailable/empty handling from the leader-chapters API.",
+        "sources": [
+          "app/(portal)/leader/dashboard/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/leader/dashboard/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "shared-coach",
+    "title": "Shared coach conversation",
+    "portals": [
+      "shared"
+    ],
+    "routePatterns": [
+      "/coach"
+    ],
+    "features": [
+      {
+        "label": "Keep the shared coaching conversation and its established access boundary.",
+        "sources": [
+          "app/(portal)/coach/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep coach chat interaction and source conversation context.",
+        "sources": [
+          "components/portal/CoachChat.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(portal)/coach/page.tsx"
+    ],
+    "integrations": [
+      "AI coach",
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "entry-authentication",
+    "title": "Sign-in, recovery and MFA",
+    "portals": [
+      "entry"
+    ],
+    "routePatterns": [
+      "/login",
+      "/forgot-password",
+      "/reset-password",
+      "/setup-mfa",
+      "/verify-mfa"
+    ],
+    "features": [
+      {
+        "label": "Keep role-aware safe return destinations, session-expiry feedback, password visibility and connection-failure recovery.",
+        "sources": [
+          "app/(auth)/login/LoginForm.tsx"
+        ]
+      },
+      {
+        "label": "Keep password-recovery request and password-reset stages.",
+        "sources": [
+          "app/(auth)/forgot-password/page.tsx",
+          "app/(auth)/reset-password/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep staff MFA enrollment and verification, challenge validation and safe redirect behavior.",
+        "sources": [
+          "app/(auth)/setup-mfa/page.tsx",
+          "app/(auth)/verify-mfa/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(auth)/login/page.tsx",
+      "app/(auth)/forgot-password/page.tsx",
+      "app/(auth)/reset-password/page.tsx",
+      "app/(auth)/setup-mfa/page.tsx",
+      "app/(auth)/verify-mfa/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth",
+      "Email"
+    ],
+    "previewStatus": "mixed",
+    "notes": "Only sample sign-in/navigation is simulated. No account authentication, password reset, MFA challenge or email is performed."
+  },
+  {
+    "id": "entry-member-application",
+    "title": "Member signup and application",
+    "portals": [
+      "entry"
+    ],
+    "routePatterns": [
+      "/signup",
+      "/apply",
+      "/apply/create-account",
+      "/apply/results",
+      "/apply/confirmation"
+    ],
+    "features": [
+      {
+        "label": "Keep application steps, program/eligibility context and account creation with existing validation.",
+        "sources": [
+          "app/apply/page.tsx",
+          "app/apply/create-account/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep referral disclosure, sponsor/partner attribution, communication consent and anti-bot controls.",
+        "sources": [
+          "app/(auth)/signup/SignupForm.tsx"
+        ]
+      },
+      {
+        "label": "Keep result/recommendation handoff and confirmation receipt/retry separate from provider delivery.",
+        "sources": [
+          "app/apply/results/page.tsx",
+          "app/apply/confirmation/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/(auth)/signup/page.tsx",
+      "app/apply/page.tsx",
+      "app/apply/create-account/page.tsx",
+      "app/apply/results/page.tsx",
+      "app/apply/confirmation/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth",
+      "PostgreSQL",
+      "Cloudflare Turnstile",
+      "Email"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "entry-application-status",
+    "title": "Application-status recovery",
+    "portals": [
+      "entry"
+    ],
+    "routePatterns": [
+      "/apply/status",
+      "/apply/status/view"
+    ],
+    "features": [
+      {
+        "label": "Keep signed status-link request and the signed-in dashboard redirect.",
+        "sources": [
+          "app/apply/status/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep bound application lookup, token verification and expired/tampered/stale-link recovery without leaking a token.",
+        "sources": [
+          "app/apply/status/view/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/apply/status/page.tsx",
+      "app/apply/status/view/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Email"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "entry-tokenized-forms",
+    "title": "Guardian consent and eligibility links",
+    "portals": [
+      "entry"
+    ],
+    "routePatterns": [
+      "/consent/[token]",
+      "/q/[token]"
+    ],
+    "features": [
+      {
+        "label": "Keep one-use, expiring guardian-consent links and reason-specific invalid/used/expired states.",
+        "sources": [
+          "app/consent/[token]/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep eligibility questionnaire prefill bound to the token subject and its own submission contract.",
+        "sources": [
+          "app/q/[token]/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/consent/[token]/page.tsx",
+      "app/q/[token]/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "entry-invitations-sponsored",
+    "title": "Invitations and sponsored enrollment",
+    "portals": [
+      "entry"
+    ],
+    "routePatterns": [
+      "/invite",
+      "/join/[code]",
+      "/enroll/[school]"
+    ],
+    "features": [
+      {
+        "label": "Keep invitation validation/acceptance through either token or email-plus-code with identity binding.",
+        "sources": [
+          "app/invite/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep partner-specific referral disclosure and attribution on join links.",
+        "sources": [
+          "app/join/[code]/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep configured school enrollment and unknown-school recovery without fabricating sponsorship.",
+        "sources": [
+          "app/enroll/[school]/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/invite/page.tsx",
+      "app/join/[code]/page.tsx",
+      "app/enroll/[school]/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth",
+      "PostgreSQL",
+      "Email"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "entry-organization-mentor",
+    "title": "Employer, partner and mentor onboarding",
+    "portals": [
+      "entry"
+    ],
+    "routePatterns": [
+      "/employers/signup",
+      "/partner-signup",
+      "/org/onboard",
+      "/mentor/apply"
+    ],
+    "features": [
+      {
+        "label": "Keep employer signup fields, validation, password visibility and anti-bot/approval flow.",
+        "sources": [
+          "app/employers/signup/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep partner and organization onboarding handoffs.",
+        "sources": [
+          "app/partner-signup/page.tsx",
+          "app/org/onboard/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep mentor application submission and subsequent review boundary.",
+        "sources": [
+          "app/mentor/apply/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/employers/signup/page.tsx",
+      "app/partner-signup/page.tsx",
+      "app/org/onboard/page.tsx",
+      "app/mentor/apply/page.tsx"
+    ],
+    "integrations": [
+      "Supabase Auth",
+      "PostgreSQL",
+      "Cloudflare Turnstile",
+      "Email"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "entry-placement-survey",
+    "title": "Placement follow-up survey",
+    "portals": [
+      "entry"
+    ],
+    "routePatterns": [
+      "/placement-survey",
+      "/survey/placement/[token]"
+    ],
+    "features": [
+      {
+        "label": "Keep token-bound placement follow-up, response validation and invalid/expired/already-completed feedback.",
+        "sources": [
+          "app/placement-survey/page.tsx"
+        ]
+      },
+      {
+        "label": "Preserve a reported survey response as its own evidence instead of automatically asserting a verified placement.",
+        "sources": [
+          "app/placement-survey/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/placement-survey/page.tsx",
+      "app/survey/placement/[token]/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "entry-public-outcomes",
+    "title": "Public organization outcomes and achievements",
+    "portals": [
+      "entry"
+    ],
+    "routePatterns": [
+      "/org/[slug]/outcomes",
+      "/share/achievement"
+    ],
+    "features": [
+      {
+        "label": "Keep organization lookup and quarter/year outcome selection with the published aggregate scope.",
+        "sources": [
+          "app/org/[slug]/outcomes/page.tsx"
+        ]
+      },
+      {
+        "label": "Keep validated achievement-sharing parameters and the original dynamic-card privacy choices.",
+        "sources": [
+          "app/share/achievement/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/org/[slug]/outcomes/page.tsx",
+      "app/share/achievement/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL",
+      "Dynamic share-card rendering"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "entry-wioa",
+    "title": "Public WIOA qualification",
+    "portals": [
+      "entry"
+    ],
+    "routePatterns": [
+      "/wioa-qualification"
+    ],
+    "features": [
+      {
+        "label": "Keep qualification questions, progress, result explanation and existing next-step handoff.",
+        "sources": [
+          "app/wioa-qualification/page.tsx"
+        ]
+      },
+      {
+        "label": "Preserve self-reported screening as a preliminary result rather than a staff eligibility decision.",
+        "sources": [
+          "app/wioa-qualification/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/wioa-qualification/page.tsx"
+    ],
+    "integrations": [
+      "PostgreSQL"
+    ],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  },
+  {
+    "id": "entry-pwa",
+    "title": "Installed application launch",
+    "portals": [
+      "entry"
+    ],
+    "routePatterns": [
+      "/pwa-start"
+    ],
+    "features": [
+      {
+        "label": "Keep the installed-app launch route and authenticated destination selection.",
+        "sources": [
+          "app/pwa-start/page.tsx"
+        ]
+      }
+    ],
+    "sources": [
+      "app/pwa-start/page.tsx"
+    ],
+    "integrations": [],
+    "previewStatus": "structural",
+    "notes": "The preview shows synthetic navigation and layout. The source implementation remains the acceptance contract for actions, data and permissions."
+  }
+]
