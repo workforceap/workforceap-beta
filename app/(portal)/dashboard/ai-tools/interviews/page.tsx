@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({ title: t('title'), description: t('description'), path: '/dashboard/ai-tools/interviews' });
 }
 
-export default async function InterviewsPage({ searchParams }: { searchParams?: Promise<{ role?: string }> } = {}) {
+export default async function InterviewsPage({ searchParams }: { searchParams?: Promise<{ role?: string }> }) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/ai-tools/interviews');
   const params = await searchParams;

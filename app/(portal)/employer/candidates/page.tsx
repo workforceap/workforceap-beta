@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Each existing view authorizes its employer context before reading company records. */
 export default async function EmployerCandidatesPage({
   searchParams,
-}: { searchParams?: Promise<EmployerCandidateParams> } = {}) {
+}: { searchParams?: Promise<EmployerCandidateParams> }) {
   const params = (await searchParams) ?? {};
   const view = parseEmployerCandidateView(params.view);
   const props = { searchParams: Promise.resolve(params), loginHref: employerCandidatesHref(view, params) };

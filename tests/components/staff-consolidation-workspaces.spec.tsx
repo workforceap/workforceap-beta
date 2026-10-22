@@ -106,7 +106,7 @@ describe('Counselor Today workspace', () => {
     await expect(CounselorTodayPage({ searchParams: Promise.resolve({ view: 'decisions' }) })).rejects.toThrow('redirect:/dashboard');
     expect(mocks.views).not.toHaveBeenCalled(); expect(mocks.approvals).not.toHaveBeenCalled();
     mocks.user = null;
-    await expect(CounselorTodayPage()).rejects.toThrow('redirect:/login?redirectTo=/counselor/today');
+    await expect(CounselorTodayPage({})).rejects.toThrow('redirect:/login?redirectTo=/counselor/today');
   });
 
   it('renders a decision failure as a retryable error, with the other work views still reachable', async () => {

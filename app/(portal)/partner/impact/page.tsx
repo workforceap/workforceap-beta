@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Load only the selected view; its existing partner/consent/disclosure rules remain authoritative. */
 export default async function PartnerImpactPage({
   searchParams,
-}: { searchParams?: Promise<PartnerImpactParams> } = {}) {
+}: { searchParams?: Promise<PartnerImpactParams> }) {
   const params = (await searchParams) ?? {};
   const view = parsePartnerImpactView(params.view);
   const props = { searchParams: Promise.resolve(params), loginHref: partnerImpactHref(view, params) };

@@ -124,18 +124,32 @@ test('member mobile top nav prefers Profile over a duplicate AI Advisor tab', ()
   assert.doesNotMatch(topNav, /canonical: '\/dashboard\/counselor'/);
 });
 
-test('member mobile top nav surfaces AI Career Tools before Jobs and Training progress', () => {
+test('member mobile top nav keeps five daily destinations and every secondary shortcut', () => {
   const topNav = source('components/portal/MemberPortalTopNav.tsx');
-  const jobs = topNav.indexOf("canonical: '/dashboard/jobs'");
-  const progress = topNav.indexOf("canonical: '/dashboard/readiness'");
-  const messages = topNav.indexOf("canonical: '/dashboard/messages'");
-  const toolkit = topNav.indexOf("canonical: '/dashboard/ai-tools'");
-  const profile = topNav.indexOf("canonical: '/dashboard/profile'");
+  const tabsBlock = topNav.match(/const tabs = \[([\s\S]*?)\]\.filter/);
+  assert.ok(tabsBlock, 'Member destination definitions are missing');
+  const tabs = [...tabsBlock[1].matchAll(/\{ canonical: '([^']+)'([^\n]*)\}/g)].map((match) => ({
+    href: match[1],
+    primary: /\bprimary:\s*true\b/.test(match[2]),
+  }));
 
-  assert.ok(jobs >= 0, 'Job board tab is missing');
-  assert.ok(progress >= 0, 'Training progress tab is missing');
-  assert.ok(toolkit >= 0, 'AI Career Tools tab is missing');
-  assert.ok(toolkit < jobs && jobs < progress && progress < messages && messages < profile);
+  assert.deepEqual(tabs.filter((tab) => tab.primary).map((tab) => tab.href), [
+    '/dashboard',
+    '/dashboard/program',
+    '/dashboard/jobs',
+    '/dashboard/ai-tools',
+    '/dashboard/messages',
+  ]);
+  assert.deepEqual(tabs.filter((tab) => !tab.primary).map((tab) => tab.href), [
+    '/dashboard/assessment',
+    '/dashboard/readiness',
+    '/dashboard/missions',
+    '/dashboard/job-applications',
+    '/dashboard/resume',
+    '/dashboard/learning',
+    '/dashboard/certifications',
+    '/dashboard/profile',
+  ]);
 });
 
 test('localized signup opens root legal documents without Next prefetch requests', () => {

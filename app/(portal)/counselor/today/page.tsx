@@ -26,7 +26,7 @@ export const dynamic = 'force-dynamic';
  * decision failures cannot blank the attention list, or vice versa. */
 export default async function CounselorTodayPage({ searchParams }: {
   searchParams?: Promise<CounselorWorkspaceParams>;
-} = {}) {
+}) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/counselor/today');
   const counselor = await isCounselor(user.id);

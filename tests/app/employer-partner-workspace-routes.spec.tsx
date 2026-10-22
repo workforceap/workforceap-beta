@@ -81,7 +81,7 @@ describe('Candidates server views', () => {
 
   it('keeps all three previous list URLs as the corresponding named view', async () => {
     for (const [page, name] of [[EmployerApplicationsPage, 'Applicants'], [EmployerMatchesPage, 'Matches'], [EmployerPipelinePage, 'Pipeline']] as const) {
-      const { unmount } = render(await page());
+      const { unmount } = render(await page({}));
       const nav = within(screen.getByRole('navigation', { name: 'Candidate views' }));
       expect(nav.getByRole('link', { name })).toHaveAttribute('aria-current', 'page');
       unmount();
@@ -132,7 +132,7 @@ describe('Impact server views', () => {
 
   it('keeps previous Impact URLs as their corresponding view', async () => {
     for (const [page, name] of [[PartnerOutcomesPage, 'Outcomes'], [PartnerMilestonesPage, 'Milestones'], [PartnerExportsPage, 'Exports']] as const) {
-      const { unmount } = render(await page());
+      const { unmount } = render(await page({}));
       const nav = within(screen.getByRole('navigation', { name: 'Impact views' }));
       expect(nav.getByRole('link', { name })).toHaveAttribute('aria-current', 'page');
       unmount();

@@ -4,7 +4,7 @@ import { resumeWorkspaceHref, resumeWorkspaceView } from '@/lib/member/memberWor
 /** Preserve Studio deep links and their context in the unified Resume workspace. */
 export default async function ResumeStudioPage({ searchParams }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
-} = {}) {
+}) {
   const incoming = await searchParams ?? {};
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(incoming)) {

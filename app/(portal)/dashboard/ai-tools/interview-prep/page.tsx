@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 };
 
-export default async function InterviewPrepBundlePage({ searchParams }: { searchParams?: Promise<{ role?: string }> } = {}) {
+export default async function InterviewPrepBundlePage({ searchParams }: { searchParams?: Promise<{ role?: string }> }) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/ai-tools/interview-prep');
 

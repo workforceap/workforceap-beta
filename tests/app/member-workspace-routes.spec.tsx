@@ -59,7 +59,7 @@ describe('member workspace route context', () => {
     await expect(page({ searchParams: Promise.resolve({ regenerateFrom: 'saved-old', role: 'Support', tag: ['a', 'b'] }) })).rejects.toThrow(`redirect:/dashboard/resume?regenerateFrom=saved-old&role=Support&tag=a&tag=b&view=${view}`);
   });
   it('preserves the legacy Studio default and a selected coach view', async () => {
-    await expect(StudioRedirect()).rejects.toThrow('redirect:/dashboard/resume?view=score');
+    await expect(StudioRedirect({})).rejects.toThrow('redirect:/dashboard/resume?view=score');
     await expect(StudioRedirect({ searchParams: Promise.resolve({ view: 'coach', source: 'history' }) })).rejects.toThrow('redirect:/dashboard/resume?view=coach&source=history');
   });
 });

@@ -16,6 +16,6 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Existing deep link; the same authorized server view also powers the workspace. */
 export default async function PartnerMilestonesPage({
   searchParams,
-}: { searchParams?: Promise<PartnerImpactParams> } = {}) {
+}: { searchParams?: Promise<PartnerImpactParams> }) {
   return PartnerMilestonesView({ searchParams });
 }

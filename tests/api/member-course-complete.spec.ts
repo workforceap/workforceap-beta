@@ -200,7 +200,7 @@ describe('Learning Hub completion identity contract', () => {
       courseraCourseProgress: [],
     });
     mocks.getCourses.mockReturnValue(courses);
-    const page = await LearningPage();
+    const page = await LearningPage({});
     const lists: ReactElement<ComponentProps<typeof LearningHubEnrolledCourses>>[] = [];
     const collectCourseLists = (node: ReactNode) => {
       Children.forEach(node, (child) => {

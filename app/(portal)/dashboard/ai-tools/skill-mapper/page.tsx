@@ -40,7 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function SkillMapperPage({ searchParams }: {
   searchParams?: Promise<{ result?: string | string[]; code?: string | string[]; title?: string | string[] }>;
-} = {}) {
+}) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/ai-tools/skill-mapper');
   const params = await searchParams;

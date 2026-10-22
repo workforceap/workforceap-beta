@@ -44,7 +44,7 @@ const MODULE_ICONS: Record<string, string> = {
   Business: 'business_center',
 };
 
-export default async function LearningPage({ searchParams }: { searchParams?: Promise<{ program?: string }> } = {}) {
+export default async function LearningPage({ searchParams }: { searchParams?: Promise<{ program?: string }> }) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/learning');
 

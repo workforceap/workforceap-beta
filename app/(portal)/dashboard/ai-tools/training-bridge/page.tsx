@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function TrainingBridgePage({ searchParams }: {
   searchParams?: Promise<{ result?: string | string[] }>;
-} = {}) {
+}) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/ai-tools/training-bridge');
   const t = await getTranslations('trainingBridge');
