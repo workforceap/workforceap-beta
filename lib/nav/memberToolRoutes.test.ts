@@ -48,7 +48,6 @@ test('the hub route itself shows zero tool rows', () => {
 
 test('only one tool row is ever produced, on every tool route', () => {
   const slugs = [
-    'resume-studio',
     'cover-letter',
     'interview-practice',
     'interview-coach',
@@ -64,7 +63,6 @@ test('only one tool row is ever produced, on every tool route', () => {
     'elevator-pitch',
     'career-business-coach',
     'readiness-coach',
-    'resume-rewriter',
     'voice-interview',
   ];
   for (const slug of slugs) {
@@ -80,6 +78,9 @@ test('routes a permanent rail entry already claims grow no duplicate row', () =>
   // Job applications owns the application tracker; the hub owns /studio.
   assert.equal(memberContextualToolItem('/dashboard/ai-tools/application-tracker', claimed), null);
   assert.equal(memberContextualToolItem('/dashboard/ai-tools/studio', claimed), null);
+  for (const slug of ['resume-studio', 'resume-analysis', 'resume-rewriter', 'resume-coach']) {
+    assert.equal(memberContextualToolItem(`/dashboard/ai-tools/${slug}`, claimed), null, `${slug} belongs to Resume`);
+  }
   // The AI Advisor lives outside /dashboard/ai-tools and keeps its own row.
   assert.equal(memberContextualToolItem('/dashboard/counselor', claimed), null);
 });
@@ -103,14 +104,14 @@ test('the WAP-189 five-row primary ordering survives the contextual row', () => 
     '/dashboard/ai-tools',
     '/dashboard/messages',
   ]);
-  const { items } = withContextualToolRow(MEMBER_PORTAL_NAV_ITEMS, '/dashboard/ai-tools/resume-studio');
+  const { items } = withContextualToolRow(MEMBER_PORTAL_NAV_ITEMS, '/dashboard/ai-tools/skill-mapper');
   const withTool = primaryOrder(items);
   // Same order, with the single tool row inserted directly after the hub.
   assert.deepEqual(
-    withTool.filter((href) => href !== '/dashboard/ai-tools/resume-studio'),
+    withTool.filter((href) => href !== '/dashboard/ai-tools/skill-mapper'),
     baseline,
   );
-  assert.equal(withTool.indexOf('/dashboard/ai-tools/resume-studio'), withTool.indexOf('/dashboard/ai-tools') + 1);
+  assert.equal(withTool.indexOf('/dashboard/ai-tools/skill-mapper'), withTool.indexOf('/dashboard/ai-tools') + 1);
   // The source array is never mutated.
   assert.deepEqual(primaryOrder(MEMBER_PORTAL_NAV_ITEMS), baseline);
 });

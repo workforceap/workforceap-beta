@@ -20,15 +20,16 @@ import MobileBottomNav from '@/components/MobileBottomNav';
 afterEach(cleanup);
 
 describe('partner mobile bottom nav', () => {
-  it('shows Overview, Members, Attention, Messages and Milestones, with Attention opening the queue', () => {
+  it('keeps Attention and opens reporting through the Impact workspace', () => {
     render(
       <NextIntlClientProvider locale="en" messages={en}>
         <MobileBottomNav variant="partner" />
       </NextIntlClientProvider>,
     );
     const links = within(screen.getByRole('navigation')).getAllByRole('link');
-    expect(links.map((a) => a.textContent)).toEqual(['Overview', 'Members', 'Attention', 'Messages', 'Milestones']);
+    expect(links.map((a) => a.textContent)).toEqual(['Overview', 'Members', 'Attention', 'Messages', 'Impact']);
     expect(screen.getByRole('link', { name: 'Attention' }).getAttribute('href')).toMatch(/\/partner\/attention$/);
+    expect(screen.getByRole('link', { name: 'Impact' }).getAttribute('href')).toMatch(/\/partner\/impact$/);
   });
 
   it.each([

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import {
   ADMIN_PORTAL_NAV_ITEMS,
   COUNSELOR_PORTAL_NAV_ITEMS,
+  EMPLOYER_PORTAL_NAV_ITEMS,
   GROUP_ORDER,
   NAV_GROUP_ALWAYS_OPEN,
   NAV_GROUP_COLLAPSED_BY_DEFAULT,
@@ -312,4 +313,22 @@ test('counselor Messages and Today carry their badge keys', () => {
 test('partner attention badge sits on the Attention queue, not Referred members', () => {
   const badged = PARTNER_PORTAL_NAV_ITEMS.filter((entry) => entry.badgeKey === 'partner_needs_attention');
   assert.deepEqual(badged.map((entry) => entry.href), ['/partner/attention']);
+});
+
+test('consolidated destinations own their legacy routes while daily queues keep distinct badges', () => {
+  for (const [items, destination, legacyPaths] of [
+    [MEMBER_PORTAL_NAV_ITEMS, '/dashboard/resume', ['/dashboard/ai-tools/resume-studio', '/dashboard/ai-tools/resume-rewriter', '/dashboard/ai-tools/resume-coach']],
+    [COUNSELOR_PORTAL_NAV_ITEMS, '/counselor/today', ['/counselor/queue', '/counselor/triage', '/counselor/inbox', '/counselor/at-risk', '/counselor/inactive-members']],
+    [EMPLOYER_PORTAL_NAV_ITEMS, '/employer/candidates', ['/employer/applications', '/employer/matches', '/employer/pipeline', '/employer/candidates/person-1']],
+    [PARTNER_PORTAL_NAV_ITEMS, '/partner/impact', ['/partner/outcomes', '/partner/milestones', '/partner/exports']],
+  ] as const) {
+    for (const legacy of legacyPaths) assert.equal(getBestActiveHref(legacy, navItemsForActiveRoute([...items])), destination, legacy);
+  }
+  assert.equal(EMPLOYER_PORTAL_NAV_ITEMS.find((item) => item.href === '/employer/candidates')?.badgeKey, undefined);
+  assert.deepEqual(EMPLOYER_PORTAL_NAV_ITEMS.find((item) => item.href === '/employer/work-queue')?.badgeKeys, [
+    'employer_queue_review_today', 'employer_queue_stale_48h', 'employer_queue_interview',
+  ]);
+  assert.equal(PARTNER_PORTAL_NAV_ITEMS.find((item) => item.href === '/partner/impact')?.badgeKey, 'milestones_new');
+  assert.equal(getBestActiveHref('/admin/members/member-1', navItemsForActiveRoute(ADMIN_PORTAL_NAV_ITEMS)), '/admin/students');
+  assert.equal(getBestActiveHref('/admin/members/duplicates', navItemsForActiveRoute(ADMIN_PORTAL_NAV_ITEMS)), '/admin/members/duplicates');
 });

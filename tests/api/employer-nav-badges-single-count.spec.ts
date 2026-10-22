@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  * WAP-211: each waiting item lights exactly one employer rail row.
  *  - A pending job badges Jobs (`jobs_pending`) and no longer also inflates
  *    Work queue's "review today" (which the bell labels "Candidates to review today").
- *  - A pending application badges Work queue only; Applicants carries no badge.
+ *  - A pending application badges Work queue only; Candidates carries no badge.
  */
 const db = vi.hoisted(() => ({
   appFindMany: vi.fn(),
@@ -31,6 +31,7 @@ vi.mock('@/lib/auth/roles', () => ({
 import { countEmployerQueueBadges } from '@/lib/employer/workQueue';
 import { getNavBadgeCountsForUser } from '@/lib/portal/navBadges';
 import { EMPLOYER_PORTAL_NAV_ITEMS, badgeTotalForItem } from '@/lib/nav/portalNav';
+import { getBestActiveHref } from '@/lib/nav/activeRoute';
 
 const now = Date.now();
 const app = (id: string, hoursAgo: number, status = 'pending') => ({
@@ -87,7 +88,12 @@ describe('employer rail badges count each item once (WAP-211)', () => {
       ['/employer/work-queue', 1],
       ['/employer/jobs', 1],
     ]);
-    expect(badgeTotalForItem(counts, row('/employer/applications'))).toBe(0);
+    const candidates = row('/employer/candidates');
+    expect(badgeTotalForItem(counts, candidates)).toBe(0);
+    expect(candidates.aliases).toEqual(['/employer/applications', '/employer/matches', '/employer/pipeline']);
+    for (const path of candidates.aliases!) {
+      expect(getBestActiveHref(path, EMPLOYER_PORTAL_NAV_ITEMS)).toBe('/employer/candidates');
+    }
   });
 
   it('still serves applications_new for the notification bell, and no unused jobs_live', async () => {

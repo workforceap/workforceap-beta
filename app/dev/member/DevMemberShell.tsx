@@ -27,6 +27,7 @@ const DEV_HREF: Record<string, string> = {
   '/dashboard/jobs': '/dev/member/jobs',
   '/dashboard/readiness': '/dev/member/progress',
   '/dashboard/ai-tools': '/dev/member/toolkit',
+  '/dashboard/resume': '/dev/member/resume-studio',
   '/dashboard/messages': '/dev/member/messages',
   '/dashboard/assessment': '/dev/member/assessment',
   '/dashboard/profile': '/dev/member/profile',
@@ -35,7 +36,10 @@ const DEV_HREF: Record<string, string> = {
 const DEV_ALIASES: Record<string, string[]> = {
   '/dev/member/jobs': ['/dev/member/jobs-empty'],
   '/dev/member/certificates': ['/dev/member/certificates-empty'],
+  '/dev/member/resume-studio': ['/dev/member/resume-rewriter', '/dev/member/resume-strength'],
   '/dev/member/toolkit': [
+    '/dev/member/interviews',
+    '/dev/member/skill-mapper',
     '/dev/member/interview-prep',
     '/dev/member/interview-practice',
     '/dev/member/linkedin-headline',
@@ -43,9 +47,6 @@ const DEV_ALIASES: Record<string, string[]> = {
     '/dev/member/job-match',
     '/dev/member/interview-coach',
     '/dev/member/cover-letter',
-    '/dev/member/resume-rewriter',
-    '/dev/member/resume-strength',
-    '/dev/member/resume-studio',
     '/dev/member/salary-negotiation',
     '/dev/member/elevator-pitch',
     '/dev/member/gap-analyzer',

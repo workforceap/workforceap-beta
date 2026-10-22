@@ -139,7 +139,8 @@
         "jobs": "Emplois",
         "pipeline": "Suivi",
         "workQueue": "À traiter",
-        "messages": "Messages"
+        "messages": "Messages",
+        "candidates": "Candidats"
       },
       "counselor": {
         "today": "Aujourd'hui",
@@ -147,7 +148,8 @@
         "inbox": "Boîte",
         "members": "Membres",
         "messages": "Messages",
-        "resources": "Ressources"
+        "resources": "Ressources",
+        "sessions": "Séances"
       },
       "partner": {
         "overview": "Aperçu",
@@ -155,7 +157,8 @@
         "attention": "Attention",
         "messages": "Messages",
         "milestones": "Étapes",
-        "outcomes": "Résultats"
+        "outcomes": "Résultats",
+        "impact": "Impact"
       },
       "admin": {
         "today": "Aujourd'hui",
@@ -167,7 +170,11 @@
     "freeCareerQuiz": "Quiz de carrière gratuit",
     "comparePrograms": "Comparer les programmes",
     "salaryGuide": "Guide salarial",
-    "membership": "Adhésion"
+    "membership": "Adhésion",
+    "candidates": "Candidats",
+    "impact": "Impact",
+    "morePages": "Autres pages",
+    "newMilestonesCount": "{count} nouvelles étapes"
   },
   "cta": {
     "applyNow": "Postuler maintenant",
@@ -1651,7 +1658,13 @@
     "resourcesTitle": "Ressources",
     "resourcesGoal": "Liens rapides pour {partnerName} et votre équipe interne.",
     "settingsTitle": "Paramètres",
-    "settingsGoal": "Le profil de votre organisation et les préférences de notification."
+    "settingsGoal": "Le profil de votre organisation et les préférences de notification.",
+    "impactWorkspaceTitle": "Impact",
+    "impactWorkspaceDescription": "Suivez les résultats des orientations et les étapes récentes, puis préparez vos rapports.",
+    "impactWorkspaceViews": "Vues de l’impact",
+    "impactWorkspaceOutcomes": "Résultats",
+    "impactWorkspaceMilestones": "Étapes",
+    "impactWorkspaceExports": "Exports"
   },
   "group": {
     "memberTools": "Outils et carrières",
@@ -2727,7 +2740,14 @@
     "reviewCandidatesMobile": "Examiner et répondre aux candidats",
     "reviewCandidatesDesktop": "Examiner et répondre aux candidats pour vos postes ouverts",
     "checkoutSuccess": "Votre abonnement a été configuré avec succès. Bienvenue !",
-    "checkoutCanceled": "Le paiement a été annulé — votre forfait n’a pas changé."
+    "checkoutCanceled": "Le paiement a été annulé — votre forfait n’a pas changé.",
+    "candidatesWorkspaceTitle": "Candidats",
+    "candidatesWorkspaceDescription": "Examinez les candidatures et les correspondances suggérées, puis faites avancer les candidats dans votre processus de recrutement.",
+    "candidatesWorkspaceViews": "Vues des candidats",
+    "candidatesWorkspaceApplicants": "Candidatures",
+    "candidatesWorkspaceMatches": "Correspondances",
+    "candidatesWorkspacePipeline": "Processus",
+    "jobsWorkspaceActions": "Actions des offres"
   },
   "auth": {
     "login": {
@@ -3667,8 +3687,8 @@
           "body": "Postes actifs, candidats en cours d'examen et offres ouvertes en un coup d'œil. File de travail, dans le menu, liste les actions du jour : candidats à examiner, entretiens à planifier et annonces qui s'essoufflent."
         },
         "applicants": {
-          "title": "Examiner les candidats",
-          "body": "Toutes les personnes qui ont postulé, avec programme, statut et score de correspondance. Ouvrez un candidat pour voir sa progression de formation et son profil, puis faites-le avancer ou passez."
+          "title": "Examinez les candidats",
+          "body": "Candidats réunit Candidatures, Correspondances et Processus. Examinez les candidatures, explorez les correspondances suggérées par l’IA et faites avancer les candidats dans le recrutement. Chaque vue conserve ses filtres et ses actions."
         },
         "pipeline": {
           "title": "Suivre votre pipeline",
@@ -3723,8 +3743,8 @@
           "body": "Les partenaires de parrainage reçoivent un versement pour chaque placement vérifié. Connectez un compte bancaire ici une seule fois ; les versements sont envoyés dès qu'un placement est vérifié."
         },
         "exports": {
-          "title": "Exports",
-          "body": "Téléchargez vos membres orientés, jalons et résultats en CSV pour vos rapports de subvention et vos points au conseil. Aperçu des résultats affiche les mêmes chiffres à l'écran."
+          "title": "Impact et rapports",
+          "body": "Impact réunit Résultats, Étapes et Exports. Consultez la progression à l’écran, puis téléchargez les rapports CSV pour les subventions et le conseil d’administration."
         },
         "help": {
           "title": "Revenez quand vous voulez",
@@ -3766,7 +3786,7 @@
         },
         "atRisk": {
           "title": "Membres à risque",
-          "body": "Le modèle de risque classe votre portefeuille selon l'inactivité, la formation au point mort et les messages sans réponse. Commencez ici les jours chargés."
+          "body": "Utilisez la vue À risque d’Aujourd’hui pour examiner les membres classés selon l’inactivité, la formation bloquée et les messages sans réponse. Chaque membre conserve son motif et sa prochaine étape."
         },
         "messages": {
           "title": "Écrire à un membre",
@@ -4234,5 +4254,204 @@
     "interview": "M’entraîner aux entretiens",
     "coverLetter": "Rédiger une lettre de motivation",
     "preparation": "Préparez un CV ou une offre d’emploi si l’outil en demande un. Pour le coaching vocal, choisissez un coach et appuyez sur Start quand vous êtes prêt à utiliser votre microphone. Choisissez All Tools ci-dessous pour voir d’autres options."
+  },
+  "portalWorkspaces": {
+    "backToResults": "Retour aux résultats",
+    "backToMembers": "Retour aux membres",
+    "counselor": {
+      "kicker": "Conseiller",
+      "title": "Aujourd’hui",
+      "lede": "Le suivi de vos membres, organisé selon la prochaine action.",
+      "allMembers": "Tous les membres",
+      "viewsLabel": "Vues de travail du conseiller",
+      "filtersLabel": "Vues des besoins d’attention",
+      "region": "Espace de travail : {view}",
+      "views": {
+        "attention": {
+          "label": "À suivre",
+          "description": "Voyez qui a besoin d’aide et pourquoi, avec chaque membre affiché une seule fois."
+        },
+        "replies": {
+          "label": "En attente de réponse",
+          "description": "Conversations des membres en attente d’une réponse de l’équipe."
+        },
+        "decisions": {
+          "label": "Décisions",
+          "description": "Demandes et vérifications d’admission à examiner, les plus anciennes d’abord."
+        },
+        "followup": {
+          "label": "Suivi",
+          "description": "Préparez les suivis, consignez les contacts et organisez la prochaine transmission."
+        },
+        "overview": {
+          "label": "Vue d’ensemble",
+          "description": "Vos membres suivis, les séances récentes et l’activité en contexte."
+        }
+      },
+      "filters": {
+        "all": "Tous les besoins",
+        "priorities": "Par priorité",
+        "at-risk": "Cas à risque",
+        "inactive": "Membres inactifs"
+      }
+    },
+    "students": {
+      "kicker": "Personnes",
+      "title": "Étudiants",
+      "lede": "Un espace pour trouver les étudiants, gérer leurs dossiers et suivre leur progression.",
+      "duplicates": "Examiner les doublons",
+      "add": "Ajouter un étudiant",
+      "viewsLabel": "Vues de l’espace étudiants",
+      "readinessLabel": "Vues de préparation",
+      "interview": "Prêts pour un entretien",
+      "trainingThreshold": "Formation à 70 % ou plus",
+      "region": "Étudiants : {view}",
+      "views": {
+        "roster": {
+          "label": "Liste",
+          "description": "Trouvez un étudiant et consultez son programme, sa progression et son activité récente."
+        },
+        "manage": {
+          "label": "Gérer",
+          "description": "Filtrez les comptes, contactez les étudiants sélectionnés, mettez à jour les dossiers et exportez la liste filtrée."
+        },
+        "training": {
+          "label": "Formation",
+          "description": "Examinez la progression du cursus attribué, le rythme et les données du prestataire non rapprochées."
+        },
+        "readiness": {
+          "label": "Préparation",
+          "description": "Examinez séparément l’admissibilité aux entretiens et l’avancement de la formation."
+        }
+      }
+    }
+  },
+  "memberWorkspace": {
+    "resume": {
+      "metaTitle": "CV",
+      "metaDescription": "Gérez votre CV original et ses révisions, consultez les scores, améliorez votre brouillon et travaillez avec un coach IA.",
+      "intro": "Vos fichiers, scores, améliorations et coach de CV IA dans un seul espace.",
+      "files": "Mon CV",
+      "scoreSource": "Le score analyse le texte affiché ci-dessous. Il reprend votre CV révisé enregistré, si disponible, sinon votre original. Consulter un score ne remplace aucun de ces fichiers.",
+      "rewriteSource": "L’amélioration part de votre CV original. Le texte généré est un résultat distinct ; l’original, le CV révisé enregistré et les résultats précédents restent séparés.",
+      "rewriteHistory": "Améliorations de CV enregistrées",
+      "filesUnavailable": "Impossible de charger les fichiers de votre CV. Réessayez pour actualiser leur état.",
+      "retryFiles": "Recharger les fichiers du CV"
+    },
+    "interviews": {
+      "title": "Entretiens",
+      "description": "Préparez des réponses, entraînez-vous avec l’IA, enregistrez une simulation d’entretien ou rassemblez vos documents de préparation enregistrés.",
+      "intro": "Choisissez votre façon de vous préparer. Chaque mode conserve ses questions, retours, résultats enregistrés et commandes.",
+      "choose": "Choisir un mode d’entretien",
+      "nav": "Modes d’entretien",
+      "all": "Tous les modes d’entretien",
+      "role": "Poste visé",
+      "roleHelp": "Conservez ce poste dans le mode choisi. Vous pouvez le modifier avant de commencer.",
+      "roleExample": "Par exemple, spécialiste du support informatique",
+      "resumeContext": "Votre CV enregistré reste dans l’espace CV. Préparer des réponses vous permet de relire et de modifier le contexte avant la génération ; les autres modes conservent leurs propres commandes de session et d’enregistrement.",
+      "openResume": "Ouvrir l’espace CV",
+      "open": "Ouvrir {mode}",
+      "humanNotice": "Ce sont des outils de préparation avec l’IA. Pour obtenir les conseils de votre conseiller attitré, utilisez Messages. Choisir un mode ne lance ni microphone, ni caméra, ni enregistrement, ni envoi d’e-mail.",
+      "humanMessages": "Messages avec votre conseiller humain",
+      "bundleRole": "Poste visé : {role}. Le dossier contient les documents enregistrés que vous avez sélectionnés ; il ne les réécrit pas pour ce poste.",
+      "answersTitle": "Préparer des réponses d’entretien",
+      "answersIntro": "Questions écrites adaptées au poste avec des trames de réponse STAR. Aucun microphone nécessaire.",
+      "coachTitle": "S’entraîner avec un coach d’entretien IA",
+      "coachIntro": "Faites une simulation d’entretien par texte ou microphone, puis consultez les retours.",
+      "recordedTitle": "Simulation d’entretien enregistrée",
+      "bundleTitle": "Dossier de préparation à l’entretien",
+      "modes": {
+        "answers": {
+          "title": "Préparer des réponses",
+          "modality": "Questions écrites et trames de réponse STAR",
+          "detail": "Générez des questions adaptées au poste, préparez des réponses écrites et retrouvez vos exercices enregistrés."
+        },
+        "coach": {
+          "title": "S’entraîner avec l’IA",
+          "modality": "Texte ou microphone",
+          "detail": "Faites une simulation d’entretien interactive et consultez les retours. L’entraînement par texte reste disponible lorsque la voix ne l’est pas."
+        },
+        "recorded": {
+          "title": "Simulation enregistrée",
+          "modality": "Microphone ; caméra facultative et consentement à l’enregistrement",
+          "detail": "Répondez à voix haute aux questions en direct. Choisissez d’enregistrer ou non, puis consultez vos enregistrements sauvegardés."
+        },
+        "bundle": {
+          "title": "Dossier de préparation",
+          "modality": "Documents enregistrés ; sans microphone",
+          "detail": "Choisissez parmi vos CV, lettres et réponses d’entraînement enregistrés pour les copier ou les envoyer par e-mail quand vous le souhaitez."
+        }
+      }
+    },
+    "exploration": {
+      "nav": "Exploration professionnelle",
+      "interests": "Intérêts",
+      "skills": "Objectif et comparaison des compétences",
+      "training": "Options de formation",
+      "selectionUnavailable": "Cette recherche enregistrée n’est pas disponible dans votre compte ou ne peut pas être lue. Aucun autre résultat ne l’a remplacée.",
+      "selectionLoadFailed": "Impossible de charger la recherche sélectionnée. Actualisez la page pour réessayer ; aucun autre résultat ne l’a remplacée.",
+      "targetFromInterests": "Objectif issu de l’exploration professionnelle : {occupation}",
+      "loadTargetHelp": "Chargez ce métier pour voir ses compétences O*NET et les comparer à votre profil. Vos résultats d’intérêts restent distincts.",
+      "loadTarget": "Charger ce métier",
+      "selectedTarget": "Objectif enregistré sélectionné : {occupation}",
+      "sample": "Données d’exemple",
+      "trainingForLookup": "Options de formation pour cette recherche",
+      "openComparison": "Ouvrir cette comparaison de compétences",
+      "saveUnavailable": "Le métier a été chargé, mais la recherche n’a pas pu être enregistrée. Sélectionnez à nouveau le métier pour réessayer l’enregistrement avant de le transmettre à Training Bridge.",
+      "exploreSkills": "Explorer les compétences pour {occupation}",
+      "interestSaved": "Vos résultats d’intérêts sont enregistrés",
+      "interestNotSaved": "L’enregistrement dans votre compte n’a pas été confirmé",
+      "interestConnectionSaved": "Vos intérêts contribuent au profil estimé dans Skill Mapper.",
+      "interestConnectionUnsaved": "Téléchargez vos résultats avant de quitter cette page. Vous pouvez continuer à explorer des métiers dans Skill Mapper.",
+      "interestNext": "Choisissez un métier ci-dessus, chargez ses compétences, puis utilisez la recherche enregistrée pour explorer les formations. Les scores d’intérêts décrivent des préférences ; ils sont distincts des évaluations de compétences et de formation.",
+      "interestExportSaved": "Ces résultats d’intérêts ont été enregistrés dans votre profil de compétences. Utilisez Skill Mapper pour les comparer à un métier O*NET ; les intérêts ne constituent pas un test de maîtrise.",
+      "interestExportUnsaved": "L’enregistrement de ces résultats d’intérêts dans votre compte n’a pas pu être confirmé. Téléchargez ce rapport avant de quitter cette page.",
+      "exploreProgram": "Explorer {program}",
+      "graphValues": "Voir les valeurs du radar",
+      "estimatedComparison": "Profil estimé du membre comparé aux exigences du métier. Ces valeurs ne constituent pas un test de maîtrise.",
+      "occupationValues": "Valeurs radar du métier issues de cette recherche",
+      "axis": "Compétence",
+      "memberEstimate": "Profil estimé",
+      "target": "Métier cible"
+    },
+    "training": {
+      "nav": "Formation et progression",
+      "program": "Mon programme",
+      "learning": "Centre d’apprentissage et ressources",
+      "readiness": "Préparation professionnelle",
+      "learningContext": "Mon programme présente votre formation attribuée et votre progression dans les cours. Le Centre d’apprentissage ajoute des exercices et des ressources. Préparation professionnelle mesure votre préparation à l’emploi séparément de l’achèvement des cours.",
+      "bridgeIntro": "Reliez un métier cible enregistré à des options de formation, puis planifiez la prochaine étape avec votre conseiller.",
+      "loadFailed": "Impossible de charger les recherches de métiers enregistrées. Actualisez la page pour réessayer. Les options ci-dessous restent générales jusqu’à la sélection d’une recherche enregistrée.",
+      "selectionUnavailable": "Cette recherche enregistrée n’est pas disponible dans votre compte ou ne peut pas être lue. Aucun autre résultat ne l’a remplacée. Choisissez l’une de vos recherches enregistrées ci-dessous.",
+      "chooseLookup": "Choisir une recherche Skill Mapper enregistrée",
+      "selectLookup": "Sélectionner une recherche",
+      "useLookup": "Utiliser la recherche sélectionnée",
+      "selectedLookup": "Recherche sélectionnée : {occupation}",
+      "occupationRequirements": "Exigences du métier enregistrées",
+      "lookupMeaning": "Cette recherche décrit les exigences du métier, pas votre maîtrise. Votre graphique radar comparant votre profil à l’objectif reste dans Skill Mapper.",
+      "exploreTitle": "Sélectionner une recherche cible ou explorer les formations",
+      "exploreBody": "Choisissez une recherche Skill Mapper enregistrée ci-dessus pour conserver le contexte du métier, ou explorez les exigences générales des parcours ci-dessous.",
+      "unmapped": "Aucune correspondance sélectionnée dans Training Bridge n’existe pour {occupation}. Le métier ci-dessous est une autre option de formation ; votre objectif enregistré n’a pas changé.",
+      "unmatchedRequirements": "Exigences sans correspondance dans la recherche sélectionnée pour {occupation}",
+      "allMatched": "Toutes les exigences répertoriées correspondent à la recherche sélectionnée",
+      "matchingNotice": "Il s’agit de correspondances de termes professionnels, pas d’une évaluation terminée ni d’une garantie de préparation à l’emploi.",
+      "represented": "Exigences représentées dans la recherche sélectionnée",
+      "pathwayMatches": "Ce parcours couvre ces exigences sans correspondance dans la recherche sélectionnée : {skills}",
+      "assignedProgram": "Mon programme attribué",
+      "humanCounselor": "Échanger avec mon conseiller humain",
+      "application": "Consulter la candidature à ce programme",
+      "unchangedAssignment": "Explorer un parcours ne change ni votre programme attribué, ni votre financement, ni votre accès au prestataire."
+    },
+    "ai": {
+      "lilley": "Lilley · coach professionnel IA",
+      "lilleyDescription": "Parlez avec un coach IA de votre plan WorkforceAP, de votre formation et de la prochaine étape. Utilisez l’espace Lilley complet pour les sessions et les plans d’action enregistrés.",
+      "humanLink": "Écrire à mon conseiller humain",
+      "humanDescription": "Lilley est un coach IA. Votre conseiller humain attitré est disponible dans Messages.",
+      "interviewDirectory": "Préparez des réponses, entraînez-vous avec l’IA, enregistrez une simulation ou assemblez votre dossier de préparation.",
+      "trainingDirectory": "Reliez un métier cible enregistré à des options de formation.",
+      "resumeDirectory": "Fichiers, scores, améliorations et coach de CV IA.",
+      "openResumeCoach": "Ouvrir le coach de CV complet",
+      "resumeCoachContext": "Consultez ensemble votre original, votre brouillon, les modifications acceptées et vos téléchargements."
+    }
   }
 }

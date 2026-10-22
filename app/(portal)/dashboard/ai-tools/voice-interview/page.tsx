@@ -9,6 +9,7 @@ import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import PortalBreadcrumb from '@/components/portal/PortalBreadcrumb';
 import ToolHistoryPanel from '@/components/portal/ToolHistoryPanel';
 import { getUser } from '@/lib/auth/server';
+import { normalizeInterviewRole } from '@/lib/member/memberWorkspace';
 
 const VoiceInterviewScaffold = dynamic(() => import('@/components/portal/tools/VoiceInterviewScaffold'), {
   loading: () => (
@@ -39,9 +40,11 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function VoiceInterviewPage() {
+export default async function VoiceInterviewPage({ searchParams }: { searchParams?: Promise<{ role?: string }> } = {}) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/ai-tools/voice-interview');
+  const params = await searchParams;
+  const t = await getTranslations('memberWorkspace.interviews');
 
   return (
     <DesignSurface surface="warm">
@@ -49,12 +52,12 @@ export default async function VoiceInterviewPage() {
         <PortalBreadcrumb
           items={[
             { label: 'AI Career Tools', href: '/dashboard/ai-tools' },
-            { label: 'Voice Job/Role Interviewer' },
+            { label: t('recordedTitle') },
           ]}
         />
         <PageOpener
           kicker="AI Career Tools"
-          title="Voice Job/Role Interviewer"
+          title={t('recordedTitle')}
           lede="Open a dedicated mock interview flow, answer questions out loud, and get live coaching feedback in a setup built specifically for practice."
         />
 
@@ -77,7 +80,7 @@ export default async function VoiceInterviewPage() {
       {/* Single scaffold — duplicate mobile/desktop mounts caused two independent button states */}
       <div style={{ paddingBottom: '6rem' }}>
         <div style={{ maxWidth: 980, margin: '0 auto', padding: '0 1rem 2rem' }}>
-          <VoiceInterviewScaffold />
+          <VoiceInterviewScaffold initialRole={normalizeInterviewRole(params?.role)} />
           <ToolHistoryPanel
             userId={user.id}
             toolType="voice_interview_video"

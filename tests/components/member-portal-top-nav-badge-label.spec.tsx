@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 import es from '@/messages/es.json';
@@ -27,6 +27,7 @@ function renderWith(locale: 'en' | 'es') {
       <MemberPortalTopNav badgeCounts={{ applications_new: 3, counselor_messages_unread: 2 }} />
     </NextIntlClientProvider>,
   );
+  fireEvent.click(screen.getByRole('button', { name: locale === 'en' ? en.nav.morePages : es.nav.morePages }));
 }
 
 describe('MemberPortalTopNav badge labels', () => {

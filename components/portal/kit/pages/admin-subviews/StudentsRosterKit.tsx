@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card } from '@astryxdesign/core/Card';
@@ -18,16 +18,20 @@ import {
   type KpiItem,
 } from '@/components/portal/kit';
 import { ariaSortForColumn, useKitTableSort } from '@/components/portal/kit/kitTableSort';
-import { KIT_TABLE_PAGE_SIZE } from '@/components/portal/kit/kitTableUrlState';
+import { KIT_TABLE_PAGE_SIZE, readKitTableUrlState, writeKitTableUrlState } from '@/components/portal/kit/kitTableUrlState';
+import { KitSortHeader } from '@/components/portal/kit/KitSortHeader';
+import { withPortalReturnTo } from '@/lib/nav/returnContext';
 import {
   DEFAULT_STUDENT_SORT_DIRECTION,
   DEFAULT_STUDENT_SORT_KEY,
+  STUDENT_SORT_KEYS,
   sortStudentRows,
   type StudentSortKey,
 } from '@/lib/admin/studentsRosterSort';
 import {
   DEFAULT_SORT_DIRECTION as DEFAULT_TRAINING_SORT_DIRECTION,
   DEFAULT_SORT_KEY as DEFAULT_TRAINING_SORT_KEY,
+  SORT_KEYS as TRAINING_SORT_KEYS,
   sortTrainingRows,
   summarizeTrainingRows,
   type SortKey as TrainingSortKey,
@@ -143,6 +147,10 @@ export interface StudentsRosterKitProps {
   focus?: StudentsRosterFocus;
   /** Mount inside a hub tab: no page surface, no opener (the hub owns the h1); the view nav stays. */
   embedded?: boolean;
+  /** A containing Students workspace already supplies its view navigation. */
+  showViewNav?: boolean;
+  /** Initial workspace query. When supplied, local refinements stay in the URL for returning from records. */
+  urlState?: string;
 }
 
 const DEFAULT_STUDENTS: StudentRow[] = [
@@ -240,6 +248,8 @@ export function StudentsRosterKit({
   initialChip,
   focus,
   embedded = false,
+  showViewNav = true,
+  urlState,
 }: StudentsRosterKitProps) {
   const router = useRouter();
   const copy = STUDENTS_ROSTER_VIEW_COPY[view];
@@ -247,19 +257,27 @@ export function StudentsRosterKit({
   const hrefs = { ...STUDENTS_ROSTER_VIEW_HREFS, ...viewHrefs };
   const isTraining = view === 'training';
 
+  const initialParams = new URLSearchParams(urlState ?? '');
+  const initial = readKitTableUrlState<StudentSortKey | TrainingSortKey>(initialParams, {
+    sortKeys: isTraining ? TRAINING_SORT_KEYS : STUDENT_SORT_KEYS,
+  });
+  const requestedChip = initialParams.get('chip') as StudentFilter | null;
   const [active, setActive] = useState<StudentFilter>(() =>
-    initialChip && chips.includes(initialChip) ? initialChip : 'All',
+    requestedChip && chips.includes(requestedChip) ? requestedChip
+      : initialChip && chips.includes(initialChip) ? initialChip : 'All',
   );
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
-  const { sortKey, sortDirection, sortHeader } = useKitTableSort<StudentSortKey | TrainingSortKey>(
-    isTraining ? DEFAULT_TRAINING_SORT_KEY : DEFAULT_STUDENT_SORT_KEY,
-    isTraining ? DEFAULT_TRAINING_SORT_DIRECTION : DEFAULT_STUDENT_SORT_DIRECTION,
+  const [search, setSearch] = useState(initial.search);
+  const [page, setPage] = useState(initial.page);
+  const { sortKey, sortDirection, onSortColumn } = useKitTableSort<StudentSortKey | TrainingSortKey>(
+    initial.sort?.key ?? (isTraining ? DEFAULT_TRAINING_SORT_KEY : DEFAULT_STUDENT_SORT_KEY),
+    initial.sort?.direction ?? (isTraining ? DEFAULT_TRAINING_SORT_DIRECTION : DEFAULT_STUDENT_SORT_DIRECTION),
     TEXT_SORT_KEYS,
   );
+  const sortHeader = (key: StudentSortKey | TrainingSortKey, label: string) => (
+    <KitSortHeader label={label} columnKey={key} active={sortKey === key} direction={sortDirection}
+      onSort={() => { onSortColumn(key); setPage(1); }} />
+  );
 
-  // A focus replaces the population: chips, counts and the footer all read
-  // the focused rows, so "All" is the focused total, not the roster's.
   const pool = useMemo(() => applyRosterFocus(students, focus), [students, focus]);
   const poolTotal = focus ? pool.length : total;
   const focusNotLoaded = focus ? Math.max(0, new Set(focus.memberIds).size - pool.length) : 0;
@@ -293,6 +311,27 @@ export function StudentsRosterKit({
   // drops back to page 1; an out-of-range page clamps to the last one.
   const pageCount = Math.max(1, Math.ceil(visible.length / KIT_TABLE_PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
+  // These filters operate on the loaded roster. Native history keeps their
+  // context without fetching the same server roster again on every keystroke.
+  useEffect(() => {
+    if (urlState === undefined) return;
+    const params = writeKitTableUrlState(window.location.search, {
+      search, sort: { key: sortKey, direction: sortDirection }, page: currentPage,
+      filters: { chip: active },
+    });
+    const next = `${window.location.pathname}${params.size ? `?${params.toString()}` : ''}${window.location.hash}`;
+    window.history.replaceState(null, '', next);
+  }, [urlState, search, sortKey, sortDirection, currentPage, active]);
+
+  const openStudent = (row: StudentRow) => {
+    const params = writeKitTableUrlState(window.location.search, {
+      search, sort: { key: sortKey, direction: sortDirection }, page: currentPage,
+      filters: { chip: active },
+    });
+    const returnTo = `${window.location.pathname}${params.size ? `?${params.toString()}` : ''}`;
+    router.push(withPortalReturnTo(row.href ?? `/admin/members/${row.id}`, returnTo));
+  };
+
   const pageRows = useMemo(
     () => visible.slice((currentPage - 1) * KIT_TABLE_PAGE_SIZE, currentPage * KIT_TABLE_PAGE_SIZE),
     [visible, currentPage],
@@ -557,7 +596,7 @@ export function StudentsRosterKit({
   return (
     <EmbeddableFrame
       embedded={embedded}
-      action={viewNav}
+      action={showViewNav ? viewNav : undefined}
       opener={<PageOpener className="wa-mb-5" title={copy.title} kicker={copy.kicker} lede={copy.lede} action={viewNav} />}
     >
       {notice ? (
@@ -620,7 +659,7 @@ export function StudentsRosterKit({
           onChange: setPage,
           label: 'Roster pagination',
         }}
-        onRowClick={(row) => router.push(row.href ?? `/admin/members/${row.id}`)}
+        onRowClick={openStudent}
         minWidth={isTraining ? 1080 : 1040}
         mobile="cards"
         cardRender={(row) => (

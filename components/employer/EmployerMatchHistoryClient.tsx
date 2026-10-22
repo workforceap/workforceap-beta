@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { useState, useCallback } from 'react';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -168,7 +169,7 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
       key: 'candidate',
       header: 'Candidate',
       render: (row) => (
-        <Link
+        <PortalRecordLink
           href={`/employer/candidates/${row.studentId}?jobId=${encodeURIComponent(row.jobId)}`}
           style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}
         >
@@ -177,7 +178,7 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
             <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--wa-accent)' }}>{row.student.fullName}</div>
             <div style={{ fontSize: 13, color: 'var(--wa-muted)', fontWeight: 600 }}>{row.job.title}</div>
           </div>
-        </Link>
+        </PortalRecordLink>
       ),
     },
     {
@@ -214,9 +215,9 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
       align: 'right',
       render: (row) =>
         row.applicationId ? (
-          <Link href={`/employer/applications/${encodeURIComponent(row.applicationId)}`} style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)' }}>
+          <PortalRecordLink href={`/employer/applications/${encodeURIComponent(row.applicationId)}`} style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)' }}>
             Open
-          </Link>
+          </PortalRecordLink>
         ) : (
           <span style={{ color: 'var(--wa-muted)' }}>—</span>
         ),
@@ -250,7 +251,7 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
         cardRender={(row) => (
           <div className="wa-kit-card wa-kit-card--sm">
             <div className="wa-flex wa-items-start wa-justify-between wa-gap-3">
-              <Link
+              <PortalRecordLink
                 href={`/employer/candidates/${row.studentId}?jobId=${encodeURIComponent(row.jobId)}`}
                 style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit', minWidth: 0 }}
               >
@@ -259,7 +260,7 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
                   <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--wa-text)' }}>{row.student.fullName}</div>
                   <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 1 }}>{row.job.title}</div>
                 </div>
-              </Link>
+              </PortalRecordLink>
               <FitBadge pct={matchScoreAsPercent(row.matchScore)} />
             </div>
             <div className="wa-flex wa-items-center wa-justify-between wa-flex-wrap wa-gap-2" style={{ marginTop: 12 }}>
@@ -270,12 +271,12 @@ export default function EmployerMatchHistoryClient({ initialRows }: { initialRow
                 onChange={(next) => void patchStatus(row.jobId, row.studentId, row.id, next)}
               />
               {row.applicationId ? (
-                <Link
+                <PortalRecordLink
                   href={`/employer/applications/${encodeURIComponent(row.applicationId)}`}
                   style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)' }}
                 >
                   Open application
-                </Link>
+                </PortalRecordLink>
               ) : null}
             </div>
             <div style={{ marginTop: 8, fontSize: 13, color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>

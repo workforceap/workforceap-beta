@@ -24,6 +24,8 @@ const db = vi.hoisted(() => {
 });
 
 vi.mock('next/navigation', () => ({
+  usePathname: () => '/dev/test',
+  useSearchParams: () => new URLSearchParams(),
   redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); },
 }));
 vi.mock('next/link', () => ({

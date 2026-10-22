@@ -1,4 +1,7 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
+import type { ReactElement, ReactNode } from 'react';
+import en from '@/messages/en.json';
+import { cleanup, render as renderPlain, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import ResumeClient from '@/app/(portal)/dashboard/resume/ResumeClient';
@@ -59,3 +62,7 @@ describe('WorkInTexas guide source and missing-field copy', () => {
     expect(guide.getByText(/Download your original resume from above/)).toBeInTheDocument();
   });
 });
+
+function render(ui: ReactElement) {
+  return renderPlain(ui, { wrapper: ({ children }: { children: ReactNode }) => <NextIntlClientProvider locale="en" messages={en}>{children}</NextIntlClientProvider> });
+}

@@ -8,7 +8,7 @@ test.use({
 
 for (const theme of ['light', 'dark'] as const) {
   for (const width of [320, 375, 768]) {
-    test(`${theme} ${width}: every member tab and focus ring stays inside the rail`, async ({ page, baseURL }) => {
+    test(`${theme} ${width}: daily links and expanded pages retain visible keyboard targets`, async ({ page, baseURL }) => {
       test.skip(!baseURL || !['localhost', '127.0.0.1'].includes(new URL(baseURL).hostname), 'Synthetic dev fixture requires loopback');
       await page.setViewportSize({ width, height: 900 });
       await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
@@ -26,9 +26,9 @@ for (const theme of ['light', 'dark'] as const) {
       await page.goto('/dev/member/jobs', { waitUntil: 'domcontentloaded' });
       await page.evaluate(() => document.fonts.ready);
       const rail = page.getByRole('navigation', { name: 'Member portal' });
-      const links = rail.getByRole('link');
+      const links = rail.locator('.member-portal-top-nav__list').getByRole('link');
       const count = await links.count();
-      expect(count).toBeGreaterThan(8);
+      expect(count).toBe(5);
       // Reach the rail by real Tab rather than assuming a document tab count;
       // /dev has an extra skip link that the production dashboard excludes.
       for (let i = 0; i < 25; i++) {
@@ -89,6 +89,28 @@ for (const theme of ['light', 'dark'] as const) {
           await assertVisible(false);
         }
       }
+      const assessment = rail.getByRole('link', { name: 'WIOA Preassessment' });
+      await expect(assessment).toBeVisible();
+      const more = rail.getByRole('button', { name: 'More pages' });
+      await more.focus();
+      await page.keyboard.press('Enter');
+      await expect(more).toHaveAttribute('aria-expanded', 'true');
+      const extra = rail.locator('.member-portal-top-nav__extra').getByRole('link');
+      expect(await extra.count()).toBeGreaterThan(0);
+      for (let i = 0; i < await extra.count(); i++) {
+        await page.keyboard.press('Tab');
+        await expect(extra.nth(i)).toBeFocused();
+        const box = await extra.nth(i).boundingBox();
+        expect(box).not.toBeNull();
+        expect(box!.x).toBeGreaterThanOrEqual(0);
+        expect(box!.x + box!.width).toBeLessThanOrEqual(width);
+        expect(box!.height).toBeGreaterThanOrEqual(44);
+      }
+      await more.focus();
+      await page.keyboard.press('Enter');
+      await expect(more).toHaveAttribute('aria-expanded', 'false');
+      await expect(extra.first()).toBeHidden();
+      await expect(assessment).toBeVisible();
     });
   }
 }

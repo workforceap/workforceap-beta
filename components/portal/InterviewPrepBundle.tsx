@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import { FileText, Mail, Copy, Check } from 'lucide-react';
 import { PortalInlineSpinner } from '@/components/portal/PortalInlineSpinner';
@@ -18,10 +19,10 @@ const KIT_BTN =
 const KIT_BTN_GHOST = `${KIT_BTN} wa-kit-cta--ghost`;
 
 const EMPTY_TOOLS = [
-  { label: 'Resume', href: '/dashboard/ai-tools/resume-studio?view=rewrite', desc: 'Polished version of your resume' },
+  { label: 'Resume', href: '/dashboard/resume?view=rewrite', desc: 'Polished version of your resume' },
   { label: 'Cover letter', href: '/dashboard/ai-tools/cover-letter', desc: 'Letter for a saved job posting' },
   { label: 'Elevator pitch', href: '/dashboard/ai-tools/elevator-pitch', desc: '10–20 second intro you can rehearse' },
-  { label: 'Interview practice', href: '/dashboard/ai-tools/interview-practice', desc: 'Mock Q&A with instant feedback' },
+  { label: 'Prepare answers', href: '/dashboard/ai-tools/interview-practice', desc: 'Written questions and STAR answer frames' },
   { label: 'LinkedIn headline', href: '/dashboard/ai-tools/linkedin-headline', desc: 'Headline for your profile' },
   { label: 'Salary negotiation', href: '/dashboard/ai-tools/salary-negotiation', desc: 'Script for an offer conversation' },
 ];
@@ -34,6 +35,9 @@ export default function InterviewPrepBundle({
   preview?: boolean;
   items?: PrepBundleItem[];
 } = {}) {
+  const t = useTranslations('memberWorkspace.interviews');
+  const emptyTools = EMPTY_TOOLS.map(tool => tool.href === '/dashboard/ai-tools/interview-practice'
+    ? { ...tool, label: t('modes.answers.title'), desc: t('modes.answers.modality') } : tool);
   const seeded = preview ? { items: items ?? [] } : null;
   const [bundle, setBundle] = useState<{ items: PrepBundleItem[] } | null>(seeded);
   const [selected, setSelected] = useState<Set<string>>(
@@ -162,12 +166,12 @@ export default function InterviewPrepBundle({
             headingAs="h2"
             title="No prep materials yet"
             description="Create materials with a tool below, then return here to email or copy them."
-            action={<Link href="/dashboard/ai-tools/resume-studio?view=rewrite" className={KIT_BTN}>Create a resume</Link>}
+            action={<Link href="/dashboard/resume?view=rewrite" className={KIT_BTN}>Create a resume</Link>}
           />
         </div>
         <SectionHeader title="Tools that create prep materials" />
         <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }}>
-          {EMPTY_TOOLS.map((tool, i) => (
+          {emptyTools.map((tool, i) => (
             <Link
               key={tool.href}
               href={preview ? '#' : tool.href}

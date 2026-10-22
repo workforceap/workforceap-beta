@@ -2873,12 +2873,11 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
 }
 
 /* ============================================================
-   Member Portal Top Nav (mobile, sticky, horizontal-scroll)
-   Decision 3 from /plan-design-review (2026-04-25)
+   Member Portal Top Nav (mobile, daily links + page disclosure)
    ============================================================
    Replaces MobileBottomNav for the Member portal at <=768px.
-   Discoverability mitigations: right-edge gradient fade + scroll-snap so
-   the half-cut item signals scrollability without users having to discover.
+   Five daily destinations match the rail. The assessment and current
+   secondary page stay visible; the other shortcuts expand below them.
 */
 .member-portal-top-nav {
   display: none;
@@ -2894,7 +2893,6 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid transparent;
-    /* Pad the right edge so the gradient fade has room without clipping the last item. */
     padding: 0;
   }
   .member-portal-top-nav__list {
@@ -2905,10 +2903,11 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     gap: 0.18rem;
     overflow-x: auto;
     scroll-snap-type: x proximity;
+    /* Start snapping must retain the focus-ring gutter before hydration too;
+       layout padding alone lets the browser snap the first link flush left. */
+    scroll-padding-inline: 0.75rem;
     scrollbar-width: none; /* firefox */
     -ms-overflow-style: none; /* IE/edge legacy */
-    /* Last item gets extra trailing space so the fade doesn't cut the active state. */
-    padding-right: 2.75rem;
     transition: padding 0.18s ease, gap 0.18s ease;
   }
   .member-portal-top-nav__list::-webkit-scrollbar {
@@ -2989,15 +2988,40 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     background: var(--wa-accent);
     color: var(--wa-on-accent-control);
   }
-  /* Right-edge gradient signaling more content is scrollable. */
-  .member-portal-top-nav__edge-fade {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 2.5rem;
-    pointer-events: none;
-    background: linear-gradient(to right, transparent, var(--wa-shell-header-bg));
+  .member-portal-top-nav__utilities {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    padding: 0 0.75rem 0.35rem;
+  }
+  .member-portal-top-nav__utilities .member-portal-top-nav__link {
+    white-space: normal;
+  }
+  .member-portal-top-nav__more {
+    border: 0;
+    font: inherit;
+    font-size: var(--wa-type-meta);
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  .member-portal-top-nav__extra:not([hidden]) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0.35rem 0.75rem 0.75rem;
+    max-height: 45dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-top: 1px solid var(--wa-border);
+  }
+  .member-portal-top-nav__extra .member-portal-top-nav__link {
+    width: 100%;
+    white-space: normal;
+    line-height: 1.4;
   }
 
   /* Icon-only strip while scrolling — frees vertical space (dashboard / messages / counselor AI route) */
@@ -3006,12 +3030,12 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     padding-bottom: 0.35rem;
     gap: 0.2rem;
   }
-  html.wap-portal-chrome-compact .member-portal-top-nav__link {
+  html.wap-portal-chrome-compact .member-portal-top-nav__list .member-portal-top-nav__link {
     gap: 0;
     padding: 0.5rem 0.62rem;
     min-height: 44px;
   }
-  html.wap-portal-chrome-compact .member-portal-top-nav__label {
+  html.wap-portal-chrome-compact .member-portal-top-nav__list .member-portal-top-nav__label {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -3028,9 +3052,6 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
 .dark .member-portal-top-nav {
   background: var(--wa-shell-header-bg);
   border-bottom-color: transparent;
-}
-.dark .member-portal-top-nav__edge-fade {
-  background: linear-gradient(to right, transparent, var(--wa-shell-header-bg));
 }
 
 /* After Tailwind utilities in main.css: portal/admin mobile stacking, tap targets, DataTable density.

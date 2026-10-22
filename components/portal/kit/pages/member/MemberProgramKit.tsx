@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 import { DesignSurface, ProgressRing, PageOpener, KitEmptyState } from '@/components/portal/kit';
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
 import CourseraLaunchErrorNotice from '@/components/portal/CourseraLaunchErrorNotice';
+import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
+import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
 import { MemberTrainingWorkspace, type MemberTrainingWorkspaceProps } from './MemberTrainingWorkspace';
 
 /**
@@ -40,6 +42,7 @@ export interface MemberProgramKitProps {
   /** Durable, authenticated workspace when the member has a pinned enrollment. */
   trainingWorkspace?: MemberTrainingWorkspaceProps;
   programTitle?: string;
+  programSlug?: string | null;
   /** 0–100. */
   progressPercent?: number;
   modulesComplete?: number;
@@ -107,6 +110,7 @@ const MODULE_META: Record<ModuleState, { label: string; color: string; icon: Luc
 export function MemberProgramKit({
   trainingWorkspace,
   programTitle = 'Your program',
+  programSlug,
   progressPercent = 0,
   modulesComplete = 0,
   modulesTotal = 0,
@@ -125,12 +129,13 @@ export function MemberProgramKit({
   // The page states the course denominator once; the workspace view must show it where it states the count too.
   // A failed Coursera launch lands here with ?error=; say what happened on both views.
   if (trainingWorkspace) return <><CourseraLaunchErrorNotice /><MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} modulesNote={modulesNote} {...trainingWorkspace} /></>;
-  return <><CourseraLaunchErrorNotice /><MemberProgramOverview programTitle={programTitle} progressPercent={progressPercent} modulesComplete={modulesComplete} modulesTotal={modulesTotal} modulesNote={modulesNote} estRemaining={estRemaining} resumeHref={resumeHref} courseraLaunchHref={courseraLaunchHref} modules={modules} liveSessionTitle={liveSessionTitle} liveSessionWhen={liveSessionWhen} liveSessionStart={liveSessionStart} liveSessionDurationMinutes={liveSessionDurationMinutes} missionsSummary={missionsSummary} missionsHref={missionsHref} /></>;
+  return <><CourseraLaunchErrorNotice /><MemberProgramOverview programSlug={programSlug} programTitle={programTitle} progressPercent={progressPercent} modulesComplete={modulesComplete} modulesTotal={modulesTotal} modulesNote={modulesNote} estRemaining={estRemaining} resumeHref={resumeHref} courseraLaunchHref={courseraLaunchHref} modules={modules} liveSessionTitle={liveSessionTitle} liveSessionWhen={liveSessionWhen} liveSessionStart={liveSessionStart} liveSessionDurationMinutes={liveSessionDurationMinutes} missionsSummary={missionsSummary} missionsHref={missionsHref} /></>;
 }
 
 /** Program overview (no pinned workspace): hooks live here so the early workspace return above stays hook-free. */
 function MemberProgramOverview({
   programTitle,
+  programSlug,
   progressPercent,
   modulesComplete,
   modulesTotal,
@@ -146,8 +151,9 @@ function MemberProgramOverview({
   missionsSummary,
   missionsHref,
 }: Required<Pick<MemberProgramKitProps, 'programTitle' | 'progressPercent' | 'modulesComplete' | 'modulesTotal' | 'resumeHref' | 'modules' | 'liveSessionDurationMinutes' | 'missionsHref'>> &
-  Pick<MemberProgramKitProps, 'modulesNote' | 'estRemaining' | 'courseraLaunchHref' | 'liveSessionTitle' | 'liveSessionWhen' | 'liveSessionStart' | 'missionsSummary'>) {
+  Pick<MemberProgramKitProps, 'programSlug' | 'modulesNote' | 'estRemaining' | 'courseraLaunchHref' | 'liveSessionTitle' | 'liveSessionWhen' | 'liveSessionStart' | 'missionsSummary'>) {
   const te = useTranslations('empty');
+  const tw = useTranslations('memberWorkspace.training');
   const pct = Math.max(0, Math.min(100, Math.round(progressPercent)));
 
   // Only show the Next Live Session card when we have a real session to show.
@@ -198,6 +204,8 @@ function MemberProgramOverview({
           lede="Modules, live sessions, and missions."
           icon={<GraduationCap size={13} aria-hidden="true" />}
         />
+        <MemberTrainingNav current="program" programSlug={programSlug} />
+        <p className={workspaceStyles.context}>{tw('learningContext')}</p>
         {/* Gradient hero */}
         <div
           className="wa-kit-card wa-kit-card--gradient-crimson wa-flex wa-flex-col md:wa-flex-row md:wa-items-center"

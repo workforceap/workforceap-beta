@@ -1,11 +1,15 @@
 process.env.TZ = 'UTC';
 
-import { renderToStaticMarkup } from 'react-dom/server';
+import { renderToStaticMarkup as renderStatic } from 'react-dom/server';
+import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import messages from '@/messages/en.json';
 
 vi.mock('next/navigation', () => ({
   redirect: vi.fn((url: string) => { throw new Error(`REDIRECT:${url}`); }),
   notFound: vi.fn(() => { throw new Error('NOT_FOUND'); }),
+  usePathname: () => '/partner/referred-members/member-1',
+  useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('next/headers', () => ({ headers: vi.fn(async () => new Headers()) }));
 vi.mock('next/link', () => ({
@@ -39,6 +43,10 @@ import { getPartnerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 
 const INSTANT = new Date('2026-09-19T02:30:00Z'); // 9:30 PM CDT, Sep 18
+
+function renderToStaticMarkup(node: React.ReactNode) {
+  return renderStatic(<NextIntlClientProvider locale="en" messages={messages} timeZone="America/Chicago">{node}</NextIntlClientProvider>);
+}
 
 describe('PartnerReferredMemberDetailPage timestamps', () => {
   beforeEach(() => {

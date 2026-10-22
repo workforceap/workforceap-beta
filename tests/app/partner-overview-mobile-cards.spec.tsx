@@ -10,7 +10,11 @@ import type { PartnerMemberRow } from '@/components/partner/PartnerReferredMembe
  */
 
 const mocks = vi.hoisted(() => ({ referrals: vi.fn(), user: vi.fn() }));
-vi.mock('next/navigation', () => ({ redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); } }));
+vi.mock('next/navigation', () => ({
+  redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); },
+  usePathname: () => '/partner',
+  useSearchParams: () => new URLSearchParams(),
+}));
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
 vi.mock('next/link', () => ({
   default: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a>,
@@ -153,7 +157,9 @@ describe('/partner overview canonical enrollment display', () => {
     expect(card).toHaveTextContent(PRIMARY_TITLE);
     expect(card).not.toHaveTextContent(LEGACY_TITLE);
     expect(within(card).getByText('Enrolled')).toBeVisible();
-    expect(card).toHaveAttribute('href', '/partner/referred-members/member-synthetic');
+    const href = new URL(card.getAttribute('href')!, 'https://workforceap.test');
+    expect(href.pathname).toBe('/partner/referred-members/member-synthetic');
+    expect(href.searchParams.get('returnTo')).toBe('/partner');
   });
 
   it('keeps the legacy-only program label for an unmigrated member', async () => {

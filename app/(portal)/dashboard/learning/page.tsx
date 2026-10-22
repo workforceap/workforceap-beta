@@ -8,6 +8,8 @@ import { getPathwayForProgram } from '@/lib/content/learningPathways';
 import { getProgramBySlug } from '@/lib/content/programs';
 import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import { buildPathwayMilestones } from '@/lib/content/pathwayStepDisplay';
+import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
+import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
 import PageHeader from '@/components/portal/PageHeader';
 import { getTranslations } from 'next-intl/server';
 import { CardHead, KitEmptyState, ProgressRing, ProgressBar, StatusTag } from '@/components/portal/kit';
@@ -42,9 +44,13 @@ const MODULE_ICONS: Record<string, string> = {
   Business: 'business_center',
 };
 
-export default async function LearningPage() {
+export default async function LearningPage({ searchParams }: { searchParams?: Promise<{ program?: string }> } = {}) {
   const user = await getUser();
   if (!user) redirect('/login?redirectTo=/dashboard/learning');
+
+  const params = await searchParams;
+  const requestedProgramSlug = typeof params?.program === 'string' ? params.program : null;
+  const tw = await getTranslations('memberWorkspace.training');
 
   const [allProgress, dbUser] = await Promise.all([
     prisma.pathwayStepProgress.findMany({
@@ -96,6 +102,7 @@ export default async function LearningPage() {
   const { activeProgramSlug: enrolledProgram } = resolveActiveDashboardProgram({
     enrollments: courseEnrollments,
     legacyEnrolledProgram: dbUser?.enrolledProgram ?? null,
+    requestedProgramSlug,
   });
   const activeEnrollment = courseEnrollments.find((enrollment) =>
     enrolledProgram
@@ -249,6 +256,11 @@ export default async function LearningPage() {
           {pathwayEmpty}
         </div>
       )}
+    </div>
+
+    <div style={{ paddingInline: 'var(--wa-pad-sm)', marginBottom: 20 }} className="wa-space-y-3">
+      <MemberTrainingNav current="learning" programSlug={enrolledProgram} />
+      <p className={workspaceStyles.context}>{tw('learningContext')}</p>
     </div>
 
     <LearningHubEnrolledCourses

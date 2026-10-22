@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { resolvePortalReturnTo } from '@/lib/nav/returnContext';
 import SuggestedProgramsRanked from '@/components/employer/SuggestedProgramsRanked';
 import { trackFunnelEvent } from '@/lib/analytics/events';
 import { EMPLOYER_JOB_SUBMIT_REVIEW_DRAFT_FLASH } from '@/lib/employer/employerJobFormFlash';
@@ -231,7 +232,7 @@ export default function JobForm({ job, initialData, companyName, programSlugs, i
         is_import_review: !!isImportReview,
         suggested_programs_count: programs.length,
       });
-      router.push('/employer/jobs');
+      router.push(resolvePortalReturnTo(new URLSearchParams(window.location.search).get('returnTo'), '/employer/jobs'));
       router.refresh();
     } catch {
       trackFunnelEvent('employer_job_review', 'network_error', {

@@ -50,13 +50,22 @@ describe('member AI Career Tools discovery', () => {
       .toHaveAttribute('href', '/dev/member/toolkit');
   });
 
+  it('preserves every tool family through the consolidated directory', () => {
+    render(<NextIntlClientProvider locale="en" messages={pickPortalClientMessages(en)}><VoiceStudioKit initialTab="toolkit" /></NextIntlClientProvider>);
+    const tools = within(screen.getByRole('region', { name: 'All career tools' }));
+    const paths = ['/dashboard/resume', '/dashboard/ai-tools/cover-letter', '/dashboard/ai-tools/skill-checkpoints', '/dashboard/ai-tools/interviews', '/dashboard/ai-tools/job-match-scorer', '/dashboard/ai-tools/skill-mapper', '/dashboard/ai-tools/training-bridge', '/dashboard/ai-tools/linkedin-headline', '/dashboard/ai-tools/linkedin-about', '/dashboard/ai-tools/gap-analyzer', '/dashboard/ai-tools/salary-negotiation', '/dashboard/ai-tools/benefits-cliff'];
+    const hrefs = tools.getAllByRole('link').map(link => link.getAttribute('href'));
+    for (const path of paths) expect(hrefs).toContain(path);
+    expect(tools.getByRole('link', { name: /Interviews\s*Prepare answers, practice with AI/ })).toHaveAttribute('href', '/dashboard/ai-tools/interviews');
+  });
+
   it('offers direct task starting points on the default hub without starting a voice session', () => {
     render(<NextIntlClientProvider locale="en" messages={pickPortalClientMessages(en)}><VoiceStudioKit /></NextIntlClientProvider>);
     const start = within(screen.getByRole('region', { name: 'Start with one task' }));
     expect(start.getByRole('link', { name: 'Improve my resume' }))
-      .toHaveAttribute('href', '/dashboard/ai-tools/resume-studio');
-    expect(start.getByRole('link', { name: 'Practice interview answers' }))
-      .toHaveAttribute('href', '/dashboard/ai-tools/interview-practice');
+      .toHaveAttribute('href', '/dashboard/resume');
+    expect(start.getByRole('link', { name: 'Interviews' }))
+      .toHaveAttribute('href', '/dashboard/ai-tools/interviews');
     expect(start.getByRole('link', { name: 'Write a cover letter' }))
       .toHaveAttribute('href', '/dashboard/ai-tools/cover-letter');
     expect(screen.getByRole('region', { name: 'Coaches' })).toBeInTheDocument();

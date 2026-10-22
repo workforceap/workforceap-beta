@@ -140,7 +140,7 @@ describe('same-page AI Tools navigation', () => {
     ['readiness', 'Readiness Coach'],
     ['resume', 'Resume Coach'],
     ['mock', 'Mock Interview'],
-    ['counselor', 'Lilley Career Coach'],
+    ['counselor', 'Lilley · AI career coach'],
     ['business', 'Career & Business Coach'],
   ] as [VoiceStudioAgentKey, string][])('applies an incoming %s deep link to the existing component', (key, label) => {
     const view = mount();
@@ -230,15 +230,15 @@ describe('same-page AI Tools navigation', () => {
     const view = mount();
     fireEvent.click(screen.getByRole('button', { name: /Resume Coach/ }));
     fireEvent.click(screen.getByRole('radio', { name: 'Coaches' }));
-    fireEvent.click(screen.getByRole('button', { name: /Lilley Career Coach/ }));
-    expectPracticeCoach('Lilley Career Coach');
+    fireEvent.click(screen.getByRole('button', { name: /Lilley · AI career coach/ }));
+    expectPracticeCoach('Lilley · AI career coach');
 
     navigate(view, 'tab=session&agent=resume&source=dashboard', { initialTab: 'session', initialAgent: 'resume' });
-    expectPracticeCoach('Lilley Career Coach');
+    expectPracticeCoach('Lilley · AI career coach');
     navigate(view, 'agent=resume&source=dashboard', { initialTab: 'coaches', initialAgent: 'resume' });
-    expectPracticeCoach('Lilley Career Coach');
+    expectPracticeCoach('Lilley · AI career coach');
     navigate(view, 'tab=session&agent=counselor&source=dashboard', { initialTab: 'session', initialAgent: 'counselor' });
-    expectPracticeCoach('Lilley Career Coach');
+    expectPracticeCoach('Lilley · AI career coach');
 
     navigate(view, 'tab=session&agent=resume&source=dashboard', { initialTab: 'session', initialAgent: 'resume' });
     expectPracticeCoach('Resume Coach');
@@ -450,7 +450,7 @@ describe('same-page AI Tools navigation', () => {
     navigate(view, 'tab=session&agent=counselor&source=dashboard', { initialTab: 'session', initialAgent: 'counselor' });
 
     expect(requestSignal?.aborted).toBe(true);
-    expectPracticeCoach('Lilley Career Coach');
+    expectPracticeCoach('Lilley · AI career coach');
     expect(screen.getByRole('button', { name: /^start session$/i })).toBeEnabled();
     expect(startSession).not.toHaveBeenCalled();
   });

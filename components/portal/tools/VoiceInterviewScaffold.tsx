@@ -11,6 +11,7 @@ import InterviewCoachingPanel from '@/components/portal/tools/InterviewCoachingP
 import MockInterviewVideoRecorder from '@/components/portal/tools/MockInterviewVideoRecorder';
 import AiToolLanguageSelector, { type AiToolLanguage } from '@/components/portal/tools/AiToolLanguageSelector';
 import { FormField } from '@/components/portal/kit';
+import { InterviewModeLinks } from '@/components/portal/InterviewModeLinks';
 
 const INTERVIEW_TYPES = ['Behavioral', 'Technical', 'General'] as const;
 const EXPERIENCE_LEVELS = [
@@ -67,8 +68,8 @@ const outlinePillStyle = {
  * Dedicated voice mock-interview entry: role + style, ElevenLabs session, live coaching panel.
  * Optional WebRTC camera+audio recording (uploaded to private storage; short-lived download link).
  */
-export default function VoiceInterviewScaffold() {
-  const [role, setRole] = useState('');
+export default function VoiceInterviewScaffold({ initialRole = '' }: { initialRole?: string } = {}) {
+  const [role, setRole] = useState(initialRole);
   const [experienceLevel, setExperienceLevel] = useState<'entry' | 'mid' | 'senior'>('entry');
   const [interviewType, setInterviewType] = useState<(typeof INTERVIEW_TYPES)[number]>('Behavioral');
   const [language, setLanguage] = useState<AiToolLanguage>('en');
@@ -116,6 +117,7 @@ export default function VoiceInterviewScaffold() {
 
   return (
     <div>
+      {!ready ? <InterviewModeLinks current="recorded" role={role} /> : null}
       {!ready ? (
         <div className="wa-kit-card wa-space-y-4" style={{ marginBottom: '1.25rem' }}>
           <AiToolLanguageSelector value={language} onChange={setLanguage} />

@@ -6,6 +6,7 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getUser } from '@/lib/auth/server';
 import { getScoreBreakdownSafeResult } from '@/lib/readiness/score';
+import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
 import PageHeader from '@/components/portal/PageHeader';
 import ReadinessMemberClient from './ReadinessMemberClient';
 import ReadinessMobileScoreCard from '@/components/portal/ReadinessMobileScoreCard';
@@ -121,6 +122,7 @@ export default async function DashboardReadinessPage({
         }
         breadcrumbs={[{ label: 'Member Portal', href: '/dashboard' }, { label: 'Job Readiness' }]}
       />
+      <MemberTrainingNav current="readiness" />
       <div className="md:wa-hidden" style={{ paddingBottom: '6rem' }}>
         <ReadinessMobileScoreCard
           overallScore={overallScore}

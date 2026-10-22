@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Children, isValidElement, type ComponentProps, type ReactElement, type ReactNode } from 'react';
+import { cleanup, render } from '@testing-library/react';
+import { withPortalIntl } from '../helpers/withPortalIntl';
 
 const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
@@ -8,6 +11,8 @@ const mocks = vi.hoisted(() => ({
   completeMemberCourse: vi.fn(),
   auditLog: vi.fn(),
   logAuditEvent: vi.fn(),
+  findLearningUser: vi.fn(),
+  getCourses: vi.fn(),
 }));
 
 vi.mock('@/lib/db/withRequestGuc', () => ({
@@ -17,6 +22,8 @@ vi.mock('@/lib/auth/server', () => ({ getUser: mocks.getUser }));
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     courseEnrollment: { findUnique: mocks.findEnrollment },
+    user: { findUnique: mocks.findLearningUser },
+    pathwayStepProgress: { findMany: async () => [] },
   },
 }));
 vi.mock('@/lib/member/courseCompletion', () => ({
@@ -24,9 +31,22 @@ vi.mock('@/lib/member/courseCompletion', () => ({
 }));
 vi.mock('@/lib/audit', () => ({ auditLog: mocks.auditLog }));
 vi.mock('@/lib/audit/log', () => ({ logAuditEvent: mocks.logAuditEvent }));
+vi.mock('next/navigation', () => ({
+  redirect: (href: string) => { throw new Error(`redirect:${href}`); },
+  useRouter: () => ({ refresh: vi.fn(), push: vi.fn(), replace: vi.fn() }),
+}));
+vi.mock('next-intl/server', () => ({ getTranslations: async () => (key: string) => key }));
+vi.mock('@/lib/content/learningPathways', () => ({ getPathwayForProgram: () => null }));
+vi.mock('@/lib/member/curriculumAssignment', () => ({ getProgramCoursesForCurriculumVersion: mocks.getCourses }));
+vi.mock('@/lib/member/skillMissions', () => ({ loadSkillMissionSummary: async () => null }));
+vi.mock('@/lib/coursera/memberSkillsetProgress', () => ({ loadMemberSkillsetProgress: async () => [] }));
 
 import { DIGITAL_LITERACY_PROGRAM_SLUG } from '@/shared/digitalLiteracyPathway';
 import { POST } from '@/app/api/member/courses/complete/route';
+import LearningPage from '@/app/(portal)/dashboard/learning/page';
+import LearningHubEnrolledCourses from '@/components/portal/LearningHubEnrolledCourses';
+
+afterEach(cleanup);
 
 function request(body: Record<string, unknown>) {
   return new Request('http://localhost/api/member/courses/complete', {
@@ -164,11 +184,41 @@ describe('Learning Hub completion identity contract', () => {
     expect(learningPage).toContain("activeEnrollment?.curriculumVersion ?? 'legacy-v1'");
   });
 
-  it('mounts the enrolled course list once so #course- anchors stay unique', () => {
-    expect(learningPage.match(/<LearningHubEnrolledCourses/g)).toHaveLength(1);
-    expect(learningPage.match(/programSlug=\{enrolledProgram\}/g)).toHaveLength(1);
-    expect(enrolledCourses).toContain('programSlug={programSlug}');
-    expect(trainingCourseList).toContain('id={`course-${c.slug}`}');
+  it('mounts the enrolled course list once so real #course- anchors stay unique', async () => {
+    const programSlug = 'it-support-professional-certificate-ibm';
+    const courses = [
+      { slug: 'fixture-first-course', name: 'First course', estimatedHours: 2 },
+      { slug: 'fixture-second-course', name: 'Second course', estimatedHours: 3 },
+    ];
+    mocks.getUser.mockResolvedValue({ id: 'user-1' });
+    mocks.findLearningUser.mockResolvedValue({
+      enrolledProgram: programSlug,
+      assessmentCompleted: true,
+      courseraEnrollmentApproved: true,
+      courseEnrollments: [{ id: 'enrollment-1', programSlug, isPrimary: true, curriculumVersion: 'fixture-v1', enrolledAt: new Date('2026-01-01') }],
+      courseProgress: [],
+      courseraCourseProgress: [],
+    });
+    mocks.getCourses.mockReturnValue(courses);
+    const page = await LearningPage();
+    const lists: ReactElement<ComponentProps<typeof LearningHubEnrolledCourses>>[] = [];
+    const collectCourseLists = (node: ReactNode) => {
+      Children.forEach(node, (child) => {
+        if (!isValidElement<{ children?: ReactNode }>(child)) return;
+        if (child.type === LearningHubEnrolledCourses) {
+          lists.push(child as ReactElement<ComponentProps<typeof LearningHubEnrolledCourses>>);
+        }
+        collectCourseLists(child.props.children);
+      });
+    };
+    collectCourseLists(page);
+    expect(lists).toHaveLength(1);
+    expect(lists[0].props).toEqual(expect.objectContaining({ programSlug, courses }));
+    const { container } = render(withPortalIntl(lists[0]));
+    expect([...container.querySelectorAll('[id^="course-"]')].map((course) => course.id)).toEqual([
+      'course-fixture-first-course',
+      'course-fixture-second-course',
+    ]);
   });
 
   it('threads the exact program slug through the Hub list into completion POST', () => {

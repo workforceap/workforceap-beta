@@ -121,12 +121,12 @@ describe('Counselor Today — waiting on your decision', () => {
     expect(tileValue()).toBe('0');
   });
 
-  it('a failed approval load shows a retry in that section only; the tile reads 0 and says so', () => {
+  it('a failed approval load shows a retry in that section only; the count remains unknown', () => {
     render(<CounselorTodayKit queue={attention} approvals={approvals} approvalsLoadError />);
     expect(within(section()).getByRole('heading', { level: 3 })).toHaveTextContent("Couldn't load the approval queue");
     expect(within(section()).getByRole('link', { name: /Retry/ })).toHaveAttribute('href', '/counselor/today');
     expect(within(section()).queryAllByTestId('approval-row')).toHaveLength(0);
-    expect(tileValue()).toBe('0');
+    expect(tileValue()).toBe('—');
     expect(screen.getByTestId('today-tile-awaiting-decision')).toHaveTextContent('Approval queue did not load');
     // The attention tiles and groups still render.
     expect(screen.getByTestId('today-group-at_risk')).toBeInTheDocument();

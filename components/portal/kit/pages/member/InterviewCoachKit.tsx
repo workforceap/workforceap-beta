@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { Mic } from 'lucide-react';
 import ToolHistoryPanel from '@/components/portal/ToolHistoryPanel';
@@ -37,10 +38,11 @@ export function InterviewCoachKit({
   initialQuestion?: string;
   initialFeedback?: string;
 }) {
+  const t = useTranslations('memberWorkspace.interviews');
   return (
     <ToolkitToolChrome
-      title="Interview coach"
-      lede="Run a mock interview and get feedback."
+      title={t('coachTitle')}
+      lede={t('coachIntro')}
       icon={<Mic size={13} aria-hidden="true" />}
       backHref={backHref}
       maxWidth={980}

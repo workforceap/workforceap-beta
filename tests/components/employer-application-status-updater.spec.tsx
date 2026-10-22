@@ -9,6 +9,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const refresh = vi.fn();
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh, push: vi.fn(), replace: vi.fn() }),
+  usePathname: () => '/employer/jobs/job-1/applicants',
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // The spinner reads window.matchMedia (reduced motion), which jsdom lacks.

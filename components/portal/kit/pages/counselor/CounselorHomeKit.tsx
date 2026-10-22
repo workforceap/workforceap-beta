@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import {
   Users,
   TriangleAlert,
@@ -28,7 +29,6 @@ import {
   type KitTone,
   type SparkStat,
 } from '@/components/portal/kit';
-import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 
 /**
  * Counselor Portal — HOME view ("Command Center" redesign).
@@ -132,6 +132,8 @@ const DEFAULT_LOAD_FAILED_COPY: CounselorHomeLoadFailedCopy = {
 };
 
 export interface CounselorHomeKitProps {
+  /** The shared Today workspace owns the page heading and gutter. */
+  embedded?: boolean;
   firstName?: string;
   greeting?: string;
 
@@ -296,6 +298,7 @@ function SessionListRow({ row, fallbackHref }: { row: CounselorSessionRow; fallb
 /* ---------------------------------------------------------------------- */
 
 export function CounselorHomeKit({
+  embedded = false,
   firstName,
   greeting = 'Caseload',
   assignedCount = 0,
@@ -391,14 +394,14 @@ export function CounselorHomeKit({
 
   return (
     <DesignSurface surface="dense">
-      <div style={{ padding: 'clamp(1rem, 4vw, 1.5rem)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div style={{ padding: embedded ? 0 : 'clamp(1rem, 4vw, 1.5rem)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
         {/* 1. Page opener */}
-        <PageOpener className="wa-mb-5"
+        {!embedded ? <PageOpener className="wa-mb-5"
           kicker={greeting}
           title={firstName ? `Hey, ${firstName}.` : 'Caseload'}
           lede="Know who needs me today."
-        />
+        /> : null}
 
         {/* 2. KPI row */}
         <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
@@ -461,7 +464,7 @@ export function CounselorHomeKit({
                     meta={queueRowMeta(row)}
                     flag={BUCKET_FLAG[row.bucket]}
                     action={
-                      <KitLinkButton href={row.href ?? `${memberHrefBase}/${row.memberId}`} label="View" variant="secondary" size="sm" />
+                      <PortalRecordLink href={row.href ?? `${memberHrefBase}/${row.memberId}`} className="wa-kit-cta wa-kit-cta--ghost">View</PortalRecordLink>
                     }
                   />
                 );

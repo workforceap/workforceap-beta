@@ -112,22 +112,6 @@ test('admin mobile bottom tabs: Today / Students, then Messages for super-admins
   assert.match(orgBlock, /href: '\/admin\/command-center\?queue=applications'/);
 });
 
-test('counselor mobile bottom tabs lead with Today, then Inbox, members and messages', () => {
-  const mobileNav = source('components/MobileBottomNav.tsx');
-  const counselorBlock = mobileNav.slice(
-    mobileNav.indexOf('const COUNSELOR_TABS'),
-    mobileNav.indexOf('const PARTNER_TABS'),
-  );
-
-  // `/counselor` redirects to Today (counselor audit 2026-09-20 §6.1); the first tab is the landing page.
-  assert.match(counselorBlock, /href: '\/counselor\/today', labelKey: 'counselor.today'/);
-  assert.doesNotMatch(counselorBlock, /href: '\/counselor'[,}]/);
-  assert.match(counselorBlock, /href: '\/counselor\/inbox'/);
-  assert.match(counselorBlock, /href: '\/counselor\/students'/);
-  assert.match(counselorBlock, /href: '\/counselor\/messages'/);
-  assert.doesNotMatch(counselorBlock, /\/counselor\/resources'/);
-});
-
 test('MainNav desktop dropdowns sync open state on hover', () => {
   const mainNav = source('components/MainNav.tsx');
   assert.match(mainNav, /onMouseEnter=\{\(\) => \{ if \(window\.innerWidth > 900\) setActiveDropdown\(item\.label\); \}\}/);

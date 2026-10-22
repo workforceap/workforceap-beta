@@ -8,7 +8,8 @@ import { MemberCertificatesKit } from '@/components/portal/kit/pages/member/Memb
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import CourseraProgressCoverageNotice from '@/components/portal/CourseraProgressCoverageNotice';
 import AddMemberWizard from '@/app/admin/members/new/AddMemberWizard';
-import { COUNSELOR_PORTAL_NAV_ITEMS } from '@/lib/nav/portalNav';
+import { COUNSELOR_PORTAL_NAV_ITEMS, navItemsForActiveRoute } from '@/lib/nav/portalNav';
+import { getBestActiveHref } from '@/lib/nav/activeRoute';
 import en from '@/messages/en.json';
 
 vi.mock('next/navigation', () => ({
@@ -47,17 +48,40 @@ describe('certificates page primary CTA', () => {
 });
 
 describe('counselor navigation', () => {
-  it('lists every reachable counselor route', () => {
-    const hrefs = new Set(COUNSELOR_PORTAL_NAV_ITEMS.map((item) => item.href));
-    for (const route of [
+  it('keeps every canonical counselor destination and highlights Today for its preserved views', () => {
+    const canonicalRoutes = [
+      '/counselor/today',
+      '/counselor/sessions',
+      '/counselor/students',
+      '/counselor/lab-reviews',
+      '/counselor/messages',
+      '/counselor/placements',
+      '/counselor/notifications',
+      '/counselor/profile',
+      '/counselor/resources',
+      '/counselor/guide',
+    ];
+    const hrefs = COUNSELOR_PORTAL_NAV_ITEMS.map((item) => item.href);
+    expect(hrefs).toEqual(canonicalRoutes);
+    const activeRoutes = navItemsForActiveRoute(COUNSELOR_PORTAL_NAV_ITEMS);
+    for (const route of canonicalRoutes) {
+      expect(getBestActiveHref(route, activeRoutes), route).toBe(route);
+    }
+
+    const preservedTodayRoutes = [
+      '/counselor',
+      '/counselor/overview',
+      '/counselor/inbox',
       '/counselor/at-risk',
       '/counselor/triage',
       '/counselor/queue',
       '/counselor/inactive-members',
-      '/counselor/placements',
-      '/counselor/notifications',
-    ]) {
-      expect(hrefs.has(route), route).toBe(true);
+    ];
+    const today = COUNSELOR_PORTAL_NAV_ITEMS.find((item) => item.href === '/counselor/today');
+    expect(new Set(today?.aliases)).toEqual(new Set(preservedTodayRoutes));
+    for (const route of preservedTodayRoutes) {
+      expect(getBestActiveHref(route, activeRoutes), route).toBe('/counselor/today');
+      expect(hrefs, route).not.toContain(route);
     }
   });
 });

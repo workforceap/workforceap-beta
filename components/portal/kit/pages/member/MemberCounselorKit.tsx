@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { MessagesSquare, ArrowRight } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
@@ -29,6 +30,7 @@ export interface MemberCounselorKitProps {
 }
 
 export function MemberCounselorKit({ title, subtitle, voiceSurface, pastSessions, pastSessionsLabel }: MemberCounselorKitProps) {
+  const t = useTranslations('memberWorkspace.ai');
   return (
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 900, margin: '0 auto', padding: 16 }} className="wa-space-y-6">
@@ -38,6 +40,8 @@ export function MemberCounselorKit({ title, subtitle, voiceSurface, pastSessions
           title={title}
           lede={subtitle}
         />
+
+        <p className="wa-kit-lede">{t('humanDescription')} <Link href="/dashboard/messages" className="wa-page-action wa-kit-focus">{t('humanLink')}</Link></p>
 
         <div style={{ maxWidth: 640, margin: '0 auto', width: '100%' }}>{voiceSurface}</div>
 

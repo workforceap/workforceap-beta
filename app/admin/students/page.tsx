@@ -7,6 +7,12 @@ import { getTranslations } from 'next-intl/server';
 import { resolveAdminPageTenant } from '@/lib/tenant/adminPageScope';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { StudentsRosterKit } from '@/components/portal/kit/pages/admin-subviews/StudentsRosterKit';
+import Link from 'next/link';
+import StudentsWorkspace from '@/components/admin/StudentsWorkspace';
+import MemberManagementView from '@/components/admin/workspace/MemberManagementView';
+import MemberInterviewReadyView from '@/components/admin/workspace/MemberInterviewReadyView';
+import MemberJobReadyView from '@/components/admin/workspace/MemberJobReadyView';
+import { parseStudentsWorkspaceView, parseStudentsReadinessView } from '@/lib/admin/studentsWorkspace';
 import { loadStudentsRoster, studentsRosterNotice } from '@/lib/admin/studentsRosterLoad';
 import { loadTrainingRoster } from '@/lib/admin/trainingRosterLoad';
 import { loadStudentsRosterFocus, STUDENTS_FOCUS_UNAVAILABLE_NOTICE } from '@/lib/admin/studentsRosterFocus';
@@ -29,7 +35,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 /**
- * The one admin roster. `?view=training` swaps the column preset to training
+ * The Students workspace. Roster, management, training and readiness views
+ * reuse their original scoped loaders and actions. `?view=training` swaps the column preset to training
  * progress (same kit, same member population); the default is the Students
  * roster. `?needs=at-risk|stalled` (the attention model's links from the
  * Command Center and overview) opens the nearest chip; `?needs=new-applicants`
@@ -61,9 +68,25 @@ export default async function AdminStudentsPage({
     redirect(`/admin/members${queryString ? `?${queryString}` : ''}`);
   }
 
+  const workspaceView = parseStudentsWorkspaceView(params.view);
+  if (workspaceView === 'manage') {
+    const content = await MemberManagementView({ searchParams: Promise.resolve(params), embedded: true });
+    return <StudentsWorkspace view="manage">{content}</StudentsWorkspace>;
+  }
+  if (workspaceView === 'readiness') {
+    const readiness = parseStudentsReadinessView(params.readiness);
+    const content = readiness === 'job'
+      ? await MemberJobReadyView({ searchParams: Promise.resolve(params), embedded: true })
+      : await MemberInterviewReadyView({ embedded: true });
+    return <StudentsWorkspace view="readiness" readiness={readiness}>{content}</StudentsWorkspace>;
+  }
+
   const view = parseStudentsRosterView(params.view);
   const needs = parseStudentsNeeds(params[STUDENTS_NEEDS_PARAM]);
   const initialChip = chipForStudentsNeeds(needs, view);
+  const tableQuery = new URLSearchParams(Object.entries(params).flatMap(([key, value]) =>
+    typeof value === 'string' ? [[key, value]] : [],
+  )).toString();
 
   if (view === 'training') {
     const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
@@ -71,9 +94,14 @@ export default async function AdminStudentsPage({
     // The legacy dual-table still reads its own data, so it stays the fallback.
     if (!training.ok) redirect(TRAINING_PROGRESS_LEGACY_HREF);
     return (
-      <>
+      <StudentsWorkspace view="training">
         {training.secondaryLoadFailed ? <span hidden data-portal-error-state="admin-students-secondary-load" /> : null}
+        <p className="wa-mb-4"><Link href={TRAINING_PROGRESS_LEGACY_HREF} className="wa-page-action">Detailed provider and curriculum view</Link></p>
         <StudentsRosterKit
+          key={`training:${tableQuery}`}
+          urlState={tableQuery}
+          embedded
+          showViewNav={false}
           view="training"
           viewHrefs={STUDENTS_ROSTER_VIEW_HREFS}
           students={training.students}
@@ -82,7 +110,7 @@ export default async function AdminStudentsPage({
           initialChip={initialChip}
           notice={studentsRosterNotice(training)}
         />
-      </>
+      </StudentsWorkspace>
     );
   }
 
@@ -100,9 +128,13 @@ export default async function AdminStudentsPage({
     .join(' ') || undefined;
 
   return (
-    <>
+    <StudentsWorkspace view="roster">
       {roster.secondaryLoadFailed ? <span hidden data-portal-error-state="admin-students-secondary-load" /> : null}
       <StudentsRosterKit
+        key={`roster:${tableQuery}`}
+        urlState={tableQuery}
+        embedded
+        showViewNav={false}
         view="roster"
         viewHrefs={STUDENTS_ROSTER_VIEW_HREFS}
         students={roster.students}
@@ -111,6 +143,6 @@ export default async function AdminStudentsPage({
         focus={focusLoad.focus ?? undefined}
         notice={notice}
       />
-    </>
+    </StudentsWorkspace>
   );
 }

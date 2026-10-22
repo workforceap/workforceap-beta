@@ -8,7 +8,7 @@ import type { AtRiskMember } from '@/lib/member/atRiskRow';
 import { ATTENTION_REASON_META } from '@/lib/attention/reasons';
 import { MEMBER_REQUEST_FAILURE } from '@/lib/portal/memberRequestFailure';
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/dev/test', useSearchParams: () => new URLSearchParams(), useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock('@/components/portal/counselor/AtRiskDetailModal', () => ({ default: () => null }));
 vi.mock('@/components/portal/PortalInlineSpinner', () => ({ PortalInlineSpinner: () => <span aria-hidden="true" /> }));
 

@@ -10,7 +10,7 @@ import { fireEvent } from '@testing-library/react';
 /**
  * Ops (10/8/26): members were not finding the WIOA Preassessment or the AI
  * Career Tools. Both must be reachable from the top of the member home and in
- * the first phone tabs, without digging through menus.
+ * the phone navigation, without opening More pages.
  */
 
 const nav = vi.hoisted(() => ({ pathname: '/dashboard' }));
@@ -104,17 +104,32 @@ describe('preassessment login prompt (logins 1-5)', () => {
 });
 
 describe('member phone nav', () => {
-  it('shows AI Career Tools and the WIOA preassessment within the first four tabs', () => {
+  it('keeps five daily destinations and the WIOA preassessment directly visible while More pages is closed', () => {
     nav.pathname = '/dashboard';
     render(
       <NextIntlClientProvider locale="en" messages={en} timeZone="America/Chicago">
         <MemberPortalTopNav />
       </NextIntlClientProvider>,
     );
-    const links = within(screen.getByRole('navigation', { name: 'Member portal' })).getAllByRole('link');
-    const firstFour = links.slice(0, 4).map((link) => link.getAttribute('href'));
-    expect(firstFour).toContain('/dashboard/ai-tools');
-    expect(firstFour).toContain('/dashboard/assessment');
-    expect(links.map((l) => l.textContent?.trim())).toContain('WIOA Preassessment');
+    const navigation = within(screen.getByRole('navigation', { name: 'Member portal' }));
+    const more = navigation.getByRole('button', { name: en.nav.morePages });
+    expect(more).toHaveAttribute('aria-expanded', 'false');
+    const extraPages = document.getElementById(more.getAttribute('aria-controls')!);
+    expect(extraPages).toHaveAttribute('hidden');
+    const preassessment = navigation.getByRole('link', { name: 'WIOA Preassessment' });
+    expect(preassessment).toHaveAttribute('href', '/dashboard/assessment');
+    expect(preassessment).toBeVisible();
+    expect(extraPages).not.toContainElement(preassessment);
+    expect(navigation.getByRole('link', { name: 'AI Career Tools' })).toBeVisible();
+    // The daily destinations retain their order; the assessment is its own
+    // always-visible utility link, outside the collapsed secondary pages.
+    expect(navigation.getAllByRole('link').map((link) => link.getAttribute('href'))).toEqual([
+      '/dashboard',
+      '/dashboard/program',
+      '/dashboard/jobs',
+      '/dashboard/ai-tools',
+      '/dashboard/messages',
+      '/dashboard/assessment',
+    ]);
   });
 });

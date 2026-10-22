@@ -9,6 +9,7 @@ import {
   REPORTING_HUB_PATH,
   REPORTING_TAB_PARAM,
   parseReportingTab,
+  parseReportingPeriod,
   type ReportingTabId,
 } from '@/lib/admin/reportingHub';
 import { ReportingHubKit } from '@/components/portal/kit/pages/admin-subviews/ReportingHubKit';
@@ -47,6 +48,7 @@ export default async function AdminReportingPage({
 
   const params = (await searchParams) ?? {};
   const tab: ReportingTabId = parseReportingTab(params[REPORTING_TAB_PARAM]);
+  const period = parseReportingPeriod(params.period);
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
   // Sections are async server components awaited here (not mounted as
@@ -64,7 +66,7 @@ export default async function AdminReportingPage({
       content = await ReportingCourseraSection({ scope, userId: user.id, readOnlyAudit });
       break;
     case 'exports':
-      content = await ReportingExportsSection();
+      content = await ReportingExportsSection({ period });
       break;
     case 'overview':
     default:
@@ -72,5 +74,5 @@ export default async function AdminReportingPage({
       break;
   }
 
-  return <ReportingHubKit activeTab={tab}>{content}</ReportingHubKit>;
+  return <ReportingHubKit activeTab={tab} period={period} superAdmin={scope.superAdmin}>{content}</ReportingHubKit>;
 }

@@ -78,6 +78,7 @@ import { KitEmptyState } from '../KitEmptyState';
 import { StatusTag } from '../StatusTag';
 import { VoiceOrb } from '../VoiceOrb';
 import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
+import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
 
 type StudioTab = 'coaches' | 'session' | 'studio' | 'toolkit';
 export type VoiceStudioAgentKey = 'readiness' | 'resume' | 'mock' | 'counselor' | 'business';
@@ -142,7 +143,7 @@ const SESSION_AGENTS: Record<VoiceStudioAgentKey, SessionAgentConfig> = {
     ...AGENT_ACCENT.crimson,
   },
   counselor: {
-    label: 'Lilley Career Coach',
+    label: 'Lilley · AI career coach',
     endpoint: '/api/counselor/session',
     dataUseNotice: LILLEY_DATA_USE_NOTICE,
     ...AGENT_ACCENT.blue,
@@ -162,14 +163,15 @@ const SESSION_AGENTS: Record<VoiceStudioAgentKey, SessionAgentConfig> = {
  */
 const TOOL_HREF = {
   'readiness-coach': '/dashboard/ai-tools/readiness-coach',
-  'resume-coach': '/dashboard/ai-tools/resume-coach',
+  'resume-coach': '/dashboard/resume?view=coach',
   counselor: '/dashboard/counselor',
   'career-business-coach': '/dashboard/ai-tools/career-business-coach',
   'elevator-pitch': '/dashboard/ai-tools/elevator-pitch',
-  'resume-studio': '/dashboard/ai-tools/resume-studio',
-  'resume-rewriter': '/dashboard/ai-tools/resume-rewriter',
+  'resume-studio': '/dashboard/resume',
+  'resume-rewriter': '/dashboard/resume?view=rewrite',
   'cover-letter': '/dashboard/ai-tools/cover-letter',
   'skill-checkpoints': '/dashboard/ai-tools/skill-checkpoints',
+  interviews: '/dashboard/ai-tools/interviews',
   'interview-practice': '/dashboard/ai-tools/interview-practice',
   'interview-coach': '/dashboard/ai-tools/interview-coach',
   'job-match-scorer': '/dashboard/ai-tools/job-match-scorer',
@@ -227,6 +229,7 @@ export function VoiceStudioKit({
   initialAgent,
 }: VoiceStudioKitProps) {
   const t = useTranslations('aiToolsDiscovery');
+  const ti = useTranslations('memberWorkspace.interviews');
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -362,7 +365,7 @@ export function VoiceStudioKit({
             </p>
             <HStack gap={3} wrap="wrap">
               <KitLinkButton href={TOOL_HREF['resume-studio']} label={t('resume')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
-              <KitLinkButton href={TOOL_HREF['interview-practice']} label={t('interview')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+              <KitLinkButton href={TOOL_HREF.interviews} label={ti('title')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
               <KitLinkButton href={TOOL_HREF['cover-letter']} label={t('coverLetter')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
             </HStack>
             <p className="wa-kit-meta wa-m-0">
@@ -457,8 +460,8 @@ const COACH_CARDS: CoachCard[] = [
     variant: 'counselor',
     Icon: Headphones,
     badge: 'LILLEY',
-    title: 'Lilley Career Coach',
-    body: 'Knows your WorkforceAP plan, training status, and Coursera progress. Ends with a saved three-step action plan.',
+    title: 'Lilley · AI career coach',
+    body: 'Talk with an AI coach about your WorkforceAP plan, training, and next step. Use the full Lilley workspace for saved sessions and action plans.',
     ctaIcon: Mic,
     cta: 'Start session',
     agent: SESSION_AGENTS.counselor,
@@ -488,6 +491,7 @@ const COACH_CARDS: CoachCard[] = [
 ];
 
 function CoachesPanel({ onPick }: { onPick: (agent: SessionAgentConfig) => void }) {
+  const t = useTranslations('memberWorkspace.ai');
   return (
     <section style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div className="wa-flex wa-items-center wa-justify-between wa-flex-wrap" style={{ gap: 12 }}>
@@ -514,6 +518,11 @@ function CoachesPanel({ onPick }: { onPick: (agent: SessionAgentConfig) => void 
           <CoachCardView key={c.key} card={c} onPick={onPick} />
         ))}
       </div>
+      <div className={workspaceStyles.navigation}>
+        <Link href={TOOL_HREF['resume-coach']} className="wa-kit-focus">{t('openResumeCoach')}</Link>
+        <Link href={TOOL_HREF.counselor} className="wa-kit-focus">{t('lilley')}</Link>
+        <Link href="/dashboard/messages" className="wa-kit-focus">{t('humanLink')}</Link>
+      </div>
     </section>
   );
 }
@@ -530,7 +539,10 @@ const GOLD_CARD_SHADOW = '0 10px 15px -3px color-mix(in srgb, var(--wa-gold) 15%
 const DARK_CARD_SHADOW = '0 10px 15px -3px color-mix(in srgb, var(--wa-sidebar-bg) 20%, transparent)';
 
 function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: SessionAgentConfig) => void }) {
-  const { variant, Icon, badge, title, body, ctaIcon: Cta, cta } = card;
+  const t = useTranslations('memberWorkspace.ai');
+  const { variant, Icon, badge, title: originalTitle, body: originalBody, ctaIcon: Cta, cta } = card;
+  const title = card.key === 'counselor' ? t('lilley') : originalTitle;
+  const body = card.key === 'counselor' ? t('lilleyDescription') : originalBody;
 
   // Per-variant styling roles, pulled from the mockup.
   const isLightBody = variant === 'counselor' || variant === 'gold-light';
@@ -688,7 +700,9 @@ function formatClock(totalSeconds: number): string {
  * live session, not canned content.
  */
 function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
-  const { label, endpoint, payload, accent, accentDark, solid, askRole, dataUseNotice } = agent;
+  const t = useTranslations('memberWorkspace.ai');
+  const { label: originalLabel, endpoint, payload, accent, accentDark, solid, askRole, dataUseNotice } = agent;
+  const label = agent === SESSION_AGENTS.counselor ? t('lilley') : originalLabel;
   const [phase, setPhase] = useState<SessionPhase>('idle');
   const [error, setError] = useState('');
   const [agentSpeaking, setAgentSpeaking] = useState(false);
@@ -1333,6 +1347,7 @@ function scoreBand(score: number): { color: string; label: string } {
 }
 
 function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; onResumeCoachNavigate: () => void }) {
+  const t = useTranslations('memberWorkspace.ai');
   const hasResume = data.hasResume;
   const score =
     typeof data.structuralScore === 'number'
@@ -1399,6 +1414,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
         />
       </div>
 
+      <p className={workspaceStyles.context}>{t('resumeCoachContext')} <Link href={TOOL_HREF['resume-coach']} className="wa-page-action wa-kit-focus">{t('openResumeCoach')}</Link></p>
       {hasResume && score !== null ? (
         <>
           {/* score + fixes */}
@@ -1599,7 +1615,7 @@ const TOOLKIT_STEPS: ToolStep[] = [
     label: 'Resume',
     title: 'Get applications ready',
     tools: [
-      { Icon: FileText, title: 'Resume Studio', body: 'Score, rewrite & talk through your resume.', tag: 'BETA', href: TOOL_HREF['resume-studio'] },
+      { Icon: FileText, title: 'Resume', body: 'Files, scoring, improvements, and your AI resume coach.', tag: 'BETA', href: TOOL_HREF['resume-studio'] },
       { Icon: MailOpen, title: 'Cover Letter', body: 'Tailored to any saved job in seconds.', href: TOOL_HREF['cover-letter'] },
       { Icon: CheckCircle2, title: 'Skill Checkpoints', body: "Verify what you've actually mastered.", href: TOOL_HREF['skill-checkpoints'] },
     ],
@@ -1609,11 +1625,10 @@ const TOOLKIT_STEPS: ToolStep[] = [
     label: 'Interview',
     title: 'Prep and target the role',
     tools: [
-      { Icon: AudioLines, title: 'Interview Practice', body: 'Live mock interviews with voice coaching.', tag: 'VOICE', href: TOOL_HREF['interview-practice'] },
-      { Icon: Headset, title: 'Interview Coach', body: 'Question-by-question guidance.', href: TOOL_HREF['interview-coach'] },
+      { Icon: AudioLines, title: 'Interviews', body: 'Prepare answers, practice with AI, record a mock, or assemble your prep bundle.', href: TOOL_HREF.interviews },
       { Icon: Search, title: 'Job Match Scorer', body: 'See how you match a specific job.', href: TOOL_HREF['job-match-scorer'] },
       { Icon: Network, title: 'Skill Mapper', body: 'Find skills employers want.', href: TOOL_HREF['skill-mapper'] },
-      { Icon: Route, title: 'Training Bridge', body: 'Map missing skills to free training.', tag: 'BETA', href: TOOL_HREF['training-bridge'] },
+      { Icon: Route, title: 'Training Bridge', body: 'Connect a saved target occupation to training options.', tag: 'BETA', href: TOOL_HREF['training-bridge'] },
     ],
   },
   {
@@ -1704,7 +1719,10 @@ function ToolkitPanel() {
 }
 
 function ToolCardView({ tool }: { tool: ToolCard }) {
-  const { Icon, title, body, tag, href } = tool;
+  const t = useTranslations('memberWorkspace');
+  const { Icon, title: originalTitle, body: originalBody, tag, href } = tool;
+  const title = href === TOOL_HREF.interviews ? t('interviews.title') : href === TOOL_HREF['resume-studio'] ? t('resume.metaTitle') : originalTitle;
+  const body = href === TOOL_HREF.interviews ? t('ai.interviewDirectory') : href === TOOL_HREF['resume-studio'] ? t('ai.resumeDirectory') : href === TOOL_HREF['training-bridge'] ? t('ai.trainingDirectory') : originalBody;
 
   return (
     <Link href={href} className="wa-kit-toolkit-row wa-kit-focus">

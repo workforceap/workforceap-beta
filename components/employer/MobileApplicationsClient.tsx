@@ -1,15 +1,19 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import Link from 'next/link';
+import type { JobPostingApplicationStatus } from '@prisma/client';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { JOB_APPLICATION_STATUS_KEYS, jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 import EmployerApplicationChatClient from '@/components/portal/EmployerApplicationChatClient';
 import { StatusTag, type KitTone } from '@/components/portal/kit';
 import type { AppMsg, EmployerApplicationRow } from './EmployerApplicationsClient';
+import { employerApplicationsListHref, type EmployerApplicationsSort } from '@/lib/employer/employerApplicationsListQuery';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 
 const STATUS_CHIP_FILTERS = [
-  { label: 'All', value: 'all' },
+  { label: 'All', value: 'all' as const },
   ...JOB_APPLICATION_STATUS_KEYS.map((value) => ({ label: jobApplicationStatusLabel(value, 'employer'), value })),
 ];
 
@@ -49,18 +53,31 @@ function initials(name: string | null): string {
 
 export default function MobileApplicationsClient({
   initialRows,
+  activeStatusFilter = null,
+  activeSort = 'applied_desc',
 }: {
   initialRows: EmployerApplicationRow[];
+  activeStatusFilter?: JobPostingApplicationStatus | null;
+  activeSort?: EmployerApplicationsSort;
 }) {
   const tCommon = useTranslations('common');
+  const t = useTranslations('employer');
   const [rows, setRows] = useState(initialRows);
-  const [filter, setFilter] = useState('all');
+  const filter = activeStatusFilter ?? 'all';
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [openChatId, setOpenChatId] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<Record<string, AppMsg[]>>({});
   const [chatLoadingId, setChatLoadingId] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Pagination/filter navigation reuses this client island. Replace the loaded
+  // rows so a new server page never keeps the previous applicants on screen.
+  useEffect(() => {
+    setRows(initialRows);
+    setExpandedId(null);
+    setOpenChatId(null);
+  }, [initialRows]);
 
   const patchStatus = useCallback(async (id: string, status: string) => {
     setBusyId(id);
@@ -122,8 +139,8 @@ export default function MobileApplicationsClient({
     setOpenChatId(applicationId);
   }, [chatMessages, openChatId]);
 
-  const visible =
-    filter === 'all' ? rows : rows.filter((r) => r.status === filter);
+  // The same server filter and pager now serve both responsive layouts.
+  const visible = rows;
 
   return (
     <div>
@@ -132,17 +149,18 @@ export default function MobileApplicationsClient({
         {STATUS_CHIP_FILTERS.map((f) => {
           const active = filter === f.value;
           return (
-            <button type="button"
+            <Link
               key={f.value}
-              onClick={() => setFilter(f.value)}
-              className="text-xs font-semibold transition-colors"
+              href={employerApplicationsListHref({ status: f.value, sort: activeSort })}
+              aria-current={active ? 'page' : undefined}
+              className="wa-kit-focus wa-text-sm wa-font-semibold"
               style={Object.assign(
                 { flexShrink: 0, padding: '0.375rem 1rem', borderRadius: '9999px' },
                 active ? { background: 'var(--color-accent)', color: '#ffffff' } : { background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' }
               )}
             >
               {f.label}
-            </button>
+            </Link>
           );
         })}
       </div>
@@ -220,6 +238,9 @@ export default function MobileApplicationsClient({
 
                     {/* Action buttons */}
                     <div className="flex flex-col gap-2" style={{ marginBottom: '0.5rem' }}>
+                      <PortalRecordLink href={`/employer/applications/${app.id}`} className="wa-kit-cta wa-mb-2">
+                        {t('applicationReviewMetaTitle')}
+                      </PortalRecordLink>
                       <button
                         type="button"
                         disabled={isChatLoading}

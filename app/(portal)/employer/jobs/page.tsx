@@ -7,6 +7,7 @@ import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
+import EmployerJobsActions from '@/components/employer/EmployerJobsActions';
 import EmployerJobsBoard from '@/components/employer/EmployerJobsBoard';
 import EmployerJobQuickActions from '@/components/employer/EmployerJobQuickActions';
 import PortalEmptyState from '@/components/portal/PortalEmptyState';
@@ -138,26 +139,7 @@ export default async function EmployerJobsPage({ searchParams }: SearchProps) {
         kicker={t('employerPortal')}
         title={t('jobPostings')}
         subtitle={t('managePostingsAndCandidates')}
-        action={
-          <>
-            <div className="md:wa-hidden">
-              <Link href="/employer/jobs/new" className="btn btn-primary btn-sm">
-                <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">add</span>
-                {t('postJob')}
-              </Link>
-            </div>
-            <div className="wa-hidden md:wa-block">
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <Link href="/employer/jobs/import" className="btn btn-muted">
-                  {t('importJobsBtn')}
-                </Link>
-                <Link href="/employer/jobs/new" className="btn btn-primary">
-                  {t('postAJobBtn')}
-                </Link>
-              </div>
-            </div>
-          </>
-        }
+        action={<EmployerJobsActions labels={{ nav: t('jobsWorkspaceActions'), jobs: t('myJobs'), post: t('postAJobBtn'), import: t('importJobsBtn') }} />}
       />
 
       {/* ── Mobile section ── */}

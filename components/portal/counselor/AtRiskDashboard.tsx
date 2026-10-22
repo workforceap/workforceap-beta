@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState, useCallback, type ReactNode } from 'react';
-import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
@@ -202,6 +203,8 @@ export function AtRiskDashboardView({
   onUpdateStatus,
   onBulkAcknowledge}: AtRiskDashboardViewProps) {
   const tCommon = useTranslations('common');
+  const pathname = usePathname();
+  const params = useSearchParams();
   const tEmpty = useTranslations('empty');
   // Local mirror of `members` so the detail modal's status-change callback
   // (which — matching the legacy behavior — only syncs local UI state, it
@@ -212,14 +215,32 @@ export function AtRiskDashboardView({
   }, [members]);
 
   // Filters
-  const [severityFilter, setSeverityFilter] = useState<AtRiskMember['riskLevel'] | 'all'>('all');
-  const [statusFilter, setStatusFilter] = useState<AtRiskMember['status'] | 'all'>('all');
-  const [unacknowledgedOnly, setUnacknowledgedOnly] = useState(false);
-  const [sortMode, setSortMode] = useState<SortMode>('risk');
+  const [severityFilter, setSeverityFilter] = useState<AtRiskMember['riskLevel'] | 'all'>(() => {
+    const value = params?.get('severity');
+    return RISK_LEVEL_ORDER.includes(value as AtRiskMember['riskLevel']) ? value as AtRiskMember['riskLevel'] : 'all';
+  });
+  const [statusFilter, setStatusFilter] = useState<AtRiskMember['status'] | 'all'>(() => {
+    const value = params?.get('caseStatus');
+    return value && Object.hasOwn(STATUS_LABEL, value) ? value as AtRiskMember['status'] : 'all';
+  });
+  const [unacknowledgedOnly, setUnacknowledgedOnly] = useState(() => params?.get('unacknowledged') === '1');
+  const [sortMode, setSortMode] = useState<SortMode>(() => params?.get('riskSort') === 'last_activity' ? 'last_activity' : 'risk');
 
   // Search + program filter
-  const [searchQuery, setSearchQuery] = useState('');
-  const [programFilter, setProgramFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState(() => params?.get('caseSearch') ?? '');
+  const [programFilter, setProgramFilter] = useState<string>(() => params?.get('caseProgram') ?? 'all');
+
+  const returnParams = new URLSearchParams(params?.toString() ?? '');
+  for (const [key, value] of Object.entries({
+    severity: severityFilter === 'all' ? '' : severityFilter,
+    caseStatus: statusFilter === 'all' ? '' : statusFilter,
+    unacknowledged: unacknowledgedOnly ? '1' : '', riskSort: sortMode,
+    caseSearch: searchQuery, caseProgram: programFilter === 'all' ? '' : programFilter,
+  })) {
+    if (value) returnParams.set(key, value);
+    else returnParams.delete(key);
+  }
+  const returnTo = `${pathname || '/counselor/at-risk'}${returnParams.size ? `?${returnParams.toString()}` : ''}`;
 
   // Selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -744,6 +765,7 @@ export function AtRiskDashboardView({
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {filteredMembers.map((row) => (
               <RiskRow
+                returnTo={returnTo}
                 key={row.alertId}
                 row={row}
                 selected={selectedIds.has(row.alertId)}
@@ -1019,6 +1041,7 @@ function FactorChips({ factors }: { factors: AtRiskFactor[] }) {
 }
 
 function RiskRow({
+  returnTo,
   row,
   selected,
   onToggleSelect,
@@ -1026,6 +1049,7 @@ function RiskRow({
   onAcknowledge,
   onResolve,
   acting}: {
+  returnTo: string;
   row: AtRiskMember;
   selected: boolean;
   onToggleSelect: () => void;
@@ -1138,7 +1162,8 @@ function RiskRow({
             {acting ? <PortalInlineSpinner size={12} /> : 'Resolve'}
           </button>
         )}
-        <Link
+        <PortalRecordLink
+          returnTo={returnTo}
           href={`/counselor/students/${encodeURIComponent(row.userId)}#counselor-member-messages`}
           className="btn btn-outline btn-sm"
           style={{ fontSize: 13, padding: '5px 10px' }}
@@ -1146,15 +1171,16 @@ function RiskRow({
         >
           <MessageSquare size={12} style={{ marginRight: 6, verticalAlign: 'middle' }} />
           Message
-        </Link>
-        <Link
+        </PortalRecordLink>
+        <PortalRecordLink
+          returnTo={returnTo}
           href={`/counselor/students/${row.userId}`}
           className="btn btn-outline btn-sm"
           style={{ fontSize: 13, padding: '5px 10px' }}
           title="Counselor student profile and history"
         >
           View
-        </Link>
+        </PortalRecordLink>
       </div>
     </div>
   );

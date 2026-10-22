@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import dynamic from 'next/dynamic';
+import { useTranslations } from 'next-intl';
+import { Button } from '@astryxdesign/core/Button';
 import {
   UploadCloud,
   Sparkles,
@@ -23,6 +25,7 @@ import {
 } from "@/lib/portal/memberResumeUpload";
 import { trackFunnelEvent } from "@/lib/analytics/events";
 import { CardHead, ProgressBar, StatusTag } from '@/components/portal/kit';
+import styles from '@/components/portal/MemberWorkspace.module.css';
 
 type WitData = {
   name: string;
@@ -39,6 +42,9 @@ type ResumeClientProps = {
   hasOriginal: boolean;
   hasEnhanced: boolean;
   layout?: "side-by-side";
+  active?: boolean;
+  /** Synthetic /dev proof only. Account reads, analytics and mutations are disabled. */
+  previewData?: { originalText: string; enhancedText: string };
 };
 
 function isPdfPreviewErrorDocument(doc: Document | null): boolean {
@@ -57,7 +63,10 @@ export default function ResumeClient({
   hasOriginal: initialHasOriginal,
   hasEnhanced: initialHasEnhanced,
   layout,
+  active = true,
+  previewData,
 }: ResumeClientProps) {
+  const tw = useTranslations('memberWorkspace.resume');
   const recommendedProfileCompleteness = 50;
   const [resumeData, setResumeData] = useState<{
     originalUrl: string | null;
@@ -70,10 +79,18 @@ export default function ResumeClient({
     enhancedExt: string | null;
     previewOriginalPath: string | null;
     previewEnhancedPath: string | null;
-  } | null>(null);
+  } | null>(() => previewData ? {
+    originalUrl: `data:text/plain;charset=utf-8,${encodeURIComponent(previewData.originalText)}`,
+    enhancedUrl: `data:text/plain;charset=utf-8,${encodeURIComponent(previewData.enhancedText)}`,
+    enhancedText: previewData.enhancedText,
+    hasOriginal: true, hasEnhanced: true, enhancedUnavailable: false,
+    originalExt: 'txt', enhancedExt: 'txt', previewOriginalPath: null, previewEnhancedPath: null,
+  } : null);
   const [originalDocHtml, setOriginalDocHtml] = useState<string | null>(null);
   const [enhancedDocHtml, setEnhancedDocHtml] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!previewData);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -94,13 +111,20 @@ export default function ResumeClient({
   }, [resumeData?.previewEnhancedPath]);
 
   useEffect(() => {
-    trackFunnelEvent("member_signup", "resume_page_viewed");
-  }, []);
+    if (!previewData) trackFunnelEvent("member_signup", "resume_page_viewed");
+  }, [previewData]);
 
   useEffect(() => {
+    if (!active || previewData) return;
+    let cancelled = false;
+    setLoadFailed(false);
     fetch("/api/member/resume")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('Could not load resume files');
+        return r.json();
+      })
       .then((d) => {
+        if (cancelled) return;
         setResumeData({
           originalUrl: d.originalUrl ?? null,
           enhancedUrl: d.enhancedUrl ?? null,
@@ -114,10 +138,13 @@ export default function ResumeClient({
           previewEnhancedPath: d.previewEnhancedPath ?? null,
         });
       })
-      .finally(() => setLoading(false));
-  }, []);
+      .catch(() => { if (!cancelled) setLoadFailed(true); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [active, loadAttempt, previewData]);
 
   const handleUpload = async (file: File) => {
+    if (previewData) return;
     if (uploadInFlightRef.current) return;
     uploadInFlightRef.current = true;
     setUploading(true);
@@ -154,6 +181,7 @@ export default function ResumeClient({
   };
 
   const handleGenerate = async () => {
+    if (previewData) return;
     setGenerating(true);
     setGenerateError("");
     let saved = false;
@@ -217,6 +245,7 @@ export default function ResumeClient({
   };
 
   useEffect(() => {
+    if (previewData) return;
     const ext = resumeData?.originalExt;
     if (!ext || !["doc", "docx"].includes(ext)) {
       setOriginalDocHtml(null);
@@ -239,9 +268,10 @@ export default function ResumeClient({
     return () => {
       cancelled = true;
     };
-  }, [resumeData?.originalExt, resumeData?.hasOriginal, resumeData?.previewOriginalPath]);
+  }, [previewData, resumeData?.originalExt, resumeData?.hasOriginal, resumeData?.previewOriginalPath]);
 
   useEffect(() => {
+    if (previewData) return;
     const ext = resumeData?.enhancedExt;
     if (!ext || !["doc", "docx"].includes(ext)) {
       setEnhancedDocHtml(null);
@@ -264,7 +294,7 @@ export default function ResumeClient({
     return () => {
       cancelled = true;
     };
-  }, [resumeData?.enhancedExt, resumeData?.hasEnhanced, resumeData?.previewEnhancedPath]);
+  }, [previewData, resumeData?.enhancedExt, resumeData?.hasEnhanced, resumeData?.previewEnhancedPath]);
 
   if (loading && !resumeData) {
     const controlsSkeleton = (
@@ -281,7 +311,7 @@ export default function ResumeClient({
     return (
       <div role="status" aria-live="polite" aria-label="Loading your resume tools">
         {layout === "side-by-side" ? (
-          <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: "2rem", alignItems: "start" }}>
+          <div className={styles.resumeColumns}>
             <div>{controlsSkeleton}</div>
             <div>{previewSkeleton}</div>
           </div>
@@ -304,6 +334,12 @@ export default function ResumeClient({
   const uploadSection = (
     <section className="wa-kit-card" style={{ marginBottom: "1.25rem" }} aria-busy={uploading}>
       <CardHead title="Upload resume" />
+      {loadFailed ? (
+        <div className="wa-space-y-3" style={{ marginBottom: 16 }}>
+          <p role="alert" style={{ color: 'var(--wa-danger)' }}>{tw('filesUnavailable')}</p>
+          <Button label={tw('retryFiles')} variant="secondary" onClick={() => setLoadAttempt(attempt => attempt + 1)} />
+        </div>
+      ) : null}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -326,13 +362,13 @@ export default function ResumeClient({
           type="file"
           accept={RESUME_UPLOAD_ACCEPT}
           onChange={handleFileInput}
-          disabled={uploading}
+          disabled={!!previewData || uploading}
           className="sr-only"
         />
         <label
           htmlFor="resume-upload-input"
           className="wa-kit-focus"
-          aria-disabled={uploading}
+          aria-disabled={!!previewData || uploading}
           style={{
             cursor: uploading ? "not-allowed" : "pointer",
             display: "flex",
@@ -394,7 +430,7 @@ export default function ResumeClient({
       <button
         type="button"
         onClick={handleGenerate}
-        disabled={generating}
+        disabled={!!previewData || generating}
         className="wa-kit-focus enabled:hover:wa-opacity-90 enabled:active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
         style={{
           display: "inline-flex",
@@ -466,7 +502,7 @@ export default function ResumeClient({
               </span>
               {resumeData?.originalUrl ? (
                 <a
-                  href={resumeData.originalUrl}
+                  href={resumeData.originalUrl} download={previewData ? "sample-original-resume.txt" : undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -499,7 +535,7 @@ export default function ResumeClient({
                     onClick={() => {
                       if (!uploadInFlightRef.current) fileInputRef.current?.click();
                     }}
-                    disabled={uploading}
+                    disabled={!!previewData || uploading}
                     aria-busy={uploading}
                     style={{
                       background: "none",
@@ -524,7 +560,7 @@ export default function ResumeClient({
                     <FileWarning size={30} color="var(--wa-muted)" aria-hidden="true" style={{ display: 'block', margin: '0 auto 0.5rem' }} />
                     <p style={{ fontSize: '0.85rem', color: 'var(--wa-muted)', margin: '0 0 0.75rem' }}>PDF preview isn't available in this browser.</p>
                     {resumeData.originalUrl && (
-                      <a href={resumeData.originalUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ fontSize: '0.875rem' }}>Download to view ↗</a>
+                      <a href={resumeData.originalUrl} download={previewData ? "sample-original-resume.txt" : undefined} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ fontSize: '0.875rem' }}>Download to view ↗</a>
                     )}
                   </div>
                 ) : (
@@ -586,7 +622,7 @@ export default function ResumeClient({
                   }}
                 >
                   <a
-                    href={resumeData.originalUrl}
+                    href={resumeData.originalUrl} download={previewData ? "sample-original-resume.txt" : undefined}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-primary"
@@ -631,7 +667,7 @@ export default function ResumeClient({
               </span>
               {resumeData?.enhancedUrl ? (
                 <a
-                  href={resumeData.enhancedUrl}
+                  href={resumeData.enhancedUrl} download={previewData ? "sample-revised-resume.txt" : undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -651,7 +687,7 @@ export default function ResumeClient({
                     <FileWarning size={30} color="var(--wa-muted)" aria-hidden="true" style={{ display: 'block', margin: '0 auto 0.5rem' }} />
                     <p style={{ fontSize: '0.85rem', color: 'var(--wa-muted)', margin: '0 0 0.75rem' }}>PDF preview isn't available in this browser.</p>
                     {resumeData.enhancedUrl && (
-                      <a href={resumeData.enhancedUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ fontSize: '0.875rem' }}>Download to view ↗</a>
+                      <a href={resumeData.enhancedUrl} download={previewData ? "sample-revised-resume.txt" : undefined} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ fontSize: '0.875rem' }}>Download to view ↗</a>
                     )}
                   </div>
                 ) : (
@@ -714,7 +750,7 @@ export default function ResumeClient({
                   }}
                 >
                   <a
-                    href={resumeData.enhancedUrl}
+                    href={resumeData.enhancedUrl} download={previewData ? "sample-revised-resume.txt" : undefined}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn btn-primary"
@@ -759,7 +795,7 @@ export default function ResumeClient({
       icon: FileEdit,
       title: "Resume Rewriter",
       desc: "Rewrite and polish your resume for a specific role.",
-      href: "/dashboard/ai-tools/resume-studio?view=rewrite",
+      href: "/dashboard/resume?view=rewrite",
     },
     {
       icon: Target,
@@ -771,7 +807,7 @@ export default function ResumeClient({
       icon: LineChart,
       title: "Resume Analysis",
       desc: "See what is working well and what to strengthen before you apply.",
-      href: "/dashboard/ai-tools/resume-studio?view=score",
+      href: "/dashboard/resume?view=score",
     },
   ];
 
@@ -919,14 +955,7 @@ export default function ResumeClient({
 
   if (layout === "side-by-side") {
     return (
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "320px 1fr",
-          gap: "2rem",
-          alignItems: "start",
-        }}
-      >
+      <div className={styles.resumeColumns}>
         {/* Left: controls */}
         <div>
           {uploadSection}

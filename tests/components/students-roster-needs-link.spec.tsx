@@ -1,3 +1,4 @@
+import { withPortalIntl } from '@/tests/helpers/withPortalIntl';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StudentRow } from '@/components/portal/kit/pages/admin-subviews/StudentsRosterKit';
@@ -185,7 +186,7 @@ describe('/admin/students resolves ?needs= from the attention links', () => {
     const { default: AdminStudentsPage } = await import('@/app/admin/students/page');
     const url = new URL(href, 'https://example.test');
     expect(url.pathname).toBe('/admin/students');
-    render(await AdminStudentsPage({ searchParams: Promise.resolve(Object.fromEntries(url.searchParams)) }));
+    render(withPortalIntl(await AdminStudentsPage({ searchParams: Promise.resolve(Object.fromEntries(url.searchParams)) })));
     return mocks.kit.mock.calls.at(-1)?.[0] as {
       initialChip: string; view: string; focus?: StudentsRosterFocus; notice?: string;
     };

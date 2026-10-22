@@ -1,4 +1,5 @@
 import type { JobPostingApplicationStatus } from '@prisma/client';
+import { employerCandidatesHref } from './candidatesWorkspace';
 
 const STATUSES: JobPostingApplicationStatus[] = [
   'pending',
@@ -30,6 +31,5 @@ export function employerApplicationsListHref(opts: {
   const status = opts.status;
   if (status && status !== 'all') params.set('status', status);
   if (opts.sort && opts.sort !== 'applied_desc') params.set('sort', opts.sort);
-  const qs = params.toString();
-  return qs ? `/employer/applications?${qs}` : '/employer/applications';
+  return employerCandidatesHref('applicants', Object.fromEntries(params));
 }

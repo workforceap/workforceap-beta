@@ -24,9 +24,9 @@ type GuideProps = { witData: { phone: string }; hasOriginal: boolean };
 
 function collectGuideProps(node: React.ReactNode): GuideProps[] {
   if (!React.isValidElement(node)) return [];
-  const props = node.props as { witData?: GuideProps['witData']; hasOriginal?: boolean; children?: React.ReactNode };
+  const props = node.props as { witData?: GuideProps['witData']; hasOriginal?: boolean; children?: React.ReactNode; filesSlot?: React.ReactNode };
   const current = props.witData ? [{ witData: props.witData, hasOriginal: !!props.hasOriginal }] : [];
-  return [...current, ...React.Children.toArray(props.children).flatMap(collectGuideProps)];
+  return [...current, ...React.Children.toArray([props.children, props.filesSlot]).flatMap(collectGuideProps)];
 }
 
 describe('Resume page WorkInTexas contact source', () => {
@@ -51,7 +51,7 @@ describe('Resume page WorkInTexas contact source', () => {
     const page = await DashboardResumePage();
     const guideProps = collectGuideProps(page);
 
-    expect(guideProps).toHaveLength(2);
+    expect(guideProps).toHaveLength(1);
     expect(guideProps.every((props) => props.witData.phone === (contactPhone ?? '') && props.hasOriginal === hasOriginal)).toBe(true);
     expect(mocks.findProfile).toHaveBeenCalledWith(expect.objectContaining({
       where: { userId: 'member-1' },

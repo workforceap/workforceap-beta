@@ -52,6 +52,35 @@ Digital Literacy uses the portal locale for lesson copy and provider links. Span
 catalog links must say that the student selects the topic; provider language-switch
 anchors use `referrerPolicy="no-referrer"` so the provider cannot redirect back here.
 
+### Portal workspace consolidation
+
+Workspace views preserve the existing loaders and actions: Resume (`files`, `score`,
+`rewrite`, `coach`), counselor Today (`attention`, `replies`, `decisions`, `followup`,
+`overview`), admin Students (`roster`, `manage`, `training`, `readiness`), employer
+Candidates (`applicants`, `matches`, `pipeline`) and partner Impact (`outcomes`,
+`milestones`, `exports`). Server views use native links and load only the selected
+view. `LinkTabs` keeps the selected or keyboard-focused link fully visible on
+narrow screens without scrolling the document. Existing entry URLs remain valid. Do not collapse distinct application,
+match, placement, milestone or readiness definitions when grouping their navigation.
+
+Record links use `PortalRecordLink` and `PortalBackLink` to retain an allowlisted,
+same-portal list URL, including filters, page, view and explicit locale. These helpers
+do not authorize access. A record-to-edit hop carries an existing safe origin. Client
+list refinements must update Next's search-parameter subscribers as well as visible
+state; native `history.replaceState(null, '', href)` lets Next copy its internal state.
+Passing the router's internal state back into that wrapper can bypass the update.
+
+Member phone navigation retains five daily destinations, an always-visible training
+preassessment, the current secondary page and a keyboard-accessible More pages
+disclosure. Labels remain visible in the utility/disclosure rows even when the daily
+strip compacts. AI Advisor and human Messages remain separate. Skill Mapper's radar
+charts retain numeric alternatives bound to the same data; an occupation's O*NET
+requirements must not be presented as demonstrated member proficiency.
+
+The preview-only [screen review checklist](qa/portal-consolidation/README.md) inventories
+the actual routes and consolidated query views. Its browser-saved review results are
+manual acceptance notes, not a production gate bypass.
+
 ---
 
 ## 1. Token families — which one to use

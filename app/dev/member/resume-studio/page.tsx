@@ -1,3 +1,4 @@
+import ResumeClient from '@/app/(portal)/dashboard/resume/ResumeClient';
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { ResumeStudioKit } from '@/components/portal/kit/pages/member/ResumeStudioKit';
@@ -5,8 +6,8 @@ import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBr
 
 /**
  * Credential-free proofs for resume studio (toolkit destination).
- *   /dev/member/resume-studio                 — score form
- *   /dev/member/resume-studio?state=filled    — score + analysis
+ *   /dev/member/resume-studio                 — separate original/revised fixture files
+ *   /dev/member/resume-studio?view=score&state=filled — score + analysis
  *   /dev/member/resume-studio?view=rewrite    — rewrite form
  *   /dev/member/resume-studio?view=rewrite&state=filled
  *   /dev/member/resume-studio?view=coach      — honest coach empty
@@ -113,9 +114,11 @@ export default async function DevMemberResumeStudioPage({
 
   return (
     <Suspense fallback={null}>
+      <p className="wa-kit-meta" style={{ padding: 16 }}>Synthetic QA fixture using the real Resume workspace. Original and revised sample files stay separate. Uploads, generation, account reads and voice are disabled here.</p>
       <ResumeStudioKit
         preview
-        hasResume={seeded}
+        hasResume
+        filesSlot={<ResumeClient completeness={75} witData={{ name: 'Jordan Reyes', email: 'jordan@example.test', phone: '', recentEmployer: '', targetJob: 'Cloud Support Associate', skills: 'Support, troubleshooting' }} hasOriginal hasEnhanced layout="side-by-side" previewData={{ originalText: SEED_RESUME, enhancedText: REWRITE }} />}
         backHref="/dev/member/toolkit"
         basePath="/dev/member/resume-studio"
         initialResume={seeded ? SEED_RESUME : ''}

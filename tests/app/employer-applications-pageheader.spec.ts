@@ -1,6 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import EmployerCandidatesHeader from '@/components/employer/EmployerCandidatesHeader';
 
 const root = process.cwd();
 
@@ -9,18 +12,17 @@ function read(rel: string) {
 }
 
 describe('employer applications EmployerPageOpener contract', () => {
-  it('list page mounts one EmployerPageOpener outside mobile/desktop splits (jobs pattern)', () => {
-    const source = read('app/(portal)/employer/applications/page.tsx');
-    expect(source.match(/<EmployerPageOpener[\s>]/g)?.length ?? 0).toBe(1);
-    expect(source).toContain('PortalPageFrame');
-    expect(source).toContain('applicantsMetaTitle');
-    // Bodies stay split; header must not live inside either wrapper.
-    const mobileIdx = source.indexOf('wa-block md:wa-hidden');
-    const desktopIdx = source.indexOf('wa-hidden md:wa-block');
-    const headerIdx = source.indexOf('<EmployerPageOpener');
-    expect(headerIdx).toBeGreaterThan(-1);
-    expect(headerIdx).toBeLessThan(mobileIdx);
-    expect(headerIdx).toBeLessThan(desktopIdx);
+  it('renders the applicants view under one workspace h1 with native view links', () => {
+    const html = renderToStaticMarkup(createElement(EmployerCandidatesHeader, {
+      activeView: 'applicants', kicker: 'Employer portal', title: 'Applicants',
+      copy: { title: 'Candidates', description: 'Review candidates', navLabel: 'Candidate views', views: { applicants: 'Applicants', matches: 'Matches', pipeline: 'Pipeline' } },
+    }));
+    const document = new DOMParser().parseFromString(html, 'text/html');
+    expect(document.querySelectorAll('h1')).toHaveLength(1);
+    expect(document.querySelector('h1')?.textContent).toBe('Candidates');
+    expect(document.querySelector('h2')?.textContent).toBe('Applicants');
+    expect(document.querySelector('nav a[aria-current="page"]')?.textContent).toBe('Applicants');
+    expect(document.querySelectorAll('nav a')).toHaveLength(3);
   });
 
   it('detail page uses EmployerPageOpener instead of a raw h1', () => {

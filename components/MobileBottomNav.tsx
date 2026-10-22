@@ -3,8 +3,9 @@
 import LocalizedLink from '@/components/LocalizedLink';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import type { NavBadgeKey } from '@/lib/nav/portalNav';
-import { isActiveRoute, type ActiveNavSearch } from '@/lib/nav/activeRoute';
+import { PORTAL_NAV, type NavBadgeKey } from '@/lib/nav/portalNav';
+import { getBestActiveHref, type ActiveNavSearch } from '@/lib/nav/activeRoute';
+import { splitLocalePrefix } from '@/lib/i18n/config';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
 
 /**
@@ -29,24 +30,25 @@ const EMPLOYER_TABS = [
   // Work queue, not Pipeline (WAP-211): the phone tabs lead with what is
   // waiting (applied today, stale 48h+, interviews), like the rail badge.
   { href: '/employer/work-queue', labelKey: 'employer.workQueue', icon: 'assignment' },
+  { href: '/employer/candidates', labelKey: 'employer.candidates', icon: 'groups' },
   { href: '/employer/messages', labelKey: 'employer.messages', icon: 'chat' },
 ];
 
 const COUNSELOR_TABS = [
   { href: '/counselor/today', labelKey: 'counselor.today', icon: 'calendar_month' },
-  { href: '/counselor/inbox', labelKey: 'counselor.inbox', icon: 'inbox' },
   { href: '/counselor/students', labelKey: 'counselor.members', icon: 'groups' },
   { href: '/counselor/messages', labelKey: 'counselor.messages', icon: 'chat' },
+  { href: '/counselor/sessions', labelKey: 'counselor.sessions', icon: 'event' },
 ];
 
 const PARTNER_TABS = [
   { href: '/partner', labelKey: 'partner.overview', icon: 'dashboard' },
   { href: '/partner/referred-members', labelKey: 'partner.members', icon: 'groups' },
   // Attention, not Outcomes (WAP-215): the phone tabs lead with who needs a
-  // check-in, like the rail badge; Milestones already covers placements.
+  // check-in, like the rail badge; Impact groups the reporting views.
   { href: '/partner/attention', labelKey: 'partner.attention', icon: 'error' },
   { href: '/partner/messages', labelKey: 'partner.messages', icon: 'chat' },
-  { href: '/partner/milestones', labelKey: 'partner.milestones', icon: 'flag' },
+  { href: '/partner/impact', labelKey: 'partner.impact', icon: 'flag' },
 ];
 
 type BottomTab = {
@@ -101,7 +103,7 @@ function prefetchForBottomTab(variant: MobileBottomNavProps['variant'], href: st
 
 export default function MobileBottomNav({ variant = 'marketing', badgeCounts, superAdmin = false, search, activePathname }: MobileBottomNavProps) {
   const currentPathname = usePathname() ?? '';
-  const pathname = activePathname ?? currentPathname;
+  const pathname = splitLocalePrefix(activePathname ?? currentPathname).pathnameWithoutLocale;
   const t = useTranslations('nav.mobileBottomNav');
   const tNav = useTranslations('nav');
   // Member portal switched from bottom-tab to sticky-top horizontal-scroll nav
@@ -115,6 +117,15 @@ export default function MobileBottomNav({ variant = 'marketing', badgeCounts, su
     : variant === 'partner' ? PARTNER_TABS
     : variant === 'admin' ? (superAdmin ? ADMIN_SUPER_TABS : ADMIN_ORG_TABS)
     : MARKETING_TABS;
+  const rail = variant !== 'marketing' ? PORTAL_NAV[variant] : [];
+  const activeHref = getBestActiveHref(pathname, tabs.map((tab) => {
+    const item = rail.find((entry) => entry.href === tab.href);
+    return {
+      href: tab.href,
+      aliases: item?.aliases,
+      exact: item?.exact ?? tab.href === '/',
+    };
+  }), search);
   return (
     <>
       {/* Mobile-only visibility: hidden on desktop (≥768px) */}
@@ -157,12 +168,7 @@ export default function MobileBottomNav({ variant = 'marketing', badgeCounts, su
         const { href, labelKey, icon } = tab;
         const label = t(labelKey);
         const tourTarget = tab.tourTarget;
-        const exactMatch = ['/', '/dashboard', '/admin', '/employer', '/counselor', '/partner'];
-        const isActive = href.includes('?')
-          ? isActiveRoute(pathname, href, [], false, search)
-          : exactMatch.includes(href)
-            ? pathname === href
-            : pathname.startsWith(href);
+        const isActive = activeHref === href;
         // Member badge logic moved to MemberPortalTopNav. Other variants do not
         // surface unread-message badges in the bottom nav today.
         const b = 0;
