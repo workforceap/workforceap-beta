@@ -50,7 +50,7 @@ Use designated preview records for writes, sends, job-stage changes, bulk action
 
 The `/dev/member/*` and `/dev/staff/*` proof pages render actual components with synthetic data and remain blocked in production. They help verify layout, keyboard interaction, data alternatives and error states without an authenticated database session. They do not certify role authorization, writes or live provider calls.
 
-New proofs include `/dev/staff/counselor-workspace` and `/dev/staff/students-workspace`, with the same `view` query parameters as their real workspaces. `/dev/staff/reporting` exercises the report chrome. The real portal and every old compatibility route remain the acceptance targets in the review index.
+New proofs include `/dev/staff/counselor-workspace` and `/dev/staff/students-workspace`, with the same `view` query parameters as their real workspaces. `/dev/staff/reporting` exercises the report chrome. The Funder CSV, Program Catalog, Outcomes CSV and Board PDF controls on `/dev/staff/reporting?tab=exports` use real authenticated preview API endpoints, so review those downloads with a designated preview admin account. The real portal and every old compatibility route remain the acceptance targets in the review index.
 
 Employer and partner proofs include:
 

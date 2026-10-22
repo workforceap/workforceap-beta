@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   findProfile: vi.fn(),
   getMemberState: vi.fn(),
+  readOnlyAudit: false,
 }));
 
 vi.mock('next/dynamic', () => ({ default: () => function ResumeClientStub() { return null; } }));
@@ -16,7 +17,7 @@ vi.mock('@/lib/member/getMemberState', () => ({ getMemberState: mocks.getMemberS
 vi.mock('@/lib/db/prisma', () => ({ prisma: { profile: { findUnique: mocks.findProfile } } }));
 vi.mock('@/lib/db/withDbRetry', () => ({ withDbRetry: (read: () => unknown) => read() }));
 vi.mock('@/lib/member/ensureAppUser', () => ({ ensureAppUserProvisioned: vi.fn() }));
-vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: () => false }));
+vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: () => mocks.readOnlyAudit }));
 
 import DashboardResumePage from '@/app/(portal)/dashboard/resume/page';
 
@@ -32,6 +33,7 @@ function collectGuideProps(node: React.ReactNode): GuideProps[] {
 describe('Resume page WorkInTexas contact source', () => {
   beforeEach(() => {
     mocks.findProfile.mockReset();
+    mocks.readOnlyAudit = false;
     mocks.getMemberState.mockReset().mockResolvedValue({
       fullName: 'Jordan Example', email: 'jordan@example.org', profileCompletenessPct: 60,
     });
@@ -57,5 +59,19 @@ describe('Resume page WorkInTexas contact source', () => {
       where: { userId: 'member-1' },
       select: { resumeOriginalPath: true, resumeEnhancedPath: true },
     }));
+  });
+
+  it.each([false, true])('rejects a resume profile outage instead of rendering a missing-resume state (readOnlyAudit=%s)', async (readOnlyAudit) => {
+    mocks.readOnlyAudit = readOnlyAudit;
+    const failure = new Error('Synthetic resume profile read failure');
+    mocks.findProfile.mockRejectedValue(failure);
+
+    await expect(DashboardResumePage()).rejects.toBe(failure);
+
+    expect(mocks.getMemberState).toHaveBeenCalledWith('member-1', { readOnlyAudit });
+    expect(mocks.findProfile).toHaveBeenCalledWith({
+      where: { userId: 'member-1' },
+      select: { resumeOriginalPath: true, resumeEnhancedPath: true },
+    });
   });
 });
