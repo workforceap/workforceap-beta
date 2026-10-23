@@ -1,4 +1,3 @@
-import { Compass } from 'lucide-react';
 import NextLink from 'next/link';
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
@@ -13,6 +12,7 @@ import styles from './MemberJobsOverview.module.css';
  * Open roles lead; tracked applications follow. Counts summarize the application
  * tracker (including external jobs), not the separate live-opening bookmarks.
  * Populated recommendations are optional. Their empty/error states stay visible.
+ * The opener keeps the board title and task links; section labels carry the structure.
  * Recommended matches use JobListingRow so pipeline, board, and listing share one row.
  *
  * The live open-roles list renders here too (`#open-roles`, JobListingRow →
@@ -165,10 +165,7 @@ export function MemberJobsKit({
     <DesignSurface surface="warm">
       <div className={styles.page}>
         <PageOpener
-          kicker="Job search"
           title="Job board"
-          lede="Find your next opportunity. Keep your applications moving."
-          icon={<Compass size={13} aria-hidden="true" />}
           action={
             <nav aria-label="Job search tasks" className={styles.actions}>
               <JobsCta href={browseHref}>Browse openings</JobsCta>
@@ -304,7 +301,7 @@ export function MemberJobsKit({
         </section>
 
         <details className={styles.recommendations} open={recommendationsLoadFailed || recommended.length === 0}>
-          <summary className="wa-kit-focus"><h2>Recommended</h2><span>{recommendationsLoadFailed ? 'Unavailable' : recommended.length > 0 ? `${recommended.length} matches` : 'Build your matches'}</span></summary>
+          <summary className="wa-kit-focus"><h2>Recommended</h2>{recommendationsLoadFailed || recommended.length > 0 ? <span>{recommendationsLoadFailed ? 'Unavailable' : `${recommended.length} matches`}</span> : null}</summary>
           <div className={styles.recommendationsBody}>
           {recommendationsLoadFailed ? (
             <div className="wa-kit-card">

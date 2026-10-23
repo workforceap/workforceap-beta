@@ -119,15 +119,20 @@ describe('credential-free Jobs review flows', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('shows a useful zero-result state after a typed search and clears without leaving the fixture', () => {
+  it.each([false, true])('returns focus to search after clearing zero results (phone: %s)', (isPhone) => {
+    phone = isPhone;
     vi.useFakeTimers();
     listing();
     fireEvent.change(screen.getByLabelText('Search jobs'), { target: { value: 'does-not-exist' } });
     act(() => vi.advanceTimersByTime(450));
     const empty = screen.getByRole('heading', { name: en.empty.jobsFiltered.title }).closest('.wa-kit-empty') as HTMLElement;
-    fireEvent.click(within(empty).getByRole('button', { name: en.empty.jobsFiltered.action }));
+    const clear = within(empty).getByRole('button', { name: en.empty.jobsFiltered.action });
+    clear.focus();
+    expect(clear).toHaveFocus();
+    fireEvent.click(clear);
     expect(screen.getByText('2 jobs found')).toBeInTheDocument();
     expect(window.location.search).toBe('?state=listing');
+    expect(screen.getByRole('searchbox', { name: 'Search jobs' })).toHaveFocus();
   });
 
   it('merges a debounced keyword with newer filters and cancels it when history changes', () => {

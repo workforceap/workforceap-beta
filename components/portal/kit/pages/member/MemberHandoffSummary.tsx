@@ -10,7 +10,7 @@ import styles from './MemberHandoffSummary.module.css';
 
 const UNKNOWN_HANDOFF: MemberHandoffEvidence = { resume: 'unknown', consultation: 'unknown', training: 'unknown' };
 
-/** Confirmed, pending and disconnected records remain distinct. Receipt dates use UTC on both renders. */
+/** Status rows carry the evidence; optional confirmation help stays disclosed. Dates use UTC on both renders. */
 export default function MemberHandoffSummary({
   evidence = UNKNOWN_HANDOFF,
   messagesHref = '/dashboard/messages',
@@ -37,10 +37,6 @@ export default function MemberHandoffSummary({
   const needsConfirmation = steps.some((step) => !step.confirmed);
   const hasPendingConfirmation = steps.some((step) => evidence[step.key] === 'pending_confirmation');
   const defaultReturnAction = showResumeAction ? <div className={styles.returnAction}>
-    <div>
-      <h3>{t(evidence.resume === 'portal_received' ? 'prepareTitle' : 'resumeTitle')}</h3>
-      <p>{t(evidence.resume === 'portal_received' ? 'prepareBody' : 'resumeBody')}</p>
-    </div>
     <Link href={resumeStudioHref} className={`wa-kit-focus ${styles.resumeLink}`}>
       <FileText size={17} aria-hidden="true" />
       {t(evidence.resume === 'portal_received' ? 'reviewResume' : 'openResume')}
@@ -51,7 +47,6 @@ export default function MemberHandoffSummary({
   return (
     <section className={styles.summary} aria-labelledby="member-handoff-heading">
       <h2 id="member-handoff-heading" className={styles.heading}>{t('title')}</h2>
-      <p className={styles.intro}>{t('evidenceIntro')}</p>
       <dl className={styles.steps}>
         {steps.map(({ key, icon: Icon, confirmed, status }) => {
           const pending = evidence[key] === 'pending_confirmation';

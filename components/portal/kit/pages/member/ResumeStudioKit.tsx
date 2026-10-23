@@ -9,7 +9,7 @@ import type { ReactElement, ReactNode } from 'react';
 
 /**
  * Member Portal — resume studio (score / rewrite / coach).
- * PageOpener chrome around ResumeStudioClient. History is omitted in preview.
+ * Title and return action frame ResumeStudioClient. History is omitted in preview.
  *
  * Target route: app/(portal)/dashboard/ai-tools/resume-studio
  * Proof: /dev/member/resume-studio
@@ -51,9 +51,7 @@ export function ResumeStudioKit({
       <div className={styles.page}>
         <PageOpener
           className={styles.opener}
-          kicker="AI Career Tools"
           title={t('metaTitle')}
-          lede={t('intro')}
           action={
             <Link href={backHref ?? '/dashboard/ai-tools'} className="wa-page-action wa-kit-focus">
               <ArrowLeft size={14} aria-hidden="true" />

@@ -205,21 +205,21 @@ export default function PortalReviewClient({ inventory, revision }: { inventory:
       <div className={styles.fixtureHeading}>
         <div className={styles.fixtureIdentity}>
           <h3 className={styles.fixtureTitle}>{item.title}</h3>
-          <p className={styles.description}>{proof.description}</p>
-          <code className={styles.path}>{item.route}</code>
+          <div className={styles.fixtureMeta}>
+            {proof.availability === 'local-development' && <span>Local development only</span>}
+            <span>{proof.scenarios.length ? `${proof.scenarios.length} scenarios` : 'Default state'}</span>
+            <StatusTag tone={result.status === 'issue' ? 'alert' : result.status === 'pass' ? 'ok' : 'muted'}>{STATUS_OPTIONS.find((option) => option.value === result.status)!.label}</StatusTag>
+          </div>
         </div>
         <Link href={item.route} target="_blank" rel="noreferrer" prefetch={false} className={`wa-kit-cta wa-kit-cta--ghost ${styles.openLink}`}>
           Open screen{' '}<span className="wa-sr-only">in a new tab: {item.title}</span>
         </Link>
       </div>
-      <div className={styles.fixtureMeta}>
-        <span>{proof.availability === 'local-development' ? 'Local development only' : 'Sample screen'}</span>
-        <span>{proof.scenarios.length ? `${proof.scenarios.length} scenarios` : 'Default state'}</span>
-        <StatusTag tone={result.status === 'issue' ? 'alert' : result.status === 'pass' ? 'ok' : 'muted'}>{STATUS_OPTIONS.find((option) => option.value === result.status)!.label}</StatusTag>
-      </div>
       <details className={styles.details}>
-        <summary>Scenarios, limits and review notes<span aria-hidden="true">+</span></summary>
+        <summary>Scenarios & review<span aria-hidden="true">+</span></summary>
         <div className={styles.detailBody}>
+          <p className={styles.description}>{proof.description}</p>
+          <code className={styles.path}>{item.route}</code>
           <div className={styles.capabilities}>
             <p><strong>Try here</strong>{proof.canTry}</p>
             <p><strong>Needs separate acceptance</strong>{proof.blocked}</p>
@@ -230,7 +230,7 @@ export default function PortalReviewClient({ inventory, revision }: { inventory:
             </Link>)}
           </nav>}
           <div className={styles.manualReview}>
-            <p className={styles.context}>Record what you tested manually. Include the scenario name in your notes; opening a screen never marks it passed.</p>
+            <p className={styles.context}>Record the scenario tested. Opening a screen does not mark it passed.</p>
             {coverageCell(item)}{resultCell(item)}
           </div>
         </div>
@@ -241,7 +241,7 @@ export default function PortalReviewClient({ inventory, revision }: { inventory:
   return (
     <DesignSurface surface="dense">
       <section className={styles.page} aria-labelledby="portal-review-title">
-        <div id="portal-review-title"><PageOpener kicker="WorkforceAP · Preview review" title="Choose a screen to test" lede={`${PORTAL_REVIEW_FIXTURES.length} sample screens · ${scenarioCount} named scenarios`} /></div>
+        <div id="portal-review-title"><PageOpener kicker="WorkforceAP" title="Screen review" lede={`${PORTAL_REVIEW_FIXTURES.length} sample screens · ${scenarioCount} scenarios`} /></div>
         <p className={styles.boundary}>Sample data. Live actions need an approved test account.</p>
         <div className={styles.reviewToolbar}>
           <details className={`${styles.details} ${styles.reviewOptions}`}>
@@ -260,12 +260,12 @@ export default function PortalReviewClient({ inventory, revision }: { inventory:
         </div>
         {storageError && <p role="alert" className={styles.boundary}>Review notes could not be saved. Export the CSV before closing.</p>}
         <div className={styles.filters}>
-          <Selector label="Checklist" value={mode} options={[{ value: 'fixtures', label: 'Try sample screens' }, { value: 'focused', label: 'Signed-in workflows' }, { value: 'routes', label: 'All application routes' }]} onChange={(value) => { setMode(value); setRole('all'); setLimit(10); }} />
+          <Selector label="Checklist" value={mode} options={[{ value: 'fixtures', label: 'Sample screens' }, { value: 'focused', label: 'Signed-in flows' }, { value: 'routes', label: 'All routes' }]} onChange={(value) => { setMode(value); setRole('all'); setLimit(10); }} />
           <Selector label="Portal" value={role} options={[{ value: 'all', label: 'All portals' }, ...ROLES.filter((value) => mode !== 'fixtures' || !['shared', 'entry'].includes(value)).map((value) => ({ value, label: roleLabel(value) }))]} onChange={(value) => { setRole(value); setLimit(10); }} />
           <div className={styles.searchFilter}><TextInput label="Find a screen or scenario" value={search} onChange={(value) => { setSearch(value); setLimit(10); }} hasClear /></div>
         </div>
         {mode === 'fixtures' && !search && role === 'all' && <details className={`${styles.details} ${styles.walkthroughs}`}>
-          <summary>Start with a member walkthrough<span aria-hidden="true">+</span></summary>
+          <summary>Member walkthroughs<span aria-hidden="true">+</span></summary>
           <div className={styles.walkGrid}>{PORTAL_REVIEW_WALKS.map((walk) => <section key={walk.title}>
             <h2 className={styles.title}>{walk.title}</h2><p className={styles.description}>{walk.description}</p>
             <ol>{walk.steps.map((step) => <li key={step.href}><Link href={step.href} target="_blank" rel="noreferrer" prefetch={false} className="wa-kit-focus">{step.title}{' '}<span className="wa-sr-only">in a new tab</span></Link></li>)}</ol>

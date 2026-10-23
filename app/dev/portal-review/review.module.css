@@ -21,7 +21,7 @@
 .catalog { display: grid; gap: var(--wa-pad); }
 .groupTitle { margin: 0; padding: var(--wa-pad-sm) 0; font-size: calc(var(--wa-type-body) * 1.25); font-weight: 700; color: var(--wa-text); }
 .fixture { border-bottom: 1px solid var(--wa-border); padding: var(--wa-pad) 0; }
-.fixtureHeading { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--wa-pad); }
+.fixtureHeading { display: flex; align-items: center; justify-content: space-between; gap: var(--wa-pad); }
 .fixtureIdentity { min-width: 0; }
 .fixtureTitle { margin: 0; color: var(--wa-text); font-size: var(--wa-type-body); line-height: 1.5; font-weight: 700; }
 .description { margin: calc(var(--wa-pad-sm) / 2) 0; color: var(--wa-muted); font-size: var(--wa-type-body); line-height: 1.5; max-width: 70ch; }
@@ -35,6 +35,7 @@
 .details > summary:focus-visible { outline: 2px solid var(--wa-accent); outline-offset: 2px; }
 .detailBody { padding: var(--wa-pad-sm) 0; }
 .capabilities { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--wa-pad); }
+.detailBody > .path { margin-bottom: var(--wa-pad-sm); }
 .capabilities p { margin: 0; color: var(--wa-muted); font-size: var(--wa-type-body); line-height: 1.6; }
 .capabilities strong { display: block; color: var(--wa-text); margin-bottom: calc(var(--wa-pad-sm) / 2); }
 .scenarios { display: flex; flex-wrap: wrap; gap: calc(var(--wa-pad-sm) / 2) var(--wa-pad-sm); margin: var(--wa-pad) 0; }

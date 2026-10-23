@@ -364,7 +364,7 @@ export default function ResumeRewriterForm({
           </div>
           <Toggle checked={atsOptimize} onChange={(value) => { if (!ready) return; setAtsOptimize(value); saveChange({ atsOptimize: value }); }} label="ATS keywords" />
           <div className={styles.metadata}>
-            <FormField label="Salary range" id="target-salary">
+            <FormField label="Salary range (optional)" id="target-salary">
               <select
                 id="target-salary"
                 value={targetSalary}
@@ -380,7 +380,7 @@ export default function ResumeRewriterForm({
                 ))}
               </select>
             </FormField>
-            <FormField label="City / location" id="target-location">
+            <FormField label="City / location (optional)" id="target-location">
               <input
                 id="target-location"
                 type="text"
@@ -393,24 +393,6 @@ export default function ResumeRewriterForm({
               />
             </FormField>
           </div>
-          <p style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', margin: '-8px 0 0', lineHeight: 1.45 }}>
-            Salary and city calibrate seniority and local phrasing. Optional.
-          </p>
-
-          <ul
-            style={{
-              margin: 0,
-              paddingLeft: 18,
-              fontSize: 'var(--wa-type-meta)',
-              color: 'var(--wa-muted)',
-              lineHeight: 1.65,
-            }}
-          >
-            <li>Quantify bullets (“Reduced ticket response time by 40%”).</li>
-            <li>Mirror keywords from the posting.</li>
-            <li>One page under 10 years; two pages max.</li>
-            <li>Lead each bullet with an action verb.</li>
-          </ul>
         </div>
       </details>
 

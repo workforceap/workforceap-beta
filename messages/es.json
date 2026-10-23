@@ -281,6 +281,7 @@
     "machineTranslationNoticeAction": "Cambiar idioma"
   },
   "dashboard": {
+    "progressDetails": "Detalles del progreso",
     "handoff": {
       "homeLede": "Tu próximo paso y el progreso que podemos confirmar.",
       "title": "Tu progreso hasta ahora",
@@ -4663,7 +4664,7 @@
           "restored": "Datos del borrador recuperados de esta pestaña",
           "unavailable": "Los últimos cambios no se guardaron. Copia el texto antes de salir.",
           "cleared": "Copia guardada eliminada. Tus cambios actuales siguen aquí.",
-          "limits": "Puedes recuperar los datos hasta 24 horas en esta pestaña; cerrarla puede impedir la recuperación. Cerrar sesión elimina la copia. Los archivos subidos y los resultados generados son independientes.",
+          "limits": "Solo en esta pestaña, hasta 24 horas. Cerrarla puede impedir la recuperación; cerrar sesión elimina la copia.",
           "clear": "Eliminar copia guardada",
           "returnTitle": "Continúa el borrador de tu currículum",
           "returnDescription": "Datos guardados a las {time} en esta pestaña.",

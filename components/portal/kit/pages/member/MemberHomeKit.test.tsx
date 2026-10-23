@@ -106,7 +106,7 @@ describe('MemberHomeKit résumé to consultation handoff', () => {
     renderKit(<MemberHomeKit {...base} handoff={{ resume: 'portal_received', consultation: 'unknown', training: 'unknown' }} advisor={{ name: 'Sample Advisor', firstName: 'Sample', messagingHref: '/dev/member/messages' }} resumeStudioHref="/dev/member/resume-studio" />);
     const handoff = within(screen.getByRole('region', { name: 'Your progress so far' }));
     expect(handoff.getByText('Received in portal')).toBeInTheDocument();
-    expect(handoff.getByRole('heading', { name: 'Prepare for your consultation' })).toBeInTheDocument();
+    expect(handoff.queryByRole('heading', { name: 'Prepare for your consultation' })).toBeNull();
     expect(handoff.getByRole('link', { name: 'Review my résumé' })).toHaveAttribute('href', '/dev/member/resume-studio');
     fireEvent.click(handoff.getByText('Already completed a step?'));
     expect(handoff.getByRole('link', { name: 'Confirm with my team' })).toHaveAttribute('href', '/dev/member/messages');
@@ -177,6 +177,29 @@ describe('MemberHomeKit résumé to consultation handoff', () => {
     const summary = screen.getByRole('region', { name: 'Approval summary' });
     expect(screen.getByRole('heading', { level: 1 }).compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Your progress so far' }).compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+});
+
+describe('MemberHomeKit optional progress details', () => {
+  it('keeps the next action and summary metrics visible while preserving the detailed program destination', () => {
+    renderKit(<MemberHomeKit {...base} coursePercent={50} resumeHref="/dashboard/program?program=aws-cloud" />);
+    const disclosure = screen.getByText('Progress details').closest('details')!;
+    const moduleLink = within(disclosure).getByRole('link', { name: /Resume module/ });
+    const primary = screen.getByRole('link', { name: /Start preassessment/ });
+
+    expect(primary).toBeVisible();
+    expect(screen.getByText('Course')).toBeVisible();
+    expect(disclosure).not.toHaveAttribute('open');
+    expect(moduleLink).not.toBeVisible();
+
+    fireEvent.click(screen.getByText('Progress details'));
+    expect(moduleLink).toBeVisible();
+    expect(moduleLink).toHaveAttribute('href', '/dashboard/program?program=aws-cloud');
+
+    fireEvent.click(screen.getByText('Progress details'));
+    expect(moduleLink).not.toBeVisible();
+    expect(moduleLink).toBeInTheDocument();
+    expect(primary).toBeVisible();
   });
 });
 
@@ -441,15 +464,22 @@ describe('MemberHomeKit enrolled-program switch (view only)', () => {
     expect(screen.queryByText(/My Program shows your primary program/)).toBeNull();
   });
 
-  it('links a secondary program into My Program for that program (WAP-196)', () => {
+  it('keeps the selected secondary program visible while collapsed and links its expanded detail to My Program (WAP-196)', () => {
     const href = '/dashboard/program?program=comptia-a-professional-certificate';
+    const selectedProgramTitle = TWO_PROGRAMS.options[1].programTitle;
     renderKit(
       <MemberHomeKit
         {...base}
+        programTitle={selectedProgramTitle}
         programHref={href}
         programSwitch={{ ...TWO_PROGRAMS, activeProgramSlug: 'comptia-a-professional-certificate', viewingSecondary: true }}
       />,
     );
+    const summary = screen.getByText('Progress details').closest('summary')!;
+    expect(within(summary).getByText(selectedProgramTitle)).toBeVisible();
+    expect(screen.getByTestId('dashboard-program-selector')).not.toBeVisible();
+    fireEvent.click(summary);
+    expect(screen.getByTestId('dashboard-program-selector')).toBeVisible();
     expect(screen.getByTestId('dashboard-program-selector')).toHaveTextContent('2 of 2 programs');
     // The old "links open the Learning hub" caveat is gone: the links now open this program.
     expect(screen.queryByText(/My Program shows your primary program/)).toBeNull();

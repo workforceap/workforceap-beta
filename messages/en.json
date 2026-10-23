@@ -281,6 +281,7 @@
     "machineTranslationNoticeAction": "Switch language"
   },
   "dashboard": {
+    "progressDetails": "Progress details",
     "handoff": {
       "homeLede": "Your next step, with the progress we can confirm.",
       "title": "Your progress so far",
@@ -4515,7 +4516,7 @@
           "restored": "Draft inputs restored from this tab",
           "unavailable": "Latest edits aren’t saved. Copy your text before leaving.",
           "cleared": "Saved copy cleared. Your current edits are still here.",
-          "limits": "Input recovery lasts up to 24 hours in this tab; closing it may end recovery. Signing out clears the copy. Uploaded files and generated results are separate.",
+          "limits": "This tab only, for up to 24 hours. Closing it may end recovery; signing out clears the copy.",
           "clear": "Clear saved copy",
           "returnTitle": "Continue your résumé draft",
           "returnDescription": "Inputs saved at {time} in this tab.",

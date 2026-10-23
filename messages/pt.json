@@ -280,6 +280,7 @@
     "machineTranslationNoticeAction": "Mudar de idioma"
   },
   "dashboard": {
+    "progressDetails": "Detalhes do progresso",
     "priorityAction": "Ação Prioritária",
     "priorityActionFor": "Para {program}.",
     "yourProgram": "Seu programa",

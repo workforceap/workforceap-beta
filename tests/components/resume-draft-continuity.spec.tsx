@@ -32,8 +32,8 @@ describe('Resume workspace input recovery', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Français' }));
     fireEvent.click(screen.getByRole('button', { name: 'executive' }));
     fireEvent.click(screen.getByRole('checkbox', { name: 'ATS keywords' }));
-    fireEvent.change(screen.getByLabelText('Salary range'), { target: { value: '$80,000 - $100,000' } });
-    fireEvent.change(screen.getByLabelText('City / location'), { target: { value: 'Atlanta' } });
+    fireEvent.change(screen.getByLabelText('Salary range (optional)'), { target: { value: '$80,000 - $100,000' } });
+    fireEvent.change(screen.getByLabelText('City / location (optional)'), { target: { value: 'Atlanta' } });
     expect(screen.getByText(en.memberWorkspace.resume.design.draft.saved)).toBeInTheDocument();
     first.unmount();
     render(wrap(editors));
@@ -44,8 +44,8 @@ describe('Resume workspace input recovery', () => {
     expect(screen.getByRole('button', { name: 'Français' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: 'executive' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('checkbox', { name: 'ATS keywords' })).not.toBeChecked();
-    expect(screen.getByLabelText('Salary range')).toHaveValue('$80,000 - $100,000');
-    expect(screen.getByLabelText('City / location')).toHaveValue('Atlanta');
+    expect(screen.getByLabelText('Salary range (optional)')).toHaveValue('$80,000 - $100,000');
+    expect(screen.getByLabelText('City / location (optional)')).toHaveValue('Atlanta');
     expect(screen.getByText(en.memberWorkspace.resume.design.draft.restored)).toBeInTheDocument();
     expect(fetchSpy).not.toHaveBeenCalled();
   });

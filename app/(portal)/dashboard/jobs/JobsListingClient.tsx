@@ -344,6 +344,9 @@ export default function JobsListingClient({
   const clearFilters = () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setQLocal('');
+    // Page-level recovery removes its own button; keep keyboard focus on the
+    // persistent search field. The modal still restores its Filters trigger.
+    if (!filtersOpen) document.getElementById('job-search-q')?.focus();
     // Clearing refinements must retain the canonical view, legacy entry and
     // caller context. A bare pathname switches a member back to the overview.
     updateUrl(Object.fromEntries(['q', 'locationType', 'jobType', 'program', 'salaryMin', 'salaryMax', 'sort'].map((key) => [key, undefined])));

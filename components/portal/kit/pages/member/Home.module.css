@@ -14,7 +14,7 @@
 .opener :global(.wa-page-opener-title) {
   font-size: clamp(1.375rem, 2vw, 1.625rem);
   line-height: 1.25;
-  margin-top: 0.25rem;
+  margin-top: 0;
 }
 
 .leadGrid,
@@ -75,15 +75,6 @@
   line-height: 1.4;
 }
 
-.upNextBody {
-  display: block;
-  max-width: 60ch;
-  margin-top: 0.25rem;
-  color: var(--wa-muted);
-  font-size: var(--wa-type-meta);
-  line-height: 1.55;
-}
-
 .upNextAction {
   display: inline-flex;
   align-items: center;
@@ -101,6 +92,60 @@
 
 .advisor :global(.wa-kit-cta) {
   min-height: 48px;
+}
+
+.progressDetails {
+  min-width: 0;
+}
+
+.progressSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wa-pad-sm);
+  min-height: 48px;
+  padding: var(--wa-pad-sm);
+  color: var(--wa-text);
+  background: var(--wa-surface);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius);
+  font-size: var(--wa-type-body);
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+  list-style: none;
+}
+
+.progressSummary::-webkit-details-marker {
+  display: none;
+}
+
+.progressSummary svg {
+  flex-shrink: 0;
+}
+
+.progressSummaryCopy {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.progressProgram {
+  color: var(--wa-muted);
+  font-size: var(--wa-type-meta);
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+
+.progressDetails[open] > .progressSummary svg {
+  transform: rotate(180deg);
+}
+
+.progressContent {
+  display: grid;
+  min-width: 0;
+  gap: var(--wa-pad-sm);
+  margin-top: var(--wa-pad-sm);
 }
 
 .preassessment {
@@ -171,32 +216,16 @@
   }
 
   .opener {
-    display: grid;
-    grid-template-columns: minmax(4rem, 1fr) minmax(0, auto);
     gap: 0.5rem 0.75rem !important;
   }
 
   .opener > div {
-    display: contents;
-  }
-
-  .opener :global(.wa-page-opener-kicker) {
-    grid-column: 1;
-    grid-row: 1;
+    flex: 1 1 15rem;
   }
 
   .opener :global(.wa-kit-streak-chip) {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
     max-width: 100%;
     white-space: normal;
-  }
-
-  .opener :global(.wa-page-opener-title) {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    margin-top: 0;
   }
 
   .preassessment a {

@@ -13,7 +13,7 @@ import {
   BookOpen,
   Briefcase,
   Star,
-  Home,
+  ChevronDown,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -58,7 +58,7 @@ import styles from './Home.module.css';
  * Faithful port of the approved Command Center mockup onto the portal design
  * kit (warm surface + --wa-* tokens + wa-kit-* classes + lucide icons). Layout
  * order, top to bottom:
- *   1. PageOpener (Home kicker + greeting) with the streak chip in `action`,
+ *   1. PageOpener greeting with the streak chip in `action`,
  *      then, for staff viewing a member home, the staff-view notice
  *      (`showStaffViewBanner`), then the youth notice for a member under 18
  *      (`youthNoticeAge`).
@@ -75,13 +75,15 @@ import styles from './Home.module.css';
  *      disconnected email, calendar and training access records.
  *   3. A 4-up stat-tile row (course / active jobs / certs / points), each with
  *      an optional inline sparkline + delta chip.
- *   4. A mixed row: certification progress ring, weekly-activity area chart,
- *      and a points ledger. With more than one enrollment the certification
- *      card carries the view-only program switch (`programSwitch`), which
+ *   4. One native Progress details disclosure contains the certification
+ *      progress ring, weekly-activity chart, points ledger, application
+ *      pipeline and badge/goals. The detail cards stay mounted while closed.
+ *      The selected program title stays visible in the disclosure summary.
+ *      With more than one enrollment the certification card carries the
+ *      view-only program switch (`programSwitch`), which
  *      reloads `/dashboard?program=<slug>` and never changes an enrollment.
- *   5. The application pipeline table + a Next Badge tile with segmented
- *      progress. Goals fold into that tile and link to the goals section on
- *      the career brief; with none, a quiet "Set a goal" link goes there.
+ *      The Next Badge tile uses segmented progress. Goals fold into that tile
+ *      and link to the career brief; with none, a quiet "Set a goal" link goes there.
  * A contextual résumé return action supports consultation preparation. General
  * tool discovery remains available after progress rather than competing with
  * the member's next step. A quiet Learning Hub link closes out the page.
@@ -676,9 +678,7 @@ export function MemberHomeKit({
       <div className={styles.page}>
         <PageOpener
           className={styles.opener}
-          kicker="Home"
           title={greeting && firstName ? `${greeting}, ${firstName}` : firstName ? `Welcome back, ${firstName}` : 'Home'}
-          icon={<Home size={13} aria-hidden="true" />}
           action={
             currentStreak > 0 ? (
               <span className="wa-kit-streak-chip">
@@ -755,7 +755,6 @@ export function MemberHomeKit({
                       <Link href={resolveMemberProgramHref(action.href)} className={`wa-kit-focus ${styles.upNextRow}`}>
                         <span className={styles.upNextCopy}>
                           <span className={styles.upNextTitle}>{action.title}</span>
-                          <span className={styles.upNextBody}>{action.body}</span>
                         </span>
                         <span className={styles.upNextAction}>
                           {action.cta} <ArrowRight size={13} aria-hidden />
@@ -805,6 +804,16 @@ export function MemberHomeKit({
           })}
         </div>
 
+        {/* Summary metrics remain visible; deeper progress stays one native disclosure away. */}
+        <details className={styles.progressDetails}>
+          <summary className={`wa-kit-focus ${styles.progressSummary}`}>
+            <span className={styles.progressSummaryCopy}>
+              <span>{t('progressDetails')}</span>
+              {programTitle ? <span className={styles.progressProgram}>{programTitle}</span> : null}
+            </span>
+            <ChevronDown size={18} aria-hidden="true" />
+          </summary>
+          <div className={styles.progressContent}>
         {/* 4. Mixed row — certification ring, weekly activity, points ledger. */}
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
           <div className="lg:wa-col-span-4 wa-min-w-0">
@@ -1079,6 +1088,9 @@ export function MemberHomeKit({
             )}
           </div>
         </div>
+
+          </div>
+        </details>
 
         {/* Discovery remains available after the member's next step and progress. */}
         <MemberStartHereCard toolkitHref={toolkitHref} preassessmentCompleted={preassessmentCompleted} variant="preassessment" />

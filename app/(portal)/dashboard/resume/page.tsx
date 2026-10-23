@@ -99,9 +99,7 @@ export default async function DashboardResumePage() {
       <div className={styles.workspace}>
         <PageOpener
           className={resumeStyles.opener}
-          kicker="AI Career Tools"
           title={t('resume')}
-          lede={tw('intro')}
           action={
             <Link href="/dashboard/ai-tools" className="wa-page-action wa-kit-focus">
               {tw('design.backToTools')}

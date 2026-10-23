@@ -95,10 +95,16 @@ Typography is shared in `portal-kit.css`, not per-page inline sizes. Shared view
 tabs distinguish the selected view with a tint, weight and underline and retain
 their native keyboard/focus behavior.
 
+Kickers and ledes are optional: omit them when navigation and the H1 already orient
+the user. Home and Jobs use that compact opener. Resume tabs show their names while
+retaining descriptions for assistive technology; the selected panel starts with its
+source status and labeled controls rather than repeating the tab title. Draft recovery
+status stays visible as a compact strip, separate from source-file status.
+
 Home is an intentional task-first exception to the shared opener scale. Its
-scoped `Home.module.css` keeps the greeting at 22–26px, omits the redundant lede,
-and places the phone streak beside the Home kicker without moving interactive
-controls. The next-action title is 26–30px and never line-clamped; its CTA wraps
+scoped `Home.module.css` keeps the greeting at 22–26px, omits the redundant kicker
+and lede, and lets the phone greeting and streak wrap naturally. The next-action
+title is 26–30px and never line-clamped; its CTA wraps
 and keeps a 48px target. At widths of at least 1100px, the action and handoff
 evidence use a 60/40 layout, followed by paired advisor and Up next panels when
 both exist. Narrow screens retain action-first document order. The compact
@@ -112,6 +118,10 @@ A compact disclosure explains how to contact the team without marking a step don
 Home places compact approval status after its next action and evidence; the full
 approval chain remains available in a disclosure. Layout must not infer completion,
 change next-action ranking, or turn a destination click into a completed step.
+The four progress metrics remain visible. Certification, activity, points, pipeline
+and badge detail stay mounted inside a native Progress details disclosure. The
+selected program title stays visible in its collapsed summary. Next
+steps, handoff evidence, approval and post-offer actions stay outside that disclosure.
 
 Resume uses scoped workspace chrome and descriptive view tabs; phone tabs keep
 their 48px targets and their full descriptions through `aria-describedby`.
@@ -146,6 +156,9 @@ links back to the index and suppresses live help, badge, notification and accoun
 requests; fixture tours suppress progress writes and analytics without changing the
 live defaults. A sample screen can still contain a provider-dependent action: its
 catalog entry records that boundary, rather than promising a fully working backend.
+Closed catalog rows show a screen title, scenario count, manual result and opening
+action. Descriptions, source paths, limits and notes are grouped in each row's
+disclosure; collapsing a row never changes its saved result or scenario coverage.
 
 Job detail presents the role and required application consent before optional
 screening, resume tailoring and referral preparation. Wide screens pair the overview

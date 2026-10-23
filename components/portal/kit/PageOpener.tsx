@@ -2,8 +2,8 @@ import type { ReactNode } from 'react';
 import { cx, type KitBaseProps, type KitDataAttrs } from './base';
 
 interface PageOpenerProps extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
-  /** Uppercase eyebrow (e.g. "My program"). */
-  kicker: string;
+  /** Optional context above the title; omit when navigation already supplies it. */
+  kicker?: string;
   title: string;
   /** One-line lede under the title. */
   lede?: string;
@@ -14,7 +14,7 @@ interface PageOpenerProps extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
 }
 
 /**
- * Member page opener — kicker + h1 + lede. Matches the VoiceStudio / member
+ * Member page opener — h1 with optional kicker and lede. Matches the VoiceStudio / member
  * kit idiom so every member surface starts the same way. Its responsive type
  * and spacing live in portal-kit.css, with a compact dense-surface variant.
  * Use this instead of
@@ -42,10 +42,10 @@ export function PageOpener({
       {...rest}
     >
       <div style={{ minWidth: 0 }}>
-        <div className="wa-page-opener-kicker wa-flex wa-items-center wa-gap-2">
+        {kicker ? <div className="wa-page-opener-kicker wa-flex wa-items-center wa-gap-2">
           {icon}
           <span>{kicker}</span>
-        </div>
+        </div> : null}
         <h1 className="h-font wa-page-opener-title">{title}</h1>
         {lede ? <p className="wa-page-opener-lede">{lede}</p> : null}
       </div>

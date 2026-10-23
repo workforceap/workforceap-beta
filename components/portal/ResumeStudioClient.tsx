@@ -157,23 +157,9 @@ function ResumeStudioContent({
       <section id={`${id}-panel-score`} role="tabpanel" aria-labelledby={`${id}-tab-score`} hidden={view !== 'score'}>
       {view === 'score' || visited.includes('score') ? (
         <div className={`wa-kit-card ${styles.toolPanel}`}>
-          <header className={styles.panelHeader}>
-            <div>
-              <h2>{tw('design.scoreTitle')}</h2>
-              <p>{tw('scoreSource')}</p>
-            </div>
-          </header>
+          <p className={styles.sourceNote}>{tw('scoreSource')}</p>
           {!resumeAvailable ? (
-            <div className={styles.getStarted}>
-              <h3>
-                {t('emptyTitle')}
-              </h3>
-              <ol>
-                <li>{t('emptyStep1')}</li>
-                <li>{t('emptyStep2')}</li>
-                <li>{t('emptyStep3')}</li>
-              </ol>
-            </div>
+            <p className={styles.fileStatus}>{t('emptyTitle')}</p>
           ) : null}
 
           <div className={styles.editor}>
@@ -186,10 +172,6 @@ function ResumeStudioContent({
           </div>
 
           <div className={styles.nextSteps}>
-            <div>
-              <p className={styles.nextLabel}>{t('nextStepsTitle')}</p>
-              <p className={styles.nextDescription}>{tw('design.nextIntro')}</p>
-            </div>
             <div className={styles.nextActions}>
               <button
                 type="button"
@@ -219,12 +201,7 @@ function ResumeStudioContent({
       <section id={`${id}-panel-rewrite`} role="tabpanel" aria-labelledby={`${id}-tab-rewrite`} hidden={view !== 'rewrite'}>
       {view === 'rewrite' || visited.includes('rewrite') ? (
         <div className={`wa-kit-card ${styles.toolPanel}`}>
-          <header className={styles.panelHeader}>
-            <div>
-              <h2>{tw('design.rewriteTitle')}</h2>
-              <p>{tw('rewriteSource')}</p>
-            </div>
-          </header>
+          <p className={styles.sourceNote}>{tw('rewriteSource')}</p>
           <div className={styles.editor}>
             {preview ? (
               <ResumeRewriterForm
