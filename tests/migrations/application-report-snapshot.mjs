@@ -16,9 +16,10 @@ function sql(input, db = database) {
 }
 sql(`CREATE DATABASE ${database}`, 'postgres');
 try {
-  sql(`CREATE TABLE users(id text PRIMARY KEY);
+  sql(`CREATE TABLE users(id text PRIMARY KEY, deleted_at timestamp);
     CREATE TABLE applications(id text PRIMARY KEY, user_id text REFERENCES users(id) ON DELETE CASCADE, status text);
-    INSERT INTO users VALUES ('synthetic'); INSERT INTO applications VALUES ('existing', 'synthetic', 'pending');`);
+    INSERT INTO users(id) VALUES ('synthetic'), ('other-active');
+    INSERT INTO applications VALUES ('existing', 'synthetic', 'pending');`);
   sql(readFileSync('prisma/migrations/20261022120000_application_report_snapshot/migration.sql', 'utf8'));
   assert.equal(sql('SELECT application_report_snapshot IS NULL FROM applications'), 't');
   sql(`UPDATE applications SET application_report_snapshot='{"version":1,"value":"original"}'; UPDATE applications SET status='approved';`);
@@ -27,7 +28,18 @@ try {
     BEGIN UPDATE applications SET application_report_snapshot=NULL; RAISE EXCEPTION 'snapshot cleared'; EXCEPTION WHEN check_violation THEN NULL; END;
     BEGIN UPDATE applications SET application_report_snapshot='{}'; RAISE EXCEPTION 'snapshot replaced'; EXCEPTION WHEN check_violation THEN NULL; END;
     END $$;`);
+  sql(`INSERT INTO applications VALUES ('other-app', 'other-active', 'pending', '{"version":1}');
+    UPDATE users SET deleted_at=now() WHERE id='synthetic';`);
+  assert.equal(sql(`SELECT application_report_snapshot IS NULL FROM applications WHERE id='existing'`), 't');
+  assert.equal(sql(`SELECT application_report_snapshot IS NOT NULL FROM applications WHERE id='other-app'`), 't');
+  sql(`DO $$ BEGIN
+    BEGIN UPDATE applications SET application_report_snapshot='{}' WHERE id='existing'; RAISE EXCEPTION 'deleted report restored'; EXCEPTION WHEN check_violation THEN NULL; END;
+    BEGIN INSERT INTO applications VALUES ('late', 'synthetic', 'pending', '{}'); RAISE EXCEPTION 'deleted report inserted'; EXCEPTION WHEN check_violation THEN NULL; END;
+    END $$;`);
+  // A restored account must not resurrect a filing copy erased on deletion.
+  sql(`UPDATE users SET deleted_at=NULL WHERE id='synthetic';`);
+  assert.equal(sql(`SELECT application_report_snapshot IS NULL FROM applications WHERE id='existing'`), 't');
   sql(`DELETE FROM users WHERE id='synthetic';`);
-  assert.equal(sql('SELECT count(*) FROM applications'), '0');
-  console.log('PASS nullable migration, initial capture, immutable snapshot, status update and account erasure');
+  assert.equal(sql(`SELECT count(*) FROM applications WHERE user_id='synthetic'`), '0');
+  console.log('PASS nullable migration, initial capture, immutability, status update, scoped soft-delete scrubbing and hard-delete cascade');
 } finally { sql(`DROP DATABASE ${database}`, 'postgres'); }

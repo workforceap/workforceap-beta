@@ -246,7 +246,9 @@ on explicit POST and labeled “recovered from current records.” GET never cre
 snapshot. Downloads require an active member in the actor’s tenant plus admin or
 assigned-counselor access, are private/no-store, and write an access audit without
 answers. Concurrent capture returns the stored winner. The database trigger prevents
-replacement after capture, while account deletion still cascades. Member data
+replacement after capture. Soft deletion clears that member’s report copies as part
+of account anonymization; restoring the account does not resurrect those copies.
+Hard account deletion still cascades. Member data
 exports naturally include the applicant-only snapshot.
 
 Email attachment and profile download use the same saved data. The embedded licensed
@@ -258,7 +260,7 @@ the attachment, since mail-client headers can make the email body itself span pa
 
 Migration: `20261022120000_application_report_snapshot`, nullable column without a
 backfill, five-second lock timeout. Code rollback may leave the additive column and
-trigger in place; do not drop saved reports during rollback. [SQL proof](../../tests/migrations/application-report-snapshot.mjs),
+triggers in place; do not drop active applicants’ saved reports during rollback. [SQL proof](../../tests/migrations/application-report-snapshot.mjs),
 [report/PDF tests](../../tests/lib/application-report.spec.ts),
 [authorization tests](../../tests/api/application-report.spec.ts), and
 [staff email tests](../../tests/email/application-report.spec.ts) use synthetic data.
