@@ -71,7 +71,7 @@ export default function DevDashboardPage() {
           <ProgressRing pct={78} size={112} onDark />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', opacity: 0.75 }}>12-day streak 🔥</div>
-            <h2 className="h-font" style={{ fontSize: 26, margin: '4px 0 2px' }}>Mike</h2>
+            <h1 className="h-font" style={{ fontSize: 26, fontWeight: 600, margin: '4px 0 2px' }}>Mike</h1>
             <p style={{ fontSize: 13, opacity: 0.85, margin: 0 }}>You're 78% to your AWS cert — one module today hits your weekly goal.</p>
             <button style={{ marginTop: 12, padding: '9px 18px', background: 'var(--wa-hero-action-bg)', color: 'var(--wa-hero-action-text)', fontWeight: 700, fontSize: 13, borderRadius: 999, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <Play size={13} /> Resume module
@@ -104,12 +104,12 @@ export default function DevDashboardPage() {
 
         {/* bento: feature tiles + pipeline */}
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-3 wa-gap-5" style={{ marginBottom: 20 }}>
-          <FeatureTile icon={<Sparkles size={22} />} badge="AI" title="AI Career Tools" body="Resume audit + cover letters in seconds." tone="crimson" />
-          <FeatureTile icon={<Medal size={22} />} badge="NEXT" title="Next Badge" body="2 modules to Cloud Foundations." tone="gold" />
+          <FeatureTile icon={<Sparkles size={22} />} badge="AI" title="AI Career Tools" body="Resume audit + cover letters in seconds." tone="crimson" headingAs="h2" />
+          <FeatureTile icon={<Medal size={22} />} badge="NEXT" title="Next Badge" body="2 modules to Cloud Foundations." tone="gold" headingAs="h2" />
           <div className="wa-kit-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>
               <div style={{ width: 44, height: 44, borderRadius: 'var(--wa-radius-sm)', background: 'var(--wa-info-soft)', color: 'var(--wa-info-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><GraduationCap size={20} /></div>
-              <h3 style={{ fontWeight: 800, fontSize: 17, marginTop: 14, letterSpacing: '-.02em' }}>Learning Hub</h3>
+              <h2 style={{ fontWeight: 800, fontSize: 17, marginTop: 14, letterSpacing: '-.02em' }}>Learning Hub</h2>
               <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>Your connected Coursera courses.</p>
             </div>
             <a href="/dashboard/learning" style={{ fontSize: 13, fontWeight: 700, marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}>Go to courses <ArrowRight size={13} /></a>
