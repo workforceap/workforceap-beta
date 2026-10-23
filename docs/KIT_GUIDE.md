@@ -40,6 +40,11 @@ The member Eligibility tab offers the same action beside the saved assessment
 answers. The Overview link uses the Tabs component's native fragment navigation
 to open that review block; preserve the attempt count and pending state.
 
+The applicant Eligibility tab offers **Download application report**. Keep its busy,
+error and download-complete states accessible. The report is saved on the application;
+older records are explicitly recovered and labeled, never presented as an original
+submission snapshot.
+
 Billing phone fields normalize complete US numbers on blur and before new draft
 payloads, including unsigned previews. Keep extensions and international or
 incomplete input intact; saved and signed PDF snapshots retain their original text.

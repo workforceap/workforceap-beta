@@ -27,6 +27,7 @@ const mocks = vi.hoisted(() => {
     resolveProvisionOrganizationId: vi.fn(),
     sendNewApplicationAdminEmail: vi.fn(),
     loggerWarn: vi.fn(),
+    committed: false,
   };
 });
 
@@ -34,7 +35,11 @@ vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     partner: { findFirst: mocks.partnerFindFirst },
     user: { findUnique: mocks.userFindUnique },
-    $transaction: (fn: (tx: typeof mocks.tx) => Promise<unknown>) => fn(mocks.tx),
+    $transaction: async (fn: (tx: typeof mocks.tx) => Promise<unknown>) => {
+      const result = await fn(mocks.tx);
+      mocks.committed = true;
+      return result;
+    },
   },
 }));
 vi.mock('@/lib/db/withDbRetry', () => ({
@@ -97,6 +102,7 @@ function applicationData(): Record<string, unknown> {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.committed = false;
   // clearAllMocks keeps implementations; seedPartner() installs one.
   mocks.partnerFindFirst.mockReset();
   mocks.resolveProvisionOrganizationId.mockResolvedValue('org-A');
@@ -111,6 +117,22 @@ beforeEach(() => {
 });
 
 describe('createMember partner attribution (/signup door)', () => {
+  it('saves the application report and notifies staff only after commit', async () => {
+    mocks.sendNewApplicationAdminEmail.mockImplementation(async (params) => {
+      expect(mocks.committed).toBe(true);
+      expect(params.applicationReport).toEqual(applicationData().applicationReportSnapshot);
+      expect(params.applicantPhone).toBe('5125550123');
+    });
+    await createMember(USER_ID, input({ phone: '5125550123' }));
+    expect(mocks.sendNewApplicationAdminEmail).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(applicationData().applicationReportSnapshot)).not.toContain('Password1');
+  });
+  it('does not email a filing report when a later transaction write rolls back', async () => {
+    mocks.partnerFindFirst.mockResolvedValue({ id: 'partner-A', partnerType: 'community' });
+    mocks.tx.partnerReferral.upsert.mockRejectedValueOnce(new Error('synthetic write failure'));
+    await expect(createMember(USER_ID, input({ referralRef: 'example' }))).rejects.toThrow('synthetic write failure');
+    expect(mocks.sendNewApplicationAdminEmail).not.toHaveBeenCalled();
+  });
   it('(a) upserts exactly one PartnerReferral for a same-org active ref, keeping Application attribution', async () => {
     mocks.partnerFindFirst.mockResolvedValue({ id: 'partner-A' });
 
