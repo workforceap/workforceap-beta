@@ -104,38 +104,14 @@ jobs:
           test "$remote" = "https://github.com/workforceap/workforceap-beta" || \
             test "$remote" = "https://github.com/workforceap/workforceap-beta.git"
 
-      # Fail fast, with Vercel's own reason, when the Preview build of the
-      # mirrored commit failed, instead of timing out in the SHA gate below.
-      # A missing or still-building deployment is waited for (25 minutes).
+      # A branch mirror is not proof of a deployment. Require the exact SHA in
+      # Preview, allow two minutes for registration and 25 minutes for a build.
+      # The health gate below still verifies the configured destination and DEMO.
       - name: Wait for the Vercel Preview build of this commit
         if: env.AUDIT_TARGET != 'production_canary'
-        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          deadline=$(( $(date +%s) + 1500 ))
-          while :; do
-            dep="$(gh api "repos/${GITHUB_REPOSITORY}/deployments?sha=${GITHUB_SHA}&environment=Preview&per_page=20" \
-              --jq '[.[] | select(.creator.login == "vercel[bot]")] | sort_by(.created_at) | last | .id // empty')"
-            state=none
-            if [ -n "$dep" ]; then
-              state="$(gh api "repos/${GITHUB_REPOSITORY}/deployments/${dep}/statuses?per_page=1" --jq '.[0].state // "none"')"
-            fi
-            echo "Vercel Preview deployment for ${GITHUB_SHA:0:9}: ${dep:-none} (${state})"
-            case "$state" in
-              success|inactive) break ;;
-              failure|error)
-                desc="$(gh api "repos/${GITHUB_REPOSITORY}/deployments/${dep}/statuses?per_page=1" --jq '.[0].description // ""')"
-                echo "::error::Vercel's Preview build of ${GITHUB_SHA:0:9} on the preview branch failed (deployment ${dep}): ${desc}. The Preview environment for the preview branch must build before this audit can run."
-                exit 1 ;;
-            esac
-            if [ "$(date +%s)" -ge "$deadline" ]; then
-              echo "::error::No successful Vercel Preview deployment of ${GITHUB_SHA:0:9} after 25 minutes. Check that vercel.json's ignoreCommand still builds the preview branch."
-              exit 1
-            fi
-            sleep 20
-          done
+        run: node scripts/portal-preview-deployment-gate.mjs
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
