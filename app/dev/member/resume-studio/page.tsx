@@ -109,8 +109,10 @@ export default async function DevMemberResumeStudioPage({
   if (process.env.VERCEL_ENV === 'production') notFound();
   const { state, view } = await searchParams;
   const filled = state === 'filled';
-  const isRewrite = view === 'rewrite';
-  const seeded = filled || isRewrite;
+  // Tabs switch on the client with no server round trip, so what a tab shows cannot
+  // depend on `view` after load: `state=filled` fills every tab, and Rewrite always
+  // starts from the sample resume, as it prefills from a file on record.
+  const seededScore = filled || view === 'rewrite';
 
   return (
     <Suspense fallback={null}>
@@ -121,11 +123,12 @@ export default async function DevMemberResumeStudioPage({
         filesSlot={<ResumeClient completeness={75} witData={{ name: 'Jordan Reyes', email: 'jordan@example.test', phone: '', recentEmployer: '', targetJob: 'Cloud Support Associate', skills: 'Support, troubleshooting' }} hasOriginal hasEnhanced layout="side-by-side" previewData={{ originalText: SEED_RESUME, enhancedText: REWRITE }} />}
         backHref="/dev/member/toolkit"
         basePath="/dev/member/resume-studio"
-        initialResume={seeded ? SEED_RESUME : ''}
+        initialResume={seededScore ? SEED_RESUME : ''}
+        initialRewriteResume={SEED_RESUME}
         initialJobTarget="Cloud Support Associate"
-        previewScoreOutput={filled && !isRewrite ? SCORE_OUTPUT : undefined}
-        previewScorePayload={filled && !isRewrite ? SCORE_PAYLOAD : undefined}
-        previewRewriteOutput={filled && isRewrite ? REWRITE : undefined}
+        previewScoreOutput={filled ? SCORE_OUTPUT : undefined}
+        previewScorePayload={filled ? SCORE_PAYLOAD : undefined}
+        previewRewriteOutput={filled ? REWRITE : undefined}
       />
     </Suspense>
   );

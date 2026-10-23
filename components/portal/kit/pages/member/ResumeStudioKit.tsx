@@ -23,6 +23,7 @@ export function ResumeStudioKit({
   backHref,
   basePath,
   initialResume,
+  initialRewriteResume,
   initialJobTarget,
   previewScoreOutput,
   previewScorePayload,
@@ -36,6 +37,7 @@ export function ResumeStudioKit({
   backHref?: string;
   basePath?: string;
   initialResume?: string;
+  initialRewriteResume?: string;
   initialJobTarget?: string;
   previewScoreOutput?: string;
   previewScorePayload?: ResumeScorePayload | null;
@@ -58,6 +60,7 @@ export function ResumeStudioKit({
         preview={preview}
         basePath={basePath}
         initialResume={initialResume}
+        initialRewriteResume={initialRewriteResume}
         initialJobTarget={initialJobTarget}
         previewScoreOutput={previewScoreOutput}
         previewScorePayload={previewScorePayload}
