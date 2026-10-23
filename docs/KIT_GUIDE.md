@@ -319,6 +319,10 @@ Mapping when converting components: `success↔ok`, `warning↔warn`, `danger(st
 `--wa-kit-tone-soft`. Use them (with `StatusTag`) instead of `colorVar('gold')`-style inline colours
 when the tone is a *state* (a triage bucket, a risk tier); numbers stay neutral `--wa-text`.
 `toneClass(tone)` (`components/portal/kit/tokens.ts`) returns the hook class for `cx()`.
+Each hook also sets `--wa-kit-tone-text`, the text twin of the fill (the same pairs as
+`textColorVar()` / `TEXT_COLOR_VARS`): the gold and success fills are under 4.5:1 as small
+text, so toned text (`.wa-kit-tone-text`, `.wa-kit-stat-tile__delta`) reads the twin, never
+`--wa-kit-tone`; the edge, icon and bar fills keep the fill hue.
 
 **Stat tiles speak KitTone, not `KitColor`.** `StatTile`, `KpiItem` (`KpiStrip`) and `StatSparkTile`
 take `tone?: KitTone` (plus `deltaTone` for the caption line) and paint only through the hooks: the
@@ -423,12 +427,12 @@ reports any barrel re-export nothing imports — keep that at zero. Direct-impor
 | `SectionHeader` | titled section starts |
 | `PageOpener` | member page start (kicker + h1 + lede, optional quiet `.wa-page-action`) — not `PageHeader` breadcrumbs or an outlined title-bar chip |
 | `ProgressRing`, `ProgressBar` | completion / capacity |
-| `Avatar` | people |
+| `Avatar` | people; initials read `--wa-accent-text` on `--wa-accent-soft` (the fill hue is under AA in dark) |
 | `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Empty rows render `KitEmptyState` from the `empty` prop (`DataTableEmpty`: `kind`, `title` — default "No rows yet" — `description`, actions, icon); the legacy `emptyTitle` / `emptyDescription` pair still works. Row density follows DesignSurface (warm → balanced, dense → compact). Opt-in table standard props (§6a): `stickyHeader`, `selectable` + `bulkBar` + `onSelectionChange`, `pagination`, `renderSubRow`, `scrollCue`, `loading`, `errorNotice`, `density`, per-column `stickyLeft`. |
 | `KitTableToolbar` (+ `KitTableViewChip`; import from `kit/KitTableToolbar`) | table toolbar: labelled search, saved-view chips with counts, a collapsed "Filters · n on" drawer, right-side actions. URL state through `kitTableUrlState.ts` (`readKitTableUrlState`, `writeKitTableUrlState`, `kitTableHref`, `KIT_TABLE_PAGE_SIZE`; import from `kit/kitTableUrlState`). |
 | `KitRowMenu` (+ `KitRowMenuItem`; import from `kit/KitRowMenu`) | one icon trigger per table row, a native `role="menu"` list; disabled items stay visible with a `reason` tooltip (`danger` tone for destructive items). |
 | `FeatureTile` | member-facing gradient/pop tiles. `headingAs` (default `h3`) follows the surrounding outline — pass `h2` when tiles directly follow the page h1 |
-| `QueueRow`, `WorkQueueItem` | staff work queues |
+| `QueueRow`, `WorkQueueItem` | staff work queues; every tone tints from a `--wa-*-soft` token, the flag `Token` sits on `--wa-surface` (not a second tint) and a ghost row action reads `--wa-accent-text` |
 | `KanbanBoard` (+ `KanbanColumnHeader` from `kit/Kanban`) | pipeline boards |
 | `BarChartMini`, `RankBars`, `AreaChartMini`, `TrendPlaceholder` | inline mini charts (`Sparkline` from `kit/Charts`) |
 | `FormField`, `Toggle` | form controls |
@@ -697,7 +701,10 @@ The Astryx design system is installed site-wide (`app/layout.tsx` imports `reset
   `member/MemberHomeKit.tsx`) — same brand-token bridge as everywhere else Astryx is used.
   A navigational action that should look like a button is `KitLinkButton`
   (`components/portal/kit/KitLinkButton.tsx`): one Next link with Astryx Button styling and the
-  kit focus ring. Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
+  kit focus ring. Its primary label colour comes from `css/astryx-brand-bridge.css`
+  (`a.astryx-button[data-variant='primary']`), because the global `a { color: inherit }` would
+  otherwise beat Astryx's layered foreground; do not override it per surface.
+  Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
   which is invalid and gives keyboard users two tab stops per action (WAP-252). The lint rule
   `wap-kit/no-button-in-link` (`scripts/lint/eslint-plugin-wap-kit.mjs`) fails `npm run lint` on
   a `Button` placed directly inside a `Link` or `AstryxLink` (WAP-268).
