@@ -5,14 +5,11 @@ import type { ReactElement } from 'react';
 import messages from '@/messages/en.json';
 import { MemberHomeKit } from './MemberHomeKit';
 
-// The kit's cards use next/navigation hooks that need a mounted app router.
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
   usePathname: () => '/dashboard',
   useSearchParams: () => new URLSearchParams(),
 }));
-// The placement strip and the First 90 Days card call server actions; the
-// render tests never click them.
 vi.mock('@/app/(portal)/dashboard/placementAction', () => ({ confirmPlacement: vi.fn() }));
 vi.mock('@/app/(portal)/dashboard/first90DaysAction', () => ({ submitFirst90DaysCheckIn: vi.fn() }));
 
@@ -20,12 +17,13 @@ function renderKit(ui: ReactElement) {
   return render(<NextIntlClientProvider locale="en" messages={messages}>{ui}</NextIntlClientProvider>);
 }
 
+const home = messages.dashboard.home;
+
 const base = {
   firstName: 'Sam',
   coursePercent: 0,
   programTitle: 'IT Support Professional Certificate (IBM)',
   programStatus: 'In progress',
-  activeJobs: 0,
   certs: 0,
   points: 0,
   currentStreak: 0,
@@ -46,7 +44,7 @@ const base = {
   },
 };
 
-describe('MemberHomeKit certification-path card', () => {
+describe('MemberHomeKit focus card', () => {
   it('links the next module title when the loader supplies a module href', () => {
     renderKit(
       <MemberHomeKit
@@ -57,28 +55,24 @@ describe('MemberHomeKit certification-path card', () => {
     );
     const link = screen.getByRole('link', { name: 'Introduction to Technical Support' });
     expect(link.getAttribute('href')).toBe('/dashboard/program?course=introduction-to-technical-support');
-    expect(screen.queryByText('No next module on file.')).toBeNull();
-    // Hero CTA is untouched.
-    expect(screen.getByRole('link', { name: /Start preassessment/ })).toBeTruthy();
+    expect(screen.queryByText(home.noNextModule)).toBeNull();
+    expect(screen.getByRole('link', { name: home.resumeModuleN.replace('{n}', '1') })).toBeTruthy();
   });
 
   it('falls back to plain text without a module href and to the empty copy without a next lesson', () => {
     const { unmount } = renderKit(<MemberHomeKit {...base} nextLesson="Take your WIOA Preassessment (35 questions)" />);
     expect(screen.queryByRole('link', { name: 'Take your WIOA Preassessment (35 questions)' })).toBeNull();
-    expect(screen.getAllByText(/Next:/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Take your WIOA Preassessment (35 questions)').length).toBeGreaterThan(0);
     unmount();
 
     renderKit(<MemberHomeKit {...base} />);
-    expect(screen.getByText('No next module on file.')).toBeTruthy();
+    expect(screen.getAllByText(home.noNextModule).length).toBeGreaterThan(0);
   });
 
-  // Dashboard progress semantics (PRODUCT_STAKES, Approval Required): partial
-  // course progress reads as progress, never as an earned certificate. This
-  // pinned the legacy home's first-cert bar until WAP-195 retired it; the kit
-  // certification-path card is the one surface that shows it now.
-  it('shows recorded course progress without claiming a certificate', () => {
+  it('states remaining modules as a claim and does not call partial progress a certificate', () => {
     renderKit(<MemberHomeKit {...base} coursePercent={50} certModulesDone={1} certModulesTotal={2} />);
-    expect(screen.getByRole('progressbar', { name: 'Certification module progress' })).toHaveAttribute('aria-valuenow', '50');
+    expect(screen.getByRole('heading', { name: /You are 1 module away from completing your IT Support Professional Certificate \(IBM\) training/ })).toBeTruthy();
+    expect(screen.getByRole('progressbar', { name: 'Modules complete, 1 of 2' })).toHaveAttribute('aria-valuenow', '50');
     expect(screen.getByText('In progress')).toBeTruthy();
     expect(screen.queryByText(/certifi(ed|cation earned)|certificate earned/i)).toBeNull();
   });
@@ -89,79 +83,36 @@ describe('MemberHomeKit resume module CTA', () => {
     const { container } = renderKit(
       <MemberHomeKit {...base} resumeHref="/dashboard/training?program=google-it-support" />,
     );
-    const link = screen.getByRole('link', { name: /Resume module/ });
+    const link = screen.getByRole('link', { name: home.resumeModuleN.replace('{n}', '1') });
     expect(link.getAttribute('href')).toBe('/dashboard/program?program=google-it-support');
-    // The CTA lives in the certification-path card inside the 4-column rail.
     const card = link.closest('.wa-kit-cert-path');
     expect(card).not.toBeNull();
-    expect(card!.parentElement?.className).toBe('lg:wa-col-span-4 wa-min-w-0');
+    expect(card).toHaveAttribute('data-testid', 'member-home-focus');
     expect(container.querySelector('a[href="/dashboard/training"]')).toBeNull();
     expect(container.querySelector('a[href^="/dashboard/training?"]')).toBeNull();
   });
 
   it('leaves a real resume destination alone and defaults to My Program', () => {
     const { unmount } = renderKit(<MemberHomeKit {...base} resumeHref="/dashboard/learning" />);
-    expect(screen.getByRole('link', { name: /Resume module/ }).getAttribute('href')).toBe('/dashboard/learning');
+    expect(screen.getByRole('link', { name: home.resumeModuleN.replace('{n}', '1') }).getAttribute('href')).toBe('/dashboard/learning');
     unmount();
 
     renderKit(<MemberHomeKit {...base} />);
-    expect(screen.getByRole('link', { name: /Resume module/ }).getAttribute('href')).toBe('/dashboard/program');
+    expect(screen.getByRole('link', { name: home.resumeModuleN.replace('{n}', '1') }).getAttribute('href')).toBe('/dashboard/program');
   });
 });
 
-/**
- * The Course tile used to warn purely because progress was 0%, so a member who
- * enrolled an hour ago opened the dashboard to a gold chip. The warn tone now
- * waits for the shared staleness threshold (`STALE_TRAINING_ACTIVITY_DAYS`,
- * 14 days) that the loader evaluates.
- */
-describe('MemberHomeKit Course tile warning', () => {
-  /**
-   * Locates the Course stat tile and proves the row is really there first: a
-   * `querySelector` that stops matching would otherwise make every tone
-   * assertion below vacuously true.
-   */
-  function courseTileTone(): string | null {
-    // The home tiles are the kit StatSparkTile: the marked inner element declares
-    // the tone hook itself and sits inside an Astryx Card, whose parent is the row.
-    const tile = screen.getByText('Course').closest<HTMLElement>('[data-testid="stat-spark-tile"]');
-    expect(tile).not.toBeNull();
-    const card = tile!.parentElement!;
-    const row = card.parentElement!;
-    expect(row.children).toHaveLength(4);
-    expect(row.children[0]).toBe(card);
-    expect(row.children[1].textContent).toContain('Active jobs');
-    const toned = tile!.matches('[class*="wa-kit-tone--"]') ? tile : tile!.querySelector<HTMLElement>('[class*="wa-kit-tone--"]');
-    return toned ? toned.className.match(/wa-kit-tone--(\w+)/)![1] : null;
-  }
-
-  it('does not warn at 0% for a member whose training has not gone stale', () => {
-    renderKit(<MemberHomeKit {...base} coursePercent={0} courseProgressStale={false} />);
-    expect(courseTileTone()).toBeNull();
-  });
-
-  it('defaults to no warning when the caller supplies no staleness signal', () => {
-    renderKit(<MemberHomeKit {...base} coursePercent={0} />);
-    expect(courseTileTone()).toBeNull();
-  });
-
-  it('warns at 0% once the staleness threshold has been crossed', () => {
+describe('MemberHomeKit no longer paints positional stat tiles', () => {
+  it('does not render the four Command Center tiles', () => {
     renderKit(<MemberHomeKit {...base} coursePercent={0} courseProgressStale />);
-    expect(courseTileTone()).toBe('warn');
-  });
-
-  it('never warns without an enrolled program, stale or not', () => {
-    renderKit(<MemberHomeKit {...base} programTitle={undefined} coursePercent={0} courseProgressStale />);
-    expect(courseTileTone()).toBeNull();
-  });
-
-  it('still reads as done at 100%, and staleness does not override it', () => {
-    renderKit(<MemberHomeKit {...base} coursePercent={100} courseProgressStale />);
-    expect(courseTileTone()).toBe('ok');
+    expect(screen.queryByText('Course')).toBeNull();
+    expect(screen.queryByText('Active jobs')).toBeNull();
+    expect(screen.queryByText('Points')).toBeNull();
+    expect(screen.queryByTestId('stat-spark-tile')).toBeNull();
   });
 });
 
-describe('MemberHomeKit up next + recommended tool', () => {
+describe('MemberHomeKit interview steps + recommended tool', () => {
   const upNext = [
     {
       id: 'upload_resume',
@@ -190,16 +141,13 @@ describe('MemberHomeKit up next + recommended tool', () => {
     cta: 'Open interview prep',
   };
 
-  it('lists each next step as one link to its page, in order', () => {
+  it('lists interview-readiness steps as links and keeps other next steps in the next-steps list', () => {
     renderKit(<MemberHomeKit {...base} upNext={upNext} />);
-    const list = screen.getByRole('list', { name: 'Up next' });
+    const list = screen.getByRole('list', { name: home.interviewClaim });
     const links = Array.from(list.querySelectorAll('a'));
-    expect(links.map((a) => a.getAttribute('href'))).toEqual([
-      '/dashboard/ai-tools/resume-studio?view=rewrite',
-      '/dashboard/readiness',
-    ]);
-    expect(links[0]?.textContent).toContain('Add your resume');
-    expect(links[0]?.textContent).toContain('Try resume rewriter');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/dashboard/readiness']);
+    expect(links[0]?.textContent).toContain('Build your job readiness plan');
+    expect(screen.getByTestId('member-home-next-step-upload_resume')).toHaveTextContent('Add your resume');
   });
 
   it('names the recommended tool and keeps the way to every tool', () => {
@@ -212,19 +160,133 @@ describe('MemberHomeKit up next + recommended tool', () => {
     expect(screen.getByRole('link', { name: 'Explore all AI Career Tools' }).getAttribute('href')).toBe('/dashboard/ai-tools');
   });
 
-  it('omits empty next-step and recommendation blocks while retaining the tools introduction', () => {
+  it('omits an empty interview list while retaining the tools introduction', () => {
     renderKit(<MemberHomeKit {...base} />);
-    expect(screen.queryByRole('list', { name: 'Up next' })).toBeNull();
+    expect(screen.queryByRole('list', { name: home.interviewClaim })).toBeNull();
     expect(screen.queryByTestId('recommended-tool')).toBeNull();
     expect(screen.getByRole('link', { name: 'Explore AI Career Tools' })).toHaveAttribute('href', '/dashboard/ai-tools');
   });
 });
 
-/**
- * WAP-188 Phase A: what only the `?ui=legacy` home showed now renders on the
- * kit home, each piece only for the members it applies to, and the goals
- * links stay on kit pages.
- */
+describe('MemberHomeKit next-step prompts from the loader', () => {
+  const profileReview = {
+    id: 'review_starter_profile',
+    title: 'Review your starter profile details',
+    body: 'Confirm the contact and referral details your counselor entered.',
+    href: '/dashboard/profile',
+    cta: 'Review profile',
+    variant: 'urgent' as const,
+    weight: 92,
+  };
+  const messagesPrompt = {
+    id: 'counselor_messages',
+    title: 'Message from your team',
+    body: 'You have 2 unread messages from your counselor or program team.',
+    href: '/dashboard/messages',
+    cta: 'Open messages',
+    variant: 'urgent' as const,
+    weight: 88,
+  };
+
+  it('renders the preassessment prompt when the loader says it is incomplete', () => {
+    renderKit(<MemberHomeKit {...base} doThisNext={null} preassessmentCompleted={false} />);
+    const row = screen.getByTestId('member-home-next-step-skills_assessment');
+    expect(row).toHaveTextContent(home.nextStepPreassessmentTitle);
+    expect(row.querySelector('a')?.getAttribute('href')).toBe('/dashboard/assessment');
+  });
+
+  it('renders the starter-profile review when that is the loader next step', () => {
+    renderKit(<MemberHomeKit {...base} doThisNext={profileReview} preassessmentCompleted={false} />);
+    expect(screen.getByTestId('member-home-next-step-review_starter_profile')).toHaveTextContent(profileReview.title);
+    expect(screen.getByTestId('member-home-next-step-skills_assessment')).toHaveTextContent(home.nextStepPreassessmentTitle);
+  });
+
+  it('renders unread counselor-message prompts from upNext', () => {
+    renderKit(<MemberHomeKit {...base} doThisNext={messagesPrompt} upNext={[]} />);
+    const row = screen.getByTestId('member-home-next-step-counselor_messages');
+    expect(row).toHaveTextContent('2 unread messages');
+    expect(row.querySelector('a')?.getAttribute('href')).toBe('/dashboard/messages');
+  });
+
+  it('does not invent a preassessment row when the loader marks it complete', () => {
+    renderKit(<MemberHomeKit {...base} doThisNext={null} preassessmentCompleted />);
+    expect(screen.queryByTestId('member-home-next-step-skills_assessment')).toBeNull();
+  });
+});
+
+describe('MemberHomeKit application totals', () => {
+  it('uses the loader active-application total instead of the capped pipeline list', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        activeJobs={12}
+        pipeline={[
+          { role: 'Help Desk Technician', company: 'Metro Transit Authority', stage: 'Applied', tone: 'muted' },
+          { role: 'IT Support Specialist', company: 'Lakeview Health System', stage: 'Interviewing', tone: 'warn' },
+          { role: 'Cloud Support Associate', company: 'Brightline Credit Union', stage: 'Offer', tone: 'warn' },
+          { role: 'Service Desk Analyst', company: 'Northside Clinic', stage: 'Screening', tone: 'info' },
+        ]}
+      />,
+    );
+    expect(screen.getByText(home.kpiActiveCount.replace('{count}', '12'))).toBeTruthy();
+    expect(screen.queryByText(home.kpiActiveCount.replace('{count}', '4'))).toBeNull();
+  });
+
+  it('counts interviews from interview statuses only and shows offers separately', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        interviewCount={1}
+        jobOffers={[{ id: 'o1', role: 'Cloud Support Associate', company: 'Brightline Credit Union' }]}
+        pipeline={[
+          { role: 'IT Support Specialist', company: 'Lakeview Health System', stage: 'Interviewing', tone: 'warn' },
+          { role: 'Cloud Support Associate', company: 'Brightline Credit Union', stage: 'Offer', tone: 'warn' },
+        ]}
+      />,
+    );
+    expect(screen.getByText('1 interview · 1 offer')).toBeTruthy();
+    expect(screen.queryByText(/2 interviews/)).toBeNull();
+  });
+});
+
+describe('MemberHomeKit curriculum rows', () => {
+  it('labels finished modules as Done, not Next module', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        certModulesDone={7}
+        certModulesTotal={9}
+        curriculum={[
+          { title: 'Networking', state: 'done', grade: 'Completed · Grade: 98%', number: 6 },
+          { title: 'Shared Responsibility Model', state: 'active', due: 'Due Thursday', number: 8 },
+        ]}
+      />,
+    );
+    expect(screen.getByText(/Module 6: Networking/)).toBeTruthy();
+    expect(screen.getByText(home.curriculumDone)).toBeTruthy();
+    expect(screen.queryByText(/Next module 6/)).toBeNull();
+  });
+});
+
+describe('MemberHomeKit application pipeline actions', () => {
+  it('keeps the Action labels visible for every stage', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        pipeline={[
+          { role: 'IT Support Specialist', company: 'Lakeview Health System', stage: 'Interviewing', tone: 'warn', appliedLabel: 'Jun 18' },
+          { role: 'Cloud Support Associate', company: 'Brightline Credit Union', stage: 'Screening', tone: 'info', appliedLabel: 'Jun 24' },
+          { role: 'Help Desk Technician', company: 'Metro Transit Authority', stage: 'Applied', tone: 'muted', appliedLabel: 'Jun 29' },
+        ]}
+      />,
+    );
+    expect(screen.getAllByText(home.openNotes).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(home.details).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(home.review).length).toBeGreaterThan(0);
+    expect(screen.getByText(home.pipelineAction)).toBeTruthy();
+  });
+});
+
 describe('MemberHomeKit application pipeline company line', () => {
   it('hides QA / demo / sandbox employers and keeps real ones', () => {
     renderKit(
@@ -252,13 +314,12 @@ describe('MemberHomeKit pieces moved over from the legacy home', () => {
     completedStages: ['week_1' as const],
   };
 
-  it('asks about each OFFER application, below the hero', () => {
+  it('asks about each OFFER application, below the focus card', () => {
     renderKit(<MemberHomeKit {...base} jobOffers={[{ id: 'o1', role: 'IT Support Specialist', company: 'Acme Health' }]} />);
     const question = screen.getByRole('heading', { name: 'Did you accept the role at Acme Health?' });
     expect(screen.getByRole('button', { name: /notify my team/ })).toBeTruthy();
-    const hero = screen.getByRole('link', { name: /Start preassessment/ });
-    expect(hero.compareDocumentPosition(question) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    // Flush in the kit column: no legacy 1.25rem gutter or trailing margin on the strip or its card.
+    const focus = screen.getByTestId('member-home-focus');
+    expect(focus.compareDocumentPosition(question) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const strip = question.closest('section') as HTMLElement;
     expect(strip.style.padding).toBe('');
     expect(strip.style.marginBottom).toBe('');
@@ -269,7 +330,6 @@ describe('MemberHomeKit pieces moved over from the legacy home', () => {
     renderKit(<MemberHomeKit {...base} first90={first90} />);
     expect(screen.getByText('Your new job at Acme Health')).toBeTruthy();
     expect(screen.getByText("How's the job going?")).toBeTruthy();
-    // Flush in the kit column: no legacy 1rem / 1.25rem section padding.
     const card = screen.getByRole('region', { name: 'First 90 Days' });
     expect(card.style.padding).toBe('');
   });
@@ -289,22 +349,21 @@ describe('MemberHomeKit pieces moved over from the legacy home', () => {
 
   it('sends "Open goals" to the goals section on the career brief, never into ?ui=legacy', () => {
     const { container } = renderKit(<MemberHomeKit {...base} goals={[{ title: 'Apply to 5 roles', percent: 40 }]} />);
-    expect(screen.getByRole('link', { name: 'Open goals' }).getAttribute('href')).toBe('/dashboard/career-brief#goals');
-    expect(screen.queryByRole('link', { name: /Set a goal/ })).toBeNull();
+    expect(screen.getByRole('link', { name: home.openGoals }).getAttribute('href')).toBe('/dashboard/career-brief#goals');
+    expect(screen.queryByRole('link', { name: home.setAGoal })).toBeNull();
     expect(container.querySelector('a[href*="ui=legacy"]')).toBeNull();
   });
 
-  it('offers a quiet "Set a goal" link in the Next badge tile when there are no goals', () => {
+  it('offers a quiet "Set a goal" link when there are no goals', () => {
     const { container } = renderKit(<MemberHomeKit {...base} goals={[]} />);
-    const link = screen.getByRole('link', { name: /Set a goal/ });
+    const link = screen.getByRole('link', { name: home.setAGoal });
     expect(link.getAttribute('href')).toBe('/dashboard/career-brief#goals');
-    expect(link.closest('.wa-kit-card')?.textContent).toContain('Next badge');
-    expect(screen.queryByRole('link', { name: 'Open goals' })).toBeNull();
+    expect(screen.queryByRole('link', { name: home.openGoals })).toBeNull();
+    expect(screen.queryByText('Next badge')).toBeNull();
     expect(container.querySelector('a[href*="ui=legacy"]')).toBeNull();
   });
 });
 
-// ── WAP-194: the staff-view banner and the view-only program switch ─────────
 const TWO_PROGRAMS = {
   options: [
     { id: 'enr-1', programSlug: 'aws-cloud-technology-amazon', programTitle: 'AWS Cloud Technology Certificate', isPrimary: true },
@@ -320,7 +379,6 @@ describe('MemberHomeKit staff-view banner', () => {
     const banner = container.querySelector('[data-staff-view-banner="dashboard"]');
     expect(banner).not.toBeNull();
     expect(banner?.textContent).toMatch(/viewing this as a super-admin/);
-    // Kit paint: lucide icons, no Material Symbols, no legacy --color-* chain.
     expect(banner?.querySelector('.material-symbols-outlined')).toBeNull();
     expect(banner?.querySelectorAll('svg.lucide').length).toBe(2);
     expect(banner?.getAttribute('style') ?? '').not.toMatch(/--color-|rgba?\(/);
@@ -332,16 +390,15 @@ describe('MemberHomeKit staff-view banner', () => {
 });
 
 describe('MemberHomeKit enrolled-program switch (view only)', () => {
-  it('puts DashboardProgramSelector on the Certification path card when there are two or more enrollments', () => {
+  it('puts DashboardProgramSelector on the focus card when there are two or more enrollments', () => {
     renderKit(<MemberHomeKit {...base} programSwitch={TWO_PROGRAMS} />);
     const wrap = screen.getByTestId('home-program-switch');
     const card = wrap.closest('.wa-kit-cert-path');
-    expect(card, 'the switch sits on the Certification path card').not.toBeNull();
+    expect(card, 'the switch sits on the focus card').not.toBeNull();
     const chip = screen.getByTestId('dashboard-program-selector');
     expect(chip).toHaveTextContent('1 of 2 programs');
     expect(chip.querySelector('.material-symbols-outlined')).toBeNull();
     expect(chip.getAttribute('style') ?? '').not.toMatch(/--color-|rgba?\(/);
-    // The primary view says nothing about Learning hub links.
     expect(screen.queryByText(/My Program shows your primary program/)).toBeNull();
   });
 
@@ -355,9 +412,8 @@ describe('MemberHomeKit enrolled-program switch (view only)', () => {
       />,
     );
     expect(screen.getByTestId('dashboard-program-selector')).toHaveTextContent('2 of 2 programs');
-    // The old "links open the Learning hub" caveat is gone: the links now open this program.
     expect(screen.queryByText(/My Program shows your primary program/)).toBeNull();
-    expect(screen.getByRole('link', { name: 'Open plan' }).getAttribute('href')).toBe(href);
+    expect(screen.getByRole('link', { name: home.openPlan }).getAttribute('href')).toBe(href);
   });
 
   it('renders no switch for one enrollment or none', () => {

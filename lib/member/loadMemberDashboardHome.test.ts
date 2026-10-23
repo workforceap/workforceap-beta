@@ -247,6 +247,7 @@ test('loadMemberDashboardHome combines enrollment + progress into kit props', as
   assert.equal(counts().findUniqueCalls, 1);
   assert.equal(view.certs, 1);
   assert.equal(view.activeJobs, 2);
+  assert.equal(view.interviewCount, 1);
   assert.equal(view.points, 250);
   assert.equal(view.currentStreak, 4);
   assert.equal(view.certModulesDone, 2);

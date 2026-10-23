@@ -255,6 +255,8 @@ export type MemberDashboardHomeView = {
   /** Coursera progress exists, but no WAP program is assigned yet. */
   noProgram?: boolean;
   activeJobs: number;
+  /** Open applications in INTERVIEWING, counted from the loader page — not the capped pipeline card. */
+  interviewCount: number;
   certs: number;
   points: number;
   currentStreak: number;
@@ -872,6 +874,7 @@ function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashbo
     counselorContext: EMPTY_COUNSELOR_CONTEXT,
     organizationId: null,
     activeJobs: 0,
+    interviewCount: 0,
     certs: 0,
     points: 0,
     currentStreak: 0,
@@ -1183,6 +1186,7 @@ function shapeHome(args: {
     noProgram: Boolean(program && !assignedSlug),
     programStatus: program ? (allCoursesComplete ? 'Complete' : 'In progress') : undefined,
     activeJobs: args.row._count.jobApplications,
+    interviewCount: args.row.jobApplications.filter((job) => job.status === 'INTERVIEWING').length,
     certs: args.row._count.userCertifications,
     points: totalPoints,
     currentStreak: effectiveStreak({

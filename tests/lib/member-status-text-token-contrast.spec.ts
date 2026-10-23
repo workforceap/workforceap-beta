@@ -75,11 +75,10 @@ describe('text-on-tint tokens clear AA for 13px text in both modes', () => {
 });
 
 describe('member surfaces paint small status text with the -dark text tokens', () => {
-  it('home: points-this-week chip, weekly delta and the Learning hub link', () => {
+  it('home: pipeline stage tracks paint through the tone hook, not a named hue', () => {
     const src = read('components/portal/kit/pages/member/MemberHomeKit.tsx');
-    expect(src).toMatch(/color: 'var\(--wa-success-dark\)',\s*\n\s*background: 'var\(--wa-success-soft\)'/);
-    expect(src).toContain("color: 'var(--wa-success-dark)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>\n                      {weeklyActivityDeltaLabel}");
-    expect(src).toContain("style={{ ...HOME_TEXT_LINK, color: 'var(--wa-info-dark)' }}");
+    expect(src).toContain('toneClass(row.tone)');
+    expect(src).toContain("background: i < filled ? 'var(--wa-kit-tone)' : 'var(--wa-track)'");
     expect(src).not.toMatch(/HOME_TEXT_LINK, color: 'var\(--wa-info\)'/);
   });
 

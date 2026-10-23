@@ -105,8 +105,8 @@ export function JobListingRow({
             <span
               className="wa-kit-meta"
               style={{
-                fontWeight: 700,
-                color: 'var(--wa-success)',
+                fontWeight: 600,
+                color: 'var(--wa-text)',
                 flexShrink: 0,
                 fontVariantNumeric: 'tabular-nums',
               }}

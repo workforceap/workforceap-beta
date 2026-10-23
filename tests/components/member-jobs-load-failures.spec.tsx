@@ -32,7 +32,8 @@ describe('MemberJobsKit failed loads (WAP-261)', () => {
     expect(within(failed).getByRole('link', { name: en.empty.applicationsUnavailable.action })).toHaveAttribute('href', '/dashboard/jobs');
     expect(screen.queryByText(en.empty.applications.title)).toBeNull();
     expect(screen.queryByText('0 active applications')).toBeNull();
-    expect(screen.getAllByText('—')).toHaveLength(4);
+    expect(document.querySelectorAll('.wa-kit-stat-value')).toHaveLength(4);
+    expect([...document.querySelectorAll('.wa-kit-stat-value')].map((el) => el.textContent)).toEqual(['—', '—', '—', '—']);
     expect(screen.queryByText('0')).toBeNull();
   });
 
@@ -50,7 +51,7 @@ describe('MemberJobsKit failed loads (WAP-261)', () => {
 
   it('everything loaded with nothing in it: honest zeros and the normal empty states', () => {
     renderKit({});
-    expect(screen.getAllByText('0')).toHaveLength(4);
+    expect([...document.querySelectorAll('.wa-kit-stat-value')].map((el) => el.textContent)).toEqual(['0', '—', '0', '0']);
     expect(screen.getByText(en.empty.applications.title)).toBeInTheDocument();
     expect(screen.getByText(en.empty.openings.title)).toBeInTheDocument();
     expect(screen.queryByTestId('member-jobs-applications-load-failed')).toBeNull();

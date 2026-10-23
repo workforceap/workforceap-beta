@@ -326,6 +326,9 @@ describe('workspace navigation', () => {
 
   it('retains the collapse preference and reveals destinations in the compact rail', async () => {
     const user = userEvent.setup();
+    // Direction C hides the persistent rail on Home / program / jobs / AI tools.
+    // Collapse still applies on the remaining member routes.
+    location.pathname = '/dashboard/messages';
     const { container } = show();
     await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
     expect(container.querySelector('.workspace-sidebar')).toHaveClass('workspace-sidebar--collapsed');

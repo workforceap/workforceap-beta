@@ -3,9 +3,11 @@
 import { Play, Check, Lock, CalendarDays, Target, ArrowRight, GraduationCap } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { DesignSurface, ProgressRing, PageOpener, KitEmptyState } from '@/components/portal/kit';
+import { DesignSurface, KpiStrip, ProgressBar, ProgressRing, PageOpener, KitEmptyState, StatusTag, type KitTone } from '@/components/portal/kit';
+import { Avatar } from '@/components/portal/kit/Avatar';
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
 import CourseraLaunchErrorNotice from '@/components/portal/CourseraLaunchErrorNotice';
+import type { AssignedCounselor } from '@/lib/member/counselorContext';
 import { MemberTrainingWorkspace, type MemberTrainingWorkspaceProps } from './MemberTrainingWorkspace';
 
 /**
@@ -68,6 +70,15 @@ export interface MemberProgramKitProps {
    */
   missionsSummary?: string;
   missionsHref?: string;
+  advisor?: AssignedCounselor | null;
+  nextLesson?: string;
+  nextLessonDue?: string;
+  pointsThisWeek?: number;
+  certsThisWeek?: number;
+  toolkitHref?: string;
+  resumeStudioHref?: string;
+  interviewHref?: string;
+  lessons?: Array<{ title: string; state: 'done' | 'active' | 'upcoming'; meta?: string }>;
 }
 
 const DEFAULT_MODULES: ProgramModule[] = [];
@@ -121,11 +132,20 @@ export function MemberProgramKit({
   liveSessionDurationMinutes = 60,
   missionsSummary,
   missionsHref = '#',
+  advisor = null,
+  nextLesson,
+  nextLessonDue,
+  pointsThisWeek,
+  certsThisWeek,
+  toolkitHref = '/dashboard/ai-tools',
+  resumeStudioHref = '/dashboard/ai-tools/resume-studio',
+  interviewHref = '/dashboard/ai-tools/interview-practice',
+  lessons = [],
 }: MemberProgramKitProps) {
   // The page states the course denominator once; the workspace view must show it where it states the count too.
   // A failed Coursera launch lands here with ?error=; say what happened on both views.
   if (trainingWorkspace) return <><CourseraLaunchErrorNotice /><MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} modulesNote={modulesNote} {...trainingWorkspace} /></>;
-  return <><CourseraLaunchErrorNotice /><MemberProgramOverview programTitle={programTitle} progressPercent={progressPercent} modulesComplete={modulesComplete} modulesTotal={modulesTotal} modulesNote={modulesNote} estRemaining={estRemaining} resumeHref={resumeHref} courseraLaunchHref={courseraLaunchHref} modules={modules} liveSessionTitle={liveSessionTitle} liveSessionWhen={liveSessionWhen} liveSessionStart={liveSessionStart} liveSessionDurationMinutes={liveSessionDurationMinutes} missionsSummary={missionsSummary} missionsHref={missionsHref} /></>;
+  return <><CourseraLaunchErrorNotice /><MemberProgramOverview programTitle={programTitle} progressPercent={progressPercent} modulesComplete={modulesComplete} modulesTotal={modulesTotal} modulesNote={modulesNote} estRemaining={estRemaining} resumeHref={resumeHref} courseraLaunchHref={courseraLaunchHref} modules={modules} liveSessionTitle={liveSessionTitle} liveSessionWhen={liveSessionWhen} liveSessionStart={liveSessionStart} liveSessionDurationMinutes={liveSessionDurationMinutes} missionsSummary={missionsSummary} missionsHref={missionsHref} advisor={advisor} nextLesson={nextLesson} nextLessonDue={nextLessonDue} pointsThisWeek={pointsThisWeek} certsThisWeek={certsThisWeek} toolkitHref={toolkitHref} resumeStudioHref={resumeStudioHref} interviewHref={interviewHref} lessons={lessons} /></>;
 }
 
 /** Program overview (no pinned workspace): hooks live here so the early workspace return above stays hook-free. */
@@ -145,10 +165,23 @@ function MemberProgramOverview({
   liveSessionDurationMinutes,
   missionsSummary,
   missionsHref,
-}: Required<Pick<MemberProgramKitProps, 'programTitle' | 'progressPercent' | 'modulesComplete' | 'modulesTotal' | 'resumeHref' | 'modules' | 'liveSessionDurationMinutes' | 'missionsHref'>> &
-  Pick<MemberProgramKitProps, 'modulesNote' | 'estRemaining' | 'courseraLaunchHref' | 'liveSessionTitle' | 'liveSessionWhen' | 'liveSessionStart' | 'missionsSummary'>) {
+  advisor,
+  nextLesson,
+  nextLessonDue,
+  pointsThisWeek,
+  certsThisWeek,
+  toolkitHref,
+  resumeStudioHref,
+  interviewHref,
+  lessons,
+}: Required<Pick<MemberProgramKitProps, 'programTitle' | 'progressPercent' | 'modulesComplete' | 'modulesTotal' | 'resumeHref' | 'modules' | 'liveSessionDurationMinutes' | 'missionsHref' | 'toolkitHref' | 'resumeStudioHref' | 'interviewHref' | 'lessons'>> &
+  Pick<MemberProgramKitProps, 'modulesNote' | 'estRemaining' | 'courseraLaunchHref' | 'liveSessionTitle' | 'liveSessionWhen' | 'liveSessionStart' | 'missionsSummary' | 'advisor' | 'nextLesson' | 'nextLessonDue' | 'pointsThisWeek' | 'certsThisWeek'>) {
   const te = useTranslations('empty');
+  const tc = useTranslations('dashboard.programC');
   const pct = Math.max(0, Math.min(100, Math.round(progressPercent)));
+  const remaining = Math.max(0, modulesTotal - modulesComplete);
+  const activeModule = modules.find((module) => module.state === 'active');
+  const resumeNumber = modulesComplete + 1;
 
   // Only show the Next Live Session card when we have a real session to show.
   const hasLiveSession = Boolean(liveSessionTitle);
@@ -189,15 +222,53 @@ function MemberProgramOverview({
     URL.revokeObjectURL(url);
   };
 
+  const journey: Array<{ title: string; body: string; state: 'done' | 'active' | 'upcoming' }> = [
+    { title: tc('stageApply'), body: tc('stageApplyBody'), state: 'done' },
+    { title: tc('stageMatch'), body: advisor ? tc('stageMatchBody', { name: advisor.firstName }) : tc('stageMatchBodyNoAdvisor'), state: 'done' },
+    { title: tc('stageTrain'), body: tc('stageTrainBody', { program: programTitle, count: remaining }), state: remaining > 0 ? 'active' : 'done' },
+    { title: tc('stageLaunch'), body: tc('stageLaunchBody'), state: remaining > 0 ? 'upcoming' : 'active' },
+  ];
+
   return (
     <DesignSurface surface="warm">
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
+      <div className="wa-dense-page wa-space-y-5">
         <PageOpener
-          kicker="Program"
-          title="Certification path"
-          lede="Modules, live sessions, and missions."
+          kicker={tc('kicker', { program: programTitle })}
+          title={tc('claim', { count: remaining, program: programTitle })}
+          lede={tc('lede')}
           icon={<GraduationCap size={13} aria-hidden="true" />}
         />
+        <div className="wa-kit-card">
+          <KpiStrip
+            items={[
+              {
+                label: tc('kpiCompleted'),
+                value: modulesTotal > 0 ? `${modulesComplete} of ${modulesTotal}` : `${pct}%`,
+                delta: modulesTotal > 0 ? `${pct}%` : undefined,
+                deltaTone: 'muted',
+              },
+              {
+                label: tc('kpiNextDue'),
+                value: nextLesson ?? activeModule?.title ?? programTitle,
+                delta: nextLessonDue ?? estRemaining,
+                tone: nextLessonDue ? 'warn' : undefined,
+                deltaTone: nextLessonDue ? 'warn' : 'muted',
+              },
+              {
+                label: tc('kpiMilestone'),
+                value: tc('kpiMilestoneValue'),
+                delta: tc('kpiStage', { current: remaining > 0 ? 3 : 4, total: 4 }),
+                deltaTone: 'muted',
+              },
+              {
+                label: tc('kpiAdvisor'),
+                value: advisor?.name ?? '—',
+                delta: advisor ? tc('activeToday') : undefined,
+                deltaTone: 'muted',
+              },
+            ]}
+          />
+        </div>
         {/* Gradient hero */}
         <div
           className="wa-kit-card wa-kit-card--gradient-crimson wa-flex wa-flex-col md:wa-flex-row md:wa-items-center"
@@ -257,7 +328,51 @@ function MemberProgramOverview({
 
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-3 wa-gap-5">
           {/* Modules list (2-wide) */}
-          <div className="wa-kit-card lg:wa-col-span-2">
+          <div className="wa-space-y-5 lg:wa-col-span-2">
+            {activeModule ? (
+              <section className="wa-kit-card" aria-labelledby="program-current-module-heading">
+                <div className="wa-flex wa-items-center wa-justify-between wa-gap-3 wa-flex-wrap">
+                  <h2 id="program-current-module-heading" className="wa-kit-meta" style={{ margin: 0, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    {tc('currentModule')}
+                  </h2>
+                  <a href={resumeHref} className="wa-kit-cta wa-kit-focus" style={{ textDecoration: 'none' }}>
+                    {tc('resumeModule', { n: resumeNumber })} <Play size={13} aria-hidden="true" />
+                  </a>
+                </div>
+                <h3 style={{ margin: '12px 0 0', fontWeight: 800, fontSize: 'clamp(1.15rem, 2vw, 1.4rem)' }}>{nextLesson ?? activeModule.title}</h3>
+                {modulesNote ? (
+                  <p data-testid="program-courses-note-current" className="wa-kit-lede" style={{ marginTop: 6 }}>{modulesNote}</p>
+                ) : null}
+                <div style={{ marginTop: 14 }}>
+                  <ProgressBar pct={pct} aria-label={`${modulesComplete} of ${modulesTotal} modules`} />
+                  <div className="wa-flex wa-items-center wa-justify-between" style={{ marginTop: 6 }}>
+                    {estRemaining ? <span className="wa-kit-meta">{estRemaining}</span> : null}
+                    {nextLessonDue ? <span className="wa-kit-meta" style={{ color: 'var(--wa-gold-dark)', fontWeight: 700 }}>{nextLessonDue}</span> : null}
+                  </div>
+                </div>
+                {lessons.length > 0 ? (
+                  <div style={{ marginTop: 16 }}>
+                    <p className="wa-kit-meta" style={{ margin: '0 0 8px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{tc('lessonBreakdown')}</p>
+                    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 }}>
+                      {lessons.map((lesson) => {
+                        const tone: KitTone = lesson.state === 'done' ? 'ok' : lesson.state === 'active' ? 'info' : 'muted';
+                        const label = lesson.state === 'done' ? tc('lessonCompleted') : lesson.state === 'active' ? tc('lessonInProgress') : tc('lessonUpcoming');
+                        return (
+                          <li key={lesson.title} className="wa-kit-phone-row">
+                            <div>
+                              <strong style={{ display: 'block' }}>{lesson.title}</strong>
+                              {lesson.meta ? <span className="wa-kit-meta">{lesson.meta}</span> : null}
+                            </div>
+                            <StatusTag tone={tone}>{label}</StatusTag>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
+          <div className="wa-kit-card">
             <div className="wa-flex wa-items-center wa-justify-between wa-gap-3" style={{ marginBottom: 16 }}>
               <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', textWrap: 'balance' }}>Modules</h3>
               <a
@@ -317,7 +432,7 @@ function MemberProgramOverview({
                     >
                       <Icon size={meta.iconSize} aria-hidden="true" />
                     </div>
-                    <span style={{ fontWeight: 600, fontSize: 'var(--wa-type-body)', flex: 1, color: dim ? 'var(--wa-muted)' : 'var(--wa-text)' }}>
+                    <span style={{ fontWeight: 600, fontSize: 'var(--wa-type-body)', flex: '1 1 12rem', minWidth: 0, overflowWrap: 'anywhere', color: dim ? 'var(--wa-muted)' : 'var(--wa-text)' }}>
                       {m.title}
                     </span>
                     {isActive && m.launchHref ? (
@@ -353,9 +468,66 @@ function MemberProgramOverview({
               })}
             </div>
           </div>
+          </div>
 
-          {/* Sidebar: live session + missions */}
+          {/* Sidebar: journey, advisor, weekly, live session + missions */}
           <div className="wa-space-y-5">
+            <section className="wa-kit-card" aria-labelledby="program-journey-heading">
+              <h2 id="program-journey-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{tc('journey')}</h2>
+              <ol style={{ listStyle: 'none', margin: '12px 0 0', padding: 0, display: 'grid', gap: 10 }}>
+                {journey.map((stage) => {
+                  const tone: KitTone = stage.state === 'done' ? 'ok' : stage.state === 'active' ? 'warn' : 'muted';
+                  const label = stage.state === 'done' ? tc('completed') : stage.state === 'active' ? tc('currentStage') : tc('upcoming');
+                  return (
+                    <li key={stage.title} className="wa-flex wa-items-start wa-justify-between wa-gap-3">
+                      <div>
+                        <strong style={{ display: 'block' }}>{stage.title}</strong>
+                        <span className="wa-kit-meta">{stage.body}</span>
+                      </div>
+                      <StatusTag tone={tone}>{label}</StatusTag>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
+            {advisor ? (
+              <section className="wa-kit-card" aria-labelledby="program-advisor-heading">
+                <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 10 }}>
+                  <h2 id="program-advisor-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{tc('dedicatedAdvisor')}</h2>
+                  <StatusTag tone="ok">{tc('activeToday')}</StatusTag>
+                </div>
+                <div className="wa-flex wa-items-center wa-gap-3">
+                  <Avatar initials={advisor.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('') || '?'} size={44} src={advisor.avatar ?? undefined} />
+                  <div>
+                    <strong style={{ display: 'block' }}>{advisor.name}</strong>
+                    <span className="wa-kit-meta">{tc('kpiAdvisor')}</span>
+                  </div>
+                </div>
+                <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap" style={{ marginTop: 14 }}>
+                  <a href={advisor.messagingHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" style={{ textDecoration: 'none' }}>
+                    {tc('messageAdvisor', { name: advisor.firstName })}
+                  </a>
+                  <a href={advisor.messagingHref} className="wa-kit-cta wa-kit-focus" style={{ textDecoration: 'none' }}>
+                    {tc('bookCheckIn')}
+                  </a>
+                </div>
+              </section>
+            ) : null}
+            {typeof pointsThisWeek === 'number' || typeof certsThisWeek === 'number' ? (
+              <section className="wa-kit-card" aria-labelledby="program-weekly-heading">
+                <h2 id="program-weekly-heading" style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{tc('weekly')}</h2>
+                <div className="wa-flex wa-items-center wa-justify-between wa-flex-wrap wa-gap-3" style={{ marginTop: 10 }}>
+                  {typeof pointsThisWeek === 'number' ? <p className="wa-kit-lede" style={{ margin: 0 }}>{tc('pointsWeek', { count: pointsThisWeek })}</p> : null}
+                  {typeof certsThisWeek === 'number' ? <p className="wa-kit-lede" style={{ margin: 0 }}>{tc('certsWeek', { count: certsThisWeek })}</p> : null}
+                </div>
+                <p className="wa-kit-meta" style={{ margin: '10px 0 8px' }}>{tc('aiNudge', { n: resumeNumber })}</p>
+                <div className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap">
+                  <a href={resumeStudioHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" style={{ textDecoration: 'none' }}>{tc('openResumeStudio')}</a>
+                  <a href={interviewHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" style={{ textDecoration: 'none' }}>{tc('openInterview')}</a>
+                  <a href={toolkitHref} className="wa-kit-meta" style={{ fontWeight: 700 }}>{tc('recommended')}</a>
+                </div>
+              </section>
+            ) : null}
             {hasLiveSession && (
               <div className="wa-kit-card">
                 <div className="wa-flex wa-items-center wa-gap-2" style={{ color: 'var(--wa-accent)', marginBottom: 8 }}>

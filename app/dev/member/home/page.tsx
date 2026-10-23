@@ -11,6 +11,18 @@ import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
 import PortalEntryErrorBoundary from '@/components/portal/PortalEntryErrorBoundary';
 import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
+import {
+  DEV_ADVISOR,
+  DEV_CURRENT_MODULE_NUMBER,
+  DEV_CURRENT_MODULE_TITLE,
+  DEV_HOME_PIPELINE,
+  DEV_INTERVIEW_WHEN,
+  DEV_MEMBER_FIRST_NAME,
+  DEV_MEMBER_FULL_NAME,
+  DEV_NEXT_CHECK_IN,
+  DEV_PROGRAM_TITLE,
+  DEV_STREAK,
+} from '@/app/dev/member/devMemberFixtures';
 
 /**
  * Storybook-lite showcase — MemberHomeKit "Command Center" (fully populated,
@@ -35,7 +47,7 @@ import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
  *     (default day_30, with the week 1 check-in answered). Built with the
  *     loader's own `buildFirst90Card`.
  *   `?youth=<age>` shows the youth notice for a member of that age (under 18).
- *   `?goals=none` empties the goals so the Next badge tile shows "Set a goal".
+ *   `?goals=none` empties the goals so the habit section shows "Set a goal".
  * The four owner-approved pieces (WAP-194), each off by default:
  *   `?onboarding=on` opens the first-login wizard (PortalEntryClient
  *     portal="member", the same mount as the live home), pre-filled with a
@@ -89,6 +101,24 @@ const DEV_PROGRAM_SLUGS = ['aws-cloud-technology-amazon', 'comptia-a-professiona
 
 const UP_NEXT_FIXTURE: NextBestAction[] = [
   {
+    id: 'review_starter_profile',
+    title: 'Review your starter profile details',
+    body: 'Confirm the contact and referral details your counselor entered.',
+    href: '/dev/member/profile',
+    cta: 'Review profile',
+    variant: 'urgent',
+    weight: 92,
+  },
+  {
+    id: 'counselor_messages',
+    title: 'Message from your team',
+    body: 'You have 2 unread messages from your counselor or program team.',
+    href: '/dev/member/messages',
+    cta: 'Open messages',
+    variant: 'urgent',
+    weight: 88,
+  },
+  {
     id: 'interview_practice',
     title: 'Practice your interview answers',
     body: 'Use guided interview practice to prepare for recruiter screens and counselor interviews.',
@@ -123,6 +153,7 @@ export default async function DevMemberHomePage({
     program?: string;
     staff?: string;
     advisor?: string;
+    empty?: string;
   }>;
 }) {
   if (process.env.VERCEL_ENV === 'production') notFound();
@@ -134,12 +165,12 @@ export default async function DevMemberHomePage({
   const courseProgressStale = courseFixture === 'zero-stale';
   const jobOffers = params?.offer === 'off'
     ? []
-    : [{ id: 'dev-offer-1', role: 'Cloud Support Associate', company: 'Indeed · Austin, TX' }];
+    : [{ id: 'dev-offer-1', role: 'Cloud Support Associate', company: 'Brightline Credit Union · Austin, TX' }];
   const first90Stage: First90Stage | null =
     params?.first90 === 'off' ? null : params?.first90 && isFirst90Stage(params.first90) ? params.first90 : 'day_30';
   const first90 = first90Stage
     ? buildFirst90Card(
-        { placedAt: new Date(Date.now() - FIRST90_FIXTURE_DAYS[first90Stage] * DAY_MS), employerName: 'Deloitte' },
+        { placedAt: new Date(Date.now() - FIRST90_FIXTURE_DAYS[first90Stage] * DAY_MS), employerName: 'Brightline Credit Union' },
         first90Stage === 'week_1'
           ? []
           : [{ entityId: 'week_1', metadata: { response: 'going_well' }, createdAt: new Date(Date.now() - 20 * DAY_MS) }],
@@ -147,10 +178,13 @@ export default async function DevMemberHomePage({
     : null;
   const youthAge = params?.youth ? Number.parseInt(params.youth, 10) : NaN;
   const youthNoticeAge = Number.isInteger(youthAge) && youthAge >= 0 && youthAge < 18 ? youthAge : null;
-  const upNext: NextBestAction[] = [
-    ...(courseProgressStale ? [STALE_TRAINING_COUNSELOR_ACTION] : []),
-    ...UP_NEXT_FIXTURE,
-  ].slice(0, 3);
+  const emptyHome = params?.empty === '1';
+  const upNext: NextBestAction[] = emptyHome
+    ? []
+    : [
+        ...(courseProgressStale ? [STALE_TRAINING_COUNSELOR_ACTION] : []),
+        ...UP_NEXT_FIXTURE,
+      ];
   const onboardingFixture = params?.onboarding === 'on' || params?.onboarding === 'tour' ? params.onboarding : null;
   const requestedProgram = typeof params?.program === 'string' ? params.program.trim() : '';
   const programSwitch = params?.programs === '2' || requestedProgram
@@ -189,7 +223,7 @@ export default async function DevMemberHomePage({
           isSuperAdmin={false}
           tourSteps={MEMBER_PORTAL_TOUR_STEPS}
           wizardProps={{
-            initialFullName: 'Mike Brown',
+            initialFullName: DEV_MEMBER_FULL_NAME,
             initialPhone: '',
             initialAddress: '',
             initialCity: 'Austin',
@@ -209,53 +243,63 @@ export default async function DevMemberHomePage({
     {placement === 'primary' ? approvalCard : null}
     <MemberHomeKit
       showStaffViewBanner={params?.staff === '1'}
-      advisor={params?.advisor === 'off' ? null : { name: 'Sample Advisor', firstName: 'Sample', messagingHref: '/dev/member/messages' }}
+      advisor={params?.advisor === 'off' ? null : DEV_ADVISOR}
       programSwitch={programSwitch}
-      firstName="Mike"
+      firstName={DEV_MEMBER_FIRST_NAME}
       coursePercent={coursePercent}
       courseProgressStale={courseProgressStale}
-      activeJobs={4}
+      activeJobs={emptyHome ? 0 : DEV_HOME_PIPELINE.length}
+      interviewCount={emptyHome ? 0 : DEV_HOME_PIPELINE.filter((row) => /interview/i.test(row.stage)).length}
       certs={2}
       points={1240}
-      programTitle={activeProgramTitle ?? 'AWS Certified Cloud Practitioner Certificate'}
+      programTitle={activeProgramTitle ?? DEV_PROGRAM_TITLE}
       programStatus="In progress"
+      nextLesson={DEV_CURRENT_MODULE_TITLE}
+      nextLessonDue="Due Thursday"
+      nextLessonHref="/dev/member/program"
       nextBadgePercent={60}
       nextBadgeName="Cloud Foundations"
       nextBadgeRemaining="2 modules"
-      currentStreak={12}
-      longestStreak={12}
+      currentStreak={DEV_STREAK}
+      longestStreak={DEV_STREAK}
+      programHref="/dev/member/program"
       resumeHref="/dev/member/program"
-      toolkitHref="/dev/member/toolkit"
+      toolkitHref="/dev/member/ai-tools"
+      interviewWhen={DEV_INTERVIEW_WHEN}
+      priorityBody="Learn the division of provider infrastructure security and customer configuration, IAM rules, and encryption controls."
+      estRemainingMinutes={25}
+      resumeModuleNumber={DEV_CURRENT_MODULE_NUMBER}
+      nextCheckIn={DEV_NEXT_CHECK_IN}
+      curriculum={[
+        { title: 'Networking, VPC and Content Delivery', state: 'done', grade: 'Completed · Grade: 98%', number: 6 },
+        { title: 'Cloud Security and Identity Access (IAM)', state: 'done', grade: 'Completed · Grade: 95%', number: 7 },
+        { title: DEV_CURRENT_MODULE_TITLE, state: 'active', due: 'In progress · Due Thursday', number: DEV_CURRENT_MODULE_NUMBER },
+        { title: 'Billing and Pricing Basics', state: 'upcoming', due: 'Unlocks after Module 8', number: 9 },
+      ]}
       jobsHref="/dev/member/jobs"
       coursesHref="/dev/member/program"
       goalsHref="/dev/member/progress"
-      jobOffers={jobOffers}
-      first90={first90}
+      jobOffers={emptyHome ? [] : jobOffers}
+      first90={emptyHome ? null : first90}
       youthNoticeAge={youthNoticeAge}
-      doThisNext={{
+      doThisNext={emptyHome ? null : {
         id: 'resume-module',
-        title: 'Shared Responsibility Model',
-        body: '~25 min · Module 8 of 9 · AWS Cloud Practitioner — due Thursday.',
+        title: DEV_CURRENT_MODULE_TITLE,
+        body: `~25 min · Module ${DEV_CURRENT_MODULE_NUMBER} of 9 · AWS Cloud Practitioner — due Thursday.`,
         href: '/dev/member/program',
         cta: 'Resume module',
         variant: 'urgent',
         weight: 100,
       }}
+      preassessmentCompleted={!emptyHome}
       upNext={upNext}
-      recommendedTool={{
-        slug: 'interview-prep',
-        title: 'Get ready for your interview',
-        body: 'You have an interview or screening in your tracker. Pull your resume, pitch and practice answers into one page to review before it.',
-        href: '/dev/member/interview-prep',
-        cta: 'Open interview prep',
-      }}
       courseSpark={{ series: [70, 71, 72, 74, 74, 76, 78], delta: '4%', direction: 'up' }}
-      activeJobsSpark={{ series: [2, 3, 3, 3, 4, 4, 4], delta: '1', direction: 'up' }}
+      activeJobsSpark={{ series: [2, 3, 3, 3, 3, 3, 3], delta: '1', direction: 'up' }}
       certsSpark={{ series: [1, 1, 1, 1, 1, 2, 2] }}
       pointsSpark={{ series: [900, 950, 1000, 1080, 1120, 1180, 1240], delta: '85', direction: 'up' }}
       certModulesDone={7}
       certModulesTotal={9}
-      programCoursesNote="9 courses: 8 on Coursera's learning path plus the WorkforceAP Lab, Project, and Test Preparation (delivered by WorkforceAP, not part of the Coursera path)."
+      programCoursesNote="9 courses: 8 on the Coursera learning path plus the WorkforceAP Lab, Project, and Test Preparation (delivered by WorkforceAP, not part of the Coursera path)."
 
       weeklyActivity={[
         { day: 'Mon', minutes: 18 },
@@ -277,44 +321,7 @@ export default async function DevMemberHomePage({
         { title: 'Finish AWS Cloud Practitioner', percent: 78 },
         { title: 'Apply to 5 cloud roles', percent: 80 },
       ]}
-      pipeline={[
-        {
-          role: 'Salesforce Administrator',
-          company: 'Deloitte',
-          stage: 'Interviewing',
-          tone: 'warn',
-          appliedLabel: 'Jun 18',
-          stageIndex: 3,
-          stageTotal: 3,
-        },
-        {
-          role: 'Agentforce Solutions Engineer',
-          company: 'Accenture · Remote',
-          stage: 'Applied',
-          tone: 'muted',
-          appliedLabel: 'Jun 29',
-          stageIndex: 1,
-          stageTotal: 3,
-        },
-        {
-          role: 'Cloud Support Associate',
-          company: 'Indeed · Austin, TX',
-          stage: 'Screening',
-          tone: 'info',
-          appliedLabel: 'Jun 24',
-          stageIndex: 2,
-          stageTotal: 3,
-        },
-        {
-          role: 'Junior Cloud Engineer',
-          company: 'Oracle · Austin, TX',
-          stage: 'Applied',
-          tone: 'muted',
-          appliedLabel: 'Jul 1',
-          stageIndex: 1,
-          stageTotal: 3,
-        },
-      ]}
+      pipeline={emptyHome ? [] : [...DEV_HOME_PIPELINE]}
     />
     {placement === 'demoted' ? approvalCard : null}
     </>

@@ -96,7 +96,7 @@ describe('member overview leaves every guided-tour anchor to the shell', () => {
       </NextIntlClientProvider>,
     );
     expect(loadMemberDashboardHome).toHaveBeenCalledTimes(1);
-    expect(html).toContain('Certification path');
+    expect(html).toContain('member-home-focus');
     expect(html).toContain('Application pipeline');
     expect(html).not.toContain('data-portal-error-state');
     for (const step of TOUR_REGISTRY['member.home'].steps) {
