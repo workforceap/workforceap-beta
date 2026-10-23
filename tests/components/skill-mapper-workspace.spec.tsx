@@ -21,7 +21,7 @@ describe('actual Skill Mapper saved workspace', () => {
   it('uses the same graphs in a synthetic proof without account, provider, extraction or export requests', () => {
     show({ preview: true, initialRun: { ...saved, demo: true }, initialMemberProfile: axes.map(axis => ({ axis, value: 0.4 })) });
     fireEvent.click(screen.getByRole('button', { name: 'Compare with my profile' }));
-    expect(screen.getByRole('img', { name: 'Skill radar chart' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: `Comparison radar: estimated profile vs ${saved.occupationTitle}` })).toBeInTheDocument();
     fireEvent.click(screen.getByText('View radar values'));
     expect(screen.getByRole('region', { name: /Estimated member profile compared with occupation requirements/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Export Comparison PDF' })).toBeDisabled();
@@ -30,13 +30,13 @@ describe('actual Skill Mapper saved workspace', () => {
 
   it('hydrates the O*NET occupation graph, scored skill list and numeric alternative without rerunning a provider', () => {
     show({ initialRun: saved });
-    expect(screen.getByRole('img', { name: 'Skill radar chart' }).tagName.toLowerCase()).toBe('svg');
+    expect(screen.getByRole('img', { name: `Occupation skill radar: ${saved.occupationTitle}` }).tagName.toLowerCase()).toBe('svg');
     expect(screen.getByText('Troubleshooting')).toBeInTheDocument();
     expect(screen.getByText('86%')).toBeInTheDocument();
     fireEvent.click(screen.getByText('View radar values'));
     const values = within(screen.getByRole('region', { name: 'Occupation radar values from this lookup' })).getByRole('table');
     expect(within(values).getAllByRole('row')).toHaveLength(7);
-    expect(within(values).getByRole('cell', { name: 'Engineering' }).closest('tr')).toHaveTextContent('75%');
+    expect(within(values).getByRole('rowheader', { name: 'Engineering' }).closest('tr')).toHaveTextContent('75%');
     expect(screen.getByRole('link', { name: /Training options for this lookup/ })).toHaveAttribute('href', '/dashboard/ai-tools/training-bridge?result=owned-selected');
     expect(fetcher).not.toHaveBeenCalled();
   });
@@ -54,11 +54,11 @@ describe('actual Skill Mapper saved workspace', () => {
     show({ initialRun: saved });
     fireEvent.click(screen.getByRole('button', { name: 'Compare with my profile' }));
     await screen.findByRole('heading', { name: `Your Skills vs. ${saved.occupationTitle}` });
-    expect(screen.getByRole('img', { name: 'Skill radar chart' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: `Comparison radar: estimated profile vs ${saved.occupationTitle}` })).toBeInTheDocument();
     fireEvent.click(screen.getByText('View radar values'));
     const table = within(screen.getByRole('region', { name: /Estimated member profile compared with occupation requirements/ })).getByRole('table');
-    const engineering = within(table).getByRole('cell', { name: 'Engineering' }).closest('tr')!;
-    expect(within(engineering).getAllByRole('cell').map(cell => cell.textContent)).toEqual(['Engineering', '40%', '75%']);
+    const engineering = within(table).getByRole('rowheader', { name: 'Engineering' }).closest('tr')!;
+    expect(within(engineering).getAllByRole('cell').map(cell => cell.textContent)).toEqual(['40%', '75%']);
     expect(screen.getByText('Skill Gaps to Close')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Export Comparison PDF' }));
     await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/ai/export-pdf', expect.objectContaining({ method: 'POST' })));
@@ -74,7 +74,7 @@ describe('actual Skill Mapper saved workspace', () => {
     show({ initialTarget: { code: saved.occupationCode, title: saved.occupationTitle } });
     expect(fetcher).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Load this occupation' }));
-    await screen.findByRole('img', { name: 'Skill radar chart' });
+    await screen.findByRole('img', { name: `Occupation skill radar: ${saved.occupationTitle}` });
     expect(fetcher).toHaveBeenCalledWith(`/api/ai/skill-mapper?code=${saved.occupationCode}&title=${encodeURIComponent(saved.occupationTitle)}`);
     expect(screen.getByRole('status')).toHaveTextContent('lookup could not be saved');
     expect(screen.queryByRole('link', { name: /Training options for this lookup/ })).toBeNull();
@@ -108,5 +108,136 @@ describe('Skill Mapper dark-mode contrast tokens', () => {
     const chipColors = Array.from(container.querySelectorAll<HTMLElement>('span')).map(span => span.style.color).filter(color => color.startsWith('color-mix(in srgb') && color.includes('var(--wa-text)'));
     expect(chipColors.length).toBeGreaterThan(0);
     expect(chipColors.every(color => color.includes(' 40%, var(--wa-text)'))).toBe(true);
+  });
+});
+
+describe('Skill Mapper accessibility', () => {
+  const profile = axes.map(axis => ({ axis, value: 0.4 }));
+  const comparisonHeading = `Your Skills vs. ${saved.occupationTitle}`;
+  const scrollIntoView = vi.fn();
+  beforeEach(() => { scrollIntoView.mockReset(); HTMLElement.prototype.scrollIntoView = scrollIntoView; });
+  afterEach(() => { delete (HTMLElement.prototype as Partial<HTMLElement>).scrollIntoView; });
+
+  it('moves focus and the viewport to the comparison heading when Compare with my profile is used', () => {
+    show({ preview: true, initialRun: saved, initialMemberProfile: profile });
+    fireEvent.click(screen.getByRole('button', { name: 'Compare with my profile' }));
+    const heading = screen.getByRole('heading', { level: 2, name: comparisonHeading });
+    expect(document.activeElement).toBe(heading);
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.mock.instances[0]).toBe(heading);
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' });
+  });
+
+  it('lands focus on the heading once the profile has loaded', async () => {
+    fetcher.mockImplementation(async input => {
+      if (String(input) === '/api/member/skill-profile') return Response.json({ skillProfile: profile, hasAiResumeExtraction: true, hasInterestProfiler: true, certNames: [], resumeSkills: profile });
+      throw new Error(`Unexpected request: ${input}`);
+    });
+    show({ initialRun: saved });
+    fireEvent.click(screen.getByRole('button', { name: 'Compare with my profile' }));
+    const heading = await screen.findByRole('heading', { level: 2, name: comparisonHeading });
+    await waitFor(() => expect(document.activeElement).toBe(heading));
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not steal focus when the profile tab is opened from the tab strip', () => {
+    show({ preview: true, initialRun: saved, initialMemberProfile: profile });
+    fireEvent.click(screen.getByRole('button', { name: 'My Skills Profile' }));
+    expect(document.activeElement).not.toBe(screen.getByRole('heading', { level: 2, name: comparisonHeading }));
+    expect(scrollIntoView).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the profile panel, not <body>, when there is no comparison to show', async () => {
+    fetcher.mockImplementation(async input => {
+      if (String(input) === '/api/member/skill-profile') return Response.json({ skillProfile: axes.map(axis => ({ axis, value: 0 })), hasAiResumeExtraction: true, hasInterestProfiler: false, certNames: [], resumeSkills: [] });
+      throw new Error(`Unexpected request: ${input}`);
+    });
+    show({ initialRun: saved });
+    fireEvent.click(screen.getByRole('button', { name: 'Compare with my profile' }));
+    await screen.findByText('Build your skill profile');
+    await waitFor(() => expect(document.activeElement).not.toBe(document.body));
+    expect(document.activeElement).toHaveAttribute('tabindex', '-1');
+    expect(document.activeElement).toContainElement(screen.getByText('Build your skill profile'));
+  });
+
+  it('gives each radar a distinct name and an always-present numeric description, and names its table', () => {
+    show({ preview: true, initialRun: saved, initialMemberProfile: profile });
+    const occupation = screen.getByRole('img', { name: `Occupation skill radar: ${saved.occupationTitle}` });
+    expect(document.getElementById(occupation.getAttribute('aria-describedby')!)).toHaveTextContent('Engineering 75%');
+    fireEvent.click(screen.getByText('View radar values'));
+    const occupationTable = within(screen.getByRole('region', { name: 'Occupation radar values from this lookup' })).getByRole('table', { name: 'Occupation radar values from this lookup' });
+    expect(within(occupationTable).getAllByRole('rowheader').map(header => header.textContent)).toEqual(axes);
+    expect(within(occupationTable).getAllByRole('columnheader').map(header => header.textContent)).toEqual(['Competency', 'Target occupation']);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Compare with my profile' }));
+    const comparison = screen.getByRole('img', { name: `Comparison radar: estimated profile vs ${saved.occupationTitle}` });
+    expect(comparison).not.toBe(occupation);
+    expect(document.getElementById(comparison.getAttribute('aria-describedby')!)).toHaveTextContent('Engineering 40% versus 75%');
+    fireEvent.click(screen.getByText('View radar values'));
+    expect(screen.getByRole('table', { name: /Estimated member profile compared with occupation requirements/ })).toBeInTheDocument();
+  });
+
+  it('keeps the heading order H2 then H3 on both tabs', () => {
+    const { container } = show({ preview: true, initialRun: saved, initialMemberProfile: profile });
+    const levels = () => screen.getAllByRole('heading').map(heading => Number(heading.tagName.slice(1)));
+    const expectOrdered = () => {
+      const found = levels();
+      expect(found[0]).toBe(2);
+      expect(found).toContain(3);
+      expect(found).not.toContain(4);
+      found.forEach((level, i) => { if (i > 0) expect(level - found[i - 1]).toBeLessThanOrEqual(1); });
+    };
+    expectOrdered();
+    fireEvent.click(screen.getByRole('button', { name: 'My Skills Profile' }));
+    expectOrdered();
+    expect(container.querySelector('h1')).toBeNull();
+  });
+
+  it('exposes the expanded state of the score explanation toggle', () => {
+    show({ preview: true, initialRun: saved });
+    const toggle = screen.getByRole('button', { name: /What do these scores measure/ });
+    const panel = document.getElementById(toggle.getAttribute('aria-controls')!)!;
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(panel).toHaveAttribute('hidden');
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(panel).not.toHaveAttribute('hidden');
+    expect(panel).toHaveTextContent('Scores come from O*NET occupational data');
+  });
+
+  it('keeps the comparison key under the chart, ahead of the numbers, with dashed and solid line samples', () => {
+    const { container } = show({ preview: true, initialRun: saved, initialMemberProfile: profile });
+    fireEvent.click(screen.getByRole('button', { name: 'Compare with my profile' }));
+    const chart = container.querySelector('svg.skill-mapper-radar-chart')!;
+    const legend = container.querySelector('.skill-mapper-legend') as HTMLElement;
+    const values = container.querySelector('details')!;
+    expect(chart.compareDocumentPosition(legend) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(legend.compareDocumentPosition(values) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const sample = (label: string) => within(legend).getByText(label).querySelector('line')!;
+    expect(sample('Your skills')).toHaveAttribute('stroke-dasharray', '4 2');
+    expect(sample('Target occupation')).not.toHaveAttribute('stroke-dasharray');
+    expect(sample('Target occupation')).toHaveAttribute('stroke', 'var(--wa-accent)');
+  });
+
+  it('shows the synthetic proof controls as disabled, not just inert', () => {
+    show({ preview: true, initialRun: saved, initialTarget: { code: saved.occupationCode, title: saved.occupationTitle }, initialMemberProfile: profile });
+    const search = screen.getByRole('button', { name: 'Search' });
+    const exportMap = screen.getByRole('button', { name: 'Export Skill Map PDF' });
+    for (const button of [search, exportMap]) {
+      expect(button).toBeDisabled();
+      expect(button.style.opacity).toBe('0.6');
+      expect(button.style.cursor).toBe('not-allowed');
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Compare with my profile' }));
+    const exportComparison = screen.getByRole('button', { name: 'Export Comparison PDF' });
+    expect(exportComparison).toBeDisabled();
+    expect(exportComparison.style.opacity).toBe('0.6');
+    expect(exportComparison.style.cursor).toBe('not-allowed');
+  });
+
+  it('keeps live controls looking enabled outside the proof', () => {
+    show({ initialRun: saved, initialTarget: { code: saved.occupationCode, title: saved.occupationTitle } });
+    expect(screen.getByRole('button', { name: 'Search' }).style.opacity).toBe('1');
+    expect(screen.getByRole('button', { name: 'Export Skill Map PDF' }).style.cursor).toBe('pointer');
   });
 });

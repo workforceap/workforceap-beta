@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useId, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Search,
@@ -122,12 +122,16 @@ const categoryChipText = (color: string) => `color-mix(in srgb, ${color} 40%, va
 
 function AxisLegend({ axes }: { axes: string[] }) {
   const [open, setOpen] = useState(false);
+  const panelId = useId();
   const shown = axes.filter(a => AXIS_DESCRIPTIONS[a]);
   if (shown.length === 0) return null;
   return (
     <div style={{ marginTop: '0.5rem', marginBottom: '1rem', border: '1px solid var(--surface-container-highest)', borderRadius: '0.75rem', overflow: 'hidden' }}>
       <button
         type="button"
+        className={styles.axisToggle}
+        aria-expanded={open}
+        aria-controls={panelId}
         onClick={() => setOpen(o => !o)}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -141,30 +145,29 @@ function AxisLegend({ axes }: { axes: string[] }) {
         </span>
         <ChevronDown size={16} aria-hidden="true" style={{ transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }} />
       </button>
-      {open && (
-        <div style={{ padding: '0.75rem 0.875rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--surface-container)' }}>
-          {shown.map(axis => {
-            const info = AXIS_DESCRIPTIONS[axis];
-            return (
-              <div key={axis} style={{ display: 'flex', gap: '0.625rem', alignItems: 'flex-start' }}>
-                <span style={{
-                  fontSize: '0.8125rem', fontWeight: 700, padding: '0.15rem 0.5rem',
-                  borderRadius: '999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
-                  color: 'var(--wa-accent-text)', flexShrink: 0, lineHeight: '1.6'}}>
-                  {axis}
-                </span>
-                <div>
-                  <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface)' }}>{info.plain}</span>
-                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}> — {info.examples}</span>
-                </div>
+      {/* Always rendered so aria-controls resolves while collapsed; `hidden` removes it from view and the a11y tree. */}
+      <div id={panelId} hidden={!open} className={styles.axisPanel} style={{ background: 'var(--surface-container)' }}>
+        {shown.map(axis => {
+          const info = AXIS_DESCRIPTIONS[axis];
+          return (
+            <div key={axis} className={styles.axisRow}>
+              <span className={styles.axisPill} style={{
+                fontSize: '0.8125rem', fontWeight: 700, padding: '0.15rem 0.5rem',
+                borderRadius: '999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
+                color: 'var(--wa-accent-text)', lineHeight: '1.6'}}>
+                {axis}
+              </span>
+              <div>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface)' }}>{info.plain}</span>
+                <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}> — {info.examples}</span>
               </div>
-            );
-          })}
-          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', lineHeight: 1.5 }}>
-            Scores come from O*NET occupational data. Higher means that skill area matters more for this job.
-          </p>
-        </div>
-      )}
+            </div>
+          );
+        })}
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', lineHeight: 1.5 }}>
+          Scores come from O*NET occupational data. Higher means that skill area matters more for this job.
+        </p>
+      </div>
     </div>
   );
 }
@@ -197,7 +200,15 @@ function RadarGrid({ n, cx, cy, pt }: { n: number; cx: number; cy: number; pt: (
   );
 }
 
-function RadarChart({ data }: { data: { axis: string; value: number }[] }) {
+const percent = (value: number) => `${Math.round(value * 100)}%`;
+
+/** Visible note under each chart so the rings can be read as a scale. */
+function RadarScaleNote() {
+  return <p className={styles.radarScale}>Rings mark 25%, 50%, 75% and 100%.</p>;
+}
+
+function RadarChart({ data, label }: { data: { axis: string; value: number }[]; label: string }) {
+  const descId = useId();
   const size = 240;
   const cx = size / 2, cy = size / 2, r = 90;
   const n = data.length;
@@ -206,21 +217,26 @@ function RadarChart({ data }: { data: { axis: string; value: number }[] }) {
     x: cx + r * v * Math.cos(angle(i)),
     y: cy + r * v * Math.sin(angle(i))});
   return (
-    <svg className={`skill-mapper-radar-chart ${styles.radar}`} width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Skill radar chart" style={{ overflow: 'visible', display: 'block', margin: '0 auto' }}>
-      <RadarGrid n={n} cx={cx} cy={cy} pt={pt} />
-      <polygon
-        points={data.map((d, i) => { const p = pt(i, d.value); return `${p.x},${p.y}`; }).join(' ')}
-        fill={RADAR_SERIES.target.stroke} fillOpacity="0.2" stroke={RADAR_SERIES.target.stroke} strokeWidth="2" />
-      {data.map((d, i) => {
-        const p = pt(i, 1.25);
-        return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
-          fontSize="13" fill="var(--color-on-surface-variant)">{d.axis}</text>;
-      })}
-    </svg>
+    <>
+      <svg className={`skill-mapper-radar-chart ${styles.radar}`} width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={label} aria-describedby={descId} style={{ overflow: 'visible', display: 'block', margin: '0 auto' }}>
+        <RadarGrid n={n} cx={cx} cy={cy} pt={pt} />
+        <polygon
+          points={data.map((d, i) => { const p = pt(i, d.value); return `${p.x},${p.y}`; }).join(' ')}
+          fill={RADAR_SERIES.target.stroke} fillOpacity="0.2" stroke={RADAR_SERIES.target.stroke} strokeWidth="2" />
+        {data.map((d, i) => {
+          const p = pt(i, 1.25);
+          return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
+            fontSize="13" fill="var(--color-on-surface-variant)">{d.axis}</text>;
+        })}
+      </svg>
+      {/* Always-present numeric alternative, built from the same data the polygon draws. */}
+      <p id={descId} className="wa-sr-only">{`Values: ${data.map(d => `${d.axis} ${percent(d.value)}`).join(', ')}.`}</p>
+    </>
   );
 }
 
-function DualRadarChart({ memberData, targetData }: { memberData: { axis: string; value: number }[]; targetData: { axis: string; value: number }[] }) {
+function DualRadarChart({ memberData, targetData, label }: { memberData: { axis: string; value: number }[]; targetData: { axis: string; value: number }[]; label: string }) {
+  const descId = useId();
   const size = 260;
   const cx = size / 2, cy = size / 2, r = 90;
   // Derive axes from whichever dataset has more entries (prefer target occupation axes)
@@ -237,26 +253,34 @@ function DualRadarChart({ memberData, targetData }: { memberData: { axis: string
     data.find(d => d.axis === axis)?.value ?? 0;
 
   return (
-    <svg className={`skill-mapper-radar-chart ${styles.radar}`} width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Skill radar chart" style={{ overflow: 'visible', display: 'block', margin: '0 auto' }}>
-      <RadarGrid n={n} cx={cx} cy={cy} pt={pt} />
-      {/* Target occupation - accent/red, solid */}
-      <polygon
-        points={axes.map((axis, i) => { const p = pt(i, getValue(targetData, axis)); return `${p.x},${p.y}`; }).join(' ')}
-        fill={RADAR_SERIES.target.stroke} fillOpacity="0.15" stroke={RADAR_SERIES.target.stroke} strokeWidth="2" />
-      {/* Member profile - blue, dashed */}
-      <polygon
-        points={axes.map((axis, i) => { const p = pt(i, getValue(memberData, axis)); return `${p.x},${p.y}`; }).join(' ')}
-        fill="rgba(43,123,185,0.2)" stroke={RADAR_SERIES.member.stroke} strokeWidth="2" strokeDasharray={RADAR_SERIES.member.dash} />
-      {axes.map((axis, i) => {
-        const p = pt(i, 1.25);
-        return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
-          fontSize="13" fill="var(--color-on-surface-variant)">{axis}</text>;
-      })}
-    </svg>
+    <>
+      <svg className={`skill-mapper-radar-chart ${styles.radar}`} width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label={label} aria-describedby={descId} style={{ overflow: 'visible', display: 'block', margin: '0 auto' }}>
+        <RadarGrid n={n} cx={cx} cy={cy} pt={pt} />
+        {/* Target occupation - accent/red, solid */}
+        <polygon
+          points={axes.map((axis, i) => { const p = pt(i, getValue(targetData, axis)); return `${p.x},${p.y}`; }).join(' ')}
+          fill={RADAR_SERIES.target.stroke} fillOpacity="0.15" stroke={RADAR_SERIES.target.stroke} strokeWidth="2" />
+        {/* Member profile - blue, dashed */}
+        <polygon
+          points={axes.map((axis, i) => { const p = pt(i, getValue(memberData, axis)); return `${p.x},${p.y}`; }).join(' ')}
+          fill="rgba(43,123,185,0.2)" stroke={RADAR_SERIES.member.stroke} strokeWidth="2" strokeDasharray={RADAR_SERIES.member.dash} />
+        {axes.map((axis, i) => {
+          const p = pt(i, 1.25);
+          return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
+            fontSize="13" fill="var(--color-on-surface-variant)">{axis}</text>;
+        })}
+      </svg>
+      {/* Always-present numeric alternative, built from the same data the polygons draw. */}
+      <p id={descId} className="wa-sr-only">{`${RADAR_SERIES.member.label} versus ${RADAR_SERIES.target.label.toLowerCase()}: ${axes.map(axis => `${axis} ${percent(getValue(memberData, axis))} versus ${percent(getValue(targetData, axis))}`).join(', ')}.`}</p>
+    </>
   );
 }
 
-/** The numeric alternative uses exactly the same normalized series as the charts. */
+/**
+ * The numeric alternative uses exactly the same normalized series as the charts.
+ * The table is named by a caption and each competency is a row header, so a
+ * screen reader announces "Engineering, Estimated profile, 40%".
+ */
 function RadarValues({ targetData, memberData }: {
   targetData: { axis: string; value: number }[];
   memberData?: { axis: string; value: number }[];
@@ -265,24 +289,26 @@ function RadarValues({ targetData, memberData }: {
   const axes = [...new Set([...targetData, ...(memberData ?? [])].map(point => point.axis))];
   const valueFor = (series: { axis: string; value: number }[], axis: string) => {
     const value = series.find(point => point.axis === axis)?.value;
-    return value === undefined ? '—' : `${Math.round(value * 100)}%`;
+    return value === undefined ? '—' : percent(value);
   };
+  const caption = memberData ? t('estimatedComparison') : t('occupationValues');
   return (
     <details style={{ marginBlock: 16 }}>
       <summary className="wa-kit-focus" style={{ cursor: 'pointer', minHeight: 44, paddingBlock: 10, fontWeight: 600 }}>{t('graphValues')}</summary>
-      <section aria-label={memberData ? t('estimatedComparison') : t('occupationValues')}>
-        <p style={{ marginBlock: 8 }}>{memberData ? t('estimatedComparison') : t('occupationValues')}</p>
+      <section aria-label={caption}>
+        <p style={{ marginBlock: 8 }}>{caption}</p>
         <DataTable
-        className={styles.radarValues}
-        minWidth={0}
-        density="compact"
-        columns={[
-          { key: 'axis', header: t('axis') },
-          ...(memberData ? [{ key: 'member', header: t('memberEstimate'), numeric: true }] : []),
-          { key: 'target', header: t('target'), numeric: true },
-        ]}
-        rows={axes.map(axis => ({ axis, member: memberData ? valueFor(memberData, axis) : '', target: valueFor(targetData, axis) }))}
-        rowKey={row => row.axis}
+          className={styles.radarValues}
+          caption={caption}
+          minWidth={0}
+          density="compact"
+          columns={[
+            { key: 'axis', header: t('axis'), rowHeader: true },
+            ...(memberData ? [{ key: 'member', header: t('memberEstimate'), numeric: true }] : []),
+            { key: 'target', header: t('target'), numeric: true },
+          ]}
+          rows={axes.map(axis => ({ axis, member: memberData ? valueFor(memberData, axis) : '', target: valueFor(targetData, axis) }))}
+          rowKey={row => row.axis}
         />
       </section>
     </details>
@@ -325,10 +351,10 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
 
   return (
     <div style={{ marginTop: '1.5rem' }}>
-      <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <h3 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <BookOpen size={16} style={{ color: 'var(--wa-accent-text)' }} />
         Fastest Path to Close Gaps
-      </h4>
+      </h3>
       <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
         Specific courses that build the skills you need most
       </p>
@@ -543,6 +569,19 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
   const autoExtractAttemptedRef = useRef(false);
   const [autoExtracting, setAutoExtracting] = useState(false);
 
+  // "Compare with my profile" unmounts the button that was pressed, so focus would fall to <body>
+  // and phone users would stay far below the comparison. Remember the request and land focus (and
+  // the viewport) on the comparison heading when it mounts, which may be after the async profile
+  // load. If there is no comparison to show, the profile panel itself takes focus instead.
+  const focusComparisonRef = useRef(false);
+  const profilePanelRef = useRef<HTMLDivElement>(null);
+  const landFocus = useCallback((el: HTMLElement | null) => {
+    if (!el || !focusComparisonRef.current) return;
+    focusComparisonRef.current = false;
+    el.focus({ preventScroll: true });
+    el.scrollIntoView?.({ block: 'start' });
+  }, []);
+
   const exportSkillMap = async () => {
     if (preview) return;
     if (!selectedTitle || !radarData.length) return;
@@ -687,6 +726,11 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
   };
 
   useEffect(() => {
+    if (activeTab !== 'profile') focusComparisonRef.current = false;
+    else if (profileLoaded && !loadingProfile && !autoExtracting) landFocus(profilePanelRef.current);
+  }, [activeTab, profileLoaded, loadingProfile, autoExtracting, landFocus]);
+
+  useEffect(() => {
     if (activeTab === 'profile' && !profileLoaded) loadProfile();
   }, [activeTab, profileLoaded]);  
 
@@ -799,6 +843,12 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
       }).filter(g => g.gap > 0).sort((a, b) => b.gap - a.gap)
     : [];
 
+  // One boolean per control drives both `disabled` and how it looks, so an inert control never
+  // reads as actionable (the /dev proof disables search and export outright).
+  const searchDisabled = preview || loading || !query.trim();
+  const exportMapDisabled = preview || exportingPdf;
+  const exportComparisonDisabled = preview || exportingComparison;
+
   // Tab styles
   const tabStyle = (active: boolean) => ({
     padding: '0.5rem 1rem',
@@ -853,8 +903,8 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                 placeholder="e.g. Software Developer, Account Executive, Project Manager"
               />
             </div>
-            <button type="button" className="wa-kit-focus" onClick={handleSearch} disabled={preview || loading || !query.trim()}
-              style={{ ...primaryPillStyle, opacity: loading || !query.trim() ? 0.6 : 1, cursor: loading || !query.trim() ? 'not-allowed' : 'pointer' }}>
+            <button type="button" className="wa-kit-focus" onClick={handleSearch} disabled={searchDisabled}
+              style={{ ...primaryPillStyle, opacity: searchDisabled ? 0.6 : 1, cursor: searchDisabled ? 'not-allowed' : 'pointer' }}>
               {loading ? <PortalInlineSpinner size={16} /> : <Search size={16} aria-hidden />}
               Search
             </button>
@@ -868,7 +918,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
 
           {occupations.length > 0 && !radarData.length && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
-              <h3 className="ai-tool-section-title">Select an occupation</h3>
+              <h2 className={`ai-tool-section-title ${styles.sectionTitle}`}>Select an occupation</h2>
               {occupations.map((occ) => (
                 <button type="button" key={occ.code} disabled={preview} onClick={() => handleSelect(occ.code, occ.title)}
                   className="wa-kit-focus"
@@ -911,7 +961,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                   </p>
                 </div>
               )}
-              <h3 className="ai-tool-section-title">{selectedTitle}</h3>
+              <h2 className={`ai-tool-section-title ${styles.sectionTitle}`}>{selectedTitle}</h2>
               {isSalesQuery(selectedTitle) && (
                 <div style={{ marginBottom: '1rem', padding: '0.875rem 1rem', background: 'var(--wa-info-soft)', border: '1px solid var(--wa-border)', borderRadius: '0.75rem', fontSize: '0.85rem', color: 'var(--color-on-surface)' }}>
                   Sales and account roles usually score strongest in <strong>Strategy</strong> and <strong>Service</strong> here because this map weighs planning, negotiation, communication, and relationship-building, not just technical tools.
@@ -919,10 +969,11 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
               )}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', marginBottom: '2rem' }}>
                 <div style={{ flex: '1 1 240px', minWidth: 240 }}>
-                  <RadarChart data={radarData} />
+                  <RadarChart data={radarData} label={`Occupation skill radar: ${selectedTitle}`} />
+                  <RadarScaleNote />
                 </div>
                 <div style={{ flex: '1 1 280px', minWidth: 280 }}>
-                  <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-on-surface)', marginBottom: '0.75rem' }}>Top Skills</h4>
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-on-surface)', marginBottom: '0.75rem' }}>Top Skills</h3>
                   {skills.map((s) => (
                     <div key={s.name} style={{ marginBottom: '0.75rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: '0.25rem' }}>
@@ -945,10 +996,10 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                 <button
                   type="button"
                   onClick={() => void exportSkillMap()}
-                  disabled={preview || exportingPdf}
+                  disabled={exportMapDisabled}
                   aria-busy={exportingPdf}
                   className="wa-kit-focus"
-                  style={{ ...outlinePillStyleSm, cursor: exportingPdf ? 'default' : 'pointer', opacity: exportingPdf ? 0.6 : 1 }}
+                  style={{ ...outlinePillStyleSm, cursor: exportingPdf ? 'default' : exportMapDisabled ? 'not-allowed' : 'pointer', opacity: exportMapDisabled ? 0.6 : 1 }}
                 >
                   {exportingPdf ? <PortalInlineSpinner size={14} /> : <Download size={14} aria-hidden="true" />}
                   <span aria-live="polite">
@@ -956,7 +1007,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                   </span>
                 </button>
                 {radarData.length > 0 && (
-                  <button type="button" onClick={() => setActiveTab('profile')} className="wa-kit-focus"
+                  <button type="button" onClick={() => { focusComparisonRef.current = true; setActiveTab('profile'); }} className="wa-kit-focus"
                     style={{ ...outlinePillStyleSm, background: 'var(--wa-accent-soft)', cursor: 'pointer' }}>
                     <ArrowLeftRight size={14} aria-hidden="true" />
                     Compare with my profile
@@ -967,9 +1018,9 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
               {/* Programs that lead to this occupation (from DB career mappings) */}
               {matchedPrograms.length > 0 && (
                 <div style={{ marginTop: '1.25rem' }}>
-                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem' }}>
                     Programs for this career
-                  </h4>
+                  </h3>
                   <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
                     WorkforceAP programs that prepare you for <strong>{selectedTitle}</strong>
                   </p>
@@ -1053,7 +1104,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
 
       {/* Tab 2: My Skills Profile */}
       {activeTab === 'profile' && (
-        <div>
+        <div ref={profilePanelRef} tabIndex={-1} className={styles.profilePanel}>
           {loadingProfile && (
             <p style={{ textAlign: 'center', padding: '2rem' }}><PortalInlineSpinner size={24} /></p>
           )}
@@ -1077,29 +1128,31 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
               {/* Dual radar or single radar */}
               {radarData.length > 0 ? (
                 <>
-                  <h3 className="ai-tool-section-title skill-mapper-profile-title">Your Skills vs. {selectedTitle || 'Target Occupation'}</h3>
+                  <h2 ref={landFocus} tabIndex={-1} className={`ai-tool-section-title skill-mapper-profile-title ${styles.sectionTitle} ${styles.comparisonTitle}`}>Your Skills vs. {selectedTitle || 'Target Occupation'}</h2>
                   <div className="skill-mapper-radar-wrap" style={{ marginBottom: '0.75rem' }}>
-                    <DualRadarChart memberData={memberProfile} targetData={radarData} />
+                    <DualRadarChart memberData={memberProfile} targetData={radarData} label={`Comparison radar: estimated profile vs ${selectedTitle || 'target occupation'}`} />
+                  </div>
+                  <RadarScaleNote />
+                  {/* Key sits directly under the chart and repeats the line style (dashed vs solid), not just the colour. */}
+                  <div className="skill-mapper-legend" style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', marginBottom: '0.5rem', fontSize: '0.8125rem' }}>
+                    {[RADAR_SERIES.member, RADAR_SERIES.target].map(series => (
+                      <span key={series.label} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                        <svg width="28" height="12" viewBox="0 0 28 12" aria-hidden="true" focusable="false">
+                          <line x1="1" y1="6" x2="27" y2="6" stroke={series.stroke} strokeWidth="2" strokeDasharray={series.dash} />
+                        </svg>
+                        {series.label}
+                      </span>
+                    ))}
                   </div>
                   <RadarValues targetData={radarData} memberData={memberProfile} />
-                  <div className="skill-mapper-legend" style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', marginBottom: '0.5rem', fontSize: '0.8125rem' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                      <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: RADAR_SERIES.member.stroke }} />
-                      Your skills
-                    </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                      <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: RADAR_SERIES.target.stroke }} />
-                      Target occupation
-                    </span>
-                  </div>
                   <div className="skill-mapper-export-row" style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
                     <button
                       type="button"
                       onClick={() => void exportComparisonPdf()}
-                      disabled={preview || exportingComparison}
+                      disabled={exportComparisonDisabled}
                       aria-busy={exportingComparison}
                       className="wa-kit-focus"
-                      style={{ ...outlinePillStyleSm, fontSize: '0.8125rem', cursor: exportingComparison ? 'default' : 'pointer', opacity: exportingComparison ? 0.6 : 1 }}
+                      style={{ ...outlinePillStyleSm, fontSize: '0.8125rem', cursor: exportingComparison ? 'default' : exportComparisonDisabled ? 'not-allowed' : 'pointer', opacity: exportComparisonDisabled ? 0.6 : 1 }}
                     >
                       {exportingComparison ? <PortalInlineSpinner size={14} /> : <Download size={14} aria-hidden="true" />}
                       <span aria-live="polite">
@@ -1115,10 +1168,11 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                 </>
               ) : (
                 <>
-                  <h3 className="ai-tool-section-title">Your Skill Profile</h3>
+                  <h2 className={`ai-tool-section-title ${styles.sectionTitle}`}>Your Skill Profile</h2>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.25rem', alignItems: 'flex-start' }}>
                     <div style={{ flex: '0 0 auto' }}>
-                      <RadarChart data={memberProfile} />
+                      <RadarChart data={memberProfile} label="Estimated skill profile radar" />
+                      <RadarScaleNote />
                     </div>
                     <div style={{ flex: '1 1 200px', minWidth: 180, paddingTop: '0.25rem' }}>
                       {memberProfile.map(d => (
@@ -1148,7 +1202,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
               {/* Earned certs */}
               {memberCerts.length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Earned Certifications</h4>
+                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Earned Certifications</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                     {memberCerts.map(cert => (
                       <span key={cert} style={{
@@ -1174,7 +1228,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
               {/* Gap analysis */}
               {gaps.length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem' }}>Skill Gaps to Close</h4>
+                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem' }}>Skill Gaps to Close</h3>
                   {gaps.map(g => (
                     <div key={g.axis} className="skill-mapper-gap-row" style={{ marginBottom: '0.75rem' }}>
                       <div className="skill-mapper-gap-row__meta" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: '0.25rem' }}>
@@ -1195,9 +1249,9 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
               {/* Program recommendations based on skill gaps */}
               {programRecs.length > 0 && (
                 <div>
-                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem' }}>
                     Recommended Programs
-                  </h4>
+                  </h3>
                   <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
                     WorkforceAP programs that close your biggest skill gaps
                   </p>
