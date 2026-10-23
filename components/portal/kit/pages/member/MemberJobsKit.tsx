@@ -67,7 +67,8 @@ export interface MemberJobsKitProps {
   /** Where "Browse openings" / "Browse jobs" go. Defaults to the in-page open-roles list. */
   browseHref?: string;
   profileHref?: string;
-  /** Match-row destination. Proofs pass a hash so they stay on /dev/member. */
+  messagesHref?: string;
+  /** Match-row destination. Proofs supply a real synthetic job detail route. */
   jobHref?: (jobId: string) => string;
   applications?: ApplicationRow[];
   recommended?: RecommendedJob[];
@@ -116,6 +117,7 @@ export function MemberJobsKit({
   syncedLabel,
   browseHref = JOBS_OPEN_ROLES_ANCHOR,
   profileHref = '/dashboard/profile',
+  messagesHref = JOBS_BOARD_EMPTY.secondaryHref,
   jobHref = (id: string) => `/dashboard/jobs/${id}`,
   applications = [],
   recommended = [],
@@ -242,8 +244,8 @@ export function MemberJobsKit({
                 kind={JOBS_BOARD_EMPTY.kind}
                 title={t('openings.title')}
                 description={t('openings.body')}
-                primaryAction={{ label: t('openings.action'), href: JOBS_BOARD_EMPTY.primaryHref }}
-                secondaryAction={{ label: t('openings.secondary'), href: JOBS_BOARD_EMPTY.secondaryHref }}
+                primaryAction={{ label: t('openings.action'), href: profileHref }}
+                secondaryAction={{ label: t('openings.secondary'), href: messagesHref }}
               />
             </div>
           ) : (

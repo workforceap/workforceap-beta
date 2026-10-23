@@ -25,6 +25,8 @@ type Job = {
   salaryMin: number | null;
   salaryMax: number | null;
   employer: { companyName: string; logoUrl: string | null };
+  /** Synthetic fixtures supply explicit program associations for local filters. */
+  programSlugs?: string[];
 };
 
 type MatchedJob = {
@@ -108,7 +110,7 @@ const FILTER_CONTROL: CSSProperties = {
   width: '100%',
   minHeight: 44,
   fontSize: 'var(--wa-type-body)',
-  border: '1px solid var(--wa-border)',
+  border: '1px solid var(--wa-control-border)',
   borderRadius: 'var(--wa-radius-sm)',
   padding: '10px 12px',
   outline: 'none',
@@ -130,6 +132,7 @@ function JobCard({
   onToggleSave,
   t,
   first = false,
+  preview = false,
 }: {
   job: Job;
   isAuthenticated: boolean;
@@ -139,6 +142,7 @@ function JobCard({
   onToggleSave?: (jobId: string) => void;
   t: (k: string) => string;
   first?: boolean;
+  preview?: boolean;
 }) {
   const locationDisplay = job.location ?? getLocationLabels(t)[job.locationType] ?? job.locationType;
   const salaryStr = formatSalary(job.salaryMin, job.salaryMax);
@@ -150,7 +154,9 @@ function JobCard({
   return (
     <JobListingRow
       href={
-        isAuthenticated
+        preview
+          ? `/dev/member/jobs?state=detail&job=${encodeURIComponent(job.id)}`
+          : isAuthenticated
           ? `/dashboard/jobs/${job.id}`
           : `/login?redirectTo=${encodeURIComponent(`/dashboard/jobs/${job.id}`)}`
       }
@@ -191,7 +197,7 @@ function JobCard({
               width: 44,
               height: 44,
               borderRadius: 999,
-              border: '1px solid var(--wa-border)',
+              border: '1px solid var(--wa-control-border)',
               background: 'var(--wa-surface-2)',
               color: isSaved ? 'var(--wa-accent)' : 'var(--wa-muted)',
               cursor: 'pointer',
@@ -231,6 +237,21 @@ export default function JobsListingClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const searchQuery = searchParams?.toString() ?? '';
+  const [previewQuery, setPreviewQuery] = useState(searchQuery);
+  const filters = new URLSearchParams(preview ? previewQuery : searchQuery);
+
+  useEffect(() => { setPreviewQuery(searchQuery); }, [searchQuery]);
+  useEffect(() => {
+    if (!preview) return;
+    const syncHistory = () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      setPreviewQuery(window.location.search.slice(1));
+      setQLocal(new URLSearchParams(window.location.search).get('q') ?? '');
+    };
+    window.addEventListener('popstate', syncHistory);
+    return () => window.removeEventListener('popstate', syncHistory);
+  }, [preview]);
 
   // Use SSR data as initial state; skip loading state if we have initial data
   const hasInitialData = initialJobs.length > 0;
@@ -238,7 +259,7 @@ export default function JobsListingClient({
   const [matchedJobs, setMatchedJobs] = useState<MatchedJob[]>(initialMatchedJobs);
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set(initialSavedJobIds));
   const appliedSet = new Set(appliedJobIds);
-  const [loading, setLoading] = useState(!hasInitialData);
+  const [loading, setLoading] = useState(!hasInitialData && !preview);
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   // CSS keeps the SSR inline panel hidden on phones until the media query hydrates.
@@ -257,7 +278,7 @@ export default function JobsListingClient({
     }
   }, [desktopFilters, filtersOpen]);
 
-  const qParam = (searchParams?.get('q') ?? '') ?? '';
+  const qParam = filters.get('q') ?? '';
   const [qLocal, setQLocal] = useState(qParam);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -265,17 +286,17 @@ export default function JobsListingClient({
     setQLocal(qParam);
   }, [qParam]);
 
-  const locationType = searchParams?.get('locationType') ?? '';
-  const jobType = searchParams?.get('jobType') ?? '';
-  const program = searchParams?.get('program') ?? '';
-  const salaryMin = searchParams?.get('salaryMin') ?? '';
-  const salaryMax = searchParams?.get('salaryMax') ?? '';
-  const sort = searchParams?.get('sort') ?? 'newest';
+  const locationType = filters.get('locationType') ?? '';
+  const jobType = filters.get('jobType') ?? '';
+  const program = filters.get('program') ?? '';
+  const salaryMin = filters.get('salaryMin') ?? '';
+  const salaryMax = filters.get('salaryMax') ?? '';
+  const sort = filters.get('sort') ?? 'newest';
   const q = qParam;
 
   const updateUrl = useCallback(
     (updates: Record<string, string | undefined>) => {
-      const params = new URLSearchParams(searchParams?.toString() ?? "");
+      const params = new URLSearchParams(preview ? window.location.search : searchQuery);
       for (const [key, value] of Object.entries(updates)) {
         if (value === undefined || value === '') {
           params.delete(key);
@@ -284,9 +305,18 @@ export default function JobsListingClient({
         }
       }
       const qs = params.toString();
-      if (pathname) router.push(qs ? `${pathname}?${qs}` : pathname);
+      if (!pathname) return;
+      const href = qs ? `${pathname}?${qs}` : pathname;
+      if (preview) {
+        // Fixture filters are entirely local. Keep Next's history subscribers
+        // and Back/Forward in sync without requesting another server render.
+        window.history.pushState(null, '', `${href}${window.location.hash}`);
+        setPreviewQuery(qs);
+      } else {
+        router.push(href);
+      }
     },
-    [pathname, router, searchParams]
+    [pathname, preview, router, searchQuery]
   );
 
   const handleKeywordChange = (value: string) => {
@@ -306,9 +336,32 @@ export default function JobsListingClient({
     q || locationType || jobType || program || salaryMin || salaryMax || sort !== 'newest';
 
   const clearFilters = () => {
-    if (pathname) router.push(pathname);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setQLocal('');
+    if (preview) {
+      updateUrl(Object.fromEntries(['q', 'locationType', 'jobType', 'program', 'salaryMin', 'salaryMax', 'sort'].map((key) => [key, undefined])));
+    } else if (pathname) {
+      router.push(pathname);
+    }
     setFiltersOpen(false);
   };
+
+  // Mirrors the visible filter controls over the declared synthetic inventory.
+  // Saves are session-only; no provider or member APIs run in preview mode.
+  const visibleJobs = preview ? initialJobs.filter((job) => {
+    const searchable = `${job.title} ${job.employer.companyName} ${job.location ?? ''}`.toLowerCase();
+    return (!q || searchable.includes(q.toLowerCase()))
+      && (!locationType || job.locationType === locationType)
+      && (!jobType || job.jobType === jobType)
+      && (!program || job.programSlugs?.includes(program))
+      && (!salaryMin || (job.salaryMax ?? job.salaryMin ?? 0) >= Number(salaryMin))
+      && (!salaryMax || (job.salaryMin ?? job.salaryMax ?? Number.POSITIVE_INFINITY) <= Number(salaryMax));
+  }).sort((a, b) => {
+    if (sort === 'title') return a.title.localeCompare(b.title);
+    if (sort === 'salary-desc') return (b.salaryMax ?? b.salaryMin ?? 0) - (a.salaryMax ?? a.salaryMin ?? 0);
+    if (sort === 'salary-asc') return (a.salaryMin ?? a.salaryMax ?? Number.POSITIVE_INFINITY) - (b.salaryMin ?? b.salaryMax ?? Number.POSITIVE_INFINITY);
+    return 0;
+  }) : jobs;
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -546,7 +599,7 @@ export default function JobsListingClient({
                 Ranked from your program, readiness, certifications, and activity.
               </p>
             </div>
-            <KitCta href="/dashboard/readiness">Improve readiness</KitCta>
+            <KitCta href={preview ? '/dev/member/progress' : '/dashboard/readiness'}>Improve readiness</KitCta>
           </div>
           {loadingMatches ? (
             <p style={{ margin: 0, padding: '8px 18px 16px', fontSize: 13, color: 'var(--wa-muted)' }}>
@@ -556,7 +609,7 @@ export default function JobsListingClient({
             matchedJobs.slice(0, 3).map((job) => (
               <JobListingRow
                 key={job.id}
-                href={`/dashboard/jobs/${job.id}`}
+                href={preview ? `/dev/member/jobs?state=detail&job=${encodeURIComponent(job.id)}` : `/dashboard/jobs/${job.id}`}
                 title={job.title}
                 meta={`${job.company} · ${job.location}`}
                 match={`${job.matchPct}% match`}
@@ -584,7 +637,7 @@ export default function JobsListingClient({
             minHeight: 44,
             padding: '10px 16px',
             background: 'var(--wa-surface)',
-            border: '1px solid var(--wa-border)',
+            border: '1px solid var(--wa-control-border)',
             color: 'var(--wa-text)',
             borderRadius: 999,
             fontWeight: 600,
@@ -630,7 +683,7 @@ export default function JobsListingClient({
             <JobListingRowSkeleton key={i} first={i === 0} />
           ))}
         </div>
-      ) : jobs.length === 0 ? (
+      ) : visibleJobs.length === 0 ? (
         <div className="wa-kit-card">
           {hasActiveFilters ? (
             <KitEmptyState
@@ -644,8 +697,8 @@ export default function JobsListingClient({
               kind="unavailable"
               title={te('openings.title')}
               description={te('openings.body')}
-              primaryAction={{ label: te('openings.action'), href: '/dashboard/profile' }}
-              secondaryAction={{ label: te('openings.secondary'), href: '/dashboard/messages' }}
+              primaryAction={{ label: te('openings.action'), href: preview ? '/dev/member/profile' : '/dashboard/profile' }}
+              secondaryAction={{ label: te('openings.secondary'), href: preview ? '/dev/member/messages' : '/dashboard/messages' }}
             />
           ) : (
             <KitEmptyState
@@ -660,10 +713,10 @@ export default function JobsListingClient({
       ) : (
         <>
           <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '0 0 8px' }}>
-            {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'} found
+            {visibleJobs.length} {visibleJobs.length === 1 ? 'job' : 'jobs'} found
           </p>
           <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }}>
-            {jobs.map((j, i) => {
+            {visibleJobs.map((j, i) => {
               const matched = matchedJobs.find((m) => m.id === j.id);
               return (
                 <JobCard
@@ -676,6 +729,7 @@ export default function JobsListingClient({
                   onToggleSave={isAuthenticated ? handleToggleSave : undefined}
                   t={t}
                   first={i === 0}
+                  preview={preview}
                 />
               );
             })}

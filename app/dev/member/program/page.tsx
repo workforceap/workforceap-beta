@@ -142,11 +142,11 @@ export default async function DevMemberProgramPage({
       modulesComplete={7}
       modulesTotal={9}
       estRemaining="4 hrs remaining"
-      resumeHref="#"
+      resumeHref="/dev/member/program?state=workspace"
       modules={[
         { title: 'Cloud Concepts', state: 'done', slug: 'cloud-concepts' },
         { title: 'Security & Compliance', state: 'done', slug: 'security-compliance' },
-        { title: 'Shared Responsibility Model', state: 'active', slug: 'shared-responsibility', moduleHref: '/dev/member/program?state=lessons' },
+        { title: 'Shared Responsibility Model', state: 'active', slug: 'shared-responsibility', moduleHref: '/dev/member/program?state=workspace' },
         { title: 'Billing & Pricing', state: 'locked', slug: 'billing-pricing' },
         { title: 'Exam Readiness', state: 'locked', slug: 'exam-readiness' },
       ]}
@@ -155,7 +155,7 @@ export default async function DevMemberProgramPage({
       liveSessionStart="2026-07-09T23:00:00.000Z"
       liveSessionDurationMinutes={60}
       missionsSummary="3 missions ready on this path."
-      missionsHref="#"
+      missionsHref="/dev/member/missions?state=enrolled"
     />
   );
 }

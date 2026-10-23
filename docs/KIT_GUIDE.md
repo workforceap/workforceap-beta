@@ -130,6 +130,22 @@ The preview-only [screen review checklist](qa/portal-consolidation/README.md) in
 the actual routes and consolidated query views. Its browser-saved review results are
 manual acceptance notes, not a production gate bypass.
 
+The review index starts with the source-covered member/staff fixture catalog and
+named scenarios. Signed-in acceptance remains a separate checklist. Fixture chrome
+links back to the index and suppresses live help, badge, notification and account
+requests; fixture tours suppress progress writes and analytics without changing the
+live defaults. A sample screen can still contain a provider-dependent action: its
+catalog entry records that boundary, rather than promising a fully working backend.
+
+Job detail presents the role and required application consent before optional
+screening, resume tailoring and referral preparation. Wide screens pair the overview
+and application; narrow screens retain the phone application dialog. Native
+disclosures keep preparation mounted, and the application jump focuses its region.
+Phone confirmation focuses a stable dialog control and Escape restores Apply;
+desktop confirmation remains inline. Preview listings filter and save synthetic
+rows locally, preserve the fixture query on Clear, and label submission and history
+as simulations. The authenticated handlers and consent requirements are unchanged.
+
 ---
 
 ## 1. Token families — which one to use

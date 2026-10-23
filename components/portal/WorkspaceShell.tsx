@@ -119,6 +119,7 @@ export default function WorkspaceShell({
   navHrefMap,
   showResumeUploadHint,
   readOnlyAudit = false,
+  previewMode = false,
   portalRoles,
   attributionLabel,
   partnerAccentColor,
@@ -164,6 +165,8 @@ export default function WorkspaceShell({
   showResumeUploadHint?: boolean;
   /** Authenticated audit capability: render the shell without polling providers or mutable notification state. */
   readOnlyAudit?: boolean;
+  /** Synthetic fixture only: suppress live chrome requests and session controls. */
+  previewMode?: boolean;
   /** Optional set of role-switch targets for authenticated multi-role users */
   portalRoles?: PortalSwitcherRole[];
   /**
@@ -397,7 +400,7 @@ export default function WorkspaceShell({
   }, [collapseKey]);
 
   useEffect(() => {
-    if (readOnlyAudit) {
+    if (readOnlyAudit || previewMode) {
       setBadgeFetchError(false);
       return;
     }
@@ -432,7 +435,7 @@ export default function WorkspaceShell({
       window.clearTimeout(deferId);
       window.removeEventListener('wa-nav-badges-refresh', onRefresh);
     };
-  }, [portalRole, readOnlyAudit]);
+  }, [portalRole, readOnlyAudit, previewMode]);
 
   const toggleCollapse = () => {
     setCollapsed((c) => {
@@ -616,6 +619,7 @@ export default function WorkspaceShell({
             knownIsAdmin={knownIsAdmin}
             helpTourKey={helpTourKey}
             helpGuideHref={helpGuideHref}
+            previewMode={previewMode}
           />
           {attributionLabel ? (
             <span
@@ -863,12 +867,12 @@ export default function WorkspaceShell({
                 <span className="workspace-sidebar-appearance__label">Appearance</span>
                 <ThemeSelector />
               </div>
-              <SignOutButton
+              {previewMode ? <Link href="/dev/portal-review" prefetch={false} onClick={closeDrawer} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus workspace-sidebar-signout">Review screens</Link> : <SignOutButton
                 className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus wa-kit-focus--on-dark workspace-sidebar-signout"
                 onSignOutStart={closeDrawer}
               >
                 {translateLabel('Sign out')}
-              </SignOutButton>
+              </SignOutButton>}
             </div> : null}
           </div>
         </aside>

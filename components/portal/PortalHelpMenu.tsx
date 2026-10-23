@@ -21,12 +21,12 @@ import type { TourKey } from '@/lib/tours/registry';
  * drawer. Its entry appears only when `GET /api/help/chat` says the flag is on
  * for this viewer, so the menu is unchanged until that flag row exists.
  */
-export default function PortalHelpMenu({ tourKey, guideHref }: { tourKey: TourKey; guideHref?: string }) {
+export default function PortalHelpMenu({ tourKey, guideHref, previewMode = false }: { tourKey: TourKey; guideHref?: string; previewMode?: boolean }) {
   const t = useTranslations('tours');
   const { start, isOpen: tourOpen } = useTour();
   const [open, setOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
-  const assistant = useHelpAssistantAvailability();
+  const assistant = useHelpAssistantAvailability(!previewMode);
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();

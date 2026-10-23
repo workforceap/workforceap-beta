@@ -2,16 +2,11 @@ import { Briefcase } from 'lucide-react';
 import NextLink from 'next/link';
 import type { ReactNode } from 'react';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
+import styles from './MemberJobs.module.css';
 
-/**
- * Member Portal — JOB DETAIL (open role).
- * Same PageOpener + wa-kit-card chrome as the listing/board so
- * /dev/member/jobs?state=detail and /dashboard/jobs/[id] read as one product.
- *
- * Target route: app/(portal)/dashboard/jobs/[id]
- * Surface: warm (member-facing).
- */
-
+/** Job detail keeps requirements and consent visible. Optional preparation,
+ * tailoring and referral material use native disclosures after the application.
+ * The live and synthetic routes share this layout, without sharing data/actions. */
 export interface JobDetailScreeningQuestion {
   id?: string;
   prompt?: string;
@@ -36,157 +31,86 @@ export interface MemberJobDetailProps {
   } | null;
   referral?: { company: string; message: string; copySlot?: ReactNode } | null;
   applySlot?: ReactNode;
-}
-
-function BackLink({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <NextLink
-      href={href}
-      className="wa-page-action wa-kit-focus"
-    >
-      {children}
-    </NextLink>
-  );
+  preparationSlot?: ReactNode;
 }
 
 export function MemberJobDetail({
-  title,
-  company,
-  location,
-  jobType,
-  salary,
-  description,
-  requirements = [],
-  backHref = '/dashboard/jobs',
-  backLabel = 'Back to board',
-  logoUrl,
-  screening,
-  referral,
-  applySlot,
+  title, company, location, jobType, salary, description, requirements = [],
+  backHref = '/dashboard/jobs', backLabel = 'Back to board', logoUrl,
+  screening, referral, applySlot, preparationSlot,
 }: MemberJobDetailProps) {
   const lede = [company, location, jobType].filter(Boolean).join(' · ');
-
   return (
     <DesignSurface surface="warm">
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
-        <BackLink href={backHref}>{backLabel}</BackLink>
-        <PageOpener
-          kicker="Job search"
-          title={title}
-          lede={lede}
+      <div className={styles.detail}>
+        <NextLink href={backHref} className="wa-page-action wa-kit-focus">{backLabel}</NextLink>
+        <PageOpener kicker="Job search" title={title} lede={lede}
           icon={<Briefcase size={13} aria-hidden="true" />}
-          action={
-            <span
-              aria-hidden="true"
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 14,
-                background: 'var(--wa-surface-2)',
-                color: 'var(--wa-accent)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                flexShrink: 0,
-              }}
-            >
-              {logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoUrl} alt="" width={48} height={48} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              ) : (
-                <Briefcase size={20} />
-              )}
-            </span>
-          }
+          action={logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt="" width={48} height={48} className={styles.logo} />
+          ) : undefined}
         />
+        <div className={styles.summaryRow}>
+          {salary ? <p className={styles.salary}>{salary}</p> : null}
+          {applySlot ? <a href="#job-application" className={`wa-kit-cta wa-kit-focus ${styles.jump}`}>Review application</a> : null}
+        </div>
 
-        {salary ? (
-          <p style={{ fontSize: 'var(--wa-type-body)', fontWeight: 700, color: 'var(--wa-text)', margin: 0 }}>
-            {salary}
-          </p>
-        ) : null}
-
-        {description ? (
-          <div className="wa-kit-card">
-            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              Description
-            </h2>
-            <div className="wa-kit-lede" style={{ whiteSpace: 'pre-wrap', color: 'var(--wa-text)' }}>
-              {description}
-            </div>
+        <div className={styles.detailGrid}>
+          <div className={styles.overview}>
+            {description ? (
+              <section aria-labelledby="job-description-heading">
+                <h2 id="job-description-heading" className={styles.heading}>About this role</h2>
+                <div className={styles.prose}>{description}</div>
+              </section>
+            ) : null}
+            {requirements.length > 0 ? (
+              <section aria-labelledby="job-requirements-heading">
+                <h2 id="job-requirements-heading" className={styles.heading}>Requirements</h2>
+                <ul className={styles.list}>{requirements.map((item) => <li key={item}>{item}</li>)}</ul>
+              </section>
+            ) : null}
           </div>
-        ) : null}
+          {applySlot ? (
+            <section id="job-application" aria-labelledby="job-application-heading" tabIndex={-1} className={styles.application}>
+              <h2 id="job-application-heading" className={styles.heading}>Your application</h2>
+              {applySlot}
+            </section>
+          ) : null}
+        </div>
 
-        {requirements.length > 0 ? (
-          <div className="wa-kit-card">
-            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              Requirements
-            </h2>
-            <ul className="wa-kit-lede" style={{ margin: 0, paddingLeft: 18, color: 'var(--wa-text)' }}>
-              {requirements.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
+        {preparationSlot || (screening && screening.questions.length > 0) || referral ? (
+          <section aria-labelledby="job-prepare-heading" className={styles.preparation}>
+            <h2 id="job-prepare-heading" className={styles.heading}>Prepare before you apply</h2>
+            {screening && screening.questions.length > 0 ? (
+              <details className={styles.disclosure}>
+                <summary className="wa-kit-focus">What this employer looks for <span>{screening.questions.length} preparation questions</span></summary>
+                <div className={styles.disclosureBody}>
+                  <p className="wa-kit-lede">{screening.packTitle} — shared by {screening.employerLabel}. Informational, so you can prepare before you apply.</p>
+                  <ol className={styles.list}>{screening.questions.map((q, i) => (
+                    <li key={q.id ?? i}>{q.prompt ?? 'See counselor for details.'}{q.type ? <span className="wa-kit-meta"> ({q.type.replace(/_/g, ' ')})</span> : null}</li>
+                  ))}</ol>
+                </div>
+              </details>
+            ) : null}
+            {preparationSlot ? (
+              <details className={styles.disclosure}>
+                <summary className="wa-kit-focus">Tailor your resume <span>Optional AI assistance</span></summary>
+                <div className={styles.disclosureBody}>{preparationSlot}</div>
+              </details>
+            ) : null}
+            {referral ? (
+              <details className={styles.disclosure}>
+                <summary className="wa-kit-focus">Know someone at {referral.company}? <span>Referral message</span></summary>
+                <div className={styles.disclosureBody}>
+                  <p className="wa-kit-lede">If you know someone there, use this message as a starting point.</p>
+                  <div className={styles.referralMessage}>{referral.message}</div>
+                  {referral.copySlot}
+                </div>
+              </details>
+            ) : null}
+          </section>
         ) : null}
-
-        {screening && screening.questions.length > 0 ? (
-          <div className="wa-kit-card">
-            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 6px' }}>
-              What this employer looks for
-            </h2>
-            <p className="wa-kit-lede" style={{ margin: '0 0 12px' }}>
-              {screening.packTitle} — shared by {screening.employerLabel}. Informational, so you can prepare before you apply.
-            </p>
-            <ol className="wa-kit-lede" style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 8, color: 'var(--wa-text)' }}>
-              {screening.questions.map((q, i) => (
-                <li key={q.id ?? i}>
-                  {q.prompt ?? 'See counselor for details.'}
-                  {q.type ? (
-                    <span className="wa-kit-meta">
-                      {' '}
-                      ({q.type.replace(/_/g, ' ')})
-                    </span>
-                  ) : null}
-                </li>
-              ))}
-            </ol>
-          </div>
-        ) : null}
-
-        {referral ? (
-          <div
-            className="wa-kit-card"
-            style={{
-              background: 'var(--wa-accent-soft)',
-            }}
-          >
-            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 6px' }}>
-              Know someone at {referral.company}?
-            </h2>
-            <p className="wa-kit-lede" style={{ margin: '0 0 12px' }}>
-              If you know someone there, send them this:
-            </p>
-            <div
-              className="wa-kit-lede"
-              style={{
-                whiteSpace: 'pre-wrap',
-                color: 'var(--wa-text)',
-                padding: '12px 14px',
-                borderRadius: 'var(--wa-radius-sm)',
-                border: '1px solid var(--wa-border)',
-                background: 'var(--wa-surface)',
-                marginBottom: 12,
-              }}
-            >
-              {referral.message}
-            </div>
-            {referral.copySlot}
-          </div>
-        ) : null}
-
-        {applySlot}
       </div>
     </DesignSurface>
   );

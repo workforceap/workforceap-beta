@@ -1,0 +1,31 @@
+.detail {
+  max-width: 70rem;
+  margin-inline: auto;
+  padding: var(--wa-pad-sm);
+  display: grid;
+  gap: var(--wa-pad-sm);
+}
+
+.logo { object-fit: contain; border-radius: var(--wa-radius-sm); }
+.detail > a:first-child { justify-self: start; }
+.summaryRow { display: flex; align-items: center; justify-content: space-between; gap: var(--wa-pad-sm); flex-wrap: wrap; }
+.salary { margin: 0; color: var(--wa-text); font-size: var(--wa-type-body); font-weight: 700; }
+.jump { min-height: 48px; white-space: normal; text-align: center; }
+.detailGrid, .overview { display: grid; gap: var(--wa-pad-sm); min-width: 0; }
+.heading { margin: 0 0 .75rem; color: var(--wa-text); font-size: 1.0625rem; font-weight: 800; letter-spacing: -.02em; }
+.prose, .list, .referralMessage { color: var(--wa-text); font-size: var(--wa-type-body); line-height: 1.65; }
+.prose, .referralMessage { white-space: pre-wrap; overflow-wrap: anywhere; }
+.list { margin: 0; padding-inline-start: var(--wa-pad); display: grid; gap: .5rem; }
+.application { min-width: 0; scroll-margin-top: calc(var(--workspace-top-offset, 68px) + 1rem); }
+.application:focus-visible { outline: 2px solid var(--wa-accent); outline-offset: 4px; border-radius: var(--wa-radius-sm); }
+.preparation { min-width: 0; margin-top: var(--wa-pad-sm); }
+.disclosure { border-top: 1px solid var(--wa-border); }
+.disclosure:last-child { border-bottom: 1px solid var(--wa-border); }
+.disclosure summary { padding-block: var(--wa-pad-sm); cursor: pointer; color: var(--wa-text); font-size: var(--wa-type-body); font-weight: 700; min-height: 48px; }
+.disclosure summary span { display: block; padding-inline-start: 1.1rem; margin-top: .25rem; color: var(--wa-muted); font-size: var(--wa-type-meta); font-weight: 400; }
+.disclosureBody { padding-bottom: var(--wa-pad-sm); }
+.referralMessage { padding: var(--wa-pad-sm); background: var(--wa-surface); border: 1px solid var(--wa-border); border-radius: var(--wa-radius-sm); margin-bottom: var(--wa-pad-sm); }
+
+@media (min-width: 1100px) {
+  .detailGrid { grid-template-columns: minmax(0, 1.2fr) minmax(20rem, .8fr); gap: var(--wa-pad); align-items: start; }
+}

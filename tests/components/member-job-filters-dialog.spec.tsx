@@ -20,6 +20,7 @@ beforeEach(() => {
   desktop = false;
   listeners.clear();
   router.push.mockClear();
+  window.history.replaceState(null, '', '/dashboard/jobs?jobType=contract');
   vi.stubGlobal('matchMedia', () => ({
     get matches() { return desktop; },
     addEventListener: (_event: string, listener: () => void) => listeners.add(listener),
@@ -43,7 +44,7 @@ function mount() {
 }
 
 function openFilters() {
-  const trigger = screen.getByRole('button', { name: 'Filters (1)' });
+  const trigger = screen.getByRole('button', { name: /^Filters/ });
   trigger.focus();
   fireEvent.click(trigger);
   return { trigger, dialog: screen.getByRole('dialog', { name: 'Job filters' }) };
@@ -55,10 +56,11 @@ describe('member Jobs responsive filter dialog', () => {
     const { dialog } = openFilters();
     expect(screen.getByLabelText('Search jobs')).toHaveFocus();
     fireEvent.change(screen.getByLabelText('Location type'), { target: { value: 'remote' } });
-    expect(router.push).toHaveBeenCalledWith('/dashboard/jobs?jobType=contract&locationType=remote');
+    expect(window.location.search).toBe('?jobType=contract&locationType=remote');
+    expect(router.push).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Filters (1)' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Filters (2)' })).toHaveFocus();
     openFilters();
     expect(screen.getByLabelText('Job type')).toHaveValue('contract');
     expect(screen.getAllByLabelText('Search jobs')).toHaveLength(1);

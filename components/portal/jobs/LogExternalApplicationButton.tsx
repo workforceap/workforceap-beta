@@ -188,10 +188,10 @@ export default function LogExternalApplicationButton({
                 aria-hidden
               />
               <h2 style={{ margin: '0 0 8px', fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em' }}>
-                Application logged
+                {preview ? 'Application log preview complete' : 'Application logged'}
               </h2>
               <p className="wa-kit-lede" style={{ margin: '0 0 20px' }}>
-                Noted {role} at {company} on {savedAt.toLocaleDateString()}. Your counselor was notified.
+                {preview ? `Sample entry for ${role} at ${company}. Nothing was saved and no counselor was notified.` : <>Noted {role} at {company} on {savedAt.toLocaleDateString()}. Your counselor was notified.</>}
               </p>
               {feedbackAppId && feedbackTools.length > 0 ? (
                 <ApplicationAiFeedbackPrompt

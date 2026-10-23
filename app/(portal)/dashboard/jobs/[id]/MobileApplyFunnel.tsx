@@ -43,7 +43,25 @@ export default function MobileApplyFunnel({
   const [profileShareConsent, setProfileShareConsent] = useState(false);
   const [resumeShareConsent, setResumeShareConsent] = useState(false);
   const submitBtnRef = useRef<HTMLButtonElement>(null);
+  const desktopResultRef = useRef<HTMLElement>(null);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileBackRef = useRef<HTMLButtonElement>(null);
+  const previousStepRef = useRef(step);
   const overlayTitleId = useId();
+  const trackerHref = preview ? '/dev/member/jobs' : '/dashboard/job-applications';
+  const [mobileViewport, setMobileViewport] = useState(false);
+  const [interactionReady, setInteractionReady] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 640px)');
+    const sync = () => setMobileViewport(media.matches);
+    sync();
+    // Server-rendered controls must not look actionable before React attaches
+    // their handler. This also covers phone users activating immediately after
+    // a fresh load while the development route is still hydrating.
+    setInteractionReady(true);
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
 
   // Ensure submit button is visible when keyboard opens (Virtual Viewport API)
   useEffect(() => {
@@ -168,7 +186,7 @@ export default function MobileApplyFunnel({
   // component's own DOM siblings on the job detail page). useFocusTrap moves
   // focus into the overlay on open, cycles Tab within it, restores focus to
   // the trigger on close, and wires Escape to `goBack` (mirrors ConfirmDialog).
-  const overlayActive = step !== 'overview';
+  const overlayActive = step !== 'overview' && mobileViewport;
   const trapRef = useFocusTrap(overlayActive, goBack);
 
   // Additionally mark everything outside the overlay `inert` while it's open
@@ -202,6 +220,13 @@ export default function MobileApplyFunnel({
     return () => restoreFns.forEach((fn) => fn());
   }, [overlayActive, trapRef]);
 
+  useEffect(() => {
+    if (!mobileViewport && (step === 'success' || step === 'tracked')) desktopResultRef.current?.focus();
+    if (mobileViewport && (step === 'success' || step === 'tracked')) mobileBackRef.current?.focus();
+    if (mobileViewport && step === 'overview' && previousStepRef.current !== 'overview') mobileTriggerRef.current?.focus();
+    previousStepRef.current = step;
+  }, [mobileViewport, step, trapRef]);
+
   const kitBtn =
     'wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none';
   const kitBtnSolid: CSSProperties = {
@@ -224,6 +249,7 @@ export default function MobileApplyFunnel({
   // === DESKTOP FALLBACK (inline apply form) ===
   const desktopApply = (
     <div className={`${styles['desktop-apply-container']} wa-kit-card`}>
+      {preview ? <p className="wa-kit-meta" role="note">Preview simulation. No information is shared or saved.</p> : null}
       {error && (
         <div
           role="alert"
@@ -289,7 +315,7 @@ export default function MobileApplyFunnel({
         <p style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 12, lineHeight: 1.45 }}>
           Your information will only be shared with this employer for this specific job application.
           You can manage your applications in your{' '}
-          <Link href="/dashboard/job-applications" className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 600 }}>
+          <Link href={trackerHref} className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 600 }}>
             dashboard
           </Link>
           .
@@ -340,10 +366,13 @@ export default function MobileApplyFunnel({
         <button
           type="button"
           className={styles['mobile-sticky-cta-btn']}
+          ref={mobileTriggerRef}
           onClick={startApply}
-          aria-label={`Apply to ${jobTitle}`}
+          disabled={!interactionReady}
+          aria-busy={!interactionReady}
+          aria-label={interactionReady ? `Apply to ${jobTitle}` : 'Application controls are loading'}
         >
-          Apply Now
+          {interactionReady ? 'Apply Now' : 'Loading…'}
         </button>
       </div>
       <div className={styles['mobile-sticky-cta-spacer']} />
@@ -351,7 +380,7 @@ export default function MobileApplyFunnel({
   );
 
   // === MOBILE OVERLAY (apply / success / tracked) ===
-  const mobileOverlay = step !== 'overview' && (
+  const mobileOverlay = overlayActive && (
     <div className={styles['mobile-only']}>
       <div
         ref={trapRef as React.RefObject<HTMLDivElement>}
@@ -365,13 +394,14 @@ export default function MobileApplyFunnel({
           <button
             type="button"
             className={styles['mobile-funnel-back-btn']}
+            ref={mobileBackRef}
             onClick={goBack}
             aria-label="Go back"
           >
             ←
           </button>
-          <p id={overlayTitleId} className={styles['mobile-funnel-title']}>
-            {step === 'apply' ? 'Review & Submit' : step === 'success' ? 'Application Sent' : 'Saved to Tracker'}
+          <p id={overlayTitleId} className={styles['mobile-funnel-title']} aria-live="polite">
+            {step === 'apply' ? 'Review & Submit' : step === 'success' ? (preview ? 'Application preview complete' : 'Application Sent') : (preview ? 'Tracker preview complete' : 'Saved to Tracker')}
           </p>
           <span className={styles['mobile-funnel-progress']}>{progressText}</span>
         </div>
@@ -408,6 +438,7 @@ export default function MobileApplyFunnel({
 
           {step === 'apply' && (
             <>
+              {preview ? <p className="wa-kit-meta" role="note">Preview simulation. No information is shared or saved.</p> : null}
               <div className={styles['overview-card']} style={{ marginBottom: '1rem' }}>
                 <h3 className={styles['overview-title']}>{jobTitle}</h3>
                 <p className={styles['overview-meta']}>{employerName} · {location} · {jobType}</p>
@@ -450,7 +481,7 @@ export default function MobileApplyFunnel({
                 <p className={styles['consent-hint']}>
                   Your information will only be shared with this employer for this specific job application.
                   You can manage your applications in your{' '}
-                  <Link href="/dashboard/job-applications" className="wa-kit-focus" style={{ color: 'var(--wa-accent)' }}>dashboard</Link>.
+                  <Link href={trackerHref} className="wa-kit-focus" style={{ color: 'var(--wa-accent)' }}>dashboard</Link>.
                 </p>
               </div>
             </>
@@ -458,26 +489,26 @@ export default function MobileApplyFunnel({
 
           {step === 'success' && (
             <div className={styles['success-card']}>
-              <p className={styles['success-title']}>Application submitted successfully!</p>
-              <p className={styles['success-body']}>The employer will review your application and contact you.</p>
-              <p className={styles['success-body']}>
-                <Link href="/dashboard/job-applications" className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 700 }}>
+              <p className={styles['success-title']}>{preview ? 'Application preview complete' : 'Application submitted successfully!'}</p>
+              <p className={styles['success-body']}>{preview ? 'Nothing was sent to an employer. This tested the consent and confirmation steps only.' : 'The employer will review your application and contact you.'}</p>
+              {!preview ? <p className={styles['success-body']}>
+                <Link href={trackerHref} className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 700 }}>
                   Open Application Tracker
                 </Link>
                 {' '}to see this role on your board.
-              </p>
+              </p> : null}
             </div>
           )}
 
           {step === 'tracked' && (
             <div className={styles['tracked-card']}>
-              <p style={{ fontWeight: 700, margin: 0 }}>Saved to your Application Tracker</p>
+              <p style={{ fontWeight: 700, margin: 0 }}>{preview ? 'Tracker preview complete' : 'Saved to your Application Tracker'}</p>
               <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem', color: 'var(--wa-muted)' }}>
-                We added this job under <strong>Saved</strong>. Update the stage as you apply and interview.
+                {preview ? 'No job was saved. This tested the tracker confirmation only.' : <>We added this job under <strong>Saved</strong>. Update the stage as you apply and interview.</>}
               </p>
-              <Link href="/dashboard/job-applications" className={styles['mobile-funnel-btn'] + ' ' + styles['mobile-funnel-btn-primary']} style={{ marginTop: '0.75rem', display: 'inline-flex' }}>
+              {!preview ? <Link href={trackerHref} className={styles['mobile-funnel-btn'] + ' ' + styles['mobile-funnel-btn-primary']} style={{ marginTop: '0.75rem', display: 'inline-flex' }}>
                 Go to Application Tracker
-              </Link>
+              </Link> : null}
             </div>
           )}
         </div>
@@ -504,13 +535,13 @@ export default function MobileApplyFunnel({
             </>
           )}
           {step === 'success' && (
-            <Link href="/dashboard/job-applications" className={styles['mobile-funnel-btn'] + ' ' + styles['mobile-funnel-btn-primary']}>
-              Open Application Tracker
+            <Link href={trackerHref} className={styles['mobile-funnel-btn'] + ' ' + styles['mobile-funnel-btn-primary']}>
+              {preview ? 'Return to sample job board' : 'Open Application Tracker'}
             </Link>
           )}
           {step === 'tracked' && (
-            <Link href="/dashboard/job-applications" className={styles['mobile-funnel-btn'] + ' ' + styles['mobile-funnel-btn-primary']}>
-              Go to Application Tracker
+            <Link href={trackerHref} className={styles['mobile-funnel-btn'] + ' ' + styles['mobile-funnel-btn-primary']}>
+              {preview ? 'Return to sample job board' : 'Go to Application Tracker'}
             </Link>
           )}
         </div>
@@ -559,7 +590,13 @@ export default function MobileApplyFunnel({
     <>
       {mobileStickyCTA}
       {mobileOverlay}
-      {desktopApply}
+      {step === 'success' || step === 'tracked' ? (
+        <section ref={desktopResultRef} tabIndex={-1} className={`${styles['desktop-apply-container']} wa-kit-card wa-kit-focus`} aria-label="Application result" role="status">
+          <h3 style={{ marginTop: 0 }}>{step === 'success' ? (preview ? 'Application preview complete' : 'Application submitted successfully!') : (preview ? 'Tracker preview complete' : 'Saved to your Application Tracker')}</h3>
+          <p className="wa-kit-lede">{preview ? 'Nothing was sent to an employer or saved. Reload resets this simulation.' : step === 'success' ? 'The employer will review your application and contact you.' : 'We added this job under Saved. Update the stage as you apply and interview.'}</p>
+          <Link href={trackerHref} className="wa-kit-cta wa-kit-focus">{preview ? 'Return to sample job board' : 'Open Application Tracker'}</Link>
+        </section>
+      ) : desktopApply}
     </>
   );
 }

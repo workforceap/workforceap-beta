@@ -188,9 +188,8 @@ export default async function JobDetailPage({ params }: Props) {
             }
           : null
       }
+      preparationSlot={user ? <JobTailorPanel jobId={job.id} /> : null}
       applySlot={
-        <>
-          {user ? <JobTailorPanel jobId={job.id} /> : null}
           <MobileApplyFunnel
             jobId={job.id}
             authenticated={!!user}
@@ -202,7 +201,6 @@ export default async function JobDetailPage({ params }: Props) {
             description={job.description}
             requirements={job.requirements}
           />
-        </>
       }
     />
   );

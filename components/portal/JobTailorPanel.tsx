@@ -208,7 +208,7 @@ export default function JobTailorPanel({
             <p style={{ margin: '12px 0 0', fontSize: 13, lineHeight: 1.5, color: 'var(--wa-text)' }}>
               Upload a resume in{' '}
               <Link
-                href="/dashboard/resume"
+                href={preview ? '/dev/member/resume-studio' : '/dashboard/resume'}
                 className="wa-kit-focus"
                 style={{ fontWeight: 700, color: 'var(--wa-accent)' }}
               >
@@ -329,15 +329,15 @@ export default function JobTailorPanel({
           )}
           <div style={{ marginTop: 12 }}>
             <p style={{ margin: 0, fontSize: 13, color: 'var(--wa-muted)', lineHeight: 1.5 }}>
-              Saved to history. Match scores are estimates, not a guarantee.
+              {preview ? 'Synthetic sample output. Nothing was generated from your data or saved to history.' : 'Saved to history. Match scores are estimates, not a guarantee.'}
             </p>
             <Link
-              href="/dashboard/ai-tools/history"
+              href={preview ? '/dev/member/resume-studio' : '/dashboard/ai-tools/history'}
               className="wa-page-action wa-kit-focus"
               style={{ marginTop: 4 }}
             >
               <History size={14} aria-hidden="true" />
-              Open AI tool history
+              {preview ? 'Open sample Resume workspace' : 'Open AI tool history'}
             </Link>
           </div>
         </div>
