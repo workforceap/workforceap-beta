@@ -406,11 +406,16 @@ export default function ResumeRewriterForm({
                 {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
                 {copied ? 'Copied' : 'Copy'}
               </span>
+              {' '}
+              <span className="wa-sr-only">rewritten resume</span>
             </button>
-            <ExportPdfButton kit text={output} title="Resume" toolName="Resume Rewriter" />
+            <ExportPdfButton kit text={output} title="Resume" toolName="Resume Rewriter" srSuffix="of rewritten resume" />
           </div>
           <pre
             className="resume-rewriter-output-content"
+            role="region"
+            tabIndex={0}
+            aria-label="Rewritten resume text"
             style={{
               margin: 0,
               padding: 16,

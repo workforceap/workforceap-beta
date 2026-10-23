@@ -326,6 +326,7 @@ export default function ResumeStrengthForm({
           <ResumeAnalysisPanel
             resumePreview={resume}
             scorePercent={scorePercent}
+            title="Resume analysis"
             gaugeLabel="Overall strength"
             extractionWarning={extractionWarning}
             matchedSkills={matchedSkills}
