@@ -39,6 +39,14 @@
   --color-accent-muted: color-mix(in srgb, var(--wa-accent, light-dark(#ad2c4d, #e0658a)) 14%, transparent);
 }
 
+/* Button rendered as a link (KitLinkButton, Button href): the unlayered global
+   `a { color: inherit }` in css/main.css outranks Astryx's layered primary
+   foreground, so the label inherited page text (#1a1a1a on the crimson fill,
+   2.7:1). Restore the on-accent foreground for primary link-buttons. */
+a.astryx-button[data-variant='primary'] {
+  color: var(--color-on-accent);
+}
+
 /* Member warm surfaces: Stitch uses #fcf9f8 cream, not cool #f7f8fa gray.
    Dark value matches the portal-wide dark palette (css/portal-tokens.css)
    rather than the old cool-dark #0f1115, so member dark mode isn't a
