@@ -18,6 +18,7 @@ import ResumeStudioClient from '@/components/portal/ResumeStudioClient';
 import ToolHistoryPanel from '@/components/portal/ToolHistoryPanel';
 import styles from '@/components/portal/MemberWorkspace.module.css';
 import resumeStyles from '@/components/portal/ResumeStudio.module.css';
+import { getResumeDraftOwnerToken } from '@/lib/resume/resumeProfileRevision';
 
 const ResumeClient = dynamic(() => import('./ResumeClient'), {
   loading: () => (
@@ -112,6 +113,7 @@ export default async function DashboardResumePage() {
         )}
         <Suspense fallback={null}>
           <ResumeStudioClient
+            draftOwnerToken={getResumeDraftOwnerToken(user.id)}
             basePath="/dashboard/resume"
             hasResume={!!(profile?.resumeOriginalPath || profile?.resumeEnhancedPath)}
             filesSlot={

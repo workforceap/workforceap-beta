@@ -11,18 +11,19 @@ import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import PortalEntryClient from '@/components/onboarding/PortalEntryClient';
 import PortalEntryErrorBoundary from '@/components/portal/PortalEntryErrorBoundary';
 import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
+import { PREVIEW_RESUME_DRAFT_OWNER } from '@/lib/resume/studioDraft';
 
 /**
  * Storybook-lite showcase — MemberHomeKit "Command Center" (fully populated,
  * every new optional prop wired). Preview-only, no auth/DB. See
  * app/dev/dashboard/page.tsx for the pattern.
- * `?handoff=unknown|received|confirmed` shows synthetic handoff evidence.
+ * `?handoff=unknown|pending|received|confirmed` shows synthetic handoff evidence.
  * `confirmed` is a contract preview only: the live Home loader has no calendar
  * booking or provider access receipt source and returns unknown for both.
  *
  * `?approval=live|closed|complete|off` swaps the approval-status card fixture
  * so both placements can be reviewed in the real chrome: `live` (a pending
- * application) keeps the full card above the dashboard, `closed` and
+ * application) keeps a compact current-step summary after the main action, `closed` and
  * `complete` collapse it below the content. Same composition as
  * app/(portal)/dashboard/page.tsx.
  *
@@ -134,9 +135,18 @@ export default async function DevMemberHomePage({
   const params = await searchParams;
   const handoffFixture = params?.handoff;
   const handoff: MemberHandoffEvidence = {
-    resume: handoffFixture === 'unknown' ? 'unknown' : 'portal_received',
-    consultation: handoffFixture === 'confirmed' ? 'booked' : 'unknown',
+    resume: handoffFixture === 'unknown' ? 'unknown' : handoffFixture === 'pending' ? 'pending_confirmation' : 'portal_received',
+    consultation: handoffFixture === 'confirmed' ? 'booked' : handoffFixture === 'pending' ? 'pending_confirmation' : 'unknown',
     training: handoffFixture === 'confirmed' ? 'access_confirmed' : 'unknown',
+    ...(handoffFixture === 'confirmed' || handoffFixture === 'received' ? {
+      receipts: {
+        resume: { source: 'portal' as const, confirmedAt: '2026-10-21T16:00:00Z' },
+        ...(handoffFixture === 'confirmed' ? {
+          consultation: { source: 'calendar' as const, confirmedAt: '2026-10-22T14:30:00Z' },
+          training: { source: 'provider' as const, confirmedAt: '2026-10-23T13:00:00Z' },
+        } : {}),
+      },
+    } : {}),
   };
   const requested = params?.approval ?? 'live';
   const courseFixture = params?.course;
@@ -183,13 +193,13 @@ export default async function DevMemberHomePage({
   const status = fixture ? buildMemberApprovalStatus(fixture) : null;
   const placement = status ? memberApprovalCardPlacement(status) : null;
   const approvalCard = status ? (
-    <MemberApprovalStatusCard status={status} storageUserId="dev-member" placement={placement ?? 'primary'} />
+    <MemberApprovalStatusCard status={status} storageUserId="dev-member" placement={placement ?? 'primary'} variant="compact" messagesHref="/dev/member/messages" />
   ) : null;
 
   return (
     <>
     <p className="wa-kit-meta wa-px-4 wa-py-3" role="note">
-      Preview only: synthetic progress. Email, calendar and training connections are not active.
+      Preview only: synthetic progress, sources and confirmation dates. Email, calendar and training connections are not active.
     </p>
     <PWAInstallPrompt />
     {onboardingFixture ? (
@@ -219,8 +229,8 @@ export default async function DevMemberHomePage({
         </PortalEntryClient>
       </PortalEntryErrorBoundary>
     ) : null}
-    {placement === 'primary' ? approvalCard : null}
     <MemberHomeKit
+      approvalSummary={placement === 'primary' ? approvalCard : null}
       showStaffViewBanner={params?.staff === '1'}
       advisor={params?.advisor === 'off' ? null : { name: 'Sample Advisor', firstName: 'Sample', messagingHref: '/dev/member/messages' }}
       programSwitch={programSwitch}
@@ -239,6 +249,7 @@ export default async function DevMemberHomePage({
       longestStreak={12}
       resumeHref="/dev/member/program"
       resumeStudioHref="/dev/member/resume-studio"
+      resumeDraftOwnerToken={PREVIEW_RESUME_DRAFT_OWNER}
       handoff={handoff}
       toolkitHref="/dev/member/toolkit"
       jobsHref="/dev/member/jobs"
@@ -247,7 +258,7 @@ export default async function DevMemberHomePage({
       jobOffers={jobOffers}
       first90={first90}
       youthNoticeAge={youthNoticeAge}
-      doThisNext={handoffFixture === 'received' || handoffFixture === 'unknown' ? {
+      doThisNext={handoffFixture === 'received' || handoffFixture === 'unknown' || handoffFixture === 'pending' ? {
         id: 'prepare-consultation-fixture',
         title: 'Prepare for your consultation',
         body: 'Review your résumé, career goals and questions before meeting your advisor.',

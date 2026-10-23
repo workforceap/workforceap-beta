@@ -232,11 +232,20 @@ export type DashboardOnboarding = {
   };
 };
 
+/** A recorded receipt, never a page visit, member click, or profile edit timestamp. */
+export type MemberHandoffReceipt = {
+  source: 'portal' | 'team' | 'calendar' | 'provider';
+  /** ISO 8601 UTC timestamp from the confirmation record itself. Omit when unavailable. */
+  confirmedAt?: string;
+};
+
 /** Only confirmed evidence may complete a handoff step. Unknown is not incomplete. */
 export type MemberHandoffEvidence = {
-  resume: 'portal_received' | 'unknown';
-  consultation: 'booked' | 'unknown';
-  training: 'access_confirmed' | 'unknown';
+  resume: 'portal_received' | 'pending_confirmation' | 'unknown';
+  consultation: 'booked' | 'pending_confirmation' | 'unknown';
+  training: 'access_confirmed' | 'pending_confirmation' | 'unknown';
+  /** Optional supporting records. Ignored for unknown or pending steps. */
+  receipts?: Partial<Record<'resume' | 'consultation' | 'training', MemberHandoffReceipt>>;
 };
 
 /**

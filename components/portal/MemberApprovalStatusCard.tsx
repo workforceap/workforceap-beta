@@ -21,6 +21,8 @@ import {
 } from '@/lib/member/memberApprovalStatus';
 import type { MemberCounselorContext } from '@/lib/member/counselorContext';
 import { applicationStatusLabel, intakeStatusLabel } from '@/lib/status/applicationStatusVocabulary';
+import { ChevronDown } from 'lucide-react';
+import styles from './MemberApprovalStatusCard.module.css';
 
 const STAGE_ORDER: ApprovalStageKey[] = ['application', 'intake', 'training'];
 
@@ -38,8 +40,10 @@ const REVIEWER_KEY = {
  * stored start date say so instead of guessing one.
  *
  * Presentation (WAP-91 follow-up): `placement` comes from
- * `memberApprovalCardPlacement`. `primary` is the full card above the
- * dashboard, for a member with a live next step. `demoted` is the same facts
+ * `memberApprovalCardPlacement`. `primary` is the full card by default.
+ * Home opts into `variant="compact"` after its next action, keeping the current
+ * status and owner visible with the full chain in a native disclosure.
+ * `demoted` is the same facts
  * collapsed to one summary line, rendered below the dashboard content, for a
  * finished or closed pathway. Either can be dismissed; the dismissal is
  * stored per member and per status, so it lasts until the status moves, and
@@ -56,12 +60,17 @@ export default function MemberApprovalStatusCard({
   storageUserId,
   placement = 'primary',
   counselorContext = null,
+  variant = 'full',
+  messagesHref = '/dashboard/messages',
 }: {
   status: MemberApprovalStatus;
   /** Member id — scopes the dismissal so a shared device never hides someone else's status. */
   storageUserId: string;
   placement?: MemberApprovalCardPlacement;
   counselorContext?: MemberCounselorContext | null;
+  /** Task-first Home keeps the current status/owner visible and discloses the full chain below it. */
+  variant?: 'full' | 'compact';
+  messagesHref?: string;
 }) {
   const t = useTranslations('memberApproval');
   // Application and intake words come from the shared status vocabulary
@@ -234,7 +243,7 @@ export default function MemberApprovalStatusCard({
       {stageList}
       {reviewer}
       <p className="wa-text-sm wa-text-[var(--wa-muted)]">{t('providerUnknown')}</p>
-      <Link href="/dashboard/messages" className="wa-kit-focus wa-underline">{t('contact')}</Link>
+      <Link href={messagesHref} className="wa-kit-focus wa-underline">{t('contact')}</Link>
     </>
   );
 
@@ -288,7 +297,32 @@ export default function MemberApprovalStatusCard({
     );
   }
 
-  // ── Primary: a live next step keeps the card where it is ──
+  if (variant === 'compact') {
+    const currentStage = status.currentStage === 'complete' ? 'training' : status.currentStage;
+    const current = status.stages[currentStage];
+    const owner = ownerLabel(current);
+    return (
+      <section aria-labelledby="member-approval-title" className={styles.compact} data-approval-card="compact">
+        <h2 id="member-approval-title" className={styles.title}>{t('title')}</h2>
+        <details>
+          <summary className={`wa-kit-focus ${styles.summary}`}>
+            <span className={styles.summaryCopy}>
+              <span className={styles.current} data-approval-summary="">{t(currentStage)}: {statusText(currentStage)}</span>
+              {owner ? <span className={styles.owner}>{t('whoOwns', { owner })}</span> : null}
+              {current.owner === 'member' ? <span className={styles.owner} data-approval-summary-action="">{t('whatsNext', { text: t(`next.${currentStage}.${current.nextKey}`) })}</span> : null}
+            </span>
+            <span className={styles.disclosure}>{t('viewDetails')} <ChevronDown size={18} aria-hidden="true" /></span>
+          </summary>
+          <div className={styles.details}>
+            {details}
+            {dismissButton}
+          </div>
+        </details>
+      </section>
+    );
+  }
+
+  // ── Primary: callers outside task-first Home retain the complete chain ──
   return (
     <section aria-labelledby="member-approval-title" className="wa-mb-6" data-approval-card="primary">
       <Card>

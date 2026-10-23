@@ -21,6 +21,7 @@ import { memberApprovalCardPlacement } from '@/lib/member/memberApprovalCardPlac
 import { legacyDashboardRedirectTarget } from '@/lib/member/dashboardLegacyRedirect';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import { MemberHomeViewEvents } from '@/components/portal/kit/pages/member/MemberHomeViewEvents';
+import { getResumeDraftOwnerToken } from '@/lib/resume/resumeProfileRevision';
 
 const PWAInstallPrompt = dynamic(() => import('@/components/pwa/PWAInstallPrompt'), {
   loading: () => null,
@@ -107,9 +108,8 @@ async function renderMemberDashboard(
     requestedProgramSlug: args.requestedProgramSlug,
     provisionIfMissing: () => ensureAppUserProvisioned(user, { readOnlyAudit: args.readOnlyAudit }),
   });
-  // Presentation only: a pathway with a live next step keeps the approval
-  // card above the dashboard; a finished or closed one drops below the
-  // content as a single collapsed line (memberApprovalCardPlacement).
+  // Presentation only: a live approval appears as a compact summary after
+  // the next action; finished/closed pathways remain below the content.
   const approvalPlacement = memberApprovalCardPlacement(home.approvalStatus);
   // Who reviews the pending step comes from the loader's own user read. The
   // measured wait is a separate read, taken only while the application
@@ -123,6 +123,7 @@ async function renderMemberDashboard(
       status={home.approvalStatus}
       storageUserId={user.id}
       placement={approvalPlacement}
+      variant="compact"
       counselorContext={counselorContext}
     />
   );
@@ -184,8 +185,9 @@ async function renderMemberDashboard(
         </PortalEntryClient>
       </PortalEntryErrorBoundary>
     ) : null}
-    {approvalPlacement === 'primary' ? approvalCard : null}
     <MemberHomeKit
+      approvalSummary={approvalPlacement === 'primary' ? approvalCard : null}
+      resumeDraftOwnerToken={getResumeDraftOwnerToken(user.id)}
       showStaffViewBanner={staffViewer}
       advisor={counselorContext?.counselor ?? null}
       programSwitch={home.programSwitch}

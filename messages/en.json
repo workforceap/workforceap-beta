@@ -284,6 +284,7 @@
     "handoff": {
       "homeLede": "Your next step, with the progress we can confirm.",
       "title": "Your progress so far",
+      "evidenceIntro": "Confirmed records, with gaps kept visible.",
       "resume": "Résumé",
       "consultation": "Consultation",
       "training": "Training access",
@@ -293,7 +294,19 @@
       "consultationUnknown": "Booking status not connected",
       "trainingConfirmed": "Access confirmed",
       "trainingUnknown": "Activation not confirmed",
+      "pendingConfirmation": "Awaiting team confirmation",
+      "confirmedOn": "Confirmed {date} (UTC)",
+      "source": {
+        "portal": "Portal record",
+        "team": "Team confirmation",
+        "calendar": "Calendar record",
+        "provider": "Training provider record"
+      },
+      "reconcileSummary": "Already completed a step?",
+      "pendingSummary": "A step is awaiting confirmation",
       "outsidePortal": "Already emailed your résumé or booked through your welcome email? Those steps may not show here. Check with your team before repeating them.",
+      "confirmationGuidance": "In your message, name the step and when you completed it. For a consultation, include the date and time from your booking confirmation.",
+      "confirmationBoundary": "Opening Messages does not send a request or change your progress. Your team can check the record after you send your message.",
       "confirm": "Confirm with my team",
       "prepareTitle": "Prepare for your consultation",
       "prepareBody": "Review your résumé and note the experience, goals and questions you want to discuss with your advisor.",
@@ -3528,6 +3541,7 @@
     }
   },
   "memberApproval": {
+    "viewDetails": "View details",
     "dismiss": "Hide this",
     "dismissLabel": "Hide your approval status",
     "restore": "Show your approval status",
@@ -4494,6 +4508,19 @@
         "coachIntro": "Talk through your experience and work on how to present it.",
         "coachAvailability": "Voice coach runs in a signed-in session.",
         "draftNotice": "Drafts last while this page is open. Copy edits before leaving or reloading; they won’t be restored.",
+        "draft": {
+          "loading": "Checking for a draft in this tab…",
+          "ready": "Your edits will be saved in this tab",
+          "saved": "Draft inputs saved in this tab",
+          "restored": "Draft inputs restored from this tab",
+          "unavailable": "Latest edits aren’t saved. Copy your text before leaving.",
+          "cleared": "Saved copy cleared. Your current edits are still here.",
+          "limits": "Input recovery lasts up to 24 hours in this tab; closing it may end recovery. Signing out clears the copy. Uploaded files and generated results are separate.",
+          "clear": "Clear saved copy",
+          "returnTitle": "Continue your résumé draft",
+          "returnDescription": "Inputs saved at {time} in this tab.",
+          "continue": "Continue draft"
+        },
         "backToTools": "AI tools",
         "customizeRewrite": "Customize rewrite",
         "atsOn": "ATS on",

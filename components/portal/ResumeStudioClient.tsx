@@ -10,6 +10,8 @@ import ResumeRewriterForm from '@/components/portal/tools/ResumeRewriterForm';
 import ResumeRewriterClient from '@/app/(portal)/dashboard/ai-tools/resume-rewriter/ResumeRewriterClient';
 import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBreakdown';
 import { useListFocus } from '@/components/portal/kit/hooks/useListFocus';
+import { ResumeDraftProvider, ResumeDraftStatus } from './ResumeDraftContinuity';
+import { PREVIEW_RESUME_DRAFT_OWNER } from '@/lib/resume/studioDraft';
 import styles from './ResumeStudio.module.css';
 
 const ResumeCoachWorkspace = dynamic(() => import('@/components/portal/ResumeCoachWorkspace'), {
@@ -47,6 +49,7 @@ type Props = {
   /** Legacy view-switch base; tab changes preserve the current browser pathname. */
   basePath?: string;
   preview?: boolean;
+  draftOwnerToken?: string;
   initialResume?: string;
   initialRewriteResume?: string;
   initialJobTarget?: string;
@@ -55,7 +58,12 @@ type Props = {
   previewRewriteOutput?: string;
 };
 
-export default function ResumeStudioClient({
+export default function ResumeStudioClient(props: Props) {
+  const ownerToken = props.preview ? PREVIEW_RESUME_DRAFT_OWNER : props.draftOwnerToken;
+  return <ResumeDraftProvider key={ownerToken ?? 'unscoped'} ownerToken={ownerToken}><ResumeStudioContent {...props} /></ResumeDraftProvider>;
+}
+
+function ResumeStudioContent({
   hasResume,
   filesSlot,
   scoreHistorySlot,
@@ -134,7 +142,7 @@ export default function ResumeStudioClient({
         })}
       </div>
 
-      {view === 'score' || view === 'rewrite' ? <p className={styles.draftNotice}>{tw('design.draftNotice')}</p> : null}
+      {view === 'score' || view === 'rewrite' ? <ResumeDraftStatus /> : null}
 
       {filesSlot ? (
         <section id={`${id}-panel-files`} role="tabpanel" aria-labelledby={`${id}-tab-files`} hidden={view !== 'files'} className={styles.filesPanel}>

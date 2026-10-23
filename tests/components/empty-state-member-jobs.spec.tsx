@@ -66,16 +66,16 @@ function empties(root: ParentNode, kind?: string): HTMLElement[] {
 }
 
 describe('MemberJobsKit (/dashboard/jobs pipeline)', () => {
-  it.each(Object.keys(LOCALES) as Locale[])('%s: applications first, open roles unavailable, matches first', (locale) => {
+  it.each(Object.keys(LOCALES) as Locale[])('%s: open roles unavailable, applications first, matches first', (locale) => {
     const m = LOCALES[locale];
     const { container } = wrap(locale, <MemberJobsKit applications={[]} openRoles={[]} recommended={[]} />);
 
     const all = empties(container);
-    expect(all.map((e) => e.dataset.kind)).toEqual(['first', 'unavailable', 'first']);
-    expect(all.map((e) => e.dataset.tone)).toEqual(['muted', 'warn', 'muted']);
+    expect(all.map((e) => e.dataset.kind)).toEqual(['unavailable', 'first', 'first']);
+    expect(all.map((e) => e.dataset.tone)).toEqual(['warn', 'muted', 'muted']);
     for (const e of all) expect(e.textContent).not.toMatch(RAW_KEY);
 
-    const [applications, openings, matches] = all;
+    const [openings, applications, matches] = all;
     expect(within(applications).getByRole('heading', { level: 3 })).toHaveTextContent(m.empty.applications.title);
     expect(within(applications).getByText(m.empty.applications.body)).toBeInTheDocument();
     expect(within(applications).getByRole('link', { name: m.empty.applications.action })).toHaveAttribute('href', JOBS_OPEN_ROLES_ANCHOR);

@@ -5,10 +5,11 @@ import JobsListingClient from '@/app/(portal)/dashboard/jobs/JobsListingClient';
 import en from '@/messages/en.json';
 
 const router = vi.hoisted(() => ({ push: vi.fn() }));
+const nav = vi.hoisted(() => ({ pathname: '/dashboard/jobs', query: 'jobType=contract' }));
 vi.mock('next/navigation', () => ({
   useRouter: () => router,
-  usePathname: () => '/dashboard/jobs',
-  useSearchParams: () => new URLSearchParams('jobType=contract'),
+  usePathname: () => nav.pathname,
+  useSearchParams: () => new URLSearchParams(nav.query),
 }));
 
 let desktop = false;
@@ -20,6 +21,8 @@ beforeEach(() => {
   desktop = false;
   listeners.clear();
   router.push.mockClear();
+  nav.pathname = '/dashboard/jobs';
+  nav.query = 'jobType=contract';
   window.history.replaceState(null, '', '/dashboard/jobs?jobType=contract');
   vi.stubGlobal('matchMedia', () => ({
     get matches() { return desktop; },
@@ -51,10 +54,58 @@ function openFilters() {
 }
 
 describe('member Jobs responsive filter dialog', () => {
-  it('opens with a labeled search, preserves query parameters and input state across close/reopen', async () => {
-    mount();
+  it('does not let an older live search response overwrite the cleared inventory', async () => {
+    nav.query = 'view=openings&q=old';
+    window.history.replaceState(null, '', `/dashboard/jobs?${nav.query}`);
+    let resolveSearch!: (response: { json: () => Promise<typeof jobs> }) => void;
+    const delayedSearch = new Promise<{ json: () => Promise<typeof jobs> }>((resolve) => { resolveSearch = resolve; });
+    vi.stubGlobal('fetch', vi.fn((url: string) => url.startsWith('/api/dashboard/jobs') ? delayedSearch : Promise.resolve({ ok: true, json: async () => ({ jobs: [], jobIds: [] }) })));
+    const baseline = [...jobs, { ...jobs[0], id: 'second-job', title: 'Second sample role' }];
+    const { rerender } = render(<NextIntlClientProvider locale="en" messages={en}><JobsListingClient initialJobs={baseline} /></NextIntlClientProvider>);
     const { dialog } = openFilters();
-    expect(screen.getByLabelText('Search jobs')).toHaveFocus();
+    fireEvent.click(within(dialog).getByRole('button', { name: en.jobs.clearAllFilters }));
+    nav.query = 'view=openings';
+    rerender(<NextIntlClientProvider locale="en" messages={en}><JobsListingClient initialJobs={baseline} /></NextIntlClientProvider>);
+    expect(screen.getByRole('link', { name: /Second sample role/ })).toBeInTheDocument();
+    await act(async () => { resolveSearch({ json: async () => jobs }); });
+    expect(screen.getByText('2 jobs found')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Second sample role/ })).toBeInTheDocument();
+  });
+
+  it.each(['view=openings', 'ui=legacy'])('clears live filters without leaving %s or changing bookmark behavior', async (viewQuery) => {
+    nav.pathname = '/es/dashboard/jobs';
+    nav.query = `${viewQuery}&context=returning&q=support&jobType=contract&sort=title`;
+    window.history.replaceState(null, '', `${nav.pathname}?${nav.query}#open-roles`);
+    const fetchMock = vi.fn(async (url: string, init?: RequestInit) => ({
+      ok: true,
+      json: async () => url.startsWith('/api/member/saved-jobs') && !init ? { jobIds: ['synthetic-job'] }
+        : url.startsWith('/api/member/matched-jobs') ? { jobs: [] } : jobs,
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    const baseline = [...jobs, { ...jobs[0], id: 'second-job', title: 'Second sample role' }];
+    const ui = <NextIntlClientProvider locale="es" messages={en}><JobsListingClient initialJobs={baseline} isAuthenticated /></NextIntlClientProvider>;
+    const { rerender } = render(ui);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Saved' })).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.queryByRole('link', { name: /Second sample role/ })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Saved' }));
+    expect(fetchMock).toHaveBeenCalledWith('/api/member/saved-jobs?jobId=synthetic-job', { method: 'DELETE' });
+    const { dialog, trigger } = openFilters();
+    fireEvent.click(within(dialog).getByRole('button', { name: en.jobs.clearAllFilters }));
+    expect(router.push).toHaveBeenLastCalledWith(`/es/dashboard/jobs?${viewQuery}&context=returning#open-roles`);
+    expect(screen.getByRole('searchbox', { name: en.jobs.searchJobs })).toHaveValue('');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(trigger).toHaveFocus();
+    nav.query = `${viewQuery}&context=returning`;
+    rerender(<NextIntlClientProvider locale="es" messages={en}><JobsListingClient initialJobs={baseline} isAuthenticated /></NextIntlClientProvider>);
+    await waitFor(() => expect(screen.getByRole('link', { name: /Second sample role/ })).toBeInTheDocument());
+  });
+
+  it('keeps search on the page and focuses the first refinement, preserving query parameters across close/reopen', async () => {
+    mount();
+    expect(screen.getByRole('searchbox', { name: 'Search jobs' })).toBeInTheDocument();
+    const { dialog } = openFilters();
+    expect(screen.getByLabelText('Program')).toHaveFocus();
+    expect(within(dialog).queryByRole('searchbox')).toBeNull();
     fireEvent.change(screen.getByLabelText('Location type'), { target: { value: 'remote' } });
     expect(window.location.search).toBe('?jobType=contract&locationType=remote');
     expect(router.push).not.toHaveBeenCalled();
@@ -82,7 +133,7 @@ describe('member Jobs responsive filter dialog', () => {
   it('backdrop dismisses while a pointer inside the filter content leaves it open', () => {
     mount();
     const { dialog } = openFilters();
-    fireEvent.click(screen.getByLabelText('Search jobs'));
+    fireEvent.click(screen.getByLabelText('Program'));
     expect(dialog).toHaveAttribute('open');
     fireEvent.click(dialog);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

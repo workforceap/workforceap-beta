@@ -2,13 +2,17 @@ import { Compass } from 'lucide-react';
 import NextLink from 'next/link';
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { DesignSurface, KpiStrip, DataTable, StatusTag, PageOpener, JobListingRow, KitEmptyState, type Column, type KitTone } from '@/components/portal/kit';
+import { DesignSurface, DataTable, StatusTag, PageOpener, JobListingRow, KitEmptyState, type Column, type KitTone } from '@/components/portal/kit';
 import { JOBS_BOARD_EMPTY } from '@/lib/member/jobPipelineDisplay';
+import styles from './MemberJobsOverview.module.css';
 
 /**
  * Member Portal — JOB PIPELINE view.
  * Faithful port of `data-view-panel="jobs"` in
  * docs/mockups/workforceap-member-suite.html.
+ * Open roles lead; tracked applications follow. Counts summarize the application
+ * tracker (including external jobs), not the separate live-opening bookmarks.
+ * Populated recommendations are optional. Their empty/error states stay visible.
  * Recommended matches use JobListingRow so pipeline, board, and listing share one row.
  *
  * The live open-roles list renders here too (`#open-roles`, JobListingRow →
@@ -159,65 +163,37 @@ export function MemberJobsKit({
 
   return (
     <DesignSurface surface="warm">
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
+      <div className={styles.page}>
         <PageOpener
           kicker="Job search"
           title="Job board"
-          lede="Applications, matches, next interviews."
+          lede="Find your next opportunity. Keep your applications moving."
           icon={<Compass size={13} aria-hidden="true" />}
+          action={
+            <nav aria-label="Job search tasks" className={styles.actions}>
+              <JobsCta href={browseHref}>Browse openings</JobsCta>
+              <NextLink href="#applications" className={`${styles.secondaryAction} wa-kit-focus`}>View applications</NextLink>
+            </nav>
+          }
         />
-        <KpiStrip
-          items={(
+        <dl className={styles.status} aria-label="Application tracker status">
+          {(
             [
               ['Saved', saved],
               ['Applied', applied],
               ['Interviewing', interviewing],
               ['Offers', offers],
             ] as const
-          ).map(([label, value]) =>
-            pipelineLoadFailed
-              ? { label, value: '—', delta: t('applicationsUnavailable.kpiCaption'), deltaTone: 'warn' as const }
-              : { label, value },
-          )}
-        />
-
-        <div className="wa-kit-card">
-          <div className="wa-flex wa-flex-col md:wa-flex-row md:wa-items-center wa-justify-between wa-gap-3" style={{ marginBottom: 16 }}>
-            <div>
-              <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em' }}>Applications</h2>
-              {syncedLabel && !pipelineLoadFailed ? <p className="wa-kit-meta">{syncedLabel}</p> : null}
+          ).map(([label, value]) => (
+            <div key={label} className={styles.statusItem}>
+              <dt>{label}</dt>
+              <dd>{pipelineLoadFailed ? '—' : value}</dd>
             </div>
-            {applications.length > 0 ? <JobsCta href={browseHref}>Browse openings</JobsCta> : null}
-          </div>
-          {/* The empty state is the card's own branch: the table below only mounts with rows, so it carries no `empty` prop. */}
-          {pipelineLoadFailed ? (
-            <KitEmptyState
-              kind="unavailable"
-              title={t('applicationsUnavailable.title')}
-              description={t('applicationsUnavailable.body')}
-              primaryAction={{ label: t('applicationsUnavailable.action'), href: retryHref }}
-              data-testid="member-jobs-applications-load-failed"
-            />
-          ) : applications.length === 0 ? (
-            <KitEmptyState
-              kind="first"
-              title={t('applications.title')}
-              description={t('applications.body')}
-              primaryAction={{ label: t('applications.action'), href: browseHref }}
-            />
-          ) : (
-            <DataTable<ApplicationRow>
-              columns={columns}
-              rows={applications}
-              rowKey={(r) => r.id}
-              mobile="cards"
-              cardRender={applicationCard}
-              minWidth={560}
-            />
-          )}
-        </div>
+          ))}
+        </dl>
+        {pipelineLoadFailed ? <p className="wa-kit-meta">{t('applicationsUnavailable.kpiCaption')}</p> : null}
 
-        <section id="open-roles" aria-labelledby="open-roles-heading" style={{ scrollMarginTop: 96 }}>
+        <section id="open-roles" aria-labelledby="open-roles-heading" tabIndex={-1} className={styles.section}>
           <div className="wa-flex wa-items-end wa-justify-between wa-gap-3 wa-flex-wrap" style={{ marginBottom: 16 }}>
             <h2 id="open-roles-heading" style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', margin: 0 }}>
               Open roles
@@ -292,8 +268,44 @@ export function MemberJobsKit({
           ) : null}
         </section>
 
-        <div>
-          <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>Recommended</h2>
+        <section id="applications" aria-labelledby="applications-heading" tabIndex={-1} className={`wa-kit-card ${styles.section}`}>
+          <div className="wa-flex wa-flex-col md:wa-flex-row md:wa-items-center wa-justify-between wa-gap-3" style={{ marginBottom: 16 }}>
+            <div>
+              <h2 id="applications-heading" style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em' }}>Applications</h2>
+              {syncedLabel && !pipelineLoadFailed ? <p className="wa-kit-meta">{syncedLabel}</p> : null}
+            </div>
+          </div>
+          {/* The empty state is the card's own branch: the table below only mounts with rows, so it carries no `empty` prop. */}
+          {pipelineLoadFailed ? (
+            <KitEmptyState
+              kind="unavailable"
+              title={t('applicationsUnavailable.title')}
+              description={t('applicationsUnavailable.body')}
+              primaryAction={{ label: t('applicationsUnavailable.action'), href: retryHref }}
+              data-testid="member-jobs-applications-load-failed"
+            />
+          ) : applications.length === 0 ? (
+            <KitEmptyState
+              kind="first"
+              title={t('applications.title')}
+              description={t('applications.body')}
+              primaryAction={{ label: t('applications.action'), href: browseHref }}
+            />
+          ) : (
+            <DataTable<ApplicationRow>
+              columns={columns}
+              rows={applications}
+              rowKey={(r) => r.id}
+              mobile="cards"
+              cardRender={applicationCard}
+              minWidth={560}
+            />
+          )}
+        </section>
+
+        <details className={styles.recommendations} open={recommendationsLoadFailed || recommended.length === 0}>
+          <summary className="wa-kit-focus"><h2>Recommended</h2><span>{recommendationsLoadFailed ? 'Unavailable' : recommended.length > 0 ? `${recommended.length} matches` : 'Build your matches'}</span></summary>
+          <div className={styles.recommendationsBody}>
           {recommendationsLoadFailed ? (
             <div className="wa-kit-card">
               <KitEmptyState
@@ -334,7 +346,8 @@ export function MemberJobsKit({
               ))}
             </div>
           )}
-        </div>
+          </div>
+        </details>
       </div>
     </DesignSurface>
   );

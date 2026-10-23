@@ -104,9 +104,14 @@ evidence use a 60/40 layout, followed by paired advisor and Up next panels when
 both exist. Narrow screens retain action-first document order. The compact
 Home preassessment variant preserves the completed state; one contextual AI
 introduction remains below progress instead of repeating a tool catalogue.
-The evidence summary distinguishes a received portal resume from unknown
-email, calendar and provider state. Layout must not infer completion, change
-next-action ranking, or turn a destination click into a completed step.
+The evidence summary distinguishes confirmed, awaiting-confirmation and unknown
+steps. Receipt sources and UTC dates render only when supplied for a confirmed
+step; profile modification dates are never receipt evidence. Email/calendar/provider
+state remains unknown in the live loader until an authoritative source is wired.
+A compact disclosure explains how to contact the team without marking a step done.
+Home places compact approval status after its next action and evidence; the full
+approval chain remains available in a disclosure. Layout must not infer completion,
+change next-action ranking, or turn a destination click into a completed step.
 
 Resume uses scoped workspace chrome and descriptive view tabs; phone tabs keep
 their 48px targets and their full descriptions through `aria-describedby`.
@@ -114,8 +119,13 @@ Rewrite presents the required target role and resume editor before a native
 "Customize rewrite" disclosure. Language, tone, ATS, salary and location controls
 stay mounted inside it, with tone/language/ATS summarized while closed; optional
 settings are not discarded when the disclosure closes. File-source distinctions
-and the session-only draft warning remain visible. Tab navigation retains the
-current pathname, locale, query and hash; reload/leave recovery is not promised.
+remain visible. Tab navigation retains the current pathname, locale, query and hash.
+The owned studio recovers Score and Rewrite input drafts in the same browser tab
+using member-scoped session storage, with a separate preview scope. Visible status
+distinguishes saved, restored, cleared and unavailable storage. Recovery lasts up to
+24 hours, ends on sign-out, and does not sync devices or replace uploaded originals.
+Home can offer the last saved view without displaying resume text. Generated results
+and voice-coach drafts keep their existing persistence rules.
 
 `SkillMapperKit` supplies the same 70rem (1120px at the standard root size)
 workspace to the authenticated route and its synthetic fixture. It avoids an
@@ -145,6 +155,18 @@ Phone confirmation focuses a stable dialog control and Escape restores Apply;
 desktop confirmation remains inline. Preview listings filter and save synthetic
 rows locally, preserve the fixture query on Clear, and label submission and history
 as simulations. The authenticated handlers and consent requirements are unchanged.
+
+Jobs overview uses compact counts from the application tracker, with Browse openings
+and View applications as distinct tasks. These tracker counts are not saved-opening
+bookmarks, so a universal Saved tab would imply data equivalence that does not exist.
+Openings precede application history; populated recommendations are optional native
+disclosures. Browse opens canonical `?view=openings`; Applications returns to the
+overview anchor. Clear removes filter keys while preserving view, locale and other
+context, and old search responses cannot replace the reset inventory. Partial
+unfiltered inventory shows loaded/total counts; signed-in members can open existing
+`?view=all` pagination. Search stays outside the phone refinement dialog, whose
+first focus is Program. Searchable pages place certificates and external boards
+below the results. Filtered endpoint caps and public pagination remain separate work.
 
 ---
 
@@ -797,6 +819,7 @@ section here in the same PR.*
 
 - Admin overview uses a compact metric strip and flat queue rows. All-zero measured placement series show a concise zero summary; absent series stay absent and nonzero series retain their chart. Program and system context stays secondary without stretching to the queue height. Actions retain full counts and destinations; bulk selection remains owned by the queue client.
 - Sidebar preference controls keep their radio keyboard interaction. The rail scrolls its destinations, with language and appearance visible below. Narrow or collapsed navigation must never expose clipped focusable controls.
+- The desktop shell body uses `overflow: clip` so focus or scroll-into-view cannot shift the entire rail and page; the main workspace and navigation list retain their own scrolling. Mobile drawer overflow rules stay independent.
 - Counselor messages use one neutral inbox workspace. Member metadata appears once per roster row, catalog names resolve on the server, and selected conversations/filter controls expose their state accessibly. Recipient identity, request guards, and draft ownership remain unchanged.
 - Partner share tools (`PartnerShareToolkit`, guide page) are dense edge-to-edge rows — landing page, per-channel UTM links with optional signup counts (counts only) — plus a copyable “About WorkforceAP” blurb (the mission statement, `mission.statement` in `messages/*.json`, passed in by the server page) and a read-only Apply-button snippet textarea; each Copy action is an Astryx `Button` whose failure stays visible. What a partner may see about referred members is decided in `lib/partner/dataAccess.ts`, never in a component (docs/PARTNER_TIERS.md).
 - Partner sharing keeps its primary Copy action visible; URL/code live in a native disclosure that opens on clipboard failure. Member sharing keeps the link/copy action visible and opens invitation preview for manual copying when needed. Privacy and aggregate-reward limits remain visible.

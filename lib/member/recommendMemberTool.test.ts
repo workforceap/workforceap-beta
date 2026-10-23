@@ -75,3 +75,10 @@ test('every pick links inside AI Career Tools', () => {
     assert.ok(pick.href.startsWith(`/dashboard/ai-tools/${pick.slug}`), pick.href);
   }
 });
+
+test('the canonical Resume workspace suppresses its legacy Studio recommendation without hiding different tools', () => {
+  const facts = enrolled({ hasResume: false, hasCompletedInterviewPractice: false });
+  assert.equal(recommendMemberTool(facts, ['/dashboard/resume?view=files#document'])?.slug, 'interview-practice');
+  assert.equal(recommendMemberTool(facts, ['/dashboard/resume', '/dashboard/ai-tools/interview-practice']), null);
+  assert.equal(recommendMemberTool(facts, ['/dashboard/resume-help'])?.slug, 'resume-studio');
+});

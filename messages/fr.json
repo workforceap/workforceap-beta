@@ -3447,6 +3447,7 @@
     }
   },
   "memberApproval": {
+    "viewDetails": "Voir les détails",
     "dismiss": "Masquer",
     "dismissLabel": "Masquer l'état de votre approbation",
     "restore": "Afficher l'état de votre approbation",

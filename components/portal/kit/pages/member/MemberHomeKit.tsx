@@ -1,6 +1,6 @@
 'use client';
 
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Play,
@@ -64,6 +64,8 @@ import styles from './Home.module.css';
  *      (`youthNoticeAge`).
  *   2. "Your next step" paired with the handoff evidence summary on wide screens,
  *      stacked in that order on mobile (MemberDoThisNextCard).
+ *      The compact approval summary follows this task-first pair; its saved
+ *      status and owner remain visible while the full chain expands in place.
  *      Under it, only when they apply: the placement confirmation strip for
  *      OFFER applications (`jobOffers`) and the First 90 Days check-in card
  *      while a placement is inside its window (`first90`) — the two
@@ -236,6 +238,12 @@ export interface MemberHomeKitProps {
   handoff?: MemberHandoffEvidence;
   /** Résumé workspace, independent of the historical `resumeHref` training CTA. */
   resumeStudioHref?: string;
+  /** Workspace-owned continuation content; undefined keeps the default preparation action. */
+  resumeReturnAction?: ReactNode;
+  /** Signed-in member scope for tab-local draft recovery; omitted when the owner is unavailable. */
+  resumeDraftOwnerToken?: string;
+  /** Compact approval facts follow the next step; callers keep closed/completed status below the page. */
+  approvalSummary?: ReactNode;
   /** Active assigned counselor (resolveAssignedCounselor). Null hides the advisor card. */
   advisor?: AssignedCounselor | null;
   /** The steps after `doThisNext`, most important first. Empty renders nothing. */
@@ -595,6 +603,9 @@ export function MemberHomeKit({
   doThisNext = null,
   handoff,
   resumeStudioHref = '/dashboard/resume',
+  resumeReturnAction,
+  resumeDraftOwnerToken,
+  approvalSummary,
   advisor = null,
   upNext = [],
   recommendedTool = null,
@@ -706,9 +717,13 @@ export function MemberHomeKit({
             evidence={handoff}
             messagesHref={advisor?.messagingHref}
             resumeStudioHref={resumeStudioHref}
+            resumeReturnAction={resumeReturnAction}
+            resumeDraftOwnerToken={resumeDraftOwnerToken}
             showResumeAction={doThisNext?.href.split('?')[0] !== resumeStudioHref.split('?')[0]}
           />
         </div>
+
+        {approvalSummary}
 
         {/* Post-offer surfaces, each only when it applies: confirm an accepted
             offer (writes a member-reported placement and alerts the

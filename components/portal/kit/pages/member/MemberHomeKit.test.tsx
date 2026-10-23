@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactElement } from 'react';
 import messages from '@/messages/en.json';
@@ -92,6 +92,8 @@ describe('MemberHomeKit résumé to consultation handoff', () => {
     expect(handoff.getByText('Booking status not connected')).toBeInTheDocument();
     expect(handoff.getByText('Activation not confirmed')).toBeInTheDocument();
     expect(handoff.getByText(/Already emailed your résumé/)).toBeInTheDocument();
+    expect(handoff.getByRole('link', { name: 'Confirm with my team' })).not.toBeVisible();
+    fireEvent.click(handoff.getByText('Already completed a step?'));
     expect(handoff.getByRole('link', { name: 'Confirm with my team' })).toHaveAttribute('href', '/dashboard/messages');
     expect(handoff.getByRole('link', { name: 'Open Résumé workspace' })).toHaveAttribute('href', '/dashboard/resume');
     expect(handoff.queryByText(/incomplete|not booked|not activated|upload again/i)).toBeNull();
@@ -106,6 +108,7 @@ describe('MemberHomeKit résumé to consultation handoff', () => {
     expect(handoff.getByText('Received in portal')).toBeInTheDocument();
     expect(handoff.getByRole('heading', { name: 'Prepare for your consultation' })).toBeInTheDocument();
     expect(handoff.getByRole('link', { name: 'Review my résumé' })).toHaveAttribute('href', '/dev/member/resume-studio');
+    fireEvent.click(handoff.getByText('Already completed a step?'));
     expect(handoff.getByRole('link', { name: 'Confirm with my team' })).toHaveAttribute('href', '/dev/member/messages');
     expect(handoff.queryByText('Booking confirmed')).toBeNull();
   });
@@ -121,6 +124,59 @@ describe('MemberHomeKit résumé to consultation handoff', () => {
   it('does not repeat the résumé return button when the primary next step already opens the workspace', () => {
     renderKit(<MemberHomeKit {...base} doThisNext={{ ...base.doThisNext, href: '/dashboard/resume?view=score', cta: 'Review my résumé' }} handoff={{ resume: 'portal_received', consultation: 'unknown', training: 'unknown' }} />);
     expect(screen.getAllByRole('link', { name: 'Review my résumé' })).toHaveLength(1);
+  });
+
+  it('shows a confirmation source and date only for a confirmed step with a supplied receipt', () => {
+    renderKit(<MemberHomeKit {...base} handoff={{
+      resume: 'portal_received', consultation: 'unknown', training: 'access_confirmed',
+      receipts: {
+        resume: { source: 'portal', confirmedAt: '2026-10-21T00:15:00Z' },
+        consultation: { source: 'calendar', confirmedAt: '2026-10-22T14:30:00Z' },
+        training: { source: 'provider', confirmedAt: 'not-a-date' },
+      },
+    }} />);
+    const handoff = within(screen.getByRole('region', { name: 'Your progress so far' }));
+    expect(handoff.getByText('Portal record')).toBeVisible();
+    expect(handoff.getByText('Confirmed Oct 21, 2026 (UTC)')).toHaveAttribute('datetime', '2026-10-21T00:15:00Z');
+    expect(handoff.getByText('Training provider record')).toBeVisible();
+    expect(handoff.queryByText('Calendar record')).toBeNull();
+    expect(handoff.queryByText(/Oct 22|Invalid Date|not-a-date/)).toBeNull();
+  });
+
+  it('distinguishes a pending record from unknown and does not turn opening reconciliation into confirmation', () => {
+    const { container } = renderKit(<MemberHomeKit {...base} handoff={{
+      resume: 'pending_confirmation', consultation: 'pending_confirmation', training: 'unknown',
+      receipts: { resume: { source: 'team', confirmedAt: '2026-10-21T16:00:00Z' } },
+    }} />);
+    const handoff = within(screen.getByRole('region', { name: 'Your progress so far' }));
+    expect(handoff.getAllByText('Awaiting team confirmation')).toHaveLength(2);
+    expect(handoff.getByText('Activation not confirmed')).toBeVisible();
+    expect(handoff.queryByText('Team confirmation')).toBeNull();
+    expect(container.querySelector('[data-confirmed="true"]')).toBeNull();
+    fireEvent.click(handoff.getByText('A step is awaiting confirmation'));
+    expect(handoff.getByText(/Opening Messages does not send a request or change your progress/)).toBeVisible();
+    expect(handoff.getByRole('link', { name: 'Confirm with my team' })).toHaveAttribute('href', '/dashboard/messages');
+    expect(handoff.getAllByText('Awaiting team confirmation')).toHaveLength(2);
+  });
+
+  it('does not invent a receipt date for an existing portal document', () => {
+    const { container } = renderKit(<MemberHomeKit {...base} handoff={{ resume: 'portal_received', consultation: 'unknown', training: 'unknown' }} />);
+    expect(screen.getByText('Portal record')).toBeVisible();
+    expect(container.querySelector('#member-handoff-heading')?.parentElement?.querySelector('time')).toBeNull();
+  });
+
+  it('accepts a workspace-owned continuation without duplicating the default preparation action', () => {
+    renderKit(<MemberHomeKit {...base} resumeReturnAction={<a href="/dashboard/resume?view=rewrite">Continue saved résumé draft</a>} />);
+    expect(screen.getByRole('link', { name: 'Continue saved résumé draft' })).toHaveAttribute('href', '/dashboard/resume?view=rewrite');
+    expect(screen.queryByRole('link', { name: 'Open Résumé workspace' })).toBeNull();
+    expect(screen.getByRole('link', { name: /Start preassessment/ })).toBeVisible();
+  });
+
+  it('places approval details after the next action and confirmed progress, never before the page heading', () => {
+    renderKit(<MemberHomeKit {...base} approvalSummary={<section aria-label="Approval summary">Awaiting review</section>} />);
+    const summary = screen.getByRole('region', { name: 'Approval summary' });
+    expect(screen.getByRole('heading', { level: 1 }).compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Your progress so far' }).compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
 

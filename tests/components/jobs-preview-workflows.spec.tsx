@@ -40,6 +40,23 @@ function listing(initialJobs = jobs) {
 }
 
 describe('credential-free Jobs review flows', () => {
+  it('lets a phone user search directly without opening filters or loading recommendations first', () => {
+    phone = true;
+    vi.useFakeTimers();
+    render(<NextIntlClientProvider locale="en" messages={en}><JobsListingClient preview initialJobs={jobs} initialMatchedJobs={[{ id: 'cloud', title: 'Cloud support', company: 'Sample A', location: 'Austin', locationType: 'onsite', matchPct: 92 }]} /></NextIntlClientProvider>);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    const search = screen.getByRole('searchbox', { name: 'Search jobs' });
+    const recommendations = screen.getByText('Best matches for you').closest('details');
+    expect(recommendations).not.toHaveAttribute('open');
+    expect(search.compareDocumentPosition(recommendations!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    fireEvent.change(search, { target: { value: 'Cloud' } });
+    act(() => vi.advanceTimersByTime(450));
+    expect(screen.getByText('1 job found')).toBeInTheDocument();
+    expect(screen.getAllByRole('link', { name: /Cloud support/ }).filter((link) => !recommendations!.contains(link))).toHaveLength(1);
+    expect(screen.queryByRole('link', { name: /IT support/ })).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('keeps the server-rendered phone Apply trigger disabled until its handler hydrates', async () => {
     phone = true;
     const ui = <MobileApplyFunnel preview jobId="cloud" jobTitle="Cloud support" />;

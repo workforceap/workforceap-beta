@@ -284,6 +284,7 @@
     "handoff": {
       "homeLede": "Tu próximo paso y el progreso que podemos confirmar.",
       "title": "Tu progreso hasta ahora",
+      "evidenceIntro": "Registros confirmados y datos que aún faltan.",
       "resume": "Currículum",
       "consultation": "Consulta",
       "training": "Acceso a capacitación",
@@ -293,7 +294,19 @@
       "consultationUnknown": "El estado de la reserva no está conectado",
       "trainingConfirmed": "Acceso confirmado",
       "trainingUnknown": "Activación no confirmada",
+      "pendingConfirmation": "Esperando confirmación del equipo",
+      "confirmedOn": "Confirmado el {date} (UTC)",
+      "source": {
+        "portal": "Registro del portal",
+        "team": "Confirmación del equipo",
+        "calendar": "Registro del calendario",
+        "provider": "Registro del proveedor de capacitación"
+      },
+      "reconcileSummary": "¿Ya completaste un paso?",
+      "pendingSummary": "Un paso espera confirmación",
       "outsidePortal": "¿Ya enviaste tu currículum o reservaste desde el correo de bienvenida? Esos pasos pueden no aparecer aquí. Consulta con tu equipo antes de repetirlos.",
+      "confirmationGuidance": "En tu mensaje, indica el paso y cuándo lo completaste. Para una consulta, incluye la fecha y hora de tu confirmación de reserva.",
+      "confirmationBoundary": "Abrir Mensajes no envía una solicitud ni cambia tu progreso. Tu equipo puede revisar el registro después de que envíes tu mensaje.",
       "confirm": "Confirmar con mi equipo",
       "prepareTitle": "Prepárate para tu consulta",
       "prepareBody": "Revisa tu currículum y anota la experiencia, las metas y las preguntas que quieres conversar con tu asesor.",
@@ -3528,6 +3541,7 @@
     }
   },
   "memberApproval": {
+    "viewDetails": "Ver detalles",
     "dismiss": "Ocultar",
     "dismissLabel": "Ocultar el estado de tu aprobación",
     "restore": "Mostrar el estado de tu aprobación",
@@ -4642,6 +4656,19 @@
         "coachIntro": "Habla sobre tu experiencia y trabaja en cómo presentarla.",
         "coachAvailability": "El asesor de voz está disponible al iniciar sesión.",
         "draftNotice": "Los borradores duran mientras esta página esté abierta. Copia tus cambios antes de salir o recargar; no se recuperan.",
+        "draft": {
+          "loading": "Buscando un borrador en esta pestaña…",
+          "ready": "Tus cambios se guardarán en esta pestaña",
+          "saved": "Datos del borrador guardados en esta pestaña",
+          "restored": "Datos del borrador recuperados de esta pestaña",
+          "unavailable": "Los últimos cambios no se guardaron. Copia el texto antes de salir.",
+          "cleared": "Copia guardada eliminada. Tus cambios actuales siguen aquí.",
+          "limits": "Puedes recuperar los datos hasta 24 horas en esta pestaña; cerrarla puede impedir la recuperación. Cerrar sesión elimina la copia. Los archivos subidos y los resultados generados son independientes.",
+          "clear": "Eliminar copia guardada",
+          "returnTitle": "Continúa el borrador de tu currículum",
+          "returnDescription": "Datos guardados a las {time} en esta pestaña.",
+          "continue": "Continuar borrador"
+        },
         "backToTools": "Herramientas de IA",
         "customizeRewrite": "Personalizar redacción",
         "atsOn": "ATS activo",

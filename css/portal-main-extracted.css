@@ -2386,7 +2386,9 @@ html.dark .workspace-sidebar-group-label {
     .workspace-shell-body {
         flex-direction: row;
         align-items: stretch;
-        overflow: hidden;
+        /* Only the main workspace and rail destinations scroll. Hidden still
+           permits focus/scrollIntoView to shift this entire chrome ancestor. */
+        overflow: clip;
     }
     .workspace-shell-main {
         flex: 1 1 auto;

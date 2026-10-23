@@ -24,14 +24,14 @@ const staffLimit = 'Record links and business actions can enter the signed-in po
 export const PORTAL_REVIEW_FIXTURES: PortalReviewFixture[] = [
   fixture('member', 'home', 'Home and next step', 'Review the résumé-to-consultation handoff and progress states.', 'Inspect the next action, handoff evidence, program switch and alternate notices. The fixture tour stays local without account-progress or analytics writes.', 'Email/calendar reconciliation and provider access are not connected. Offer, check-in and onboarding-wizard saves use real endpoints; do not submit them without approved records. Real tour completion telemetry still needs separate investigation.', [
     ['Focused handoff', 'approval=off&offer=off&first90=off&handoff=received'],
-    ['Handoff unknown', 'handoff=unknown'], ['Résumé received', 'handoff=received'], ['Confirmed contract example', 'handoff=confirmed'],
+    ['Handoff unknown', 'handoff=unknown'], ['Handoff awaiting confirmation', 'handoff=pending'], ['Résumé received', 'handoff=received'], ['Confirmed contract example', 'handoff=confirmed'],
     ['Application pending', 'approval=live'], ['Application closed', 'approval=closed'], ['Approval complete', 'approval=complete'], ['Approval hidden', 'approval=off'],
     ['Training not started', 'course=zero'], ['Training stalled', 'course=zero-stale'],
     ['First week', 'first90=week_1'], ['Day 30', 'first90=day_30'], ['Day 60', 'first90=day_60'], ['Day 90', 'first90=day_90'], ['Check-in hidden', 'first90=off'],
     ['Offer hidden', 'offer=off'], ['Youth notice', 'youth=17'], ['No goals', 'goals=none'], ['First-login wizard', 'onboarding=on'], ['Guided tour', 'onboarding=tour'],
     ['Two programs', 'programs=2'], ['Secondary program', 'programs=2&program=comptia-a-professional-certificate'], ['Staff view', 'staff=1'], ['No advisor', 'advisor=off'],
   ]),
-  fixture('member', 'resume-studio', 'Résumé workspace', 'Original files, scoring, rewriting and coaching in one workspace.', 'Switch tabs with unfinished text, inspect sample files/results and expand optional rewrite settings.', 'Uploads, generation, account reads and voice are disabled. Drafts are session-only; reload/leave recovery and actual downloads need separate acceptance.', [
+  fixture('member', 'resume-studio', 'Résumé workspace', 'Original files, scoring, rewriting and coaching in one workspace.', 'Edit Score or Rewrite inputs, switch tabs, reload and return through Home in the same tab. Inspect saved/restored status, clear the saved copy and expand optional settings.', 'Uploads, generation, account reads and voice are disabled. Same-tab input drafts expire after 24 hours; account-scoped recovery/logout, generated-result history and actual downloads require separate signed-in acceptance.', [
     ['Files', 'view=files'], ['Score form', 'view=score'], ['Sample score', 'view=score&state=filled'], ['Rewrite form', 'view=rewrite'], ['Sample rewrite', 'view=rewrite&state=filled'], ['Coach empty state', 'view=coach'],
   ]),
   fixture('member', 'skill-mapper', 'Skill Mapper', 'Occupation requirements and estimated profile comparison.', 'Compare the two synthetic radars, open numeric alternatives and inspect skill details.', 'Search, extraction and export are disabled. Training options enters a signed-in tool; owned lookup persistence and O*NET/provider calls remain blocked.'),

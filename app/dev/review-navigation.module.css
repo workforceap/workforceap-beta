@@ -22,6 +22,12 @@
   color: var(--wa-text);
 }
 .loading p { color: var(--wa-muted); }
+.scenarios { padding: 0 var(--wa-pad-sm); border-bottom: 1px solid var(--wa-border); }
+.scenarios summary { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--wa-pad-sm); min-height: 2.75rem; padding-block: calc(var(--wa-pad-sm) / 2); color: var(--wa-text); font-size: var(--wa-type-meta); font-weight: 600; cursor: pointer; }
+.scenarios summary::before { content: '+'; font-weight: 700; }
+.scenarios details[open] summary::before { content: '−'; }
+.scenarioNotice { color: var(--wa-muted); font-weight: 400; }
+.scenarios details[open] { padding-bottom: var(--wa-pad-sm); }
 @media (max-width: 48rem) {
   .bar { padding-inline: var(--wa-pad-sm); gap: 0 calc(var(--wa-pad-sm) * 0.75); }
   .bar span { font-size: var(--wa-type-meta); padding-bottom: calc(var(--wa-pad-sm) / 2); }

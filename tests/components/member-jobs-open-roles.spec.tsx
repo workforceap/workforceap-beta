@@ -33,6 +33,18 @@ const openRoles = [
 describe('MemberJobsKit open roles', () => {
   afterEach(() => cleanup());
 
+  it('prioritizes openings and offers a direct tracker jump without treating tracked saves as live bookmarks', () => {
+    show(<MemberJobsKit saved={4} openRoles={openRoles} recommended={[{ id: 'job-1', title: 'Help Desk Technician', meta: 'Acme IT', logo: 'AC', match: '90% match' }]} />);
+    expect(screen.getByRole('link', { name: 'View applications' })).toHaveAttribute('href', '#applications');
+    expect(screen.queryByRole('tab', { name: /Saved/ })).toBeNull();
+    const openings = screen.getByRole('region', { name: 'Open roles' });
+    const applications = screen.getByRole('region', { name: 'Applications' });
+    expect(openings.compareDocumentPosition(applications)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    const recommendations = screen.getByRole('heading', { name: 'Recommended' }).closest('details');
+    expect(recommendations).not.toHaveAttribute('open');
+    expect(within(openings).getAllByRole('link', { name: /Help Desk Technician/ })).toHaveLength(1);
+  });
+
   it('links every live opening to its job page and points the browse CTAs at the in-page list', () => {
     show(<MemberJobsKit openRoles={openRoles} openRolesTotal={12} />);
 
@@ -48,7 +60,7 @@ describe('MemberJobsKit open roles', () => {
     expect(within(section).getByText('Applied')).toBeInTheDocument();
     expect(within(section).getAllByRole('link')).toHaveLength(2);
 
-    expect(screen.getByRole('link', { name: 'Browse openings' })).toHaveAttribute('href', JOBS_OPEN_ROLES_ANCHOR);
+    for (const link of screen.getAllByRole('link', { name: 'Browse openings' })) expect(link).toHaveAttribute('href', JOBS_OPEN_ROLES_ANCHOR);
     expect(screen.getByRole('link', { name: 'Browse jobs' })).toHaveAttribute('href', JOBS_OPEN_ROLES_ANCHOR);
   });
 

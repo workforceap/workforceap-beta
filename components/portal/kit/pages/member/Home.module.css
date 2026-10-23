@@ -24,6 +24,11 @@
   min-width: 0;
 }
 
+/* Expanding evidence must not stretch the primary task or move its action. */
+.leadGrid {
+  align-items: start;
+}
+
 .supportGrid > * {
   min-width: 0;
 }

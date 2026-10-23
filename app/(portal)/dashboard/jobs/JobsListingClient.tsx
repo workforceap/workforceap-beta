@@ -13,6 +13,7 @@ import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
 import { PROGRAMS } from '@/lib/content/programs';
 import { formatJobSalaryRange } from '@/lib/jobs/formatSalary';
 import { JobListingRow, JobListingRowSkeleton, KitEmptyState, FormField } from '@/components/portal/kit';
+import styles from './JobsListing.module.css';
 
 const DEBOUNCE_MS = 400;
 
@@ -37,6 +38,8 @@ type MatchedJob = {
   locationType: string;
   matchPct: number;
 };
+
+const EMPTY_JOBS: Job[] = [];
 
 function getLocationLabels(t: (k: string) => string): Record<string, string> {
   return {
@@ -215,8 +218,9 @@ function JobCard({
 export default function JobsListingClient({
   isAuthenticated = true,
   ageGroup = 'adult18plus' as 'under14' | 'youth14to17' | 'adult18plus',
-  initialJobs = [] as Job[],
+  initialJobs = EMPTY_JOBS,
   initialTotal = 0,
+  allOpeningsHref,
   appliedJobIds = [] as string[],
   initialMatchedJobs = [] as MatchedJob[],
   initialSavedJobIds = [] as string[],
@@ -226,6 +230,8 @@ export default function JobsListingClient({
   ageGroup?: 'under14' | 'youth14to17' | 'adult18plus';
   initialJobs?: Job[];
   initialTotal?: number;
+  /** Owning member route supplies its existing paginated inventory; public callers omit it. */
+  allOpeningsHref?: string;
   appliedJobIds?: string[];
   initialMatchedJobs?: MatchedJob[];
   initialSavedJobIds?: string[];
@@ -267,7 +273,7 @@ export default function JobsListingClient({
   const filterTriggerRef = useRef<HTMLButtonElement>(null);
   const filterDialogRef = useFocusTrap<HTMLDialogElement>(filtersOpen && !desktopFilters, {
     onEscape: () => setFiltersOpen(false),
-    skipInitialFocus: true, // Astryx focuses the search after native showModal().
+    skipInitialFocus: true, // Astryx focuses the first refinement after native showModal().
   });
   const filterFieldWrap = desktopFilters ? FILTER_FIELD_WRAP : { minWidth: 0, flex: '0 0 auto' };
 
@@ -306,11 +312,11 @@ export default function JobsListingClient({
       }
       const qs = params.toString();
       if (!pathname) return;
-      const href = qs ? `${pathname}?${qs}` : pathname;
+      const href = `${qs ? `${pathname}?${qs}` : pathname}${window.location.hash}`;
       if (preview) {
         // Fixture filters are entirely local. Keep Next's history subscribers
         // and Back/Forward in sync without requesting another server render.
-        window.history.pushState(null, '', `${href}${window.location.hash}`);
+        window.history.pushState(null, '', href);
         setPreviewQuery(qs);
       } else {
         router.push(href);
@@ -338,11 +344,9 @@ export default function JobsListingClient({
   const clearFilters = () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setQLocal('');
-    if (preview) {
-      updateUrl(Object.fromEntries(['q', 'locationType', 'jobType', 'program', 'salaryMin', 'salaryMax', 'sort'].map((key) => [key, undefined])));
-    } else if (pathname) {
-      router.push(pathname);
-    }
+    // Clearing refinements must retain the canonical view, legacy entry and
+    // caller context. A bare pathname switches a member back to the overview.
+    updateUrl(Object.fromEntries(['q', 'locationType', 'jobType', 'program', 'salaryMin', 'salaryMax', 'sort'].map((key) => [key, undefined])));
     setFiltersOpen(false);
   };
 
@@ -379,15 +383,19 @@ export default function JobsListingClient({
     
     // Skip the first fetch if we have SSR data and no filters are active
     if (initialJobs.length > 0 && !hasActiveFilters) {
+      setJobs(initialJobs);
+      setLoading(false);
       return;
     }
-    
+
+    let current = true;
     setLoading(true);
     fetch(`/api/dashboard/jobs?${params}`)
       .then((r) => r.json())
-      .then((data) => { if (Array.isArray(data)) setJobs(data); })
-      .finally(() => setLoading(false));
-  }, [q, locationType, jobType, program, salaryMin, salaryMax, sort, ageGroup, hasActiveFilters, preview, initialJobs.length]);
+      .then((data) => { if (current && Array.isArray(data)) setJobs(data); })
+      .finally(() => { if (current) setLoading(false); });
+    return () => { current = false; };
+  }, [q, locationType, jobType, program, salaryMin, salaryMax, sort, ageGroup, hasActiveFilters, preview, initialJobs]);
 
   useEffect(() => {
     if (preview || !isAuthenticated) return;
@@ -446,40 +454,10 @@ export default function JobsListingClient({
 
   const filterPanel = (
     <div className={`job-filters-panel${desktopFilters ? ' wa-kit-card' : ''}`}>
-      <div style={desktopFilters ? { ...FILTER_FIELD_WRAP, minWidth: 200, flex: '2 1 220px' } : filterFieldWrap}>
-        <label htmlFor="job-search-q" className="wa-kit-field-label">
-          {t('searchJobs')}
-        </label>
-        <div style={{ position: 'relative' }}>
-          <Search
-            size={16}
-            aria-hidden
-            style={{
-              position: 'absolute',
-              left: 12,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--wa-muted)',
-              pointerEvents: 'none',
-            }}
-          />
-          <input
-            id="job-search-q"
-            data-autofocus={!desktopFilters || undefined}
-            type="search"
-            placeholder="Titles, companies, keywords…"
-            value={qLocal}
-            onChange={(e) => handleKeywordChange(e.target.value)}
-            className="wa-kit-focus"
-            autoComplete="off"
-            style={{ ...FILTER_CONTROL, paddingLeft: 36 }}
-          />
-        </div>
-      </div>
-
       <div style={filterFieldWrap}>
         <FormField label="Program" id="job-filter-program">
           <select
+            data-autofocus={!desktopFilters || undefined}
             value={program}
             onChange={(e) => updateUrl({ program: e.target.value || undefined })}
             style={FILTER_CONTROL}
@@ -580,45 +558,37 @@ export default function JobsListingClient({
   );
 
   return (
-    <div className="job-board jobs-listing">
-      {isAuthenticated && (loadingMatches || matchedJobs.length > 0) && (
-        <section className="wa-kit-card" style={{ padding: 0, overflow: 'hidden', marginBottom: 16 }}>
-          <div
-            className="wa-flex wa-flex-wrap wa-items-center"
-            style={{
-              gap: 12,
-              justifyContent: 'space-between',
-              padding: '16px 18px 12px',
-            }}
-          >
-            <div>
-              <h2 style={{ fontSize: 15, fontWeight: 800, margin: 0, color: 'var(--wa-text)' }}>
-                Best matches for you
-              </h2>
-              <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--wa-muted)' }}>
-                Ranked from your program, readiness, certifications, and activity.
-              </p>
-            </div>
-            <KitCta href={preview ? '/dev/member/progress' : '/dashboard/readiness'}>Improve readiness</KitCta>
+    <div className={`job-board jobs-listing ${styles.listing}`}>
+      <div className={styles.searchBar}>
+        <div className={styles.search}>
+          <label htmlFor="job-search-q" className="wa-kit-field-label">
+            {t('searchJobs')}
+          </label>
+          <div style={{ position: 'relative' }}>
+            <Search
+              size={16}
+              aria-hidden
+              style={{
+                position: 'absolute',
+                left: 12,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: 'var(--wa-muted)',
+                pointerEvents: 'none',
+              }}
+            />
+            <input
+              id="job-search-q"
+              type="search"
+              placeholder="Titles, companies, keywords…"
+              value={qLocal}
+              onChange={(e) => handleKeywordChange(e.target.value)}
+              className="wa-kit-focus"
+              autoComplete="off"
+              style={{ ...FILTER_CONTROL, paddingLeft: 36 }}
+            />
           </div>
-          {loadingMatches ? (
-            <p style={{ margin: 0, padding: '8px 18px 16px', fontSize: 13, color: 'var(--wa-muted)' }}>
-              Loading matches…
-            </p>
-          ) : (
-            matchedJobs.slice(0, 3).map((job) => (
-              <JobListingRow
-                key={job.id}
-                href={preview ? `/dev/member/jobs?state=detail&job=${encodeURIComponent(job.id)}` : `/dashboard/jobs/${job.id}`}
-                title={job.title}
-                meta={`${job.company} · ${job.location}`}
-                match={`${job.matchPct}% match`}
-              />
-            ))
-          )}
-        </section>
-      )}
-      <div className="job-board-header">
+        </div>
         <button
           type="button"
           ref={filterTriggerRef}
@@ -650,7 +620,8 @@ export default function JobsListingClient({
         </button>
       </div>
 
-      {/* One set of filter controls: desktop inline or native modal on phones.
+      {/* Search stays available without opening a phone overlay. Refinements
+          share one control set: desktop inline or native modal on phones.
           The dialog provides inert background, focus/scroll containment, Escape
           (with the kit IME/top-layer guards), backdrop close and trigger restore. */}
       {desktopFilters ? (
@@ -712,9 +683,16 @@ export default function JobsListingClient({
         </div>
       ) : (
         <>
-          <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: '0 0 8px' }}>
-            {visibleJobs.length} {visibleJobs.length === 1 ? 'job' : 'jobs'} found
-          </p>
+          <div className={styles.resultsHeading}>
+            <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
+              {!hasActiveFilters && initialTotal > visibleJobs.length
+                ? `Showing ${visibleJobs.length} of ${initialTotal} openings`
+                : `${visibleJobs.length} ${visibleJobs.length === 1 ? 'job' : 'jobs'} found`}
+            </p>
+            {!hasActiveFilters && initialTotal > visibleJobs.length && isAuthenticated && allOpeningsHref ? (
+              <KitCta href={allOpeningsHref}>See all {initialTotal} openings</KitCta>
+            ) : null}
+          </div>
           <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }}>
             {visibleJobs.map((j, i) => {
               const matched = matchedJobs.find((m) => m.id === j.id);
@@ -735,6 +713,41 @@ export default function JobsListingClient({
             })}
           </div>
         </>
+      )}
+      {isAuthenticated && (loadingMatches || matchedJobs.length > 0) && (
+        <details className={styles.matches}>
+          <summary className="wa-kit-focus">Best matches for you <span>{loadingMatches ? 'Loading…' : `${Math.min(matchedJobs.length, 3)} matches`}</span></summary>
+          <div
+            className="wa-flex wa-flex-wrap wa-items-center"
+            style={{
+              gap: 12,
+              justifyContent: 'space-between',
+              padding: '16px 18px 12px',
+            }}
+          >
+            <div>
+              <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--wa-muted)' }}>
+                Ranked from your program, readiness, certifications, and activity.
+              </p>
+            </div>
+            <KitCta href={preview ? '/dev/member/progress' : '/dashboard/readiness'}>Improve readiness</KitCta>
+          </div>
+          {loadingMatches ? (
+            <p style={{ margin: 0, padding: '8px 18px 16px', fontSize: 13, color: 'var(--wa-muted)' }}>
+              Loading matches…
+            </p>
+          ) : (
+            matchedJobs.slice(0, 3).map((job) => (
+              <JobListingRow
+                key={job.id}
+                href={preview ? `/dev/member/jobs?state=detail&job=${encodeURIComponent(job.id)}` : `/dashboard/jobs/${job.id}`}
+                title={job.title}
+                meta={`${job.company} · ${job.location}`}
+                match={`${job.matchPct}% match`}
+              />
+            ))
+          )}
+        </details>
       )}
     </div>
   );

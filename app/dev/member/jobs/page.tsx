@@ -10,6 +10,7 @@ import MobileApplyFunnel from '@/app/(portal)/dashboard/jobs/[id]/MobileApplyFun
 import JobTailorPanel from '@/components/portal/JobTailorPanel';
 import ReferralCopyButton from '@/app/(portal)/dashboard/jobs/[id]/ReferralCopyButton';
 import { formatJobSalaryRange } from '@/lib/jobs/formatSalary';
+import reviewStyles from '../../review-navigation.module.css';
 
 /**
  * Storybook-lite showcase — MemberJobsKit (populated pipeline + recommendations).
@@ -234,10 +235,13 @@ export default async function DevMemberJobsPage({ searchParams }: { searchParams
   ];
   return (
     <>
-      <aside aria-label="Job board preview scenarios" style={{ padding: 'var(--wa-pad-sm)', borderBottom: '1px solid var(--wa-border)' }}>
-        <p className="wa-kit-meta" style={{ margin: 0 }}>Synthetic jobs. Nothing is sent or saved; reload resets changes.</p>
+      <aside aria-label="Job board preview scenarios" className={reviewStyles.scenarios}>
         <details>
-          <summary className="wa-kit-focus" style={{ minHeight: 44, alignContent: 'center', cursor: 'pointer', fontSize: 'var(--wa-type-meta)', fontWeight: 700 }}>Job scenarios · {states.length} states</summary>
+          <summary className="wa-kit-focus">
+            <span>Job scenarios · {states.length} states</span>
+            <span className={reviewStyles.scenarioNotice}>Sample only · nothing sent or saved</span>
+          </summary>
+          <p className="wa-kit-meta">Synthetic jobs. Nothing is sent or saved; reload resets changes.</p>
           <nav aria-label="Job board scenarios" className="wa-flex wa-flex-wrap wa-gap-2">
             {states.map(([state, label]) => <Link key={state} href={`/dev/member/jobs${state ? `?state=${state}` : ''}`} aria-current={(params.state ?? '') === state ? 'page' : undefined} className="wa-page-action wa-kit-focus" style={{ minHeight: 44 }}>{label}</Link>)}
           </nav>

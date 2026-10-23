@@ -9,6 +9,7 @@ import ResumeAnalysisPanel, { type ResumeSectionAuditCard } from './ResumeAnalys
 import ResumeScoreBreakdown, { type ResumeScorePayload } from './ResumeScoreBreakdown';
 import AiToolError from './AiToolError';
 import { useHydrateMemberResumePlainText } from '@/hooks/useHydrateMemberResumePlainText';
+import { useResumeStudioDraft } from '@/components/portal/ResumeDraftContinuity';
 
 const KIT_BTN =
   'wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none';
@@ -143,8 +144,31 @@ export default function ResumeStrengthForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [showFloating, setShowFloating] = useState(false);
+  const draft = useResumeStudioDraft();
+  const didRestore = useRef(false);
+  const edited = useRef(false);
+  const resumeEditRevision = useRef(0);
+  const ready = draft?.ready ?? true;
+  const restoredScore = draft?.restored?.score;
+  useEffect(() => {
+    if (!ready || didRestore.current) return;
+    didRestore.current = true;
+    if (restoredScore && !edited.current) {
+      edited.current = true;
+      setResume(restoredScore.resume);
+    }
+  }, [ready, restoredScore]);
+  const editResume = (value: string) => {
+    resumeEditRevision.current += 1;
+    edited.current = true;
+    setResume(value);
+    draft?.save('score', { resume: value });
+  };
 
-  useHydrateMemberResumePlainText(setResume, undefined, !preview);
+  const hydrateResume = useRef<React.Dispatch<React.SetStateAction<string>>>((value) => {
+    if (!edited.current) setResume(value);
+  });
+  useHydrateMemberResumePlainText(hydrateResume.current, undefined, !preview && ready && !restoredScore);
 
   const canSubmit = resume.trim().length >= 100 && !loading;
 
@@ -218,6 +242,9 @@ export default function ResumeStrengthForm({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || preview) return;
+    const writeEpoch = draft?.getWriteEpoch();
+    const inputRevision = resumeEditRevision.current;
+    edited.current = true;
     setError('');
     setExtracting(true);
     try {
@@ -228,8 +255,10 @@ export default function ResumeStrengthForm({
         body: formData,
       });
       const data = await res.json();
+      if (writeEpoch !== undefined && !draft?.canApplyAsyncWrite(writeEpoch)) return;
+      if (resumeEditRevision.current !== inputRevision) return;
       if (res.ok && data.text) {
-        setResume(data.text);
+        editResume(data.text);
         setExtractionWarning(getResumeExtractionWarning(data.text));
       } else {
         setError(data.error ?? 'Could not extract text');
@@ -261,14 +290,14 @@ export default function ResumeStrengthForm({
               type="file"
               accept=".pdf,.docx,.txt"
               onChange={handleFileUpload}
-              disabled={extracting || loading}
+              disabled={extracting || loading || !ready}
               className="wa-sr-only"
               id="resume-strength-file"
             />
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={extracting || loading}
+              disabled={extracting || loading || !ready}
               className={KIT_BTN}
               style={{
                 ...kitBtnOutline,
@@ -284,12 +313,12 @@ export default function ResumeStrengthForm({
         <textarea
           id="resume-strength-body"
           value={resume}
-          onChange={(e) => setResume(e.target.value)}
+          onChange={(e) => editResume(e.target.value)}
           placeholder="Paste your resume (100 characters min)."
           rows={12}
           required
           minLength={100}
-          disabled={loading}
+          disabled={loading || !ready}
           className="wa-kit-focus"
           style={FIELD_CONTROL}
         />
@@ -301,7 +330,7 @@ export default function ResumeStrengthForm({
       <button
         type="submit"
         className={KIT_BTN}
-        disabled={loading || !canSubmit}
+        disabled={loading || !canSubmit || !ready}
         aria-busy={loading}
         style={{
           ...kitBtnSolid,

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { Prisma } from '@prisma/client';
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
@@ -72,7 +73,8 @@ export default async function JobsPage({
   // KPI counts per status over every row (WAP-261), not over the capped rows.
   let statusCounts: Partial<Record<(typeof pipelineRows)[number]['status'], number>> = {};
   let pipelineLoadFailed = false;
-  const needsPipeline = requestedUi !== 'legacy' && !!user;
+  const openingsView = params?.view === 'openings';
+  const needsPipeline = requestedUi !== 'legacy' && !openingsView && !!user;
   const allOpenRoles = needsPipeline && params?.view === 'all';
   const requestedPage = allOpenRoles ? positiveJobPage(params?.page) : 1;
 
@@ -255,8 +257,9 @@ export default async function JobsPage({
     openRolesLoadFailed = true;
   }
 
-  // ── v2 KIT is the DEFAULT member job-pipeline view (real data); legacy
-  // public board stays reachable via ?ui=legacy. This board is public, so the
+  // ── v2 KIT is the DEFAULT member job-pipeline view (real data). Browse opens
+  // the searchable board at ?view=openings; ?ui=legacy remains a valid entry.
+  // This board is public, so the
   // pipeline kit only renders for a signed-in member — anonymous visitors fall
   // through to the legacy public board below (preserving the current default).
   if (needsPipeline) {
@@ -392,7 +395,8 @@ export default async function JobsPage({
         interviewing={interviewingCount}
         offers={offersCount}
         syncedLabel={`${activeApplicationCount} active application${activeApplicationCount === 1 ? '' : 's'}`}
-        browseHref={JOBS_OPEN_ROLES_ANCHOR}
+        // Query-relative navigation keeps an explicit /es (or other locale) prefix.
+        browseHref="?view=openings"
         profileHref="/dashboard/profile"
         // Pass the member's REAL rows (DataTable renders its own empty state).
         applications={applications}
@@ -417,7 +421,85 @@ export default async function JobsPage({
           title={t('jobBoard')}
           lede={t('jobBoardSubtitle')}
           icon={<Briefcase size={13} aria-hidden="true" />}
+          action={user && openingsView ? (
+            <Link href="?view=overview#applications" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">View applications</Link>
+          ) : undefined}
         />
+        {!user ? (
+          <p style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--wa-text)', margin: 0 }}>
+            <strong>{t('applyingIsForMembers')}</strong>{' '}
+            <a
+              href="/login?redirectTo=/dashboard/jobs"
+              className="wa-kit-focus"
+              style={{ color: 'var(--wa-accent)', fontWeight: 600 }}
+            >
+              {t('logIn')}
+            </a>{' '}
+            {t('or')}{' '}
+            <a href="/apply" className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 600 }}>
+              {t('startApplication')}
+            </a>{' '}
+            {t('toSubmitProfile')}
+          </p>
+        ) : null}
+        {ageGroup === 'under14' ? (
+          <div className="wa-kit-card" style={{ textAlign: 'center' }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
+              {t('careerExplorationYoung')}
+            </h3>
+            <p style={{ color: 'var(--wa-muted)', lineHeight: 1.6, margin: '0 0 16px' }}>
+              {t('careerExplorationYoungDesc')}
+            </p>
+            <a
+              href="/programs"
+              className="wa-kit-focus"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minHeight: 44,
+                padding: '10px 16px',
+                background: 'var(--wa-accent)',
+                color: 'var(--wa-on-accent-control)',
+                fontWeight: 600,
+                fontSize: 14,
+                borderRadius: 999,
+                textDecoration: 'none',
+              }}
+            >
+              {t('exploreTrainingPrograms')}
+            </a>
+          </div>
+        ) : ageGroup === 'youth14to17' ? (
+          <>
+            <div className="wa-kit-card">
+              <p style={{ fontSize: 14, lineHeight: 1.5, margin: 0, color: 'var(--wa-text)' }}>
+                <strong>{t('youthJobBoard')}</strong> {t('youthJobBoardDesc')}
+              </p>
+            </div>
+            <Suspense fallback={<JobsBoardSkeleton />}>
+              <JobsListingClient
+                isAuthenticated={!!user}
+                ageGroup={ageGroup}
+                initialJobs={initialJobs}
+                initialTotal={initialTotal}
+                allOpeningsHref={user ? '?view=all#open-roles' : undefined}
+                appliedJobIds={appliedJobIds}
+              />
+            </Suspense>
+          </>
+        ) : (
+          <Suspense fallback={<JobsBoardSkeleton />}>
+            <JobsListingClient
+              isAuthenticated={!!user}
+              ageGroup={ageGroup}
+              initialJobs={initialJobs}
+              initialTotal={initialTotal}
+              allOpeningsHref={user ? '?view=all#open-roles' : undefined}
+              appliedJobIds={appliedJobIds}
+            />
+          </Suspense>
+        )}
         {user ? (
           <div
             className="wa-kit-card"
@@ -611,79 +693,6 @@ export default async function JobsPage({
           </div>
         </div>
 
-        {!user ? (
-          <p style={{ fontSize: 15, lineHeight: 1.5, color: 'var(--wa-text)', margin: 0 }}>
-            <strong>{t('applyingIsForMembers')}</strong>{' '}
-            <a
-              href="/login?redirectTo=/dashboard/jobs"
-              className="wa-kit-focus"
-              style={{ color: 'var(--wa-accent)', fontWeight: 600 }}
-            >
-              {t('logIn')}
-            </a>{' '}
-            {t('or')}{' '}
-            <a href="/apply" className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 600 }}>
-              {t('startApplication')}
-            </a>{' '}
-            {t('toSubmitProfile')}
-          </p>
-        ) : null}
-        {ageGroup === 'under14' ? (
-          <div className="wa-kit-card" style={{ textAlign: 'center' }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
-              {t('careerExplorationYoung')}
-            </h3>
-            <p style={{ color: 'var(--wa-muted)', lineHeight: 1.6, margin: '0 0 16px' }}>
-              {t('careerExplorationYoungDesc')}
-            </p>
-            <a
-              href="/programs"
-              className="wa-kit-focus"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: 44,
-                padding: '10px 16px',
-                background: 'var(--wa-accent)',
-                color: 'var(--wa-on-accent-control)',
-                fontWeight: 600,
-                fontSize: 14,
-                borderRadius: 999,
-                textDecoration: 'none',
-              }}
-            >
-              {t('exploreTrainingPrograms')}
-            </a>
-          </div>
-        ) : ageGroup === 'youth14to17' ? (
-          <>
-            <div className="wa-kit-card">
-              <p style={{ fontSize: 14, lineHeight: 1.5, margin: 0, color: 'var(--wa-text)' }}>
-                <strong>{t('youthJobBoard')}</strong> {t('youthJobBoardDesc')}
-              </p>
-            </div>
-            <Suspense fallback={<JobsBoardSkeleton />}>
-              <JobsListingClient
-                isAuthenticated={!!user}
-                ageGroup={ageGroup}
-                initialJobs={initialJobs}
-                initialTotal={initialTotal}
-                appliedJobIds={appliedJobIds}
-              />
-            </Suspense>
-          </>
-        ) : (
-          <Suspense fallback={<JobsBoardSkeleton />}>
-            <JobsListingClient
-              isAuthenticated={!!user}
-              ageGroup={ageGroup}
-              initialJobs={initialJobs}
-              initialTotal={initialTotal}
-              appliedJobIds={appliedJobIds}
-            />
-          </Suspense>
-        )}
       </div>
     </DesignSurface>
   );

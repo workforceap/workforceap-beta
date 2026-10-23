@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, type CSSProperties, type ReactNode } from 'react';
+import { useState, useRef, useEffect, type CSSProperties, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Check, Copy, Upload } from 'lucide-react';
@@ -15,6 +15,8 @@ import { useRetryableFetch } from '@/hooks/useRetryableFetch';
 import AiToolError from './AiToolError';
 import ToolFollowThrough from './ToolFollowThrough';
 import styles from './ResumeRewriterForm.module.css';
+import { useResumeStudioDraft } from '@/components/portal/ResumeDraftContinuity';
+import type { RewriteDraft } from '@/lib/resume/studioDraft';
 
 const SALARY_RANGES = [
   '',
@@ -99,12 +101,10 @@ export default function ResumeRewriterForm({
   const isControlled = onResumeChange != null;
   const resume = isControlled ? (resumeControlled ?? '') : internalResume;
 
-  const setResume = (value: string) => {
+  const setResumeValue = (value: string) => {
     if (isControlled) onResumeChange(value);
     else setInternalResume(value);
   };
-
-  useHydrateMemberResumePlainText(setInternalResume, undefined, !preview && !isControlled);
 
   const [jobTarget, setJobTarget] = useState(initialJobTarget);
   const [targetSalary, setTargetSalary] = useState(initialTargetSalary);
@@ -120,6 +120,42 @@ export default function ResumeRewriterForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { copy, copied } = useCopyToClipboard();
   const { execute, clearRetry, retryState } = useRetryableFetch();
+  const draft = useResumeStudioDraft();
+  const ready = draft?.ready ?? true;
+  const restoredRewrite = draft?.restored?.rewrite;
+  const didRestore = useRef(false);
+  const edited = useRef(false);
+  const resumeEditRevision = useRef(0);
+  // Store the complete form on the event itself so immediate navigation cannot
+  // race a deferred save effect. Uploaded/server files remain independent.
+  const values = useRef<RewriteDraft>({ resume, jobTarget, targetSalary, targetLocation, language, tone, atsOptimize });
+  values.current = { resume, jobTarget, targetSalary, targetLocation, language, tone, atsOptimize };
+  const saveChange = (change: Partial<RewriteDraft>) => {
+    edited.current = true;
+    values.current = { ...values.current, ...change };
+    draft?.save('rewrite', values.current);
+  };
+  const setResume = (value: string) => { resumeEditRevision.current += 1; setResumeValue(value); saveChange({ resume: value }); };
+  const onResumeChangeRef = useRef(onResumeChange);
+  onResumeChangeRef.current = onResumeChange;
+  useEffect(() => {
+    if (!ready || didRestore.current) return;
+    didRestore.current = true;
+    if (!restoredRewrite || edited.current) return;
+    edited.current = true;
+    if (onResumeChangeRef.current) onResumeChangeRef.current(restoredRewrite.resume);
+    else setInternalResume(restoredRewrite.resume);
+    setJobTarget(restoredRewrite.jobTarget);
+    setTargetSalary(restoredRewrite.targetSalary);
+    setTargetLocation(restoredRewrite.targetLocation);
+    setLanguage(restoredRewrite.language);
+    setTone(restoredRewrite.tone);
+    setAtsOptimize(restoredRewrite.atsOptimize);
+  }, [ready, restoredRewrite]);
+  const hydrateResume = useRef<React.Dispatch<React.SetStateAction<string>>>((value) => {
+    if (!edited.current) setInternalResume(value);
+  });
+  useHydrateMemberResumePlainText(hydrateResume.current, undefined, !preview && !isControlled && ready && !restoredRewrite);
 
   const doSubmit = async () => {
     if (preview) {
@@ -170,6 +206,11 @@ export default function ResumeRewriterForm({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || preview) return;
+    const writeEpoch = draft?.getWriteEpoch();
+    const inputRevision = resumeEditRevision.current;
+    edited.current = true;
+    // An explicit upload supersedes a pending original-file prefill.
+    if (isControlled) onResumeChange?.(resume);
     setError('');
     setExtractionWarning(null);
     setExtracting(true);
@@ -181,6 +222,8 @@ export default function ResumeRewriterForm({
         body: formData,
       });
       const data = await res.json();
+      if (writeEpoch !== undefined && !draft?.canApplyAsyncWrite(writeEpoch)) return;
+      if (resumeEditRevision.current !== inputRevision) return;
       if (res.ok && data.text) {
         setResume(data.text);
         const warning = data.extractionWarning;
@@ -205,10 +248,10 @@ export default function ResumeRewriterForm({
           id="job-target"
           type="text"
           value={jobTarget}
-          onChange={(e) => setJobTarget(e.target.value)}
+          onChange={(e) => { setJobTarget(e.target.value); saveChange({ jobTarget: e.target.value }); }}
           placeholder="IT Support Specialist, Cybersecurity Analyst"
           required
-          disabled={loading}
+          disabled={loading || !ready}
           className="wa-kit-focus"
           style={FIELD_CONTROL}
         />
@@ -226,14 +269,14 @@ export default function ResumeRewriterForm({
               type="file"
               accept=".pdf,.docx,.txt"
               onChange={handleFileUpload}
-              disabled={extracting || loading}
+              disabled={extracting || loading || !ready}
               className="wa-sr-only"
               id="resume-file"
             />
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={extracting || loading}
+              disabled={extracting || loading || !ready}
               className={KIT_BTN}
               style={{
                 ...kitBtnOutline,
@@ -253,7 +296,7 @@ export default function ResumeRewriterForm({
           placeholder="Paste your resume."
           rows={12}
           required
-          disabled={loading}
+          disabled={loading || !ready}
           className="wa-kit-focus"
           style={{ ...FIELD_CONTROL, resize: 'vertical', minHeight: 200 }}
         />
@@ -288,7 +331,7 @@ export default function ResumeRewriterForm({
         </summary>
         <div className={styles.customizeBody}>
           <div className={styles.options}>
-            <AiToolLanguageSelector value={language} onChange={setLanguage} />
+            <AiToolLanguageSelector value={language} onChange={(value) => { if (!ready) return; setLanguage(value); saveChange({ language: value }); }} />
 
             <div>
               <p className="wa-kit-field-label" style={{ marginBottom: 8 }}>
@@ -301,8 +344,8 @@ export default function ResumeRewriterForm({
                     <button
                       key={t}
                       type="button"
-                      onClick={() => setTone(t)}
-                      disabled={loading}
+                      onClick={() => { setTone(t); saveChange({ tone: t }); }}
+                      disabled={loading || !ready}
                       aria-pressed={on}
                       className={KIT_BTN}
                       style={{
@@ -319,14 +362,14 @@ export default function ResumeRewriterForm({
               </div>
             </div>
           </div>
-          <Toggle checked={atsOptimize} onChange={setAtsOptimize} label="ATS keywords" />
+          <Toggle checked={atsOptimize} onChange={(value) => { if (!ready) return; setAtsOptimize(value); saveChange({ atsOptimize: value }); }} label="ATS keywords" />
           <div className={styles.metadata}>
             <FormField label="Salary range" id="target-salary">
               <select
                 id="target-salary"
                 value={targetSalary}
-                onChange={(e) => setTargetSalary(e.target.value)}
-                disabled={loading}
+                onChange={(e) => { setTargetSalary(e.target.value); saveChange({ targetSalary: e.target.value }); }}
+                disabled={loading || !ready}
                 className="wa-kit-focus"
                 style={FIELD_CONTROL}
               >
@@ -342,9 +385,9 @@ export default function ResumeRewriterForm({
                 id="target-location"
                 type="text"
                 value={targetLocation}
-                onChange={(e) => setTargetLocation(e.target.value)}
+                onChange={(e) => { setTargetLocation(e.target.value); saveChange({ targetLocation: e.target.value }); }}
                 placeholder="Austin, TX"
-                disabled={loading}
+                disabled={loading || !ready}
                 className="wa-kit-focus"
                 style={FIELD_CONTROL}
               />
@@ -383,7 +426,7 @@ export default function ResumeRewriterForm({
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || !ready}
         aria-busy={loading}
         className={KIT_BTN}
         style={{

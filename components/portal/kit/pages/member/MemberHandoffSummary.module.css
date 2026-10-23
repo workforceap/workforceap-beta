@@ -16,6 +16,14 @@
   line-height: 1.4;
 }
 
+.intro {
+  margin: 0.25rem 0 0;
+  padding-inline: var(--wa-pad-sm);
+  color: var(--wa-muted);
+  font-size: var(--wa-type-meta);
+  line-height: 1.5;
+}
+
 .steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -47,26 +55,50 @@
   background: var(--wa-success-soft);
 }
 
+.step[data-pending='true'] .stepIcon {
+  color: var(--wa-gold-dark);
+  background: var(--wa-gold-soft);
+}
+
 .step dt { font-size: 14px; font-weight: 700; line-height: 1.45; }
 .step dd { margin: 3px 0 0; color: var(--wa-muted); font-size: 13px; line-height: 1.5; }
+.step .status { color: var(--wa-text); }
+.step .receipt { display: flex; flex-wrap: wrap; gap: 0 0.5rem; font-size: var(--wa-type-meta); }
+.receipt time { display: block; }
 
 .confirmation {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px 24px;
-  padding: 0.75rem var(--wa-pad-sm);
   border-top: 1px solid var(--wa-border);
 }
 
+.confirmation summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 48px;
+  padding: 0.625rem var(--wa-pad-sm);
+  color: var(--wa-text);
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  line-height: 1.5;
+  cursor: pointer;
+  list-style: none;
+}
+
+.confirmation summary::-webkit-details-marker { display: none; }
+.confirmation summary svg { flex-shrink: 0; }
+.confirmation[open] summary svg { transform: rotate(180deg); }
+.confirmationBody { display: grid; gap: 0.5rem; padding: 0 var(--wa-pad-sm) var(--wa-pad-sm); }
+
 .confirmation p {
-  flex: 1 1 26rem;
   margin: 0;
   max-width: 60ch;
   font-size: 13px;
   line-height: 1.6;
   color: var(--wa-muted);
 }
+
+.confirmation .boundary { font-size: var(--wa-type-meta); }
 
 .textLink,
 .resumeLink {
@@ -75,7 +107,7 @@
   justify-content: center;
   gap: 8px;
   min-height: 44px;
-  color: var(--wa-accent);
+  color: var(--wa-accent-text);
   font-size: 14px;
   font-weight: 700;
   line-height: 1.4;
@@ -108,14 +140,6 @@
   .steps {
     grid-template-columns: 1fr;
     gap: 0.875rem;
-  }
-
-  .confirmation {
-    gap: 0;
-  }
-
-  .confirmation p {
-    flex-basis: 100%;
   }
 
   .textLink {

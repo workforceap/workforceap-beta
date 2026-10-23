@@ -8,6 +8,7 @@
  * interview beats generic prep), and the first one the home is not already
  * showing wins, so the card never repeats the hero or an "Up next" row.
  */
+import { RESUME_WORKSPACE_PATH } from './memberWorkspace';
 
 export type MemberToolRecommendation = {
   /** Tool slug under `/dashboard/ai-tools/` (matches `MEMBER_TOOL_LABELS`). */
@@ -101,9 +102,10 @@ function candidatesFor(facts: MemberToolStageFacts): MemberToolRecommendation[] 
   return out;
 }
 
-/** `/a/b?x=1#y` → `/a/b`, so a tool is "already shown" whatever its query string. */
+/** Compare destination workspaces, including Studio's redirect, independently of the selected view. */
 function hrefPath(href: string): string {
-  return href.split(/[?#]/)[0] ?? href;
+  const path = href.split(/[?#]/)[0] ?? href;
+  return path === '/dashboard/ai-tools/resume-studio' ? RESUME_WORKSPACE_PATH : path;
 }
 
 export function recommendMemberTool(
