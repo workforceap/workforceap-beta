@@ -137,9 +137,24 @@ const STATUS_TOOLTIP: Record<AtRiskMember['status'], string> = {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
+// Fixed en-US/UTC so the server render and the browser print the same text.
+// `toLocaleDateString()` used the runtime's timezone and locale: a Vercel (UTC)
+// render and a browser in another timezone or locale disagree on the calendar
+// date or format, React reports a hydration text mismatch (#418) and falls back
+// to client-rendering the root, which strips the `class="dark"` that
+// ThemeInitScript put on <html>. Same convention as LabReviewQueue.
+const ACTIVITY_DATE_FORMAT = new Intl.DateTimeFormat('en-US', {
+  month: 'numeric',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
 function formatDate(d: string | null): string {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString();
+  const date = new Date(d);
+  // Intl's format() throws on an invalid date, where toLocaleDateString did not.
+  return Number.isNaN(date.getTime()) ? '—' : ACTIVITY_DATE_FORMAT.format(date);
 }
 
 function scoreLevel(score: number): AtRiskMember['riskLevel'] {
