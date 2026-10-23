@@ -707,9 +707,10 @@ export function AtRiskDashboardView({
           </p>
         )}
 
-        {/* Results header */}
+        {/* Results header. Not "Needs attention": CounselorWorkspace already
+            renders that h2 above this dashboard, so it would repeat. */}
         <SectionHeader
-          title="Needs attention"
+          title="At-risk cases"
           goal={`Showing ${filteredMembers.length} member${filteredMembers.length === 1 ? '' : 's'}${loading ? ' · Refreshing…' : ''}`}
           action={
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
