@@ -73,9 +73,19 @@ Passing the router's internal state back into that wrapper can bypass the update
 Member phone navigation retains five daily destinations, an always-visible training
 preassessment, the current secondary page and a keyboard-accessible More pages
 disclosure. Labels remain visible in the utility/disclosure rows even when the daily
-strip compacts. AI Advisor and human Messages remain separate. Skill Mapper's radar
+strip compacts. Utility links omit redundant icons to keep all three labels together
+at phone width; wrapping remains available for longer translations and text zoom.
+Daily links and desktop rail rows have 48px targets. Navigation selection uses a
+leading or lower marker in addition to its accent fill, while primary actions remain pills.
+AI Advisor and human Messages remain separate. Skill Mapper's radar
 charts retain numeric alternatives bound to the same data; an occupation's O*NET
 requirements must not be presented as demonstrated member proficiency.
+
+PageOpener keeps its title directly on the canvas, with a responsive 28–38px title
+(32px ceiling on dense surfaces), a sentence-case kicker and a readable 62ch lede.
+Typography is shared in `portal-kit.css`, not per-page inline sizes. Shared view
+tabs distinguish the selected view with a tint, weight and underline and retain
+their native keyboard/focus behavior.
 
 The preview-only [screen review checklist](qa/portal-consolidation/README.md) inventories
 the actual routes and consolidated query views. Its browser-saved review results are

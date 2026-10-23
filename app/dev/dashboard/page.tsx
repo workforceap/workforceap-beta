@@ -3,6 +3,7 @@ import { Home, BookOpen, Briefcase, User, Play, Sparkles, Medal, GraduationCap, 
 import {
   DesignSurface,
   AppShellMember,
+  PageOpener,
   SectionHeader,
   KpiStrip,
   ProgressRing,
@@ -66,6 +67,7 @@ export default function DevDashboardPage() {
           </>
         }
       >
+        <PageOpener kicker="Member dashboard" title="Your journey" lede="Sample member dashboard" />
         {/* BOLD — gradient hero + ring + momentum */}
         <div className="wa-kit-card wa-kit-card--gradient-crimson" style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: 20 }}>
           <ProgressRing pct={78} size={112} onDark />

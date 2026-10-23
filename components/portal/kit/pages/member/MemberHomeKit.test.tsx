@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactElement } from 'react';
 import messages from '@/messages/en.json';
@@ -81,6 +81,46 @@ describe('MemberHomeKit certification-path card', () => {
     expect(screen.getByRole('progressbar', { name: 'Certification module progress' })).toHaveAttribute('aria-valuenow', '50');
     expect(screen.getByText('In progress')).toBeTruthy();
     expect(screen.queryByText(/certifi(ed|cation earned)|certificate earned/i)).toBeNull();
+  });
+});
+
+describe('MemberHomeKit résumé to consultation handoff', () => {
+  it('keeps disconnected work unknown and provides one confirmation route without demanding another upload', () => {
+    renderKit(<MemberHomeKit {...base} />);
+    const handoff = within(screen.getByRole('region', { name: 'Your progress so far' }));
+    expect(handoff.getByText('No portal copy recorded')).toBeInTheDocument();
+    expect(handoff.getByText('Booking status not connected')).toBeInTheDocument();
+    expect(handoff.getByText('Activation not confirmed')).toBeInTheDocument();
+    expect(handoff.getByText(/Already emailed your résumé/)).toBeInTheDocument();
+    expect(handoff.getByRole('link', { name: 'Confirm with my team' })).toHaveAttribute('href', '/dashboard/messages');
+    expect(handoff.getByRole('link', { name: 'Open Résumé workspace' })).toHaveAttribute('href', '/dashboard/resume');
+    expect(handoff.queryByText(/incomplete|not booked|not activated|upload again/i)).toBeNull();
+    // The authoritative next action keeps precedence over discovery.
+    const primary = screen.getByRole('link', { name: /Start preassessment/ });
+    expect(primary.compareDocumentPosition(screen.getByRole('region', { name: 'Your progress so far' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('offers a useful résumé return action while leaving the disconnected booking and activation open', () => {
+    renderKit(<MemberHomeKit {...base} handoff={{ resume: 'portal_received', consultation: 'unknown', training: 'unknown' }} advisor={{ name: 'Sample Advisor', firstName: 'Sample', messagingHref: '/dev/member/messages' }} resumeStudioHref="/dev/member/resume-studio" />);
+    const handoff = within(screen.getByRole('region', { name: 'Your progress so far' }));
+    expect(handoff.getByText('Received in portal')).toBeInTheDocument();
+    expect(handoff.getByRole('heading', { name: 'Prepare for your consultation' })).toBeInTheDocument();
+    expect(handoff.getByRole('link', { name: 'Review my résumé' })).toHaveAttribute('href', '/dev/member/resume-studio');
+    expect(handoff.getByRole('link', { name: 'Confirm with my team' })).toHaveAttribute('href', '/dev/member/messages');
+    expect(handoff.queryByText('Booking confirmed')).toBeNull();
+  });
+
+  it('renders explicit confirmed evidence without asking the member to repeat a completed step', () => {
+    renderKit(<MemberHomeKit {...base} handoff={{ resume: 'portal_received', consultation: 'booked', training: 'access_confirmed' }} />);
+    const handoff = within(screen.getByRole('region', { name: 'Your progress so far' }));
+    expect(handoff.getByText('Booking confirmed')).toBeInTheDocument();
+    expect(handoff.getByText('Access confirmed')).toBeInTheDocument();
+    expect(handoff.queryByRole('link', { name: 'Confirm with my team' })).toBeNull();
+  });
+
+  it('does not repeat the résumé return button when the primary next step already opens the workspace', () => {
+    renderKit(<MemberHomeKit {...base} doThisNext={{ ...base.doThisNext, href: '/dashboard/resume?view=score', cta: 'Review my résumé' }} handoff={{ resume: 'portal_received', consultation: 'unknown', training: 'unknown' }} />);
+    expect(screen.getAllByRole('link', { name: 'Review my résumé' })).toHaveLength(1);
   });
 });
 

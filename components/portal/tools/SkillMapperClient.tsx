@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useId } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Search,
@@ -24,7 +24,7 @@ import Link from 'next/link';
 import ToolFollowThrough from './ToolFollowThrough';
 import { trackFunnelEvent } from '@/lib/analytics/events';
 import { recommendProgramsForGaps, type ProgramRecommendation } from '@/lib/content/programs';
-import { findCoursesForGap, buildCoursePathForGaps, type CourseSkillMapping } from '@/lib/content/courseSkillMap';
+import { buildCoursePathForGaps, type CourseSkillMapping } from '@/lib/content/courseSkillMap';
 import { DataTable, FormField } from '@/components/portal/kit';
 import { Button } from '@astryxdesign/core/Button';
 import { MemberCareerSteps } from '@/components/portal/MemberCareerSteps';
@@ -94,7 +94,7 @@ const primaryPillStyle = {
   background: 'var(--wa-accent)',
   color: 'var(--wa-on-accent-control)',
   fontWeight: 700,
-  fontSize: '0.85rem',
+  fontSize: 'var(--wa-type-body)',
   borderRadius: 999,
   border: 'none',
   cursor: 'pointer'} as const;
@@ -103,56 +103,51 @@ const outlinePillStyleSm = {
   display: 'inline-flex',
   alignItems: 'center',
   gap: '0.35rem',
+  minHeight: 44,
   padding: '0.4rem 0.875rem',
   borderRadius: 999,
-  border: '1px solid var(--wa-border)',
+  border: '1px solid var(--wa-control-border)',
   background: 'var(--wa-surface)',
-  color: 'var(--wa-accent)',
+  color: 'var(--wa-accent-text)',
   fontWeight: 700,
-  fontSize: '0.8125rem'} as const;
+  fontSize: 'var(--wa-type-body)'} as const;
 
 function AxisLegend({ axes }: { axes: string[] }) {
   const [open, setOpen] = useState(false);
   const shown = axes.filter(a => AXIS_DESCRIPTIONS[a]);
   if (shown.length === 0) return null;
   return (
-    <div style={{ marginTop: '0.5rem', marginBottom: '1rem', border: '1px solid var(--surface-container-highest)', borderRadius: '0.75rem', overflow: 'hidden' }}>
+    <div className={styles.axisGuide}>
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        style={{
-          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0.625rem 0.875rem', background: 'var(--surface-container-low)',
-          border: 'none', cursor: 'pointer', fontSize: '0.8125rem',
-          color: 'var(--color-on-surface-variant)', fontWeight: 500}}
+        aria-expanded={open}
+        className={`${styles.disclosureButton} wa-kit-focus`}
       >
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
           <HelpCircle size={15} aria-hidden="true" />
           What do these scores measure?
         </span>
-        <ChevronDown size={16} aria-hidden="true" style={{ transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }} />
+        <ChevronDown size={16} aria-hidden="true" className={styles.disclosureChevron} style={{ transform: open ? 'rotate(180deg)' : 'none' }} />
       </button>
       {open && (
-        <div style={{ padding: '0.75rem 0.875rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--surface-container)' }}>
+        <div className={styles.axisGuideContent}>
           {shown.map(axis => {
             const info = AXIS_DESCRIPTIONS[axis];
             return (
-              <div key={axis} style={{ display: 'flex', gap: '0.625rem', alignItems: 'flex-start' }}>
-                <span style={{
-                  fontSize: '0.8125rem', fontWeight: 700, padding: '0.15rem 0.5rem',
-                  borderRadius: '999px', background: 'color-mix(in srgb, var(--color-accent) 10%, transparent)',
-                  color: 'var(--wa-accent-text)', flexShrink: 0, lineHeight: '1.6'}}>
+              <div key={axis} className={styles.axisDefinition}>
+                <span className={styles.axisName}>
                   {axis}
                 </span>
                 <div>
-                  <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface)' }}>{info.plain}</span>
-                  <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}> — {info.examples}</span>
+                  <strong>{info.plain}</strong>
+                  <span className={styles.muted}> — {info.examples}</span>
                 </div>
               </div>
             );
           })}
-          <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0.25rem 0 0', lineHeight: 1.5 }}>
-            Scores come from O*NET occupational data. Higher means that skill area matters more for this job.
+          <p className={styles.caption}>
+            Occupation values summarize how much each area matters for the role. Member values estimate a profile from available records; they are not a proficiency assessment.
           </p>
         </div>
       )}
@@ -166,7 +161,14 @@ function isSalesQuery(text: string): boolean {
   return /\b(sales|account exec|account manager|ae\b|bdr\b|sdr\b|salesforce|crm|customer success|business dev|marketing manager)\b/.test(t);
 }
 
-function RadarChart({ data }: { data: { axis: string; value: number }[] }) {
+function RadarChart({ data, member = false, label, valuesId, captionId }: {
+  data: { axis: string; value: number }[];
+  member?: boolean;
+  label: string;
+  valuesId: string;
+  captionId: string;
+}) {
+  const descriptionId = useId();
   const size = 240;
   const cx = size / 2, cy = size / 2, r = 90;
   const n = data.length;
@@ -176,29 +178,37 @@ function RadarChart({ data }: { data: { axis: string; value: number }[] }) {
     y: cy + r * v * Math.sin(angle(i))});
   const gridLevels = [0.25, 0.5, 0.75, 1];
   return (
-    <svg className="skill-mapper-radar-chart" width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Skill radar chart" style={{ overflow: 'visible', display: 'block', margin: '0 auto' }}>
+    <svg className={`skill-mapper-radar-chart ${styles.radarChart}`} width={size} height={size} viewBox={`-28 -8 ${size + 56} ${size + 16}`} role="img" aria-label={label} aria-describedby={`${descriptionId} ${captionId}`} aria-details={valuesId}>
+      <desc id={descriptionId}>{member ? 'Estimated member profile. Exact percentages follow this chart.' : 'Occupation requirements. Exact percentages are available in the View radar values disclosure below.'}</desc>
       {gridLevels.map(level => (
         <polygon key={level}
           points={data.map((_, i) => { const p = pt(i, level); return `${p.x},${p.y}`; }).join(' ')}
-          fill="none" stroke="var(--surface-container-highest)" strokeWidth="1" />
+          fill="none" stroke="var(--wa-border)" strokeWidth="1" />
       ))}
       {data.map((_, i) => {
         const p = pt(i, 1);
-        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--surface-container-highest)" strokeWidth="1" />;
+        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--wa-border)" strokeWidth="1" />;
       })}
       <polygon
         points={data.map((d, i) => { const p = pt(i, d.value); return `${p.x},${p.y}`; }).join(' ')}
-        fill="var(--color-accent)" fillOpacity="0.2" stroke="var(--color-accent)" strokeWidth="2" />
+        fill={member ? 'var(--wa-info)' : 'var(--wa-accent)'} fillOpacity="0.2" stroke={member ? 'var(--wa-info)' : 'var(--wa-accent)'} strokeWidth="2" strokeDasharray={member ? '4 2' : undefined} />
       {data.map((d, i) => {
         const p = pt(i, 1.25);
         return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
-          fontSize="13" fill="var(--color-on-surface-variant)">{d.axis}</text>;
+          fontSize="17" fill="var(--wa-muted)">{d.axis}</text>;
       })}
     </svg>
   );
 }
 
-function DualRadarChart({ memberData, targetData }: { memberData: { axis: string; value: number }[]; targetData: { axis: string; value: number }[] }) {
+function DualRadarChart({ memberData, targetData, label, valuesId, captionId }: {
+  memberData: { axis: string; value: number }[];
+  targetData: { axis: string; value: number }[];
+  label: string;
+  valuesId: string;
+  captionId: string;
+}) {
+  const descriptionId = useId();
   const size = 260;
   const cx = size / 2, cy = size / 2, r = 90;
   // Derive axes from whichever dataset has more entries (prefer target occupation axes)
@@ -216,35 +226,37 @@ function DualRadarChart({ memberData, targetData }: { memberData: { axis: string
     data.find(d => d.axis === axis)?.value ?? 0;
 
   return (
-    <svg className="skill-mapper-radar-chart" width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Skill radar chart" style={{ overflow: 'visible', display: 'block', margin: '0 auto' }}>
+    <svg className={`skill-mapper-radar-chart ${styles.radarChart}`} width={size} height={size} viewBox={`-18 0 ${size + 36} ${size}`} role="img" aria-label={label} aria-describedby={`${descriptionId} ${captionId}`} aria-details={valuesId}>
+      <desc id={descriptionId}>Dashed line: estimated member profile. Solid line: occupation requirements. Exact percentages for both series are available in the View radar values disclosure below.</desc>
       {gridLevels.map(level => (
         <polygon key={level}
           points={axes.map((_, i) => { const p = pt(i, level); return `${p.x},${p.y}`; }).join(' ')}
-          fill="none" stroke="var(--surface-container-highest)" strokeWidth="1" />
+          fill="none" stroke="var(--wa-border)" strokeWidth="1" />
       ))}
       {axes.map((_, i) => {
         const p = pt(i, 1);
-        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--surface-container-highest)" strokeWidth="1" />;
+        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--wa-border)" strokeWidth="1" />;
       })}
       {/* Target occupation - accent/red */}
       <polygon
         points={axes.map((axis, i) => { const p = pt(i, getValue(targetData, axis)); return `${p.x},${p.y}`; }).join(' ')}
-        fill="var(--color-accent)" fillOpacity="0.15" stroke="var(--color-accent)" strokeWidth="2" />
+        fill="var(--wa-accent)" fillOpacity="0.15" stroke="var(--wa-accent)" strokeWidth="2" />
       {/* Member profile - blue */}
       <polygon
         points={axes.map((axis, i) => { const p = pt(i, getValue(memberData, axis)); return `${p.x},${p.y}`; }).join(' ')}
-        fill="rgba(43,123,185,0.2)" stroke="var(--color-blue, #2b7bb9)" strokeWidth="2" strokeDasharray="4 2" />
+        fill="var(--wa-info)" fillOpacity="0.2" stroke="var(--wa-info)" strokeWidth="2" strokeDasharray="4 2" />
       {axes.map((axis, i) => {
         const p = pt(i, 1.25);
         return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
-          fontSize="13" fill="var(--color-on-surface-variant)">{axis}</text>;
+          fontSize="17" fill="var(--wa-muted)">{axis}</text>;
       })}
     </svg>
   );
 }
 
 /** The numeric alternative uses exactly the same normalized series as the charts. */
-function RadarValues({ targetData, memberData }: {
+function RadarValues({ id, targetData, memberData }: {
+  id: string;
   targetData: { axis: string; value: number }[];
   memberData?: { axis: string; value: number }[];
 }) {
@@ -255,10 +267,10 @@ function RadarValues({ targetData, memberData }: {
     return value === undefined ? '—' : `${Math.round(value * 100)}%`;
   };
   return (
-    <details style={{ marginBlock: 16 }}>
-      <summary className="wa-kit-focus" style={{ cursor: 'pointer', minHeight: 44, paddingBlock: 10, fontWeight: 600 }}>{t('graphValues')}</summary>
-      <section aria-label={memberData ? t('estimatedComparison') : t('occupationValues')}>
-        <p style={{ marginBlock: 8 }}>{memberData ? t('estimatedComparison') : t('occupationValues')}</p>
+    <details id={id} className={styles.numericDisclosure}>
+      <summary className="wa-kit-focus">{t('graphValues')} <span className={styles.disclosureHint}>Exact values · 0–100 scale</span></summary>
+      <section className={styles.numericContent} aria-label={memberData ? t('estimatedComparison') : t('occupationValues')}>
+        <p className={styles.caption}>{memberData ? t('estimatedComparison') : t('occupationValues')}</p>
         <DataTable
         className={styles.radarValues}
         minWidth={0}
@@ -311,55 +323,47 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
   const topGaps = Object.keys(coursesByGap).slice(0, 2);
 
   return (
-    <div style={{ marginTop: '1.5rem' }}>
-      <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <BookOpen size={16} style={{ color: 'var(--wa-accent-text)' }} />
-        Fastest Path to Close Gaps
-      </h4>
-      <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
-        Specific courses that build the skills you need most
+    <div className={styles.recommendations}>
+      <h3 className={styles.subsectionTitle}>
+        <BookOpen size={20} aria-hidden="true" />
+        Courses to explore
+      </h3>
+      <p className={styles.sectionDescription}>
+        Courses mapped to the skill areas with larger estimated differences.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {topGaps.map(gapAxis => (
-          <div key={gapAxis} style={{ background: 'var(--surface-container)', borderRadius: '0.75rem', overflow: 'hidden' }}>
+          <div key={gapAxis} style={{ background: 'var(--wa-surface)', borderRadius: '0.75rem', overflow: 'hidden' }}>
             <div style={{
               padding: '0.5rem 0.75rem',
-              background: 'color-mix(in srgb, var(--color-accent) 8%, transparent)',
-              borderBottom: '1px solid var(--surface-container-highest)',
-              fontSize: '0.8125rem',
+              background: 'color-mix(in srgb, var(--wa-accent) 8%, transparent)',
+              borderBottom: '1px solid var(--wa-border)',
+              fontSize: 'var(--wa-type-meta)',
               fontWeight: 600,
               color: 'var(--wa-accent-text)',
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem'
             }}>
-              <span>Close {gapAxis} gap</span>
-              <span style={{ color: 'var(--color-on-surface-variant)', fontWeight: 400 }}>
-                (+{Math.round(gaps.find(g => g.axis === gapAxis)?.gap || 0)}% needed)
+              <span>{gapAxis}</span>
+              <span style={{ color: 'var(--wa-muted)', fontWeight: 400 }}>
+                ({Math.round(gaps.find(g => g.axis === gapAxis)?.gap || 0)}-point estimated difference)
               </span>
             </div>
             <div style={{ padding: '0.5rem' }}>
               {coursesByGap[gapAxis].slice(0, expanded ? 3 : 2).map((item, idx) => (
-                <div key={item.course.courseSlug} style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '0.625rem',
-                  padding: '0.5rem',
-                  borderRadius: '0.5rem',
-                  background: idx === 0 ? 'color-mix(in srgb, var(--color-green) 6%, transparent)' : 'transparent',
-                  marginBottom: '0.25rem'
-                }}>
+                <div key={item.course.courseSlug} className={styles.courseRow}>
                   <div style={{
                     width: '1.5rem',
                     height: '1.5rem',
                     borderRadius: '50%',
-                    background: idx === 0 ? 'var(--color-green, #4a9b4f)' : 'var(--surface-container-highest)',
-                    color: idx === 0 ? 'var(--wa-on-accent)' : 'var(--color-on-surface-variant)',
+                    background: idx === 0 ? 'var(--wa-success-dark)' : 'var(--wa-border)',
+                    color: idx === 0 ? 'var(--wa-on-success)' : 'var(--wa-muted)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '0.8125rem',
+                    fontSize: 'var(--wa-type-meta)',
                     fontWeight: 700,
                     flexShrink: 0,
                     marginTop: '0.125rem'
@@ -367,18 +371,18 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                     {item.priority}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-on-surface)', lineHeight: 1.4 }}>
+                    <div style={{ fontSize: 'var(--wa-type-body)', fontWeight: 600, color: 'var(--wa-text)', lineHeight: 1.4 }}>
                       {item.course.courseName}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <span style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         <Clock size={10} />
                         {item.course.estimatedHours} hrs
                       </span>
                       <span style={{
-                        fontSize: '0.8125rem',
-                        background: 'var(--surface-container-highest)',
-                        color: 'var(--color-on-surface-variant)',
+                        fontSize: 'var(--wa-type-meta)',
+                        background: 'var(--wa-border)',
+                        color: 'var(--wa-muted)',
                         padding: '0.1rem 0.4rem',
                         borderRadius: '999px'
                       }}>
@@ -386,9 +390,9 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                       </span>
                       {idx === 0 && (
                         <span style={{
-                          fontSize: '0.8125rem',
-                          background: 'color-mix(in srgb, var(--color-green) 15%, transparent)',
-                          color: 'var(--color-green, #4a9b4f)',
+                          fontSize: 'var(--wa-type-meta)',
+                          background: 'color-mix(in srgb, var(--wa-success) 15%, transparent)',
+                          color: 'var(--wa-success-dark)',
                           padding: '0.1rem 0.4rem',
                           borderRadius: '999px',
                           fontWeight: 600
@@ -407,9 +411,9 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                         <div style={{ marginTop: '0.375rem', display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                           {specificSkills.slice(0, 3).map(skill => (
                             <span key={skill} style={{
-                              fontSize: '0.8125rem',
-                              color: 'var(--color-on-surface-variant)',
-                              background: 'var(--surface-container-highest)',
+                              fontSize: 'var(--wa-type-meta)',
+                              color: 'var(--wa-muted)',
+                              background: 'var(--wa-border)',
                               padding: '0.125rem 0.375rem',
                               borderRadius: '0.25rem'
                             }}>
@@ -422,6 +426,7 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                   </div>
                   <a
                     href={`/programs/${item.course.programSlug}`}
+                    className={`${styles.courseAction} wa-kit-focus`}
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -430,14 +435,14 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                       borderRadius: '0.375rem',
                       background: 'var(--wa-accent)',
                       color: 'var(--wa-on-accent-control)',
-                      fontSize: '0.8125rem',
+                      fontSize: 'var(--wa-type-body)',
                       fontWeight: 600,
                       textDecoration: 'none',
                       flexShrink: 0,
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    Start <ArrowRight size={10} />
+                    View program <ArrowRight size={16} aria-hidden="true" />
                   </a>
                 </div>
               ))}
@@ -453,11 +458,11 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
             width: '100%',
             marginTop: '0.75rem',
             padding: '0.5rem',
-            border: '1px solid var(--surface-container-highest)',
+            border: '1px solid var(--wa-border)',
             borderRadius: '0.5rem',
             background: 'transparent',
-            color: 'var(--color-on-surface-variant)',
-            fontSize: '0.8125rem',
+            color: 'var(--wa-muted)',
+            fontSize: 'var(--wa-type-meta)',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -501,6 +506,13 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
   const [saveUnavailable, setSaveUnavailable] = useState(false);
   const lookupSequence = useRef(0);
   const searchSequence = useRef(0);
+  const chartId = useId();
+  const occupationValuesId = `${chartId}-occupation-values`;
+  const comparisonValuesId = `${chartId}-comparison-values`;
+  const memberValuesId = `${chartId}-member-values`;
+  const profilePanelRef = useRef<HTMLDivElement>(null);
+  const comparisonHeadingRef = useRef<HTMLHeadingElement>(null);
+  const comparisonFocusPending = useRef(false);
 
   // Matched programs from occupation → program mapping (from DB seed)
   const [matchedPrograms, setMatchedPrograms] = useState<{
@@ -677,6 +689,22 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
     if (activeTab === 'profile' && !profileLoaded) loadProfile();
   }, [activeTab, profileLoaded]);  
 
+  useEffect(() => {
+    if (activeTab !== 'profile') {
+      comparisonFocusPending.current = false;
+      return;
+    }
+    if (!comparisonFocusPending.current || loadingProfile || autoExtracting || (!preview && !profileLoaded)) return;
+    const frame = requestAnimationFrame(() => {
+      const destination = comparisonHeadingRef.current ?? profilePanelRef.current;
+      if (!destination) return;
+      comparisonFocusPending.current = false;
+      destination.focus({ preventScroll: true });
+      destination.scrollIntoView({ behavior: 'instant', block: 'start' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [activeTab, loadingProfile, autoExtracting, preview, profileLoaded]);
+
   const handleAiExtract = async () => {
     if (preview) return;
     setExtractingResume(true);
@@ -786,19 +814,8 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
       }).filter(g => g.gap > 0).sort((a, b) => b.gap - a.gap)
     : [];
 
-  // Tab styles
-  const tabStyle = (active: boolean) => ({
-    padding: '0.5rem 1rem',
-    border: 'none',
-    borderBottom: active ? '2px solid var(--color-accent)' : '2px solid transparent',
-    background: 'transparent',
-    color: active ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)',
-    fontWeight: active ? 700 : 400,
-    fontSize: '0.875rem',
-    cursor: 'pointer'} as React.CSSProperties);
-
   return (
-    <div>
+    <div className={styles.workspace}>
       <MemberCareerSteps current="skills" resultId={savedResultId} />
       {selectionError ? <p role="alert">{selectionError}</p> : null}
       {initialTarget && !selectedCode ? (
@@ -809,18 +826,18 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
         </section>
       ) : null}
       {savedResultId && selectedTitle ? (
-        <p style={{ marginBlock: 'var(--wa-pad-sm)', lineHeight: 1.6 }}>
-          <strong>{tw('selectedTarget', { occupation: selectedTitle })}</strong>{usingDemo ? ` · ${tw('sample')}` : ''}.{' '}
+        <div className={styles.savedTarget}>
+          <p><span className={styles.eyebrow}>Selected occupation</span><strong>{selectedTitle}</strong>{usingDemo ? ` · ${tw('sample')}` : ''}</p>
           <Link href={trainingBridgeHref(savedResultId)} className="wa-page-action wa-kit-focus">{tw('trainingForLookup')} <ArrowRight size={16} aria-hidden="true" /></Link>
-        </p>
+        </div>
       ) : null}
       {saveUnavailable ? <p role="status">{tw('saveUnavailable')}</p> : null}
       {/* Tab switcher */}
-      <div style={{ display: 'flex', borderBottom: '1px solid var(--surface-container-highest)', marginBottom: '1.5rem' }}>
-        <button type="button" aria-pressed={activeTab === 'search'} style={tabStyle(activeTab === 'search')} onClick={() => setActiveTab('search')}>
+      <div className={styles.viewSwitcher} aria-label="Skill Mapper views">
+        <button type="button" className="wa-kit-focus" aria-pressed={activeTab === 'search'} onClick={() => setActiveTab('search')}>
           Occupation Search
         </button>
-        <button type="button" aria-pressed={activeTab === 'profile'} style={tabStyle(activeTab === 'profile')} onClick={() => setActiveTab('profile')}>
+        <button type="button" className="wa-kit-focus" aria-pressed={activeTab === 'profile'} onClick={() => setActiveTab('profile')}>
           My Skills Profile
         </button>
       </div>
@@ -828,8 +845,12 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
       {/* Tab 1: Occupation Search */}
       {activeTab === 'search' && (
         <div>
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-            <div style={{ flex: '1 1 260px', minWidth: 200 }}>
+          <div className={styles.sectionIntro}>
+            <h2>Explore an occupation</h2>
+            <p>See the skills a role calls for, then compare them with your estimated profile.</p>
+          </div>
+          <div className={styles.searchRow}>
+            <div className={styles.searchField}>
               <FormField
                 label="Search an occupation"
                 id="skill-mapper-query"
@@ -837,10 +858,10 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="e.g. Software Developer, Account Executive, Project Manager"
+                placeholder="e.g. Software Developer"
               />
             </div>
-            <button type="button" className="wa-kit-focus" onClick={handleSearch} disabled={preview || loading || !query.trim()}
+            <button type="button" className={`${styles.searchAction} wa-kit-focus`} onClick={handleSearch} disabled={preview || loading || !query.trim()}
               style={{ ...primaryPillStyle, opacity: loading || !query.trim() ? 0.6 : 1, cursor: loading || !query.trim() ? 'not-allowed' : 'pointer' }}>
               {loading ? <PortalInlineSpinner size={16} /> : <Search size={16} aria-hidden />}
               Search
@@ -848,26 +869,19 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
           </div>
 
           {error && (
-            <div role="alert" style={{ padding: '10px 14px', borderRadius: 'var(--wa-radius-sm)', background: 'var(--wa-danger-soft)', color: 'var(--wa-danger)', fontSize: '0.875rem', fontWeight: 600, marginBottom: '1rem' }}>
+            <div role="alert" style={{ padding: '10px 14px', borderRadius: 'var(--wa-radius-sm)', background: 'var(--wa-danger-soft)', color: 'var(--wa-danger)', fontSize: 'var(--wa-type-body)', fontWeight: 600, marginBottom: '1rem' }}>
               {error}
             </div>
           )}
 
           {occupations.length > 0 && !radarData.length && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
-              <h3 className="ai-tool-section-title">Select an occupation</h3>
+            <div className={styles.searchResults}>
+              <h3>Select an occupation</h3>
               {occupations.map((occ) => (
                 <button type="button" key={occ.code} disabled={preview} onClick={() => handleSelect(occ.code, occ.title)}
-                  className="wa-kit-focus"
-                  style={{
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    padding: '0.75rem 1rem',
-                    borderRadius: 'var(--wa-radius-sm)',
-                    border: '1px solid var(--wa-border)',
-                    background: 'var(--wa-surface)'}}>
+                  className={`${styles.occupationOption} wa-kit-focus`}>
                   <strong style={{ color: 'var(--wa-text)' }}>{occ.title}</strong>
-                  <span style={{ display: 'block', fontSize: '0.8125rem', color: 'var(--wa-muted)', marginTop: 2 }}>{occ.code} — {occ.description?.slice(0, 120)}</span>
+                  <span style={{ display: 'block', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 2 }}>{occ.code} — {occ.description?.slice(0, 120)}</span>
                 </button>
               ))}
             </div>
@@ -884,7 +898,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                   borderRadius: 'var(--wa-radius-sm)',
                   padding: '1rem',
                   marginBottom: '1rem',
-                  fontSize: '0.85rem',
+                  fontSize: 'var(--wa-type-body)',
                   color: 'var(--wa-text)'}}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: 700, color: 'var(--wa-danger)' }}>
                     <TriangleAlert size={16} aria-hidden="true" />
@@ -893,44 +907,56 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                   <p style={{ margin: 0, lineHeight: 1.5 }}>
                     {demoFallbackReason || 'Showing sample skill ranges for demonstration purposes. This is not real occupational data from O*NET.'}
                   </p>
-                  <p style={{ margin: '0.5rem 0 0', fontSize: '0.8125rem', color: 'var(--wa-muted)' }}>
-                    For accurate skill mapping, try again later or upload your resume for personalized results.
+                  <p style={{ margin: '0.5rem 0 0', fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)' }}>
+                    Try another occupation or return later for O*NET occupation data.
                   </p>
                 </div>
               )}
-              <h3 className="ai-tool-section-title">{selectedTitle}</h3>
+              <section className={styles.resultPanel} aria-label="Occupation requirements">
+              <div className={styles.resultHeading}>
+                <div>
+                  <p className={styles.eyebrow}>{usingDemo ? 'Sample occupation requirements' : 'Occupation requirements'}</p>
+                  <h2>{selectedTitle}</h2>
+                </div>
+                {selectedCode && <span className={styles.occupationCode}>O*NET {selectedCode}</span>}
+              </div>
               {isSalesQuery(selectedTitle) && (
-                <div style={{ marginBottom: '1rem', padding: '0.875rem 1rem', background: 'var(--wa-info-soft)', border: '1px solid var(--wa-border)', borderRadius: '0.75rem', fontSize: '0.85rem', color: 'var(--color-on-surface)' }}>
+                <div style={{ marginBottom: '1rem', padding: '0.875rem 1rem', background: 'var(--wa-info-soft)', border: '1px solid var(--wa-border)', borderRadius: '0.75rem', fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)' }}>
                   Sales and account roles usually score strongest in <strong>Strategy</strong> and <strong>Service</strong> here because this map weighs planning, negotiation, communication, and relationship-building, not just technical tools.
                 </div>
               )}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', marginBottom: '2rem' }}>
-                <div style={{ flex: '1 1 240px', minWidth: 240 }}>
-                  <RadarChart data={radarData} />
-                </div>
-                <div style={{ flex: '1 1 280px', minWidth: 280 }}>
-                  <h4 style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--color-on-surface)', marginBottom: '0.75rem' }}>Top Skills</h4>
+              <div className={styles.occupationGrid}>
+                <figure className={styles.chartFigure}>
+                  <h3>Skill areas</h3>
+                  <RadarChart data={radarData} label={`Skill requirements for ${selectedTitle || 'the selected occupation'}`} valuesId={occupationValuesId} captionId={`${chartId}-occupation-caption`} />
+                  <figcaption id={`${chartId}-occupation-caption`}>Higher values mean an area matters more for this occupation.</figcaption>
+                </figure>
+                <div className={styles.skillList}>
+                  <h3>Top skills for this role</h3>
+                  <p className={styles.caption}>Occupation requirements, shown on a 0–100 scale.</p>
                   {skills.map((s) => (
-                    <div key={s.name} style={{ marginBottom: '0.75rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: '0.25rem' }}>
-                        <span style={{ color: 'var(--color-on-surface)' }}>{s.name}</span>
-                        <span style={{ color: 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>{s.score}%</span>
+                    <div key={s.name} className={styles.skillRow}>
+                      <div className={styles.skillRowLabel}>
+                        <span>{s.name}</span>
+                        <span className={styles.numericValue}>{s.score}%</span>
                       </div>
-                      <div style={{ height: 8, borderRadius: 4, background: 'var(--surface-container-highest)', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${s.score}%`, borderRadius: 4, background: 'var(--color-accent)', transition: 'width 0.4s ease' }} />
+                      <div className={styles.skillTrack} aria-hidden="true">
+                        <div className={styles.requirementFill} style={{ width: `${s.score}%` }} />
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-              <RadarValues targetData={radarData} />
+              <RadarValues id={occupationValuesId} targetData={radarData} />
               <AxisLegend axes={radarData.map(d => d.axis)} />
-              <div className={styles.followThrough}>
-                <ToolFollowThrough toolType="skill_mapper" />
-              </div>
+              </section>
 
               {/* Export + profile compare prompt */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+              <div className={styles.resultActions}>
+                <button type="button" onClick={() => { comparisonFocusPending.current = true; setActiveTab('profile'); }} className="wa-kit-focus" style={primaryPillStyle}>
+                  <ArrowLeftRight size={18} aria-hidden="true" />
+                  Compare with my profile
+                </button>
                 <button
                   type="button"
                   onClick={() => void exportSkillMap()}
@@ -944,91 +970,79 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                     {exportingPdf ? 'Saving…' : 'Export Skill Map PDF'}
                   </span>
                 </button>
-                {radarData.length > 0 && (
-                  <button type="button" onClick={() => setActiveTab('profile')} className="wa-kit-focus"
-                    style={{ ...outlinePillStyleSm, background: 'var(--wa-accent-soft)', cursor: 'pointer' }}>
-                    <ArrowLeftRight size={14} aria-hidden="true" />
-                    Compare with my profile
-                  </button>
-                )}
+              </div>
+              <div className={styles.followThrough}>
+                <ToolFollowThrough toolType="skill_mapper" />
               </div>
 
               {/* Programs that lead to this occupation (from DB career mappings) */}
               {matchedPrograms.length > 0 && (
-                <div style={{ marginTop: '1.25rem' }}>
-                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem' }}>
+                <div className={styles.recommendations}>
+                  <h3 className={styles.subsectionTitle}>
                     Programs for this career
-                  </h4>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
+                  </h3>
+                  <p className={styles.sectionDescription}>
                     WorkforceAP programs that prepare you for <strong>{selectedTitle}</strong>
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {matchedPrograms.map((mp) => (
-                      <div key={`${mp.programSlug}-${mp.experienceBand}`} style={{
-                        background: 'var(--surface-container)', borderRadius: '0.75rem',
-                        padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
-                        <div style={{
-                          width: '2.25rem', height: '2.25rem', borderRadius: '0.5rem', flexShrink: 0,
-                          background: `color-mix(in srgb, ${mp.categoryColor} 12%, transparent)`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.125rem'}}>
-                          {mp.icon}
-                        </div>
+                      <div key={`${mp.programSlug}-${mp.experienceBand}`} className={styles.programRecommendation}>
+                        <BookOpen size={24} className={styles.programIcon} aria-hidden="true" />
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <div className={styles.programTitle}>
                             {mp.programTitle}
                           </div>
                           <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center', marginTop: '0.2rem', flexWrap: 'wrap' }}>
                             <span style={{
                               background: `color-mix(in srgb, ${mp.categoryColor} 12%, transparent)`,
                               color: mp.categoryColor,
-                              borderRadius: '999px', padding: '0.1rem 0.4rem', fontSize: '0.8125rem', fontWeight: 600}}>{mp.categoryLabel}</span>
+                              borderRadius: '999px', padding: '0.1rem 0.4rem', fontSize: 'var(--wa-type-meta)', fontWeight: 600}}>{mp.categoryLabel}</span>
                             <span style={{
                               background: mp.recommendationType === 'primary'
-                                ? 'color-mix(in srgb, var(--color-green) 12%, transparent)'
+                                ? 'color-mix(in srgb, var(--wa-success) 12%, transparent)'
                                 : mp.recommendationType === 'bridge'
-                                ? 'color-mix(in srgb, var(--color-blue) 12%, transparent)'
-                                : 'color-mix(in srgb, var(--color-gold) 12%, transparent)',
+                                ? 'color-mix(in srgb, var(--wa-info) 12%, transparent)'
+                                : 'color-mix(in srgb, var(--wa-gold) 12%, transparent)',
                               color: mp.recommendationType === 'primary'
-                                ? 'var(--color-green, #4a9b4f)'
+                                ? 'var(--wa-success-dark)'
                                 : mp.recommendationType === 'bridge'
-                                ? 'var(--color-blue, #2b7bb9)'
-                                : 'var(--color-gold, #a47f38)',
-                              borderRadius: '999px', padding: '0.1rem 0.4rem', fontSize: '0.8125rem', fontWeight: 600, textTransform: 'capitalize'}}>{mp.recommendationType}</span>
-                            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+                                ? 'var(--wa-info-dark)'
+                                : 'var(--wa-gold-dark)',
+                              borderRadius: '999px', padding: '0.1rem 0.4rem', fontSize: 'var(--wa-type-meta)', fontWeight: 600, textTransform: 'capitalize'}}>{mp.recommendationType}</span>
+                            <span style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>
                               {mp.experienceBand.replace(/_/g, ' ')}
                             </span>
                           </div>
                           {mp.whyRecommended && (
-                            <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginTop: '0.25rem', lineHeight: 1.4 }}>
+                            <div style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: '0.25rem', lineHeight: 1.4 }}>
                               {mp.whyRecommended}
                             </div>
                           )}
                         </div>
-                        <Link href={`/programs/${mp.programSlug}`} style={{
-                          background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', borderRadius: 'var(--wa-radius-sm)',
-                          padding: '0.35rem 0.625rem', fontSize: '0.8125rem', fontWeight: 600,
-                          textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0}} onClick={() => trackFunnelEvent('skill_mapper', 'program_recommendation_viewed', { program_slug: mp.programSlug, recommendation_type: mp.recommendationType })}>View →</Link>
+                        <Link href={`/programs/${mp.programSlug}`} className={`${styles.programAction} wa-kit-cta--ghost wa-kit-focus`} onClick={() => trackFunnelEvent('skill_mapper', 'program_recommendation_viewed', { program_slug: mp.programSlug, recommendation_type: mp.recommendationType })}>View <ArrowRight size={16} aria-hidden="true" /></Link>
                       </div>
                     ))}
                   </div>
                   {/* Enrollment CTAs */}
                   <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--wa-accent-soft)', border: '1px solid var(--wa-border)', borderRadius: '0.75rem' }}>
-                    <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--color-on-surface)', marginBottom: '0.5rem' }}>
+                    <p style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)', marginBottom: '0.5rem' }}>
                       Ready to start your training?
                     </p>
                     <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      <Link href={`/programs/${matchedPrograms[0].programSlug}`} style={{
+                      <Link href={`/programs/${matchedPrograms[0].programSlug}`} className="wa-kit-focus" style={{
                         display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                        minHeight: 44,
                         padding: '0.5rem 1rem', borderRadius: 999,
                         background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
-                        fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none'}} onClick={() => trackFunnelEvent('skill_mapper', 'enroll_cta_clicked', { program_slug: matchedPrograms[0].programSlug })}>
+                        fontWeight: 700, fontSize: 'var(--wa-type-body)', textDecoration: 'none'}} onClick={() => trackFunnelEvent('skill_mapper', 'enroll_cta_clicked', { program_slug: matchedPrograms[0].programSlug })}>
                         {tw('exploreProgram', { program: matchedPrograms[0].programTitle })}
                       </Link>
-                      <Link href="/dashboard/messages" style={{
+                      <Link href="/dashboard/messages" className="wa-kit-focus" style={{
                         display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                        minHeight: 44,
                         padding: '0.5rem 1rem', borderRadius: 999,
                         background: 'var(--wa-surface-2)', color: 'var(--wa-text)',
-                        fontWeight: 600, fontSize: '0.8125rem', textDecoration: 'none'}} onClick={() => trackFunnelEvent('skill_mapper', 'counselor_cta_clicked', {})}>
+                        fontWeight: 600, fontSize: 'var(--wa-type-body)', textDecoration: 'none'}} onClick={() => trackFunnelEvent('skill_mapper', 'counselor_cta_clicked', {})}>
                         {ta('humanLink')}
                       </Link>
                     </div>
@@ -1042,7 +1056,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
 
       {/* Tab 2: My Skills Profile */}
       {activeTab === 'profile' && (
-        <div>
+        <div ref={profilePanelRef} tabIndex={-1} role="region" aria-label="My skills profile" className={`${styles.focusTarget} wa-kit-focus`}>
           {loadingProfile && (
             <p style={{ textAlign: 'center', padding: '2rem' }}><PortalInlineSpinner size={24} /></p>
           )}
@@ -1051,11 +1065,11 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
             <div style={{ padding: '1rem 1.25rem', background: 'var(--wa-info-soft)', border: '1px solid var(--wa-border)', borderRadius: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.875rem', marginBottom: '1.25rem' }}>
               <PortalInlineSpinner size={20} style={{ flexShrink: 0 }} />
               <div>
-                <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: '0 0 0.2rem' }}>
+                <p style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)', margin: '0 0 0.2rem' }}>
                   Analyzing your resume with AI…
                 </p>
-                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.4 }}>
-                  Extracting skills and mapping them to your profile. Takes about 10 seconds.
+                <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', margin: 0, lineHeight: 1.4 }}>
+                  Extracting skills and mapping them to your estimated profile.
                 </p>
               </div>
             </div>
@@ -1065,85 +1079,96 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
             <>
               {/* Dual radar or single radar */}
               {radarData.length > 0 ? (
-                <>
-                  <h3 className="ai-tool-section-title skill-mapper-profile-title">Your Skills vs. {selectedTitle || 'Target Occupation'}</h3>
-                  <div className="skill-mapper-radar-wrap" style={{ marginBottom: '0.75rem' }}>
-                    <DualRadarChart memberData={memberProfile} targetData={radarData} />
+                <section className={styles.resultPanel} aria-label="Your profile comparison">
+                  <div className={styles.resultHeading}>
+                    <div>
+                      <p className={styles.eyebrow}>Your profile comparison{usingDemo ? ' · Sample occupation data' : ''}</p>
+                      <h2 ref={comparisonHeadingRef} tabIndex={-1} className={`${styles.focusTarget} wa-kit-focus`}>Your Skills vs. {selectedTitle || 'Target Occupation'}</h2>
+                    </div>
                   </div>
-                  <RadarValues targetData={radarData} memberData={memberProfile} />
-                  <div className="skill-mapper-legend" style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', marginBottom: '0.5rem', fontSize: '0.8125rem' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                      <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: 'var(--color-blue, #2b7bb9)' }} />
-                      Your skills
-                    </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                      <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: 'var(--color-accent)' }} />
-                      Target occupation
-                    </span>
+                  <div className={styles.comparisonGrid}>
+                    <figure className={styles.chartFigure}>
+                      <DualRadarChart memberData={memberProfile} targetData={radarData} label={`Estimated profile compared with ${selectedTitle || 'the selected occupation'}`} valuesId={comparisonValuesId} captionId={`${chartId}-comparison-caption`} />
+                      <figcaption id={`${chartId}-comparison-caption`}>Compare the shape of both profiles across the same skill areas.</figcaption>
+                    </figure>
+                    <div className={styles.comparisonContext}>
+                      <h3>How to read this comparison</h3>
+                      <dl className={styles.seriesLegend}>
+                        <div>
+                          <dt><span className={styles.memberSwatch} aria-hidden="true" />Your estimated profile</dt>
+                          <dd>Signals from your available resume, certifications, and Interest Profiler results.</dd>
+                        </div>
+                        <div>
+                          <dt><span className={styles.requirementSwatch} aria-hidden="true" />Occupation requirements</dt>
+                          <dd>How much each skill area matters for {selectedTitle || 'the selected role'}.</dd>
+                        </div>
+                      </dl>
+                      <p className={styles.comparisonNote}>Use the differences to explore training. They do not measure demonstrated proficiency or readiness for a job.</p>
+                    </div>
                   </div>
-                  <div className="skill-mapper-export-row" style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+                  <RadarValues id={comparisonValuesId} targetData={radarData} memberData={memberProfile} />
+                  <div className={styles.comparisonFooter}>
                     <button
                       type="button"
                       onClick={() => void exportComparisonPdf()}
                       disabled={preview || exportingComparison}
                       aria-busy={exportingComparison}
                       className="wa-kit-focus"
-                      style={{ ...outlinePillStyleSm, fontSize: '0.8125rem', cursor: exportingComparison ? 'default' : 'pointer', opacity: exportingComparison ? 0.6 : 1 }}
+                      style={{ ...outlinePillStyleSm, cursor: exportingComparison ? 'default' : 'pointer', opacity: exportingComparison ? 0.6 : 1 }}
                     >
                       {exportingComparison ? <PortalInlineSpinner size={14} /> : <Download size={14} aria-hidden="true" />}
                       <span aria-live="polite">
                         {exportingComparison ? 'Saving…' : 'Export Comparison PDF'}
                       </span>
                     </button>
+                    <p className={styles.caption}>Update your records to give this estimate more context.</p>
                   </div>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.5 }}>
-                    Your profile reflects what we found in your resume and certifications.
-                    {' '}<a href="/dashboard/learning/interest-profiler" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>Complete the Interest Profiler</a> or{' '}
-                    <a href="/dashboard/resume" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>update your resume</a> to show more of your experience.
-                  </p>
-                </>
+                  <div className={styles.profileLinks}>
+                    <a href="/dashboard/learning/interest-profiler" className="wa-page-action wa-kit-focus">Complete the Interest Profiler <ArrowRight size={16} aria-hidden="true" /></a>
+                    <a href="/dashboard/resume" className="wa-page-action wa-kit-focus">Update your resume <ArrowRight size={16} aria-hidden="true" /></a>
+                  </div>
+                </section>
               ) : (
-                <>
-                  <h3 className="ai-tool-section-title">Your Skill Profile</h3>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.25rem', alignItems: 'flex-start' }}>
-                    <div style={{ flex: '0 0 auto' }}>
-                      <RadarChart data={memberProfile} />
-                    </div>
-                    <div style={{ flex: '1 1 200px', minWidth: 180, paddingTop: '0.25rem' }}>
+                <section className={styles.resultPanel} aria-label="Your estimated skill profile">
+                  <div className={styles.resultHeading}>
+                    <div><p className={styles.eyebrow}>Your available records</p><h2 ref={comparisonHeadingRef} tabIndex={-1} className={`${styles.focusTarget} wa-kit-focus`}>Your estimated skill profile</h2></div>
+                  </div>
+                  <div className={styles.occupationGrid}>
+                    <figure className={styles.chartFigure}>
+                      <RadarChart data={memberProfile} member label="Your estimated skill profile" valuesId={memberValuesId} captionId={`${chartId}-member-caption`} />
+                      <figcaption id={`${chartId}-member-caption`}>An estimate from your records, not a proficiency assessment.</figcaption>
+                    </figure>
+                    <div id={memberValuesId} className={styles.skillList}>
+                      <h3>Profile by skill area</h3>
                       {memberProfile.map(d => (
-                        <div key={d.axis} style={{ marginBottom: '0.625rem' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: '0.2rem' }}>
-                            <span style={{ fontWeight: 600, color: 'var(--color-on-surface)' }}>{d.axis}</span>
-                            <span style={{ color: 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>{Math.round(d.value * 100)}%</span>
+                        <div key={d.axis} className={styles.skillRow}>
+                          <div className={styles.skillRowLabel}>
+                            <span>{d.axis}</span>
+                            <span className={styles.numericValue}>{Math.round(d.value * 100)}%</span>
                           </div>
-                          <div style={{ height: 7, borderRadius: 4, background: 'var(--surface-container-highest)', overflow: 'hidden' }}>
-                            <div style={{
-                              height: '100%',
-                              width: `${Math.round(d.value * 100)}%`,
-                              borderRadius: 4,
-                              background: d.value >= 0.6 ? 'var(--color-accent)' : d.value >= 0.3 ? 'color-mix(in srgb, var(--color-accent) 65%, var(--color-gold, #a47f38))' : 'var(--color-on-surface-variant)',
-                              transition: 'width 0.5s ease'}} />
+                          <div className={styles.skillTrack} aria-hidden="true">
+                            <div className={styles.memberFill} style={{ width: `${Math.round(d.value * 100)}%` }} />
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '1.5rem' }}>
+                  <p className={styles.caption}>
                     Search an occupation in the <strong>Occupation Search</strong> tab to compare your skills against a target role.
                   </p>
-                </>
+                </section>
               )}
 
               {/* Earned certs */}
               {memberCerts.length > 0 && (
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Earned Certifications</h4>
+                <div className={styles.profileRecords}>
+                  <h3 style={{ marginBottom: '0.75rem' }}>Earned certifications</h3>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                     {memberCerts.map(cert => (
                       <span key={cert} style={{
                         display: 'inline-flex', alignItems: 'center', gap: 5,
                         background: 'color-mix(in srgb, var(--wa-success) 12%, transparent)', color: 'var(--wa-success)',
-                        borderRadius: '999px', padding: '0.25rem 0.75rem', fontSize: '0.8125rem', fontWeight: 600}}>
+                        borderRadius: '999px', padding: '0.25rem 0.75rem', fontSize: 'var(--wa-type-meta)', fontWeight: 600}}>
                         <CheckCircle2 size={13} aria-hidden="true" />
                         {cert}
                       </span>
@@ -1153,76 +1178,68 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
               )}
 
               {memberCerts.length === 0 && (
-                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '1.25rem', marginTop: '-0.25rem' }}>
+                <p className={styles.profileRecords} style={{ color: 'var(--wa-muted)' }}>
                   No certifications on file —{' '}
-                  <a href="/dashboard/certifications" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>add certs in Verification Vault</a>
+                  <a href="/dashboard/certifications" className="wa-page-action wa-kit-focus">add certs in Verification Vault</a>
                   {' '}to strengthen your radar.
                 </p>
               )}
 
               {/* Gap analysis */}
               {gaps.length > 0 && (
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem' }}>Skill Gaps to Close</h4>
+                <section className={styles.gapsSection} aria-label="Estimated skill differences">
+                  <div className={styles.sectionIntro}>
+                    <p className={styles.eyebrow}>Plan your next step</p>
+                    <h3>Skill Gaps to Close</h3>
+                    <p>These are differences between your estimated profile and the role’s requirements. Use them as starting points for a training conversation.</p>
+                  </div>
+                  <div className={styles.gapGrid}>
                   {gaps.map(g => (
-                    <div key={g.axis} className="skill-mapper-gap-row" style={{ marginBottom: '0.75rem' }}>
-                      <div className="skill-mapper-gap-row__meta" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: '0.25rem' }}>
-                        <span>{g.axis}</span>
-                        <span style={{ color: g.gap > 30 ? 'var(--color-error, #d32f2f)' : 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>
-                          {Math.round(g.member)}% → {Math.round(g.target)}% ({g.gap > 0 ? `+${Math.round(g.gap)}` : Math.round(g.gap)} needed)
-                        </span>
+                    <div key={g.axis} className={styles.gapRow}>
+                      <div className={styles.skillRowLabel}>
+                        <strong>{g.axis}</strong>
+                        <span className={styles.gapDifference}>{Math.round(g.gap)}-point difference</span>
                       </div>
-                      <div style={{ height: 8, borderRadius: 4, background: 'var(--surface-container-highest)', overflow: 'hidden', position: 'relative' }}>
-                        <div style={{ height: '100%', width: `${g.target}%`, borderRadius: 4, background: 'rgba(43,123,185,0.2)', position: 'absolute' }} />
-                        <div style={{ height: '100%', width: `${g.member}%`, borderRadius: 4, background: 'var(--color-blue, #2b7bb9)', position: 'absolute' }} />
+                      <div className={styles.gapSeries}>
+                        <div><span>Your estimate</span><span className={styles.skillTrack} aria-hidden="true"><span className={styles.memberFill} style={{ width: `${g.member}%` }} /></span><strong>{Math.round(g.member)}%</strong></div>
+                        <div><span>Requirement</span><span className={styles.skillTrack} aria-hidden="true"><span className={styles.requirementFill} style={{ width: `${g.target}%` }} /></span><strong>{Math.round(g.target)}%</strong></div>
                       </div>
                     </div>
                   ))}
-                </div>
+                  </div>
+                </section>
               )}
 
               {/* Program recommendations based on skill gaps */}
               {programRecs.length > 0 && (
-                <div>
-                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-                    Recommended Programs
-                  </h4>
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginBottom: '0.75rem' }}>
-                    WorkforceAP programs that close your biggest skill gaps
+                <div className={styles.recommendations}>
+                  <h3 className={styles.subsectionTitle}>Recommended programs</h3>
+                  <p className={styles.sectionDescription}>
+                    WorkforceAP programs mapped to the skill areas in your comparison.
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                     {programRecs.map((rec) => (
-                      <div key={rec.program.slug} className={styles.programRecommendation} style={{
-                        background: 'var(--surface-container)', borderRadius: '0.75rem',
-                        padding: '0.875rem 1rem'}}>
-                        <div style={{
-                          width: '2.5rem', height: '2.5rem', borderRadius: '0.625rem', flexShrink: 0,
-                          background: `color-mix(in srgb, ${rec.program.categoryColor} 12%, transparent)`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem'}}>
-                          {rec.program.icon}
-                        </div>
+                      <div key={rec.program.slug} className={styles.programRecommendation}>
+                        <BookOpen size={24} className={styles.programIcon} aria-hidden="true" />
                         <div style={{ minWidth: 0 }}>
-                          <div className={styles.programTitle} style={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                          <div className={styles.programTitle}>
                             {rec.program.title}
                           </div>
                           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.25rem', flexWrap: 'wrap' }}>
                             <span style={{
                               background: `color-mix(in srgb, ${rec.program.categoryColor} 12%, transparent)`,
                               color: rec.program.categoryColor,
-                              borderRadius: '999px', padding: '0.125rem 0.5rem', fontSize: '0.8125rem', fontWeight: 600}}>{rec.program.categoryLabel}</span>
-                            <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+                              borderRadius: '999px', padding: '0.125rem 0.5rem', fontSize: 'var(--wa-type-meta)', fontWeight: 600}}>{rec.program.categoryLabel}</span>
+                            <span style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>
                               {rec.reason}
                             </span>
                           </div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.375rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.375rem', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>
                             <span>{rec.program.duration}</span>
                             <span>{rec.program.partner}</span>
                           </div>
                         </div>
-                        <a href={`/programs/${rec.program.slug}`} className={styles.programAction} style={{
-                          background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', borderRadius: '0.5rem',
-                          padding: '0.375rem 0.75rem', fontSize: '0.8125rem', fontWeight: 600,
-                          textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0}}>{tt('viewProgram')} →</a>
+                        <a href={`/programs/${rec.program.slug}`} className={`${styles.programAction} wa-kit-cta--ghost wa-kit-focus`}>{tt('viewProgram')} <ArrowRight size={16} aria-hidden="true" /></a>
                       </div>
                     ))}
                   </div>
@@ -1237,28 +1254,28 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
           )}
 
           {!loadingProfile && !autoExtracting && profileLoaded && memberProfile.every(p => p.value === 0) && memberCerts.length === 0 && (
-            <div style={{ padding: '1.5rem', color: 'var(--color-on-surface-variant)' }}>
-              <p style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--color-on-surface)', marginBottom: '0.875rem' }}>Build your skill profile</p>
+            <div style={{ padding: '1.5rem', color: 'var(--wa-muted)' }}>
+              <h2 ref={comparisonHeadingRef} tabIndex={-1} className={`${styles.focusTarget} wa-kit-focus`} style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)', marginBottom: '0.875rem' }}>Build your skill profile</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                 <a href="/dashboard/learning/interest-profiler" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem', background: 'var(--wa-accent-soft)', border: '1px solid var(--wa-border)', borderRadius: 'var(--wa-radius-sm)', textDecoration: 'none' }}>
                   <ListChecks size={20} aria-hidden="true" style={{ color: 'var(--wa-accent)', flexShrink: 0 }} />
                   <div>
-                    <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--wa-accent)', margin: '0 0 0.2rem' }}>Take the 30-question Interest Profiler</p>
-                    <p style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', margin: 0 }}>~10 minutes — generates your full radar from O*NET interest data</p>
+                    <p style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-accent)', margin: '0 0 0.2rem' }}>Take the 30-question Interest Profiler</p>
+                    <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', margin: 0 }}>About 10 minutes — adds O*NET interest data to your estimated profile</p>
                   </div>
                 </a>
                 <a href="/dashboard/resume?view=rewrite" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem', background: 'var(--wa-surface)', border: '1px solid var(--wa-border)', borderRadius: 'var(--wa-radius-sm)', textDecoration: 'none' }}>
                   <FileText size={20} aria-hidden="true" style={{ color: 'var(--wa-info)', flexShrink: 0 }} />
                   <div>
-                    <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--wa-text)', margin: '0 0 0.2rem' }}>Run the AI Resume Rewriter</p>
-                    <p style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', margin: 0 }}>We extract skills from your resume and map them to this radar automatically</p>
+                    <p style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)', margin: '0 0 0.2rem' }}>Run the AI Resume Rewriter</p>
+                    <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', margin: 0 }}>We extract skills from your resume and map them to this radar automatically</p>
                   </div>
                 </a>
                 <a href="/dashboard/certifications" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem', background: 'var(--wa-surface)', border: '1px solid var(--wa-border)', borderRadius: 'var(--wa-radius-sm)', textDecoration: 'none' }}>
                   <Award size={20} aria-hidden="true" style={{ color: 'var(--wa-success)', flexShrink: 0 }} />
                   <div>
-                    <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: '0 0 0.2rem' }}>Add earned certifications</p>
-                    <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0 }}>Certs like CompTIA A+, IBM AI, Google Data Analytics enrich the Engineering and Analytics axes</p>
+                    <p style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)', margin: '0 0 0.2rem' }}>Add earned certifications</p>
+                    <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', margin: 0 }}>Certs like CompTIA A+, IBM AI, Google Data Analytics enrich the Engineering and Analytics axes</p>
                   </div>
                 </a>
               </div>
@@ -1270,13 +1287,13 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
             <div style={{ marginTop: '0.875rem', padding: '1rem 1.125rem', background: 'var(--wa-accent-soft)', border: '1px solid var(--wa-border)', borderRadius: 'var(--wa-radius-sm)', display: 'flex', alignItems: 'flex-start', gap: '0.875rem' }}>
               <ListChecks size={22} aria-hidden="true" style={{ color: 'var(--wa-accent)', flexShrink: 0, marginTop: '0.125rem' }} />
               <div>
-                <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-on-surface)', margin: '0 0 0.25rem' }}>
+                <p style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)', margin: '0 0 0.25rem' }}>
                   Take the 30-question Interest Profiler
                 </p>
-                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
-                  Your current profile is based on certifications and resume. Complete the O*NET Interest Profiler to significantly enrich your radar chart with interest-based signals.
+                <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
+                  Complete the O*NET Interest Profiler to add interest-based signals alongside your available resume and certification records.
                 </p>
-                <a href="/dashboard/learning/interest-profiler" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.875rem', borderRadius: 999, background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none' }}>
+                <a href="/dashboard/learning/interest-profiler" className="wa-kit-focus" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, gap: '0.35rem', padding: '0.4rem 0.875rem', borderRadius: 999, background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', fontWeight: 700, fontSize: 'var(--wa-type-body)', textDecoration: 'none' }}>
                   <ArrowRight size={15} aria-hidden="true" />
                   Start 30-question assessment (~10 min)
                 </a>
@@ -1286,10 +1303,10 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
 
           {/* IP complete confirmation */}
           {!loadingProfile && profileLoaded && hasInterestProfiler && (
-            <div style={{ marginTop: '0.875rem', padding: '0.75rem 1rem', background: 'color-mix(in srgb, var(--wa-success) 8%, transparent)', border: '1px solid var(--wa-success)', borderRadius: 'var(--wa-radius-sm)', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+            <div style={{ marginTop: '0.875rem', padding: '0.75rem 1rem', background: 'color-mix(in srgb, var(--wa-success) 8%, transparent)', border: '1px solid var(--wa-success)', borderRadius: 'var(--wa-radius-sm)', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
               <CheckCircle2 size={16} aria-hidden="true" style={{ color: 'var(--wa-success)', flexShrink: 0 }} />
               <span><strong style={{ color: 'var(--wa-success)' }}>Interest Profiler complete</strong> — your 30-question results are blended into this radar.{' '}
-                <a href="/dashboard/learning/interest-profiler" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>Retake</a>
+                <a href="/dashboard/learning/interest-profiler" className="wa-page-action wa-kit-focus">Retake</a>
               </span>
             </div>
           )}
@@ -1297,7 +1314,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
           {/* Resume skill source transparency */}
           {!loadingProfile && resumeSkills.length > 0 && resumeSkills.some(r => r.value > 0) && (
             <div style={{ marginTop: '0.875rem', padding: '0.875rem 1rem', background: 'var(--wa-info-soft)', border: '1px solid var(--wa-info)', borderRadius: 'var(--wa-radius-sm)' }}>
-              <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--wa-info)', margin: '0 0 0.5rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+              <p style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-info)', margin: '0 0 0.5rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                 {hasAiResumeExtraction ? <Sparkles size={16} aria-hidden="true" /> : <FileText size={16} aria-hidden="true" />}
                 {hasAiResumeExtraction ? 'AI-extracted resume skills' : 'Resume skills detected'}
               </p>
@@ -1305,8 +1322,8 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                 {resumeSkills.filter(r => r.value > 0).map(r => {
                   const keywords = (resumeMatchedKeywords as Record<string, string[]>)[r.axis] ?? [];
                   return (
-                    <div key={r.axis} style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-                      <span style={{ fontWeight: 700, color: 'var(--color-on-surface)' }}>{r.axis}:</span>{' '}
+                    <div key={r.axis} style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--wa-text)' }}>{r.axis}:</span>{' '}
                       {keywords.length > 0
                         ? keywords.slice(0, 5).join(', ') + (keywords.length > 5 ? ` +${keywords.length - 5} more` : '')
                         : 'detected'}
@@ -1325,7 +1342,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                       display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                       padding: '0.35rem 0.75rem', borderRadius: 999,
                       background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
-                      fontWeight: 700, fontSize: '0.8125rem', border: 'none',
+                      fontWeight: 700, fontSize: 'var(--wa-type-body)', border: 'none',
                       cursor: extractingResume ? 'default' : 'pointer',
                       opacity: extractingResume ? 0.6 : 1}}
                   >
@@ -1343,7 +1360,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                       display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                       padding: '0.45rem 0.9rem', borderRadius: 999,
                       background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
-                      fontWeight: 800, fontSize: '0.8125rem', border: 'none',
+                      fontWeight: 800, fontSize: 'var(--wa-type-body)', border: 'none',
                       cursor: extractingResume ? 'default' : 'pointer',
                       opacity: extractingResume ? 0.6 : 1}}
                   >
@@ -1351,7 +1368,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                     {extractingResume ? 'Re-analyzing…' : 'Reanalyze resume skills'}
                   </button>
                 )}
-                <a href="/dashboard/resume?view=rewrite" style={{ color: 'var(--wa-accent-text)', fontWeight: 700, fontSize: '0.8125rem' }}>Update resume</a>
+                <a href="/dashboard/resume?view=rewrite" className="wa-page-action wa-kit-focus">Update resume</a>
               </div>
             </div>
           )}
@@ -1361,18 +1378,19 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
             <div style={{ marginTop: '0.875rem', padding: '0.875rem 1rem', background: 'var(--wa-info-soft)', border: '1px solid var(--wa-info)', borderRadius: 'var(--wa-radius-sm)', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
               <Sparkles size={20} aria-hidden="true" style={{ color: 'var(--wa-info)', flexShrink: 0 }} />
               <div>
-                <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--color-on-surface)', margin: '0 0 0.25rem' }}>
+                <p style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)', margin: '0 0 0.25rem' }}>
                   Enhance your profile with AI
                 </p>
-                <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.5rem', lineHeight: 1.4 }}>
-                  Upload a resume and let AI analyze it to extract detailed skills across all 6 axes — much more accurate than keyword matching.
+                <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', margin: '0 0 0.5rem', lineHeight: 1.4 }}>
+                  Upload a resume so AI can identify skills across the six areas and add context to your estimated profile.
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <a href="/dashboard/resume" style={{
+                  <a href="/dashboard/resume" className="wa-kit-focus" style={{
                     display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+                    minHeight: 44,
                     padding: '0.35rem 0.75rem', borderRadius: 999,
                     background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
-                    fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none'}}>
+                    fontWeight: 700, fontSize: 'var(--wa-type-body)', textDecoration: 'none'}}>
                     <UploadCloud size={14} aria-hidden="true" />
                     Upload resume
                   </a>

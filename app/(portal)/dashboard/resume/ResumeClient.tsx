@@ -43,6 +43,8 @@ type ResumeClientProps = {
   hasEnhanced: boolean;
   layout?: "side-by-side";
   active?: boolean;
+  /** Keep a containing workspace in sync without remounting its draft editors. */
+  onResumeAvailabilityChange?: (available: boolean) => void;
   /** Synthetic /dev proof only. Account reads, analytics and mutations are disabled. */
   previewData?: { originalText: string; enhancedText: string };
 };
@@ -64,6 +66,7 @@ export default function ResumeClient({
   hasEnhanced: initialHasEnhanced,
   layout,
   active = true,
+  onResumeAvailabilityChange,
   previewData,
 }: ResumeClientProps) {
   const tw = useTranslations('memberWorkspace.resume');
@@ -101,6 +104,10 @@ export default function ResumeClient({
   const [enhancedPdfFailed, setEnhancedPdfFailed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadInFlightRef = useRef(false);
+
+  useEffect(() => {
+    if (resumeData) onResumeAvailabilityChange?.(resumeData.hasOriginal || resumeData.hasEnhanced);
+  }, [resumeData, onResumeAvailabilityChange]);
 
   useEffect(() => {
     setOriginalPdfFailed(false);
@@ -157,8 +164,11 @@ export default function ResumeClient({
         return;
       }
       setUploadWarning(result.warning ?? "");
+      // The accepted upload is authoritative even if its preview refresh fails.
+      onResumeAvailabilityChange?.(true);
       trackFunnelEvent("member_signup", "resume_uploaded");
       const refetch = await fetch("/api/member/resume");
+      if (!refetch.ok) throw new Error('Could not refresh resume status');
       const d = await refetch.json();
       setResumeData({
         originalUrl: d.originalUrl ?? null,

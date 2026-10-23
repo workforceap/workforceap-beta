@@ -177,10 +177,10 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
   if (!!ctx.enrolledProgram && !ctx.hasResume) {
     out.push({
       id: 'upload_resume',
-      title: 'Add your resume',
-      body: 'Upload a resume so employers and AI tools can tailor help to your background.',
-      href: '/dashboard/ai-tools/resume-studio?view=rewrite',
-      cta: 'Try resume rewriter',
+      title: 'Review your résumé for your consultation',
+      body: 'No portal copy is recorded. If you emailed your résumé, confirm receipt with your team before uploading again.',
+      href: '/dashboard/resume',
+      cta: 'Open Résumé workspace',
       variant: 'default',
       weight: 80,
     });

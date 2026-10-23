@@ -24,7 +24,8 @@ describe('member AI Career Tools discovery', () => {
     const tools = screen.getByRole('region', { name: 'AI Career Tools' });
     expect(within(tools).getByRole('link', { name: 'Explore AI Career Tools' }))
       .toHaveAttribute('href', '/dashboard/ai-tools');
-    expect(tools.compareDocumentPosition(screen.getByText('Certification path')) & Node.DOCUMENT_POSITION_FOLLOWING)
+    // Tools remain discoverable, after the progress overview rather than above the next step.
+    expect(tools.compareDocumentPosition(screen.getByText('Certification path')) & Node.DOCUMENT_POSITION_PRECEDING)
       .toBeTruthy();
   });
 

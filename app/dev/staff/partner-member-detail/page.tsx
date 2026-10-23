@@ -3,6 +3,7 @@ import PartnerMemberJourney, { type PartnerJourneyStep } from '@/components/part
 import PartnerPlacementCard, { type PartnerPlacementView } from '@/components/partner/PartnerPlacementCard';
 import PartnerStageBadge from '@/components/partner/PartnerStageBadge';
 import type { PartnerMemberStage } from '@/lib/partner/memberStage';
+import { PageOpener } from '@/components/portal/kit';
 
 /**
  * Showcase-only render of the partner member detail pieces
@@ -74,7 +75,7 @@ const SCENARIOS: Scenario[] = [
 ];
 
 function heading(title: string) {
-  return <h2 style={{ fontSize: '0.8125rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</h2>;
+  return <h3 style={{ fontSize: '0.8125rem', margin: 0, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</h3>;
 }
 
 export default function DevStaffPartnerMemberDetailPage() {
@@ -82,11 +83,12 @@ export default function DevStaffPartnerMemberDetailPage() {
 
   return (
     <main style={{ padding: '2rem 1rem', maxWidth: '72rem', margin: '0 auto', display: 'grid', gap: '2.5rem' }}>
+      <PageOpener kicker="Partner workspace" title="Partner member scenarios" lede="Sample journeys and placement states" />
       {SCENARIOS.map((scenario) => (
         <section key={scenario.key} data-scenario={scenario.key} style={{ display: 'grid', gap: '1rem' }}>
           <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--wa-muted-strong)' }}>{scenario.title}</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
-            <h1 style={{ margin: 0, fontSize: '1.75rem' }}>{scenario.name}</h1>
+            <h2 style={{ margin: 0, fontSize: '1.75rem' }}>{scenario.name}</h2>
             <PartnerStageBadge stage={scenario.stage} />
           </div>
           <div className="wa-grid wa-grid-cols-1 md:wa-grid-cols-2 wa-gap-4">

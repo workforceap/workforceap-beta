@@ -37,6 +37,8 @@ import MemberDoThisNextCard from '@/components/portal/MemberDoThisNextCard';
 import MemberStartHereCard from './MemberStartHereCard';
 import MemberAdvisorCard from '@/components/portal/kit/pages/member/MemberAdvisorCard';
 import MemberAiToolsCard from '@/components/portal/kit/pages/member/MemberAiToolsCard';
+import MemberHandoffSummary from './MemberHandoffSummary';
+import type { MemberHandoffEvidence } from '@/lib/member/loadMemberDashboardHome';
 import type { AssignedCounselor } from '@/lib/member/counselorContext';
 import First90DaysCard, { type First90DaysCardProps } from '@/components/portal/First90DaysCard';
 import YouthDashboardNotice from '@/components/portal/YouthDashboardNotice';
@@ -64,8 +66,9 @@ import { isExcludedPublicEmployerName } from '@/lib/jobs/publicJobFilters';
  *      OFFER applications (`jobOffers`) and the First 90 Days check-in card
  *      while a placement is inside its window (`first90`) — the two
  *      post-offer surfaces the `?ui=legacy` home used to own (WAP-188). Then
- *      an "Up next" list of the following steps. AI Career Tools stays visible
- *      directly below Today, with a stage-specific pick when one is available.
+ *      an "Up next" list of the following steps. A compact evidence summary
+ *      under the next action distinguishes confirmed résumé receipt from
+ *      disconnected email, calendar and training access records.
  *   3. A 4-up stat-tile row (course / active jobs / certs / points), each with
  *      an optional inline sparkline + delta chip.
  *   4. A mixed row: certification progress ring, weekly-activity area chart,
@@ -75,8 +78,9 @@ import { isExcludedPublicEmployerName } from '@/lib/jobs/publicJobFilters';
  *   5. The application pipeline table + a Next Badge tile with segmented
  *      progress. Goals fold into that tile and link to the goals section on
  *      the career brief; with none, a quiet "Set a goal" link goes there.
- * A quiet Learning Hub link closes out the page; AI Career Tools is introduced
- * near the top so members can find it without scrolling through their metrics.
+ * A contextual résumé return action supports consultation preparation. General
+ * tool discovery remains available after progress rather than competing with
+ * the member's next step. A quiet Learning Hub link closes out the page.
  *
  * All-new visual data (sparklines, weekly activity, points ledger, per-row
  * applied date + stage index) is additive/optional and degrades gracefully
@@ -226,6 +230,10 @@ export interface MemberHomeKitProps {
   } | null;
   /** Dominant next-best-action banner rendered above the bento grid. `null`/omitted renders nothing (no empty shell). */
   doThisNext?: NextBestAction | null;
+  /** Only evidence the loader can confirm; disconnected handoffs stay unknown. */
+  handoff?: MemberHandoffEvidence;
+  /** Résumé workspace, independent of the historical `resumeHref` training CTA. */
+  resumeStudioHref?: string;
   /** Active assigned counselor (resolveAssignedCounselor). Null hides the advisor card. */
   advisor?: AssignedCounselor | null;
   /** The steps after `doThisNext`, most important first. Empty renders nothing. */
@@ -597,6 +605,8 @@ export function MemberHomeKit({
   showStaffViewBanner = false,
   programSwitch = null,
   doThisNext = null,
+  handoff,
+  resumeStudioHref = '/dashboard/resume',
   advisor = null,
   upNext = [],
   recommendedTool = null,
@@ -668,7 +678,7 @@ export function MemberHomeKit({
         <PageOpener
           kicker="Home"
           title={greeting && firstName ? `${greeting}, ${firstName}` : firstName ? `Welcome back, ${firstName}` : 'Home'}
-          lede={nextLesson ? `Next: ${nextLesson}${nextLessonDue ? ` · ${nextLessonDue}` : ''}` : 'Pick up your program, jobs, or AI Career Tools.'}
+          lede={t('handoff.homeLede')}
           icon={<Home size={13} aria-hidden="true" />}
           action={
             currentStreak > 0 ? (
@@ -684,8 +694,6 @@ export function MemberHomeKit({
         />
 
         {showStaffViewBanner ? <StaffViewBanner page="dashboard" /> : null}
-
-        <MemberStartHereCard toolkitHref={toolkitHref} preassessmentCompleted={preassessmentCompleted} />
 
         {noProgram ? (
           <div
@@ -705,7 +713,12 @@ export function MemberHomeKit({
         {/* 2. Dominant next-best-action banner. Renders nothing when there's no
             pending action (see MemberDoThisNextCard). */}
         <MemberDoThisNextCard action={doThisNext} />
-        <MemberAiToolsCard toolkitHref={toolkitHref} recommendedTool={recommendedTool} />
+        <MemberHandoffSummary
+          evidence={handoff}
+          messagesHref={advisor?.messagingHref}
+          resumeStudioHref={resumeStudioHref}
+          showResumeAction={doThisNext?.href.split('?')[0] !== resumeStudioHref.split('?')[0]}
+        />
 
         {/* Post-offer surfaces, each only when it applies: confirm an accepted
             offer (writes a member-reported placement and alerts the
@@ -1068,6 +1081,10 @@ export function MemberHomeKit({
             )}
           </div>
         </div>
+
+        {/* Discovery remains available after the member's next step and progress. */}
+        <MemberStartHereCard toolkitHref={toolkitHref} preassessmentCompleted={preassessmentCompleted} />
+        <MemberAiToolsCard toolkitHref={toolkitHref} recommendedTool={recommendedTool} />
 
         {/* Learning Hub remains available after the progress overview. */}
         <div className="wa-flex wa-items-center wa-gap-5 wa-flex-wrap">

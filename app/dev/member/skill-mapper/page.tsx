@@ -16,7 +16,7 @@ const run: SavedSkillMapperRun = {
 export default function SkillMapperProofPage() {
   if (process.env.VERCEL_ENV === 'production') notFound();
   return (
-    <ToolkitToolChrome title="Skill Mapper" icon={<Radar size={20} aria-hidden="true" />} lede="Synthetic QA fixture. These are sample values, not a live O*NET response or member assessment. Search, extraction and export are disabled; both actual radar views and their numeric alternatives remain interactive." backHref="/dev/member/toolkit">
+    <ToolkitToolChrome title="Skill Mapper" icon={<Radar size={20} aria-hidden="true" />} lede="Sample data preview. Both radars and numeric values are interactive; search, extraction and export are disabled." backHref="/dev/member/toolkit">
       <SkillMapperClient preview initialRun={run} initialMemberProfile={axes.map((axis, index) => ({ axis, value: 0.3 + index * 0.04 }))} />
     </ToolkitToolChrome>
   );

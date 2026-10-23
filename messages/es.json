@@ -280,6 +280,27 @@
     "machineTranslationNoticeAction": "Cambiar idioma"
   },
   "dashboard": {
+    "handoff": {
+      "homeLede": "Tu próximo paso y el progreso que podemos confirmar.",
+      "title": "Tu progreso hasta ahora",
+      "resume": "Currículum",
+      "consultation": "Consulta",
+      "training": "Acceso a capacitación",
+      "resumeReceived": "Recibido en el portal",
+      "resumeUnknown": "No hay copia registrada en el portal",
+      "consultationBooked": "Reserva confirmada",
+      "consultationUnknown": "El estado de la reserva no está conectado",
+      "trainingConfirmed": "Acceso confirmado",
+      "trainingUnknown": "Activación no confirmada",
+      "outsidePortal": "¿Ya enviaste tu currículum o reservaste desde el correo de bienvenida? Esos pasos pueden no aparecer aquí. Consulta con tu equipo antes de repetirlos.",
+      "confirm": "Confirmar con mi equipo",
+      "prepareTitle": "Prepárate para tu consulta",
+      "prepareBody": "Revisa tu currículum y anota la experiencia, las metas y las preguntas que quieres conversar con tu asesor.",
+      "resumeTitle": "Trabaja en tu currículum",
+      "resumeBody": "Usa el espacio de currículum para revisar un documento que ya tienes o preparar uno para tu consulta.",
+      "reviewResume": "Revisar mi currículum",
+      "openResume": "Abrir espacio de currículum"
+    },
     "priorityAction": "Acción prioritaria",
     "priorityActionFor": "Para {program}.",
     "yourProgram": "Tu programa",
@@ -428,7 +449,10 @@
     "pwaInstallCta": "Instalar",
     "trainingPlanComplete": "Tu plan de entrenamiento está completo. Enfócate en resultados de empleo y preparación profesional.",
     "doThisNext": "Haz esto ahora",
-    "todayFocus": "Hoy",
+    "todayFocus": "Tu próximo paso",
+    "dismissSuggestion": "Descartar sugerencia",
+    "suggestionDismissed": "Sugerencia descartada. Tu progreso registrado no ha cambiado.",
+    "dismissSuggestionError": "No pudimos descartar esta sugerencia. Inténtalo de nuevo.",
     "alsoForYou": "También para ti",
     "alsoForYouHint": "Otros próximos pasos útiles",
     "stateGettingStarted": "Primeros pasos",
@@ -4602,7 +4626,22 @@
       "rewriteSource": "La mejora parte de tu currículum original. El texto generado es un resultado independiente; tu original, la revisión guardada y los resultados anteriores se mantienen separados.",
       "rewriteHistory": "Mejoras del currículum guardadas",
       "filesUnavailable": "No se pudieron cargar los archivos de tu currículum. Vuelve a intentarlo para actualizar su estado.",
-      "retryFiles": "Volver a cargar los archivos del currículum"
+      "retryFiles": "Volver a cargar los archivos del currículum",
+      "design": {
+        "filesHint": "Archivos y versiones",
+        "scoreHint": "Detecta qué mejorar",
+        "rewriteHint": "Mejora tu borrador",
+        "coachHint": "Habla sobre tu CV",
+        "filesTitle": "Los archivos de tu currículum",
+        "filesIntro": "Sube tu original, crea un currículum a partir de tu perfil y revisa cada versión.",
+        "scoreTitle": "Descubre cómo mejorar tu currículum",
+        "rewriteTitle": "Adapta tu currículum al puesto",
+        "nextIntro": "Mejora tu borrador o habla sobre tu próximo paso.",
+        "coachTitle": "Tu asesor de currículum con IA",
+        "coachIntro": "Habla sobre tu experiencia y trabaja en cómo presentarla.",
+        "coachAvailability": "El asesor de voz está disponible al iniciar sesión.",
+        "draftNotice": "Los borradores de Puntuación y Reescribir se conservan mientras esta página esté abierta. Copia tus cambios antes de recargarla o salir; los cambios sin guardar no se recuperan."
+      }
     },
     "interviews": {
       "title": "Entrevistas",

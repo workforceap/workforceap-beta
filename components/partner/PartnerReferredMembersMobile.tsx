@@ -61,7 +61,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
 
   return (
     <>
-      <div style={{ display: 'flex', gap: '0.5rem', padding: '0 1.5rem 1rem', overflowX: 'auto' }}>
+      <div role="group" aria-label="Filter referred members" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', padding: '0 1.5rem 1rem' }}>
         {chips.map((chip) => {
           const active = filter === chip.key;
           return (
@@ -74,12 +74,13 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
               className="wa-kit-focus"
               style={{
                 flexShrink: 0,
+                minHeight: 44,
                 padding: '0.375rem 0.875rem',
                 borderRadius: '9999px',
                 fontSize: '0.8125rem',
                 fontWeight: 700,
                 background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
-                color: active ? 'var(--wa-on-accent)' : 'var(--wa-muted)',
+                color: active ? 'var(--wa-on-accent-control)' : 'var(--wa-muted)',
                 border: `1px solid ${active ? 'var(--wa-accent)' : 'var(--wa-border)'}`,
                 cursor: 'pointer',
                 fontFamily: 'inherit',

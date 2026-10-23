@@ -220,6 +220,7 @@ async function renderMemberDashboard(
       toolkitHref={home.toolkitHref}
       jobsHref={home.jobsHref}
       doThisNext={home.doThisNext}
+      handoff={home.handoff}
       upNext={home.upNext}
       recommendedTool={home.recommendedTool}
       preassessmentCompleted={home.preassessmentCompleted}

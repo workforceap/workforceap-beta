@@ -89,6 +89,7 @@ html[data-portal-role][data-theme='dark'] body {
   background: transparent;
   border: 0;
   box-shadow: none;
+  padding-block: 0.25rem;
 }
 
 /* Quiet PageOpener action — stays on the wash instead of becoming a header chip. */
@@ -96,14 +97,28 @@ html[data-portal-role][data-theme='dark'] body {
   font-size: var(--wa-type-meta);
   font-weight: 700;
   color: var(--wa-accent);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  line-height: 1.4;
+  text-transform: none;
+}
+.wa-page-opener-title {
+  margin: 0.5rem 0 0;
+  font-size: clamp(1.75rem, 2.4vw + 1rem, 2.375rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+[data-surface='dense'] .wa-page-opener-title {
+  font-size: clamp(1.75rem, 2vw + 1rem, 2rem);
 }
 .wa-page-opener-lede {
   font-size: var(--wa-type-body);
   color: var(--wa-muted);
-  margin-top: 4px;
-  line-height: 1.5;
+  max-width: 62ch;
+  margin-top: 0.75rem;
+  line-height: 1.6;
+  text-wrap: pretty;
 }
 .wa-kit-meta {
   font-size: var(--wa-type-meta);
@@ -520,7 +535,7 @@ html[data-portal-role][data-theme='dark'] body {
    bar. Inactive panels carry the `hidden` attribute. */
 .wa-kit-tabs {
   display: flex;
-  gap: 4px;
+  gap: 0.5rem;
   overflow-x: auto;
   scrollbar-width: none;
   border-bottom: 1px solid var(--wa-border);
@@ -532,8 +547,8 @@ html[data-portal-role][data-theme='dark'] body {
 .wa-kit-tab {
   flex-shrink: 0;
   white-space: nowrap;
-  min-height: 44px;
-  padding: 10px 14px;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
   margin-bottom: -1px;
   border: 0;
   border-bottom: 3px solid transparent;
@@ -542,7 +557,7 @@ html[data-portal-role][data-theme='dark'] body {
   color: var(--wa-muted);
   font: inherit;
   font-size: var(--wa-type-body);
-  font-weight: 700;
+  font-weight: 500;
   cursor: pointer;
   transition: color var(--wa-dur-fast) var(--wa-ease), background-color var(--wa-dur-fast) var(--wa-ease);
 }
@@ -553,6 +568,8 @@ html[data-portal-role][data-theme='dark'] body {
 .wa-kit-tab[aria-selected='true'],
 .wa-kit-tab[aria-current='page'] {
   color: var(--wa-accent);
+  background: var(--wa-accent-soft);
+  font-weight: 700;
   border-bottom-color: var(--wa-accent);
 }
 /* Server-driven tabs (the admin reporting hub): the same tab row rendered as

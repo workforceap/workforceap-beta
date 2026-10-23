@@ -1,0 +1,229 @@
+.studio {
+  display: grid;
+  gap: var(--wa-pad);
+  min-width: 0;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding-block-end: var(--wa-pad-sm);
+  border-bottom: 1px solid var(--wa-border);
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 4.75rem;
+  padding: 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--wa-radius-sm);
+  background: transparent;
+  color: var(--wa-muted);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--wa-dur-fast) var(--wa-ease),
+    border-color var(--wa-dur-fast) var(--wa-ease),
+    color var(--wa-dur-fast) var(--wa-ease);
+}
+
+/* Preserve the workspace's global touch-target floor without letting it
+   replace this tool rail's taller, descriptive desktop tabs. */
+.studio .tabs > .tab { min-height: 4.75rem; }
+
+.tab::after {
+  position: absolute;
+  inset-inline: 0.75rem;
+  bottom: -0.5rem;
+  height: 3px;
+  border-radius: var(--wa-radius-sm);
+  background: transparent;
+  content: '';
+}
+
+.tab[aria-selected='true'] {
+  color: var(--wa-text);
+  background: var(--wa-surface);
+  border-color: var(--wa-border);
+  box-shadow: var(--wa-shadow);
+}
+
+.tab[aria-selected='true']::after { background: var(--wa-accent); }
+
+.tabIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-surface-2);
+  color: var(--wa-muted);
+}
+
+.tab[aria-selected='true'] .tabIcon {
+  background: var(--wa-accent);
+  color: var(--wa-on-accent-control);
+}
+
+.tabCopy { display: grid; gap: 0.125rem; min-width: 0; }
+.tabLabel { font-size: var(--wa-type-body); line-height: 1.4; font-weight: 700; }
+.tabHint { color: var(--wa-muted); font-size: var(--wa-type-meta); line-height: 1.4; }
+
+.filesPanel { min-width: 0; }
+.filesHeading { margin-block-end: var(--wa-pad-sm); }
+.filesHeading h2,
+.panelHeader h2,
+.coachPreview h2 {
+  margin: 0;
+  font-size: clamp(1.25rem, 1.1rem + 0.4vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--wa-text);
+  text-wrap: balance;
+}
+
+.filesHeading p,
+.panelHeader p,
+.coachPreview p {
+  margin: 0.5rem 0 0;
+  color: var(--wa-muted);
+  font-size: var(--wa-type-body);
+  line-height: 1.6;
+  max-width: 65ch;
+}
+
+.toolPanel {
+  display: grid;
+  gap: var(--wa-pad);
+  min-width: 0;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wa-pad-sm);
+  padding-block-end: var(--wa-pad-sm);
+  border-bottom: 1px solid var(--wa-border);
+}
+
+.panelHeader > div { min-width: 0; }
+.panelIcon,
+.coachIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--wa-radius-sm);
+  color: var(--wa-accent-text);
+  background: var(--wa-accent-soft);
+}
+
+.editor { min-width: 0; }
+
+/* The existing forms own behavior and inline field sizing. Only the resume
+   document gets this scoped paper treatment; other tool editors are unchanged. */
+.editor textarea {
+  box-shadow: inset 4px 0 0 var(--wa-accent-soft), var(--wa-shadow);
+  border-color: var(--wa-control-border) !important;
+  padding: var(--wa-pad-sm) !important;
+  line-height: 1.7;
+  font-family: inherit;
+}
+
+.editor textarea:focus-visible {
+  border-color: var(--wa-accent) !important;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
+}
+
+@media (forced-colors: active) {
+  .editor textarea:focus-visible {
+    outline: 2px solid Highlight;
+    box-shadow: none;
+  }
+}
+
+.editor :is(button:not([role='switch']), input:not([type='file'], [type='checkbox'], [type='radio']), select) { min-height: 3rem !important; }
+
+.getStarted {
+  padding: var(--wa-pad-sm);
+  background: var(--wa-surface-2);
+  border-radius: var(--wa-radius-sm);
+}
+
+.getStarted h3 { margin: 0 0 0.5rem; color: var(--wa-text); font-size: var(--wa-type-body); font-weight: 700; }
+.getStarted ol { margin: 0; padding-inline-start: 1.25rem; display: grid; gap: 0.375rem; color: var(--wa-muted); font-size: var(--wa-type-body); line-height: 1.6; }
+
+.nextSteps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--wa-pad-sm);
+  border-top: 1px solid var(--wa-border);
+  padding-block-start: var(--wa-pad-sm);
+}
+
+.nextLabel { margin: 0; color: var(--wa-text); font-size: var(--wa-type-body); font-weight: 700; }
+.nextDescription { margin: 0.25rem 0 0; color: var(--wa-muted); font-size: var(--wa-type-body); line-height: 1.5; }
+.nextActions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.action { min-height: 3rem; }
+
+.coachPreview { display: grid; justify-items: center; padding-block: calc(var(--wa-pad) * 2); text-align: center; }
+.coachIcon { width: 4rem; height: 4rem; margin-block-end: var(--wa-pad-sm); }
+.coachPreview .coachAvailability { margin-block-start: var(--wa-pad-sm); font-size: var(--wa-type-meta); padding-block-start: var(--wa-pad-sm); border-top: 1px solid var(--wa-border); }
+.coachLoading { min-height: 15rem; display: grid; place-items: center; color: var(--wa-muted); font-size: var(--wa-type-body); }
+
+@media (hover: hover) {
+  .tab:not([aria-selected='true']):hover { color: var(--wa-text); background: var(--wa-surface-2); }
+}
+
+@media (max-width: 45rem) {
+  .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 0.75rem; }
+  .studio .tabs > .tab { gap: 0.5rem; min-height: 4.5rem; }
+  .tabHint { font-size: var(--wa-type-meta); }
+  .panelHeader { gap: 0.75rem; }
+  .panelIcon { width: 2.5rem; height: 2.5rem; }
+  .nextActions { width: 100%; }
+  .action { flex: 1 1 auto; }
+}
+
+@media (max-width: 30rem) {
+  .tabs { row-gap: 0.5rem; padding-block-end: 0.75rem; }
+  .studio .tabs > .tab { min-height: 3.75rem; gap: 0.375rem; padding: 0.5rem; }
+  .tab::after { inset-inline: 0.5rem; bottom: -0.25rem; height: 2px; }
+  .tabIcon { width: 1.75rem; height: 1.75rem; }
+  .tabCopy { display: block; }
+  .tabLabel { line-height: 1.25; }
+  /* Keep the tab descriptions available to aria-describedby without using
+     phone space needed for the working document. */
+  .tabHint {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+@media (max-width: 25rem) {
+  .panelHeader { display: block; }
+  .panelIcon { margin-block-end: 0.75rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab { transition: none; }
+}

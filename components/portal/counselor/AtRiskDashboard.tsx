@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState, useCallback, type ReactNode } from 'react';
 import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { formatDate } from '@/lib/i18n/date';
+import { DEFAULT_LOCALE, isAppLocale } from '@/lib/i18n/config';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 import { describeMemberRequestException, readMemberRequestFailure } from '@/lib/portal/memberRequestFailure';
@@ -136,11 +138,6 @@ const STATUS_TOOLTIP: Record<AtRiskMember['status'], string> = {
   escalated: 'Escalated to admin for additional support—admin team should review.'};
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-
-function formatDate(d: string | null): string {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString();
-}
 
 function scoreLevel(score: number): AtRiskMember['riskLevel'] {
   if (score >= 70) return 'CRITICAL';
@@ -1059,6 +1056,7 @@ function RiskRow({
   acting: boolean;
 }) {
   const cfg = RISK_CONFIG[row.riskLevel];
+  const locale = useLocale();
   const c = colorVar(cfg.color);
   const Icon = cfg.icon;
 
@@ -1130,7 +1128,7 @@ function RiskRow({
             {row.phone ? ` · ${row.phone}` : ''}
           </div>
           <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 4 }}>
-            {row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : 'Not enrolled'} · {row.lastActivityAt ? `last activity ${formatDate(row.lastActivityAt)}` : 'No activity recorded'}
+            {row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : 'Not enrolled'} · {row.lastActivityAt ? `last activity ${formatDate(row.lastActivityAt, isAppLocale(locale) ? locale : DEFAULT_LOCALE)}` : 'No activity recorded'}
           </div>
           <FactorChips factors={row.factors} />
         </div>

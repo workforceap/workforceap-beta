@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { DesignSurface, SectionHeader } from '@/components/portal/kit';
+import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import PartnerMembersList from '@/components/portal/PartnerMembersList';
 import PartnerReferredMembersMobile from '@/components/partner/PartnerReferredMembersMobile';
 
@@ -97,10 +97,10 @@ export default function DevStaffPartnerMembersPage() {
 
   return (
     <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6 wa-p-6">
-      <SectionHeader
+      <PageOpener
         kicker="Partner Dashboard"
         title="Referred Members"
-        goal="Enrollment and placement dates across every referral milestone stage"
+        lede="Enrollment and placement dates across every referral milestone stage"
       />
 
       <div className="wa-block md:wa-hidden">

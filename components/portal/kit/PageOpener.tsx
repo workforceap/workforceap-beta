@@ -15,7 +15,9 @@ interface PageOpenerProps extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
 
 /**
  * Member page opener — kicker + h1 + lede. Matches the VoiceStudio / member
- * kit idiom so every member surface starts the same way. Use this instead of
+ * kit idiom so every member surface starts the same way. Its responsive type
+ * and spacing live in portal-kit.css, with a compact dense-surface variant.
+ * Use this instead of
  * `PageHeader` breadcrumbs on warm member routes.
  *
  * Type: kicker is metadata (`--wa-type-meta`, 13px floor); lede is body
@@ -44,18 +46,7 @@ export function PageOpener({
           {icon}
           <span>{kicker}</span>
         </div>
-        <h1
-          className="h-font"
-          style={{
-            fontSize: 'clamp(22px, 6vw, 30px)',
-            fontWeight: 800,
-            letterSpacing: '-0.03em',
-            marginTop: 4,
-            textWrap: 'balance',
-          }}
-        >
-          {title}
-        </h1>
+        <h1 className="h-font wa-page-opener-title">{title}</h1>
         {lede ? <p className="wa-page-opener-lede">{lede}</p> : null}
       </div>
       {action}

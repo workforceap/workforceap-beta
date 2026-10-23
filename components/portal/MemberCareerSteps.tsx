@@ -15,7 +15,7 @@ export function MemberCareerSteps({ current, resultId }: {
     { id: 'training', label: t('training'), href: trainingBridgeHref(resultId) },
   ];
   return (
-    <nav className={styles.navigation} aria-label={t('nav')}>
+    <nav className={`${styles.navigation} ${styles.careerNavigation}`} aria-label={t('nav')}>
       {items.map(item => (
         <Link key={item.id} href={item.href} className="wa-kit-focus" aria-current={current === item.id ? 'step' : undefined}>
           {item.label}

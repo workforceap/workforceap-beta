@@ -280,6 +280,27 @@
     "machineTranslationNoticeAction": "Switch language"
   },
   "dashboard": {
+    "handoff": {
+      "homeLede": "Your next step, with the progress we can confirm.",
+      "title": "Your progress so far",
+      "resume": "Résumé",
+      "consultation": "Consultation",
+      "training": "Training access",
+      "resumeReceived": "Received in portal",
+      "resumeUnknown": "No portal copy recorded",
+      "consultationBooked": "Booking confirmed",
+      "consultationUnknown": "Booking status not connected",
+      "trainingConfirmed": "Access confirmed",
+      "trainingUnknown": "Activation not confirmed",
+      "outsidePortal": "Already emailed your résumé or booked through your welcome email? Those steps may not show here. Check with your team before repeating them.",
+      "confirm": "Confirm with my team",
+      "prepareTitle": "Prepare for your consultation",
+      "prepareBody": "Review your résumé and note the experience, goals and questions you want to discuss with your advisor.",
+      "resumeTitle": "Work on your résumé",
+      "resumeBody": "Use the Résumé workspace to review a document you already have or prepare one for your consultation.",
+      "reviewResume": "Review my résumé",
+      "openResume": "Open Résumé workspace"
+    },
     "priorityAction": "Priority Action",
     "priorityActionFor": "For {program}.",
     "yourProgram": "Your program",
@@ -437,7 +458,10 @@
     "pwaInstallCta": "Install",
     "trainingPlanComplete": "Your training plan is complete. Focus on job outcomes and career readiness.",
     "doThisNext": "Do this next",
-    "todayFocus": "Today",
+    "todayFocus": "Your next step",
+    "dismissSuggestion": "Dismiss suggestion",
+    "suggestionDismissed": "Suggestion dismissed. Your recorded progress has not changed.",
+    "dismissSuggestionError": "We could not dismiss this suggestion. Try again.",
     "alsoForYou": "Also for you",
     "alsoForYouHint": "Other helpful next steps",
     "stateGettingStarted": "Getting started",
@@ -4454,7 +4478,22 @@
       "rewriteSource": "Improve starts from your original resume. Generated text is a separate result; your original, saved revised resume, and past runs remain distinct.",
       "rewriteHistory": "Saved resume improvements",
       "filesUnavailable": "Your resume files could not be loaded. Try again to refresh their status.",
-      "retryFiles": "Reload resume files"
+      "retryFiles": "Reload resume files",
+      "design": {
+        "filesHint": "Files & versions",
+        "scoreHint": "Find the gaps",
+        "rewriteHint": "Refine your draft",
+        "coachHint": "Talk it through",
+        "filesTitle": "Your resume files",
+        "filesIntro": "Upload an original, build from your profile, and review each version.",
+        "scoreTitle": "See where your resume can improve",
+        "rewriteTitle": "Shape your resume for the role",
+        "nextIntro": "Refine your draft or talk through your next step.",
+        "coachTitle": "Your AI resume coach",
+        "coachIntro": "Talk through your experience and work on how to present it.",
+        "coachAvailability": "Voice coach runs in a signed-in session.",
+        "draftNotice": "Score and Rewrite drafts stay here while this page is open. Copy your edits before reloading or leaving; unsaved changes are not restored."
+      }
     },
     "interviews": {
       "title": "Interviews",

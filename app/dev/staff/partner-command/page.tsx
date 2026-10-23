@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { BarChart3, Download, GraduationCap, Percent, Target, Users, Wallet } from 'lucide-react';
 import {
   DesignSurface,
+  PageOpener,
   SectionHeader,
   DataTable,
   QueueRow,
@@ -68,10 +69,10 @@ export default function DevStaffPartnerCommandPage() {
 
   return (
     <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6 wa-p-6">
-      <SectionHeader
+      <PageOpener
         kicker="Partner Dashboard"
         title="Skillpoint Alliance"
-        goal="Referrals, progress & outcomes for Skillpoint Alliance"
+        lede="Referrals, progress & outcomes for Skillpoint Alliance"
       />
 
       <PartnerKpiGrid

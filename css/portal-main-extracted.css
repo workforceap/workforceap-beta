@@ -1294,8 +1294,8 @@ html {
         gap: 0.4rem 0.65rem;
     }
     html.wap-portal-chrome-compact .workspace-menu-btn {
-        min-width: 40px;
-        min-height: 40px;
+        min-width: 44px;
+        min-height: 44px;
         padding: 0.32rem;
     }
     html.wap-portal-chrome-compact .workspace-shell-header__meta .workspace-shell-context--chip,
@@ -1345,17 +1345,20 @@ html.dark .workspace-shell-header,
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 44px;
-    min-height: 44px;
+    min-width: 48px;
+    min-height: 48px;
     padding: 0.45rem;
-    background: transparent;
-    border: 1px solid var(--outline-variant);
-    border-radius: var(--radius-sm);
+    background: var(--wa-surface);
+    border: 1px solid var(--wa-border);
+    border-radius: var(--wa-radius-sm);
     cursor: pointer;
-    color: var(--color-on-surface);
+    color: var(--wa-text);
+    box-shadow: var(--wa-shadow);
+    transition: background-color var(--wa-dur-fast) var(--wa-ease), border-color var(--wa-dur-fast) var(--wa-ease);
 }
 .workspace-menu-btn:hover {
-    background: var(--surface-container-high);
+    background: var(--wa-accent-soft);
+    border-color: var(--wa-control-border);
 }
 .workspace-shell-brand-block {
     display: flex;
@@ -1364,9 +1367,10 @@ html.dark .workspace-shell-header,
     min-width: 0;
 }
 .workspace-shell-brand {
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: var(--color-on-surface);
+    letter-spacing: -0.035em;
+    color: var(--wa-text);
     line-height: 1.2;
 }
 .workspace-shell-brand:hover {
@@ -1391,8 +1395,8 @@ html.dark .workspace-shell-header,
     align-items: center;
     gap: 0.35rem;
     font-size: 0.8125rem;
-    font-weight: 700;
-    color: var(--wa-accent-text);
+    font-weight: 500;
+    color: var(--wa-muted);
     text-decoration: none;
     max-width: 100%;
 }
@@ -2034,7 +2038,7 @@ html.dark .workspace-sidebar-group-label {
     background: color-mix(in srgb, var(--color-accent) 6%, var(--surface-container-high) 94%);
     color: var(--color-on-surface);
     border-color: color-mix(in srgb, var(--color-accent) 14%, transparent 86%);
-    transform: translateX(1px);
+    transform: none;
 }
 .workspace-sidebar-link.active {
     background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 12%, var(--color-white) 88%), color-mix(in srgb, var(--color-accent) 7%, var(--color-white) 93%));
@@ -9919,11 +9923,21 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
     opacity: 1;
 }
 .workspace-shell-root[data-workspace-role] .workspace-sidebar-link {
-    min-height: 2.75rem;
+    min-height: 3rem;
     font-size: 1rem;
     font-weight: 500;
     gap: 0.625rem;
     transition: background-color var(--wa-dur-fast) var(--wa-ease), color var(--wa-dur-fast) var(--wa-ease);
+}
+.workspace-shell-root[data-workspace-role] .workspace-sidebar-list {
+    gap: 0.375rem;
+}
+.workspace-shell-root[data-workspace-role] .workspace-sidebar-link.active {
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 var(--wa-on-accent-control);
+}
+.workspace-shell-root[data-workspace-role] .workspace-sidebar-link.active::after {
+    display: none;
 }
 .workspace-shell-root[data-workspace-role] .workspace-sidebar-group {
     margin-bottom: 0.5rem !important;

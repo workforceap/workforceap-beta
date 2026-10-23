@@ -3,7 +3,7 @@ import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKi
 import MemberApprovalStatusCard from '@/components/portal/MemberApprovalStatusCard';
 import { memberApprovalCardPlacement } from '@/lib/member/memberApprovalCardPlacement';
 import { buildMemberApprovalStatus, type MemberApprovalFacts } from '@/lib/member/memberApprovalStatus';
-import { STALE_TRAINING_COUNSELOR_ACTION, buildFirst90Card } from '@/lib/member/loadMemberDashboardHome';
+import { STALE_TRAINING_COUNSELOR_ACTION, buildFirst90Card, type MemberHandoffEvidence } from '@/lib/member/loadMemberDashboardHome';
 import { isFirst90Stage, type First90Stage } from '@/lib/member/first90Days';
 import type { NextBestAction } from '@/lib/member/nextBestActions';
 import { programDisplayTitle } from '@/lib/content/programTitle';
@@ -16,6 +16,9 @@ import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
  * Storybook-lite showcase — MemberHomeKit "Command Center" (fully populated,
  * every new optional prop wired). Preview-only, no auth/DB. See
  * app/dev/dashboard/page.tsx for the pattern.
+ * `?handoff=unknown|received|confirmed` shows synthetic handoff evidence.
+ * `confirmed` is a contract preview only: the live Home loader has no calendar
+ * booking or provider access receipt source and returns unknown for both.
  *
  * `?approval=live|closed|complete|off` swaps the approval-status card fixture
  * so both placements can be reviewed in the real chrome: `live` (a pending
@@ -123,11 +126,18 @@ export default async function DevMemberHomePage({
     program?: string;
     staff?: string;
     advisor?: string;
+    handoff?: string;
   }>;
 }) {
   if (process.env.VERCEL_ENV === 'production') notFound();
 
   const params = await searchParams;
+  const handoffFixture = params?.handoff;
+  const handoff: MemberHandoffEvidence = {
+    resume: handoffFixture === 'unknown' ? 'unknown' : 'portal_received',
+    consultation: handoffFixture === 'confirmed' ? 'booked' : 'unknown',
+    training: handoffFixture === 'confirmed' ? 'access_confirmed' : 'unknown',
+  };
   const requested = params?.approval ?? 'live';
   const courseFixture = params?.course;
   const coursePercent = courseFixture === 'zero' || courseFixture === 'zero-stale' ? 0 : 78;
@@ -178,6 +188,9 @@ export default async function DevMemberHomePage({
 
   return (
     <>
+    <p className="wa-kit-meta wa-px-4 wa-py-3" role="note">
+      Sample data preview. Handoff states are synthetic; email, calendar and provider access are not connected here.
+    </p>
     <PWAInstallPrompt />
     {onboardingFixture ? (
       <PortalEntryErrorBoundary>
@@ -189,7 +202,7 @@ export default async function DevMemberHomePage({
           isSuperAdmin={false}
           tourSteps={MEMBER_PORTAL_TOUR_STEPS}
           wizardProps={{
-            initialFullName: 'Mike Brown',
+            initialFullName: 'Alex Sample',
             initialPhone: '',
             initialAddress: '',
             initialCity: 'Austin',
@@ -211,7 +224,7 @@ export default async function DevMemberHomePage({
       showStaffViewBanner={params?.staff === '1'}
       advisor={params?.advisor === 'off' ? null : { name: 'Sample Advisor', firstName: 'Sample', messagingHref: '/dev/member/messages' }}
       programSwitch={programSwitch}
-      firstName="Mike"
+      firstName="Alex"
       coursePercent={coursePercent}
       courseProgressStale={courseProgressStale}
       activeJobs={4}
@@ -225,6 +238,8 @@ export default async function DevMemberHomePage({
       currentStreak={12}
       longestStreak={12}
       resumeHref="/dev/member/program"
+      resumeStudioHref="/dev/member/resume-studio"
+      handoff={handoff}
       toolkitHref="/dev/member/toolkit"
       jobsHref="/dev/member/jobs"
       coursesHref="/dev/member/program"
@@ -232,7 +247,15 @@ export default async function DevMemberHomePage({
       jobOffers={jobOffers}
       first90={first90}
       youthNoticeAge={youthNoticeAge}
-      doThisNext={{
+      doThisNext={handoffFixture === 'received' || handoffFixture === 'unknown' ? {
+        id: 'prepare-consultation-fixture',
+        title: 'Prepare for your consultation',
+        body: 'Review your résumé, career goals and questions for your advisor. If you already emailed your résumé or booked, confirm those steps with your team.',
+        href: '/dev/member/resume-studio',
+        cta: handoffFixture === 'received' ? 'Review my résumé' : 'Open Résumé workspace',
+        variant: 'default',
+        weight: 80,
+      } : {
         id: 'resume-module',
         title: 'Shared Responsibility Model',
         body: '~25 min · Module 8 of 9 · AWS Cloud Practitioner — due Thursday.',

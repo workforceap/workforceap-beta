@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation';
 import EmployerJobsBoard, { type EmployerJobBoardItem } from '@/components/employer/EmployerJobsBoard';
 import { jobPostingStatusLabel } from '@/lib/status/jobPostingStatusVocabulary';
+import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
+import PortalPageFrame from '@/components/portal/PortalPageFrame';
+import { DesignSurface } from '@/components/portal/kit';
 
 /**
  * Storybook-lite showcase — the employer "My Jobs" board in the Command
@@ -182,24 +185,33 @@ export default function DevEmployerJobsBoardPage() {
   if (process.env.VERCEL_ENV === 'production') notFound();
 
   return (
-    <EmployerJobsBoard
-      jobs={JOBS}
-      filter="all"
-      page={1}
-      pageSize={20}
-      totalInFilter={JOBS.length}
-      totalInDb={JOBS.length}
-      deletableInFilter={JOBS.filter((j) => ['draft', 'pending', 'filled', 'closed'].includes(j.status)).map((j) => ({
-        id: j.id,
-        title: j.title,
-        status: j.status,
-      }))}
-      closableInFilter={JOBS.filter((j) => ['live', 'approved'].includes(j.status)).map((j) => ({
-        id: j.id,
-        title: j.title,
-        status: j.status,
-      }))}
-      titleByIdInFilter={TITLE_BY_ID}
-    />
+    <DesignSurface surface="dense" className="wa-p-6">
+      <PortalPageFrame>
+        <EmployerPageOpener
+          kicker="Employer workspace"
+          title="Job postings"
+          subtitle="Manage your postings and see where each role needs attention."
+        />
+        <EmployerJobsBoard
+          jobs={JOBS}
+          filter="all"
+          page={1}
+          pageSize={20}
+          totalInFilter={JOBS.length}
+          totalInDb={JOBS.length}
+          deletableInFilter={JOBS.filter((j) => ['draft', 'pending', 'filled', 'closed'].includes(j.status)).map((j) => ({
+            id: j.id,
+            title: j.title,
+            status: j.status,
+          }))}
+          closableInFilter={JOBS.filter((j) => ['live', 'approved'].includes(j.status)).map((j) => ({
+            id: j.id,
+            title: j.title,
+            status: j.status,
+          }))}
+          titleByIdInFilter={TITLE_BY_ID}
+        />
+      </PortalPageFrame>
+    </DesignSurface>
   );
 }

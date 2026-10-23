@@ -1,17 +1,16 @@
 'use client';
 
-import { cloneElement, useCallback, useEffect, useId, useState, type CSSProperties, type ReactElement, type ReactNode } from 'react';
+import { cloneElement, useCallback, useEffect, useId, useState, type ReactElement, type ReactNode } from 'react';
 import dynamic from 'next/dynamic';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { FilePen, FileText, Gauge, Headset } from 'lucide-react';
+import { ArrowRight, FilePen, FileText, Gauge, Headset } from 'lucide-react';
 import ResumeStrengthForm from '@/components/portal/tools/ResumeStrengthForm';
 import ResumeRewriterForm from '@/components/portal/tools/ResumeRewriterForm';
 import ResumeRewriterClient from '@/app/(portal)/dashboard/ai-tools/resume-rewriter/ResumeRewriterClient';
 import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBreakdown';
 import { useListFocus } from '@/components/portal/kit/hooks/useListFocus';
-import { resumeWorkspaceHref } from '@/lib/member/memberWorkspace';
-import styles from './MemberWorkspace.module.css';
+import styles from './ResumeStudio.module.css';
 
 const ResumeCoachWorkspace = dynamic(() => import('@/components/portal/ResumeCoachWorkspace'), {
   ssr: false,
@@ -19,15 +18,7 @@ const ResumeCoachWorkspace = dynamic(() => import('@/components/portal/ResumeCoa
     <div
       role="status"
       aria-live="polite"
-      className="wa-kit-card"
-      style={{
-        minHeight: 240,
-        padding: 24,
-        textAlign: 'center',
-        color: 'var(--wa-muted)',
-        fontSize: 14,
-        fontWeight: 600,
-      }}
+      className={`wa-kit-card ${styles.coachLoading}`}
     >
       Loading coach…
     </div>
@@ -47,42 +38,17 @@ export function normalizeStudioView(value: string | undefined, hasFiles = false)
   return hasFiles ? 'files' : 'score';
 }
 
-const KIT_BTN =
-  'wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none';
-
-const kitBtnSolid: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 8,
-  minHeight: 44,
-  padding: '10px 16px',
-  background: 'var(--wa-accent)',
-  color: 'var(--wa-on-accent-control)',
-  border: '1px solid var(--wa-accent)',
-  fontWeight: 600,
-  fontSize: 'var(--wa-type-body)',
-  borderRadius: 999,
-  cursor: 'pointer',
-};
-
-const kitBtnOutline: CSSProperties = {
-  ...kitBtnSolid,
-  background: 'transparent',
-  color: 'var(--wa-accent-text)',
-  border: '1px solid var(--wa-control-border)',
-};
-
 type Props = {
   hasResume: boolean;
   /** The existing file manager, mounted once and retained while changing views. */
-  filesSlot?: ReactElement<{ active?: boolean }>;
+  filesSlot?: ReactElement<{ active?: boolean; onResumeAvailabilityChange?: (available: boolean) => void }>;
   scoreHistorySlot?: ReactNode;
   rewriteHistorySlot?: ReactNode;
-  /** View-switch base. Proofs use `/dev/member/resume-studio`. */
+  /** Legacy view-switch base; tab changes preserve the current browser pathname. */
   basePath?: string;
   preview?: boolean;
   initialResume?: string;
+  initialRewriteResume?: string;
   initialJobTarget?: string;
   previewScoreOutput?: string;
   previewScorePayload?: ResumeScorePayload | null;
@@ -94,9 +60,9 @@ export default function ResumeStudioClient({
   filesSlot,
   scoreHistorySlot,
   rewriteHistorySlot,
-  basePath = '/dashboard/ai-tools/resume-studio',
   preview = false,
   initialResume,
+  initialRewriteResume,
   initialJobTarget,
   previewScoreOutput,
   previewScorePayload,
@@ -104,9 +70,16 @@ export default function ResumeStudioClient({
 }: Props) {
   const t = useTranslations('resumeStudio');
   const tw = useTranslations('memberWorkspace.resume');
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const view = normalizeStudioView(searchParams?.get('view') ?? undefined, !!filesSlot);
+  const hasFiles = !!filesSlot;
+  const [resumeAvailable, setResumeAvailable] = useState(hasResume);
+  const onFilesAvailabilityChange = filesSlot?.props.onResumeAvailabilityChange;
+  const updateResumeAvailability = useCallback((available: boolean) => {
+    setResumeAvailable(available);
+    onFilesAvailabilityChange?.(available);
+  }, [onFilesAvailabilityChange]);
+  useEffect(() => { setResumeAvailable(hasResume); }, [hasResume]);
+  const view = normalizeStudioView(searchParams?.get('view') ?? undefined, hasFiles);
   const [visited, setVisited] = useState<ResumeStudioView[]>([view]);
   const id = useId();
   const { containerRef, onKeyDown } = useListFocus<HTMLDivElement>({ orientation: 'horizontal' });
@@ -117,15 +90,21 @@ export default function ResumeStudioClient({
 
   const setView = useCallback(
     (next: ResumeStudioView) => {
+      const url = new URL(window.location.href);
+      if (normalizeStudioView(url.searchParams.get('view') ?? undefined, hasFiles) === next) return;
+      url.searchParams.set('view', next);
+      // Next integrates native history with useSearchParams. This is a local
+      // panel change: retain locale/context and drafts without an RSC navigation.
+      // The URL guard also combines pointer focus + click into one history entry.
+      window.history.pushState(null, '', `${url.pathname}${url.search}${url.hash}`);
       setVisited(current => current.includes(next) ? current : [...current, next]);
-      router.replace(resumeWorkspaceHref(next, searchParams?.toString(), basePath), { scroll: false });
     },
-    [router, basePath, searchParams],
+    [hasFiles],
   );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div ref={containerRef} onKeyDown={onKeyDown} role="tablist" aria-label={t('viewsLabel')} className="resume-studio-tabs wa-page-tabs" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+    <div className={styles.studio}>
+      <div ref={containerRef} onKeyDown={onKeyDown} role="tablist" aria-label={t('viewsLabel')} className={`resume-studio-tabs wa-page-tabs ${styles.tabs}`}>
         {views.map(({ id: viewId, Icon }) => {
           const active = viewId === view;
           const label = viewId === 'files' ? tw('files') : t(`tabs.${viewId}`);
@@ -136,38 +115,53 @@ export default function ResumeStudioClient({
               role="tab"
               id={`${id}-tab-${viewId}`}
               aria-controls={`${id}-panel-${viewId}`}
+              aria-describedby={`${id}-hint-${viewId}`}
               aria-selected={active}
               tabIndex={active ? 0 : -1}
               data-kit-list-item
               aria-label={label}
               onClick={() => setView(viewId)}
               onFocus={() => { if (!active) setView(viewId); }}
-              className={KIT_BTN}
-              style={active ? kitBtnSolid : kitBtnOutline}
+              className={`wa-kit-focus ${styles.tab}`}
             >
-              <Icon size={16} aria-hidden="true" />
-              {label}
+              <span className={styles.tabIcon}><Icon size={20} aria-hidden="true" /></span>
+              <span className={styles.tabCopy}>
+                <span className={styles.tabLabel}>{label}</span>
+                <span id={`${id}-hint-${viewId}`} className={styles.tabHint}>{tw(`design.${viewId}Hint`)}</span>
+              </span>
             </button>
           );
         })}
       </div>
 
+      {view === 'score' || view === 'rewrite' ? <p className="wa-kit-meta">{tw('design.draftNotice')}</p> : null}
+
       {filesSlot ? (
-        <section id={`${id}-panel-files`} role="tabpanel" aria-labelledby={`${id}-tab-files`} hidden={view !== 'files'}>
-          {view === 'files' || visited.includes('files') ? cloneElement(filesSlot, { active: view === 'files' }) : null}
+        <section id={`${id}-panel-files`} role="tabpanel" aria-labelledby={`${id}-tab-files`} hidden={view !== 'files'} className={styles.filesPanel}>
+          <div className={styles.filesHeading}>
+            <h2>{tw('design.filesTitle')}</h2>
+            <p>{tw('design.filesIntro')}</p>
+          </div>
+          {view === 'files' || visited.includes('files') ? cloneElement(filesSlot, { active: view === 'files', onResumeAvailabilityChange: updateResumeAvailability }) : null}
         </section>
       ) : null}
 
       <section id={`${id}-panel-score`} role="tabpanel" aria-labelledby={`${id}-tab-score`} hidden={view !== 'score'}>
       {view === 'score' || visited.includes('score') ? (
-        <div className="wa-kit-card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <p className={styles.context}>{tw('scoreSource')}</p>
-          {!hasResume ? (
+        <div className={`wa-kit-card ${styles.toolPanel}`}>
+          <header className={styles.panelHeader}>
+            <span className={styles.panelIcon}><Gauge size={24} aria-hidden="true" /></span>
             <div>
-              <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 700, color: 'var(--wa-text)' }}>
+              <h2>{tw('design.scoreTitle')}</h2>
+              <p>{tw('scoreSource')}</p>
+            </div>
+          </header>
+          {!resumeAvailable ? (
+            <div className={styles.getStarted}>
+              <h3>
                 {t('emptyTitle')}
-              </h2>
-              <ol style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 6, color: 'var(--wa-muted)', fontSize: 14, lineHeight: 1.5 }}>
+              </h3>
+              <ol>
                 <li>{t('emptyStep1')}</li>
                 <li>{t('emptyStep2')}</li>
                 <li>{t('emptyStep3')}</li>
@@ -175,31 +169,33 @@ export default function ResumeStudioClient({
             </div>
           ) : null}
 
-          <ResumeStrengthForm
-            preview={preview}
-            initialResume={initialResume}
-            previewOutput={previewScoreOutput}
-            previewPayload={previewScorePayload}
-          />
+          <div className={styles.editor}>
+            <ResumeStrengthForm
+              preview={preview}
+              initialResume={initialResume}
+              previewOutput={previewScoreOutput}
+              previewPayload={previewScorePayload}
+            />
+          </div>
 
-          <div>
-            <p style={{ margin: '0 0 8px', fontSize: 14, fontWeight: 700, color: 'var(--wa-text)' }}>
-              {t('nextStepsTitle')}
-            </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div className={styles.nextSteps}>
+            <div>
+              <p className={styles.nextLabel}>{t('nextStepsTitle')}</p>
+              <p className={styles.nextDescription}>{tw('design.nextIntro')}</p>
+            </div>
+            <div className={styles.nextActions}>
               <button
                 type="button"
-                className={KIT_BTN}
-                style={kitBtnSolid}
+                className={`wa-kit-cta wa-kit-focus ${styles.action}`}
                 onClick={() => setView('rewrite')}
               >
                 <FilePen size={16} aria-hidden="true" />
                 {t('ctaRewrite')}
+                <ArrowRight size={16} aria-hidden="true" />
               </button>
               <button
                 type="button"
-                className={KIT_BTN}
-                style={kitBtnOutline}
+                className={`wa-kit-cta wa-kit-cta--ghost wa-kit-focus ${styles.action}`}
                 onClick={() => setView('coach')}
               >
                 <Headset size={16} aria-hidden="true" />
@@ -215,18 +211,26 @@ export default function ResumeStudioClient({
 
       <section id={`${id}-panel-rewrite`} role="tabpanel" aria-labelledby={`${id}-tab-rewrite`} hidden={view !== 'rewrite'}>
       {view === 'rewrite' || visited.includes('rewrite') ? (
-        <div className="wa-kit-card">
-          <p className={styles.context}>{tw('rewriteSource')}</p>
-          {preview ? (
-            <ResumeRewriterForm
-              preview
-              initialResume={initialResume}
-              initialJobTarget={initialJobTarget}
-              previewOutput={previewRewriteOutput}
-            />
-          ) : (
-            <ResumeRewriterClient />
-          )}
+        <div className={`wa-kit-card ${styles.toolPanel}`}>
+          <header className={styles.panelHeader}>
+            <span className={styles.panelIcon}><FilePen size={24} aria-hidden="true" /></span>
+            <div>
+              <h2>{tw('design.rewriteTitle')}</h2>
+              <p>{tw('rewriteSource')}</p>
+            </div>
+          </header>
+          <div className={styles.editor}>
+            {preview ? (
+              <ResumeRewriterForm
+                preview
+                initialResume={initialRewriteResume ?? initialResume}
+                initialJobTarget={initialJobTarget}
+                previewOutput={previewRewriteOutput}
+              />
+            ) : (
+              <ResumeRewriterClient />
+            )}
+          </div>
           {!preview ? rewriteHistorySlot : null}
         </div>
       ) : null}
@@ -235,10 +239,11 @@ export default function ResumeStudioClient({
       <section id={`${id}-panel-coach`} role="tabpanel" aria-labelledby={`${id}-tab-coach`} hidden={view !== 'coach'}>
       {view === 'coach' ? (
         preview ? (
-          <div className="wa-kit-card">
-            <p style={{ margin: 0, fontSize: 14, color: 'var(--wa-muted)', lineHeight: 1.5 }}>
-              Voice coach runs in a signed-in session.
-            </p>
+          <div className={`wa-kit-card ${styles.coachPreview}`}>
+            <span className={styles.coachIcon}><Headset size={32} aria-hidden="true" /></span>
+            <h2>{tw('design.coachTitle')}</h2>
+            <p>{tw('design.coachIntro')}</p>
+            <p className={styles.coachAvailability}>{tw('design.coachAvailability')}</p>
           </div>
         ) : (
           <ResumeCoachWorkspace />

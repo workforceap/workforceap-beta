@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { AtRiskMember } from '@/components/portal/counselor/AtRiskDashboard';
 import AtRiskShowcaseClient from './AtRiskShowcaseClient';
+import CounselorWorkspace from '@/components/portal/counselor/CounselorWorkspace';
 
 /**
  * Storybook-lite showcase — AtRiskDashboard "Command Center" redesign
@@ -121,5 +122,9 @@ const MOCK_MEMBERS: AtRiskMember[] = [
 export default function DevStaffCounselorAtRiskPage() {
   if (process.env.VERCEL_ENV === 'production') notFound();
 
-  return <AtRiskShowcaseClient initialMembers={MOCK_MEMBERS} />;
+  return (
+    <CounselorWorkspace view="attention" filter="at-risk" baseHref="/dev/staff/counselor-workspace">
+      <AtRiskShowcaseClient initialMembers={MOCK_MEMBERS} />
+    </CounselorWorkspace>
+  );
 }

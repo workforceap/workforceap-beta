@@ -32,6 +32,26 @@
   font-weight: 700;
 }
 
+@media (max-width: 30rem) {
+  .navigation.careerNavigation {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 0.25rem;
+    align-items: stretch;
+  }
+
+  .careerNavigation a {
+    min-width: 0;
+    min-height: 2.75rem;
+    justify-content: center;
+    padding: 0.375rem 0.25rem;
+    line-height: 1.35;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+
 .context {
   margin: 0;
   padding-block: 0.5rem;
@@ -50,6 +70,43 @@
 }
 
 .resumeColumns > * { min-width: 0; }
+
+/* Keep the file tools secondary to the document preview, in both themes. */
+.resumeColumns > :first-child > :global(.wa-kit-card) {
+  background: var(--wa-surface-2);
+  box-shadow: none;
+}
+
+.resumeColumns > :first-child > :global(.wa-kit-card):first-child {
+  background: var(--wa-surface);
+}
+
+.resumeColumns > :last-child > :global(.wa-kit-card) {
+  border-top: 4px solid var(--wa-accent);
+  box-shadow: var(--wa-shadow-lg);
+}
+
+.resumeColumns :global(#resume-ai-generator) > button {
+  min-height: 3rem !important;
+  font-size: var(--wa-type-body) !important;
+}
+
+.resumeColumns > :last-child > section > div > div:first-child {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.resumeColumns > :last-child > section > div > div:first-child > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  font-size: var(--wa-type-body);
+}
+
+.resumeColumns > :last-child :global(.markdown-body) {
+  color: var(--wa-text);
+  line-height: 1.7;
+}
 
 .modeList {
   list-style: none;
@@ -81,7 +138,7 @@
 .controls > :first-child { flex: 1 1 20rem; }
 
 @media (min-width: 64rem) {
-  .resumeColumns { grid-template-columns: minmax(16rem, 0.8fr) minmax(0, 1.7fr); }
+  .resumeColumns { grid-template-columns: minmax(17rem, 0.95fr) minmax(0, 1.65fr); }
 }
 
 @media (max-width: 40rem) {

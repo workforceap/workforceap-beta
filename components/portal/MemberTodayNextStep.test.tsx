@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import MemberDoThisNextCard from '@/components/portal/MemberDoThisNextCard';
 import type { NextBestAction } from '@/lib/member/nextBestActions';
 
@@ -21,7 +21,7 @@ vi.mock('next/navigation', () => ({
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => {
     const map: Record<string, string> = {
-      todayFocus: 'Today',
+      todayFocus: 'Your next step',
       doThisNext: 'Do this next',
       alsoForYou: 'Also for you',
       alsoForYouHint: 'Other helpful next steps',
@@ -69,10 +69,10 @@ describe('MemberDoThisNextCard', () => {
     vi.unstubAllGlobals();
   });
 
-  it('labels the primary CTA as Today', () => {
+  it('labels the primary CTA as Your next step', () => {
     render(<MemberDoThisNextCard action={sampleAction} />);
-    expect(screen.getByLabelText('Today')).toBeInTheDocument();
-    expect(screen.getByText('Today')).toBeInTheDocument();
+    expect(screen.getByLabelText('Your next step')).toBeInTheDocument();
+    expect(screen.getByText('Your next step')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open course' })).toHaveAttribute('href', '/dashboard/learning');
   });
 
@@ -88,18 +88,16 @@ describe('MemberDoThisNextCard', () => {
     );
   });
 
-  it('completes the persisted action when the kit CTA is clicked, so the banner clears', async () => {
+  it('keeps the persisted action pending when its destination is opened', () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
     vi.stubGlobal('fetch', fetchMock);
 
     render(<MemberDoThisNextCard action={persistedAction} />);
-    fireEvent.click(screen.getByRole('link', { name: /Open course/ }));
-
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe(`/api/member/nba/${persistedAction.id}`);
-    expect(init.method).toBe('PATCH');
-    expect(JSON.parse(String(init.body))).toEqual({ status: 'COMPLETED' });
+    const link = screen.getByRole('link', { name: /Open course/ });
+    link.addEventListener('click', (event) => event.preventDefault());
+    fireEvent.click(link);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByText('Continue your next course')).toBeInTheDocument();
   });
 
   it('does not PATCH synthetic (non-UUID) actions', async () => {

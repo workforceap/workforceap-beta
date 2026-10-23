@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, type MouseEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ArrowRight } from 'lucide-react';
 
@@ -11,7 +10,7 @@ import { resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
 import { trackFunnelEvent } from '@/lib/analytics/events';
 import { postMemberEvent } from '@/lib/events/client';
 
-/** Persisted MemberNextBestAction rows have UUID ids; synthetic ones don't and can't be PATCHed. */
+/** Only persisted actions have an entity ID for click telemetry. */
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type MemberDoThisNextCardProps = {
@@ -23,36 +22,46 @@ type MemberDoThisNextCardProps = {
  * with the portal `--wa-*` tokens and `wa-kit-*` classes. Its pre-kit styling
  * went with the retired `?ui=legacy` home (WAP-195).
  *
- * Acting on the CTA marks the action `COMPLETED` — the CTA is the clearing
- * gesture, since the card has no dismiss affordance. Without this the banner
- * would be permanent, as nothing else clears a non-CareerOS action.
+ * Opening a destination is a click, not evidence that the member completed it.
+ * Completion belongs to the successful workflow or a verified staff update.
  */
 export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardProps) {
   const t = useTranslations('dashboard');
-  const router = useRouter();
-  const [completed, setCompleted] = useState(false);
-  if (!action || completed) return null;
+  const [dismissedId, setDismissedId] = useState<string | null>(null);
+  const [dismissing, setDismissing] = useState(false);
+  const [dismissErrorId, setDismissErrorId] = useState<string | null>(null);
+  const dismissalStatus = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (action?.id === dismissedId) dismissalStatus.current?.focus();
+  }, [action?.id, dismissedId]);
+  if (!action) return null;
+  if (action.id === dismissedId) {
+    return <p ref={dismissalStatus} role="status" tabIndex={-1} className="wa-kit-focus">{t('suggestionDismissed')}</p>;
+  }
 
   const actionId = action.id;
   const actionHref = resolveMemberProgramHref(action.href);
 
-  const completeAndOpen = async () => {
+  const dismissSuggestion = async () => {
+    if (dismissing) return;
+    setDismissing(true);
+    setDismissErrorId(null);
     try {
       const response = await fetch(`/api/member/nba/${actionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'COMPLETED' }),
-        keepalive: true,
+        body: JSON.stringify({ status: 'DISMISSED' }),
       });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) throw new Error('Suggestion dismissal failed');
+      setDismissedId(actionId);
     } catch {
-      setCompleted(false);
-      // Keep the unsaved action visible, but still open its destination.
+      setDismissErrorId(actionId);
+    } finally {
+      setDismissing(false);
     }
-    router.push(actionHref);
   };
 
-  const handleCtaClick = (event: MouseEvent<HTMLAnchorElement>) => {
+  const handleCtaClick = () => {
     trackFunnelEvent('member_dashboard', 'dashboard_primary_cta_clicked', {
       action_id: action.id,
       action_label: action.cta,
@@ -71,11 +80,6 @@ export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardPro
         href: actionHref,
       },
     });
-
-    if (!UUID_RE.test(actionId)) return;
-    event.preventDefault();
-    setCompleted(true);
-    void completeAndOpen();
   };
 
   return (
@@ -86,12 +90,24 @@ export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardPro
       >
         <div
           className="wa-flex wa-items-center wa-gap-2"
-          style={{ color: 'color-mix(in srgb, var(--wa-on-accent) 85%, transparent)' }}
+          style={{ color: 'color-mix(in srgb, var(--wa-on-accent) 85%, transparent)', justifyContent: 'space-between', flexWrap: 'wrap' }}
         >
           <span className="wa-kit-meta" style={{ letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, color: 'inherit' }}>
             {t('todayFocus')}
           </span>
+          {UUID_RE.test(actionId) && (
+            <button
+              type="button"
+              className="wa-kit-focus"
+              disabled={dismissing}
+              onClick={() => void dismissSuggestion()}
+              style={{ minHeight: 44, padding: '8px 12px', border: '1px solid currentColor', borderRadius: 'var(--wa-radius-sm)', background: 'transparent', color: 'var(--wa-on-accent)', fontSize: 'var(--wa-type-meta)', cursor: 'pointer' }}
+            >
+              {t('dismissSuggestion')}
+            </button>
+          )}
         </div>
+        {dismissErrorId === actionId && <p role="alert" style={{ margin: 0, color: 'var(--wa-on-accent)' }}>{t('dismissSuggestionError')}</p>}
         <h2
           className="h-font"
           style={{
