@@ -1,6 +1,9 @@
-/* Keep this primary action paired with the adaptive WAP accent in either theme. */
-.followThrough :global(a[data-variant='primary']) {
-  color: var(--wa-on-accent-control);
+/* Radar grid tones. The outer ring and spokes sit at 3:1 or better against the
+   page (about 3.4:1 light, 5.2:1 dark) so the 100% edge reads in both themes; the
+   inner rings stay quiet. Derived from --wa-muted so they flip with the theme. */
+.radar {
+  --skill-radar-grid: color-mix(in srgb, var(--wa-muted) 80%, transparent);
+  --skill-radar-grid-quiet: color-mix(in srgb, var(--wa-muted) 45%, transparent);
 }
 
 .programRecommendation {

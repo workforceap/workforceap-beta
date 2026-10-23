@@ -111,6 +111,15 @@ const outlinePillStyleSm = {
   fontWeight: 700,
   fontSize: '0.8125rem'} as const;
 
+/** Radar series styles live in one place so the chart lines and their legend keys cannot drift apart. */
+const RADAR_SERIES = {
+  target: { label: 'Target occupation', stroke: 'var(--wa-accent)', dash: undefined },
+  member: { label: 'Your skills', stroke: 'var(--color-blue, #2b7bb9)', dash: '4 2' },
+} as const;
+
+/** Category chip text: the brand hue pulled toward the theme text colour so it clears 4.5:1 on its own 12% tint in both themes. */
+const categoryChipText = (color: string) => `color-mix(in srgb, ${color} 40%, var(--wa-text))`;
+
 function AxisLegend({ axes }: { axes: string[] }) {
   const [open, setOpen] = useState(false);
   const shown = axes.filter(a => AXIS_DESCRIPTIONS[a]);
@@ -166,6 +175,28 @@ function isSalesQuery(text: string): boolean {
   return /\b(sales|account exec|account manager|ae\b|bdr\b|sdr\b|salesforce|crm|customer success|business dev|marketing manager)\b/.test(t);
 }
 
+/**
+ * Rings and spokes shared by both radars. The outer ring and the spokes use the
+ * 3:1 grid tone (--skill-radar-grid, set in SkillMapperClient.module.css) so the
+ * 100% edge is readable in light and dark; the inner rings stay quiet.
+ */
+function RadarGrid({ n, cx, cy, pt }: { n: number; cx: number; cy: number; pt: (i: number, v: number) => { x: number; y: number } }) {
+  const indexes = Array.from({ length: n }, (_, i) => i);
+  return (
+    <>
+      {[0.25, 0.5, 0.75, 1].map(level => (
+        <polygon key={level}
+          points={indexes.map(i => { const p = pt(i, level); return `${p.x},${p.y}`; }).join(' ')}
+          fill="none" stroke={level === 1 ? 'var(--skill-radar-grid)' : 'var(--skill-radar-grid-quiet)'} strokeWidth="1" />
+      ))}
+      {indexes.map(i => {
+        const p = pt(i, 1);
+        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--skill-radar-grid)" strokeWidth="1" />;
+      })}
+    </>
+  );
+}
+
 function RadarChart({ data }: { data: { axis: string; value: number }[] }) {
   const size = 240;
   const cx = size / 2, cy = size / 2, r = 90;
@@ -174,21 +205,12 @@ function RadarChart({ data }: { data: { axis: string; value: number }[] }) {
   const pt = (i: number, v: number) => ({
     x: cx + r * v * Math.cos(angle(i)),
     y: cy + r * v * Math.sin(angle(i))});
-  const gridLevels = [0.25, 0.5, 0.75, 1];
   return (
-    <svg className="skill-mapper-radar-chart" width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Skill radar chart" style={{ overflow: 'visible', display: 'block', margin: '0 auto' }}>
-      {gridLevels.map(level => (
-        <polygon key={level}
-          points={data.map((_, i) => { const p = pt(i, level); return `${p.x},${p.y}`; }).join(' ')}
-          fill="none" stroke="var(--surface-container-highest)" strokeWidth="1" />
-      ))}
-      {data.map((_, i) => {
-        const p = pt(i, 1);
-        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--surface-container-highest)" strokeWidth="1" />;
-      })}
+    <svg className={`skill-mapper-radar-chart ${styles.radar}`} width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Skill radar chart" style={{ overflow: 'visible', display: 'block', margin: '0 auto' }}>
+      <RadarGrid n={n} cx={cx} cy={cy} pt={pt} />
       <polygon
         points={data.map((d, i) => { const p = pt(i, d.value); return `${p.x},${p.y}`; }).join(' ')}
-        fill="var(--color-accent)" fillOpacity="0.2" stroke="var(--color-accent)" strokeWidth="2" />
+        fill={RADAR_SERIES.target.stroke} fillOpacity="0.2" stroke={RADAR_SERIES.target.stroke} strokeWidth="2" />
       {data.map((d, i) => {
         const p = pt(i, 1.25);
         return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
@@ -210,30 +232,21 @@ function DualRadarChart({ memberData, targetData }: { memberData: { axis: string
   const pt = (i: number, v: number) => ({
     x: cx + r * v * Math.cos(angle(i)),
     y: cy + r * v * Math.sin(angle(i))});
-  const gridLevels = [0.25, 0.5, 0.75, 1];
 
   const getValue = (data: { axis: string; value: number }[], axis: string) =>
     data.find(d => d.axis === axis)?.value ?? 0;
 
   return (
-    <svg className="skill-mapper-radar-chart" width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Skill radar chart" style={{ overflow: 'visible', display: 'block', margin: '0 auto' }}>
-      {gridLevels.map(level => (
-        <polygon key={level}
-          points={axes.map((_, i) => { const p = pt(i, level); return `${p.x},${p.y}`; }).join(' ')}
-          fill="none" stroke="var(--surface-container-highest)" strokeWidth="1" />
-      ))}
-      {axes.map((_, i) => {
-        const p = pt(i, 1);
-        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--surface-container-highest)" strokeWidth="1" />;
-      })}
-      {/* Target occupation - accent/red */}
+    <svg className={`skill-mapper-radar-chart ${styles.radar}`} width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Skill radar chart" style={{ overflow: 'visible', display: 'block', margin: '0 auto' }}>
+      <RadarGrid n={n} cx={cx} cy={cy} pt={pt} />
+      {/* Target occupation - accent/red, solid */}
       <polygon
         points={axes.map((axis, i) => { const p = pt(i, getValue(targetData, axis)); return `${p.x},${p.y}`; }).join(' ')}
-        fill="var(--color-accent)" fillOpacity="0.15" stroke="var(--color-accent)" strokeWidth="2" />
-      {/* Member profile - blue */}
+        fill={RADAR_SERIES.target.stroke} fillOpacity="0.15" stroke={RADAR_SERIES.target.stroke} strokeWidth="2" />
+      {/* Member profile - blue, dashed */}
       <polygon
         points={axes.map((axis, i) => { const p = pt(i, getValue(memberData, axis)); return `${p.x},${p.y}`; }).join(' ')}
-        fill="rgba(43,123,185,0.2)" stroke="var(--color-blue, #2b7bb9)" strokeWidth="2" strokeDasharray="4 2" />
+        fill="rgba(43,123,185,0.2)" stroke={RADAR_SERIES.member.stroke} strokeWidth="2" strokeDasharray={RADAR_SERIES.member.dash} />
       {axes.map((axis, i) => {
         const p = pt(i, 1.25);
         return <text key={i} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle"
@@ -790,7 +803,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
   const tabStyle = (active: boolean) => ({
     padding: '0.5rem 1rem',
     border: 'none',
-    borderBottom: active ? '2px solid var(--color-accent)' : '2px solid transparent',
+    borderBottom: active ? '2px solid var(--wa-accent)' : '2px solid transparent',
     background: 'transparent',
     color: active ? 'var(--wa-accent-text)' : 'var(--color-on-surface-variant)',
     fontWeight: active ? 700 : 400,
@@ -917,7 +930,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                         <span style={{ color: 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>{s.score}%</span>
                       </div>
                       <div style={{ height: 8, borderRadius: 4, background: 'var(--surface-container-highest)', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${s.score}%`, borderRadius: 4, background: 'var(--color-accent)', transition: 'width 0.4s ease' }} />
+                        <div style={{ height: '100%', width: `${s.score}%`, borderRadius: 4, background: 'var(--wa-accent)', transition: 'width 0.4s ease' }} />
                       </div>
                     </div>
                   ))}
@@ -925,9 +938,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
               </div>
               <RadarValues targetData={radarData} />
               <AxisLegend axes={radarData.map(d => d.axis)} />
-              <div className={styles.followThrough}>
-                <ToolFollowThrough toolType="skill_mapper" />
-              </div>
+              <ToolFollowThrough toolType="skill_mapper" />
 
               {/* Export + profile compare prompt */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
@@ -980,7 +991,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                           <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center', marginTop: '0.2rem', flexWrap: 'wrap' }}>
                             <span style={{
                               background: `color-mix(in srgb, ${mp.categoryColor} 12%, transparent)`,
-                              color: mp.categoryColor,
+                              color: categoryChipText(mp.categoryColor),
                               borderRadius: '999px', padding: '0.1rem 0.4rem', fontSize: '0.8125rem', fontWeight: 600}}>{mp.categoryLabel}</span>
                             <span style={{
                               background: mp.recommendationType === 'primary'
@@ -1073,11 +1084,11 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                   <RadarValues targetData={radarData} memberData={memberProfile} />
                   <div className="skill-mapper-legend" style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', marginBottom: '0.5rem', fontSize: '0.8125rem' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                      <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: 'var(--color-blue, #2b7bb9)' }} />
+                      <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: RADAR_SERIES.member.stroke }} />
                       Your skills
                     </span>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-                      <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: 'var(--color-accent)' }} />
+                      <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: RADAR_SERIES.target.stroke }} />
                       Target occupation
                     </span>
                   </div>
@@ -1121,7 +1132,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                               height: '100%',
                               width: `${Math.round(d.value * 100)}%`,
                               borderRadius: 4,
-                              background: d.value >= 0.6 ? 'var(--color-accent)' : d.value >= 0.3 ? 'color-mix(in srgb, var(--color-accent) 65%, var(--color-gold, #a47f38))' : 'var(--color-on-surface-variant)',
+                              background: d.value >= 0.6 ? 'var(--wa-accent)' : d.value >= 0.3 ? 'color-mix(in srgb, var(--wa-accent) 65%, var(--wa-gold))' : 'var(--color-on-surface-variant)',
                               transition: 'width 0.5s ease'}} />
                           </div>
                         </div>
@@ -1168,7 +1179,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                     <div key={g.axis} className="skill-mapper-gap-row" style={{ marginBottom: '0.75rem' }}>
                       <div className="skill-mapper-gap-row__meta" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', marginBottom: '0.25rem' }}>
                         <span>{g.axis}</span>
-                        <span style={{ color: g.gap > 30 ? 'var(--color-error, #d32f2f)' : 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>
+                        <span style={{ color: g.gap > 30 ? 'var(--wa-danger)' : 'var(--color-on-surface-variant)', fontWeight: g.gap > 30 ? 600 : undefined, fontVariantNumeric: 'tabular-nums' }}>
                           {Math.round(g.member)}% → {Math.round(g.target)}% ({g.gap > 0 ? `+${Math.round(g.gap)}` : Math.round(g.gap)} needed)
                         </span>
                       </div>
@@ -1208,7 +1219,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.25rem', flexWrap: 'wrap' }}>
                             <span style={{
                               background: `color-mix(in srgb, ${rec.program.categoryColor} 12%, transparent)`,
-                              color: rec.program.categoryColor,
+                              color: categoryChipText(rec.program.categoryColor),
                               borderRadius: '999px', padding: '0.125rem 0.5rem', fontSize: '0.8125rem', fontWeight: 600}}>{rec.program.categoryLabel}</span>
                             <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                               {rec.reason}

@@ -81,3 +81,32 @@ describe('actual Skill Mapper saved workspace', () => {
     expect(screen.getByRole('link', { name: 'Training options' })).toHaveAttribute('href', '/dashboard/ai-tools/training-bridge');
   });
 });
+
+describe('Skill Mapper dark-mode contrast tokens', () => {
+  const profile = axes.map(axis => ({ axis, value: 0.4 }));
+  const strokes = (container: HTMLElement) => Array.from(container.querySelectorAll('svg.skill-mapper-radar-chart polygon')).map(polygon => polygon.getAttribute('stroke'));
+
+  it('draws the occupation series, tab underline and skill bars with the adaptive accent instead of the static one', () => {
+    const { container } = show({ preview: true, initialRun: saved });
+    expect(strokes(container)).toContain('var(--wa-accent)');
+    expect(screen.getByRole('button', { name: 'Occupation Search' }).getAttribute('style')).toContain('var(--wa-accent)');
+    expect(container.querySelector<HTMLElement>('div[style*="width: 86%"]')?.style.background).toBe('var(--wa-accent)');
+  });
+
+  it('draws the radar grid, comparison series, legend key, large gaps and category chips from AA-safe tokens', () => {
+    const { container } = show({ preview: true, initialRun: saved, initialMemberProfile: profile });
+    fireEvent.click(screen.getByRole('button', { name: 'Compare with my profile' }));
+    expect(strokes(container)).toEqual(expect.arrayContaining(['var(--skill-radar-grid)', 'var(--skill-radar-grid-quiet)', 'var(--wa-accent)', 'var(--color-blue, #2b7bb9)']));
+    expect(strokes(container)).not.toContain('var(--surface-container-highest)');
+    const spokes = Array.from(container.querySelectorAll('svg.skill-mapper-radar-chart line')).map(line => line.getAttribute('stroke'));
+    expect(spokes.length).toBe(axes.length);
+    expect(spokes.every(stroke => stroke === 'var(--skill-radar-grid)')).toBe(true);
+    // 80 - 40 and 75 - 40 are over the 30-point threshold; 70 - 40 is not.
+    expect(screen.getByText(/\+40 needed/).style.color).toBe('var(--wa-danger)');
+    expect(screen.getByText(/\+35 needed/).style.color).toBe('var(--wa-danger)');
+    expect(screen.getByText(/\+30 needed/).style.color).not.toBe('var(--wa-danger)');
+    const chipColors = Array.from(container.querySelectorAll<HTMLElement>('span')).map(span => span.style.color).filter(color => color.startsWith('color-mix(in srgb') && color.includes('var(--wa-text)'));
+    expect(chipColors.length).toBeGreaterThan(0);
+    expect(chipColors.every(color => color.includes(' 40%, var(--wa-text)'))).toBe(true);
+  });
+});
