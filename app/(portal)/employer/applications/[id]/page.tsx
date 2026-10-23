@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
+import PortalBackLink from '@/components/portal/PortalBackLink';
 import { buildPageMetadata } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser, isSuperAdmin } from '@/lib/auth/roles';
@@ -94,9 +94,7 @@ export default async function EmployerApplicationPage({
         title={candidateName}
         subtitle={t('applyingForJob', { title: application.job.title })}
         action={
-          <Link href="/employer/applications" className="btn btn-outline btn-sm">
-            {t('backToApplicants')}
-          </Link>
+          <PortalBackLink fallbackHref="/employer/applications" fallbackLabel={t('backToApplicants')} className="btn btn-outline btn-sm" />
         }
       />
 

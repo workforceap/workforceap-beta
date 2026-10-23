@@ -6,7 +6,11 @@ import path from 'node:path';
 import AtRiskDashboard from '@/components/portal/counselor/AtRiskDashboard';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => window.location.pathname,
+  useSearchParams: () => new URLSearchParams(window.location.search),
+}));
 vi.mock('@/components/portal/counselor/AtRiskDetailModal', () => ({ default: () => null }));
 vi.mock('@/components/portal/PortalInlineSpinner', () => ({ PortalInlineSpinner: () => null }));
 

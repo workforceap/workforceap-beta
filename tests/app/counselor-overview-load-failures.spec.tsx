@@ -1,3 +1,4 @@
+import { withPortalIntl } from '@/tests/helpers/withPortalIntl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { emptyAttentionQueue } from '@/lib/attention/evaluate';
@@ -64,12 +65,11 @@ const center = {
 };
 
 async function renderPage() {
-  render(await CounselorOverviewPage({ searchParams: Promise.resolve({}) }));
+  render(withPortalIntl(await CounselorOverviewPage({ searchParams: Promise.resolve({}) })));
 }
 
 function tile(label: string) {
-  const labelNode = screen.getByText(label);
-  const tileNode = labelNode.closest('[data-testid="stat-spark-tile"]');
+  const tileNode = screen.getAllByText(label).map(node => node.closest('[data-testid="stat-spark-tile"]')).find(Boolean);
   if (!tileNode) throw new Error(`no tile for ${label}`);
   return tileNode as HTMLElement;
 }

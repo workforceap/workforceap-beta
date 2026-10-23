@@ -2,13 +2,17 @@ import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { DesignSurface, PageOpener, SectionHeader } from '@/components/portal/kit';
+import { LinkTabs } from '@/components/portal/kit/LinkTabs';
 import {
   REPORTING_RELATED_LINKS,
   REPORTING_TABS,
   REPORTING_TAB_COPY,
   reportingTabHref,
+  reportingViewContext,
+  reportingRelatedHref,
   type ReportingTabId,
 } from '@/lib/admin/reportingHub';
+import type { BoardOutcomesPeriod } from '@/lib/admin/boardOutcomes';
 
 /**
  * Reporting hub — the one admin reporting page (dense).
@@ -21,7 +25,7 @@ import {
  * `embedded`), and a "More reports" strip for the surfaces that keep their
  * own routes (print layout, quarterly builder, specialised dashboards).
  *
- * Pure read view — no interactivity, so no 'use client'.
+ * Data stays on the server; LinkTabs only manages horizontal visibility.
  */
 export interface ReportingHubKitProps {
   activeTab: ReportingTabId;
@@ -31,6 +35,9 @@ export interface ReportingHubKitProps {
   action?: ReactNode;
   /** Hide the related-reports strip (showcase renders). */
   showRelated?: boolean;
+  /** Retained outcomes period; other tabs state their own time basis. */
+  period?: BoardOutcomesPeriod;
+  superAdmin?: boolean;
   children: ReactNode;
 }
 
@@ -64,29 +71,33 @@ export function ReportingSubsection({
 
 export function ReportingHubKit({
   activeTab,
-  tabHref = (tab) => reportingTabHref(tab),
+  tabHref,
   action,
   showRelated = true,
+  period = 'all-time',
+  superAdmin = false,
   children,
 }: ReportingHubKitProps) {
   const copy = REPORTING_TAB_COPY[activeTab];
+  const context = reportingViewContext(activeTab, period, superAdmin);
+  const hrefForTab = tabHref ?? ((tab: ReportingTabId) => reportingTabHref(tab, period === 'all-time' ? {} : { period }));
   return (
     <DesignSurface surface="dense" className="wa-p-6">
       <PageOpener
         className="wa-mb-5"
         kicker="Admin"
         title="Reporting"
-        lede="Enrollment, outcomes, training, Coursera and exports — one page, one set of definitions."
+        lede="Review the evidence, understand each measure and prepare the right report."
         action={action}
       />
 
-      <nav aria-label="Reporting views" className="wa-kit-tabs wa-mb-5" data-testid="reporting-hub-tabs">
+      <LinkTabs label="Reporting views" activeKey={activeTab} className="wa-mb-5" data-testid="reporting-hub-tabs">
         {REPORTING_TABS.map((tab) => {
           const selected = tab.id === activeTab;
           return (
             <Link
               key={tab.id}
-              href={tabHref(tab.id)}
+              href={hrefForTab(tab.id)}
               className="wa-kit-tab"
               aria-current={selected ? 'page' : undefined}
               data-reporting-tab={tab.id}
@@ -95,10 +106,14 @@ export function ReportingHubKit({
             </Link>
           );
         })}
-      </nav>
+      </LinkTabs>
 
       <section aria-label={copy.title} data-reporting-section={activeTab}>
         <SectionHeader title={copy.title} goal={copy.lede} data-testid="reporting-hub-section-header" />
+        <aside aria-label="Report context" className="wa-mb-5" data-testid="reporting-context">
+          <p className="wa-kit-meta wa-mb-2"><strong>{context.periodLabel}</strong> · {context.scopeLabel}</p>
+          <p className="wa-kit-meta" style={{ color: 'var(--wa-muted)' }}>{context.definition}</p>
+        </aside>
         {children}
       </section>
 
@@ -115,7 +130,7 @@ export function ReportingHubKit({
             {REPORTING_RELATED_LINKS.map((item) => (
               <Link
                 key={item.href}
-                href={item.href}
+                href={reportingRelatedHref(item.href, period)}
                 className="wa-kit-card wa-kit-card--sm wa-kit-card--hover wa-kit-focus"
                 style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, textDecoration: 'none', color: 'inherit' }}
               >

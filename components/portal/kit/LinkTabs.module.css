@@ -1,0 +1,9 @@
+.nav {
+  /* Leave the existing focus ring inside the horizontal clipping boundary. */
+  padding: 4px;
+  scroll-padding-inline: 4px;
+}
+
+.nav :global(.wa-kit-tab) {
+  margin-bottom: 0;
+}

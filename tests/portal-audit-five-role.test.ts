@@ -353,6 +353,28 @@ describe('portal route inventory gate', () => {
     ).toBe(true);
   });
 
+  it('audits canonical Resume views and retains the exact final targets of every legacy Resume URL', () => {
+    const redirects: Array<[string, string]> = [
+      ['/dashboard/ai-tools/resume-studio', '/dashboard/resume?view=score'],
+      ['/dashboard/ai-tools/resume-studio?view=score', '/dashboard/resume?view=score'],
+      ['/dashboard/ai-tools/resume-studio?view=coach', '/dashboard/resume?view=coach'],
+      ['/dashboard/ai-tools/resume-studio?view=rewrite', '/dashboard/resume?view=rewrite'],
+      ['/dashboard/ai-tools/resume-analysis', '/dashboard/resume?view=score'],
+      ['/dashboard/ai-tools/resume-coach', '/dashboard/resume?view=coach'],
+      ['/dashboard/ai-tools/resume-rewriter', '/dashboard/resume?view=rewrite'],
+    ];
+    expect(STATIC_PATHS.member).toContain('/dashboard/resume');
+    for (const [path, target] of redirects) {
+      expect(STATIC_PATHS.member).not.toContain(path);
+      expect(STATIC_PATHS.member).toContain(target);
+      expect(REDIRECT_ONLY_PATHS.member).toContainEqual({
+        path,
+        target,
+        reason: 'consolidated_experience',
+      });
+    }
+  });
+
   it('keeps fixture-gated pages out of unconditional static coverage and inventories their conditional checks', () => {
     const adminGates = [
       '/admin/audit-logs',
@@ -800,12 +822,13 @@ describe('read-only portal action contracts', () => {
     }
   });
 
-  it('marks staff and resume/resource secondary-load fallbacks with stable audit states', () => {
+  it('marks staff and resource secondary-load fallbacks with stable audit states', () => {
+    // Studio now redirects to Resume, whose profile-read failures propagate.
+    // That outage contract is exercised in resume-page-workintexas-contact.spec.tsx.
     const expectedMarkers: Array<[string[], string]> = [
-      [['app', '(portal)', 'dashboard', 'ai-tools', 'resume-studio', 'page.tsx'], 'resume-studio-resume-load'],
       [['app', '(portal)', 'dashboard', 'resources', 'page.tsx'], 'member-resources-personalization-load'],
       [['app', '(portal)', 'partner', 'page.tsx'], 'partner-schema-compatibility-fallback'],
-      [['app', '(portal)', 'counselor', 'inbox', 'page.tsx'], 'counselor-inbox-queue-load'],
+      [['components', 'portal', 'counselor', 'workspace', 'CounselorFollowupView.tsx'], 'counselor-inbox-queue-load'],
       [['app', '(portal)', 'counselor', 'students', '[memberId]', 'page.tsx'], 'counselor-member-360-load'],
       [['app', 'admin', 'assessments', 'page.tsx'], 'admin-assessments-average-load'],
       [['app', 'admin', 'career-mappings', 'page.tsx'], 'admin-career-mappings-partner-load'],
@@ -894,7 +917,7 @@ describe('read-only portal action contracts', () => {
       'utf8',
     );
     const counselor = readFileSync(
-      join(process.cwd(), 'app', '(portal)', 'counselor', 'overview', 'page.tsx'),
+      join(process.cwd(), 'components', 'portal', 'counselor', 'workspace', 'CounselorOverviewView.tsx'),
       'utf8',
     );
     expect(partnerGate).toContain('partner-exclusive-role-lookup');

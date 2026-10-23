@@ -1,4 +1,7 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
+import type { ReactElement, ReactNode } from 'react';
+import en from '@/messages/en.json';
+import { act, cleanup, fireEvent, render as renderPlain, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import ResumeClient from '@/app/(portal)/dashboard/resume/ResumeClient';
@@ -35,6 +38,23 @@ function loadAs(frame: HTMLElement, doc: Document | null) {
   Object.defineProperty(frame, 'contentDocument', { configurable: true, value: doc });
   fireEvent.load(frame);
 }
+
+describe('synthetic Resume file proof', () => {
+  afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+  it('keeps separate original and revised files while disabling account/provider side effects', () => {
+    const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher);
+    render(<ResumeClient completeness={75} witData={{ name: 'Fixture', email: 'fixture@example.test', phone: '', recentEmployer: '', targetJob: '', skills: '' }} hasOriginal hasEnhanced layout="side-by-side" previewData={{ originalText: 'ORIGINAL SAMPLE', enhancedText: 'REVISED SAMPLE' }} />);
+    expect(screen.getByRole('button', { name: 'Refresh from Profile' })).toBeDisabled();
+    const file = document.querySelector<HTMLInputElement>('input[type="file"]')!;
+    expect(file).toBeDisabled();
+    fireEvent.change(file, { target: { files: [new File(['fixture'], 'fixture.txt', { type: 'text/plain' })] } });
+    const downloads = screen.getAllByRole('link').filter(link => link.hasAttribute('download'));
+    expect(downloads.some(link => link.getAttribute('href')?.includes('ORIGINAL%20SAMPLE'))).toBe(true);
+    expect(downloads.some(link => link.getAttribute('href')?.includes('REVISED%20SAMPLE'))).toBe(true);
+    expect(fetcher).not.toHaveBeenCalled();
+    cleanup(); vi.unstubAllGlobals();
+  });
+});
 
 describe('member PDF preview fallback', () => {
   afterEach(() => {
@@ -90,3 +110,7 @@ describe('member PDF preview fallback', () => {
     expect(screen.getByText('Download to view ↗').closest('a')).toHaveAttribute('href', resumeStatus.enhancedUrl);
   });
 });
+
+function render(ui: ReactElement) {
+  return renderPlain(ui, { wrapper: ({ children }: { children: ReactNode }) => <NextIntlClientProvider locale="en" messages={en}>{children}</NextIntlClientProvider> });
+}

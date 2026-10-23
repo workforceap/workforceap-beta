@@ -135,10 +135,12 @@ describe('admin Today (WAP-190)', () => {
     expect(within(section).getByRole('heading', { level: 2 })).toHaveTextContent('Waiting on your decision');
     expect(section).toHaveTextContent('in your organization');
     const rows = within(section).getAllByTestId('approval-row');
+    // Preserve the exact queue/member, panel and anchor, with Today carried as
+    // the return destination by the real PortalRecordLink.
     expect(rows.map((row) => row.getAttribute('href'))).toEqual([
-      '/admin/command-center?queue=applications&page=1#application-a-old',
-      '/admin/members/m-intake?tab=eligibility',
-      '/admin/command-center?queue=applications&page=1#application-a-new',
+      '/admin/command-center?queue=applications&page=1&returnTo=%2Fadmin#application-a-old',
+      '/admin/members/m-intake?tab=eligibility&returnTo=%2Fadmin',
+      '/admin/command-center?queue=applications&page=1&returnTo=%2Fadmin#application-a-new',
     ]);
     expect(within(section).queryByTestId('approval-queue-truncated')).toBeNull();
     expect(screen.getByRole('link', { name: 'Public screening contacts' })).toHaveAttribute('href', '/admin/wioa-screening#public-wioa-screenings');

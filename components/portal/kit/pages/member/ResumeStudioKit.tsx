@@ -1,8 +1,9 @@
+import { useTranslations } from 'next-intl';
 import { Layers } from 'lucide-react';
 import ResumeStudioClient from '@/components/portal/ResumeStudioClient';
 import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBreakdown';
 import { ToolkitToolChrome } from './ToolkitToolChrome';
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 
 /**
  * Member Portal — resume studio (score / rewrite / coach).
@@ -15,6 +16,7 @@ import type { ReactNode } from 'react';
 
 export function ResumeStudioKit({
   hasResume = false,
+  filesSlot,
   scoreHistorySlot,
   rewriteHistorySlot,
   preview = false,
@@ -27,6 +29,7 @@ export function ResumeStudioKit({
   previewRewriteOutput,
 }: {
   hasResume?: boolean;
+  filesSlot?: ReactElement<{ active?: boolean }>;
   scoreHistorySlot?: ReactNode;
   rewriteHistorySlot?: ReactNode;
   preview?: boolean;
@@ -38,16 +41,18 @@ export function ResumeStudioKit({
   previewScorePayload?: ResumeScorePayload | null;
   previewRewriteOutput?: string;
 }) {
+  const t = useTranslations('memberWorkspace.resume');
   return (
     <ToolkitToolChrome
-      title="Resume studio"
-      lede="Score, rewrite, or talk through a resume."
+      title={t('metaTitle')}
+      lede={t('intro')}
       icon={<Layers size={13} aria-hidden="true" />}
       backHref={backHref}
       maxWidth={960}
     >
       <ResumeStudioClient
         hasResume={hasResume}
+        filesSlot={filesSlot}
         scoreHistorySlot={scoreHistorySlot}
         rewriteHistorySlot={rewriteHistorySlot}
         preview={preview}

@@ -1,4 +1,7 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
+import type { ReactElement, ReactNode } from 'react';
+import en from '@/messages/en.json';
+import { act, cleanup, fireEvent, render as renderPlain, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import ResumeClient from '@/app/(portal)/dashboard/resume/ResumeClient';
@@ -104,3 +107,7 @@ describe('ResumeClient PDF preview fallback', () => {
     expect(screen.getByRole('link', { name: /Download to view/ })).toHaveAttribute('href', pdfOnFile.originalUrl);
   });
 });
+
+function render(ui: ReactElement) {
+  return renderPlain(ui, { wrapper: ({ children }: { children: ReactNode }) => <NextIntlClientProvider locale="en" messages={en}>{children}</NextIntlClientProvider> });
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Search,
   BookOpen,
@@ -24,7 +25,12 @@ import ToolFollowThrough from './ToolFollowThrough';
 import { trackFunnelEvent } from '@/lib/analytics/events';
 import { recommendProgramsForGaps, type ProgramRecommendation } from '@/lib/content/programs';
 import { findCoursesForGap, buildCoursePathForGaps, type CourseSkillMapping } from '@/lib/content/courseSkillMap';
-import { FormField } from '@/components/portal/kit';
+import { DataTable, FormField } from '@/components/portal/kit';
+import { Button } from '@astryxdesign/core/Button';
+import { MemberCareerSteps } from '@/components/portal/MemberCareerSteps';
+import { trainingBridgeHref } from '@/lib/member/memberWorkspace';
+import type { SavedSkillMapperRun } from '@/lib/member/skillMapperRun';
+import styles from './SkillMapperClient.module.css';
 
 const DEMO_RADAR = [
   { axis: 'Analytics', value: 0.72 },
@@ -72,7 +78,7 @@ const AXIS_DESCRIPTIONS: Record<string, { plain: string; examples: string }> = {
   Strategy: {
     plain: 'Planning, leadership, and decision-making',
     examples: 'Management, sales & marketing, budgeting, negotiation, coordination'},
-  Ethics: {
+  Service: {
     plain: 'People skills and professional conduct',
     examples: 'Communication, active listening, empathy, teamwork, service orientation'},
   Research: {
@@ -237,6 +243,39 @@ function DualRadarChart({ memberData, targetData }: { memberData: { axis: string
   );
 }
 
+/** The numeric alternative uses exactly the same normalized series as the charts. */
+function RadarValues({ targetData, memberData }: {
+  targetData: { axis: string; value: number }[];
+  memberData?: { axis: string; value: number }[];
+}) {
+  const t = useTranslations('memberWorkspace.exploration');
+  const axes = [...new Set([...targetData, ...(memberData ?? [])].map(point => point.axis))];
+  const valueFor = (series: { axis: string; value: number }[], axis: string) => {
+    const value = series.find(point => point.axis === axis)?.value;
+    return value === undefined ? '—' : `${Math.round(value * 100)}%`;
+  };
+  return (
+    <details style={{ marginBlock: 16 }}>
+      <summary className="wa-kit-focus" style={{ cursor: 'pointer', minHeight: 44, paddingBlock: 10, fontWeight: 600 }}>{t('graphValues')}</summary>
+      <section aria-label={memberData ? t('estimatedComparison') : t('occupationValues')}>
+        <p style={{ marginBlock: 8 }}>{memberData ? t('estimatedComparison') : t('occupationValues')}</p>
+        <DataTable
+        className={styles.radarValues}
+        minWidth={0}
+        density="compact"
+        columns={[
+          { key: 'axis', header: t('axis') },
+          ...(memberData ? [{ key: 'member', header: t('memberEstimate'), numeric: true }] : []),
+          { key: 'target', header: t('target'), numeric: true },
+        ]}
+        rows={axes.map(axis => ({ axis, member: memberData ? valueFor(memberData, axis) : '', target: valueFor(targetData, axis) }))}
+        rowKey={row => row.axis}
+        />
+      </section>
+    </details>
+  );
+}
+
 /**
  * CoursePathForGaps - Shows specific courses that close skill gaps
  * Displays a compact, actionable course path based on the user's biggest gaps
@@ -389,8 +428,8 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                       gap: '0.25rem',
                       padding: '0.35rem 0.5rem',
                       borderRadius: '0.375rem',
-                      background: 'var(--color-accent)',
-                      color: 'var(--wa-on-accent)',
+                      background: 'var(--wa-accent)',
+                      color: 'var(--wa-on-accent-control)',
                       fontSize: '0.8125rem',
                       fontWeight: 600,
                       textDecoration: 'none',
@@ -433,21 +472,35 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
   );
 }
 
-export default function SkillMapperClient() {
+export default function SkillMapperClient({ initialRun = null, initialTarget, selectionError, preview = false, initialMemberProfile }: {
+  initialRun?: SavedSkillMapperRun | null;
+  /** Credential-free /dev proof: never fetch, extract, save or export. */
+  preview?: boolean;
+  initialMemberProfile?: { axis: string; value: number }[];
+  initialTarget?: { code: string; title: string };
+  selectionError?: string;
+} = {}) {
   const [activeTab, setActiveTab] = useState<'search' | 'profile'>('search');
-  const [query, setQuery] = useState('');
+  const tw = useTranslations('memberWorkspace.exploration');
+  const ta = useTranslations('memberWorkspace.ai');
+  const tt = useTranslations('trainingBridge');
+  const [query, setQuery] = useState(initialTarget?.title ?? '');
   const [occupations, setOccupations] = useState<{ code: string; title: string; description: string }[]>([]);
-  const [selectedTitle, setSelectedTitle] = useState('');
-  const [selectedCode, setSelectedCode] = useState('');
-  const [radarData, setRadarData] = useState<{ axis: string; value: number }[]>([]);
-  const [skills, setSkills] = useState<{ name: string; score: number; importance: string }[]>([]);
+  const [selectedTitle, setSelectedTitle] = useState(initialRun?.occupationTitle ?? '');
+  const [selectedCode, setSelectedCode] = useState(initialRun?.occupationCode ?? '');
+  const [radarData, setRadarData] = useState<{ axis: string; value: number }[]>(() => initialRun?.radarAxes.map(point => ({ axis: point.axis, value: point.value / 100 })) ?? []);
+  const [skills, setSkills] = useState<{ name: string; score: number; importance: string }[]>(() => initialRun?.skills.map(skill => ({ ...skill, importance: skill.score >= 70 ? 'High' : skill.score >= 40 ? 'Medium' : 'Low' })) ?? []);
   const [loading, setLoading] = useState(false);
   const [loadingSkills, setLoadingSkills] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [exportingComparison, setExportingComparison] = useState(false);
   const [error, setError] = useState('');
-  const [usingDemo, setUsingDemo] = useState(false);
+  const [usingDemo, setUsingDemo] = useState(initialRun?.demo ?? false);
   const [demoFallbackReason, setDemoFallbackReason] = useState<string>('');
+  const [savedResultId, setSavedResultId] = useState<string | null>(initialRun?.id ?? null);
+  const [saveUnavailable, setSaveUnavailable] = useState(false);
+  const lookupSequence = useRef(0);
+  const searchSequence = useRef(0);
 
   // Matched programs from occupation → program mapping (from DB seed)
   const [matchedPrograms, setMatchedPrograms] = useState<{
@@ -465,7 +518,7 @@ export default function SkillMapperClient() {
   }[]>([]);
 
   // Profile tab state
-  const [memberProfile, setMemberProfile] = useState<{ axis: string; value: number }[]>([]);
+  const [memberProfile, setMemberProfile] = useState<{ axis: string; value: number }[]>(initialMemberProfile ?? []);
   const [memberCerts, setMemberCerts] = useState<string[]>([]);
   const [resumeSkills, setResumeSkills] = useState<{ axis: string; value: number }[]>([]);
   const [resumeMatchedKeywords, setResumeMatchedKeywords] = useState<Record<string, string[]>>({});
@@ -473,11 +526,12 @@ export default function SkillMapperClient() {
   const [hasAiResumeExtraction, setHasAiResumeExtraction] = useState(false);
   const [extractingResume, setExtractingResume] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(false);
-  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [profileLoaded, setProfileLoaded] = useState(Boolean(initialMemberProfile));
   const autoExtractAttemptedRef = useRef(false);
   const [autoExtracting, setAutoExtracting] = useState(false);
 
   const exportSkillMap = async () => {
+    if (preview) return;
     if (!selectedTitle || !radarData.length) return;
     setExportingPdf(true);
     setError('');
@@ -532,6 +586,7 @@ export default function SkillMapperClient() {
   };
 
   const exportComparisonPdf = async () => {
+    if (preview) return;
     if (!memberProfile.length || !radarData.length) return;
     setExportingComparison(true);
     setError('');
@@ -592,6 +647,7 @@ export default function SkillMapperClient() {
   };
 
   const loadProfile = () => {
+    if (preview) return;
     setLoadingProfile(true);
     fetch('/api/member/skill-profile')
       .then(r => r.json())
@@ -622,6 +678,7 @@ export default function SkillMapperClient() {
   }, [activeTab, profileLoaded]);  
 
   const handleAiExtract = async () => {
+    if (preview) return;
     setExtractingResume(true);
     try {
       const res = await fetch('/api/ai/extract-resume-skills', { method: 'POST' });
@@ -634,11 +691,16 @@ export default function SkillMapperClient() {
   };
 
   const handleSearch = async () => {
+    if (preview) return;
     if (!query.trim()) return;
+    const requestId = ++searchSequence.current;
+    ++lookupSequence.current;
+    setLoadingSkills(false); setSavedResultId(null); setSaveUnavailable(false); setSelectedCode(''); setSelectedTitle('');
     setLoading(true); setError(''); setOccupations([]); setRadarData([]); setSkills([]); setDemoFallbackReason('');
     try {
       const res = await fetch(`/api/ai/skill-mapper?occupation=${encodeURIComponent(query)}`);
       const data = await res.json();
+      if (requestId !== searchSequence.current) return;
       if (data.occupations?.length) {
         setOccupations(data.occupations);
       } else {
@@ -654,6 +716,7 @@ export default function SkillMapperClient() {
         setSelectedTitle(useSales ? 'Sales Representative (Demo)' : 'Software Developer (Demo)');
       }
     } catch (err) {
+      if (requestId !== searchSequence.current) return;
       const useSales = isSalesQuery(query);
       setError('');
       setRadarData(useSales ? DEMO_SALES_RADAR : DEMO_RADAR);
@@ -662,15 +725,22 @@ export default function SkillMapperClient() {
       setDemoFallbackReason('Unable to connect to occupation database. Showing sample data for demonstration.');
       setSelectedTitle(useSales ? 'Sales Representative (Demo)' : 'Software Developer (Demo)');
     }
-    setLoading(false);
+    if (requestId === searchSequence.current) setLoading(false);
   };
 
   const handleSelect = async (code: string, title: string) => {
+    if (preview) return;
+    const requestId = ++lookupSequence.current;
+    ++searchSequence.current;
+    setLoading(false); setSavedResultId(null); setSaveUnavailable(false); setRadarData([]); setSkills([]);
     setSelectedTitle(title); setSelectedCode(code); setLoadingSkills(true); setError(''); setUsingDemo(false); setMatchedPrograms([]); setDemoFallbackReason('');
     try {
       const res = await fetch(`/api/ai/skill-mapper?code=${encodeURIComponent(code)}&title=${encodeURIComponent(title)}`);
       const data = await res.json();
+      if (requestId !== lookupSequence.current) return;
       if (data.radarAxes) {
+        setSavedResultId(typeof data.resultId === 'string' && data.resultId ? data.resultId : null);
+        setSaveUnavailable(!data.resultId);
         setRadarData(data.radarAxes.map((a: { axis: string; value: number }) => ({ axis: a.axis, value: (a.value ?? 0) / 100 })));
         setSkills((data.skills || []).map((s: { name: string; score: number; category: string }) => ({ name: s.name, score: s.score, importance: s.score >= 70 ? 'High' : s.score >= 40 ? 'Medium' : 'Low' })));
         setUsingDemo(Boolean(data.demo));
@@ -689,13 +759,14 @@ export default function SkillMapperClient() {
       }
       if (data.matchedPrograms?.length) setMatchedPrograms(data.matchedPrograms);
     } catch (err) {
+      if (requestId !== lookupSequence.current) return;
       const useSales = isSalesQuery(title);
       setRadarData(useSales ? DEMO_SALES_RADAR : DEMO_RADAR);
       setSkills(useSales ? DEMO_SALES_SKILLS : DEMO_SKILLS);
       setUsingDemo(true);
       setDemoFallbackReason('Unable to load occupation details. Showing sample data for demonstration.');
     }
-    setLoadingSkills(false);
+    if (requestId === lookupSequence.current) setLoadingSkills(false);
   };
 
   const programRecs: ProgramRecommendation[] = memberProfile.length > 0
@@ -728,12 +799,28 @@ export default function SkillMapperClient() {
 
   return (
     <div>
+      <MemberCareerSteps current="skills" resultId={savedResultId} />
+      {selectionError ? <p role="alert">{selectionError}</p> : null}
+      {initialTarget && !selectedCode ? (
+        <section className="wa-kit-card wa-kit-card--sm" style={{ marginBlock: 'var(--wa-pad-sm)' }}>
+          <p><strong>{tw('targetFromInterests', { occupation: initialTarget.title })}</strong> · {initialTarget.code}</p>
+          <p>{tw('loadTargetHelp')}</p>
+          <Button label={tw('loadTarget')} onClick={() => void handleSelect(initialTarget.code, initialTarget.title)} isLoading={loadingSkills} isDisabled={preview} />
+        </section>
+      ) : null}
+      {savedResultId && selectedTitle ? (
+        <p style={{ marginBlock: 'var(--wa-pad-sm)', lineHeight: 1.6 }}>
+          <strong>{tw('selectedTarget', { occupation: selectedTitle })}</strong>{usingDemo ? ` · ${tw('sample')}` : ''}.{' '}
+          <Link href={trainingBridgeHref(savedResultId)} className="wa-page-action wa-kit-focus">{tw('trainingForLookup')} <ArrowRight size={16} aria-hidden="true" /></Link>
+        </p>
+      ) : null}
+      {saveUnavailable ? <p role="status">{tw('saveUnavailable')}</p> : null}
       {/* Tab switcher */}
       <div style={{ display: 'flex', borderBottom: '1px solid var(--surface-container-highest)', marginBottom: '1.5rem' }}>
-        <button type="button" style={tabStyle(activeTab === 'search')} onClick={() => setActiveTab('search')}>
+        <button type="button" aria-pressed={activeTab === 'search'} style={tabStyle(activeTab === 'search')} onClick={() => setActiveTab('search')}>
           Occupation Search
         </button>
-        <button type="button" style={tabStyle(activeTab === 'profile')} onClick={() => setActiveTab('profile')}>
+        <button type="button" aria-pressed={activeTab === 'profile'} style={tabStyle(activeTab === 'profile')} onClick={() => setActiveTab('profile')}>
           My Skills Profile
         </button>
       </div>
@@ -753,7 +840,7 @@ export default function SkillMapperClient() {
                 placeholder="e.g. Software Developer, Account Executive, Project Manager"
               />
             </div>
-            <button type="button" className="wa-kit-focus" onClick={handleSearch} disabled={loading || !query.trim()}
+            <button type="button" className="wa-kit-focus" onClick={handleSearch} disabled={preview || loading || !query.trim()}
               style={{ ...primaryPillStyle, opacity: loading || !query.trim() ? 0.6 : 1, cursor: loading || !query.trim() ? 'not-allowed' : 'pointer' }}>
               {loading ? <PortalInlineSpinner size={16} /> : <Search size={16} aria-hidden />}
               Search
@@ -770,7 +857,7 @@ export default function SkillMapperClient() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
               <h3 className="ai-tool-section-title">Select an occupation</h3>
               {occupations.map((occ) => (
-                <button type="button" key={occ.code} onClick={() => handleSelect(occ.code, occ.title)}
+                <button type="button" key={occ.code} disabled={preview} onClick={() => handleSelect(occ.code, occ.title)}
                   className="wa-kit-focus"
                   style={{
                     textAlign: 'left',
@@ -814,7 +901,7 @@ export default function SkillMapperClient() {
               <h3 className="ai-tool-section-title">{selectedTitle}</h3>
               {isSalesQuery(selectedTitle) && (
                 <div style={{ marginBottom: '1rem', padding: '0.875rem 1rem', background: 'var(--wa-info-soft)', border: '1px solid var(--wa-border)', borderRadius: '0.75rem', fontSize: '0.85rem', color: 'var(--color-on-surface)' }}>
-                  Sales and account roles usually score strongest in <strong>Strategy</strong> and <strong>Ethics</strong> here because this map weighs planning, negotiation, communication, and relationship-building, not just technical tools.
+                  Sales and account roles usually score strongest in <strong>Strategy</strong> and <strong>Service</strong> here because this map weighs planning, negotiation, communication, and relationship-building, not just technical tools.
                 </div>
               )}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', marginBottom: '2rem' }}>
@@ -836,15 +923,18 @@ export default function SkillMapperClient() {
                   ))}
                 </div>
               </div>
+              <RadarValues targetData={radarData} />
               <AxisLegend axes={radarData.map(d => d.axis)} />
-              <ToolFollowThrough toolType="skill_mapper" />
+              <div className={styles.followThrough}>
+                <ToolFollowThrough toolType="skill_mapper" />
+              </div>
 
               {/* Export + profile compare prompt */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
                 <button
                   type="button"
                   onClick={() => void exportSkillMap()}
-                  disabled={exportingPdf}
+                  disabled={preview || exportingPdf}
                   aria-busy={exportingPdf}
                   className="wa-kit-focus"
                   style={{ ...outlinePillStyleSm, cursor: exportingPdf ? 'default' : 'pointer', opacity: exportingPdf ? 0.6 : 1 }}
@@ -854,7 +944,7 @@ export default function SkillMapperClient() {
                     {exportingPdf ? 'Saving…' : 'Export Skill Map PDF'}
                   </span>
                 </button>
-                {memberProfile.length > 0 && (
+                {radarData.length > 0 && (
                   <button type="button" onClick={() => setActiveTab('profile')} className="wa-kit-focus"
                     style={{ ...outlinePillStyleSm, background: 'var(--wa-accent-soft)', cursor: 'pointer' }}>
                     <ArrowLeftRight size={14} aria-hidden="true" />
@@ -932,14 +1022,14 @@ export default function SkillMapperClient() {
                         padding: '0.5rem 1rem', borderRadius: 999,
                         background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
                         fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none'}} onClick={() => trackFunnelEvent('skill_mapper', 'enroll_cta_clicked', { program_slug: matchedPrograms[0].programSlug })}>
-                        Enroll in {matchedPrograms[0].programTitle}
+                        {tw('exploreProgram', { program: matchedPrograms[0].programTitle })}
                       </Link>
-                      <Link href="/dashboard/counselor" style={{
+                      <Link href="/dashboard/messages" style={{
                         display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                         padding: '0.5rem 1rem', borderRadius: 999,
                         background: 'var(--wa-surface-2)', color: 'var(--wa-text)',
                         fontWeight: 600, fontSize: '0.8125rem', textDecoration: 'none'}} onClick={() => trackFunnelEvent('skill_mapper', 'counselor_cta_clicked', {})}>
-                        Talk to a counselor first
+                        {ta('humanLink')}
                       </Link>
                     </div>
                   </div>
@@ -980,6 +1070,7 @@ export default function SkillMapperClient() {
                   <div className="skill-mapper-radar-wrap" style={{ marginBottom: '0.75rem' }}>
                     <DualRadarChart memberData={memberProfile} targetData={radarData} />
                   </div>
+                  <RadarValues targetData={radarData} memberData={memberProfile} />
                   <div className="skill-mapper-legend" style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', marginBottom: '0.5rem', fontSize: '0.8125rem' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
                       <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: 'var(--color-blue, #2b7bb9)' }} />
@@ -994,7 +1085,7 @@ export default function SkillMapperClient() {
                     <button
                       type="button"
                       onClick={() => void exportComparisonPdf()}
-                      disabled={exportingComparison}
+                      disabled={preview || exportingComparison}
                       aria-busy={exportingComparison}
                       className="wa-kit-focus"
                       style={{ ...outlinePillStyleSm, fontSize: '0.8125rem', cursor: exportingComparison ? 'default' : 'pointer', opacity: exportingComparison ? 0.6 : 1 }}
@@ -1101,17 +1192,17 @@ export default function SkillMapperClient() {
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
                     {programRecs.map((rec) => (
-                      <div key={rec.program.slug} style={{
+                      <div key={rec.program.slug} className={styles.programRecommendation} style={{
                         background: 'var(--surface-container)', borderRadius: '0.75rem',
-                        padding: '0.875rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem'}}>
+                        padding: '0.875rem 1rem'}}>
                         <div style={{
                           width: '2.5rem', height: '2.5rem', borderRadius: '0.625rem', flexShrink: 0,
                           background: `color-mix(in srgb, ${rec.program.categoryColor} 12%, transparent)`,
                           display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem'}}>
                           {rec.program.icon}
                         </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div className={styles.programTitle} style={{ fontWeight: 600, fontSize: '0.9rem' }}>
                             {rec.program.title}
                           </div>
                           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.25rem', flexWrap: 'wrap' }}>
@@ -1123,15 +1214,15 @@ export default function SkillMapperClient() {
                               {rec.reason}
                             </span>
                           </div>
-                          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.375rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.375rem', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                             <span>{rec.program.duration}</span>
                             <span>{rec.program.partner}</span>
                           </div>
                         </div>
-                        <a href={`/programs/${rec.program.slug}`} style={{
-                          background: 'var(--color-accent)', color: 'var(--wa-on-accent)', borderRadius: '0.5rem',
+                        <a href={`/programs/${rec.program.slug}`} className={styles.programAction} style={{
+                          background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', borderRadius: '0.5rem',
                           padding: '0.375rem 0.75rem', fontSize: '0.8125rem', fontWeight: 600,
-                          textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0}}>Enroll →</a>
+                          textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0}}>{tt('viewProgram')} →</a>
                       </div>
                     ))}
                   </div>
@@ -1156,7 +1247,7 @@ export default function SkillMapperClient() {
                     <p style={{ fontSize: '0.8125rem', color: 'var(--wa-muted)', margin: 0 }}>~10 minutes — generates your full radar from O*NET interest data</p>
                   </div>
                 </a>
-                <a href="/dashboard/ai-tools/resume-studio?view=rewrite" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem', background: 'var(--wa-surface)', border: '1px solid var(--wa-border)', borderRadius: 'var(--wa-radius-sm)', textDecoration: 'none' }}>
+                <a href="/dashboard/resume?view=rewrite" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem', background: 'var(--wa-surface)', border: '1px solid var(--wa-border)', borderRadius: 'var(--wa-radius-sm)', textDecoration: 'none' }}>
                   <FileText size={20} aria-hidden="true" style={{ color: 'var(--wa-info)', flexShrink: 0 }} />
                   <div>
                     <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--wa-text)', margin: '0 0 0.2rem' }}>Run the AI Resume Rewriter</p>
@@ -1228,7 +1319,7 @@ export default function SkillMapperClient() {
                   <button
                     type="button"
                     onClick={handleAiExtract}
-                    disabled={extractingResume}
+                    disabled={preview || extractingResume}
                     className="wa-kit-focus"
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
@@ -1246,7 +1337,7 @@ export default function SkillMapperClient() {
                   <button
                     type="button"
                     onClick={handleAiExtract}
-                    disabled={extractingResume}
+                    disabled={preview || extractingResume}
                     className="wa-kit-focus"
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
@@ -1260,7 +1351,7 @@ export default function SkillMapperClient() {
                     {extractingResume ? 'Re-analyzing…' : 'Reanalyze resume skills'}
                   </button>
                 )}
-                <a href="/dashboard/ai-tools/resume-studio?view=rewrite" style={{ color: 'var(--wa-accent-text)', fontWeight: 700, fontSize: '0.8125rem' }}>Update resume</a>
+                <a href="/dashboard/resume?view=rewrite" style={{ color: 'var(--wa-accent-text)', fontWeight: 700, fontSize: '0.8125rem' }}>Update resume</a>
               </div>
             </div>
           )}

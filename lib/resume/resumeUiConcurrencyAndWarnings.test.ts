@@ -42,8 +42,16 @@ test('member resume surfaces lock every file input behind one in-flight upload g
 
     const fileInputs = source.match(/<input[\s\S]*?type="file"[\s\S]*?\/>/g) ?? [];
     assert.ok(fileInputs.length > 0, `${relativePath} should contain a file input`);
+    const hasPreviewFixture = relativePath === 'app/(portal)/dashboard/resume/ResumeClient.tsx';
+    const disabledGuard = hasPreviewFixture
+      ? /disabled=\{\s*!!previewData\s*\|\|\s*uploading\s*\}/
+      : /disabled=\{\s*uploading\s*\}/;
     for (const input of fileInputs) {
-      assert.match(input, /disabled=\{uploading\}/, `${relativePath} has an enabled file input while uploading`);
+      assert.match(
+        input,
+        disabledGuard,
+        `${relativePath} must disable file inputs while uploading${hasPreviewFixture ? ' and in preview fixtures' : ''}`,
+      );
     }
   }
 });

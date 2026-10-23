@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 import WorkspaceShell from '@/components/portal/WorkspaceShell';
 import CounselorPortalShell from '@/components/portal/CounselorPortalShell';
+import CounselorWorkspace from '@/components/portal/counselor/CounselorWorkspace';
 import { TourProvider } from '@/components/onboarding/TourContext';
 import { GuidedTour } from '@/components/portal/kit/GuidedTour';
 import { CounselorTodayKit } from '@/components/portal/kit/pages/counselor/CounselorTodayKit';
@@ -56,10 +57,12 @@ const posted = (): Posted[] =>
     .filter((p) => p.url.startsWith('/api/tours/'));
 
 function Today() {
-  return <CounselorTodayKit queue={toTodayQueue(emptyAttentionQueue())} />;
+  return <CounselorWorkspace view="attention">
+    <CounselorTodayKit embedded showApprovals={false} approvalSummaryHref="/counselor/today?view=decisions" queue={toTodayQueue(emptyAttentionQueue())} />
+  </CounselorWorkspace>;
 }
 
-/** The real counselor shell (WorkspaceShell + counselor nav + header actions) around the real Today kit. */
+/** The real counselor shell around the Today workspace and its embedded attention view. */
 function Portal({ helpTourKey = 'counselor.home' as const, guide = '/counselor/guide' }: { helpTourKey?: 'counselor.home' | null; guide?: string }) {
   return (
     <NextIntlClientProvider locale="en" messages={en}>
@@ -106,12 +109,16 @@ describe('counselor guided tour (wave 2)', () => {
       const anchors = document.querySelectorAll(`[data-tour="${step.target}"]`);
       expect(anchors, step.target).toHaveLength(1);
     }
-    // Page anchors are the real Today surfaces, shell anchors the real rail rows and the Help trigger.
+    // Page anchors include the visible attention filter; shell anchors are the
+    // real member/message rail rows and the Help trigger.
     expect(document.querySelector('[data-tour="tour-today-attention"]')).toContainElement(screen.getByTestId('today-tile-flagged'));
     expect(document.querySelector('[data-tour="tour-today-queue"]')).toContainElement(screen.getByTestId('today-group-at_risk'));
     expect(document.querySelector('[data-tour="tour-today-roster"]')).toHaveAttribute('href', '/counselor/students');
     expect(document.querySelector('[data-tour="tour-nav-members"]')).toHaveAttribute('href', '/counselor/students');
-    expect(document.querySelector('[data-tour="tour-nav-at-risk"]')).toHaveAttribute('href', '/counselor/at-risk');
+    const atRisk = within(screen.getByRole('navigation', { name: 'Attention views' })).getByRole('link', { name: 'At-risk cases' });
+    expect(document.querySelector('[data-tour="tour-nav-at-risk"]')).toBe(atRisk);
+    expect(atRisk).toHaveAttribute('href', '/counselor/today?view=attention&filter=at-risk');
+    expect(atRisk).toBeVisible();
     expect(document.querySelector('[data-tour="tour-nav-messages"]')).toHaveAttribute('href', '/counselor/messages');
     expect(document.querySelector('[data-tour="tour-help"]')).toBe(screen.getByRole('button', { name: 'Help' }));
   });
@@ -193,6 +200,9 @@ describe('counselor guided tour (wave 2)', () => {
     const dialog = await openFromHelp();
     await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('The member record'));
     expect(dialog).toHaveTextContent('Step 4 of 7');
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Message a member'));
+    expect(dialog).toHaveTextContent('Step 6 of 7');
   });
 
   it('CounselorPortalShell shows the strip only when the offer says so and wires the Help menu to the flag', () => {

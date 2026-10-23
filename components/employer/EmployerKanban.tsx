@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { Sparkles, Mail, Video, CheckCircle2, Ban, GripVertical, Briefcase } from 'lucide-react';
 import { matchScoreAsPercent } from '@/lib/employer/matchScoreDisplay';
 import { Avatar, DesignSurface, colorVar, type KitColor } from '@/components/portal/kit';
@@ -245,9 +246,9 @@ export default function EmployerKanban({ initialMatches }: { initialMatches: Mat
                           </p>
                         )}
                         <div className="wa-flex wa-items-center wa-gap-2" style={{ marginTop: 8 }}>
-                          <Link href={`/employer/candidates/${m.student.id}?jobId=${m.jobId}`} style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none' }}>
+                          <PortalRecordLink href={`/employer/candidates/${m.student.id}?jobId=${m.jobId}`} style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none' }}>
                             View →
-                          </Link>
+                          </PortalRecordLink>
                           {isBusy && <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>Moving…</span>}
                         </div>
                         {revertError === m.id && (

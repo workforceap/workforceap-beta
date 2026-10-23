@@ -3,6 +3,8 @@ import { Check, Mic, TrendingUp, Zap, Flag } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DesignSurface, PageOpener, ProgressRing, KitEmptyState } from '@/components/portal/kit';
+import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
+import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
 import type { ReadinessPriorityAction } from '@/lib/readiness/progressView';
 
 /**
@@ -73,6 +75,7 @@ export function MemberProgressKit({
   // `loadFailed` branch, `unavailable`/danger) or in previews — the `first`
   // states below carry no CTA because nothing the member does creates a row.
   const te = useTranslations('empty');
+  const tw = useTranslations('memberWorkspace.training');
 
   return (
     <DesignSurface surface="warm">
@@ -83,6 +86,8 @@ export function MemberProgressKit({
           lede="Score, this week, next milestone."
           icon={<TrendingUp size={13} aria-hidden="true" />}
         />
+        <MemberTrainingNav current="readiness" />
+        <p className={workspaceStyles.context}>{tw('learningContext')}</p>
         {loadFailed ? (
           <div className="wa-kit-card" data-portal-error-state="member-readiness-load">
             <KitEmptyState

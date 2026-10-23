@@ -1,7 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
+import { useMemo } from 'react';
+import { usePartnerReferralListContext, type PartnerReferralMobileView } from './usePartnerReferralListContext';
 import { Avatar, StageTrack } from '@/components/portal/kit';
 import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
 import { PIPELINE_STAGES_ORDERED, type PipelineStage } from '@/lib/pipeline/stage';
@@ -21,7 +22,7 @@ export type PartnerMemberRow = {
   placementVerified?: boolean | null;
 };
 
-type Filter = 'all' | 'active' | 'placed' | 'atRisk';
+type Filter = PartnerReferralMobileView;
 
 const STAGE_ORDER = PIPELINE_STAGES_ORDERED;
 
@@ -31,7 +32,7 @@ function stageTrackIndex(stage: string): number {
 }
 
 export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMemberRow[] }) {
-  const [filter, setFilter] = useState<Filter>('all');
+  const { mobileView: filter, setMobileView: setFilter } = usePartnerReferralListContext();
 
   const counts = useMemo(
     () => ({
@@ -69,6 +70,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
               type="button"
               onClick={() => setFilter(chip.key)}
               aria-pressed={active}
+              aria-label={chip.count > 0 ? `${chip.label} ${chip.count}` : chip.label}
               className="wa-kit-focus"
               style={{
                 flexShrink: 0,
@@ -108,7 +110,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
             const isPlaced = row.stage === 'placed';
 
             return (
-              <Link key={row.id} href={`/partner/referred-members/${row.id}`} style={{ textDecoration: 'none' }}>
+              <PortalRecordLink key={row.id} href={`/partner/referred-members/${row.id}`} style={{ textDecoration: 'none' }}>
                 <div
                   className="wa-kit-card wa-kit-card--sm wa-kit-card--hover wa-kit-focus"
                   style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}
@@ -142,7 +144,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
                     </div>
                   </div>
                 </div>
-              </Link>
+              </PortalRecordLink>
             );
           })
         )}

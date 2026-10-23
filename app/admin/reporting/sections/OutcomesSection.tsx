@@ -40,7 +40,7 @@ export async function ReportingOutcomesSection({
       placementsTotal={data.placementsTotal}
       periodLabel={data.periodLabel}
       byProgram={data.byProgram}
-      exportsHref={reportingTabHref('exports')}
+      exportsHref={reportingTabHref('exports', { period })}
       headerAction={
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }} data-testid="reporting-outcomes-actions">
           <nav aria-label="Outcomes period" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -70,7 +70,7 @@ function PeriodLink({ period, current }: { period: BoardOutcomesPeriod; current:
   return (
     <Link
       href={reportingTabHref('outcomes', { [REPORTING_PERIOD_PARAM]: period })}
-      className={active ? 'btn btn-primary btn-small' : 'btn btn-muted btn-small'}
+      className={active ? 'wa-kit-cta' : 'wa-kit-cta wa-kit-cta--ghost'}
       aria-current={active ? 'page' : undefined}
     >
       {REPORTING_PERIOD_LABELS[period]}

@@ -234,31 +234,9 @@ html[data-portal-role][data-theme='dark'] body {
   background: color-mix(in srgb, var(--wa-accent) 8%, transparent);
 }
 
-[data-surface] .wa-kit-card {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--wa-surface) 96%, white 4%), var(--wa-surface));
-  border-color: color-mix(in srgb, var(--wa-border) 82%, var(--wa-accent) 18%);
-  box-shadow:
-    0 1px 1px rgba(17, 24, 39, 0.03),
-    0 14px 34px rgba(17, 24, 39, 0.055),
-    inset 0 1px 0 rgba(255, 255, 255, 0.52);
-}
-[data-surface='dense'] .wa-kit-card {
-  box-shadow:
-    0 1px 1px rgba(17, 24, 39, 0.025),
-    0 10px 22px rgba(17, 24, 39, 0.045),
-    inset 0 1px 0 rgba(255, 255, 255, 0.42);
-}
-html.dark [data-surface] .wa-kit-card,
-[data-theme='dark'] [data-surface] .wa-kit-card {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--wa-surface) 92%, white 4%), var(--wa-surface));
-  border-color: color-mix(in srgb, var(--wa-border) 84%, var(--wa-accent) 16%);
-  box-shadow:
-    0 1px 1px rgba(0, 0, 0, 0.36),
-    0 18px 42px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
+/* Standard cards use the solid surface and elevation tokens above. Keep
+   their specificity below variants: a dark-theme generic card rule must
+   never replace a text-bearing hero gradient or a dense semantic tint. */
 .wa-kit-card--sm {
   border-radius: var(--wa-radius-sm);
   padding: var(--wa-pad-sm);
@@ -288,22 +266,24 @@ html.dark [data-surface] .wa-kit-card,
   background: linear-gradient(135deg, var(--wa-hero-crimson), var(--wa-hero-crimson-dark));
   border-color: transparent;
   color: var(--wa-on-hero);
-  box-shadow: 0 20px 42px color-mix(in srgb, var(--wa-accent) 24%, transparent);
+  box-shadow: var(--wa-shadow-lg);
 }
 [data-surface] .wa-kit-card--gradient-gold {
   background: linear-gradient(135deg, var(--wa-hero-gold), var(--wa-hero-gold-dark));
   border-color: transparent;
   color: var(--wa-on-hero);
-  box-shadow: 0 20px 42px color-mix(in srgb, var(--wa-gold) 20%, transparent);
+  box-shadow: var(--wa-shadow-lg);
 }
 /* When pop is off (dense), gradient tiles fall back to calm tints. */
 [data-surface='dense'] .wa-kit-card--gradient-crimson {
   background: var(--wa-accent-soft);
   color: var(--wa-accent-text);
+  box-shadow: var(--wa-shadow);
 }
 [data-surface='dense'] .wa-kit-card--gradient-gold {
   background: var(--wa-gold-soft);
   color: var(--wa-gold-dark);
+  box-shadow: var(--wa-shadow);
 }
 
 .wa-kit-stat-label {

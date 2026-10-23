@@ -194,14 +194,14 @@ test('member.home (wave 3) is written for the /dashboard overview and walks home
   assert.equal(getHomeTourForRole('member')?.key, 'member.home');
 });
 
-test('employer.home (wave 3) is written for the overview and walks post → review → pipeline → messages → settings', () => {
+test('employer.home walks post → Candidates → messages → settings without duplicate workspace targets', () => {
   const tour = TOUR_REGISTRY['employer.home'];
   assert.equal(tour.role, 'employer');
   assert.equal(tour.route, '/employer');
-  assert.equal(tour.version, 3, 'v3 re-tours everyone who finished the v2 rail walk-through');
+  assert.equal(tour.version, 4, 'v4 explains the consolidated Candidates workspace');
   assert.deepEqual(
     tour.steps.map((s) => s.target),
-    ['tour-overview', 'tour-post-job', 'tour-applicants', 'tour-pipeline', 'tour-messages', 'tour-settings', 'tour-help'],
+    ['tour-overview', 'tour-post-job', 'tour-applicants', 'tour-messages', 'tour-settings', 'tour-help'],
   );
   assert.ok(tour.steps.length >= 5 && tour.steps.length <= 7);
   assert.equal(getHomeTourForRole('employer')?.key, 'employer.home');
@@ -211,7 +211,7 @@ test('partner.home (wave 3) is written for the overview and walks referrals → 
   const tour = TOUR_REGISTRY['partner.home'];
   assert.equal(tour.role, 'partner');
   assert.equal(tour.route, '/partner');
-  assert.equal(tour.version, 3);
+  assert.equal(tour.version, 4);
   assert.deepEqual(
     tour.steps.map((s) => s.target),
     ['tour-referral-link', 'tour-members', 'tour-attention', 'tour-payouts', 'tour-exports', 'tour-messages', 'tour-help'],

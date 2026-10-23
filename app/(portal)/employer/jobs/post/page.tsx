@@ -7,6 +7,7 @@ import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
+import EmployerJobsActions from '@/components/employer/EmployerJobsActions';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
 import EmployerJobPostForm from '@/components/employer/EmployerJobPostForm';
@@ -56,18 +57,21 @@ export default async function EmployerJobPostPage() {
         title={t('postAJobTitle')}
         subtitle={t('publishToJobBoard')}
         action={
-          <Link
-            href="/employer/jobs/new"
-            style={{
-              padding: '0.5rem 1rem',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              color: 'var(--wa-accent-text)',
-              textDecoration: 'none',
-            }}
-          >
-            {t('advancedEditor')}
-          </Link>
+          <>
+            <EmployerJobsActions showJobs current="post" labels={{ nav: t('jobsWorkspaceActions'), jobs: t('myJobs'), post: t('postAJobBtn'), import: t('importJobsBtn') }} />
+            <Link
+              href="/employer/jobs/new"
+              style={{
+                padding: '0.5rem 1rem',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                color: 'var(--wa-accent-text)',
+                textDecoration: 'none',
+              }}
+            >
+              {t('advancedEditor')}
+            </Link>
+          </>
         }
       />
 

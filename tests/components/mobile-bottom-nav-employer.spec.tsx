@@ -20,14 +20,14 @@ import MobileBottomNav from '@/components/MobileBottomNav';
 afterEach(cleanup);
 
 describe('employer mobile bottom nav', () => {
-  it('shows Overview, Jobs, Queue and Messages, with Queue opening the work queue', () => {
+  it('keeps the Work queue and adds one Candidates destination beside Jobs', () => {
     render(
       <NextIntlClientProvider locale="en" messages={en}>
         <MobileBottomNav variant="employer" />
       </NextIntlClientProvider>,
     );
     const links = within(screen.getByRole('navigation')).getAllByRole('link');
-    expect(links.map((a) => a.textContent)).toEqual(['Overview', 'Jobs', 'Queue', 'Messages']);
+    expect(links.map((a) => a.textContent)).toEqual(['Overview', 'Jobs', 'Queue', 'Candidates', 'Messages']);
     expect(screen.getByRole('link', { name: 'Queue' }).getAttribute('href')).toMatch(/\/employer\/work-queue$/);
     for (const link of links) expect(link.getAttribute('href')).not.toMatch(/\/employer\/pipeline/);
   });

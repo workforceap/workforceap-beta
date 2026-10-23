@@ -6,6 +6,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { prefillInterviewPractice } from '@/lib/ai/prefillFromMemberState';
 import { InterviewPracticeKit } from '@/components/portal/kit/pages/member/InterviewPracticeKit';
+import { normalizeInterviewRole } from '@/lib/member/memberWorkspace';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
@@ -47,8 +48,9 @@ export default async function InterviewPracticePage({ searchParams }: { searchPa
     }
   }
   // URL role param overrides prefill
-  if (sp.role) {
-    initialData = { ...(initialData ?? { experienceLevel: 'mid', resumeContext: '' }), role: sp.role };
+  const targetRole = normalizeInterviewRole(sp.role);
+  if (targetRole) {
+    initialData = { ...(initialData ?? { experienceLevel: 'mid', resumeContext: '' }), role: targetRole };
   }
 
   return (

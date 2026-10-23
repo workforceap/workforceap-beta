@@ -3,6 +3,7 @@ process.env.TZ = 'UTC';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { withPortalIntl } from '@/tests/helpers/withPortalIntl';
 
 /**
  * Counselor audit §6 item 3 / §2 item 4: the student record reads as four
@@ -33,6 +34,8 @@ const db = vi.hoisted(() => {
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn(), replace: vi.fn() }),
+  usePathname: () => window.location.pathname,
+  useSearchParams: () => new URLSearchParams(window.location.search),
   redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); },
   notFound: () => { throw new Error('NOT_FOUND'); },
 }));
@@ -95,11 +98,16 @@ const BASE = STUDENT_DETAIL_TABS_ID_BASE;
 const TAB_IDS = ['profile', 'training', 'notes', 'messages'] as const;
 
 async function renderPage(searchParams?: Record<string, string | string[] | undefined>): Promise<Document> {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams ?? {})) {
+    for (const entry of Array.isArray(value) ? value : value === undefined ? [] : [value]) query.append(key, entry);
+  }
+  window.history.replaceState(null, '', `/counselor/students/member-1${query.size ? `?${query}` : ''}`);
   const html = renderToStaticMarkup(
-    await CounselorStudentDetailPage({
+    withPortalIntl(await CounselorStudentDetailPage({
       params: Promise.resolve({ memberId: 'member-1' }),
       ...(searchParams ? { searchParams: Promise.resolve(searchParams) } : {}),
-    }),
+    })),
   );
   const doc = document.implementation.createHTMLDocument('student detail');
   doc.body.innerHTML = html;

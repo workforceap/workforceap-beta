@@ -6,6 +6,7 @@ import { RouterContext } from 'next/dist/shared/lib/router-context.shared-runtim
 import type { NextRouter } from 'next/router';
 import en from '@/messages/en.json';
 import { pickPortalClientMessages } from '@/lib/i18n/pickRootClientMessages';
+import { readCss, loadRootTokens, colorOf, contrast, splitTopLevel } from '@/lib/ui/cssTokenContrast.test-helpers';
 import {
   VoiceStudioKit,
   type VoiceStudioAgentKey,
@@ -94,6 +95,33 @@ async function startActiveConversation() {
 }
 
 describe('same-page AI Tools navigation', () => {
+  it('keeps Resume Studio banner and coach text readable across their gradients in either theme', () => {
+    mount({ initialTab: 'studio', resumeStudio: { hasResume: true, structuralScore: 76, issues: [] } }, 'tab=studio');
+    const region = screen.getByRole('region', { name: 'Resume' });
+    const banner = within(region).getByRole('heading', { name: 'Resume Studio' }).parentElement!.parentElement!;
+    const coach = within(region).getByRole('link', { name: /resume coach.*start voice session/i });
+    const palette = loadRootTokens(readCss('css/wa-brand-tokens.css'), readCss('css/portal-tokens.css'));
+
+    for (const panel of [banner, coach]) {
+      const background = panel.style.background;
+      const stops = splitTopLevel(background.slice(background.indexOf('(') + 1, -1)).slice(1);
+      expect(stops).toHaveLength(2);
+      const foregrounds = [panel, ...panel.querySelectorAll<HTMLElement>('[style]')]
+        .map((element) => element.style.color).filter(Boolean);
+      for (const scheme of ['light', 'dark'] as const) {
+        const [start, end] = stops.map((stop) => colorOf(stop, palette, scheme));
+        for (let step = 0; step <= 10; step++) {
+          const t = step / 10;
+          const sample = { r: start.r * (1 - t) + end.r * t, g: start.g * (1 - t) + end.g * t, b: start.b * (1 - t) + end.b * t, a: 1 };
+          for (const foreground of foregrounds) {
+            expect(contrast(colorOf(foreground, palette, scheme), sample), `${scheme} ${foreground} at ${step * 10}%`).toBeGreaterThanOrEqual(4.5);
+          }
+        }
+      }
+    }
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('opens the real Resume coach destination without remounting the hub', () => {
     const resumeStudio = { hasResume: true, structuralScore: 76, issues: [] };
     const view = mount({ initialTab: 'studio', initialAgent: 'mock', resumeStudio }, 'tab=studio&agent=mock&source=dashboard');
@@ -112,7 +140,7 @@ describe('same-page AI Tools navigation', () => {
     ['readiness', 'Readiness Coach'],
     ['resume', 'Resume Coach'],
     ['mock', 'Mock Interview'],
-    ['counselor', 'Lilley Career Coach'],
+    ['counselor', 'Lilley · AI career coach'],
     ['business', 'Career & Business Coach'],
   ] as [VoiceStudioAgentKey, string][])('applies an incoming %s deep link to the existing component', (key, label) => {
     const view = mount();
@@ -202,15 +230,15 @@ describe('same-page AI Tools navigation', () => {
     const view = mount();
     fireEvent.click(screen.getByRole('button', { name: /Resume Coach/ }));
     fireEvent.click(screen.getByRole('radio', { name: 'Coaches' }));
-    fireEvent.click(screen.getByRole('button', { name: /Lilley Career Coach/ }));
-    expectPracticeCoach('Lilley Career Coach');
+    fireEvent.click(screen.getByRole('button', { name: /Lilley · AI career coach/ }));
+    expectPracticeCoach('Lilley · AI career coach');
 
     navigate(view, 'tab=session&agent=resume&source=dashboard', { initialTab: 'session', initialAgent: 'resume' });
-    expectPracticeCoach('Lilley Career Coach');
+    expectPracticeCoach('Lilley · AI career coach');
     navigate(view, 'agent=resume&source=dashboard', { initialTab: 'coaches', initialAgent: 'resume' });
-    expectPracticeCoach('Lilley Career Coach');
+    expectPracticeCoach('Lilley · AI career coach');
     navigate(view, 'tab=session&agent=counselor&source=dashboard', { initialTab: 'session', initialAgent: 'counselor' });
-    expectPracticeCoach('Lilley Career Coach');
+    expectPracticeCoach('Lilley · AI career coach');
 
     navigate(view, 'tab=session&agent=resume&source=dashboard', { initialTab: 'session', initialAgent: 'resume' });
     expectPracticeCoach('Resume Coach');
@@ -422,7 +450,7 @@ describe('same-page AI Tools navigation', () => {
     navigate(view, 'tab=session&agent=counselor&source=dashboard', { initialTab: 'session', initialAgent: 'counselor' });
 
     expect(requestSignal?.aborted).toBe(true);
-    expectPracticeCoach('Lilley Career Coach');
+    expectPracticeCoach('Lilley · AI career coach');
     expect(screen.getByRole('button', { name: /^start session$/i })).toBeEnabled();
     expect(startSession).not.toHaveBeenCalled();
   });

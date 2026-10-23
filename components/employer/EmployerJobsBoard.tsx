@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { useRouter } from 'next/navigation';
 import { flushSync } from 'react-dom';
 import { useState, useMemo, useEffect, useId, useCallback, type RefObject } from 'react';
@@ -944,13 +945,13 @@ export default function EmployerJobsBoard({
                     </p>
 
                     <div className="wa-flex wa-flex-wrap wa-gap-2" style={{ borderTop: '1px solid var(--wa-border)', paddingTop: 12 }}>
-                      <Link
+                      <PortalRecordLink
                         href={`/employer/jobs/${j.id}`}
                         className="btn btn-primary btn-sm"
                         onClick={() => trackEmployerJobAction('edit', j.id, { status: j.status })}
                       >
                         {j.status === 'draft' ? 'Edit draft' : 'View & edit'}
-                      </Link>
+                      </PortalRecordLink>
                       {j.status === 'draft' && (
                         <button
                           type="button"
@@ -992,13 +993,13 @@ export default function EmployerJobsBoard({
                         </button>
                       )}
                       {j.status !== 'draft' && (
-                        <Link
+                        <PortalRecordLink
                           href={`/employer/jobs/${encodeURIComponent(j.id)}/applicants`}
                           className="btn btn-ghost btn-sm"
                           onClick={() => trackEmployerJobAction('view_applications', j.id, { status: j.status })}
                         >
                           View applicants
-                        </Link>
+                        </PortalRecordLink>
                       )}
                     </div>
                   </article>

@@ -2,9 +2,8 @@ import { Sparkles } from 'lucide-react';
 import type { PortalNavItem } from './portalNav';
 
 /**
- * Canonical member toolkit hub. Product copy calls this surface **Career
- * Studio** (`ToolkitToolChrome` kicker + "Back to AI Career Tools" on every tool
- * page, `MemberHomeKit` CTA), so the rail uses the same noun.
+ * Canonical member tool hub. Keep the rail, tool chrome and home action on
+ * the same product name: AI Career Tools.
  */
 export const MEMBER_TOOLKIT_HUB_HREF = '/dashboard/ai-tools';
 export const MEMBER_TOOLKIT_HUB_LABEL = 'AI Career Tools';
@@ -31,6 +30,7 @@ const MEMBER_TOOL_LABELS: Record<string, string> = {
   'interview-coach': 'Interview coach',
   'interview-practice': 'Interview practice',
   'interview-prep': 'Interview prep',
+  interviews: 'Interview practice',
   'job-match-scorer': 'Job match scorer',
   'linkedin-about': 'LinkedIn About',
   'linkedin-headline': 'LinkedIn headline',

@@ -7,6 +7,7 @@ import { getUser } from '@/lib/auth/server';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import InterestProfilerClient from '@/components/portal/InterestProfilerClient';
 import { PageOpener } from '@/components/portal/kit';
+import { MemberCareerSteps } from '@/components/portal/MemberCareerSteps';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -49,6 +50,7 @@ export default async function InterestProfilerPage() {
         title="O*NET Interest Profiler"
         lede="Rate 30 short activities to see how your interests line up with WorkforceAP programs."
       />
+      <MemberCareerSteps current="interests" />
       <InterestProfilerClient />
     </div>    </>
   );

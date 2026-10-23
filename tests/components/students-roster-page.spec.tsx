@@ -1,3 +1,4 @@
+import { withPortalIntl } from '@/tests/helpers/withPortalIntl';
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { StudentRow } from '@/components/portal/kit/pages/admin-subviews/StudentsRosterKit';
@@ -43,7 +44,7 @@ const enrichment = {
   courseraActivityAt: new Date('2026-09-18T12:00:00Z'), courseActivityAt: null,
 };
 async function displayedStudent(): Promise<StudentRow> {
-  render(await AdminStudentsPage({}));
+  render(withPortalIntl(await AdminStudentsPage({})));
   return mocks.kit.mock.calls.at(-1)?.[0].students[0];
 }
 beforeEach(() => {

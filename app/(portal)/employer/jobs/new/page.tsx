@@ -10,6 +10,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getActiveProgramsResult } from '@/lib/platform/programCatalog';
 import JobForm from '@/components/employer/JobForm';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
+import EmployerJobsActions from '@/components/employer/EmployerJobsActions';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { getTranslations } from 'next-intl/server';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
@@ -49,18 +50,21 @@ export default async function NewJobPage() {
         title={t('createJobPosting')}
         subtitle={t('createJobDesc')}
         action={
-          <Link
-            href="/employer/jobs/post"
-            style={{
-              padding: '0.5rem 1rem',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              color: 'var(--wa-accent-text)',
-              textDecoration: 'none',
-            }}
-          >
-            {t('quickPostLink')}
-          </Link>
+          <>
+            <EmployerJobsActions showJobs current="post" labels={{ nav: t('jobsWorkspaceActions'), jobs: t('myJobs'), post: t('postAJobBtn'), import: t('importJobsBtn') }} />
+            <Link
+              href="/employer/jobs/post"
+              style={{
+                padding: '0.5rem 1rem',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                color: 'var(--wa-accent-text)',
+                textDecoration: 'none',
+              }}
+            >
+              {t('quickPostLink')}
+            </Link>
+          </>
         }
       />
       <div className="wa-pb-24 md:wa-pb-0">

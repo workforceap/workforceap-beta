@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/react';
 
 import CertificationsEarnMoreCard from '@/components/portal/CertificationsEarnMoreCard';
-import { readCss, loadRootTokens, colorOf, contrast as tokenContrast } from '@/lib/ui/cssTokenContrast.test-helpers';
+import ReadinessCoachReturnButton from '@/components/portal/ReadinessCoachReturnButton';
+import { readCss, loadRootTokens, colorOf, contrast as tokenContrast, splitTopLevel } from '@/lib/ui/cssTokenContrast.test-helpers';
 
 /**
  * The member portal's white CTA pills keep `background: #fff` in both
@@ -33,6 +34,28 @@ describe('certifications page "Earn More Credentials" pill', () => {
       const fg = colorOf(fgExpr as string, tokens, scheme);
       expect(bg, `${scheme} pill background`).toEqual({ r: 255, g: 255, b: 255, a: 1 });
       expect(tokenContrast(fg, bg), `${scheme} label "${fgExpr}" on the white pill`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});
+
+describe('floating readiness-coach action', () => {
+  it('keeps its label readable at both ends of the gold gradient in either theme', () => {
+    vi.stubGlobal('scrollY', 400);
+    const view = render(<ReadinessCoachReturnButton />);
+    try {
+      const button = view.getByRole('button', { name: 'Jump back to readiness coach' });
+      const background = button.style.background;
+      const stops = splitTopLevel(background.slice(background.indexOf('(') + 1, -1)).slice(1);
+      expect(stops).toHaveLength(2);
+      const tokens = loadRootTokens(readCss('css/wa-brand-tokens.css'), readCss('css/portal-tokens.css'));
+      for (const scheme of ['light', 'dark'] as const) {
+        for (const stop of stops) {
+          expect(tokenContrast(colorOf(button.style.color, tokens, scheme), colorOf(stop, tokens, scheme))).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+    } finally {
+      view.unmount();
+      vi.unstubAllGlobals();
     }
   });
 });

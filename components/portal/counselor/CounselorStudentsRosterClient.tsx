@@ -1,6 +1,7 @@
 'use client';
 
-import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
+import { withPortalReturnTo } from '@/lib/nav/returnContext';
 import { NO_ACTIVITY_RECORDED_LABEL } from '@/lib/counselor/lastActivity';
 import { useMemo, useState, useCallback } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -157,7 +158,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [atRiskOnly, setAtRiskOnly] = useState(false);
+  const [atRiskOnly, setAtRiskOnly] = useState(() => searchParams?.get('risk') === '1');
 
   const activeFilter: FilterKey = useMemo(() => {
     const param = searchParams?.get('filter') ?? initialFilter ?? '';
@@ -180,6 +181,11 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
     },
     [pathname, router, searchParams]
   );
+
+  const returnParams = new URLSearchParams(searchParams?.toString() ?? '');
+  if (atRiskOnly) returnParams.set('risk', '1');
+  else returnParams.delete('risk');
+  const returnTo = `${pathname || '/counselor/students'}${returnParams.size ? `?${returnParams.toString()}` : ''}`;
 
   const metaByMember = useMemo(() => {
     const map = new Map<string, CounselorRosterFilterMeta>();
@@ -278,7 +284,8 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
     const showMessage = row.riskScore != null && row.riskScore >= RISK_MEDIUM_OR_ABOVE;
     if (!showMessage) return <span style={{ color: 'var(--wa-muted)' }}>—</span>;
     return (
-      <Link
+      <PortalRecordLink
+        returnTo={returnTo}
         href={`/counselor/students/${row.memberId}#counselor-member-messages`}
         className="btn btn-primary btn-sm"
         style={{ whiteSpace: 'nowrap', fontSize: 13 }}
@@ -286,7 +293,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
       >
         <MessageSquare size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
         Message
-      </Link>
+      </PortalRecordLink>
     );
   };
 
@@ -397,7 +404,7 @@ export default function CounselorStudentsRosterClient({ rows, filterMeta, initia
           columns={columns}
           rows={visible}
           rowKey={(row) => row.assignmentId}
-          onRowClick={(row) => router.push(`/counselor/students/${row.memberId}`)}
+          onRowClick={(row) => router.push(withPortalReturnTo(`/counselor/students/${row.memberId}`, returnTo))}
           minWidth={860}
           mobile="cards"
           cardRender={(row) => {

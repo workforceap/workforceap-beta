@@ -21,6 +21,8 @@ import EmployerJobQuickActions from '@/components/employer/EmployerJobQuickActio
 const refresh = vi.hoisted(() => vi.fn());
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh, push: vi.fn(), replace: vi.fn() }),
+  usePathname: () => '/employer/jobs',
+  useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('next/link', () => ({
   default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (

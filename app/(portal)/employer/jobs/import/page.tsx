@@ -10,6 +10,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getActiveProgramsResult } from '@/lib/platform/programCatalog';
 import ImportJobClient from './ImportJobClient';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
+import EmployerJobsActions from '@/components/employer/EmployerJobsActions';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 
@@ -45,6 +46,7 @@ export default async function ImportJobPage() {
       <EmployerPageOpener
         kicker={t('importJobsMetaTitle')}
         title="Add roles from your site"
+        action={<EmployerJobsActions showJobs current="import" labels={{ nav: t('jobsWorkspaceActions'), jobs: t('myJobs'), post: t('postAJobBtn'), import: t('importJobsBtn') }} />}
         subtitle="We turn what is already on your public careers page into private drafts. You edit, then choose when to send a posting for WorkforceAP review. Candidates never see anything until after that review — and your approval."
       />
       <ImportJobClient

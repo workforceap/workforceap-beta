@@ -291,6 +291,8 @@ export default function WorkspaceShell({
       'Help & Support': tNav('help'),
       'Member Guide': tNav('memberGuide'),
       'Profile & settings': tNav('profile'),
+      'Candidates': tNav('candidates'),
+      'Impact': tNav('impact'),
       'My account': tNav('myAccount'),
       'Sign out': tNav('signOut'),
     };
@@ -775,7 +777,7 @@ export default function WorkspaceShell({
                                   {translateLabel(item.label)}
                                 </span>
                                 {b > 0 ? (
-                                  <span className="workspace-nav-badge">{b > 99 ? '99+' : b}</span>
+                                  <span className="workspace-nav-badge" aria-label={item.badgeKey === 'milestones_new' ? tNav('newMilestonesCount', { count: b }) : undefined} title={item.badgeKey === 'milestones_new' ? tNav('newMilestonesCount', { count: b }) : undefined}>{b > 99 ? '99+' : b}</span>
                                 ) : null}
                               </Link>
                             </li>

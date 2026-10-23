@@ -8,9 +8,11 @@ import Link from 'next/link';
 export default function AdminDataLoadError({
   title = 'Could not load this page',
   message = 'There was a problem loading data. This is often temporary — try again in a moment.',
+  headingAs: Heading = 'h1',
 }: {
   title?: string;
   message?: string;
+  headingAs?: 'h1' | 'h2';
 }) {
   return (
     <section
@@ -18,7 +20,7 @@ export default function AdminDataLoadError({
       role="alert"
       className="wa-kit-card wa-kit-card--sm wa-kit-load-error"
     >
-      <h1 className="wa-kit-load-error__title">{title}</h1>
+      <Heading className="wa-kit-load-error__title">{title}</Heading>
       <p className="wa-kit-lede" style={{ margin: 0 }}>{message}</p>
       <div className="wa-kit-load-error__actions">
         <Link href="/admin" className="wa-kit-cta wa-kit-focus">

@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { withPortalReturnTo } from '@/lib/nav/returnContext';
 import { Filter, Plus, Download, Mail, Users, GraduationCap, CheckCircle } from 'lucide-react';
 import { StatusDot } from '@astryxdesign/core/StatusDot';
 import { getStudentStatus, type StudentStatus } from '@/lib/admin/studentStatus';
@@ -313,6 +315,7 @@ export default function MembersTable({
 }: MembersTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
   const initialSort = searchParams?.get('sort')?.split(':') as [SortKey, SortDir] | undefined;
   const { query: search, search: setSearch, navigate: updateUrl, pending: searchPending } = useDirectoryNavigation(searchQuery);
@@ -324,7 +327,7 @@ export default function MembersTable({
     const v = searchParams?.get('triage') ?? '';
     return (APPLICANT_TRIAGE_BUCKETS as readonly string[]).includes(v) ? v : '';
   });
-  const [notInCourseFilter, setNotInCourseFilter] = useState(false);
+  const [notInCourseFilter, setNotInCourseFilter] = useState(() => searchParams?.get('unassigned') === '1');
   const [needsAttentionFilter, setNeedsAttentionFilter] = useState(() => searchParams?.get('attention') === '1');
   const [startDate, setStartDate] = useState(startDateFilter);
   const [endDate, setEndDate] = useState(endDateFilter);
@@ -347,6 +350,24 @@ export default function MembersTable({
   };
 
   const totalPages = Math.ceil(totalCount / pageSize);
+
+  // Carry both server filters and the current-page refinements through a record.
+  // They remain refinements of the same loaded rows; this does not change queries
+  // or widen the selection used by bulk actions and CSV exports.
+  const returnParams = new URLSearchParams(searchParams?.toString() ?? '');
+  for (const [key, value] of Object.entries({
+    search: search.trim(), program: programFilterState, status: statusFilterState,
+    partner: partnerFilter, startDate, endDate, health: healthFilter, triage: triageFilter,
+    unassigned: notInCourseFilter ? '1' : '', attention: needsAttentionFilter ? '1' : '',
+    sort: `${sortKey}:${sortDir}`,
+  })) {
+    if (value) returnParams.set(key, value);
+    else returnParams.delete(key);
+  }
+  if (currentPage > 1) returnParams.set('page', String(currentPage));
+  else returnParams.delete('page');
+  const returnTo = `${pathname || '/admin/students'}${returnParams.size ? `?${returnParams.toString()}` : ''}`;
+
 
   // An earlier response for one filter must not reset newer choices in others.
   useEffect(() => { setProgramFilterState(programFilter); }, [programFilter]);
@@ -439,11 +460,12 @@ export default function MembersTable({
     setStatusFilterState('');
     setPartnerFilter('');
     setHealthFilter('');
+    setTriageFilter('');
     setNotInCourseFilter(false);
     setNeedsAttentionFilter(false);
     setStartDate('');
     setEndDate('');
-    updateUrl({ search: '', program: '', status: '', partner: '', startDate: '', endDate: '', health: '', attention: '', page: '' });
+    updateUrl({ search: '', program: '', status: '', partner: '', startDate: '', endDate: '', health: '', triage: '', unassigned: '', attention: '', page: '' });
   }
 
   /** Local YYYY-MM-DD for date inputs (avoids UTC day-shift from toISOString). */
@@ -921,7 +943,7 @@ export default function MembersTable({
           rows={filtered}
           rowKey={(m) => m.id}
           getRowProps={(m) => ({
-            onClick: () => router.push(`/admin/members/${m.id}`),
+            onClick: () => router.push(withPortalReturnTo(`/admin/members/${m.id}`, returnTo)),
             style: { cursor: 'pointer' },
             'data-clickable': 'true',
           })}
@@ -985,10 +1007,10 @@ export default function MembersTable({
                 const lastActive = formatMemberDate(m.updatedAt) ?? '—';
                 return (
                   <>
-                    <Link href={`/admin/members/${m.id}`} onClick={(e) => e.stopPropagation()}>
+                    <PortalRecordLink href={`/admin/members/${m.id}`} returnTo={returnTo} onClick={(e) => e.stopPropagation()}>
                       {m.healthStatus && <HealthDot status={m.healthStatus} />}
                       {m.fullName}
-                    </Link>
+                    </PortalRecordLink>
                     <div className="members-name-details">
                       {rawPhone ? (
                         <>
@@ -1120,10 +1142,10 @@ export default function MembersTable({
                       aria-label={`Select ${m.fullName}`}
                     />
                   </label>
-                  <Link href={`/admin/members/${m.id}`} style={{ fontWeight: 700, color: 'var(--wa-accent-text)', wordBreak: 'break-word' }} onClick={(e) => e.stopPropagation()}>
+                  <PortalRecordLink href={`/admin/members/${m.id}`} returnTo={returnTo} style={{ fontWeight: 700, color: 'var(--wa-accent-text)', wordBreak: 'break-word' }} onClick={(e) => e.stopPropagation()}>
                     {m.healthStatus && <HealthDot status={m.healthStatus} />}
                     {m.fullName}
-                  </Link>
+                  </PortalRecordLink>
                 </div>
                 {m.healthStatus ? (
                   <span
@@ -1186,7 +1208,7 @@ export default function MembersTable({
               <p className="admin-portal-card__meta">Last active {lastActive}</p>
               </details>
               <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
-                <Link href={`/admin/members/${m.id}`} className="btn btn-sm btn-primary">Open member</Link>
+                <PortalRecordLink href={`/admin/members/${m.id}`} returnTo={returnTo} className="btn btn-sm btn-primary">Open member</PortalRecordLink>
                 <Link
                   href={`/counselor/sessions/${m.id}/run`}
                   onClick={(e) => e.stopPropagation()}
@@ -1207,7 +1229,7 @@ export default function MembersTable({
           <p>{activeFilterCount > 0 ? 'Try a different name, email, or filter.' : 'Add your first member to get started.'}</p>
           {activeFilterCount > 0 && <button type="button" className="btn btn-outline" onClick={clearAllFilters}>Clear search & filters</button>}
           {members.length === 0 && activeFilterCount === 0 && !searchPending && (
-            <a href="/admin/members/new" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <a href="/admin/members/new" className="wa-kit-cta">
               <Plus size={16} /> Add Member
             </a>
           )}

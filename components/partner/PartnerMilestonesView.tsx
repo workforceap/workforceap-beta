@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import type { LucideIcon } from 'lucide-react';
 import { Activity, Award, Briefcase } from 'lucide-react';
 import {
@@ -70,9 +70,9 @@ function stageTrackFor(kind: string): { index: number; total: number } | null {
   return { index: idx + 1, total: PIPELINE_STAGES_ORDERED.length };
 }
 
-export default function PartnerMilestonesView() {
+export default function PartnerMilestonesView({ initialMilestones }: { initialMilestones?: Milestone[] } = {}) {
   const t = useTranslations('partner');
-  const [milestones, setMilestones] = useState<Milestone[] | null>(null);
+  const [milestones, setMilestones] = useState<Milestone[] | null>(initialMilestones ?? null);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -91,8 +91,9 @@ export default function PartnerMilestonesView() {
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (initialMilestones !== undefined) setMilestones(initialMilestones);
+    else void load();
+  }, [load, initialMilestones]);
 
   const counts = useMemo(() => {
     if (!milestones) return null;
@@ -170,12 +171,12 @@ export default function PartnerMilestonesView() {
                     <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--wa-text)' }}>{m.label}</span>
                   </div>
                   <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 3 }}>
-                    <Link
+                    <PortalRecordLink
                       href={`/partner/referred-members/${m.memberId}`}
                       style={{ color: 'var(--wa-accent)', textDecoration: 'none', fontWeight: 600 }}
                     >
                       {m.memberName}
-                    </Link>
+                    </PortalRecordLink>
                     {' · '}
                     {new Date(m.at).toLocaleString()}
                   </div>

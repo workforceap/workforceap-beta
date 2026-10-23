@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { ROOT, readCss, loadRootTokens, loadBlockTokens, colorOf, over, contrast } from './cssTokenContrast.test-helpers';
+import { ROOT, readCss, loadRootTokens, loadBlockTokens, colorOf, over, contrast, splitTopLevel } from './cssTokenContrast.test-helpers';
 
 /**
  * WAP-153 / WAP-154 — dark-mode canvas below the portal shell and the dev
@@ -69,5 +69,46 @@ test('the /dev/dashboard fixture carries no hardcoded light tile and its info ti
     const tile = over(colorOf('var(--wa-info-soft)', tokens, scheme), surface);
     const ratio = contrast(colorOf('var(--wa-info-dark)', tokens, scheme), tile);
     assert.ok(ratio >= 4.5, `${scheme} info tile foreground is ${ratio.toFixed(2)}:1`);
+  }
+});
+
+test('normal and muted text remain AA at the strongest overlapping portal canvas washes', () => {
+  const warmBg = loadBlockTokens(BRIDGE_CSS, "html[data-portal-role='member']").get('--wa-bg')!;
+  for (const scheme of ['light', 'dark'] as const) {
+    for (const canvas of [tokens.get('--wa-bg')!, warmBg]) {
+      const palette = new Map(tokens).set('--wa-bg', canvas);
+      const layers = splitTopLevel(palette.get('--wa-bg-wave')!);
+      let background = colorOf(layers.pop()!, palette, scheme);
+      // Conservative maximum: both radial layers at their full first stop,
+      // even though their centers occupy different positions in the viewport.
+      for (const layer of layers.reverse()) {
+        const stops = splitTopLevel(layer.slice(layer.indexOf('(') + 1, -1));
+        const strongestStop = stops[1].replace(/\s+0$/, '');
+        background = over(colorOf(strongestStop, palette, scheme), background);
+      }
+      for (const foreground of ['--wa-text', '--wa-muted']) {
+        const ratio = contrast(colorOf(`var(${foreground})`, palette, scheme), background);
+        assert.ok(ratio >= 4.5, `${scheme} ${foreground} on overlapping canvas washes is ${ratio.toFixed(2)}:1`);
+      }
+    }
+  }
+});
+
+test('sticky navigation preserves AA text over both light and dark scrolled content', () => {
+  const warmBg = loadBlockTokens(BRIDGE_CSS, "html[data-portal-role='member']").get('--wa-bg')!;
+  for (const scheme of ['light', 'dark'] as const) {
+    for (const canvas of [tokens.get('--wa-bg')!, warmBg]) {
+      const palette = new Map(tokens).set('--wa-bg', canvas);
+      for (const content of ['#000000', '#ffffff']) {
+        const background = over(
+          colorOf('var(--wa-shell-header-bg)', palette, scheme),
+          colorOf(content, palette, scheme),
+        );
+        for (const foreground of ['--wa-text', '--wa-muted']) {
+          const ratio = contrast(colorOf(`var(${foreground})`, palette, scheme), background);
+          assert.ok(ratio >= 4.5, `${scheme} ${foreground} in sticky navigation over ${content} is ${ratio.toFixed(2)}:1`);
+        }
+      }
+    }
   }
 });

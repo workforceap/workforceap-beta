@@ -2,6 +2,7 @@
 
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import Link from 'next/link';
+import { InterviewModeLinks } from '@/components/portal/InterviewModeLinks';
 import { Brain, Check, Code, Copy, Download, Heart, Lightbulb, Puzzle, Users } from 'lucide-react';
 import { useRetryableFetch } from '@/hooks/useRetryableFetch';
 import AiToolError from './AiToolError';
@@ -88,8 +89,10 @@ export default function InterviewPracticeForm({
   initialData,
   preview = false,
   previewQuestions,
+  workspaceNavigation = false,
 }: {
   memberId?: string;
+  workspaceNavigation?: boolean;
   initialData?: { role: string; experienceLevel: 'entry' | 'mid' | 'senior'; resumeContext: string } | null;
   /** Skip resume hydrate / generate POST — /dev/member proofs. */
   preview?: boolean;
@@ -218,6 +221,7 @@ export default function InterviewPracticeForm({
 
   return (
     <form onSubmit={handleSubmit} className="interview-practice-form" style={{ marginTop: 0 }}>
+      {workspaceNavigation ? <InterviewModeLinks current="answers" role={role} /> : null}
       <AiToolLanguageSelector value={language} onChange={setLanguage} />
       <div className="wa-space-y-4">
         <FormField

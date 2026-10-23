@@ -16,6 +16,7 @@ process.env.TZ = 'UTC';
 
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { withPortalIntl } from '@/tests/helpers/withPortalIntl';
 
 const db = vi.hoisted(() => {
   const overrides: Record<string, (args: unknown) => Promise<unknown>> = {};
@@ -34,6 +35,8 @@ const db = vi.hoisted(() => {
 const panelMock = vi.hoisted(() => (name: string) => ({ default: () => <div data-panel={name} /> }));
 
 vi.mock('next/navigation', () => ({
+  usePathname: () => window.location.pathname,
+  useSearchParams: () => new URLSearchParams(window.location.search),
   redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); },
   notFound: () => { throw new Error('NOT_FOUND'); },
 }));
@@ -161,11 +164,16 @@ const baseMember = {
 };
 
 async function renderPage(searchParams?: Record<string, string | string[] | undefined>): Promise<Document> {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams ?? {})) {
+    for (const entry of Array.isArray(value) ? value : value === undefined ? [] : [value]) query.append(key, entry);
+  }
+  window.history.replaceState(null, '', `/admin/members/member-1${query.size ? `?${query}` : ''}`);
   const html = renderToStaticMarkup(
-    await AdminMemberDetailPage({
+    withPortalIntl(await AdminMemberDetailPage({
       params: Promise.resolve({ id: 'member-1' }),
       ...(searchParams ? { searchParams: Promise.resolve(searchParams) } : {}),
-    }),
+    })),
   );
   const doc = document.implementation.createHTMLDocument('member detail');
   doc.body.innerHTML = html;

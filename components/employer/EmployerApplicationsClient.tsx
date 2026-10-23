@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import type { JobPostingApplicationStatus } from '@prisma/client';
@@ -10,6 +11,7 @@ import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import DataTable from '@/components/portal/ui/DataTable';
 import { employerApplicationsListHref, type EmployerApplicationsSort } from '@/lib/employer/employerApplicationsListQuery';
 import { employerJobPostingApplicationStatusLabel } from '@/lib/employer/jobPostingApplicationStatus';
+import styles from './EmployerApplicationsClient.module.css';
 
 export type AppMsg = {
   id: string;
@@ -182,7 +184,7 @@ export default function EmployerApplicationsClient({
     const filtered = !!activeStatusFilter;
     return (
       <div className="employer-applications-root">
-        <div className="employer-applications-toolbar" role="search" aria-label="Filter applicants by hiring stage">
+        <div className={`employer-applications-toolbar ${styles.toolbar}`} role="search" aria-label="Filter applicants by hiring stage">
           <div className="employer-applications-toolbar__row">
             <div className="employer-applications-toolbar__filters">
               <span className="employer-applications-toolbar__eyebrow">
@@ -203,7 +205,7 @@ export default function EmployerApplicationsClient({
                         status: chip.value === 'all' ? undefined : chip.value,
                         sort: activeSort,
                       })}
-                      className={`employer-applications-filter-chip${isActive ? ' is-active' : ''}`}
+                      className={`employer-applications-filter-chip wa-kit-focus${isActive ? ' is-active' : ''}`}
                       aria-current={isActive ? 'page' : undefined}
                     >
                       {chip.label}
@@ -222,14 +224,14 @@ export default function EmployerApplicationsClient({
               <div className="employer-applications-sort-toggle" role="group" aria-labelledby="employer-apps-sort-label-empty">
                 <Link
                   href={employerApplicationsListHref({ page: 1, status: activeStatusFilter ?? undefined, sort: 'applied_desc' })}
-                  className={`employer-applications-sort-toggle__btn${activeSort === 'applied_desc' ? ' is-active' : ''}`}
+                  className={`employer-applications-sort-toggle__btn wa-kit-focus${activeSort === 'applied_desc' ? ' is-active' : ''}`}
                   aria-current={activeSort === 'applied_desc' ? 'true' : undefined}
                 >
                   Newest
                 </Link>
                 <Link
                   href={employerApplicationsListHref({ page: 1, status: activeStatusFilter ?? undefined, sort: 'applied_asc' })}
-                  className={`employer-applications-sort-toggle__btn${activeSort === 'applied_asc' ? ' is-active' : ''}`}
+                  className={`employer-applications-sort-toggle__btn wa-kit-focus${activeSort === 'applied_asc' ? ' is-active' : ''}`}
                   aria-current={activeSort === 'applied_asc' ? 'true' : undefined}
                 >
                   Oldest
@@ -258,7 +260,7 @@ export default function EmployerApplicationsClient({
 
   return (
     <div className="employer-applications-root">
-      <div className="employer-applications-toolbar" role="search" aria-label="Filter applicants by hiring stage">
+      <div className={`employer-applications-toolbar ${styles.toolbar}`} role="search" aria-label="Filter applicants by hiring stage">
         <div className="employer-applications-toolbar__row">
           <div className="employer-applications-toolbar__filters">
             <span className="employer-applications-toolbar__eyebrow">
@@ -279,7 +281,7 @@ export default function EmployerApplicationsClient({
                       status: chip.value === 'all' ? null : chip.value,
                       sort: activeSort,
                     })}
-                    className={`employer-applications-filter-chip${isActive ? ' is-active' : ''}`}
+                    className={`employer-applications-filter-chip wa-kit-focus${isActive ? ' is-active' : ''}`}
                     aria-current={isActive ? 'page' : undefined}
                   >
                     {chip.label}
@@ -298,14 +300,14 @@ export default function EmployerApplicationsClient({
             <div className="employer-applications-sort-toggle" role="group" aria-labelledby="employer-apps-sort-label">
               <Link
                 href={employerApplicationsListHref({ page: 1, status: activeStatusFilter ?? undefined, sort: 'applied_desc' })}
-                className={`employer-applications-sort-toggle__btn${activeSort === 'applied_desc' ? ' is-active' : ''}`}
+                className={`employer-applications-sort-toggle__btn wa-kit-focus${activeSort === 'applied_desc' ? ' is-active' : ''}`}
                 aria-current={activeSort === 'applied_desc' ? 'true' : undefined}
               >
                 Newest
               </Link>
               <Link
                 href={employerApplicationsListHref({ page: 1, status: activeStatusFilter ?? undefined, sort: 'applied_asc' })}
-                className={`employer-applications-sort-toggle__btn${activeSort === 'applied_asc' ? ' is-active' : ''}`}
+                className={`employer-applications-sort-toggle__btn wa-kit-focus${activeSort === 'applied_asc' ? ' is-active' : ''}`}
                 aria-current={activeSort === 'applied_asc' ? 'true' : undefined}
               >
                 Oldest
@@ -444,12 +446,12 @@ export default function EmployerApplicationsClient({
                           .toUpperCase()}
                       </div>
                       <div className="employer-applications-candidate-cell__text">
-                        <Link
+                        <PortalRecordLink
                           href={`/employer/candidates/${app.student.id}?jobId=${encodeURIComponent(app.jobId)}`}
                           className="employer-applications-candidate-cell__name"
                         >
                           {studentName}
-                        </Link>
+                        </PortalRecordLink>
                         <div className="employer-applications-candidate-cell__email">{app.student.email}</div>
                       </div>
                     </div>
@@ -462,9 +464,9 @@ export default function EmployerApplicationsClient({
                 hideOnMobile: true,
                 cellDataLabel: 'Job',
                 cell: (app) => (
-                  <Link href={`/employer/jobs/${app.job.id}`} className="employer-applications-job-link">
+                  <PortalRecordLink href={`/employer/jobs/${app.job.id}`} className="employer-applications-job-link">
                     {app.job.title}
-                  </Link>
+                  </PortalRecordLink>
                 ),
               },
               {

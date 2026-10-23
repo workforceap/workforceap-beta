@@ -1,0 +1,60 @@
+/* Keep this primary action paired with the adaptive WAP accent in either theme. */
+.followThrough :global(a[data-variant='primary']) {
+  color: var(--wa-on-accent-control);
+}
+
+.programRecommendation {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.programTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.programAction {
+  justify-self: start;
+  max-width: 100%;
+}
+
+@media (max-width: 39.9375rem) {
+  /* Keep every comparison value visible without changing the shared table. */
+  .radarValues :global(.wa-kit-table) {
+    table-layout: fixed;
+  }
+
+  .radarValues :global(.wa-kit-table[data-density='compact']) th,
+  .radarValues :global(.wa-kit-table[data-density='compact']) td {
+    padding-inline: 4px;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .radarValues th:first-child {
+    width: 40%;
+  }
+
+  .radarValues th {
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .programRecommendation {
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .programTitle {
+    overflow: visible;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .programAction {
+    grid-column: 1 / -1;
+  }
+}

@@ -130,7 +130,7 @@ export type ReportingTabCopy = {
 export const REPORTING_TAB_COPY: Record<ReportingTabId, ReportingTabCopy> = {
   overview: {
     title: 'Overview',
-    lede: 'Enrollment, placements and engagement for this organization — the numbers /admin/analytics and /admin/metrics used to print separately.',
+    lede: 'Enrollment, placement outcomes and portal engagement, with the period shown beside each measure.',
   },
   outcomes: {
     title: 'Outcomes',
@@ -146,7 +146,7 @@ export const REPORTING_TAB_COPY: Record<ReportingTabId, ReportingTabCopy> = {
   },
   exports: {
     title: 'Exports',
-    lede: 'Every CSV, PDF and datasheet funders and the state ask for, listed once.',
+    lede: 'Choose the report, confirm its period and filters, then download or print.',
   },
 };
 
@@ -169,3 +169,50 @@ export const REPORTING_RELATED_LINKS: readonly ReportingRelatedLink[] = [
   { href: '/admin/analytics/ai-efficacy', label: 'AI tool efficacy', description: 'Which AI tools move members forward' },
   { href: '/admin/growth', label: 'Growth', description: 'Paid-traffic signup sanity check' },
 ];
+
+/** Reading context only: these descriptions do not change any metric query.
+ * An outcomes period is carried between tabs, but never relabels rolling or
+ * current-state metrics as if they had been filtered to that period. */
+export function reportingViewContext(tab: ReportingTabId, period: BoardOutcomesPeriod, superAdmin = false): {
+  periodLabel: string;
+  scopeLabel: string;
+  definition: string;
+} {
+  switch (tab) {
+    case 'outcomes':
+      return {
+        periodLabel: `Outcomes: ${REPORTING_PERIOD_LABELS[period]}`,
+        scopeLabel: superAdmin ? 'All organizations' : 'This organization',
+        definition: 'Enrollment and placement measures use the selected outcomes period. Activity and recent certification measures keep their labeled rolling windows. See the methodology for each denominator.',
+      };
+    case 'training':
+      return {
+        periodLabel: 'Latest saved training progress',
+        scopeLabel: 'Members in your admin scope',
+        definition: 'Course completion follows each student’s assigned curriculum. Pace and last activity are separate signals; unmatched provider records remain identified. The outcomes period does not filter this roster.',
+      };
+    case 'coursera':
+      return {
+        periodLabel: 'Latest sync status · activity: last 30 days',
+        scopeLabel: 'Configured Coursera organization',
+        definition: 'Provider progress and unmatched identities are shown with their sync status. Missing credentials or unavailable evidence must remain visible; they do not mean no activity.',
+      };
+    case 'exports':
+      return {
+        periodLabel: `Outcomes files: ${REPORTING_PERIOD_LABELS[period]}`,
+        scopeLabel: 'Each report uses its existing access scope',
+        definition: 'Outcomes CSV and board PDF use the retained outcomes period. Training and eligibility exports have their own filters; the program catalog is a current catalog export.',
+      };
+    case 'overview':
+    default:
+      return {
+        periodLabel: 'Current totals and labeled activity windows',
+        scopeLabel: superAdmin ? 'Enrollment: your organization · engagement: all organizations' : 'This organization',
+        definition: 'Weekly active counts cover seven days. Saved AI-result and voice-session totals use their stated windows. The outcomes period is retained for Outcomes and its exports, without changing these measures.',
+      };
+  }
+}
+
+export function reportingRelatedHref(href: string, period: BoardOutcomesPeriod): string {
+  return href === '/admin/board/print' && period !== 'all-time' ? `${href}?period=${period}` : href;
+}

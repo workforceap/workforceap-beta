@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { redirect } from 'next/navigation';
 import { Flame } from 'lucide-react';
 import { getUser } from '@/lib/auth/server';
@@ -92,7 +92,7 @@ function HotMemberQueue({
       </div>
       <div className={styles.hotQueueList}>
         {actions.map((action) => (
-          <Link
+          <PortalRecordLink
             key={action.id}
             href={`/counselor/students/${action.memberId}`}
             className={`wa-kit-card wa-kit-card--sm wa-kit-card--hover wa-kit-tone-edge wa-kit-focus ${styles.hotQueueCard}`}
@@ -107,7 +107,7 @@ function HotMemberQueue({
               <span className="wa-kit-meta">{formatHotQueueTime(action.createdAt, translate)}</span>
               {openLabel ? <span className="btn btn-primary btn-sm">{openLabel}</span> : null}
             </div>
-          </Link>
+          </PortalRecordLink>
         ))}
       </div>
     </section>

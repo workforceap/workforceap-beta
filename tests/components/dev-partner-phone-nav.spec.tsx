@@ -35,9 +35,9 @@ describe('partner phone navigation in dev fixtures', () => {
     route.pathname = pathname;
     renderFixture();
     const links = within(screen.getByRole('navigation')).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual(['Overview', 'Members', 'Attention', 'Messages', 'Milestones']);
+    expect(links.map((link) => link.textContent)).toEqual(['Overview', 'Members', 'Attention', 'Messages', 'Impact']);
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
-      '/en/partner', '/en/partner/referred-members', '/en/partner/attention', '/en/partner/messages', '/en/partner/milestones',
+      '/en/partner', '/en/partner/referred-members', '/en/partner/attention', '/en/partner/messages', '/en/partner/impact',
     ]);
     expect(links.filter((link) => link.getAttribute('aria-current') === 'page')).toEqual([
       screen.getByRole('link', { name: current }),

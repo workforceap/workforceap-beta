@@ -25,6 +25,7 @@ import StaffViewBanner from '@/components/portal/StaffViewBanner';
 import CourseraProgressCoverageNotice from '@/components/portal/CourseraProgressCoverageNotice';
 import { formatDate } from '@/lib/i18n/date';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
+import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
 import { MemberProgramKit } from '@/components/portal/kit/pages/member/MemberProgramKit';
 import { describeCourseDenominator } from '@/lib/coursera/progressTileSummary';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
@@ -132,6 +133,7 @@ export default async function ProgramPage({
             lede="Funding covers one program at a time. Your counselor can help you switch later."
             icon={<GraduationCap size={13} aria-hidden="true" />}
           />
+          <MemberTrainingNav current="program" />
           <ProgramPicker programs={pickerPrograms.length ? pickerPrograms : []} />
         </div>
       </DesignSurface>
@@ -266,6 +268,7 @@ export default async function ProgramPage({
       ) : null}
       <CourseraProgressCoverageNotice coverage={trainingView?.providerCoverage} />
       <MemberProgramKit
+        programSlug={enrolledSlug}
         trainingWorkspace={workspaceResult.workspace ? {
           workspace: workspaceResult.workspace,
           programTitle: program.title,

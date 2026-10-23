@@ -57,6 +57,35 @@ Digital Literacy uses the portal locale for lesson copy and provider links. Span
 catalog links must say that the student selects the topic; provider language-switch
 anchors use `referrerPolicy="no-referrer"` so the provider cannot redirect back here.
 
+### Portal workspace consolidation
+
+Workspace views preserve the existing loaders and actions: Resume (`files`, `score`,
+`rewrite`, `coach`), counselor Today (`attention`, `replies`, `decisions`, `followup`,
+`overview`), admin Students (`roster`, `manage`, `training`, `readiness`), employer
+Candidates (`applicants`, `matches`, `pipeline`) and partner Impact (`outcomes`,
+`milestones`, `exports`). Server views use native links and load only the selected
+view. `LinkTabs` keeps the selected or keyboard-focused link fully visible on
+narrow screens without scrolling the document. Existing entry URLs remain valid. Do not collapse distinct application,
+match, placement, milestone or readiness definitions when grouping their navigation.
+
+Record links use `PortalRecordLink` and `PortalBackLink` to retain an allowlisted,
+same-portal list URL, including filters, page, view and explicit locale. These helpers
+do not authorize access. A record-to-edit hop carries an existing safe origin. Client
+list refinements must update Next's search-parameter subscribers as well as visible
+state; native `history.replaceState(null, '', href)` lets Next copy its internal state.
+Passing the router's internal state back into that wrapper can bypass the update.
+
+Member phone navigation retains five daily destinations, an always-visible training
+preassessment, the current secondary page and a keyboard-accessible More pages
+disclosure. Labels remain visible in the utility/disclosure rows even when the daily
+strip compacts. AI Advisor and human Messages remain separate. Skill Mapper's radar
+charts retain numeric alternatives bound to the same data; an occupation's O*NET
+requirements must not be presented as demonstrated member proficiency.
+
+The preview-only [screen review checklist](qa/portal-consolidation/README.md) inventories
+the actual routes and consolidated query views. Its browser-saved review results are
+manual acceptance notes, not a production gate bypass.
+
 ---
 
 ## 1. Token families — which one to use
@@ -83,8 +112,10 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
 - **Neutrals (flip in dark mode):** `--wa-bg`, `--wa-surface`, `--wa-surface-2` (raised
   fill: icon tiles, chips), `--wa-text`, `--wa-muted`, `--wa-border`, `--wa-track`, plus the
   sidebar set (`--wa-sidebar-*`, dark chrome in both modes). `--wa-bg-wave` is the shared
-  member canvas (accent/gold wash on `--wa-bg`); `--wa-shell-header-bg` is the translucent
-  sticky nav so the wash continues through the header. Member header and mobile
+  member canvas (a restrained 5% accent / 3% gold wash on `--wa-bg`); even where
+  both washes overlap, muted text must retain 4.5:1 contrast. `--wa-shell-header-bg`
+  is a 96% canvas fill that keeps sticky navigation readable as content scrolls
+  beneath it, with a slight continuation of the canvas tone. Member header and mobile
   nav borders stay transparent; `PageOpener` is never recut as a title bar.
   Appearance lives once in the rail/drawer, with its selected segment melting
   into the rail rather than sitting on a second slab. Header text actions sit
@@ -246,6 +277,15 @@ barrel) returns `'warm' | 'dense'` for the rare component that must branch in JS
 - Elevation in dark mode comes from shadows plus a 1px **inset bezel highlight** baked into
   `--wa-shadow`/`--wa-shadow-lg` (transparent in light) — not from lighter surface tones. Do not
   add new surface-tone variables; `--wa-surface` and `--wa-surface-2` are the whole ladder.
+- Standard kit and Astryx cards use solid `--wa-surface`, `--wa-border` and
+  `--wa-shadow` in both themes. Reserve gradients for the existing crimson/gold
+  hero variants, using their deep hero pairs and `--wa-on-hero`; dense variants
+  retain their semantic tint. Keep generic card selectors below variant
+  specificity so dark mode cannot erase a hero gradient or a tinted card.
+  Hero elevation uses `--wa-shadow-lg`; dense tinted cards use `--wa-shadow`.
+  The Resume Studio banner/coach link and the floating readiness-coach action
+  use these same fixed hero pairs. Their normal-size labels remain fully
+  opaque; reducing white text opacity can erase the intended contrast margin.
 
 ---
 
