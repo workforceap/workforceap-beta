@@ -83,8 +83,10 @@ Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
 - **Neutrals (flip in dark mode):** `--wa-bg`, `--wa-surface`, `--wa-surface-2` (raised
   fill: icon tiles, chips), `--wa-text`, `--wa-muted`, `--wa-border`, `--wa-track`, plus the
   sidebar set (`--wa-sidebar-*`, dark chrome in both modes). `--wa-bg-wave` is the shared
-  member canvas (accent/gold wash on `--wa-bg`); `--wa-shell-header-bg` is the translucent
-  sticky nav so the wash continues through the header. Member header and mobile
+  member canvas (a restrained 5% accent / 3% gold wash on `--wa-bg`); even where
+  both washes overlap, muted text must retain 4.5:1 contrast. `--wa-shell-header-bg`
+  is a 96% canvas fill that keeps sticky navigation readable as content scrolls
+  beneath it, with a slight continuation of the canvas tone. Member header and mobile
   nav borders stay transparent; `PageOpener` is never recut as a title bar.
   Appearance lives once in the rail/drawer, with its selected segment melting
   into the rail rather than sitting on a second slab. Header text actions sit
@@ -246,6 +248,15 @@ barrel) returns `'warm' | 'dense'` for the rare component that must branch in JS
 - Elevation in dark mode comes from shadows plus a 1px **inset bezel highlight** baked into
   `--wa-shadow`/`--wa-shadow-lg` (transparent in light) — not from lighter surface tones. Do not
   add new surface-tone variables; `--wa-surface` and `--wa-surface-2` are the whole ladder.
+- Standard kit and Astryx cards use solid `--wa-surface`, `--wa-border` and
+  `--wa-shadow` in both themes. Reserve gradients for the existing crimson/gold
+  hero variants, using their deep hero pairs and `--wa-on-hero`; dense variants
+  retain their semantic tint. Keep generic card selectors below variant
+  specificity so dark mode cannot erase a hero gradient or a tinted card.
+  Hero elevation uses `--wa-shadow-lg`; dense tinted cards use `--wa-shadow`.
+  The Resume Studio banner/coach link and the floating readiness-coach action
+  use these same fixed hero pairs. Their normal-size labels remain fully
+  opaque; reducing white text opacity can erase the intended contrast margin.
 
 ---
 

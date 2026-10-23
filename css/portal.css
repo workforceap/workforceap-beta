@@ -18,34 +18,13 @@
   overflow-wrap: anywhere;
 }
 
-/* Final portal-scoped Astryx card polish. Astryx emits generated atomic classes,
-   so this lives after all portal imports and keys off the stable root class. */
-[data-surface] .astryx-card {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--wa-surface) 96%, white 4%), var(--wa-surface));
-  border-color: color-mix(in srgb, var(--wa-border) 82%, var(--wa-accent) 18%);
-  box-shadow:
-    0 1px 1px rgba(17, 24, 39, 0.03),
-    0 14px 34px rgba(17, 24, 39, 0.055),
-    inset 0 1px 0 rgba(255, 255, 255, 0.52);
-}
-
-[data-surface='dense'] .astryx-card {
-  box-shadow:
-    0 1px 1px rgba(17, 24, 39, 0.025),
-    0 10px 22px rgba(17, 24, 39, 0.045),
-    inset 0 1px 0 rgba(255, 255, 255, 0.42);
-}
-
-html.dark [data-surface] .astryx-card,
-[data-theme='dark'] [data-surface] .astryx-card {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--wa-surface) 92%, white 4%), var(--wa-surface));
-  border-color: color-mix(in srgb, var(--wa-border) 84%, var(--wa-accent) 16%);
-  box-shadow:
-    0 1px 1px rgba(0, 0, 0, 0.36),
-    0 18px 42px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+/* Astryx and kit cards share calm, solid surfaces in either theme. Keep the
+   scope zero-specificity so a semantic kit variant on an Astryx Card wins
+   even though this compatibility rule follows the portal imports. */
+:where([data-surface]) .astryx-card {
+  background: var(--wa-surface);
+  border-color: var(--wa-border);
+  box-shadow: var(--wa-shadow);
 }
 
 /* ── Employer Guide — 3-step flow grid ── */

@@ -55,14 +55,16 @@
   /* Foreground on a solid --wa-success-dark fill (placement strip): white in
      light; dark ink in dark, where that fill lightens to #8fd9b0. */
   --wa-on-success: light-dark(#ffffff, #0f2a16);
-  /* Shared portal canvas: warm wash on --wa-bg. Header/nav sit on this, not a
-     separate white/glass slab. Shell paints it; pages inside stay transparent. */
+  /* Shared portal canvas: a restrained brand wash on --wa-bg. The two washes
+     can overlap, so their strongest composition must still carry muted text
+     at AA contrast. Shell paints it; pages inside stay transparent. */
   --wa-bg-wave:
-    radial-gradient(circle at 38% -8%, color-mix(in srgb, var(--wa-accent) 12%, transparent) 0, transparent 32rem),
-    radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--wa-gold) 8%, transparent) 0, transparent 26rem),
+    radial-gradient(circle at 38% -8%, color-mix(in srgb, var(--wa-accent) 5%, transparent) 0, transparent 32rem),
+    radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--wa-gold) 3%, transparent) 0, transparent 26rem),
     var(--wa-bg);
-  /* Sticky chrome: mostly clear so the wash continues through the nav. */
-  --wa-shell-header-bg: color-mix(in srgb, var(--wa-bg) 18%, transparent);
+  /* Stable reading surface while content scrolls beneath sticky navigation.
+     A small amount of transparency keeps the shared canvas tone visible. */
+  --wa-shell-header-bg: color-mix(in srgb, var(--wa-bg) 96%, transparent);
   /* sidebar is dark chrome in both modes */
   --wa-sidebar-bg: #161616;
   --wa-sidebar-border: #2a2a2a;
