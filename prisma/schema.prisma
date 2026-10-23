@@ -481,6 +481,7 @@ model Application {
   recommendedOnetCode    String?           @map("recommended_onet_code")
   recommendedCareerTitle String?           @map("recommended_career_title")
   notes                  String?           @db.Text
+  applicationReportSnapshot Json?          @map("application_report_snapshot")
   submittedAt            DateTime?         @map("submitted_at")
   referralSource         String?           @map("referral_source")
   referralPartnerId      String?           @map("referral_partner_id")

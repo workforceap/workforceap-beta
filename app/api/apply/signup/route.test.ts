@@ -1080,6 +1080,12 @@ describe('POST /api/apply/signup WS4 eligibility extended fields', () => {
     expect(sendNewApplicationAdminEmail).toHaveBeenCalled();
     const adminArgs = vi.mocked(sendNewApplicationAdminEmail).mock.calls.at(-1)?.[0];
     expect(adminArgs).not.toHaveProperty('eligibility');
+    // The explicit staff filing report is saved with the application, then
+    // passed unchanged to the post-commit staff notification.
+    expect(state.applicationCreates[0]?.data).toMatchObject({ applicationReportSnapshot: adminArgs?.applicationReport });
+    expect(JSON.stringify(adminArgs?.applicationReport)).toContain('Acme Logistics');
+    expect(adminArgs?.memberId).toBeTruthy();
+    expect(adminArgs?.organizationId).toBeTruthy();
     // The staff alert's notes block is the same pointer-only text.
     const alertNotes = adminArgs?.applicationNotes ?? '';
     expect(alertNotes).toContain('Eligibility screening: on file');

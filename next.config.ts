@@ -55,6 +55,9 @@ const nextConfig: NextConfig = {
   // serverless route trace so a Vercel bundle cannot silently degrade to an
   // unavailable/stale knowledge response.
   outputFileTracingIncludes: {
+    '/api/apply/signup': ['./assets/application-report/DejaVuSans.ttf'],
+    '/api/member/signup': ['./assets/application-report/DejaVuSans.ttf'],
+    '/api/admin/members/*/applications/*/report': ['./assets/application-report/DejaVuSans.ttf'],
     '/api/enrollment-agreements/template': ['./assets/enrollment/workforceap-enrollment-2026.pdf'],
     '/api/enrollment-agreements/template/send': ['./assets/enrollment/workforceap-enrollment-2026.pdf'],
     '/api/enrollment-agreements': [

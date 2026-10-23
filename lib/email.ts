@@ -954,25 +954,46 @@ export async function sendNewApplicationAdminEmail(params: {
   programInterest: string;
   applicationId: string;
   applicationNotes?: string;
+  memberId?: string;
+  organizationId?: string;
+  applicationReport?: import('@/lib/apply/applicationReport').ApplicationReport;
 }): Promise<{ ok: boolean; skipped?: boolean; error?: string }> {
   const resend = getResend();
   if (!resend) {
     console.warn('sendNewApplicationAdminEmail: RESEND_API_KEY not set');
     return { ok: false, error: 'Email not configured' };
   }
-  const html = brandedEmailLayout({
-    title: `New Application: ${params.applicantName}`,
-    bodyHtml: newApplicationAlertHtml(params),
-    ctaText: 'Review Application',
-    ctaUrl: `${SITE_URL}/admin/members?highlight=${encodeURIComponent(params.applicationId)}`,
-  });
   try {
+    // The configured alert list belongs to WorkforceAP, not every tenant.
+    // Other tenants retain the profile report; do not send their applicant
+    // details to this global staff distribution list.
+    if (params.organizationId) {
+      const { getDefaultOrganizationId } = await import('@/lib/tenant/organization');
+      if (params.organizationId !== await getDefaultOrganizationId()) return { ok: true, skipped: true };
+    }
+    const report = params.organizationId ? params.applicationReport : undefined;
+    const attachment = report
+      ? await (await import('@/lib/apply/applicationReportFile')).applicationReportFile(report, params.applicationId)
+      : null;
+    const html = brandedEmailLayout({
+      title: `New Application: ${params.applicantName}`,
+      bodyHtml: newApplicationAlertHtml({ ...params, applicationReport: report }),
+      ctaText: 'Open Applicant Profile',
+      ctaUrl: params.memberId
+        ? `${SITE_URL}/admin/members/${encodeURIComponent(params.memberId)}?tab=eligibility`
+        : `${SITE_URL}/admin/members`,
+    });
     await sendBrandedEmail(resend, {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.admin_new_application,
       to: getAdminAlertRecipients(),
       subject: sanitizeEmailSubjectLine(`New Application: ${params.applicantName}`),
       html,
+      ...(attachment ? { attachments: [{ filename: attachment.filename, content: attachment.content }] } : {}),
+      idempotencyKey: `application-staff-report-v1/${params.applicationId}`,
+      userId: params.memberId,
+      entityType: 'Application',
+      entityId: params.applicationId,
     });
     return { ok: true };
   } catch (err) {

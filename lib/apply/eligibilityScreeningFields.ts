@@ -141,11 +141,12 @@ export function hasEligibilityScreeningAnswers(
 }
 
 /**
- * The one screening line allowed in `Application.notes` and the staff alert
+ * The one screening line allowed in `Application.notes` and legacy staff alerts
  * (WAP-170/172): a pointer, never an answer or the quick-fit flag. The answers
  * live in `ApplyEligibilityScreening`, read on the member's admin page;
  * `Application.notes` is also returned verbatim by the member's self-serve
- * export and copied into the admin alert email, so neither may carry them.
+ * export and copied into legacy admin alerts. The separately authorized staff filing
+ * report now carries an explicit applicant-only snapshot, not answers in notes.
  */
 const ELIGIBILITY_SCREENING_NOTES_POINTER =
   'Eligibility screening: on file (answers on the member record in admin, not in these notes)';

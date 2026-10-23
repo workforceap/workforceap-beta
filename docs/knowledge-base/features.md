@@ -236,3 +236,31 @@ rendered-page tests cover authorization, stale form tokens, side effects and
 student prompts. These fixtures do not certify production Auth, RLS or delivery.
 Release preflight follows [database recovery](../DATABASE-RECOVERY.md); keep the
 additive columns/history on an application rollback rather than deleting results.
+
+### Application filing reports
+
+The admin member profile’s **Eligibility → Download application report** action
+uses the [staff report endpoint](../../app/api/admin/members/[id]/applications/[applicationId]/report/route.ts).
+New applications keep a submission snapshot; older applications are captured once
+on explicit POST and labeled “recovered from current records.” GET never creates a
+snapshot. Downloads require an active member in the actor’s tenant plus admin or
+assigned-counselor access, are private/no-store, and write an access audit without
+answers. Concurrent capture returns the stored winner. The database trigger prevents
+replacement after capture. Soft deletion clears that member’s report copies as part
+of account anonymization; restoring the account does not resurrect those copies.
+Hard account deletion still cascades. Member data
+exports naturally include the applicant-only snapshot.
+
+Email attachment and profile download use the same saved data. The embedded licensed
+DejaVu font handles accents and common Unicode. Normal applications print
+on one US Letter page. Unsupported glyphs, oversized records or a PDF rendering failure use a complete,
+escaped printable HTML file (which can span pages), never silently clipped answers.
+No old application is automatically emailed or bulk-backfilled. Staff should print
+the attachment, since mail-client headers can make the email body itself span pages.
+
+Migration: `20261022120000_application_report_snapshot`, nullable column without a
+backfill, five-second lock timeout. Code rollback may leave the additive column and
+triggers in place; do not drop active applicants’ saved reports during rollback. [SQL proof](../../tests/migrations/application-report-snapshot.mjs),
+[report/PDF tests](../../tests/lib/application-report.spec.ts),
+[authorization tests](../../tests/api/application-report.spec.ts), and
+[staff email tests](../../tests/email/application-report.spec.ts) use synthetic data.

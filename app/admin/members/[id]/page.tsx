@@ -1,4 +1,5 @@
 import AssessmentResultHistory from '@/components/admin/AssessmentResultHistory';
+import ApplicationReportButton from '@/components/admin/ApplicationReportButton';
 import AllowAssessmentRetakeButton from '@/components/admin/AllowAssessmentRetakeButton';
 import MemberServiceRequests from '@/components/admin/MemberServiceRequests';
 import { loadMemberServiceRequests } from '@/lib/admin/memberServiceRequests';
@@ -1414,6 +1415,7 @@ export default async function AdminMemberDetailPage({
                       : 'Not submitted'}
                   </p>
                   <p><strong>Recommended career:</strong> {latestApplication.recommendedCareerTitle ?? '—'}</p>
+                  <ApplicationReportButton memberId={member.id} applicationId={latestApplication.id} />
                   <p>
                     <strong>Ranked programs:</strong>{' '}
                     {Array.isArray(latestApplication.programRankedSlugs) && latestApplication.programRankedSlugs.length > 0
