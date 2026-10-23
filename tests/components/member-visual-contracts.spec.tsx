@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 import { MemberJobsKit } from '@/components/portal/kit/pages/member/MemberJobsKit';
@@ -23,10 +23,13 @@ function stat(label: string) {
 describe('categorical totals retain their value without status-like colors', () => {
   it.each([0, 3])('job totals remain neutral at %i and real application status stays distinct', (value) => {
     render(<NextIntlClientProvider locale="en" messages={en}><MemberJobsKit saved={value} applied={value} interviewing={value} offers={value} applications={[{ id: 'fixture', role: 'Fixture role', company: 'Fixture company', location: 'Remote', applied: 'Sep19', stage: 'Interview scheduled', tone: 'warn' }]} /></NextIntlClientProvider>);
+    const tracker = screen.getByLabelText('Application tracker status');
     for (const label of ['Saved', 'Applied', 'Interviewing', 'Offers']) {
-      expect(stat(label)).toHaveTextContent(String(value));
-      expect(stat(label).style.color).toBe('');
-      expect(stat(label).closest('.wa-kit-card')!.className).not.toMatch(/wa-kit-tone--/);
+      const count = within(tracker).getByText(label, { selector: 'dt' }).nextElementSibling as HTMLElement;
+      expect(count.tagName).toBe('DD');
+      expect(count).toHaveTextContent(String(value));
+      expect(count.style.color).toBe('');
+      expect(count.closest('[class*="wa-kit-tone--"]')).toBeNull();
     }
     expect(screen.getAllByText('Interview scheduled').length).toBeGreaterThan(0);
   });

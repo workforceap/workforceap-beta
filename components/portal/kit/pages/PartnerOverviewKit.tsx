@@ -8,7 +8,8 @@
  *   - <PartnerReferralFunnel>   Referred → Enrolled → Placed in one desktop row.
  *   - <PartnerPayoutLedger>     Payout history as a period/amount/status table.
  *   - <PartnerAttentionCard>    "Review member progress" accent CTA card
- *   - <PartnerAssistantAccordion> collapsible Partner-assistant disclosure
+ *   - <PartnerAssistantAccordion> native disclosure with a stateful chevron,
+ *     one full-width keyboard/touch target and no repeated open instruction
  *   - <PartnerQuickActions>     3-up Quick Actions grid (Export / Refer / Milestones)
  *
  * Target mockup: docs/mockups/wa-v2-partner.html — elevated to the "Command
@@ -169,38 +170,18 @@ export function PartnerAttentionCard({
 
 export function PartnerAssistantAccordion({
   title,
-  hint,
   children,
 }: {
   title: string;
-  hint?: string;
   children?: ReactNode;
 }) {
   return (
-    <details className="wa-kit-card">
-      <summary
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          cursor: 'pointer',
-          listStyle: 'none',
-          fontWeight: 700,
-          fontSize: 13,
-          color: 'var(--wa-text)',
-        }}
-      >
-        <span aria-hidden style={{ fontSize: 13, color: 'var(--wa-accent)' }}>
-          ▶
-        </span>
+    <details className={`wa-kit-card ${styles.assistant}`}>
+      <summary className="wa-kit-focus">
+        <ChevronRight className={styles.assistantChevron} size={18} aria-hidden />
         <span>{title}</span>
-        {hint ? (
-          <span style={{ fontSize: 13, color: 'var(--wa-muted)', marginLeft: 'auto', fontWeight: 400 }}>
-            {hint}
-          </span>
-        ) : null}
       </summary>
-      {children ? <div style={{ marginTop: 14 }}>{children}</div> : null}
+      {children ? <div className={styles.assistantBody}>{children}</div> : null}
     </details>
   );
 }

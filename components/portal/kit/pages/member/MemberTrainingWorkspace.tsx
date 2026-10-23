@@ -14,7 +14,6 @@ import { VStack } from '@astryxdesign/core/VStack';
 import { HStack } from '@astryxdesign/core/HStack';
 import { DesignSurface, PageOpener, KitEmptyState, useAnnounce } from '@/components/portal/kit';
 import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
-import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
 import SkillMissionChallenge from '@/components/portal/SkillMissionChallenge';
 import type { TrainingCoursePractice } from '@/lib/member/trainingCoursePractice';
@@ -111,7 +110,6 @@ function addDays(date: string, days: number) {
 export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTitle, completedSlugs, destinations, initialCourseSlug, syllabusHours, syllabusBreakdown, modulesNote, trainingEmail, practiceMissions = [], practiceUnavailable = false }: MemberTrainingWorkspaceProps) {
   const router = useRouter();
   const te = useTranslations('empty');
-  const tw = useTranslations('memberWorkspace.training');
   const [workspace, setWorkspace] = useState(initialWorkspace);
   const completed = new Set(completedSlugs);
   const nextCourse = workspace.courses.find((course) => !completed.has(course.slug));
@@ -221,7 +219,6 @@ export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTi
       <main className="wa-kit-training">
         <PageOpener kicker="My program" title="Your training workspace" lede="Learn the skills. Build the work. Keep moving toward your next role." icon={<GraduationCap size={14} aria-hidden="true" />} />
         <MemberTrainingNav current="program" programSlug={workspace.programSlug} />
-        <p className={workspaceStyles.context}>{tw('learningContext')}</p>
         <section className="wa-kit-training-overview" aria-label="Your assigned training">
           <VStack gap={3}>
             <p className="wa-kit-training-eyebrow">{totalHours} hours of assigned training</p>

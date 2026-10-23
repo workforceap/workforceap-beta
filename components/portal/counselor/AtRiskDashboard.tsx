@@ -12,7 +12,6 @@ import { describeMemberRequestException, readMemberRequestFailure } from '@/lib/
 import { ATTENTION_REASON_META } from '@/lib/attention/reasons';
 import { toAtRiskMemberRow, type AtRiskFactor, type AtRiskMember, type SavedAtRiskCase } from '@/lib/member/atRiskRow';
 import {
-  BookOpen,
   Check,
   Filter,
   MessageSquare,
@@ -35,6 +34,7 @@ import {
   type KitTone} from '@/components/portal/kit';
 import AtRiskDetailModal from './AtRiskDetailModal';
 import { programDisplayTitle } from '@/lib/content/programTitle';
+import styles from './AtRiskDashboard.module.css';
 
 /**
  * Counselor "At-risk members" — Command Center redesign.
@@ -52,6 +52,8 @@ import { programDisplayTitle } from '@/lib/content/programTitle';
  * `AtRiskDashboardView` that takes members + a couple of mutation callbacks
  * as props — so app/dev/staff/counselor-atrisk can render the exact same
  * surface against static mock data, with no auth/DB dependency.
+ * Triage guidance is optional disclosure content; the counted-case definition
+ * remains visible. Checkbox labels carry the touch target around a normal glyph.
  */
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -161,7 +163,7 @@ function ScoreBadge({ score }: { score: number }) {
         borderRadius: '50%',
         fontWeight: 800,
         fontSize: 13,
-        color: c,
+        color: textColorVar(RISK_CONFIG[level].color),
         background: `color-mix(in srgb, ${c} 14%, transparent)`,
         border: `2px solid color-mix(in srgb, ${c} 40%, transparent)`,
         flexShrink: 0,
@@ -451,36 +453,23 @@ export function AtRiskDashboardView({
   return (
     <DesignSurface surface="dense">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        {/* How-to-use runbook tip */}
-        <div className="wa-kit-card wa-kit-card--sm" style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-          <div
-            aria-hidden
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 9,
-              flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'var(--wa-info-soft)',
-              color: 'var(--wa-info)'}}
-          >
-            <BookOpen size={15} />
-          </div>
-          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: 'var(--wa-muted)' }}>
-            <strong style={{ color: 'var(--wa-text)' }}>How to use this screen:</strong>{' '}
-            Turn on <strong>Only unacknowledged</strong>, sort <strong>Severity ↑</strong>, then{' '}
-            <strong>Message</strong> or call top rows. Click <strong>Ack</strong> after you reach out; click{' '}
-            <strong>Resolve</strong> only when disengagement is fixed or the case is closed.
-            <br />
-            <strong style={{ color: 'var(--wa-text)' }}>Counted here:</strong>{' '}
+        <div className={styles.guidance}>
+          <p>
+            <strong>Counted here:</strong>{' '}
             {RISK_ALERT_REASON.definition} &mdash; the same &ldquo;{RISK_ALERT_REASON.label}&rdquo; rule Today uses.
           </p>
+          <details>
+            <summary className="wa-kit-focus">Triage guidance</summary>
+            <p>
+              Turn on <strong>Only unacknowledged</strong>, sort <strong>Severity ↑</strong>, then{' '}
+              <strong>Message</strong> or call top rows. Click <strong>Ack</strong> after you reach out; click{' '}
+              <strong>Resolve</strong> only when disengagement is fixed or the case is closed.
+            </p>
+          </details>
         </div>
 
         {/* Severity KPI row */}
-        <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
+        <div className={`wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3 ${styles.riskMetrics}`}>
           {RISK_LEVEL_ORDER.map((level) => {
             const Icon = RISK_CONFIG[level].icon;
             return (
@@ -550,6 +539,7 @@ export function AtRiskDashboardView({
             />
             {programOptions.length > 0 && (
               <select
+                aria-label="Program"
                 value={programFilter}
                 onChange={(e) => setProgramFilter(e.target.value)}
                 className="wa-kit-focus"
@@ -587,6 +577,7 @@ export function AtRiskDashboardView({
               </SortModeButton>
             </div>
             <label
+              className={styles.checkboxTarget}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -604,7 +595,6 @@ export function AtRiskDashboardView({
                 type="checkbox"
                 checked={unacknowledgedOnly}
                 onChange={(e) => setUnacknowledgedOnly(e.target.checked)}
-                style={{ cursor: 'pointer', width: 15, height: 15 }}
               />
               Only unacknowledged
             </label>
@@ -696,13 +686,12 @@ export function AtRiskDashboardView({
           action={
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               {filteredMembers.length > 0 ? (
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', color: 'var(--wa-muted)' }}>
+                <label className={styles.checkboxTarget} style={{ gap: 8, fontSize: 13, fontWeight: 600, color: 'var(--wa-muted)' }}>
                   <input
                     type="checkbox"
                     aria-label="Select all visible"
                     checked={allSelectedOnPage}
                     onChange={toggleSelectAll}
-                    style={{ cursor: 'pointer', width: 15, height: 15 }}
                   />
                   Select all visible
                 </label>
@@ -1071,13 +1060,14 @@ function RiskRow({
         background: selected ? `color-mix(in srgb, ${c} 6%, var(--wa-surface))` : 'var(--wa-surface)'}}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-        <input
-          type="checkbox"
-          aria-label={`Select ${row.name}`}
-          checked={selected}
-          onChange={onToggleSelect}
-          style={{ cursor: 'pointer', width: 16, height: 16, marginTop: 10, flexShrink: 0 }}
-        />
+        <label className={`${styles.checkboxTarget} ${styles.checkboxIconTarget}`}>
+          <input
+            type="checkbox"
+            aria-label={`Select ${row.name}`}
+            checked={selected}
+            onChange={onToggleSelect}
+          />
+        </label>
         <div
           aria-hidden
           style={{
@@ -1102,7 +1092,7 @@ function RiskRow({
             >
               {row.name}
             </button>
-            <span title={SEVERITY_TOOLTIP[row.riskLevel]} style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: c }}>
+            <span title={SEVERITY_TOOLTIP[row.riskLevel]} style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: textColorVar(cfg.color) }}>
               {cfg.label}
             </span>
             <StatusTag tone={STATUS_TONE[row.status]}>{STATUS_LABEL[row.status]}</StatusTag>
@@ -1136,13 +1126,23 @@ function RiskRow({
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <PortalRecordLink
+          returnTo={returnTo}
+          href={`/counselor/students/${encodeURIComponent(row.userId)}#counselor-member-messages`}
+          className="btn btn-primary btn-sm"
+          style={{ fontSize: 13, padding: '8px 12px', minHeight: 44 }}
+          title="Open the counselor message thread with this member"
+        >
+          <MessageSquare size={12} style={{ marginRight: 6, verticalAlign: 'middle' }} />
+          Message
+        </PortalRecordLink>
         {row.status === 'open' && (
           <button
             type="button"
-            className="btn btn-muted btn-sm"
+            className="btn btn-outline btn-sm"
             disabled={acting}
             onClick={onAcknowledge}
-            style={{ fontSize: 13, padding: '5px 10px' }}
+            style={{ fontSize: 13, padding: '8px 12px', minHeight: 44 }}
             title="Mark that you have started outreach or taken ownership"
           >
             {acting ? <PortalInlineSpinner size={12} /> : 'Ack'}
@@ -1151,10 +1151,10 @@ function RiskRow({
         {row.status !== 'resolved' && (
           <button
             type="button"
-            className="btn btn-primary btn-sm"
+            className="btn btn-muted btn-sm"
             disabled={acting}
             onClick={onResolve}
-            style={{ fontSize: 13, padding: '5px 10px' }}
+            style={{ fontSize: 13, padding: '8px 12px', minHeight: 44 }}
             title="Close this alert when risk is cleared, member is placed/exited, or outcome documented"
           >
             {acting ? <PortalInlineSpinner size={12} /> : 'Resolve'}
@@ -1162,19 +1162,9 @@ function RiskRow({
         )}
         <PortalRecordLink
           returnTo={returnTo}
-          href={`/counselor/students/${encodeURIComponent(row.userId)}#counselor-member-messages`}
-          className="btn btn-outline btn-sm"
-          style={{ fontSize: 13, padding: '5px 10px' }}
-          title="Open the counselor message thread with this member"
-        >
-          <MessageSquare size={12} style={{ marginRight: 6, verticalAlign: 'middle' }} />
-          Message
-        </PortalRecordLink>
-        <PortalRecordLink
-          returnTo={returnTo}
           href={`/counselor/students/${row.userId}`}
           className="btn btn-outline btn-sm"
-          style={{ fontSize: 13, padding: '5px 10px' }}
+          style={{ fontSize: 13, padding: '8px 12px', minHeight: 44 }}
           title="Counselor student profile and history"
         >
           View

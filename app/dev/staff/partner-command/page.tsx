@@ -70,9 +70,7 @@ export default function DevStaffPartnerCommandPage() {
   return (
     <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6 wa-p-6">
       <PageOpener
-        kicker="Partner Dashboard"
         title="Skillpoint Alliance"
-        lede="Referrals, progress & outcomes for Skillpoint Alliance"
       />
 
       <PartnerKpiGrid
@@ -122,7 +120,7 @@ export default function DevStaffPartnerCommandPage() {
         href="/partner/attention"
       />
 
-      <PartnerAssistantAccordion title="Partner assistant" hint="(tap to open)">
+      <PartnerAssistantAccordion title="Partner assistant">
         <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0, lineHeight: 1.6 }}>
           Ask about referrals, member progress, or using the partner portal. Voice session preview
           omitted in this showcase.

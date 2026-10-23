@@ -73,11 +73,19 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const conversationButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreConversationFocusRef = useRef(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const composeRef = useRef<HTMLTextAreaElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations('empty');
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (view !== 'list' || !restoreConversationFocusRef.current) return;
+    restoreConversationFocusRef.current = false;
+    conversationButtonRef.current?.focus();
+  }, [view]);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: scrollBehavior() });
@@ -248,6 +256,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
               <button
                 type="button"
                 onClick={() => setView('thread')}
+                ref={conversationButtonRef}
                 className="portal-messages-thread-btn"
               >
                 <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -289,7 +298,10 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
       <header className="wa-flex-shrink-0 wa-flex wa-items-center wa-gap-3 wa-px-4 wa-py-3 portal-messages-header">
         <button
           type="button"
-          onClick={() => setView('list')}
+          onClick={() => {
+            restoreConversationFocusRef.current = true;
+            setView('list');
+          }}
           className="portal-messages-header-btn hover:wa-bg-[var(--surface-container)] active:wa-scale-95 wa-transition-transform"
           aria-label="Back to messages"
         >

@@ -2,10 +2,8 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { Briefcase, Users, CalendarClock, Award, ChevronRight, HeartHandshake, SquarePen } from 'lucide-react';
-import NextLink from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 import {
   DataTable,
   DesignSurface,
@@ -31,7 +29,7 @@ import {
  * the hero — an employer's first question on landing is "who do I need to
  * look at today," not a KPI wall. Layout, top to bottom:
  *   1. Page opener (PageOpener "Hiring" + employer name eyebrow) with a
- *      "Post a role" CTA.
+ *      "Post a role" CTA as one native navigation link.
  *   2. A 4-up KPI row: open roles / in pipeline / interviews / hires, each
  *      with an optional sparkline + delta chip.
  *   3. The candidate pipeline table (hero) — avatar/name/role, AI fit score
@@ -290,18 +288,17 @@ export function EmployerHomeKit({
         <PageOpener
           kicker={companyName}
           title="Hiring"
-          lede="Open roles, pipeline, and where every candidate stands right now."
           action={
             /* `tour-post-job`: step 2 of the employer guided tour (lib/tours/registry.ts). */
             <span data-tour="tour-post-job" style={{ display: 'inline-flex' }}>
-              <AstryxLink href={postRoleHref} as={NextLink as never} isStandalone>
-                <Button
-                  label="Post a role"
-                  variant="primary"
-                  size="sm"
-                  icon={<SquarePen size={14} aria-hidden />}
-                />
-              </AstryxLink>
+              <KitLinkButton
+                href={postRoleHref}
+                label="Post a role"
+                variant="primary"
+                size="md"
+                style={{ background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)' }}
+                icon={<SquarePen size={16} aria-hidden />}
+              />
             </span>
           }
         />

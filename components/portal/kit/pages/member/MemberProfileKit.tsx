@@ -263,13 +263,13 @@ export function MemberProfileKit({
               overflowing implicit track on mobile/tablet). */}
           <div className="wa-kit-card lg:wa-col-span-2">
             <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>Account details</h3>
-            <div className="wa-grid wa-grid-cols-1 sm:wa-grid-cols-2 wa-gap-4">
+            <div className="wa-grid wa-grid-cols-2 wa-gap-4">
               <FormField
                 label="Full name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
               />
-              <FormField label="Email" type="email" value={email} readOnly disabled />
+              <FormField label="Email" type="email" value={email} readOnly disabled full />
               <FormField
                 label="Location"
                 value={loc}
@@ -287,6 +287,7 @@ export function MemberProfileKit({
                 autoComplete="street-address"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
+                full
               />
               <FormField
                 label="State"
@@ -306,6 +307,7 @@ export function MemberProfileKit({
                 type="url"
                 value={linkedin}
                 onChange={(e) => setLinkedin(e.target.value)}
+                full
               />
               <FormField label="Bio" full>
                 <textarea
@@ -326,7 +328,7 @@ export function MemberProfileKit({
                   }}
                 />
               </FormField>
-              <FormField label="Program">
+              <FormField label="Program" full>
                 <select
                   value={programInterest}
                   disabled

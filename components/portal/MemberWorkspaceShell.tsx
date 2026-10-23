@@ -12,6 +12,7 @@ import type { PortalSwitcherRole } from '@/lib/auth/portalRoleSwitcher';
 import type { MemberShellIdentity } from '@/lib/member/memberIdentity';
 import type { TourOffer } from '@/lib/tours/getTourOffer';
 import TourOfferStrip from '@/components/onboarding/TourOfferStrip';
+import styles from './MemberWorkspace.module.css';
 
 /** Guide page the Help menu links beside "Take the tour" (the nav's "Member Guide"). */
 export const MEMBER_GUIDE_HREF = '/dashboard/guide';
@@ -61,6 +62,7 @@ export default function MemberWorkspaceShell({
   return (
     <WorkspaceShell
       portalRole="member"
+      memberShellClassName={styles.memberShell}
       navItems={MEMBER_PORTAL_NAV_ITEMS}
       identity={identity}
       workspaceLabel={PRODUCT_COPY.memberWorkspace}

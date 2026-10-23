@@ -99,11 +99,11 @@ export default function MemberPortalTopNav({
    * is also visible while that list is closed.
    */
   const tabs = [
-    { canonical: '/dashboard', label: t('dashboard'), icon: 'home', primary: true },
-    { canonical: '/dashboard/program', label: t('myProgram'), icon: 'school', primary: true },
-    { canonical: '/dashboard/jobs', label: t('jobBoard'), icon: 'work', primary: true },
-    { canonical: '/dashboard/ai-tools', label: t('careerToolkit'), icon: 'auto_awesome', primary: true },
-    { canonical: '/dashboard/messages', label: t('counselorChat'), icon: 'chat', badgeKey: 'counselor_messages_unread' as NavBadgeKey, primary: true },
+    { canonical: '/dashboard', label: t('dashboard'), shortLabel: t('dashboardShort'), icon: 'home', primary: true },
+    { canonical: '/dashboard/program', label: t('myProgram'), shortLabel: t('myProgramShort'), icon: 'school', primary: true },
+    { canonical: '/dashboard/jobs', label: t('jobBoard'), shortLabel: t('jobBoardShort'), icon: 'work', primary: true },
+    { canonical: '/dashboard/ai-tools', label: t('careerToolkit'), shortLabel: t('careerToolkitShort'), icon: 'auto_awesome', primary: true },
+    { canonical: '/dashboard/messages', label: t('counselorChat'), shortLabel: t('counselorChatShort'), icon: 'chat', badgeKey: 'counselor_messages_unread' as NavBadgeKey, primary: true },
     // Ops (10/8/26): members were not finding the preassessment; keep it a tap away.
     { canonical: '/dashboard/assessment', label: t('wioaPreassessment'), icon: 'assignment_turned_in' },
     { canonical: '/dashboard/readiness', label: t('myProgress'), icon: 'check_circle' },
@@ -148,6 +148,15 @@ export default function MemberPortalTopNav({
     const href = explicitLocale ? localizeHref(mappedHref, explicitLocale) : mappedHref;
     const active = tab.canonical === activeCanonical;
     const badge = tab.badgeKey ? badgeCounts?.[tab.badgeKey] : undefined;
+    const badgeLabel = badge && badge > 0
+      ? tab.badgeKey === 'applications_new'
+        ? t('pendingApplicationsCount', { count: badge })
+        : t('unreadCount', { count: badge })
+      : null;
+    const shortLabel = inPrimary && 'shortLabel' in tab ? tab.shortLabel : null;
+    const accessibleTabLabel = shortLabel && !tab.label.toLowerCase().includes(shortLabel.toLowerCase())
+      ? `${shortLabel}, ${tab.label}`
+      : tab.label;
     return (
       <Link
         href={href}
@@ -168,16 +177,16 @@ export default function MemberPortalTopNav({
           });
         }}
         className={`member-portal-top-nav__link${active ? ' member-portal-top-nav__link--active' : ''}`}
+        aria-label={badgeLabel ? `${accessibleTabLabel}, ${badgeLabel}` : accessibleTabLabel}
         aria-current={active ? 'page' : undefined}
       >
         <LegacyGlyph name={tab.icon} size={17} className="member-portal-top-nav__icon" />
         <span className="member-portal-top-nav__label">{tab.label}</span>
+        {inPrimary && 'shortLabel' in tab ? (
+          <span className="member-portal-top-nav__short-label" aria-hidden="true">{tab.shortLabel}</span>
+        ) : null}
         {badge && badge > 0 ? (
-          <span className="member-portal-top-nav__badge" aria-label={
-            tab.badgeKey === 'applications_new'
-              ? t('pendingApplicationsCount', { count: badge })
-              : t('unreadCount', { count: badge })
-          }>{badge > 9 ? '9+' : badge}</span>
+          <span className="member-portal-top-nav__badge" aria-label={badgeLabel ?? undefined}>{badge > 9 ? '9+' : badge}</span>
         ) : null}
       </Link>
     );

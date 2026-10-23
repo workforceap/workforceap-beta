@@ -1,0 +1,63 @@
+.guidance {
+  padding-block: var(--wa-pad-sm);
+  border-block-end: 1px solid var(--wa-border);
+}
+
+.guidance p {
+  margin: 0;
+  color: var(--wa-muted);
+  font-size: var(--wa-type-meta);
+  line-height: 1.55;
+}
+
+.guidance strong {
+  color: var(--wa-text);
+}
+
+.guidance summary {
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  padding-block: var(--wa-pad-sm);
+  cursor: pointer;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  color: var(--wa-accent-text);
+}
+
+.guidance details[open] p {
+  padding-block-end: var(--wa-pad-sm);
+}
+
+.checkboxTarget {
+  display: inline-flex;
+  align-items: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.checkboxIconTarget {
+  justify-content: center;
+}
+
+.checkboxTarget input[type='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .riskMetrics [data-testid='stat-spark-tile'] {
+    flex-direction: row !important;
+    align-items: center;
+    gap: 10px !important;
+  }
+
+  .riskMetrics [data-testid='stat-spark-tile'] > div:first-child {
+    flex: 0 0 auto;
+  }
+}

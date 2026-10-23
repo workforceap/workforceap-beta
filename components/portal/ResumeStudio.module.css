@@ -202,8 +202,9 @@
 
 @media (max-width: 45rem) {
   .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 0.75rem; }
-  .nextActions { width: 100%; }
-  .action { flex: 1 1 auto; }
+  .editor textarea { min-height: 16rem !important; }
+  .nextActions { display: grid; grid-template-columns: minmax(0, 1fr); width: 100%; }
+  .nextActions > .action { width: 100%; justify-content: center; }
 }
 
 @media (max-width: 30rem) {

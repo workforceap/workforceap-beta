@@ -183,6 +183,46 @@ below the results. Filtered endpoint caps and public pagination remain separate 
 
 ---
 
+### Compact workspaces and useful disclosures
+
+AI Career Tools places its view tabs immediately below the H1. Preparation guidance
+stays mounted in a localized native disclosure; session, microphone and provider
+requirements remain with the relevant action. Skill Mapper, Program and Readiness
+omit redundant opener copy. Locked modules and goal milestones keep full-opacity
+text; lock/status indicators communicate availability. Member training navigation
+uses three equal, wrapping columns on phones with complete labels and 44px targets.
+
+Member daily navigation uses five destinations with short localized phone labels
+and 48px targets. The full accessible name includes the visible label and any badge
+count; secondary destinations stay in More pages. This is scoped to the member shell,
+including its fixture shell. Resume follow-up actions stack on phones, with Rewrite
+first. Profile pairs short fields and keeps longer fields full width. Returning from
+a message thread restores focus to its conversation button in both the live and
+fixture inbox. Preserve labels, status explanations and recovery instructions that
+carry meaning when removing redundant copy.
+
+Counselor Today and Students use the active navigation for visible section orientation
+and retain a screen-reader section heading. Today keeps every empty group's title,
+count and message while using two-column phone metrics. At-risk keeps the counted-case
+rule visible and triage instructions in a native disclosure. Checkbox labels carry
+the touch area; checkbox glyphs keep their normal size. Risk text uses text-safe tones.
+The student roster repeats its existing pager above and below phone cards without
+changing page size, query state or totals. Reporting preserves period, organization
+scope and metric definitions while omitting generic introductions.
+
+Employer Jobs uses a compact count strip and a native Bulk actions disclosure. Row
+selection opens it; clearing selection or completing an action leaves it open and
+restores focus to the visible summary. Existing deletion confirmation, selected IDs,
+filter/page scope and applicant-count definitions remain unchanged. Hiring's Post a
+role uses one `KitLinkButton`, never a nested link/button. Candidate phone emptiness
+distinguishes an active filter from no applications; Show all applicants retains sort.
+
+Partner phone rosters inherit the page inset and retain stage and return-context
+semantics. The assistant uses a native 48px summary with an open-state chevron; its
+children remain mounted. Impact and candidate fixtures provide the same scoped page
+inset as their real shells. Referral, verification, payout and export definitions
+remain visible; fixture representation does not establish authenticated acceptance.
+
 ## 1. Token families — which one to use
 
 There are **two** live CSS-variable families in this codebase. Only one is canonical for new work.

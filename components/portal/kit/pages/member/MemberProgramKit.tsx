@@ -1,19 +1,20 @@
 'use client';
 
-import { Play, Check, Lock, CalendarDays, Target, ArrowRight, GraduationCap } from 'lucide-react';
+import { Play, Check, Lock, CalendarDays, Target, ArrowRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DesignSurface, ProgressRing, PageOpener, KitEmptyState } from '@/components/portal/kit';
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
 import CourseraLaunchErrorNotice from '@/components/portal/CourseraLaunchErrorNotice';
 import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
-import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
 import { MemberTrainingWorkspace, type MemberTrainingWorkspaceProps } from './MemberTrainingWorkspace';
 
 /**
  * Member Portal — program / certification path (kit ProgressRing + modules +
  * live session + missions). Live at `/dashboard/program`; proof at
  * `/dev/member/program`. Surface: warm (member-facing).
+ * The compact opener lets the assigned program lead; locked rows retain
+ * full-opacity labels because status already has an explicit icon and name.
  */
 
 type ModuleState = 'done' | 'active' | 'locked';
@@ -153,7 +154,6 @@ function MemberProgramOverview({
 }: Required<Pick<MemberProgramKitProps, 'programTitle' | 'progressPercent' | 'modulesComplete' | 'modulesTotal' | 'resumeHref' | 'modules' | 'liveSessionDurationMinutes' | 'missionsHref'>> &
   Pick<MemberProgramKitProps, 'programSlug' | 'modulesNote' | 'estRemaining' | 'courseraLaunchHref' | 'liveSessionTitle' | 'liveSessionWhen' | 'liveSessionStart' | 'missionsSummary'>) {
   const te = useTranslations('empty');
-  const tw = useTranslations('memberWorkspace.training');
   const pct = Math.max(0, Math.min(100, Math.round(progressPercent)));
 
   // Only show the Next Live Session card when we have a real session to show.
@@ -199,13 +199,9 @@ function MemberProgramOverview({
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker="Program"
           title="Certification path"
-          lede="Modules, live sessions, and missions."
-          icon={<GraduationCap size={13} aria-hidden="true" />}
         />
         <MemberTrainingNav current="program" programSlug={programSlug} />
-        <p className={workspaceStyles.context}>{tw('learningContext')}</p>
         {/* Gradient hero */}
         <div
           className="wa-kit-card wa-kit-card--gradient-crimson wa-flex wa-flex-col md:wa-flex-row md:wa-items-center"
@@ -307,7 +303,6 @@ function MemberProgramOverview({
                       borderRadius: 'var(--wa-radius-sm)',
                       background: meta.bg,
                       border: meta.border,
-                      opacity: dim ? 0.7 : 1,
                     }}
                   >
                     <div

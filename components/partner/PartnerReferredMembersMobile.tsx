@@ -61,7 +61,8 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
 
   return (
     <>
-      <div role="group" aria-label="Filter referred members" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', padding: '0 1.5rem 1rem' }}>
+      {/* The owning page supplies the inset; nested padding squeezes phone records. */}
+      <div role="group" aria-label="Filter referred members" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', paddingBottom: '1rem' }}>
         {chips.map((chip) => {
           const active = filter === chip.key;
           return (
@@ -75,7 +76,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
               style={{
                 flexShrink: 0,
                 minHeight: 44,
-                padding: '0.375rem 0.875rem',
+                padding: '0.375rem 0.625rem',
                 borderRadius: '9999px',
                 fontSize: '0.8125rem',
                 fontWeight: 700,
@@ -95,7 +96,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
         })}
       </div>
 
-      <div style={{ padding: '0 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
         {rows.length === 0 ? (
           <PartnerEmptyState variant="referrals" framed hideSecondary />
         ) : filtered.length === 0 ? (
@@ -111,9 +112,9 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
             const isPlaced = row.stage === 'placed';
 
             return (
-              <PortalRecordLink key={row.id} href={`/partner/referred-members/${row.id}`} style={{ textDecoration: 'none' }}>
+              <PortalRecordLink key={row.id} href={`/partner/referred-members/${row.id}`} className="wa-kit-focus" style={{ textDecoration: 'none' }}>
                 <div
-                  className="wa-kit-card wa-kit-card--sm wa-kit-card--hover wa-kit-focus"
+                  className="wa-kit-card wa-kit-card--sm wa-kit-card--hover"
                   style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}
                 >
                   <Avatar initials={initials} size={38} gradient={isPlaced} />

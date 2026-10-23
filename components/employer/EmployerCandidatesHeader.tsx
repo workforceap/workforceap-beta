@@ -14,7 +14,8 @@ import {
 /**
  * One hiring workspace heading and link-based views. A navigation requests
  * only the selected server view; no hidden application/match loaders run.
- * Follows ReportingHubKit's native-link navigation and shared kit tokens.
+ * Tabs supply general orientation; the section retains view-specific counts
+ * and explanations rather than repeating a workspace description above it.
  */
 export default function EmployerCandidatesHeader({
   activeView,
@@ -38,7 +39,7 @@ export default function EmployerCandidatesHeader({
 }) {
   return (
     <>
-      <EmployerPageOpener kicker={kicker} title={copy.title} subtitle={copy.description} action={action} />
+      <EmployerPageOpener kicker={kicker} title={copy.title} action={action} />
       <LinkTabs label={copy.navLabel} activeKey={activeView} className="wa-mb-5" data-testid="employer-candidate-views">
         {EMPLOYER_CANDIDATE_VIEWS.map((view) => (
           <Link

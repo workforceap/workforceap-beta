@@ -112,6 +112,8 @@ export function MemberMessagesKit({
   // (md+) ignores this and keeps the two-pane layout via CSS. Default to the
   // open thread so members land on the active conversation.
   const [mobileView, setMobileView] = useState<'list' | 'thread'>('thread');
+  const conversationButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreConversationFocusRef = useRef(false);
   // Keep latest "other" initials available to the realtime callback without
   // re-subscribing when they change.
   const otherInitialsRef = useRef(otherInitials);
@@ -123,6 +125,12 @@ export function MemberMessagesKit({
   const [readIds, setReadIds] = useState<ReadonlySet<string>>(() => new Set());
   const conversationsRef = useRef(conversations);
   conversationsRef.current = conversations;
+
+  useEffect(() => {
+    if (mobileView !== 'list' || !restoreConversationFocusRef.current) return;
+    restoreConversationFocusRef.current = false;
+    conversationButtonRef.current?.focus();
+  }, [mobileView]);
 
   // Read marker: opening the thread (and receiving a counselor reply while it
   // is open) marks it read, the same way the legacy clients do. Without this
@@ -293,6 +301,7 @@ export function MemberMessagesKit({
                   key={c.id}
                   type="button"
                   onClick={() => setMobileView('thread')}
+                  ref={c.active ? conversationButtonRef : undefined}
                   className={`wa-kit-focus wa-transition-colors wa-duration-150 motion-reduce:wa-transition-none${c.active ? '' : ' hover:wa-bg-[var(--wa-surface-2)]'}`}
                   style={{
                     display: 'block',
@@ -353,7 +362,10 @@ export function MemberMessagesKit({
               <span className="md:wa-hidden" style={{ marginLeft: -4, flexShrink: 0 }}>
                 <button
                   type="button"
-                  onClick={() => setMobileView('list')}
+                  onClick={() => {
+                    restoreConversationFocusRef.current = true;
+                    setMobileView('list');
+                  }}
                   className="wa-kit-focus"
                   aria-label={tm('backToMessages')}
                   style={{

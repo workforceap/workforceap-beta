@@ -190,7 +190,6 @@ export default function DevEmployerJobsBoardPage() {
         <EmployerPageOpener
           kicker="Employer workspace"
           title="Job postings"
-          subtitle="Manage your postings and see where each role needs attention."
         />
         <EmployerJobsBoard
           jobs={JOBS}

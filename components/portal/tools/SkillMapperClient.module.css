@@ -533,6 +533,13 @@
 }
 
 @media (max-width: 39.9375rem) {
+  .searchRow {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .searchAction {
+    align-self: flex-end;
+  }
   .viewSwitcher {
     gap: 1.25rem;
   }

@@ -39,7 +39,7 @@ export const PORTAL_REVIEW_FIXTURES: PortalReviewFixture[] = [
     ['Open roles', 'state=board'], ['No open roles', 'state=board-empty'], ['Searchable listing', 'state=listing'], ['Empty listing', 'state=listing-empty'], ['Job detail and apply', 'state=detail'],
     ['Remote job detail', 'state=detail&job=j2'], ['Support job detail', 'state=detail&job=j3'], ['Hybrid job detail', 'state=detail&job=j4'], ['Load error', 'state=error'],
   ]),
-  fixture('member', 'jobs-empty', 'Applications · empty', 'An application pipeline before the first application.', 'Inspect the empty state and browse open roles.', 'Real applications and account persistence require an approved signed-in member.'),
+  fixture('member', 'jobs-empty', 'Open roles · empty', 'A member has tracked applications but no live openings or recommended matches.', 'Inspect the no-openings state and existing application cards.', 'Real applications and account persistence require an approved signed-in member.'),
   fixture('member', 'program', 'My program', 'Enrolled AWS curriculum, training workspace and a separate DigitalLearn example.', 'Inspect module states and the program picker. Resume/Continue opens the AWS training workspace; DigitalLearn lessons are a separate example.', 'Provider launches leave this environment. Module-complete and training-save actions use real endpoints; provider access and recorded completion remain blocked.', [
     ['Choose a program', 'state=empty'], ['Training workspace', 'state=workspace'], ['Separate DigitalLearn example', 'state=lessons'],
   ]),

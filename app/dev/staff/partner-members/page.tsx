@@ -98,9 +98,7 @@ export default function DevStaffPartnerMembersPage() {
   return (
     <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6 wa-p-6">
       <PageOpener
-        kicker="Partner Dashboard"
         title="Referred Members"
-        lede="Enrollment and placement dates across every referral milestone stage"
       />
 
       <div className="wa-block md:wa-hidden">

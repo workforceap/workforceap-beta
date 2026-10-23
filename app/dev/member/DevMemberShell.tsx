@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import WorkspaceShell from '@/components/portal/WorkspaceShell';
+import memberStyles from '@/components/portal/MemberWorkspace.module.css';
 import DashboardFooter from '@/components/portal/DashboardFooter';
 import TourProviderWrapper from '@/components/onboarding/TourProviderWrapper';
 import type { MemberShellIdentity } from '@/lib/member/memberIdentity';
@@ -91,6 +92,7 @@ export default function DevMemberShell({ children }: { children: ReactNode }) {
     <TourProviderWrapper previewMode>
       <WorkspaceShell
         portalRole="member"
+        memberShellClassName={memberStyles.memberShell}
         navItems={navItems}
         identity={DEV_MEMBER_IDENTITY}
         helpTourKey="member.home"

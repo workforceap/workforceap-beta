@@ -38,7 +38,7 @@ function currentLabels(strip: ReturnType<typeof renderAt>): string[] {
   return strip
     .getAllByRole('link')
     .filter((link) => link.getAttribute('aria-current') === 'page')
-    .map((link) => link.textContent ?? '');
+    .map((link) => link.getAttribute('aria-label') ?? '');
 }
 
 describe('MemberPortalTopNav current tab (WAP-263)', () => {
@@ -105,6 +105,8 @@ describe('MemberPortalTopNav current tab (WAP-263)', () => {
   it('matches the five daily desktop destinations and keeps preassessment directly visible', () => {
     const strip = renderAt('/dashboard');
     expect(strip.getByRole('link', { name: 'AI Career Tools' })).toHaveAttribute('href', '/dashboard/ai-tools');
+    expect(strip.getByRole('link', { name: 'Jobs, Job board' }).querySelector('.member-portal-top-nav__short-label'))
+      .toHaveTextContent('Jobs');
     expect(strip.getAllByRole('link').slice(0, 5).map((link) => link.getAttribute('href'))).toEqual([
       '/dashboard',
       '/dashboard/program',

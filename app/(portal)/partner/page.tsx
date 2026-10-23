@@ -448,9 +448,7 @@ export default async function PartnerDashboardPage({
         <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6">
           {isPendingApproval && <PendingApprovalBanner />}
           <PageOpener
-            kicker={t('partnerDashboard')}
             title={ctx.partner.name}
-            lede={t('referralsProgressOutcomes', { partnerName: ctx.partner.name })}
           />
 
           {/* `tour-referral-link`: step 1 of the partner guided tour (lib/tours/registry.ts). */}
@@ -515,7 +513,7 @@ export default async function PartnerDashboardPage({
             href="/partner/attention"
           />
 
-          <PartnerAssistantAccordion title={t('partnerAssistant')} hint="(tap to open)">
+          <PartnerAssistantAccordion title={t('partnerAssistant')}>
             <VoiceAgentSurface {...partnerVoiceSurface}>
               <PortalVoiceSessionLazy
                 sessionEndpoint="/api/partner/voice-session"

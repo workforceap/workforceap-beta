@@ -20,6 +20,8 @@
  * the `session` tab. Page chrome is PageOpener + SegmentedControl on the shared
  * `--wa-bg-wave` wash (same as other member kits). Live-session panels stay dark
  * on purpose (`--wa-sidebar-*` / session tokens — not a second app header).
+ * Workspace tabs precede task shortcuts; preparation guidance stays available
+ * in a native disclosure so the phone view reaches the actual choices quickly.
  * Text-bearing Resume Studio gradients use fixed deep hero colors so their
  * foregrounds stay readable independently of the selected app theme.
  *
@@ -79,6 +81,7 @@ import { StatusTag } from '../StatusTag';
 import { VoiceOrb } from '../VoiceOrb';
 import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
+import styles from './VoiceStudio.module.css';
 
 type StudioTab = 'coaches' | 'session' | 'studio' | 'toolkit';
 export type VoiceStudioAgentKey = 'readiness' | 'resume' | 'mock' | 'counselor' | 'business';
@@ -352,27 +355,8 @@ export function VoiceStudioKit({
         className="wa-space-y-6"
       >
         <PageOpener
-          kicker="Tools & careers"
           title="AI Career Tools"
-          lede={t('hubIntro')}
-          icon={<AudioLines size={13} aria-hidden="true" />}
         />
-        {tab === 'coaches' ? (
-          <VStack as="section" gap={3} aria-labelledby="ai-tools-start-heading">
-            <h2 id="ai-tools-start-heading" className="wa-text-lg wa-font-bold">{t('startTitle')}</h2>
-            <p className="wa-kit-lede wa-m-0">
-              {t('startIntro')}
-            </p>
-            <HStack gap={3} wrap="wrap">
-              <KitLinkButton href={TOOL_HREF['resume-studio']} label={t('resume')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
-              <KitLinkButton href={TOOL_HREF.interviews} label={ti('title')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
-              <KitLinkButton href={TOOL_HREF['cover-letter']} label={t('coverLetter')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
-            </HStack>
-            <p className="wa-kit-meta wa-m-0">
-              {t('preparation')}
-            </p>
-          </VStack>
-        ) : null}
         <div className="wa-page-tabs">
           <SegmentedControl
             value={tab}
@@ -386,6 +370,21 @@ export function VoiceStudioKit({
             ))}
           </SegmentedControl>
         </div>
+        {tab === 'coaches' ? (
+          <VStack as="section" gap={3} aria-labelledby="ai-tools-start-heading">
+            <h2 id="ai-tools-start-heading" className="wa-text-lg wa-font-bold">{t('startTitle')}</h2>
+            <HStack gap={3} wrap="wrap">
+              <KitLinkButton href={TOOL_HREF['resume-studio']} label={t('resume')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+              <KitLinkButton href={TOOL_HREF.interviews} label={ti('title')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+              <KitLinkButton href={TOOL_HREF['cover-letter']} label={t('coverLetter')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+            </HStack>
+            <details className={styles.preparation}>
+              <summary className="wa-kit-focus">{t('preparationTitle')}</summary>
+              <p>{t('startIntro')}</p>
+              <p>{t('preparation')}</p>
+            </details>
+          </VStack>
+        ) : null}
         <div
           role="region"
           id={`vs-panel-${tab}`}

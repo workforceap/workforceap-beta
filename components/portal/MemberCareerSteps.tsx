@@ -37,7 +37,7 @@ export function MemberTrainingNav({ current, programSlug }: {
     { id: 'readiness', label: t('readiness'), href: '/dashboard/readiness' },
   ];
   return (
-    <nav className={styles.navigation} aria-label={t('nav')}>
+    <nav className={`${styles.navigation} ${styles.trainingNavigation}`} aria-label={t('nav')}>
       {items.map(item => (
         <Link key={item.id} href={item.href} className="wa-kit-focus" aria-current={current === item.id ? 'page' : undefined}>
           {item.label}

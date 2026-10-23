@@ -117,6 +117,7 @@ export default function WorkspaceShell({
   marketingSiteHref,
   marketingSiteLabel,
   navHrefMap,
+  memberShellClassName,
   showResumeUploadHint,
   readOnlyAudit = false,
   previewMode = false,
@@ -161,6 +162,8 @@ export default function WorkspaceShell({
   marketingSiteLabel?: string;
   /** Rewrite canonical member nav hrefs (e.g. /dev/member proofs). */
   navHrefMap?: Record<string, string>;
+  /** Member-only scoped styling hook for phone shell refinements. */
+  memberShellClassName?: string;
   /** Member: prompt to upload resume when none on file */
   showResumeUploadHint?: boolean;
   /** Authenticated audit capability: render the shell without polling providers or mutable notification state. */
@@ -514,7 +517,11 @@ export default function WorkspaceShell({
   const minimalHeader = minimalMobileHeader || (portalRole !== 'member' && !wide);
 
   return (
-    <div className="workspace-shell-root" data-workspace-role={portalRole} style={rootStyle}>
+    <div
+      className={`workspace-shell-root${portalRole === 'member' && memberShellClassName ? ` ${memberShellClassName}` : ''}`}
+      data-workspace-role={portalRole}
+      style={rootStyle}
+    >
       {/* Mirror the data-portal-role effect at parse time so <html>/<body> take the
           portal canvas on first paint instead of after hydration (WAP-153). The
           value is a fixed PortalRole union member, never user input. */}

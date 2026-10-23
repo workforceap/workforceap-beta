@@ -13,6 +13,12 @@
 .attentionCopy { display: flex; flex: 1; gap: 0.5rem var(--wa-pad); align-items: baseline; flex-wrap: wrap; min-width: 0; }
 .attentionCopy strong { color: var(--wa-text); font-size: var(--wa-type-body); }
 .attentionCopy > span { color: var(--wa-muted); font-size: var(--wa-type-meta); }
+.assistant { padding: 0 var(--wa-pad-sm); box-shadow: none; }
+.assistant > summary { display: flex; align-items: center; gap: 0.5rem; min-height: 3rem; padding-block: 0.75rem; cursor: pointer; list-style: none; color: var(--wa-text); font-size: var(--wa-type-body); font-weight: 650; }
+.assistant > summary::-webkit-details-marker { display: none; }
+.assistantChevron { flex-shrink: 0; color: var(--wa-accent); }
+.assistant[open] .assistantChevron { transform: rotate(90deg); }
+.assistantBody { padding-block: 0 var(--wa-pad-sm); }
 
 @media (max-width: 47.99rem) {
   .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }

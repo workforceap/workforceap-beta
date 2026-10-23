@@ -11,6 +11,7 @@ import { StatusTag, type KitTone } from '@/components/portal/kit';
 import type { AppMsg, EmployerApplicationRow } from './EmployerApplicationsClient';
 import { employerApplicationsListHref, type EmployerApplicationsSort } from '@/lib/employer/employerApplicationsListQuery';
 import PortalRecordLink from '@/components/portal/PortalRecordLink';
+import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
 
 const STATUS_CHIP_FILTERS = [
   { label: 'All', value: 'all' as const },
@@ -145,7 +146,7 @@ export default function MobileApplicationsClient({
   return (
     <div>
       {/* Filter chips */}
-      <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '0 1rem 0.75rem', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', whiteSpace: 'nowrap' }}>
+      <div role="group" aria-label="Filter by application status" style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '0 1rem 0.75rem', scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch', whiteSpace: 'nowrap' }}>
         {STATUS_CHIP_FILTERS.map((f) => {
           const active = filter === f.value;
           return (
@@ -155,8 +156,18 @@ export default function MobileApplicationsClient({
               aria-current={active ? 'page' : undefined}
               className="wa-kit-focus wa-text-sm wa-font-semibold"
               style={Object.assign(
-                { flexShrink: 0, padding: '0.375rem 1rem', borderRadius: '9999px' },
-                active ? { background: 'var(--color-accent)', color: '#ffffff' } : { background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' }
+                {
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  minHeight: '44px',
+                  padding: '0.375rem 1rem',
+                  borderRadius: '9999px',
+                },
+                active
+                  ? { background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)' }
+                  : { background: 'var(--wa-surface-2)', color: 'var(--wa-muted)' }
               )}
             >
               {f.label}
@@ -172,10 +183,15 @@ export default function MobileApplicationsClient({
       {/* Applicant cards */}
       <div style={{ padding: '0 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {visible.length === 0 ? (
-          <div style={{ background: 'var(--color-white)', borderRadius: '0.75rem', padding: '1.5rem', textAlign: 'center' }}>
-            <span className="material-symbols-outlined text-3xl block mb-2" style={{ color: 'var(--outline-variant)' }} aria-hidden="true">inbox</span>
-            <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>No applications found.</p>
-          </div>
+          <KitEmptyState
+            framed
+            title={activeStatusFilter ? 'No applicants match this filter' : t('noApplicationsYet')}
+            kind={activeStatusFilter ? 'filtered' : 'first'}
+            primaryAction={activeStatusFilter ? {
+              label: 'Show all applicants',
+              href: employerApplicationsListHref({ sort: activeSort }),
+            } : undefined}
+          />
         ) : (
           visible.map((app) => {
             const isExpanded = expandedId === app.id;

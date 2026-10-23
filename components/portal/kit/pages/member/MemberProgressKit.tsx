@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
-import { Check, Mic, TrendingUp, Zap, Flag } from 'lucide-react';
+import { Check, Mic, Zap, Flag } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DesignSurface, PageOpener, ProgressRing, KitEmptyState } from '@/components/portal/kit';
 import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
-import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
 import type { ReadinessPriorityAction } from '@/lib/readiness/progressView';
 
 /**
@@ -16,6 +15,7 @@ import type { ReadinessPriorityAction } from '@/lib/readiness/progressView';
  * breakdown). This kit does not invent scores. A load failure is an explicit
  * empty/error, not a 0% ring. The summary slot is kit-token UI composed by
  * the page — do not mount Astryx inside this file.
+ * Goal rows use their explicit icon and label, never lowered text opacity.
  */
 
 interface WeekStat {
@@ -75,19 +75,14 @@ export function MemberProgressKit({
   // `loadFailed` branch, `unavailable`/danger) or in previews — the `first`
   // states below carry no CTA because nothing the member does creates a row.
   const te = useTranslations('empty');
-  const tw = useTranslations('memberWorkspace.training');
 
   return (
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker="Progress"
           title="Readiness"
-          lede="Score, this week, next milestone."
-          icon={<TrendingUp size={13} aria-hidden="true" />}
         />
         <MemberTrainingNav current="readiness" />
-        <p className={workspaceStyles.context}>{tw('learningContext')}</p>
         {loadFailed ? (
           <div className="wa-kit-card" data-portal-error-state="member-readiness-load">
             <KitEmptyState
@@ -175,7 +170,7 @@ export function MemberProgressKit({
                 const meta = MILESTONE_META[m.state];
                 const Icon = meta.icon;
                 return (
-                  <div key={m.label} className="wa-flex wa-items-center wa-gap-3" style={{ opacity: meta.dim ? 0.6 : 1 }}>
+                  <div key={m.label} className="wa-flex wa-items-center wa-gap-3">
                     <div
                       style={{
                         width: 32,

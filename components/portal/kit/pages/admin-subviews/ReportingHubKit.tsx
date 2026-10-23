@@ -20,8 +20,8 @@ import type { BoardOutcomesPeriod } from '@/lib/admin/boardOutcomes';
  *
  * One `PageOpener` (the page's only h1), a tab row rendered as LINKS
  * (`.wa-kit-tabs` / `.wa-kit-tab`, `aria-current="page"` on the open tab) so
- * each request loads one tab's data, the tab's own `SectionHeader` with its
- * definition line, the tab content (an existing admin kit mounted with
+ * each request loads one tab's data, the tab's own `SectionHeader` followed
+ * by visible period/scope/metric definitions, the content (an existing admin kit mounted with
  * `embedded`), and a "More reports" strip for the surfaces that keep their
  * own routes (print layout, quarterly builder, specialised dashboards).
  *
@@ -82,12 +82,10 @@ export function ReportingHubKit({
   const context = reportingViewContext(activeTab, period, superAdmin);
   const hrefForTab = tabHref ?? ((tab: ReportingTabId) => reportingTabHref(tab, period === 'all-time' ? {} : { period }));
   return (
-    <DesignSurface surface="dense" className="wa-p-6">
+    <DesignSurface surface="dense" className="wa-p-4 md:wa-p-6">
       <PageOpener
         className="wa-mb-5"
-        kicker="Admin"
         title="Reporting"
-        lede="Review the evidence, understand each measure and prepare the right report."
         action={action}
       />
 
@@ -109,7 +107,7 @@ export function ReportingHubKit({
       </LinkTabs>
 
       <section aria-label={copy.title} data-reporting-section={activeTab}>
-        <SectionHeader title={copy.title} goal={copy.lede} data-testid="reporting-hub-section-header" />
+        <SectionHeader title={copy.title} data-testid="reporting-hub-section-header" />
         <aside aria-label="Report context" className="wa-mb-5" data-testid="reporting-context">
           <p className="wa-kit-meta wa-mb-2"><strong>{context.periodLabel}</strong> · {context.scopeLabel}</p>
           <p className="wa-kit-meta" style={{ color: 'var(--wa-muted)' }}>{context.definition}</p>

@@ -41,8 +41,9 @@ import { CounselorApprovalQueue } from './CounselorApprovalQueue';
  *      this counselor, oldest first with an age clock
  *      (`CounselorApprovalQueue`, lib/counselor/approvalQueue.ts).
  *   4. One section per group (`TODAY_GROUP_ORDER`), each with its rows as
- *      severity-coded QueueRows and its own empty state. On-track members
- *      are never listed — the queue must not list everyone.
+ *      severity-coded QueueRows and its own empty state. Empty groups keep
+ *      their title/count/message without repeating rule explanations; metrics
+ *      use two columns on phones. On-track members are never listed.
  *
  * Pure and serializable: every string is computed from the queue so a render
  * test can drive it with the shared fixture roster.
@@ -191,7 +192,7 @@ function TodayGroupSection({ group, memberHrefBase }: { group: TodayGroup; membe
         </h2>
         <StatusTag tone={countTone}>{plural(count, 'member')}</StatusTag>
       </div>
-      <p className="wa-kit-meta" style={{ margin: 0, color: 'var(--wa-muted)' }}>{group.description}</p>
+      {count > 0 ? <p className="wa-kit-meta" style={{ margin: 0, color: 'var(--wa-muted)' }}>{group.description}</p> : null}
       {count === 0 ? (
         <KitEmptyState title={group.emptyTitle} headingAs="h3" />
       ) : (
@@ -267,7 +268,7 @@ export function CounselorTodayKit({
           </div>
         ) : (
           <>
-            <div className="wa-grid wa-grid-cols-1 sm:wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3" data-tour="tour-today-attention">
+            <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3" data-tour="tour-today-attention">
               <TodayTile
                 id="flagged"
                 label="Needs attention"

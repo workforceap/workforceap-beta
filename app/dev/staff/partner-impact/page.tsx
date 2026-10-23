@@ -31,7 +31,7 @@ export default async function PartnerImpactProof({ searchParams }: { searchParam
   const packet = buildPartnerOutcomePacket({ pipelineMembers: [], totalReferrals: 0, partnerName: 'Preview partner', generatedAt: new Date('2026-10-22T12:00:00Z') });
   return (
     <PortalPageFrame maxWidth="80rem">
-      <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6">
+      <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6 wa-p-6">
         <div className="wa-flex wa-flex-wrap wa-items-center wa-justify-between wa-gap-4">
           <p role="note" id="preview-export-note" className="wa-kit-meta">Preview fixture: synthetic milestones and empty outcomes. Record actions and downloads use the authenticated partner portal; this fixture does not load or export partner data.</p>
           <ThemeSelector />

@@ -62,9 +62,15 @@ describe('StudentsRosterKit pagination', () => {
 
   it('moves to the next page and drops back to page 1 when the search changes', () => {
     render(<StudentsRosterKit students={ROWS} total={ROWS.length} />);
-    const [nav] = screen.getAllByRole('navigation', { name: 'Roster pagination' });
-    fireEvent.click(within(nav).getByRole('button', { name: 'Go to next page' }));
+    const topPager = screen.getByTestId('students-roster-top-pagination');
+    fireEvent.click(within(topPager).getByRole('button', { name: 'Go to next page' }));
     expect(bodyRows()).toHaveLength(ROWS.length - KIT_TABLE_PAGE_SIZE);
+
+    // Both controls act on the same page state; the footer remains available.
+    const navs = screen.getAllByRole('navigation', { name: 'Roster pagination' });
+    fireEvent.click(within(navs[navs.length - 1]).getByRole('button', { name: 'Go to previous page' }));
+    expect(bodyRows()).toHaveLength(KIT_TABLE_PAGE_SIZE);
+    fireEvent.click(within(topPager).getByRole('button', { name: 'Go to next page' }));
 
     fireEvent.change(screen.getByPlaceholderText('Name, email or program'), { target: { value: 'Student' } });
     expect(bodyRows()).toHaveLength(KIT_TABLE_PAGE_SIZE);
