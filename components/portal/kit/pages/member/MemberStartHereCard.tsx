@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { CheckCircle2, ClipboardCheck, Wand2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ClipboardCheck, Wand2 } from 'lucide-react';
+import styles from './Home.module.css';
 
 /**
  * Pinned "Start here" shortcuts under the home greeting.
@@ -20,11 +21,40 @@ export default function MemberStartHereCard({
   preassessmentHref = '/dashboard/assessment',
   toolkitHref = '/dashboard/ai-tools',
   preassessmentCompleted,
+  variant = 'full',
 }: {
   preassessmentHref?: string;
   toolkitHref?: string;
   preassessmentCompleted: boolean;
+  /** Home already has a contextual AI introduction; keep this entry focused on the assessment. */
+  variant?: 'full' | 'preassessment';
 }) {
+  if (variant === 'preassessment') {
+    return (
+      <section
+        aria-labelledby="member-start-here-heading"
+        className={`wa-kit-card ${styles.preassessment}`}
+        data-testid="member-start-here"
+        data-done={preassessmentCompleted ? 'true' : 'false'}
+      >
+        <div className={styles.preassessmentIdentity}>
+          {preassessmentCompleted ? <CheckCircle2 size={22} aria-hidden="true" /> : <ClipboardCheck size={22} aria-hidden="true" />}
+          <div>
+            <h2 id="member-start-here-heading">WIOA Preassessment</h2>
+            <p>{preassessmentCompleted ? 'Done. View your results' : '35 questions for your counselor'}</p>
+          </div>
+        </div>
+        <Link
+          href={preassessmentHref}
+          className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus"
+          data-done={preassessmentCompleted ? 'true' : 'false'}
+        >
+          {preassessmentCompleted ? 'View your results' : 'Open preassessment'}
+          <ArrowRight size={16} aria-hidden="true" />
+        </Link>
+      </section>
+    );
+  }
   return (
     <section
       aria-labelledby="member-start-here-heading"

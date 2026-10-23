@@ -17,6 +17,7 @@ import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import ResumeStudioClient from '@/components/portal/ResumeStudioClient';
 import ToolHistoryPanel from '@/components/portal/ToolHistoryPanel';
 import styles from '@/components/portal/MemberWorkspace.module.css';
+import resumeStyles from '@/components/portal/ResumeStudio.module.css';
 
 const ResumeClient = dynamic(() => import('./ResumeClient'), {
   loading: () => (
@@ -96,12 +97,13 @@ export default async function DashboardResumePage() {
     <DesignSurface surface="warm">
       <div className={styles.workspace}>
         <PageOpener
+          className={resumeStyles.opener}
           kicker="AI Career Tools"
           title={t('resume')}
           lede={tw('intro')}
           action={
             <Link href="/dashboard/ai-tools" className="wa-page-action wa-kit-focus">
-              AI Career Tools
+              {tw('design.backToTools')}
             </Link>
           }
         />

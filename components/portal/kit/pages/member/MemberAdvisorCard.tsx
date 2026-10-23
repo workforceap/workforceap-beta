@@ -9,7 +9,7 @@ import type { AssignedCounselor } from '@/lib/member/counselorContext';
  * (`resolveAssignedCounselor`), so the Message button never routes to nobody.
  * It states no presence or availability: we don't record either.
  */
-export default function MemberAdvisorCard({ advisor }: { advisor: AssignedCounselor | null | undefined }) {
+export default function MemberAdvisorCard({ advisor, className }: { advisor: AssignedCounselor | null | undefined; className?: string }) {
   if (!advisor) return null;
   const initials = advisor.name
     .split(/\s+/)
@@ -19,7 +19,7 @@ export default function MemberAdvisorCard({ advisor }: { advisor: AssignedCounse
     .join('');
   return (
     <section
-      className="wa-kit-card"
+      className={`wa-kit-card${className ? ` ${className}` : ''}`}
       aria-labelledby="member-advisor-heading"
       data-testid="member-advisor-card"
       style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}

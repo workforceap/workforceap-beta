@@ -1360,6 +1360,14 @@ html.dark .workspace-shell-header,
     background: var(--wa-accent-soft);
     border-color: var(--wa-control-border);
 }
+.workspace-shell-root .workspace-menu-btn:disabled,
+.workspace-shell-root .workspace-menu-btn:disabled:hover {
+    background: var(--wa-surface);
+    border-color: var(--wa-border);
+    color: var(--wa-muted);
+    box-shadow: none;
+    cursor: wait;
+}
 .workspace-shell-brand-block {
     display: flex;
     flex-direction: column;

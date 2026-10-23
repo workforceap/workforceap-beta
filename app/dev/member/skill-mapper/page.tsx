@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
-import { Radar } from 'lucide-react';
 import SkillMapperClient from '@/components/portal/tools/SkillMapperClient';
-import { ToolkitToolChrome } from '@/components/portal/kit/pages/member/ToolkitToolChrome';
+import { SkillMapperKit } from '@/components/portal/kit/pages/member/SkillMapperKit';
 import type { SavedSkillMapperRun } from '@/lib/member/skillMapperRun';
 
 export const dynamic = 'force-dynamic';
@@ -16,8 +15,8 @@ const run: SavedSkillMapperRun = {
 export default function SkillMapperProofPage() {
   if (process.env.VERCEL_ENV === 'production') notFound();
   return (
-    <ToolkitToolChrome title="Skill Mapper" icon={<Radar size={20} aria-hidden="true" />} lede="Sample data preview. Both radars and numeric values are interactive; search, extraction and export are disabled." backHref="/dev/member/toolkit">
+    <SkillMapperKit backHref="/dev/member/toolkit">
       <SkillMapperClient preview initialRun={run} initialMemberProfile={axes.map((axis, index) => ({ axis, value: 0.3 + index * 0.04 }))} />
-    </ToolkitToolChrome>
+    </SkillMapperKit>
   );
 }

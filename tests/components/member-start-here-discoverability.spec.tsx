@@ -23,6 +23,15 @@ vi.mock('next/navigation', () => ({
 afterEach(cleanup);
 
 describe('member "Start here" shortcuts', () => {
+  it('keeps Home focused on the assessment while preserving the completed state and destination', () => {
+    render(<MemberStartHereCard preassessmentCompleted variant="preassessment" />);
+    const card = within(screen.getByTestId('member-start-here'));
+    expect(card.getByRole('heading', { name: 'WIOA Preassessment' })).toBeTruthy();
+    expect(card.getByText('Done. View your results')).toBeTruthy();
+    expect(card.getByRole('link', { name: 'View your results' })).toHaveAttribute('href', '/dashboard/assessment');
+    expect(card.queryByRole('link', { name: /^AI Career Tools/ })).toBeNull();
+  });
+
   it('links the WIOA preassessment and AI Career Tools', () => {
     render(<MemberStartHereCard preassessmentCompleted={false} />);
     const card = within(screen.getByTestId('member-start-here'));

@@ -189,7 +189,7 @@ export default async function DevMemberHomePage({
   return (
     <>
     <p className="wa-kit-meta wa-px-4 wa-py-3" role="note">
-      Sample data preview. Handoff states are synthetic; email, calendar and provider access are not connected here.
+      Preview only: synthetic progress. Email, calendar and training connections are not active.
     </p>
     <PWAInstallPrompt />
     {onboardingFixture ? (
@@ -250,7 +250,7 @@ export default async function DevMemberHomePage({
       doThisNext={handoffFixture === 'received' || handoffFixture === 'unknown' ? {
         id: 'prepare-consultation-fixture',
         title: 'Prepare for your consultation',
-        body: 'Review your résumé, career goals and questions for your advisor. If you already emailed your résumé or booked, confirm those steps with your team.',
+        body: 'Review your résumé, career goals and questions before meeting your advisor.',
         href: '/dev/member/resume-studio',
         cta: handoffFixture === 'received' ? 'Review my résumé' : 'Open Résumé workspace',
         variant: 'default',

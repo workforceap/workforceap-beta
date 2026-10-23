@@ -3,8 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useState, useRef, useEffect, useCallback, startTransition } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Menu, ShieldHalf, X } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback, useId, startTransition } from 'react';
+import { ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Hourglass, Menu, ShieldHalf, X } from 'lucide-react';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import { getBestActiveHref } from '@/lib/nav/activeRoute';
 import { PRODUCT_COPY } from '@/lib/nav/workspaceCopy';
@@ -223,6 +223,8 @@ export default function WorkspaceShell({
         : railNavItems;
   const mobileDrawerNavItems = railNavItems;
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [menuReady, setMenuReady] = useState(false);
+  const menuLoadingId = useId();
   const [collapsed, setCollapsed] = useState(false);
   const [wide, setWide] = useState(false);
   const [badges, setBadges] = useState<Partial<Record<NavBadgeKey, number>>>({});
@@ -312,6 +314,16 @@ export default function WorkspaceShell({
   useWorkspaceMobileScrollChrome();
 
   useEffect(() => {
+    // Server-rendered navigation must not offer an action before its handler is ready.
+    setMenuReady(true);
+  }, []);
+
+  const previousDrawerPathname = useRef(pathname);
+  useEffect(() => {
+    // A first activation can arrive after hydration commits but before passive
+    // effects run. Only navigation should close it, never the initial effect.
+    if (previousDrawerPathname.current === pathname) return;
+    previousDrawerPathname.current = pathname;
     setDrawerOpen(false);
   }, [pathname]);
 
@@ -521,12 +533,17 @@ export default function WorkspaceShell({
             type="button"
             className="workspace-menu-btn"
             onClick={() => setDrawerOpen(true)}
+            disabled={!menuReady}
+            aria-busy={!menuReady}
             aria-label={tNav('openMenu')}
+            aria-describedby={!menuReady ? menuLoadingId : undefined}
+            title={!menuReady ? tNav('menuLoading') : undefined}
             aria-expanded={drawerOpen}
             aria-controls="workspace-sidebar"
           >
-            <Menu size={22} strokeWidth={2} aria-hidden />
+            {menuReady ? <Menu size={22} strokeWidth={2} aria-hidden /> : <Hourglass size={22} strokeWidth={2} aria-hidden />}
           </button>
+          {!menuReady ? <span id={menuLoadingId} className="sr-only">{tNav('menuLoading')}</span> : null}
           <div className="workspace-shell-brand-block">
             <Link href={firstHref} prefetch={false} className="workspace-shell-brand">
               WorkforceAP

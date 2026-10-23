@@ -81,11 +81,50 @@ AI Advisor and human Messages remain separate. Skill Mapper's radar
 charts retain numeric alternatives bound to the same data; an occupation's O*NET
 requirements must not be presented as demonstrated member proficiency.
 
+The WorkspaceShell menu trigger is disabled and marked busy until its client
+handler is ready, with an hourglass and localized loading description in all
+four catalogs. Enabling it does not move focus. The pathname effect closes an
+open drawer only for a real normalized-path change, not the initial passive
+effect; Escape, focus trapping and restoration retain the shared hook contract.
+These guards do not establish physical-device acceptance or prove every earlier
+intermittent phone-menu failure has the same cause.
+
 PageOpener keeps its title directly on the canvas, with a responsive 28–38px title
 (32px ceiling on dense surfaces), a sentence-case kicker and a readable 62ch lede.
 Typography is shared in `portal-kit.css`, not per-page inline sizes. Shared view
 tabs distinguish the selected view with a tint, weight and underline and retain
 their native keyboard/focus behavior.
+
+Home is an intentional task-first exception to the shared opener scale. Its
+scoped `Home.module.css` keeps the greeting at 22–26px, omits the redundant lede,
+and places the phone streak beside the Home kicker without moving interactive
+controls. The next-action title is 26–30px and never line-clamped; its CTA wraps
+and keeps a 48px target. At widths of at least 1100px, the action and handoff
+evidence use a 60/40 layout, followed by paired advisor and Up next panels when
+both exist. Narrow screens retain action-first document order. The compact
+Home preassessment variant preserves the completed state; one contextual AI
+introduction remains below progress instead of repeating a tool catalogue.
+The evidence summary distinguishes a received portal resume from unknown
+email, calendar and provider state. Layout must not infer completion, change
+next-action ranking, or turn a destination click into a completed step.
+
+Resume uses scoped workspace chrome and descriptive view tabs; phone tabs keep
+their 48px targets and their full descriptions through `aria-describedby`.
+Rewrite presents the required target role and resume editor before a native
+"Customize rewrite" disclosure. Language, tone, ATS, salary and location controls
+stay mounted inside it, with tone/language/ATS summarized while closed; optional
+settings are not discarded when the disclosure closes. File-source distinctions
+and the session-only draft warning remain visible. Tab navigation retains the
+current pathname, locale, query and hash; reload/leave recovery is not promised.
+
+`SkillMapperKit` supplies the same 70rem (1120px at the standard root size)
+workspace to the authenticated route and its synthetic fixture. It avoids an
+extra card around the entire workspace; each result owns its chart, numeric
+alternative, selected-occupation title and exact saved-lookup training link.
+Empty chart/profile branches retain the lookup link. Synthetic preview notices
+state the data and disabled-action limits; a real lookup fallback keeps its
+failure explanation and recovery guidance. Neither layout implies a skill
+proficiency measurement, provider access or authenticated acceptance.
 
 The preview-only [screen review checklist](qa/portal-consolidation/README.md) inventories
 the actual routes and consolidated query views. Its browser-saved review results are

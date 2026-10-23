@@ -119,6 +119,7 @@
     "contactUs": "Contactez-nous",
     "memberPortal": "Portail membre",
     "openMenu": "Ouvrir le menu",
+    "menuLoading": "Chargement de la navigation…",
     "expandSidebar": "Développer la barre latérale",
     "showMoreUnder": "Afficher {count} de plus sous {label}",
     "hideMoreUnder": "Masquer {count} de plus sous {label}",

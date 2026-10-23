@@ -2,6 +2,7 @@
 
 import { useState, useRef, type CSSProperties, type ReactNode } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Check, Copy, Upload } from 'lucide-react';
 import { PortalInlineSpinner } from '@/components/portal/PortalInlineSpinner';
 import { trackToolLaunch } from '@/lib/analytics/events';
@@ -13,6 +14,7 @@ import AiToolLanguageSelector, { type AiToolLanguage } from './AiToolLanguageSel
 import { useRetryableFetch } from '@/hooks/useRetryableFetch';
 import AiToolError from './AiToolError';
 import ToolFollowThrough from './ToolFollowThrough';
+import styles from './ResumeRewriterForm.module.css';
 
 const SALARY_RANGES = [
   '',
@@ -92,6 +94,7 @@ export default function ResumeRewriterForm({
   preview = false,
   previewOutput,
 }: ResumeRewriterFormProps = {}) {
+  const t = useTranslations('memberWorkspace.resume.design');
   const [internalResume, setInternalResume] = useState(initialResume ?? '');
   const isControlled = onResumeChange != null;
   const resume = isControlled ? (resumeControlled ?? '') : internalResume;
@@ -196,40 +199,7 @@ export default function ResumeRewriterForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <AiToolLanguageSelector value={language} onChange={setLanguage} />
-
-      <div>
-        <p className="wa-kit-field-label" style={{ marginBottom: 8 }}>
-          Tone
-        </p>
-        <div role="group" aria-label="Tone" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {TONES.map((t) => {
-            const on = tone === t;
-            return (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setTone(t)}
-                disabled={loading}
-                aria-pressed={on}
-                className={KIT_BTN}
-                style={{
-                  ...(on ? kitBtnSolid : kitBtnOutline),
-                  textTransform: 'capitalize',
-                  opacity: loading ? 0.55 : 1,
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {t}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <Toggle checked={atsOptimize} onChange={setAtsOptimize} label="ATS keywords" />
-
+    <form onSubmit={handleSubmit} className={styles.form}>
       <FormField label="Target job title" id="job-target" full>
         <input
           id="job-target"
@@ -239,41 +209,10 @@ export default function ResumeRewriterForm({
           placeholder="IT Support Specialist, Cybersecurity Analyst"
           required
           disabled={loading}
+          className="wa-kit-focus"
           style={FIELD_CONTROL}
         />
       </FormField>
-
-      <div className="wa-grid wa-grid-cols-1 sm:wa-grid-cols-2 wa-gap-3">
-        <FormField label="Salary range" id="target-salary">
-          <select
-            id="target-salary"
-            value={targetSalary}
-            onChange={(e) => setTargetSalary(e.target.value)}
-            disabled={loading}
-            style={FIELD_CONTROL}
-          >
-            {SALARY_RANGES.map((s) => (
-              <option key={s} value={s}>
-                {s || 'Optional'}
-              </option>
-            ))}
-          </select>
-        </FormField>
-        <FormField label="City / location" id="target-location">
-          <input
-            id="target-location"
-            type="text"
-            value={targetLocation}
-            onChange={(e) => setTargetLocation(e.target.value)}
-            placeholder="Austin, TX"
-            disabled={loading}
-            style={FIELD_CONTROL}
-          />
-        </FormField>
-      </div>
-      <p style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', margin: '-8px 0 0', lineHeight: 1.45 }}>
-        Salary and city calibrate seniority and local phrasing. Optional.
-      </p>
 
       <div>
         <label htmlFor="resume" className="wa-kit-field-label" style={{ marginBottom: 8, display: 'block' }}>
@@ -340,20 +279,97 @@ export default function ResumeRewriterForm({
         </p>
       ) : null}
 
-      <ul
-        style={{
-          margin: 0,
-          paddingLeft: 18,
-          fontSize: 'var(--wa-type-meta)',
-          color: 'var(--wa-muted)',
-          lineHeight: 1.65,
-        }}
-      >
-        <li>Quantify bullets (“Reduced ticket response time by 40%”).</li>
-        <li>Mirror keywords from the posting.</li>
-        <li>One page under 10 years; two pages max.</li>
-        <li>Lead each bullet with an action verb.</li>
-      </ul>
+      <details className={styles.customize}>
+        <summary className="wa-kit-focus">
+          <span className={styles.customizeTitle}>{t('customizeRewrite')}</span>
+          <span className={styles.customizeValue}>
+            {t('tones.' + tone)} · {({ en: 'English', es: 'Español', fr: 'Français', pt: 'Português' })[language]} · {t(atsOptimize ? 'atsOn' : 'atsOff')}
+          </span>
+        </summary>
+        <div className={styles.customizeBody}>
+          <div className={styles.options}>
+            <AiToolLanguageSelector value={language} onChange={setLanguage} />
+
+            <div>
+              <p className="wa-kit-field-label" style={{ marginBottom: 8 }}>
+                Tone
+              </p>
+              <div role="group" aria-label="Tone" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {TONES.map((t) => {
+                  const on = tone === t;
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setTone(t)}
+                      disabled={loading}
+                      aria-pressed={on}
+                      className={KIT_BTN}
+                      style={{
+                        ...(on ? kitBtnSolid : kitBtnOutline),
+                        textTransform: 'capitalize',
+                        opacity: loading ? 0.55 : 1,
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          <Toggle checked={atsOptimize} onChange={setAtsOptimize} label="ATS keywords" />
+          <div className={styles.metadata}>
+            <FormField label="Salary range" id="target-salary">
+              <select
+                id="target-salary"
+                value={targetSalary}
+                onChange={(e) => setTargetSalary(e.target.value)}
+                disabled={loading}
+                className="wa-kit-focus"
+                style={FIELD_CONTROL}
+              >
+                {SALARY_RANGES.map((s) => (
+                  <option key={s} value={s}>
+                    {s || 'Optional'}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+            <FormField label="City / location" id="target-location">
+              <input
+                id="target-location"
+                type="text"
+                value={targetLocation}
+                onChange={(e) => setTargetLocation(e.target.value)}
+                placeholder="Austin, TX"
+                disabled={loading}
+                className="wa-kit-focus"
+                style={FIELD_CONTROL}
+              />
+            </FormField>
+          </div>
+          <p style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', margin: '-8px 0 0', lineHeight: 1.45 }}>
+            Salary and city calibrate seniority and local phrasing. Optional.
+          </p>
+
+          <ul
+            style={{
+              margin: 0,
+              paddingLeft: 18,
+              fontSize: 'var(--wa-type-meta)',
+              color: 'var(--wa-muted)',
+              lineHeight: 1.65,
+            }}
+          >
+            <li>Quantify bullets (“Reduced ticket response time by 40%”).</li>
+            <li>Mirror keywords from the posting.</li>
+            <li>One page under 10 years; two pages max.</li>
+            <li>Lead each bullet with an action verb.</li>
+          </ul>
+        </div>
+      </details>
 
       {error ? (
         <AiToolError

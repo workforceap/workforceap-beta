@@ -1,0 +1,38 @@
+.form {
+  display: grid;
+  gap: var(--wa-pad-sm);
+  min-width: 0;
+}
+
+.form > * { min-width: 0; }
+.form > button[type='submit'] { justify-self: start; }
+
+.customize {
+  border-block: 1px solid var(--wa-border);
+  padding-block: 0.25rem;
+}
+
+.customize summary {
+  min-height: 3rem;
+  padding-block: 0.5rem;
+  color: var(--wa-text);
+  cursor: pointer;
+  font-size: var(--wa-type-body);
+  border-radius: var(--wa-radius-sm);
+}
+
+.customize summary::marker { color: var(--wa-accent-text); }
+.customizeTitle { font-weight: 600; }
+.customizeValue { display: block; margin-inline-start: 1.1rem; color: var(--wa-muted); font-size: var(--wa-type-meta); line-height: 1.5; }
+.customizeBody { display: grid; gap: var(--wa-pad-sm); padding-block: var(--wa-pad-sm); }
+.options { display: grid; gap: var(--wa-pad-sm); align-items: start; }
+.options > section { margin-block-end: 0 !important; }
+.metadata { display: grid; gap: var(--wa-pad-sm); }
+
+@media (min-width: 40rem) {
+  .metadata { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 60rem) {
+  .options { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
+}

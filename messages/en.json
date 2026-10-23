@@ -119,6 +119,7 @@
     "contactUs": "Contact Us",
     "memberPortal": "Member portal",
     "openMenu": "Open menu",
+    "menuLoading": "Navigation is loading…",
     "closeMenu": "Close menu",
     "expandSidebar": "Expand sidebar",
     "showMoreUnder": "Show {count} more under {label}",
@@ -4472,10 +4473,10 @@
     "resume": {
       "metaTitle": "Resume",
       "metaDescription": "Manage your original and revised resumes, review scores, improve your draft, and work with an AI coach.",
-      "intro": "Your files, scores, improvements, and AI resume coach in one workspace.",
+      "intro": "Manage your files and improve your resume.",
       "files": "My resume",
-      "scoreSource": "Score reviews the text shown below. It prefills from your saved revised resume when available, otherwise your original. Reviewing a score does not replace either file.",
-      "rewriteSource": "Improve starts from your original resume. Generated text is a separate result; your original, saved revised resume, and past runs remain distinct.",
+      "scoreSource": "Reviews the text below, prefilled from your revised file or original. Saved files stay unchanged.",
+      "rewriteSource": "Starts from your original. Generated text, saved revisions, and history stay separate.",
       "rewriteHistory": "Saved resume improvements",
       "filesUnavailable": "Your resume files could not be loaded. Try again to refresh their status.",
       "retryFiles": "Reload resume files",
@@ -4486,13 +4487,22 @@
         "coachHint": "Talk it through",
         "filesTitle": "Your resume files",
         "filesIntro": "Upload an original, build from your profile, and review each version.",
-        "scoreTitle": "See where your resume can improve",
-        "rewriteTitle": "Shape your resume for the role",
+        "scoreTitle": "Review your resume",
+        "rewriteTitle": "Rewrite for a role",
         "nextIntro": "Refine your draft or talk through your next step.",
         "coachTitle": "Your AI resume coach",
         "coachIntro": "Talk through your experience and work on how to present it.",
         "coachAvailability": "Voice coach runs in a signed-in session.",
-        "draftNotice": "Score and Rewrite drafts stay here while this page is open. Copy your edits before reloading or leaving; unsaved changes are not restored."
+        "draftNotice": "Drafts last while this page is open. Copy edits before leaving or reloading; they won’t be restored.",
+        "backToTools": "AI tools",
+        "customizeRewrite": "Customize rewrite",
+        "atsOn": "ATS on",
+        "atsOff": "ATS off",
+        "tones": {
+          "professional": "Professional",
+          "conversational": "Conversational",
+          "executive": "Executive"
+        }
       }
     },
     "interviews": {

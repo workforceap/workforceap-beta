@@ -50,6 +50,7 @@ import type { NextBestAction } from '@/lib/member/nextBestActions';
 import type { MemberToolRecommendation } from '@/lib/member/recommendMemberTool';
 import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
 import { isExcludedPublicEmployerName } from '@/lib/jobs/publicJobFilters';
+import styles from './Home.module.css';
 
 /**
  * Member Portal — HOME view ("Command Center" redesign).
@@ -61,13 +62,14 @@ import { isExcludedPublicEmployerName } from '@/lib/jobs/publicJobFilters';
  *      then, for staff viewing a member home, the staff-view notice
  *      (`showStaffViewBanner`), then the youth notice for a member under 18
  *      (`youthNoticeAge`).
- *   2. Full-bleed "Do this next" banner (MemberDoThisNextCard).
+ *   2. "Your next step" paired with the handoff evidence summary on wide screens,
+ *      stacked in that order on mobile (MemberDoThisNextCard).
  *      Under it, only when they apply: the placement confirmation strip for
  *      OFFER applications (`jobOffers`) and the First 90 Days check-in card
  *      while a placement is inside its window (`first90`) — the two
  *      post-offer surfaces the `?ui=legacy` home used to own (WAP-188). Then
- *      an "Up next" list of the following steps. A compact evidence summary
- *      under the next action distinguishes confirmed résumé receipt from
+ *      an "Up next" list of the following steps paired with the advisor. The evidence summary
+ *      beside the next action distinguishes confirmed résumé receipt from
  *      disconnected email, calendar and training access records.
  *   3. A 4-up stat-tile row (course / active jobs / certs / points), each with
  *      an optional inline sparkline + delta chip.
@@ -329,20 +331,6 @@ const HOME_TEXT_LINK: CSSProperties = {
   textDecoration: 'none',
   flexShrink: 0,
   gap: 6,
-};
-
-/** One "Up next" row: title + reason on the left, the action on the right; the whole row is the link. */
-const UP_NEXT_ROW: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  flexWrap: 'wrap',
-  gap: '4px 12px',
-  minHeight: 44,
-  padding: '10px 0',
-  borderTop: '1px solid var(--wa-border)',
-  textDecoration: 'none',
-  color: 'inherit',
 };
 
 function KitCardHead({ title, linkLabel, linkHref }: { title: string; linkLabel?: string; linkHref?: string }) {
@@ -674,11 +662,11 @@ export function MemberHomeKit({
 
   return (
     <DesignSurface surface="warm">
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
+      <div className={styles.page}>
         <PageOpener
+          className={styles.opener}
           kicker="Home"
           title={greeting && firstName ? `${greeting}, ${firstName}` : firstName ? `Welcome back, ${firstName}` : 'Home'}
-          lede={t('handoff.homeLede')}
           icon={<Home size={13} aria-hidden="true" />}
           action={
             currentStreak > 0 ? (
@@ -712,13 +700,15 @@ export function MemberHomeKit({
 
         {/* 2. Dominant next-best-action banner. Renders nothing when there's no
             pending action (see MemberDoThisNextCard). */}
-        <MemberDoThisNextCard action={doThisNext} />
-        <MemberHandoffSummary
-          evidence={handoff}
-          messagesHref={advisor?.messagingHref}
-          resumeStudioHref={resumeStudioHref}
-          showResumeAction={doThisNext?.href.split('?')[0] !== resumeStudioHref.split('?')[0]}
-        />
+        <div className={styles.leadGrid} data-has-action={Boolean(doThisNext)}>
+          <MemberDoThisNextCard action={doThisNext} />
+          <MemberHandoffSummary
+            evidence={handoff}
+            messagesHref={advisor?.messagingHref}
+            resumeStudioHref={resumeStudioHref}
+            showResumeAction={doThisNext?.href.split('?')[0] !== resumeStudioHref.split('?')[0]}
+          />
+        </div>
 
         {/* Post-offer surfaces, each only when it applies: confirm an accepted
             offer (writes a member-reported placement and alerts the
@@ -737,8 +727,32 @@ export function MemberHomeKit({
           </ErrorBoundary>
         ) : null}
 
-        {/* Stitch member layout: who to ask, right under the next step. */}
-        <MemberAdvisorCard advisor={advisor} />
+        {/* Human support and following steps stay secondary to the one primary action. */}
+        {advisor || upNext.length > 0 ? (
+          <div className={styles.supportGrid} data-paired={Boolean(advisor && upNext.length > 0)}>
+            <MemberAdvisorCard advisor={advisor} className={styles.advisor} />
+            {upNext.length > 0 ? (
+              <section className={`wa-kit-card ${styles.upNext}`} aria-labelledby="member-up-next-heading">
+                <h3 id="member-up-next-heading">Up next</h3>
+                <ol aria-label="Up next">
+                  {upNext.map((action) => (
+                    <li key={action.id}>
+                      <Link href={resolveMemberProgramHref(action.href)} className={`wa-kit-focus ${styles.upNextRow}`}>
+                        <span className={styles.upNextCopy}>
+                          <span className={styles.upNextTitle}>{action.title}</span>
+                          <span className={styles.upNextBody}>{action.body}</span>
+                        </span>
+                        <span className={styles.upNextAction}>
+                          {action.cta} <ArrowRight size={13} aria-hidden />
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ) : null}
+          </div>
+        ) : null}
 
         {!programTitle && ungatedDigitalBasicsHref ? (
           <div className="wa-kit-card" style={{ display: 'grid', gap: 10 }}>
@@ -755,37 +769,6 @@ export function MemberHomeKit({
             >
               Start this lesson
             </Link>
-          </div>
-        ) : null}
-
-        {upNext.length > 0 ? (
-          <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
-            {upNext.length > 0 ? (
-              <div className="wa-kit-card lg:wa-col-span-12">
-                <KitCardHead title="Up next" />
-                <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 2 }} aria-label="Up next">
-                  {upNext.map((action) => (
-                    <li key={action.id}>
-                      <Link
-                        href={resolveMemberProgramHref(action.href)}
-                        className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                        style={UP_NEXT_ROW}
-                      >
-                        <span style={{ minWidth: 0 }}>
-                          <span style={{ display: 'block', fontWeight: 700, color: 'var(--wa-text)' }}>{action.title}</span>
-                          <span style={{ display: 'block', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 2 }}>
-                            {action.body}
-                          </span>
-                        </span>
-                        <span style={{ ...HOME_TEXT_LINK, fontSize: 'var(--wa-type-meta)' }}>
-                          {action.cta} <ArrowRight size={13} aria-hidden />
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            ) : null}
           </div>
         ) : null}
 
@@ -1083,7 +1066,7 @@ export function MemberHomeKit({
         </div>
 
         {/* Discovery remains available after the member's next step and progress. */}
-        <MemberStartHereCard toolkitHref={toolkitHref} preassessmentCompleted={preassessmentCompleted} />
+        <MemberStartHereCard toolkitHref={toolkitHref} preassessmentCompleted={preassessmentCompleted} variant="preassessment" />
         <MemberAiToolsCard toolkitHref={toolkitHref} recommendedTool={recommendedTool} />
 
         {/* Learning Hub remains available after the progress overview. */}

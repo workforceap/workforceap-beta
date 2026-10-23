@@ -30,6 +30,35 @@ afterEach(() => {
 });
 
 describe('actual Skill Mapper saved workspace', () => {
+  it('labels a synthetic preview once without implying an occupation service failure', () => {
+    show({ preview: true, initialRun: { ...saved, demo: true } });
+    expect(screen.getByRole('note', { name: 'Sample data preview' })).toHaveTextContent('Not real O*NET data. Search, extraction and export are disabled.');
+    expect(screen.queryByRole('note', { name: 'Sample occupation data' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Explore an occupation' })).toBeNull();
+    expect(screen.getByRole('heading', { name: saved.occupationTitle })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Search' })).toBeDisabled();
+    expect(screen.getByRole('link', { name: /Training options for this lookup/ })).toHaveAttribute('href', '/dashboard/ai-tools/training-bridge?result=owned-selected');
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['network', 'Unable to connect to occupation database.'],
+    ['provider', 'O*NET occupational search is unavailable.'],
+  ])('preserves the real %s failure reason and recovery guidance when showing sample data', async (failure, reason) => {
+    if (failure === 'network') fetcher.mockRejectedValue(new Error('Network unavailable'));
+    else fetcher.mockResolvedValue(Response.json({ demo: true }));
+    show({});
+    expect(screen.getByRole('heading', { name: 'Explore an occupation' })).toBeInTheDocument();
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search an occupation' }), { target: { value: 'Developer' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    const warning = await screen.findByRole('note', { name: 'Sample occupation data' });
+    expect(warning).toHaveTextContent(reason);
+    expect(warning).toHaveTextContent('Sample data only.');
+    expect(warning).toHaveTextContent('Try another occupation or return later for O*NET occupation data.');
+    expect(screen.queryByRole('note', { name: 'Sample data preview' })).toBeNull();
+    expect(screen.getByRole('img', { name: /Skill requirements for Software Developer/ })).toBeInTheDocument();
+  });
+
   it('focuses and reveals the synthetic comparison without account, provider, extraction or export requests', async () => {
     show({ preview: true, initialRun: { ...saved, demo: true }, initialMemberProfile: axes.map(axis => ({ axis, value: 0.4 })) });
     const compare = screen.getByRole('button', { name: 'Compare with my profile' });

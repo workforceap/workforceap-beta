@@ -119,6 +119,7 @@
     "contactUs": "Contáctanos",
     "memberPortal": "Portal de miembros",
     "openMenu": "Abrir menú",
+    "menuLoading": "Cargando la navegación…",
     "closeMenu": "Cerrar menú",
     "expandSidebar": "Expandir barra lateral",
     "showMoreUnder": "Mostrar {count} más bajo {label}",
@@ -4620,10 +4621,10 @@
     "resume": {
       "metaTitle": "Currículum",
       "metaDescription": "Gestiona tu currículum original y sus revisiones, consulta las puntuaciones, mejora tu borrador y trabaja con un asistente de IA.",
-      "intro": "Tus archivos, puntuaciones, mejoras y asistente de currículum con IA en un solo espacio.",
+      "intro": "Gestiona tus archivos y mejora tu currículum.",
       "files": "Mi currículum",
-      "scoreSource": "La puntuación analiza el texto que aparece abajo. Se rellena con tu currículum revisado guardado, si existe; de lo contrario, con el original. Consultar una puntuación no reemplaza ninguno de los dos archivos.",
-      "rewriteSource": "La mejora parte de tu currículum original. El texto generado es un resultado independiente; tu original, la revisión guardada y los resultados anteriores se mantienen separados.",
+      "scoreSource": "Revisa el texto de tu archivo revisado o, si no existe, del original. Los archivos guardados no cambian.",
+      "rewriteSource": "Parte del original. El texto generado, las revisiones guardadas y el historial se mantienen separados.",
       "rewriteHistory": "Mejoras del currículum guardadas",
       "filesUnavailable": "No se pudieron cargar los archivos de tu currículum. Vuelve a intentarlo para actualizar su estado.",
       "retryFiles": "Volver a cargar los archivos del currículum",
@@ -4634,13 +4635,22 @@
         "coachHint": "Habla sobre tu CV",
         "filesTitle": "Los archivos de tu currículum",
         "filesIntro": "Sube tu original, crea un currículum a partir de tu perfil y revisa cada versión.",
-        "scoreTitle": "Descubre cómo mejorar tu currículum",
-        "rewriteTitle": "Adapta tu currículum al puesto",
+        "scoreTitle": "Revisa tu currículum",
+        "rewriteTitle": "Adapta tu currículum",
         "nextIntro": "Mejora tu borrador o habla sobre tu próximo paso.",
         "coachTitle": "Tu asesor de currículum con IA",
         "coachIntro": "Habla sobre tu experiencia y trabaja en cómo presentarla.",
         "coachAvailability": "El asesor de voz está disponible al iniciar sesión.",
-        "draftNotice": "Los borradores de Puntuación y Reescribir se conservan mientras esta página esté abierta. Copia tus cambios antes de recargarla o salir; los cambios sin guardar no se recuperan."
+        "draftNotice": "Los borradores duran mientras esta página esté abierta. Copia tus cambios antes de salir o recargar; no se recuperan.",
+        "backToTools": "Herramientas de IA",
+        "customizeRewrite": "Personalizar redacción",
+        "atsOn": "ATS activo",
+        "atsOff": "ATS desactivado",
+        "tones": {
+          "professional": "Profesional",
+          "conversational": "Conversacional",
+          "executive": "Ejecutivo"
+        }
       }
     },
     "interviews": {

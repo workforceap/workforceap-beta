@@ -134,7 +134,7 @@ export default function ResumeStudioClient({
         })}
       </div>
 
-      {view === 'score' || view === 'rewrite' ? <p className="wa-kit-meta">{tw('design.draftNotice')}</p> : null}
+      {view === 'score' || view === 'rewrite' ? <p className={styles.draftNotice}>{tw('design.draftNotice')}</p> : null}
 
       {filesSlot ? (
         <section id={`${id}-panel-files`} role="tabpanel" aria-labelledby={`${id}-tab-files`} hidden={view !== 'files'} className={styles.filesPanel}>
@@ -150,7 +150,6 @@ export default function ResumeStudioClient({
       {view === 'score' || visited.includes('score') ? (
         <div className={`wa-kit-card ${styles.toolPanel}`}>
           <header className={styles.panelHeader}>
-            <span className={styles.panelIcon}><Gauge size={24} aria-hidden="true" /></span>
             <div>
               <h2>{tw('design.scoreTitle')}</h2>
               <p>{tw('scoreSource')}</p>
@@ -213,7 +212,6 @@ export default function ResumeStudioClient({
       {view === 'rewrite' || visited.includes('rewrite') ? (
         <div className={`wa-kit-card ${styles.toolPanel}`}>
           <header className={styles.panelHeader}>
-            <span className={styles.panelIcon}><FilePen size={24} aria-hidden="true" /></span>
             <div>
               <h2>{tw('design.rewriteTitle')}</h2>
               <p>{tw('rewriteSource')}</p>

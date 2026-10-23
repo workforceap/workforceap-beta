@@ -1,8 +1,10 @@
 import { useTranslations } from 'next-intl';
-import { Layers } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import ResumeStudioClient from '@/components/portal/ResumeStudioClient';
 import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBreakdown';
-import { ToolkitToolChrome } from './ToolkitToolChrome';
+import styles from '@/components/portal/ResumeStudio.module.css';
 import type { ReactElement, ReactNode } from 'react';
 
 /**
@@ -45,27 +47,35 @@ export function ResumeStudioKit({
 }) {
   const t = useTranslations('memberWorkspace.resume');
   return (
-    <ToolkitToolChrome
-      title={t('metaTitle')}
-      lede={t('intro')}
-      icon={<Layers size={13} aria-hidden="true" />}
-      backHref={backHref}
-      maxWidth={960}
-    >
-      <ResumeStudioClient
-        hasResume={hasResume}
-        filesSlot={filesSlot}
-        scoreHistorySlot={scoreHistorySlot}
-        rewriteHistorySlot={rewriteHistorySlot}
-        preview={preview}
-        basePath={basePath}
-        initialResume={initialResume}
-        initialRewriteResume={initialRewriteResume}
-        initialJobTarget={initialJobTarget}
-        previewScoreOutput={previewScoreOutput}
-        previewScorePayload={previewScorePayload}
-        previewRewriteOutput={previewRewriteOutput}
-      />
-    </ToolkitToolChrome>
+    <DesignSurface surface="warm">
+      <div className={styles.page}>
+        <PageOpener
+          className={styles.opener}
+          kicker="AI Career Tools"
+          title={t('metaTitle')}
+          lede={t('intro')}
+          action={
+            <Link href={backHref ?? '/dashboard/ai-tools'} className="wa-page-action wa-kit-focus">
+              <ArrowLeft size={14} aria-hidden="true" />
+              {t('design.backToTools')}
+            </Link>
+          }
+        />
+        <ResumeStudioClient
+          hasResume={hasResume}
+          filesSlot={filesSlot}
+          scoreHistorySlot={scoreHistorySlot}
+          rewriteHistorySlot={rewriteHistorySlot}
+          preview={preview}
+          basePath={basePath}
+          initialResume={initialResume}
+          initialRewriteResume={initialRewriteResume}
+          initialJobTarget={initialJobTarget}
+          previewScoreOutput={previewScoreOutput}
+          previewScorePayload={previewScorePayload}
+          previewRewriteOutput={previewRewriteOutput}
+        />
+      </div>
+    </DesignSurface>
   );
 }

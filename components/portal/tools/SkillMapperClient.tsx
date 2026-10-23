@@ -10,6 +10,7 @@ import {
   HelpCircle,
   ChevronDown,
   TriangleAlert,
+  Info,
   Download,
   ArrowLeftRight,
   FileText,
@@ -816,7 +817,15 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
 
   return (
     <div className={styles.workspace}>
-      <MemberCareerSteps current="skills" resultId={savedResultId} />
+      <div className={styles.careerContext}>
+        <MemberCareerSteps current="skills" resultId={savedResultId} />
+      </div>
+      {preview && (
+        <p className={styles.previewNotice} role="note" aria-label="Sample data preview">
+          <Info size={16} aria-hidden="true" />
+          <span><strong>Sample preview.</strong> Not real O*NET data. Search, extraction and export are disabled.</span>
+        </p>
+      )}
       {selectionError ? <p role="alert">{selectionError}</p> : null}
       {initialTarget && !selectedCode ? (
         <section className="wa-kit-card wa-kit-card--sm" style={{ marginBlock: 'var(--wa-pad-sm)' }}>
@@ -825,13 +834,13 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
           <Button label={tw('loadTarget')} onClick={() => void handleSelect(initialTarget.code, initialTarget.title)} isLoading={loadingSkills} isDisabled={preview} />
         </section>
       ) : null}
-      {savedResultId && selectedTitle ? (
-        <div className={styles.savedTarget}>
-          <p><span className={styles.eyebrow}>Selected occupation</span><strong>{selectedTitle}</strong>{usingDemo ? ` · ${tw('sample')}` : ''}</p>
-          <Link href={trainingBridgeHref(savedResultId)} className="wa-page-action wa-kit-focus">{tw('trainingForLookup')} <ArrowRight size={16} aria-hidden="true" /></Link>
-        </div>
-      ) : null}
       {saveUnavailable ? <p role="status">{tw('saveUnavailable')}</p> : null}
+      {savedResultId && selectedTitle && (!radarData.length || (activeTab === 'profile' && !memberProfile.some(point => point.value > 0))) ? (
+        <p className={styles.caption}>
+          <strong>{selectedTitle}</strong>{' · '}
+          <Link href={trainingBridgeHref(savedResultId)} className="wa-page-action wa-kit-focus">{tw('trainingForLookup')} <ArrowRight size={16} aria-hidden="true" /></Link>
+        </p>
+      ) : null}
       {/* Tab switcher */}
       <div className={styles.viewSwitcher} aria-label="Skill Mapper views">
         <button type="button" className="wa-kit-focus" aria-pressed={activeTab === 'search'} onClick={() => setActiveTab('search')}>
@@ -845,10 +854,10 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
       {/* Tab 1: Occupation Search */}
       {activeTab === 'search' && (
         <div>
-          <div className={styles.sectionIntro}>
+          {!radarData.length && <div className={styles.sectionIntro}>
             <h2>Explore an occupation</h2>
             <p>See the skills a role calls for, then compare them with your estimated profile.</p>
-          </div>
+          </div>}
           <div className={styles.searchRow}>
             <div className={styles.searchField}>
               <FormField
@@ -891,35 +900,26 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
 
           {radarData.length > 0 && (
             <>
-              {usingDemo && (
-                <div style={{
-                  background: 'var(--wa-danger-soft)',
-                  border: '1px solid var(--wa-danger)',
-                  borderRadius: 'var(--wa-radius-sm)',
-                  padding: '1rem',
-                  marginBottom: '1rem',
-                  fontSize: 'var(--wa-type-body)',
-                  color: 'var(--wa-text)'}}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontWeight: 700, color: 'var(--wa-danger)' }}>
-                    <TriangleAlert size={16} aria-hidden="true" />
-                    DEMO MODE — Sample Data Only
-                  </div>
-                  <p style={{ margin: 0, lineHeight: 1.5 }}>
-                    {demoFallbackReason || 'Showing sample skill ranges for demonstration purposes. This is not real occupational data from O*NET.'}
-                  </p>
-                  <p style={{ margin: '0.5rem 0 0', fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)' }}>
-                    Try another occupation or return later for O*NET occupation data.
-                  </p>
-                </div>
-              )}
               <section className={styles.resultPanel} aria-label="Occupation requirements">
               <div className={styles.resultHeading}>
                 <div>
                   <p className={styles.eyebrow}>{usingDemo ? 'Sample occupation requirements' : 'Occupation requirements'}</p>
                   <h2>{selectedTitle}</h2>
                 </div>
-                {selectedCode && <span className={styles.occupationCode}>O*NET {selectedCode}</span>}
+                <aside className={styles.resultMeta}>
+                  {selectedCode && <span className={styles.occupationCode}>O*NET {selectedCode}</span>}
+                  {savedResultId && <Link href={trainingBridgeHref(savedResultId)} className="wa-page-action wa-kit-focus">{tw('trainingForLookup')} <ArrowRight size={16} aria-hidden="true" /></Link>}
+                </aside>
               </div>
+              {usingDemo && !preview && (
+                <div className={styles.sampleWarning} role="note" aria-label="Sample occupation data">
+                  <TriangleAlert size={18} aria-hidden="true" />
+                  <div>
+                    <p><strong>Sample data only.</strong> {demoFallbackReason || 'These skill ranges are for demonstration and are not real O*NET occupational data.'}</p>
+                    <p>Try another occupation or return later for O*NET occupation data.</p>
+                  </div>
+                </div>
+              )}
               {isSalesQuery(selectedTitle) && (
                 <div style={{ marginBottom: '1rem', padding: '0.875rem 1rem', background: 'var(--wa-info-soft)', border: '1px solid var(--wa-border)', borderRadius: '0.75rem', fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)' }}>
                   Sales and account roles usually score strongest in <strong>Strategy</strong> and <strong>Service</strong> here because this map weighs planning, negotiation, communication, and relationship-building, not just technical tools.
@@ -1085,6 +1085,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                       <p className={styles.eyebrow}>Your profile comparison{usingDemo ? ' · Sample occupation data' : ''}</p>
                       <h2 ref={comparisonHeadingRef} tabIndex={-1} className={`${styles.focusTarget} wa-kit-focus`}>Your Skills vs. {selectedTitle || 'Target Occupation'}</h2>
                     </div>
+                    {savedResultId && <Link href={trainingBridgeHref(savedResultId)} className="wa-page-action wa-kit-focus">{tw('trainingForLookup')} <ArrowRight size={16} aria-hidden="true" /></Link>}
                   </div>
                   <div className={styles.comparisonGrid}>
                     <figure className={styles.chartFigure}>

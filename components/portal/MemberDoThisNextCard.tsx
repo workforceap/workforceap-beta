@@ -9,6 +9,7 @@ import type { NextBestAction } from '@/lib/member/nextBestActions';
 import { resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
 import { trackFunnelEvent } from '@/lib/analytics/events';
 import { postMemberEvent } from '@/lib/events/client';
+import styles from './MemberDoThisNextCard.module.css';
 
 /** Only persisted actions have an entity ID for click telemetry. */
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -83,16 +84,12 @@ export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardPro
   };
 
   return (
-    <section aria-label={t('todayFocus')}>
+    <section aria-label={t('todayFocus')} className={styles.section}>
       <div
-        className="wa-kit-card wa-kit-card--gradient-crimson"
-        style={{ display: 'flex', flexDirection: 'column', gap: 10, boxShadow: 'var(--wa-shadow-lg)' }}
+        className={`wa-kit-card wa-kit-card--gradient-crimson ${styles.card}`}
       >
-        <div
-          className="wa-flex wa-items-center wa-gap-2"
-          style={{ color: 'color-mix(in srgb, var(--wa-on-accent) 85%, transparent)', justifyContent: 'space-between', flexWrap: 'wrap' }}
-        >
-          <span className="wa-kit-meta" style={{ letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, color: 'inherit' }}>
+        <div className={styles.eyebrow}>
+          <span className={styles.label}>
             {t('todayFocus')}
           </span>
           {UUID_RE.test(actionId) && (
@@ -108,26 +105,11 @@ export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardPro
           )}
         </div>
         {dismissErrorId === actionId && <p role="alert" style={{ margin: 0, color: 'var(--wa-on-accent)' }}>{t('dismissSuggestionError')}</p>}
-        <h2
-          className="h-font"
-          style={{
-            fontSize: 'clamp(1.05rem, 3.2vw, 1.375rem)',
-            fontWeight: 800,
-            letterSpacing: '-0.02em',
-            color: 'var(--wa-on-accent)',
-            margin: 0,
-            lineHeight: 1.25,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-          }}
-        >
+        <h2 className={`h-font ${styles.title}`}>
           {action.title}
         </h2>
         <p
-          className="wa-kit-lede"
+          className={`wa-kit-lede ${styles.body}`}
           style={{
             color: 'color-mix(in srgb, var(--wa-on-accent) 90%, transparent)',
             margin: 0,
@@ -139,27 +121,7 @@ export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardPro
         <Link
           href={actionHref}
           onClick={handleCtaClick}
-          className="wa-kit-focus"
-          style={{
-            marginTop: 4,
-            alignSelf: 'flex-start',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '8px 16px',
-            minHeight: 44,
-            background: 'var(--wa-hero-action-bg)',
-            color: 'var(--wa-hero-action-text)',
-            fontWeight: 700,
-            fontSize: 'var(--wa-type-body)',
-            borderRadius: 999,
-            textDecoration: 'none',
-            maxWidth: '100%',
-            boxSizing: 'border-box',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
+          className={`wa-kit-focus ${styles.action}`}
         >
           {action.cta} <ArrowRight size={14} aria-hidden />
         </Link>
