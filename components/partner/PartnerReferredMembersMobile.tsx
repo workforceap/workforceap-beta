@@ -79,7 +79,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
                 fontSize: '0.8125rem',
                 fontWeight: 700,
                 background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
-                color: active ? 'var(--wa-on-accent)' : 'var(--wa-muted)',
+                color: active ? 'var(--wa-on-accent-control)' : 'var(--wa-muted)',
                 border: `1px solid ${active ? 'var(--wa-accent)' : 'var(--wa-border)'}`,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
@@ -87,7 +87,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
             >
               {chip.label}
               {chip.count > 0 ? (
-                <span className="wa-tabular-nums" style={{ marginLeft: '0.375rem', fontSize: '0.8125rem', opacity: 0.85 }}>{chip.count}</span>
+                <span className="wa-tabular-nums" style={{ marginLeft: '0.375rem', fontSize: '0.8125rem' }}>{chip.count}</span>
               ) : null}
             </button>
           );
