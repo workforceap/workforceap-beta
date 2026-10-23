@@ -17,6 +17,12 @@ export type KitTableShellColumn = {
   /** Minimum width for this column so badges/tokens are not clipped. */
   minWidth?: number | string;
   ariaSort?: 'ascending' | 'descending' | 'none';
+  /**
+   * Render this column's body cells as `<th scope="row">` (the row's name), so
+   * assistive tech announces it with each value in the row. Row headers inherit
+   * the header chrome of `.wa-kit-table th`; restyle `tbody th` where that is wrong.
+   */
+  rowHeader?: boolean;
 };
 
 export type KitTableShellRow = {
@@ -46,6 +52,8 @@ interface KitTableShellProps extends KitDataAttrs {
   columns: KitTableShellColumn[];
   rows: KitTableShellRow[];
   minWidth?: number;
+  /** Accessible name for the table, rendered as a visually hidden `<caption>`. */
+  caption?: string;
   /** Rendered in a full-width cell when there are no rows (DataTable resolves the defaults). */
   empty: KitEmptyStateProps;
   onRowKeyClick?: (key: string) => void;
@@ -94,6 +102,7 @@ export function KitTableShell({
   columns,
   rows,
   minWidth = 600,
+  caption,
   empty,
   onRowKeyClick,
   density,
@@ -228,6 +237,7 @@ export function KitTableShell({
               data-density={density}
               style={{ minWidth }}
             >
+              {caption ? <caption className="wa-sr-only">{caption}</caption> : null}
               <thead>
                 <tr>
                   {selectable ? (
@@ -330,11 +340,19 @@ export function KitTableShell({
                             ) : null}
                           </td>
                         ) : null}
-                        {columns.map((c, i) => (
-                          <td key={c.key} className={cx(c.stickyLeft && 'wa-kit-table-sticky-left', c.numeric && 'wa-kit-table-cell--num')} style={cellStyle(c)}>
-                            {row.cells[i]}
-                          </td>
-                        ))}
+                        {columns.map((c, i) => {
+                          const Cell = c.rowHeader ? 'th' : 'td';
+                          return (
+                            <Cell
+                              key={c.key}
+                              scope={c.rowHeader ? 'row' : undefined}
+                              className={cx(c.stickyLeft && 'wa-kit-table-sticky-left', c.numeric && 'wa-kit-table-cell--num')}
+                              style={cellStyle(c)}
+                            >
+                              {row.cells[i]}
+                            </Cell>
+                          );
+                        })}
                       </tr>,
                       row.subRow != null && isExpanded ? (
                         <tr key={`${row.key}-sub`} id={subRowId} className="wa-kit-table-subrow">
