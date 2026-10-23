@@ -126,7 +126,7 @@ function AxisLegend({ axes }: { axes: string[] }) {
   const shown = axes.filter(a => AXIS_DESCRIPTIONS[a]);
   if (shown.length === 0) return null;
   return (
-    <div style={{ marginTop: '0.5rem', marginBottom: '1rem', border: '1px solid var(--surface-container-highest)', borderRadius: '0.75rem', overflow: 'hidden' }}>
+    <div className={styles.axisLegend} style={{ marginTop: '0.5rem', marginBottom: '1rem', border: '1px solid var(--surface-container-highest)', borderRadius: '0.75rem', overflow: 'hidden' }}>
       <button
         type="button"
         className={styles.axisToggle}

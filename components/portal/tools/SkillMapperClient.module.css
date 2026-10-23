@@ -41,11 +41,29 @@
   color: var(--wa-muted);
 }
 
-/* "What do these scores measure?" disclosure. The container clips overflow, so
-   the focus ring is drawn inset. */
+/* "What do these scores measure?" disclosure. The container clips overflow
+   (rounded corners), so a ring drawn on the toggle itself would be cut off. The
+   toggle keeps the standard recipe and the container draws the ring you can see,
+   the same split as .wa-kit-table-wrap (css/portal-kit.css). Forced-colors mode
+   drops box-shadow, so it outlines the container instead. */
 .axisToggle:focus-visible {
-  outline: 2px solid var(--wa-accent);
-  outline-offset: -2px;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
+}
+.axisLegend:has(> .axisToggle:focus-visible) {
+  box-shadow: var(--wa-focus-ring);
+}
+@media (forced-colors: active) {
+  .axisToggle:focus-visible {
+    outline: 2px solid Highlight;
+    box-shadow: none;
+  }
+  .axisLegend:has(> .axisToggle:focus-visible) {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
 }
 
 .axisPanel {
