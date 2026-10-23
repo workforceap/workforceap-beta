@@ -213,7 +213,9 @@ function FilterPill({ active, href, children }: { active: boolean; href: string;
         ...pillBase,
         background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
         borderColor: active ? 'var(--wa-accent)' : 'var(--wa-border)',
-        color: active ? 'var(--wa-on-accent)' : 'var(--wa-muted)',
+        // Solid accent control: --wa-on-accent stays white, which is 3.3:1 on
+        // the lighter dark-mode accent (KIT_GUIDE §1).
+        color: active ? 'var(--wa-on-accent-control)' : 'var(--wa-muted)',
       }}
     >
       {children}
