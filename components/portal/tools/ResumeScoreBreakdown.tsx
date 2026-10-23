@@ -42,10 +42,18 @@ export interface ResumeScorePayload {
   }>;
 }
 
+/** Fill colour for bars and icons. Too light to carry small text; see textColorForScore. */
 function colorForScore(score: number): string {
   if (score >= 80) return 'var(--wa-success)';
   if (score >= 60) return 'var(--wa-gold)';
   return 'var(--wa-danger)';
+}
+
+/** Text twin of colorForScore: the -dark / -text tokens keep 13px numbers above 4.5:1 on the grey card in light mode. */
+function textColorForScore(score: number): string {
+  if (score >= 80) return 'var(--wa-success-dark)';
+  if (score >= 60) return 'var(--wa-gold-dark)';
+  return 'var(--wa-danger-text)';
 }
 
 function Bar({ score, label }: { score: number; label: string }) {
@@ -103,7 +111,7 @@ export default function ResumeScoreBreakdown({ payload }: { payload: ResumeScore
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
         <div>
           <div className="wa-kit-field-label">Composite</div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: colorForScore(composite), lineHeight: 1, marginTop: 4 }}>
+          <div style={{ fontSize: 32, fontWeight: 700, color: textColorForScore(composite), lineHeight: 1, marginTop: 4 }}>
             {composite}
             <span style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', fontWeight: 400 }}>/100</span>
           </div>
@@ -135,7 +143,7 @@ export default function ResumeScoreBreakdown({ payload }: { payload: ResumeScore
                 <div key={key}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
                     <span style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-text)' }}>{label}</span>
-                    <span style={{ fontSize: 'var(--wa-type-meta)', color: colorForScore(sub.score), fontWeight: 600 }}>{sub.score}</span>
+                    <span style={{ fontSize: 'var(--wa-type-meta)', color: textColorForScore(sub.score), fontWeight: 600 }}>{sub.score}</span>
                   </div>
                   <Bar score={sub.score} label={label} />
                 </div>
@@ -171,7 +179,7 @@ export default function ResumeScoreBreakdown({ payload }: { payload: ResumeScore
                     <>
                       <div style={{ marginTop: 8 }}>
                         <Bar score={cov.coverageScore} label={`${occ.title} coverage`} />
-                        <p style={{ margin: '4px 0 0', fontSize: 'var(--wa-type-meta)', textAlign: 'right', color: colorForScore(cov.coverageScore), fontWeight: 600 }}>
+                        <p style={{ margin: '4px 0 0', fontSize: 'var(--wa-type-meta)', textAlign: 'right', color: textColorForScore(cov.coverageScore), fontWeight: 600 }}>
                           {cov.coverageScore}
                         </p>
                       </div>
@@ -223,14 +231,14 @@ export default function ResumeScoreBreakdown({ payload }: { payload: ResumeScore
                 </div>
                 {m.mustHaveMissing.length > 0 ? (
                   <div style={{ fontSize: 'var(--wa-type-meta)', marginBottom: 8 }}>
-                    <p style={{ fontWeight: 600, margin: '0 0 6px', color: 'var(--wa-danger)' }}>
+                    <p style={{ fontWeight: 600, margin: '0 0 6px', color: 'var(--wa-danger-text)' }}>
                       Missing (≥70% of postings)
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                       {m.mustHaveMissing.slice(0, 8).map((kw) => (
                         <span
                           key={kw.phrase}
-                          style={{ ...chipBase, border: '1px solid var(--wa-danger)', color: 'var(--wa-danger)' }}
+                          style={{ ...chipBase, border: '1px solid var(--wa-danger)', color: 'var(--wa-danger-text)' }}
                         >
                           {kw.phrase} ({Math.round(kw.frequency * 100)}%)
                         </span>
@@ -240,12 +248,12 @@ export default function ResumeScoreBreakdown({ payload }: { payload: ResumeScore
                 ) : null}
                 {m.mustHavePresent.length > 0 ? (
                   <div style={{ fontSize: 'var(--wa-type-meta)' }}>
-                    <p style={{ fontWeight: 600, margin: '0 0 6px', color: 'var(--wa-success)' }}>On the resume</p>
+                    <p style={{ fontWeight: 600, margin: '0 0 6px', color: 'var(--wa-success-dark)' }}>On the resume</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                       {m.mustHavePresent.slice(0, 8).map((kw) => (
                         <span
                           key={kw.phrase}
-                          style={{ ...chipBase, border: '1px solid var(--wa-success)', color: 'var(--wa-success)' }}
+                          style={{ ...chipBase, border: '1px solid var(--wa-success)', color: 'var(--wa-success-dark)' }}
                         >
                           {kw.phrase}
                         </span>
@@ -276,7 +284,7 @@ function PillarTile({ label, score, icon }: { label: string; score: number; icon
         {icon}
         <span>{label}</span>
       </div>
-      <div style={{ fontSize: 24, fontWeight: 700, color: colorForScore(score), lineHeight: 1 }}>
+      <div style={{ fontSize: 24, fontWeight: 700, color: textColorForScore(score), lineHeight: 1 }}>
         {score}
         <span style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', fontWeight: 400 }}>/100</span>
       </div>
