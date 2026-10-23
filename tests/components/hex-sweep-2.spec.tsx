@@ -488,6 +488,23 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
     }
   });
 
+  it.each(['light', 'dark'] as const)('%s: the Astryx primary Button paints the org accent or the brand crimson behind its white label in every cascade', (scheme) => {
+    // The bridge rule for every primary Button (the link-button rule above it only sets the label).
+    const bridge = readCss('css/astryx-brand-bridge.css').replace(/\/\*[\s\S]*?\*\//g, '');
+    const fill = bridge.match(/(?:^|\s)\.astryx-button\[data-variant='primary'\]\s*\{\s*background-color:\s*([^;]+);/)?.[1];
+    expect(fill).toBe('var(--org-accent, var(--wa-hero-crimson))');
+    // Astryx paints the label with --color-on-accent, which the portal bridge aliases to white.
+    const label = 'var(--color-on-accent)';
+    for (const [name, tokens] of cascades) {
+      expect(ratio(label, fill!, tokens, scheme), `${scheme} ${name} primary Button`).toBeGreaterThanOrEqual(4.5);
+    }
+    // The fill it replaces (--color-accent) is the lightened dark accent where no org accent is pinned.
+    if (scheme === 'dark') {
+      expect(ratio(label, 'var(--color-accent)', bridgeLast, 'dark')).toBeCloseTo(3.28, 1);
+      expect(ratio(label, 'var(--color-accent)', bridgeLast, 'dark')).toBeLessThan(4.5);
+    }
+  });
+
   it.each(['light', 'dark'] as const)('%s: a solid --wa-accent chip reads through --wa-on-accent-control (M14)', async (scheme) => {
     vi.stubGlobal('fetch', vi.fn(async () => json({ milestones: [{ id: 'm1', kind: 'placement_pending', label: 'Pending verification', memberId: 'u1', memberName: 'Ada', at: '2026-09-01T00:00:00Z' }] })));
     const { default: PartnerMilestonesMobile } = await import('@/components/partner/PartnerMilestonesMobile');

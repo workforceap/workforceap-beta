@@ -704,6 +704,10 @@ The Astryx design system is installed site-wide (`app/layout.tsx` imports `reset
   kit focus ring. Its primary label colour comes from `css/astryx-brand-bridge.css`
   (`a.astryx-button[data-variant='primary']`), because the global `a { color: inherit }` would
   otherwise beat Astryx's layered foreground; do not override it per surface.
+  The primary fill is the next rule in that file: the org accent (`--org-accent`), else the
+  mode-constant `--wa-hero-crimson`, never the dark-lightened `--wa-accent`, so the white label holds
+  6.47:1 in both themes (3.28:1 on `#e0658a`). Do not retarget the label to
+  `--wa-on-accent-control` instead: dark ink on the pinned org accent is 2.78:1.
   Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
   which is invalid and gives keyboard users two tab stops per action (WAP-252). The lint rule
   `wap-kit/no-button-in-link` (`scripts/lint/eslint-plugin-wap-kit.mjs`) fails `npm run lint` on

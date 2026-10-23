@@ -47,6 +47,18 @@ a.astryx-button[data-variant='primary'] {
   color: var(--color-on-accent);
 }
 
+/* Primary Button fill. --color-accent is the org accent where OrgBrandingStyle
+   pins one (same hue in both themes, so the white --color-on-accent label holds
+   6.47:1), but it follows the portal bridge to the lightened dark --wa-accent
+   (#e0658a) where no org accent is set, and white on that is 3.28:1. Paint the
+   org accent, else the mode-constant brand crimson (--wa-hero-crimson, equal to
+   --wa-accent in light), so the white label clears AA in both themes either way.
+   Do not swap the label to --wa-on-accent-control instead: dark ink on the
+   pinned org accent is 2.78:1 (tests/components/ui-followups-glow-tokens.spec). */
+.astryx-button[data-variant='primary'] {
+  background-color: var(--org-accent, var(--wa-hero-crimson));
+}
+
 /* Member warm surfaces: Stitch uses #fcf9f8 cream, not cool #f7f8fa gray.
    Dark value matches the portal-wide dark palette (css/portal-tokens.css)
    rather than the old cool-dark #0f1115, so member dark mode isn't a

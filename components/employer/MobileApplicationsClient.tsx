@@ -156,7 +156,11 @@ export default function MobileApplicationsClient({
               className="wa-kit-focus wa-text-sm wa-font-semibold"
               style={Object.assign(
                 { flexShrink: 0, padding: '0.375rem 1rem', borderRadius: '9999px' },
-                active ? { background: 'var(--color-accent)', color: '#ffffff' } : { background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' }
+                // Solid accent control: --wa-accent paired with its adaptive foreground
+                // (KIT_GUIDE §1), like the desktop "All" pill in EmployerJobsBoard. The
+                // old --color-accent + #ffffff was 3.28:1 wherever --color-accent
+                // follows the lightened dark accent (no org accent pinned).
+                active ? { background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)' } : { background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' }
               )}
             >
               {f.label}
