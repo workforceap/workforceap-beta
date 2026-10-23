@@ -164,9 +164,17 @@ function scoreLevel(score: number): AtRiskMember['riskLevel'] {
   return 'LOW';
 }
 
+/** Opaque-in-light soft tints, each paired with its text twin (KIT_GUIDE §1). */
+const SOFT_TINT: Partial<Record<KitColor, string>> = {
+  accent: 'var(--wa-accent-soft)',
+  gold: 'var(--wa-gold-soft)',
+  info: 'var(--wa-info-soft)',
+  success: 'var(--wa-success-soft)'};
+
 function ScoreBadge({ score }: { score: number }) {
   const level = scoreLevel(score);
-  const c = colorVar(RISK_CONFIG[level].color);
+  const tierColor = RISK_CONFIG[level].color;
+  const c = colorVar(tierColor);
   return (
     <span
       title={`Risk score ${score}. ${SEVERITY_TOOLTIP[level]}`}
@@ -179,8 +187,10 @@ function ScoreBadge({ score }: { score: number }) {
         borderRadius: '50%',
         fontWeight: 800,
         fontSize: 13,
-        color: c,
-        background: `color-mix(in srgb, ${c} 14%, transparent)`,
+        // The fill hue is for the ring only; the number uses the text twin
+        // on the matching soft tint so it clears 4.5:1 in both themes.
+        color: textColorVar(tierColor),
+        background: SOFT_TINT[tierColor] ?? 'var(--wa-surface-2)',
         border: `2px solid color-mix(in srgb, ${c} 40%, transparent)`,
         flexShrink: 0,
         fontVariantNumeric: 'tabular-nums'}}
@@ -1046,7 +1056,7 @@ function FactorChips({ factors }: { factors: AtRiskFactor[] }) {
             padding: '3px 9px',
             borderRadius: 999,
             background: 'var(--wa-border)',
-            color: 'var(--wa-muted)',
+            color: 'var(--wa-muted-strong)',
             fontWeight: 600}}
         >
           {f.description}
@@ -1120,7 +1130,7 @@ function RiskRow({
             >
               {row.name}
             </button>
-            <span title={SEVERITY_TOOLTIP[row.riskLevel]} style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: c }}>
+            <span title={SEVERITY_TOOLTIP[row.riskLevel]} style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: textColorVar(cfg.color) }}>
               {cfg.label}
             </span>
             <StatusTag tone={STATUS_TONE[row.status]}>{STATUS_LABEL[row.status]}</StatusTag>
@@ -1136,7 +1146,7 @@ function RiskRow({
                 padding: '2px 8px',
                 borderRadius: 999,
                 background: 'var(--wa-accent-soft)',
-                color: 'var(--wa-accent)'}}
+                color: 'var(--wa-accent-text)'}}
             >
               {RISK_ALERT_REASON.label}
             </span>

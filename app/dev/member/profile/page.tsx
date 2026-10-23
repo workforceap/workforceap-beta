@@ -30,9 +30,9 @@ export default async function DevMemberProfilePage({
       programInterest="Cloud & IT"
       programOptions={['Cloud & IT', 'Data & AI', 'Healthcare', 'Skilled Trades']}
       badges={[
-        { label: '2 certs', bg: 'var(--wa-gold-soft)', color: 'var(--wa-gold)' },
-        { label: '84 readiness', bg: 'var(--wa-success-soft)', color: 'var(--wa-success)' },
-        { label: '12-day streak', bg: 'var(--wa-accent-soft)', color: 'var(--wa-accent)' },
+        { label: '2 certs', bg: 'var(--wa-gold-soft)', color: 'var(--wa-gold-dark)' },
+        { label: '84 readiness', bg: 'var(--wa-success-soft)', color: 'var(--wa-success-dark)' },
+        { label: '12-day streak', bg: 'var(--wa-accent-soft)', color: 'var(--wa-accent-text)' },
       ]}
       notifications={[
         { key: 'jobs', label: 'Job matches', enabled: true },
