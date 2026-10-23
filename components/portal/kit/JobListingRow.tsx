@@ -106,7 +106,7 @@ export function JobListingRow({
               className="wa-kit-meta"
               style={{
                 fontWeight: 700,
-                color: 'var(--wa-success)',
+                color: 'var(--wa-success-dark)',
                 flexShrink: 0,
                 fontVariantNumeric: 'tabular-nums',
               }}

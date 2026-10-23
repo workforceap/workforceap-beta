@@ -32,7 +32,7 @@ const TONE_TOKEN: Record<QueueTone, 'pink' | 'yellow' | 'blue'> = {
 };
 
 const TONE_BG: Record<QueueTone, string> = {
-  red: 'color-mix(in srgb, var(--color-accent) 12%, transparent)',
+  red: 'var(--wa-accent-soft)',
   yellow: 'var(--wa-gold-soft)',
   blue: 'var(--wa-info-soft)',
 };

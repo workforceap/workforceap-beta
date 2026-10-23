@@ -316,10 +316,10 @@ html[data-portal-role][data-theme='dark'] body {
    tokens (statusColors.ts pattern), so dark mode needs no per-class override. */
 .wa-kit-tag--ok {
   color: light-dark(#2e7d32, #74c878);
-  background: light-dark(
-    color-mix(in srgb, var(--wa-success) 12%, transparent),
-    color-mix(in srgb, var(--wa-success) 18%, transparent)
-  );
+  /* Opaque pastel in light like the other tones: the old 12% alpha tint let a
+     grey backdrop (--wa-surface-2, --wa-bg) pull the text under 4.5:1. Dark
+     keeps the same 18% overlay. */
+  background: var(--wa-success-soft);
 }
 .wa-kit-tag--warn {
   color: light-dark(#7a5e29, #d8b25e);
@@ -408,26 +408,32 @@ html[data-portal-role][data-theme='dark'] body {
 .wa-kit-tone--ok {
   --wa-kit-tone: var(--wa-success);
   --wa-kit-tone-soft: var(--wa-success-soft);
+  --wa-kit-tone-text: var(--wa-success-dark);
 }
 .wa-kit-tone--warn {
   --wa-kit-tone: var(--wa-gold);
   --wa-kit-tone-soft: var(--wa-gold-soft);
+  --wa-kit-tone-text: var(--wa-gold-dark);
 }
 .wa-kit-tone--alert {
   --wa-kit-tone: var(--wa-accent);
   --wa-kit-tone-soft: var(--wa-accent-soft);
+  --wa-kit-tone-text: var(--wa-accent-text);
 }
 .wa-kit-tone--danger {
   --wa-kit-tone: var(--wa-danger);
   --wa-kit-tone-soft: var(--wa-danger-soft);
+  --wa-kit-tone-text: var(--wa-danger-text);
 }
 .wa-kit-tone--info {
   --wa-kit-tone: var(--wa-info);
   --wa-kit-tone-soft: var(--wa-info-soft);
+  --wa-kit-tone-text: var(--wa-info-dark);
 }
 .wa-kit-tone--muted {
   --wa-kit-tone: var(--wa-muted);
   --wa-kit-tone-soft: var(--wa-surface-2);
+  --wa-kit-tone-text: var(--wa-muted);
 }
 /* Toned edge on a card / row (queue rows, signal cards). */
 .wa-kit-tone-edge {
@@ -445,9 +451,10 @@ html[data-portal-role][data-theme='dark'] body {
   background: var(--wa-kit-tone-soft, var(--wa-surface-2));
   color: var(--wa-kit-tone, var(--wa-muted));
 }
-/* Toned inline text (a level, a count) — 13px floor, bold. */
+/* Toned inline text (a level, a count) — 13px floor, bold. Reads the tone's
+   text twin: the fill hues (gold, success) are under 4.5:1 as small text. */
 .wa-kit-tone-text {
-  color: var(--wa-kit-tone, var(--wa-text));
+  color: var(--wa-kit-tone-text, var(--wa-text));
   font-size: var(--wa-type-meta);
   font-weight: 700;
   white-space: nowrap;
@@ -511,7 +518,9 @@ html[data-portal-role][data-theme='dark'] body {
 .wa-kit-stat-tile__delta {
   margin-top: 4px;
   font-weight: 700;
-  color: var(--wa-kit-tone, var(--wa-muted));
+  /* Caption text reads the tone's text twin (TEXT_COLOR_VARS in kit/tokens.ts);
+     the fill hues (gold, success) are under 4.5:1 as 13px text. */
+  color: var(--wa-kit-tone-text, var(--wa-muted));
 }
 
 /* Section tabs (Tabs / TabPanel in components/portal/kit/Tabs.tsx). One row
@@ -666,6 +675,18 @@ a.wa-kit-tab {
 }
 .wa-kit-queue-row__action {
   flex-shrink: 0;
+}
+/* The row already carries its tone tint. A flag Token tinted the same way
+   stacks a second translucent layer in dark mode (4.2:1) and vanishes as a pill
+   in light, so it sits on the surface instead. Unlayered, so it beats the
+   Astryx layer. */
+.wa-kit-queue-row .astryx-token {
+  background-color: var(--wa-surface);
+}
+/* Ghost "View" actions on a gold / info / accent row tint: the fill hue
+   --wa-accent drops under 4.5:1 there in dark mode; use its text twin. */
+.wa-kit-queue-row .wa-kit-cta--ghost {
+  color: var(--wa-accent-text);
 }
 @media (max-width: 480px) {
   .wa-kit-queue-row {
@@ -1850,6 +1871,21 @@ a.wa-kit-tab {
   color: var(--wa-accent);
   border-color: var(--wa-accent);
 }
+/* Legacy .btn-ghost paints var(--color-accent), which OrgBrandingStyle pins to
+   the org's light primary (#ad2c4d) in both themes: 2.8:1 on the dark surface.
+   Inside any portal surface, read the adaptive --wa-accent instead (identical in
+   light). :where() keeps these at (0,2,0)/(0,2,1) so they beat main.css's
+   .btn-ghost / a.btn-ghost:hover (this file loads later) but still lose to the
+   contextual rules (admin jobs filter tabs, employer jobs board, the member
+   retarget below). Do not unpin --color-accent instead: Astryx primary buttons
+   paint it behind white text. */
+:where([data-surface]) .btn.btn-ghost {
+  color: var(--wa-accent);
+}
+:where([data-surface]) .btn.btn-ghost:where(:hover),
+:where([data-surface]) a.btn.btn-ghost:where(:hover) {
+  color: var(--wa-accent-text);
+}
 .workspace-shell-root[data-workspace-role='member'] .btn.btn-ghost,
 .workspace-shell-root[data-workspace-role='member'] .btn.btn-tertiary {
   padding: 0 10px;
@@ -2169,7 +2205,9 @@ a.wa-kit-tab {
   color: var(--wa-muted);
 }
 .wa-kit-start-here__cta:not(.wa-kit-cta--ghost) .wa-kit-start-here__cta-copy .wa-kit-meta {
-  color: color-mix(in srgb, var(--wa-on-accent-control) 85%, transparent);
+  /* Fully opaque: an 85% mix on the dark-mode accent fell to 4.47:1. The
+     16px/700 strong vs 13px/400 meta still carries the hierarchy. */
+  color: var(--wa-on-accent-control);
 }
 .wa-kit-start-here__subhead {
   margin: var(--wa-pad) 0 0.375rem;

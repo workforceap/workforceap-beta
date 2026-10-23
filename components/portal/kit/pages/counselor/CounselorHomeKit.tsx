@@ -514,7 +514,7 @@ export function CounselorHomeKit({
                     ariaLabel={activityDeltaLabel}
                   />
                   {activityDeltaLabel ? (
-                    <p style={{ marginTop: 10, fontSize: 13, fontWeight: 700, color: 'var(--wa-success)', fontVariantNumeric: 'tabular-nums' }}>
+                    <p style={{ marginTop: 10, fontSize: 13, fontWeight: 700, color: 'var(--wa-success-dark)', fontVariantNumeric: 'tabular-nums' }}>
                       {activityDeltaLabel}
                     </p>
                   ) : null}
