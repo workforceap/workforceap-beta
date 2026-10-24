@@ -98,4 +98,58 @@ describe('useFocusTrap', () => {
     );
     expect(document.activeElement).toBe(trigger);
   });
+  it('returns focus to returnFocusRef when nothing usable was focused on open (Safari leaves <body> focused)', () => {
+    const triggerRef = { current: null as HTMLButtonElement | null };
+    function Harness({ active }: { active: boolean }) {
+      const ref = useFocusTrap<HTMLDivElement>(active, { skipInitialFocus: true, returnFocusRef: triggerRef });
+      return (
+        <>
+          <button data-testid="trigger" ref={(el) => { triggerRef.current = el; }}>open</button>
+          <div ref={ref}><button>inside</button></div>
+        </>
+      );
+    }
+    const { rerender } = render(<Harness active={false} />);
+    expect(document.activeElement).toBe(document.body);
+    rerender(<Harness active />);
+    screen.getByText('inside').focus();
+    rerender(<Harness active={false} />);
+    expect(document.activeElement).toBe(screen.getByTestId('trigger'));
+  });
+
+  it('falls back to the control whose aria-controls names the container when no opener was focused', () => {
+    function Harness({ active }: { active: boolean }) {
+      const ref = useFocusTrap<HTMLDivElement>(active, { skipInitialFocus: true });
+      return (
+        <>
+          <button data-testid="trigger" aria-controls="drawer">open</button>
+          <div id="drawer" ref={ref}><button>inside</button></div>
+        </>
+      );
+    }
+    const { rerender } = render(<Harness active={false} />);
+    rerender(<Harness active />);
+    screen.getByText('inside').focus();
+    rerender(<Harness active={false} />);
+    expect(document.activeElement).toBe(screen.getByTestId('trigger'));
+  });
+
+  it('moves focus onto an empty container that opted in with tabIndex, and keeps Tab inside it', async () => {
+    function Harness({ active }: { active: boolean }) {
+      const ref = useFocusTrap<HTMLDivElement>(active);
+      return (
+        <>
+          <button>outside</button>
+          <div ref={ref} tabIndex={-1} data-testid="panel"><p>All caught up</p></div>
+        </>
+      );
+    }
+    const { rerender } = render(<Harness active={false} />);
+    rerender(<Harness active />);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    const panel = screen.getByTestId('panel');
+    expect(document.activeElement).toBe(panel);
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(document.activeElement).toBe(panel);
+  });
 });
