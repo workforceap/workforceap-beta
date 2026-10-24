@@ -492,7 +492,7 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
     // The bridge rule for every primary Button (the link-button rule above it only sets the label).
     const bridge = readCss('css/astryx-brand-bridge.css').replace(/\/\*[\s\S]*?\*\//g, '');
     const fill = bridge.match(/(?:^|\s)\.astryx-button\[data-variant='primary'\]\s*\{\s*background-color:\s*([^;]+);/)?.[1];
-    expect(fill).toBe('var(--org-accent, var(--wa-hero-crimson))');
+    expect(fill).toBe('var(--org-accent, var(--wa-hero-crimson, #ad2c4d))');
     // Astryx paints the label with --color-on-accent, which the portal bridge aliases to white.
     const label = 'var(--color-on-accent)';
     for (const [name, tokens] of cascades) {

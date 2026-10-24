@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { IdCard } from 'lucide-react';
 import { VStack } from '@astryxdesign/core/VStack';
 import { DesignSurface, FormField, Toggle, PageOpener } from '@/components/portal/kit';
 import { MemberProfilePhotoEditor } from '@/components/portal/kit/MemberProfilePhotoEditor';
@@ -229,16 +228,14 @@ export function MemberProfileKit({
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker="Account"
           title="Profile"
-          lede="Details, notifications, and security."
-          icon={<IdCard size={13} aria-hidden="true" />}
+          meta="Details, notifications, and security."
         />
         {/* Profile header */}
         <div className="wa-kit-card wa-flex wa-flex-col sm:wa-flex-row wa-items-center wa-gap-5">
           <MemberProfilePhotoEditor initials={initials || '?'} photoUrl={photoUrl} live={live} />
           <div style={{ flex: 1 }} className="wa-text-center sm:wa-text-left">
-            <h2 className="h-font" style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em' }}>
+            <h2 className="h-font" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
               {name || 'Name not on file'}
             </h2>
             {headline ? (
@@ -262,7 +259,7 @@ export function MemberProfileKit({
               span only applies where the 3-col grid exists so it can't create an
               overflowing implicit track on mobile/tablet). */}
           <div className="wa-kit-card lg:wa-col-span-2">
-            <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>Account details</h3>
+            <h3 className="wa-kit-card-title" style={{ marginBottom: 16 }}>Account details</h3>
             <div className="wa-grid wa-grid-cols-1 sm:wa-grid-cols-2 wa-gap-4">
               <FormField
                 label="Full name"
@@ -393,7 +390,7 @@ export function MemberProfileKit({
           <VStack gap={5} className="wa-self-start wa-min-w-0 wa-w-full">
             {/* Notifications */}
             <div className="wa-kit-card">
-              <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>Notifications</h3>
+              <h3 className="wa-kit-card-title" style={{ marginBottom: 16 }}>Notifications</h3>
               {prefError ? (
                 <p
                   ref={prefErrorRef}
@@ -429,7 +426,7 @@ export function MemberProfileKit({
                 mobile members (who land here via the "Profile & Settings" nav
                 item) can change locale without a bookmarked /fr or /pt URL. */}
             <div className="wa-kit-card">
-              <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>Language</h3>
+              <h3 className="wa-kit-card-title" style={{ marginBottom: 16 }}>Language</h3>
               <LanguageToggle />
             </div>
           </VStack>
@@ -441,7 +438,7 @@ export function MemberProfileKit({
                 change a password at all; members were stranded unless they knew
                 to log out and use "forgot password" on the sign-in screen. */}
             <div className="wa-kit-card">
-              <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 8 }}>Password and security</h3>
+              <h3 className="wa-kit-card-title" style={{ marginBottom: 8 }}>Password and security</h3>
               <p className="wa-kit-lede" style={{ marginBottom: 16 }}>
                 Reset by email — current password is not required.
               </p>
@@ -456,7 +453,7 @@ export function MemberProfileKit({
             {/* Danger zone — same reasoning: account deletion was only reachable
                 via the legacy (?ui=legacy) fallback, not the live default UI. */}
             <div className="wa-kit-card" style={{ borderColor: 'var(--wa-danger)' }}>
-              <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 8, color: 'var(--wa-danger)' }}>
+              <h3 className="wa-kit-card-title" style={{ marginBottom: 8, color: 'var(--wa-danger)' }}>
                 Delete account
               </h3>
               <p className="wa-kit-lede" style={{ marginBottom: 16 }}>

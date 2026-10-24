@@ -3503,6 +3503,17 @@
         "unknown": "Aucune approbation de formation n’est encore enregistrée. Le personnel met cette étape à jour une fois la décision prise."
       }
     },
+    "strip": {
+      "done": "Terminé",
+      "inProgress": "En cours",
+      "waiting": "Pas commencé",
+      "closed": "Clôturé",
+      "cleared": "Autorisé à se former",
+      "pending": "En cours d’examen",
+      "closedChip": "Parcours clôturé",
+      "needsInfo": "Votre réponse est attendue",
+      "label": "Étapes d’approbation"
+    },
     "trainingStatus": {
       "approved": "Formation approuvée",
       "pending": "Pas encore approuvée",

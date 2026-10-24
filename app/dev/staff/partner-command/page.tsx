@@ -1,14 +1,15 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { BarChart3, Download, GraduationCap, Percent, Target, Users, Wallet } from 'lucide-react';
+import { DesignSurface, DataTable, PageOpener, type Column } from '@/components/portal/kit';
 import {
-  DesignSurface,
-  PageOpener,
-  SectionHeader,
-  DataTable,
-  QueueRow,
-  type Column,
-} from '@/components/portal/kit';
+  StaffCard,
+  StaffSplit,
+  StaffTaskList,
+  StaffTaskRow,
+  staffLinkClass,
+  staffPillClass,
+} from '@/components/portal/kit/pages/StaffKit';
 import {
   PartnerKpiGrid,
   PartnerAttentionCard,
@@ -70,9 +71,13 @@ export default function DevStaffPartnerCommandPage() {
   return (
     <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6 wa-p-6">
       <PageOpener
-        kicker="Partner dashboard"
         title="Skillpoint Alliance"
-        lede="Skillpoint Alliance referrals, progress, and placement outcomes in one place."
+        meta="Referrals, progress and placement outcomes in one place. 2 placements are waiting for your confirmation."
+        action={
+          <Link href="/partner/exports" className={staffPillClass.base}>
+            Export data
+          </Link>
+        }
       />
 
       <PartnerKpiGrid
@@ -108,120 +113,133 @@ export default function DevStaffPartnerCommandPage() {
         ]}
       />
 
-      <PartnerReferralFunnel
-        stages={[
-          { label: 'Referred', value: 86, pct: 100 },
-          { label: 'Enrolled', value: 54, pct: 63, tone: 'info' },
-          { label: 'Placed', value: 31, pct: 36, tone: 'ok' },
-        ]}
+      <StaffSplit
+        main={
+          <>
+            <StaffCard
+              id="partner-awaiting"
+              title="What needs you today"
+              meta="2 placements awaiting your confirmation"
+              flush
+              action={
+                <Link href="/partner/outcomes" className={staffLinkClass}>
+                  View all
+                </Link>
+              }
+            >
+              <StaffTaskList label="Placements awaiting confirmation">
+                <StaffTaskRow
+                  tone="yellow"
+                  title="Marcus DeLeon, Field Service Technician at Austin Energy"
+                  subline="6/29/2026. Confirm the hire so payout and outcomes reporting stay accurate."
+                  flag="Pending verification"
+                  flagTone="yellow"
+                  action={
+                    <Link href="/partner/referred-members/r2" className={staffPillClass.dark}>
+                      Review
+                    </Link>
+                  }
+                />
+                <StaffTaskRow
+                  tone="yellow"
+                  title="Hoang Tran, Warehouse Associate at HEB Distribution"
+                  subline="6/24/2026"
+                  flag="Pending verification"
+                  flagTone="yellow"
+                  action={
+                    <Link href="/partner/referred-members/r4" className={staffPillClass.base}>
+                      Review
+                    </Link>
+                  }
+                />
+              </StaffTaskList>
+            </StaffCard>
+
+            <PartnerReferralFunnel
+              stages={[
+                { label: 'Referred', value: 86, pct: 100 },
+                { label: 'Enrolled', value: 54, pct: 63, tone: 'info' },
+                { label: 'Placed', value: 31, pct: 36, tone: 'ok' },
+              ]}
+            />
+
+            <StaffCard
+              id="partner-referred"
+              title="Referred Members"
+              meta="Enrollment and placement dates"
+              action={
+                <Link href="/partner/referred-members" className={staffLinkClass}>
+                  View all
+                </Link>
+              }
+            >
+              <DataTable<ReferralRow>
+                columns={referralColumns}
+                rows={REFERRAL_ROWS}
+                rowKey={(row) => row.id}
+                mobile="scroll"
+                caption="Referred members"
+                minWidth={320}
+                scrollCue
+                emptyTitle="No referred members yet"
+                emptyDescription="New referrals will appear here after members apply through this partner."
+              />
+            </StaffCard>
+          </>
+        }
+        rail={
+          <>
+            <PartnerAttentionCard
+              title="Review member progress"
+              body="3 referred members are within one module of finishing their program."
+              href="/partner/attention"
+            />
+
+            <StaffCard
+              id="partner-payouts"
+              title="Payout history"
+              meta="Verified placements that generated a payout to your organization."
+            >
+              <PartnerPayoutLedger rows={PAYOUT_ROWS} />
+            </StaffCard>
+
+            <StaffCard id="partner-actions" title="Quick Actions">
+              <PartnerQuickActions
+                actions={[
+                  {
+                    icon: <BarChart3 size={16} aria-hidden />,
+                    tone: 'accent',
+                    title: 'Export data',
+                    body: 'CSV / PDF reports',
+                    href: '/partner/exports',
+                  },
+                  {
+                    icon: <Download size={16} aria-hidden />,
+                    tone: 'info',
+                    title: 'New referral',
+                    body: 'Share your referral link',
+                    href: '/partner/guide',
+                  },
+                  {
+                    icon: <Target size={16} aria-hidden />,
+                    tone: 'gold',
+                    title: 'Milestones & updates',
+                    body: 'View placement reports',
+                    href: '/partner/milestones',
+                  },
+                ]}
+              />
+            </StaffCard>
+
+            <PartnerAssistantAccordion title="Partner assistant" hint="(tap to open)">
+              <p style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', margin: 0, lineHeight: 1.6 }}>
+                Ask about referrals, member progress, or using the partner portal. Voice session preview
+                omitted in this showcase.
+              </p>
+            </PartnerAssistantAccordion>
+          </>
+        }
       />
-
-      <PartnerAttentionCard
-        title="Review member progress"
-        body="3 referred members are within one module of finishing their program."
-        href="/partner/attention"
-      />
-
-      <PartnerAssistantAccordion title="Partner assistant" hint="(tap to open)">
-        <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0, lineHeight: 1.6 }}>
-          Ask about referrals, member progress, or using the partner portal. Voice session preview
-          omitted in this showcase.
-        </p>
-      </PartnerAssistantAccordion>
-
-      <div className="wa-flex wa-flex-col wa-gap-3">
-        <SectionHeader
-          title="2 placements awaiting your confirmation"
-          goal="Confirm the hire so payout and outcomes reporting stay accurate."
-          action={
-            <Link href="/partner/outcomes" className="portal-section-action">
-              View all
-            </Link>
-          }
-        />
-        <QueueRow
-          tone="yellow"
-          title="Marcus DeLeon — Field Service Technician at Austin Energy"
-          meta="6/29/2026"
-          flag="Pending verification"
-          action={
-            <Link href="/partner/referred-members/r2" className="portal-section-action">
-              Review
-            </Link>
-          }
-        />
-        <QueueRow
-          tone="yellow"
-          title="Hoang Tran — Warehouse Associate at HEB Distribution"
-          meta="6/24/2026"
-          flag="Pending verification"
-          action={
-            <Link href="/partner/referred-members/r4" className="portal-section-action">
-              Review
-            </Link>
-          }
-        />
-      </div>
-
-      <div className="wa-flex wa-flex-col wa-gap-3">
-        <SectionHeader
-          title="Referred Members"
-          goal="Enrollment and placement dates"
-          action={
-            <Link href="/partner/referred-members" className="portal-section-action">
-              View all
-            </Link>
-          }
-        />
-        <DataTable<ReferralRow>
-          columns={referralColumns}
-          rows={REFERRAL_ROWS}
-          rowKey={(row) => row.id}
-          mobile="scroll"
-          caption="Referred members"
-          minWidth={320}
-          scrollCue
-          emptyTitle="No referred members yet"
-          emptyDescription="New referrals will appear here after members apply through this partner."
-        />
-      </div>
-
-      <div className="wa-flex wa-flex-col wa-gap-3">
-        <SectionHeader
-          title="Payout history"
-          goal="Verified placements that generated a payout to your organization."
-        />
-        <PartnerPayoutLedger rows={PAYOUT_ROWS} />
-      </div>
-
-      <div className="wa-flex wa-flex-col wa-gap-3">
-        <SectionHeader title="Quick Actions" />
-        <PartnerQuickActions
-          actions={[
-            {
-              icon: <BarChart3 size={16} aria-hidden />,
-              tone: 'accent',
-              title: 'Export data',
-              body: 'CSV / PDF reports',
-              href: '/partner/exports',
-            },
-            {
-              icon: <Download size={16} aria-hidden />,
-              tone: 'info',
-              title: 'New referral',
-              body: 'Share your referral link',
-              href: '/partner/guide',
-            },
-            {
-              icon: <Target size={16} aria-hidden />,
-              tone: 'gold',
-              title: 'Milestones & updates',
-              body: 'View placement reports',
-              href: '/partner/milestones',
-            },
-          ]}
-        />
-      </div>
     </DesignSurface>
   );
 }

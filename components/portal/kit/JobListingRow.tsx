@@ -46,7 +46,7 @@ export function JobListingRow({
       )}
       style={{
         minHeight: 72,
-        padding: '14px 18px',
+        padding: '14px 24px',
         borderTop: first ? 'none' : '1px solid var(--wa-border)',
         textDecoration: 'none',
         color: 'var(--wa-text)',
@@ -59,9 +59,10 @@ export function JobListingRow({
         style={{
           width: 40,
           height: 40,
-          borderRadius: 12,
+          borderRadius: 'var(--wa-radius-sm)',
           background: 'var(--wa-surface-2)',
-          color: 'var(--wa-accent)',
+          border: '1px solid var(--wa-border)',
+          color: 'var(--wa-accent-text)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -102,15 +103,7 @@ export function JobListingRow({
             </StatusTag>
           ) : null}
           {match ? (
-            <span
-              className="wa-kit-meta"
-              style={{
-                fontWeight: 700,
-                color: 'var(--wa-success-dark)',
-                flexShrink: 0,
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
+            <span className="wa-kit-chip wa-kit-chip--green" style={{ flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
               {match}
             </span>
           ) : null}

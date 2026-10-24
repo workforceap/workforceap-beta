@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import { Target } from 'lucide-react';
 import { DesignSurface, KitEmptyState, PageOpener } from '@/components/portal/kit';
 import SkillMissionPanel, { type SkillMissionSummary } from '@/components/portal/SkillMissionPanel';
 import { SkillMissionChallengePreview } from '@/components/portal/SkillMissionChallenge';
@@ -149,10 +148,8 @@ export default async function DevMemberMissionsPage({
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker="Missions"
           title="Skill missions"
-          lede="One pass per course. Resume bullet and STAR story."
-          icon={<Target size={13} aria-hidden="true" />}
+          meta="One pass per course. Resume bullet and STAR story."
         />
         {view === 'teaser' ? (
           <SkillMissionTeaserCard

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { ArrowRight, BookOpen, CalendarDays, Check, ChevronRight, Clock3, FileCheck2, GraduationCap, MessageCircle, Save } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarDays, Check, ChevronRight, Clock3, FileCheck2, MessageCircle, Save } from 'lucide-react';
 import { Button } from '@astryxdesign/core/Button';
 import { ProgressBar } from '@astryxdesign/core/ProgressBar';
 import { TextArea } from '@astryxdesign/core/TextArea';
@@ -219,7 +219,7 @@ export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTi
   return (
     <DesignSurface surface="warm">
       <main className="wa-kit-training">
-        <PageOpener kicker="My program" title="Your training workspace" lede="Learn the skills. Build the work. Keep moving toward your next role." icon={<GraduationCap size={14} aria-hidden="true" />} />
+        <PageOpener title="Your training workspace" meta={workspace.courses.length ? `${completedCount} of ${workspace.courses.length} courses complete. Keep moving toward your next role.` : 'Learn the skills. Build the work. Keep moving toward your next role.'} />
         <MemberTrainingNav current="program" programSlug={workspace.programSlug} />
         <p className={workspaceStyles.context}>{tw('learningContext')}</p>
         <section className="wa-kit-training-overview" aria-label="Your assigned training">

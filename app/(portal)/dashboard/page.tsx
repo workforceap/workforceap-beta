@@ -107,9 +107,10 @@ async function renderMemberDashboard(
     requestedProgramSlug: args.requestedProgramSlug,
     provisionIfMissing: () => ensureAppUserProvisioned(user, { readOnlyAudit: args.readOnlyAudit }),
   });
-  // Presentation only: a pathway with a live next step keeps the approval
-  // card above the dashboard; a finished or closed one drops below the
-  // content as a single collapsed line (memberApprovalCardPlacement).
+  // Presentation only: the approval status is a slim strip in the page header
+  // (MemberHomeKit `approvalSlot`). A live pathway names its next step on the
+  // line under the strip; a finished or closed one names the saved state
+  // (memberApprovalCardPlacement).
   const approvalPlacement = memberApprovalCardPlacement(home.approvalStatus);
   // Who reviews the pending step comes from the loader's own user read. The
   // measured wait is a separate read, taken only while the application
@@ -184,8 +185,8 @@ async function renderMemberDashboard(
         </PortalEntryClient>
       </PortalEntryErrorBoundary>
     ) : null}
-    {approvalPlacement === 'primary' ? approvalCard : null}
     <MemberHomeKit
+      approvalSlot={approvalCard}
       showStaffViewBanner={staffViewer}
       advisor={counselorContext?.counselor ?? null}
       programSwitch={home.programSwitch}
@@ -228,7 +229,6 @@ async function renderMemberDashboard(
       first90={home.first90}
       youthNoticeAge={home.youthNoticeAge}
     />
-    {approvalPlacement === 'demoted' ? approvalCard : null}
     </>
   );
 }

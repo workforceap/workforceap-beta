@@ -1,0 +1,35 @@
+/* "Today" next-best-action: hairline card + 3px crimson edge (.wa-kit-card--accent-edge),
+   one crimson pill. Tokens only. */
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.eyebrow {
+  margin: 0;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--wa-accent-text);
+}
+.title {
+  margin: 0;
+  font-size: clamp(20px, 3.2vw, 24px);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--wa-text);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.body {
+  margin: 0;
+  color: var(--wa-muted);
+}
+.cta {
+  margin-top: 8px;
+  max-width: 100%;
+  text-align: center;
+}

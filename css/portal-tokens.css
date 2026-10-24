@@ -63,8 +63,8 @@
     radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--wa-gold) 3%, transparent) 0, transparent 26rem),
     var(--wa-bg);
   /* Stable reading surface while content scrolls beneath sticky navigation.
-     A small amount of transparency keeps the shared canvas tone visible. */
-  --wa-shell-header-bg: color-mix(in srgb, var(--wa-bg) 96%, transparent);
+     Reads as a white (surface) top bar with a hairline, like the C1/C3 mockups. */
+  --wa-shell-header-bg: color-mix(in srgb, var(--wa-surface) 96%, transparent);
   /* sidebar is dark chrome in both modes */
   --wa-sidebar-bg: #161616;
   --wa-sidebar-border: #2a2a2a;
@@ -96,11 +96,11 @@
   --color-border: var(--wa-border);
 
   /* — shape / density / pop (overridden per surface below) — */
-  --wa-radius: 20px;
-  --wa-radius-sm: 12px;
+  --wa-radius: 12px;
+  --wa-radius-sm: 8px;
   --wa-pad: 24px;
   --wa-pad-sm: 16px;
-  --wa-pop: 1; /* 0 = calm tints, 1 = gradient feature tiles */
+  --wa-pop: 0; /* 0 = calm cards (default), 1 = gradient feature tiles (opt-in) */
   /*
    * Elevation: shadows deepen in dark mode, plus a 1px inset "bezel" highlight
    * so cards separate from the dark body without a tonal surface ramp
@@ -206,13 +206,15 @@ html.dark [data-surface],
   --color-primary: var(--wa-accent);
 }
 
-/* WARM — member surfaces: Bold + Calm. Soft corners, generous space, pop on. */
+/* WARM — member surfaces: calm card recipe (C1 + C3). Hairline cards on the
+   canvas, 12px corners, 8px grid, no gradient feature tiles by default
+   (gradient variants stay opt-in classes). Keeps more air than dense. */
 [data-surface='warm'] {
-  --wa-radius: 26px;
-  --wa-radius-sm: 16px;
-  --wa-pad: 28px;
-  --wa-pad-sm: 18px;
-  --wa-pop: 1;
+  --wa-radius: 12px;
+  --wa-radius-sm: 8px;
+  --wa-pad: 24px;
+  --wa-pad-sm: 16px;
+  --wa-pop: 0;
   --wa-type-body: 16px;
   --wa-type-meta: 13px;
 }

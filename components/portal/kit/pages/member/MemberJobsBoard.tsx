@@ -1,4 +1,3 @@
-import { Briefcase } from 'lucide-react';
 import NextLink from 'next/link';
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
@@ -70,13 +69,11 @@ export function MemberJobsBoard({
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker="Job search"
           title={title}
-          lede={lede}
-          icon={<Briefcase size={13} aria-hidden="true" />}
-          action={<BoardCta href={pipelineHref}>View pipeline</BoardCta>}
+          meta={lede}
+          aside={<BoardCta href={pipelineHref}>View pipeline</BoardCta>}
         />
-        <div className="wa-kit-card" style={{ padding: jobs.length === 0 ? undefined : 0, overflow: 'hidden' }}>
+        <div className={`wa-kit-card${jobs.length === 0 ? '' : ' wa-kit-card--flush'}`}>
           {jobs.length === 0 ? (
             <KitEmptyState
               kind={JOBS_BOARD_EMPTY.kind}
@@ -104,7 +101,7 @@ export function MemberJobsBoard({
           style={{ gap: 16 }}
         >
           <div style={{ flex: 1, minWidth: '14rem' }}>
-            <p style={{ fontSize: 'var(--wa-type-body)', fontWeight: 800, color: 'var(--wa-text)', margin: '0 0 4px' }}>
+            <p className="wa-kit-card-title" style={{ margin: '0 0 4px' }}>
               Applied somewhere else?
             </p>
             <p className="wa-kit-lede" style={{ margin: 0 }}>
@@ -114,7 +111,7 @@ export function MemberJobsBoard({
           <LogExternalApplicationButton preview variant="primary" />
         </div>
         <div className="wa-kit-card">
-          <p style={{ fontSize: 'var(--wa-type-body)', fontWeight: 700, color: 'var(--wa-text)', margin: '0 0 4px' }}>
+          <p className="wa-kit-card-title" style={{ margin: '0 0 4px' }}>
             Search beyond this board
           </p>
           <p className="wa-kit-lede" style={{ margin: 0 }}>

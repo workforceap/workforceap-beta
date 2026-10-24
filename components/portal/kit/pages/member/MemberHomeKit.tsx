@@ -1,19 +1,18 @@
 'use client';
 
-import type { CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Play,
   Medal,
   GraduationCap,
   ArrowRight,
-  ArrowUp,
+  Check,
   Flame,
   Target,
   BookOpen,
   Briefcase,
   Star,
-  Home,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -48,40 +47,38 @@ import type { NextBestAction } from '@/lib/member/nextBestActions';
 import type { MemberToolRecommendation } from '@/lib/member/recommendMemberTool';
 import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
 import { isExcludedPublicEmployerName } from '@/lib/jobs/publicJobFilters';
+import { PORTAL_TIMEZONE } from '@/lib/formatDate';
+import styles from './MemberHomeKit.module.css';
 
 /**
- * Member Portal — HOME view ("Command Center" redesign).
+ * Member Portal — HOME view (C1 + C3 redesign).
  *
- * Faithful port of the approved Command Center mockup onto the portal design
- * kit (warm surface + --wa-* tokens + wa-kit-* classes + lucide icons). Layout
- * order, top to bottom:
- *   1. PageOpener (Home kicker + greeting) with the streak chip in `action`,
- *      then, for staff viewing a member home, the staff-view notice
- *      (`showStaffViewBanner`), then the youth notice for a member under 18
- *      (`youthNoticeAge`).
- *   2. Full-bleed "Do this next" banner (MemberDoThisNextCard).
- *      Under it, only when they apply: the placement confirmation strip for
- *      OFFER applications (`jobOffers`) and the First 90 Days check-in card
- *      while a placement is inside its window (`first90`) — the two
- *      post-offer surfaces the `?ui=legacy` home used to own (WAP-188). Then
- *      an "Up next" list of the following steps. AI Career Tools stays visible
- *      directly below Today, with a stage-specific pick when one is available.
- *   3. A 4-up stat-tile row (course / active jobs / certs / points), each with
- *      an optional inline sparkline + delta chip.
- *   4. A mixed row: certification progress ring, weekly-activity area chart,
- *      and a points ledger. With more than one enrollment the certification
- *      card carries the view-only program switch (`programSwitch`), which
- *      reloads `/dashboard?program=<slug>` and never changes an enrollment.
- *   5. The application pipeline table + a Next Badge tile with segmented
- *      progress. Goals fold into that tile and link to the goals section on
- *      the career brief; with none, a quiet "Set a goal" link goes there.
- * A quiet Learning Hub link closes out the page; AI Career Tools is introduced
- * near the top so members can find it without scrolling through their metrics.
+ * Built on the portal design kit (warm surface + --wa-* tokens + wa-kit-*
+ * classes + lucide icons). Layout, top to bottom:
+ *   1. Header: greeting + ONE contextual sentence (today's date and the next
+ *      lesson), with the approval steps strip at the right on desktop
+ *      (`approvalSlot`, rendered through PageOpener `aside`) and stacked below
+ *      on phone. Under it, only when they apply: the staff-view notice
+ *      (`showStaffViewBanner`), the no-program notice, and the youth notice for
+ *      a member under 18 (`youthNoticeAge`).
+ *   2. Two columns from 1100px (main about 2/3, right rail 352px); one column
+ *      on phone with the rail after the main flow.
+ *      Main: the "Today" next-best-action card (MemberDoThisNextCard), the
+ *      Start here shortcuts, the placement confirmation strip for OFFER
+ *      applications (`jobOffers`) and the First 90 Days check-in (`first90`),
+ *      AI Career Tools, the "This week" task list (the next-best-actions after
+ *      the dominant one, `upNext`), the certification path with segmented
+ *      module progress (with more than one enrollment it carries the view-only
+ *      program switch, `programSwitch`, which reloads `/dashboard?program=<slug>`
+ *      and never changes an enrollment), the application pipeline, and the four
+ *      totals tiles.
+ *      Rail: the assigned counselor (`advisor`), streak + points, recent points,
+ *      study this week, and the next badge with goals folded in.
  *
- * All-new visual data (sparklines, weekly activity, points ledger, per-row
- * applied date + stage index) is additive/optional and degrades gracefully
- * when a caller doesn't pass it (see each prop's doc comment below) — the
- * live route (app/(portal)/dashboard/page.tsx) keeps rendering unchanged.
+ * All visual data (sparklines, weekly activity, points ledger, per-row applied
+ * date + stage index) is additive/optional and degrades gracefully when a
+ * caller doesn't pass it (see each prop's doc comment below) — the live route
+ * (app/(portal)/dashboard/page.tsx) keeps rendering unchanged.
  *
  * Target route: app/(portal)/dashboard
  * Surface: warm (member-facing).
@@ -189,7 +186,7 @@ export interface MemberHomeKitProps {
   toolkitHref?: string;
   jobsHref?: string;
   coursesHref?: string;
-  /** Daily-habit streak (see lib/member/streaks.ts). 0 renders nothing. */
+  /** Daily-habit streak (see lib/member/streaks.ts). 0 hides the streak cell; points still show. */
   currentStreak?: number;
   longestStreak?: number;
   /** Up to a few active goals, folded into the Next Badge tile. */
@@ -261,6 +258,12 @@ export interface MemberHomeKitProps {
   pointsThisWeek?: number;
   /** Recent point-earning events for the points ledger. Omit/empty to hide the list (points total still shows). */
   pointsLedger?: PointsLedgerEntry[];
+  /**
+   * Compact approval status for the header (`MemberApprovalStatusCard`'s strip).
+   * Rendered at the right of the greeting on desktop and under it on phone.
+   * Omit to render no status element.
+   */
+  approvalSlot?: ReactNode;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -323,37 +326,6 @@ const HOME_TEXT_LINK: CSSProperties = {
   gap: 6,
 };
 
-/** One "Up next" row: title + reason on the left, the action on the right; the whole row is the link. */
-const UP_NEXT_ROW: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  flexWrap: 'wrap',
-  gap: '4px 12px',
-  minHeight: 44,
-  padding: '10px 0',
-  borderTop: '1px solid var(--wa-border)',
-  textDecoration: 'none',
-  color: 'inherit',
-};
-
-function KitCardHead({ title, linkLabel, linkHref }: { title: string; linkLabel?: string; linkHref?: string }) {
-  return (
-    <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 14, gap: 12 }}>
-      <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', textWrap: 'balance' }}>{title}</h3>
-      {linkLabel && linkHref ? (
-        <a
-          href={linkHref}
-          className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-          style={HOME_TEXT_LINK}
-        >
-          {linkLabel}
-        </a>
-      ) : null}
-    </div>
-  );
-}
-
 function PipelineStageTrack({ row }: { row: PipelineRow }) {
   const total = row.stageTotal ?? 3;
   const filled = Math.max(0, Math.min(total, row.stageIndex ?? defaultStageIndex(row.tone)));
@@ -413,64 +385,6 @@ function SegmentedProgress({
           }}
         />
       ))}
-    </div>
-  );
-}
-
-/** Decorative area chart (aria-hidden) + a visually-hidden text equivalent nearby. */
-function WeeklyActivityChart({ data }: { data: WeeklyActivityPoint[] }) {
-  const w = 460;
-  const h = 140;
-  const padX = 10;
-  const padTop = 10;
-  const padBottom = 20;
-  const max = Math.max(...data.map((d) => d.minutes), 1);
-  const stepX = data.length > 1 ? (w - padX * 2) / (data.length - 1) : 0;
-  const points = data.map((d, i) => ({
-    x: padX + i * stepX,
-    y: padTop + (h - padTop - padBottom) * (1 - d.minutes / max),
-    minutes: d.minutes,
-    day: d.day,
-  }));
-  const line = points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  const baseline = h - padBottom;
-  const areaPath = `M${points[0].x.toFixed(1)},${baseline.toFixed(1)} L${points
-    .map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`)
-    .join(' L')} L${points[points.length - 1].x.toFixed(1)},${baseline.toFixed(1)} Z`;
-  const first = points[0];
-  const last = points[points.length - 1];
-  const trendingUp = last.minutes >= first.minutes;
-  const a11yText = `Study minutes ${trendingUp ? 'trending up' : 'trending down'} across the week, from ${first.minutes} minutes on ${first.day} to ${last.minutes} minutes on ${last.day}.`;
-
-  return (
-    <div>
-      <svg aria-hidden focusable="false" viewBox={`0 0 ${w} ${h}`} width="100%" height={140} preserveAspectRatio="none">
-        <defs>
-          <linearGradient id="wa-home-weekly-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--wa-accent)" stopOpacity={0.22} />
-            <stop offset="100%" stopColor="var(--wa-accent)" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        {[0.25, 0.5, 0.75, 1].map((f) => {
-          const y = padTop + (h - padTop - padBottom) * f;
-          return <line key={f} x1={0} x2={w} y1={y} y2={y} stroke="var(--wa-border)" strokeWidth={1} />;
-        })}
-        <path d={areaPath} fill="url(#wa-home-weekly-fill)" />
-        <polyline points={line} fill="none" stroke="var(--wa-accent)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-        {points.slice(0, -1).map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={3} fill="var(--wa-accent)" />
-        ))}
-        <circle cx={last.x} cy={last.y} r={5.5} fill="var(--wa-surface)" stroke="var(--wa-accent)" strokeWidth={2.5} />
-      </svg>
-      <div
-        className="wa-flex wa-items-center wa-justify-between"
-        style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', fontWeight: 600, padding: '2px 4px 0' }}
-      >
-        {data.map((d) => (
-          <span key={d.day}>{d.day}</span>
-        ))}
-      </div>
-      <p className="sr-only">{a11yText}</p>
     </div>
   );
 }
@@ -564,6 +478,37 @@ const pipelineCard = (row: PipelineRow) => {
 /* Main component                                                          */
 /* ---------------------------------------------------------------------- */
 
+/** "3h 25m" / "42 min" for the study-this-week total. */
+function formatStudyMinutes(total: number): string {
+  if (total < 60) return `${total} min`;
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return m === 0 ? `${h}h` : `${h}h ${m}m`;
+}
+
+const DAY_LONG: Record<string, string> = {
+  Mon: 'Monday',
+  Tue: 'Tuesday',
+  Wed: 'Wednesday',
+  Thu: 'Thursday',
+  Fri: 'Friday',
+  Sat: 'Saturday',
+  Sun: 'Sunday',
+};
+
+/** Today's date for the header sentence. Read after mount so server and client markup agree. */
+function useTodayLabel(): string | null {
+  const [label, setLabel] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      setLabel(new Intl.DateTimeFormat('en-US', { timeZone: PORTAL_TIMEZONE, weekday: 'long', month: 'long', day: 'numeric' }).format(new Date()));
+    } catch {
+      setLabel(null);
+    }
+  }, []);
+  return label;
+}
+
 export function MemberHomeKit({
   firstName = '',
   greeting,
@@ -613,10 +558,12 @@ export function MemberHomeKit({
   weeklyActivityDeltaLabel,
   pointsThisWeek,
   pointsLedger = [],
+  approvalSlot = null,
 }: MemberHomeKitProps) {
   const t = useTranslations('dashboard');
   const te = useTranslations('empty');
   const pct = clampPct(coursePercent);
+  const today = useTodayLabel();
 
   /**
    * Only a state paints a tile (WAP-99). These four used to be magenta /
@@ -661,423 +608,411 @@ export function MemberHomeKit({
 
   const showProgramSwitch = Boolean(programSwitch && programSwitch.options.length > 1 && programSwitch.activeProgramSlug);
   const hasModuleRow = typeof certModulesDone === 'number' && typeof certModulesTotal === 'number' && certModulesTotal > 0;
+  const moduleDone = hasModuleRow ? Math.max(0, Math.min(certModulesTotal as number, certModulesDone as number)) : 0;
+  const moduleTotal = hasModuleRow ? (certModulesTotal as number) : 0;
+  const segmentsCompact = moduleTotal > 8;
+
+  const studyMinutes = weeklyActivity.reduce((sum, d) => sum + d.minutes, 0);
+  const hasStudyWeek = weeklyActivity.length > 1;
+
+  const nextSentence = nextLesson
+    ? `Next: ${nextLesson}${nextLessonDue ? ` · ${nextLessonDue}` : ''}`
+    : 'Pick up your program, jobs, or AI Career Tools.';
+
+  const hasNotices = showStaffViewBanner || noProgram || (youthNoticeAge !== null && youthNoticeAge < 18);
 
   return (
     <DesignSurface surface="warm">
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
-        <PageOpener
-          kicker="Home"
-          title={greeting && firstName ? `${greeting}, ${firstName}` : firstName ? `Welcome back, ${firstName}` : 'Home'}
-          lede={nextLesson ? `Next: ${nextLesson}${nextLessonDue ? ` · ${nextLessonDue}` : ''}` : 'Pick up your program, jobs, or AI Career Tools.'}
-          icon={<Home size={13} aria-hidden="true" />}
-          action={
-            currentStreak > 0 ? (
-              <span className="wa-kit-streak-chip">
-                <Flame size={15} aria-hidden />
-                <span>
-                  <b>{currentStreak}</b>
-                  -day streak{longestStreak > currentStreak ? ` · best ${longestStreak}` : ''}
-                </span>
-              </span>
-            ) : null
-          }
-        />
+      <div className={styles.page}>
+        <div className="wa-kit-home-grid">
+          <div className="wa-kit-home-grid__head wa-kit-stack">
+            <PageOpener
+              title={greeting && firstName ? `${greeting}, ${firstName}` : firstName ? `Welcome back, ${firstName}` : 'Home'}
+              meta={today ? `${today}. ${nextSentence}` : nextSentence}
+              aside={approvalSlot}
+            />
+            {hasNotices ? (
+              <div className={styles.headStack}>
+                {showStaffViewBanner ? <StaffViewBanner page="dashboard" /> : null}
 
-        {showStaffViewBanner ? <StaffViewBanner page="dashboard" /> : null}
+                {noProgram ? (
+                  <div className={cx('wa-kit-card', styles.notice)} role="status">
+                    <StatusTag tone="warn">No program</StatusTag>
+                    <p className={styles.noticeText}>
+                      Your Coursera progress is saved. A counselor still needs to enroll you in a WorkforceAP program.
+                    </p>
+                  </div>
+                ) : null}
 
-        <MemberStartHereCard toolkitHref={toolkitHref} preassessmentCompleted={preassessmentCompleted} />
-
-        {noProgram ? (
-          <div
-            className="wa-kit-card wa-flex wa-items-center wa-gap-3"
-            role="status"
-            style={{ padding: '12px 14px' }}
-          >
-            <StatusTag tone="warn">No program</StatusTag>
-            <span style={{ color: 'var(--wa-muted)', fontSize: 'var(--wa-type-meta)' }}>
-              Your Coursera progress is saved. A counselor still needs to enroll you in a WorkforceAP program.
-            </span>
+                {youthNoticeAge !== null && youthNoticeAge < 18 ? <YouthDashboardNotice age={youthNoticeAge} /> : null}
+              </div>
+            ) : null}
           </div>
-        ) : null}
 
-        {youthNoticeAge !== null && youthNoticeAge < 18 ? <YouthDashboardNotice age={youthNoticeAge} /> : null}
+          {/* ───────── Main column: what to do ───────── */}
+          <div className="wa-kit-home-grid__main">
+            {/* Dominant next-best-action. Renders nothing when there's no
+                pending action (see MemberDoThisNextCard). */}
+            <MemberDoThisNextCard action={doThisNext} />
 
-        {/* 2. Dominant next-best-action banner. Renders nothing when there's no
-            pending action (see MemberDoThisNextCard). */}
-        <MemberDoThisNextCard action={doThisNext} />
-        <MemberAiToolsCard toolkitHref={toolkitHref} recommendedTool={recommendedTool} />
+            {/* Pinned shortcuts: members were not finding the preassessment (ops 10/8/26). */}
+            <MemberStartHereCard toolkitHref={toolkitHref} preassessmentCompleted={preassessmentCompleted} />
 
-        {/* Post-offer surfaces, each only when it applies: confirm an accepted
-            offer (writes a member-reported placement and alerts the
-            counselor), then the First 90 Days check-in (a trouble report
-            escalates to the counselor). Both call their own server actions.
-            The kit variant drops their legacy gutter so they sit flush in
-            this column like the kit cards around them. */}
-        {jobOffers.length > 0 ? (
-          <ErrorBoundary>
-            <PlacementConfirmationStrip offers={jobOffers} variant="kit" />
-          </ErrorBoundary>
-        ) : null}
-        {first90 ? (
-          <ErrorBoundary>
-            <First90DaysCard {...first90} variant="kit" />
-          </ErrorBoundary>
-        ) : null}
+            {/* Post-offer surfaces, each only when it applies: confirm an accepted
+                offer (writes a member-reported placement and alerts the
+                counselor), then the First 90 Days check-in (a trouble report
+                escalates to the counselor). Both call their own server actions.
+                The kit variant drops their legacy gutter so they sit flush in
+                this column like the kit cards around them. */}
+            {jobOffers.length > 0 ? (
+              <ErrorBoundary>
+                <PlacementConfirmationStrip offers={jobOffers} variant="kit" />
+              </ErrorBoundary>
+            ) : null}
+            {first90 ? (
+              <ErrorBoundary>
+                <First90DaysCard {...first90} variant="kit" />
+              </ErrorBoundary>
+            ) : null}
 
-        {/* Stitch member layout: who to ask, right under the next step. */}
-        <MemberAdvisorCard advisor={advisor} />
+            {!programTitle && ungatedDigitalBasicsHref ? (
+              <div className={cx('wa-kit-card', styles.basicsCard)}>
+                <p className={styles.basicsEyebrow}>No application needed</p>
+                <h2 className={styles.basicsTitle}>Start digital basics</h2>
+                <p className={cx('wa-kit-lede', styles.basicsBody)}>
+                  Ten self-paced computer lessons. Open lesson 1 now.
+                </p>
+                <Link
+                  href={ungatedDigitalBasicsHref}
+                  className="wa-kit-cta wa-kit-cta--xl wa-kit-cta--block wa-kit-focus hover:wa-opacity-90"
+                >
+                  Start this lesson
+                </Link>
+              </div>
+            ) : null}
 
-        {!programTitle && ungatedDigitalBasicsHref ? (
-          <div className="wa-kit-card" style={{ display: 'grid', gap: 10 }}>
-            <p className="wa-kit-meta" style={{ margin: 0, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              No application needed
-            </p>
-            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em' }}>Start digital basics</h3>
-            <p className="wa-kit-lede" style={{ margin: 0 }}>
-              Ten self-paced computer lessons. Open lesson 1 now.
-            </p>
-            <Link
-              href={ungatedDigitalBasicsHref}
-              className="wa-kit-cta wa-kit-cta--xl wa-kit-cta--block wa-kit-focus hover:wa-opacity-90"
-            >
-              Start this lesson
-            </Link>
-          </div>
-        ) : null}
+            <MemberAiToolsCard toolkitHref={toolkitHref} recommendedTool={recommendedTool} />
 
-        {upNext.length > 0 ? (
-          <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
+            {/* This week: the next-best-actions after the dominant one, as a task list. */}
             {upNext.length > 0 ? (
-              <div className="wa-kit-card lg:wa-col-span-12">
-                <KitCardHead title="Up next" />
-                <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 2 }} aria-label="Up next">
-                  {upNext.map((action) => (
+              <section className="wa-kit-card wa-kit-card--flush" aria-labelledby="member-this-week-heading">
+                <div className="wa-kit-card__head wa-kit-card__head--ruled">
+                  <h2 id="member-this-week-heading" className="wa-kit-card-title">This week</h2>
+                  <span className="wa-kit-card-count"><b>{upNext.length}</b> {upNext.length === 1 ? 'step' : 'steps'}</span>
+                </div>
+                <ol className="wa-kit-task-list" aria-label="Up next">
+                  {upNext.map((action, index) => (
                     <li key={action.id}>
                       <Link
                         href={resolveMemberProgramHref(action.href)}
-                        className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                        style={UP_NEXT_ROW}
+                        className="wa-kit-task-row wa-kit-task-row--link wa-kit-focus"
+                        data-state={index === 0 ? 'current' : 'todo'}
                       >
-                        <span style={{ minWidth: 0 }}>
-                          <span style={{ display: 'block', fontWeight: 700, color: 'var(--wa-text)' }}>{action.title}</span>
-                          <span style={{ display: 'block', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 2 }}>
-                            {action.body}
-                          </span>
+                        <span className="wa-kit-task-row__check" aria-hidden="true" />
+                        <span className="wa-kit-task-row__body">
+                          <span className="wa-kit-task-row__title" style={{ display: 'block' }}>{action.title}</span>
+                          <span className="wa-kit-task-row__sub" style={{ display: 'block' }}>{action.body}</span>
                         </span>
-                        <span style={{ ...HOME_TEXT_LINK, fontSize: 'var(--wa-type-meta)' }}>
+                        <span className={styles.rowAction}>
                           {action.cta} <ArrowRight size={13} aria-hidden />
                         </span>
                       </Link>
                     </li>
                   ))}
                 </ol>
-              </div>
+              </section>
             ) : null}
-          </div>
-        ) : null}
 
-        {/* 3. Stat tiles — icon + delta chip + value/label + optional sparkline. */}
-        <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
-          {statTiles.map((tile) => {
-            const Icon = tile.icon;
-            return (
-              <StatSparkTile
-                key={tile.key}
-                icon={<Icon size={16} />}
-                label={tile.label}
-                value={tile.value}
-                tone={tile.tone}
-                spark={tile.spark}
-                emptyTrendLabel={t('noTrendYet')}
-              />
-            );
-          })}
-        </div>
-
-        {/* 4. Mixed row — certification ring, weekly activity, points ledger. */}
-        <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
-          <div className="lg:wa-col-span-4 wa-min-w-0">
-          <div className="wa-kit-card wa-kit-cert-path">
-            <KitCardHead title="Certification path" linkLabel="Open plan" linkHref={programHref} />
-            {showProgramSwitch && programSwitch ? (
-              <div data-testid="home-program-switch" style={{ display: 'grid', gap: 6, marginBottom: 14 }}>
-                <DashboardProgramSelector
-                  options={programSwitch.options}
-                  activeProgramSlug={programSwitch.activeProgramSlug}
-                  pathname={programSwitch.pathname}
-                />
+            {/* Certification path: segmented module progress. */}
+            <section className="wa-kit-card wa-kit-cert-path" aria-labelledby="member-cert-path-heading">
+              <div className="wa-kit-card__head">
+                <h2 id="member-cert-path-heading" className="wa-kit-card-title">Certification path</h2>
+                <a href={programHref} className="wa-kit-card-link wa-kit-focus">Open plan</a>
               </div>
-            ) : null}
-            <div className="wa-kit-cert-path-body">
-              <ProgressRing pct={pct} size={112} tone={pct >= 100 ? 'ok' : undefined} label="Course completion" />
-              <div className="wa-kit-cert-path-copy">
-                {programStatus ? <StatusTag tone="info">{programStatus}</StatusTag> : null}
-                <h3 style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', marginTop: programStatus ? 8 : 0 }}>
-                  {programTitle ?? 'No program enrolled'}
-                </h3>
-                {nextLesson ? (
-                  <p style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 4 }}>
-                    Next:{' '}
-                    {nextLessonHref ? (
-                      <Link
-                        href={nextLessonHref}
-                        className="wa-kit-focus"
-                        style={{ color: 'inherit', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: 2 }}
-                      >
-                        {nextLesson}
-                      </Link>
-                    ) : (
-                      nextLesson
-                    )}
-                    {nextLessonDue ? (
-                      <>
-                        {' '}
-                        · <span style={{ color: 'var(--wa-accent)', fontWeight: 700 }}>{nextLessonDue}</span>
-                      </>
-                    ) : null}
-                  </p>
-                ) : (
-                  <p style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 4 }}>
-                    {programTitle ? 'No next module on file.' : 'Choose a program to start.'}
-                  </p>
-                )}
-                {hasModuleRow ? (
-                  <div style={{ marginTop: 10 }}>
-                    <ProgressBar
-                      pct={Math.round(((certModulesDone as number) / (certModulesTotal as number)) * 100)}
-                      aria-label="Certification module progress"
-                    />
+              {showProgramSwitch && programSwitch ? (
+                <div data-testid="home-program-switch" className={styles.certSwitch}>
+                  <DashboardProgramSelector
+                    options={programSwitch.options}
+                    activeProgramSlug={programSwitch.activeProgramSlug}
+                    pathname={programSwitch.pathname}
+                  />
+                </div>
+              ) : null}
+              <div className={styles.certTop}>
+                <ProgressRing pct={pct} size={72} tone={pct >= 100 ? 'ok' : undefined} label="Course completion" />
+                <div className={styles.certCopy}>
+                  <div className={styles.certTitleRow}>
+                    <h3 className={styles.certTitle}>{programTitle ?? 'No program enrolled'}</h3>
+                    {programStatus ? <StatusTag tone="info">{programStatus}</StatusTag> : null}
                   </div>
-                ) : null}
-                {programTitle && programCoursesNote ? (
-                  <p
-                    data-testid="program-courses-note"
-                    style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 6 }}
-                  >
-                    {programCoursesNote}
-                  </p>
-                ) : null}
-                <div style={{ marginTop: 12 }}>
-                  <Link
-                    href={resolveMemberProgramHref(resumeHref)}
-                    className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
-                  >
-                    {programTitle ? (
-                      <>
-                        Resume module <Play size={13} aria-hidden />
-                      </>
-                    ) : (
-                      <>
-                        Choose program <ArrowRight size={13} aria-hidden />
-                      </>
-                    )}
-                  </Link>
+                  {nextLesson ? (
+                    <p className={styles.certMeta}>
+                      Next:{' '}
+                      {nextLessonHref ? (
+                        <Link href={nextLessonHref} className={cx('wa-kit-focus', styles.certMetaLink)}>
+                          {nextLesson}
+                        </Link>
+                      ) : (
+                        nextLesson
+                      )}
+                      {nextLessonDue ? (
+                        <>
+                          {' '}
+                          · <span className={styles.certDue}>{nextLessonDue}</span>
+                        </>
+                      ) : null}
+                    </p>
+                  ) : (
+                    <p className={styles.certMeta}>
+                      {programTitle ? 'No next module on file.' : 'Choose a program to start.'}
+                    </p>
+                  )}
                 </div>
               </div>
-            </div>
-          </div>
-          </div>
-
-          <div className="wa-kit-card lg:wa-col-span-5" style={{ display: 'flex', flexDirection: 'column' }}>
-            <KitCardHead title="Weekly study activity" />
-            {weeklyActivity.length > 1 ? (
-              <>
-                <WeeklyActivityChart data={weeklyActivity} />
+              {hasModuleRow ? (
                 <div
-                  className="wa-flex wa-items-center wa-justify-between"
-                  style={{ marginTop: 10, fontSize: 'var(--wa-type-meta)', fontWeight: 600, color: 'var(--wa-muted)' }}
+                  className={styles.certSegments}
+                  role="progressbar"
+                  aria-label="Certification module progress"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round((moduleDone / moduleTotal) * 100)}
+                  aria-valuetext={`${moduleDone} of ${moduleTotal} modules`}
                 >
-                  <span className="wa-flex wa-items-center wa-gap-2">
-                    <span aria-hidden style={{ width: 10, height: 10, borderRadius: 3, background: 'var(--wa-accent)' }} />
-                    Study minutes / day
-                  </span>
-                  {weeklyActivityDeltaLabel ? (
-                    <span style={{ color: 'var(--wa-success-dark)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-                      {weeklyActivityDeltaLabel}
-                    </span>
-                  ) : null}
-                </div>
-              </>
-            ) : (
-              <p className="wa-kit-lede" style={{ margin: 0 }}>
-                {typeof pointsThisWeek === 'number' && pointsThisWeek > 0
-                  ? `${pointsThisWeek} points earned this week. Study minutes are not tracked for this program yet. `
-                  : 'No study minutes this week. '}
-                <a href={programHref} className="wa-kit-focus" style={{ color: 'var(--wa-accent)', fontWeight: 700, textDecoration: 'none' }}>
-                  Open program
-                </a>
-              </p>
-            )}
-          </div>
-
-          <div className="wa-kit-card lg:wa-col-span-3" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <KitCardHead title="Points" />
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-              <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
-                {points.toLocaleString()}
-              </span>
-              <span style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', fontWeight: 700 }}>pts</span>
-            </div>
-            {typeof pointsThisWeek === 'number' ? (
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  fontSize: 'var(--wa-type-meta)',
-                  fontWeight: 700,
-                  // Text on a success tint reads the text-on-tint token (4.8:1 light);
-                  // --wa-success itself is a fill/icon colour (3.2:1 on the page).
-                  color: 'var(--wa-success-dark)',
-                  background: 'var(--wa-success-soft)',
-                  padding: '3px 8px',
-                  borderRadius: 999,
-                  width: 'fit-content',
-                  fontVariantNumeric: 'tabular-nums',
-                }}
-              >
-                <ArrowUp size={10} aria-hidden />
-                {pointsThisWeek} this week
-              </span>
-            ) : null}
-            {pointsLedger.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginTop: 4 }}>
-                {pointsLedger.map((entry, i) => (
-                  <div
-                    key={`${entry.label}-${i}`}
-                    className={cx('wa-flex wa-items-center wa-justify-between', toneClass(entry.tone))}
-                    style={{ fontSize: 'var(--wa-type-meta)' }}
+                  <ol
+                    className={cx('wa-kit-segments', segmentsCompact && styles.certSegmentsCompact)}
+                    style={{ '--wa-segments': moduleTotal } as CSSProperties}
+                    aria-hidden="true"
                   >
-                    <span className="wa-flex wa-items-center wa-gap-2" style={{ color: 'var(--wa-muted)', fontWeight: 600 }}>
-                      <span
-                        aria-hidden
-                        style={{
-                          width: 6,
-                          height: 6,
-                          borderRadius: 999,
-                          background: tonePaint(entry.tone, entry.color) ?? colorVar('accent'),
-                        }}
-                      />
-                      {entry.label}
-                    </span>
-                    <span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>+{entry.amount}</span>
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        {/* 5. Application pipeline table + Next Badge (segmented progress). */}
-        <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
-          <div className="wa-kit-card lg:wa-col-span-8">
-            <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12, gap: 12 }}>
-              <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', textWrap: 'balance' }}>Application pipeline</h3>
-              <a
-                href={jobsHref}
-                className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                style={HOME_TEXT_LINK}
-              >
-                Open jobs
-              </a>
-            </div>
-            <DataTable<PipelineRow>
-              columns={pipelineColumns}
-              rows={pipeline}
-              rowKey={(row) => `${row.role}-${row.company}`}
-              mobile="cards"
-              cardRender={pipelineCard}
-              minWidth={560}
-              empty={{
-                kind: 'first',
-                title: te('activeApplications.title'),
-                description: te('activeApplications.body'),
-                primaryAction: { label: te('activeApplications.action'), href: jobsHref },
-              }}
-            />
-          </div>
-
-          <div className="wa-kit-card lg:wa-col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <KitCardHead title="Next badge" />
-            <div className="wa-flex wa-items-center wa-gap-3">
-              <div
-                aria-hidden
-                style={{
-                  width: 54,
-                  height: 54,
-                  borderRadius: 14,
-                  flexShrink: 0,
-                  background: 'var(--wa-gold-soft)',
-                  color: 'var(--wa-gold-dark)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Medal size={24} />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{nextBadgeName ?? 'Next badge'}</div>
-                {nextBadgeRemaining ? (
-                <div style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
-                  {nextBadgeRemaining} to go
+                    {Array.from({ length: moduleTotal }).map((_, i) => {
+                      const state = i < moduleDone ? 'done' : i === moduleDone ? 'current' : 'todo';
+                      return (
+                        <li key={i} className={`wa-kit-segment wa-kit-segment--${state}`}>
+                          <span className="wa-kit-segment__bar"><i /></span>
+                          {segmentsCompact ? null : (
+                            <span className="wa-kit-segment__label">
+                              <b className="wa-kit-segment__state">
+                                {state === 'done' ? <Check size={13} /> : null}
+                                {i + 1}
+                              </b>
+                              <span className="wa-kit-segment__name">Module {i + 1}</span>
+                            </span>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ol>
                 </div>
-                ) : null}
+              ) : null}
+              {programTitle && programCoursesNote ? (
+                <p data-testid="program-courses-note" className={styles.certNote}>
+                  {programCoursesNote}
+                </p>
+              ) : null}
+              <div className={styles.certFoot}>
+                <Link
+                  href={resolveMemberProgramHref(resumeHref)}
+                  className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
+                >
+                  {programTitle ? (
+                    <>
+                      Resume module <Play size={13} aria-hidden />
+                    </>
+                  ) : (
+                    <>
+                      Choose program <ArrowRight size={13} aria-hidden />
+                    </>
+                  )}
+                </Link>
               </div>
-            </div>
-            {/* Progress toward the next badge is neutral: there is no good or bad
-                value, only how far along it is (WAP-99). */}
-            <SegmentedProgress pct={nextBadgePercent} segments={7} label={`${nextBadgeName} badge progress`} />
-            {goals.length > 0 ? (
-              <div style={{ marginTop: 2, paddingTop: 14, borderTop: '1px solid var(--wa-border)', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <span style={{ fontSize: 'var(--wa-type-meta)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--wa-muted)' }} className="wa-flex wa-items-center wa-gap-2">
-                  <Target size={14} aria-hidden /> Goals
-                </span>
-                {goals.slice(0, 2).map((g) => (
-                  <div key={g.title}>
-                    <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 3 }}>
-                      <span style={{ fontSize: 'var(--wa-type-meta)', fontWeight: 700, color: 'var(--wa-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {g.title}
-                      </span>
-                      <span style={{ fontSize: 'var(--wa-type-meta)', fontWeight: 700, color: 'var(--wa-muted)', flexShrink: 0, marginLeft: 6, fontVariantNumeric: 'tabular-nums' }}>
-                        {g.percent}%
-                      </span>
-                    </div>
-                    <div className="wa-kit-bar-track" role="progressbar" aria-valuenow={g.percent} aria-valuemin={0} aria-valuemax={100} aria-label={`${g.title} progress`}>
-                      <div className="wa-kit-bar-fill" style={{ width: `${g.percent}%` }} />
-                    </div>
-                  </div>
-                ))}
+            </section>
+
+            {/* Application pipeline. */}
+            <div className="wa-kit-card">
+              <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12, gap: 12 }}>
+                <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', textWrap: 'balance' }}>Application pipeline</h3>
                 <a
-                  href={goalsHref}
+                  href={jobsHref}
                   className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
                   style={HOME_TEXT_LINK}
                 >
-                  Open goals
+                  Open jobs
                 </a>
               </div>
-            ) : (
-              // No active goal: one quiet way to set one, not an empty goals block.
-              <a
-                href={goalsHref}
-                className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                style={{ ...HOME_TEXT_LINK, alignSelf: 'flex-start', fontSize: 'var(--wa-type-meta)' }}
-              >
-                <Target size={14} aria-hidden /> Set a goal
-              </a>
-            )}
-          </div>
-        </div>
+              <DataTable<PipelineRow>
+                columns={pipelineColumns}
+                rows={pipeline}
+                rowKey={(row) => `${row.role}-${row.company}`}
+                mobile="cards"
+                cardRender={pipelineCard}
+                minWidth={560}
+                empty={{
+                  kind: 'first',
+                  title: te('activeApplications.title'),
+                  description: te('activeApplications.body'),
+                  primaryAction: { label: te('activeApplications.action'), href: jobsHref },
+                }}
+              />
+            </div>
 
-        {/* Learning Hub remains available after the progress overview. */}
-        <div className="wa-flex wa-items-center wa-gap-5 wa-flex-wrap">
-          <a
-            href={coursesHref}
-            className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-            style={{ ...HOME_TEXT_LINK, color: 'var(--wa-info-dark)' }}
-          >
-            <GraduationCap size={14} aria-hidden /> Learning hub <ArrowRight size={14} aria-hidden />
-          </a>
+            {/* Totals at a glance — icon + delta chip + value/label + optional sparkline. */}
+            <div className={styles.tiles}>
+              {statTiles.map((tile) => {
+                const Icon = tile.icon;
+                return (
+                  <StatSparkTile
+                    key={tile.key}
+                    icon={<Icon size={16} />}
+                    label={tile.label}
+                    value={tile.value}
+                    tone={tile.tone}
+                    spark={tile.spark}
+                    emptyTrendLabel={t('noTrendYet')}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Learning Hub remains available after the progress overview. */}
+            <div className={styles.footLinks}>
+              <a
+                href={coursesHref}
+                className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
+                style={{ ...HOME_TEXT_LINK, color: 'var(--wa-info-dark)' }}
+              >
+                <GraduationCap size={14} aria-hidden /> Learning hub <ArrowRight size={14} aria-hidden />
+              </a>
+            </div>
+          </div>
+
+          {/* ───────── Right rail: people and rhythm ───────── */}
+          <aside className="wa-kit-home-grid__rail" aria-label="Your people and progress">
+            <MemberAdvisorCard advisor={advisor} />
+
+            <section
+              className="wa-kit-card wa-kit-stat-pair"
+              aria-label="Streak and points"
+              style={currentStreak > 0 ? undefined : { gridTemplateColumns: 'minmax(0, 1fr)' }}
+            >
+              {currentStreak > 0 ? (
+                <div className="wa-kit-stat-pair__cell">
+                  <span className={cx('wa-kit-stat-pair__value', styles.streakValue)}><Flame size={20} aria-hidden />{currentStreak}</span>
+                  <span className="wa-kit-stat-pair__label">
+                    day streak{longestStreak > currentStreak ? ` · best ${longestStreak}` : ''}
+                  </span>
+                </div>
+              ) : null}
+              <div className="wa-kit-stat-pair__cell">
+                <span className="wa-kit-stat-pair__value">{points.toLocaleString()}</span>
+                <span className="wa-kit-stat-pair__label">points</span>
+                {typeof pointsThisWeek === 'number' ? (
+                  <span className="wa-kit-stat-pair__label">{pointsThisWeek} this week</span>
+                ) : null}
+              </div>
+            </section>
+
+            {pointsLedger.length > 0 ? (
+              <section className="wa-kit-card" aria-labelledby="member-points-heading">
+                <div className="wa-kit-card__head">
+                  <h2 id="member-points-heading" className="wa-kit-card-title">Recent points</h2>
+                </div>
+                <ul className={styles.ledger}>
+                  {pointsLedger.map((entry, i) => (
+                    <li
+                      key={`${entry.label}-${i}`}
+                      className={cx(styles.ledgerRow, toneClass(entry.tone))}
+                    >
+                      <span className={styles.ledgerLabel}>
+                        <span
+                          aria-hidden
+                          className={styles.ledgerDot}
+                          style={{ background: tonePaint(entry.tone, entry.color) ?? colorVar('accent') }}
+                        />
+                        {entry.label}
+                      </span>
+                      <span className={styles.ledgerAmount}>+{entry.amount}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
+            <section className="wa-kit-card" aria-labelledby="member-study-heading">
+              <div className="wa-kit-card__head">
+                <h2 id="member-study-heading" className="wa-kit-card-title">Study this week</h2>
+              </div>
+              {hasStudyWeek ? (
+                <>
+                  <p className={styles.studyTotal}>{formatStudyMinutes(studyMinutes)}</p>
+                  <ul className={styles.studyDays} aria-label="Study days this week">
+                    {weeklyActivity.map((d) => (
+                      <li key={d.day} className={styles.studyDay} data-active={d.minutes > 0 ? 'true' : 'false'}>
+                        <span className={styles.studyDot} aria-hidden="true" />
+                        <span aria-hidden="true">{d.day.charAt(0)}</span>
+                        <span className={styles.srOnly}>
+                          {DAY_LONG[d.day] ?? d.day}: {d.minutes} minutes
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  {weeklyActivityDeltaLabel ? <p className={styles.studyDelta}>{weeklyActivityDeltaLabel}</p> : null}
+                </>
+              ) : (
+                <p className={cx('wa-kit-lede', styles.studyEmpty)}>
+                  {typeof pointsThisWeek === 'number' && pointsThisWeek > 0
+                    ? `${pointsThisWeek} points earned this week. Study minutes are not tracked for this program yet. `
+                    : 'No study minutes this week. '}
+                  <a href={programHref} className={cx('wa-kit-focus', styles.inlineLink)}>
+                    Open program
+                  </a>
+                </p>
+              )}
+            </section>
+
+            <section className="wa-kit-card" aria-labelledby="member-next-badge-heading">
+              <div className="wa-kit-card__head">
+                <h2 id="member-next-badge-heading" className="wa-kit-card-title">Next badge</h2>
+              </div>
+              <div className={styles.badgeRow}>
+                <div aria-hidden className={styles.badgeIcon}>
+                  <Medal size={22} />
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <p className={styles.badgeName}>{nextBadgeName ?? 'Next badge'}</p>
+                  {nextBadgeRemaining ? <p className={styles.badgeSub}>{nextBadgeRemaining} to go</p> : null}
+                </div>
+              </div>
+              {/* Progress toward the next badge is neutral: there is no good or bad
+                  value, only how far along it is (WAP-99). */}
+              <SegmentedProgress pct={nextBadgePercent} segments={7} label={`${nextBadgeName} badge progress`} />
+              {goals.length > 0 ? (
+                <div className={styles.goals}>
+                  <p className={styles.goalsLabel}>
+                    <Target size={14} aria-hidden /> Goals
+                  </p>
+                  {goals.slice(0, 2).map((g) => (
+                    <div key={g.title}>
+                      <div className={styles.goalHead}>
+                        <span className={styles.goalTitle}>{g.title}</span>
+                        <span className={styles.goalPct}>{g.percent}%</span>
+                      </div>
+                      <div className="wa-kit-bar-track" role="progressbar" aria-valuenow={g.percent} aria-valuemin={0} aria-valuemax={100} aria-label={`${g.title} progress`}>
+                        <div className="wa-kit-bar-fill" style={{ width: `${g.percent}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                  <a href={goalsHref} className="wa-kit-card-link wa-kit-focus">
+                    Open goals
+                  </a>
+                </div>
+              ) : (
+                // No active goal: one quiet way to set one, not an empty goals block.
+                <a href={goalsHref} className={cx('wa-kit-card-link wa-kit-focus', styles.setGoal)}>
+                  <Target size={14} aria-hidden /> Set a goal
+                </a>
+              )}
+            </section>
+          </aside>
         </div>
       </div>
     </DesignSurface>

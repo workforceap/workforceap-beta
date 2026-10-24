@@ -1,0 +1,505 @@
+/* Member kit pages: layout specifics only. Card, chip, task-row, segment and
+   people-card recipes live in css/portal-kit.css (.wa-kit-*). */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Long paths (17 courses) cannot caption every bar; keep one row of bars. */
+.segmentsCompact {
+  grid-template-columns: repeat(var(--wa-segments), minmax(0, 1fr)) !important;
+  gap: 4px !important;
+  position: relative;
+}
+
+.segmentDetail {
+  display: block;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pathCard {
+  display: grid;
+  gap: var(--wa-pad-sm);
+  min-width: 0;
+}
+
+.pathFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--wa-pad-sm);
+}
+
+.pathNote {
+  margin: 0;
+  color: var(--wa-muted);
+  font-size: var(--wa-type-meta);
+  line-height: 1.5;
+  min-width: 0;
+  flex: 1 1 14rem;
+}
+
+.rowAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  color: var(--wa-accent-text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.rowAction:hover {
+  text-decoration: underline;
+}
+
+.railCard {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.railCard p {
+  margin: 0;
+}
+
+.tile {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--wa-radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tileGold {
+  background: var(--wa-gold-soft);
+  color: var(--wa-gold-dark);
+}
+
+.headRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- Score (progress) ---- */
+.scoreCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.areaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .areaGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.areaCell {
+  text-align: center;
+  padding: 12px;
+  background: var(--wa-surface-2);
+  border-radius: var(--wa-radius-sm);
+  border: 1px solid var(--wa-border);
+}
+
+.sectionLabel {
+  margin: 0;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  color: var(--wa-muted);
+}
+
+.splitGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.splitGrid > * {
+  min-width: 0;
+}
+
+@media (min-width: 1100px) {
+  .splitGrid {
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 16px 24px;
+  }
+}
+
+/* ---- Jobs ---- */
+.sectionHead {
+  margin-bottom: 12px;
+}
+
+.jobRow {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 72px;
+  padding: 12px 24px;
+  border-top: 1px solid var(--wa-border);
+  text-decoration: none;
+  color: var(--wa-text);
+}
+
+.jobRow:first-child {
+  border-top: 0;
+}
+
+.jobRow:hover {
+  background: var(--wa-surface-2);
+}
+
+.jobLogo {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-surface-2);
+  border: 1px solid var(--wa-border);
+  color: var(--wa-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+}
+
+.jobTitle {
+  margin: 0;
+  font-size: var(--wa-type-body);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.jobMeta {
+  margin: 2px 0 0;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jobTrail {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .jobRow {
+    grid-template-columns: 40px minmax(0, 1fr);
+    padding: 12px 16px;
+  }
+  .jobTrail {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .jobMeta {
+    white-space: normal;
+  }
+}
+
+.listRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--wa-border);
+}
+
+.listRow:first-child {
+  border-top: 0;
+}
+
+.listRowBody {
+  min-width: 0;
+  flex: 1;
+}
+
+.listRowTitle {
+  margin: 0;
+  font-size: var(--wa-type-body);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.listRowSub {
+  margin: 2px 0 0;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.engineList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.engineList li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 0;
+  border-top: 1px solid var(--wa-border);
+}
+
+.engineList li:first-child {
+  border-top: 0;
+}
+
+/* ---- Messages ---- */
+.inbox {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 520px;
+}
+
+@media (min-width: 768px) {
+  .inbox {
+    grid-template-columns: 340px minmax(0, 1fr);
+  }
+}
+
+.inboxList {
+  border-right: 1px solid var(--wa-border);
+  min-width: 0;
+}
+
+.inboxHead {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--wa-border);
+}
+
+.person {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 4px 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 72px;
+  padding: 12px 20px;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid var(--wa-border);
+  border-left: 3px solid transparent;
+  background: transparent;
+  color: var(--wa-text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.person:hover {
+  background: var(--wa-surface-2);
+}
+
+.personActive {
+  background: var(--wa-surface-2);
+  border-left-color: var(--wa-accent);
+}
+
+.personAvatar {
+  grid-row: 1 / span 2;
+  align-self: start;
+}
+
+.personName {
+  font-size: var(--wa-type-body);
+  font-weight: 700;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.personRole {
+  display: block;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+  font-weight: 400;
+}
+
+.personPreview {
+  grid-column: 2 / span 2;
+  margin: 0;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.personPreviewActive {
+  color: var(--wa-text);
+}
+
+.unreadDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--wa-accent);
+  flex-shrink: 0;
+}
+
+.threadHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--wa-border);
+}
+
+.threadBody {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-left: -8px;
+  border: 0;
+  background: transparent;
+  color: var(--wa-text);
+  cursor: pointer;
+  border-radius: var(--wa-radius-sm);
+}
+
+/* ---- Mentors / people grid ---- */
+.peopleGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .peopleGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .peopleGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.personCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-width: 0;
+}
+
+.personCardHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.personCardName {
+  margin: 0;
+  font-size: var(--wa-type-body);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.personCardRole {
+  margin: 2px 0 0;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+}
+
+.personCardFoot {
+  margin-top: auto;
+}
+
+/* ---- Certificates ---- */
+.certIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-gold-soft);
+  color: var(--wa-gold-dark);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.certRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--wa-border);
+}
+
+.certRow:first-child {
+  border-top: 0;
+}
+
+.certBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.certActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.progressRow {
+  padding: 16px 24px;
+  border-top: 1px solid var(--wa-border);
+}
+
+.progressRow:first-child {
+  border-top: 0;
+}
+
+@media (max-width: 640px) {
+  .listRow,
+  .certRow,
+  .progressRow {
+    padding-inline: 16px;
+  }
+}

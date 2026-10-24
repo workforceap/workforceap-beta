@@ -10,7 +10,6 @@ import {
 } from '@/lib/jobs/publicJobFilters';
 import { resolveSupabasePublicAssetUrl } from '@/lib/storage/publicAssetUrl';
 import { resolveJobBoardAgeGroup } from '@/lib/jobs/jobBoardAgeGroup';
-import { Briefcase } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import LogExternalApplicationButton from '@/components/portal/jobs/LogExternalApplicationButton';
@@ -413,10 +412,8 @@ export default async function JobsPage({
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker="Job search"
           title={t('jobBoard')}
-          lede={t('jobBoardSubtitle')}
-          icon={<Briefcase size={13} aria-hidden="true" />}
+          meta={t('jobBoardSubtitle')}
         />
         {user ? (
           <div

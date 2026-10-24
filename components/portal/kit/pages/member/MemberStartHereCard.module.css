@@ -1,0 +1,43 @@
+/* Start here: card-title heading and a collapsed tools list. Tokens only. */
+.heading {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.tools {
+  margin-top: 8px;
+}
+.toolsSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--wa-radius-sm, 8px);
+}
+.toolsSummary::-webkit-details-marker {
+  display: none;
+}
+.toolsHeading {
+  margin: 0;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--wa-muted);
+}
+.chevron {
+  flex: none;
+  color: var(--wa-muted);
+  transition: transform 150ms ease;
+}
+.tools[open] .chevron {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+}

@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { ArrowLeft, MessageCircle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { DesignSurface, Avatar, ChatThread, KitEmptyState, PageOpener, type ChatMessage } from '@/components/portal/kit';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
+import styles from './memberPages.module.css';
 
 /**
  * Member Portal — MESSAGES view (counselor / support inbox + thread).
@@ -69,16 +70,15 @@ export interface MemberMessagesKitProps {
  * (no member row yet, no thread in a read-only audit), so a provisioning
  * inbox reads as the same product as a live one.
  */
-export function MemberMessagesFrame({ children }: { children: ReactNode }) {
+export function MemberMessagesFrame({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   const tm = useTranslations('messages');
   return (
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker={tm('inbox')}
           title={tm('messagesTitle')}
-          lede={tm('kitLede')}
-          icon={<MessageCircle size={13} aria-hidden="true" />}
+          meta={tm('kitLede')}
+          aside={aside}
         />
         {children}
       </div>
@@ -265,22 +265,22 @@ export function MemberMessagesKit({
   }, [memberUserId, threadId]);
 
   const canSend = Boolean(onSend) || Boolean(memberUserId);
+  const unreadCount = conversations.filter((c) => c.unread && !readIds.has(c.id)).length;
 
   return (
-    <MemberMessagesFrame>
-        <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }}>
+    <MemberMessagesFrame
+      aside={unreadCount > 0 ? <span className="wa-kit-chip wa-kit-chip--crimson">{unreadCount} unread</span> : undefined}
+    >
+      <div className="wa-kit-card wa-kit-card--flush">
+        <div className={styles.inbox}>
+          {/* Conversation list: single pane on mobile (hidden when a thread is
+              open), always visible alongside the thread on md+. People-card
+              rows: avatar, name and role, latest preview. */}
           <div
-            className="wa-grid wa-grid-cols-1 md:wa-grid-cols-3"
-            style={{ overflow: 'hidden', minHeight: 520 }}
+            className={`${mobileView === 'list' ? 'wa-block' : 'wa-hidden'} md:wa-block ${styles.inboxList}`}
           >
-          {/* Conversation list — single pane on mobile (hidden when a thread is
-              open), always visible alongside the thread on md+. */}
-          <div
-            className={`${mobileView === 'list' ? 'wa-block' : 'wa-hidden'} md:wa-block`}
-            style={{ borderRight: '1px solid var(--wa-border)' }}
-          >
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--wa-border)' }}>
-              <h2 style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}>{tm('conversations')}</h2>
+            <div className={styles.inboxHead}>
+              <h2 className="wa-kit-card-title">{tm('conversations')}</h2>
             </div>
             <div>
               {conversations.length === 0 ? (
@@ -293,46 +293,17 @@ export function MemberMessagesKit({
                   key={c.id}
                   type="button"
                   onClick={() => setMobileView('thread')}
-                  className={`wa-kit-focus wa-transition-colors wa-duration-150 motion-reduce:wa-transition-none${c.active ? '' : ' hover:wa-bg-[var(--wa-surface-2)]'}`}
-                  style={{
-                    display: 'block',
-                    width: '100%',
-                    textAlign: 'left',
-                    padding: '16px 20px',
-                    border: 'none',
-                    borderBottom: '1px solid var(--wa-border)',
-                    borderLeft: '2px solid transparent',
-                    background: c.active ? 'var(--wa-accent-soft)' : 'transparent',
-                    cursor: 'pointer',
-                  }}
+                  className={`wa-kit-focus wa-transition-colors wa-duration-150 motion-reduce:wa-transition-none ${styles.person}${c.active ? ` ${styles.personActive}` : ''}`}
                 >
-                  <div className="wa-flex wa-items-center wa-justify-between">
-                    <span style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)' }}>{c.name}</span>
-                    {c.unread && !readIds.has(c.id) ? (
-                      <span
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: 999,
-                          background: 'var(--wa-accent)',
-                          flexShrink: 0,
-                        }}
-                        aria-label={tm('unreadMessage')}
-                      />
-                    ) : null}
-                  </div>
-                  <div className="wa-kit-meta" style={{ marginTop: 2 }}>{c.role}</div>
-                  <p
-                    className={c.active ? undefined : 'wa-kit-meta'}
-                    style={{
-                      fontSize: c.active ? 'var(--wa-type-body)' : undefined,
-                      color: c.active ? 'var(--wa-text)' : undefined,
-                      marginTop: 4,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
+                  <span className={styles.personAvatar}><Avatar initials={initialsOf(c.name)} size={44} /></span>
+                  <span className={styles.personName}>
+                    {c.name}
+                    <span className={styles.personRole}>{c.role}</span>
+                  </span>
+                  {c.unread && !readIds.has(c.id) ? (
+                    <span className={styles.unreadDot} aria-label={tm('unreadMessage')} />
+                  ) : <span />}
+                  <p className={`${styles.personPreview}${c.active ? ` ${styles.personPreviewActive}` : ''}`}>
                     {c.preview}
                   </p>
                 </button>
@@ -341,38 +312,26 @@ export function MemberMessagesKit({
             </div>
           </div>
 
-          {/* Active thread — single pane on mobile (hidden when the list is
+          {/* Active thread: single pane on mobile (hidden when the list is
               open), always visible beside the list on md+. Display is driven by
               classes (not inline) so the mobile hide/show can win over flex. */}
           <div
-            className={`${mobileView === 'thread' ? 'wa-flex' : 'wa-hidden'} md:wa-flex md:wa-col-span-2`}
-            style={{ flexDirection: 'column' }}
+            className={`${mobileView === 'thread' ? 'wa-flex' : 'wa-hidden'} md:wa-flex`}
+            style={{ flexDirection: 'column', minWidth: 0 }}
           >
-            <div className="wa-flex wa-items-center wa-gap-3" style={{ padding: '16px 20px', borderBottom: '1px solid var(--wa-border)' }}>
-              {/* Mobile-only back button → return to the conversation list. */}
-              <span className="md:wa-hidden" style={{ marginLeft: -4, flexShrink: 0 }}>
+            <div className={styles.threadHead}>
+              {/* Mobile-only back button: return to the conversation list. */}
+              <span className="md:wa-hidden" style={{ flexShrink: 0 }}>
                 <button
                   type="button"
                   onClick={() => setMobileView('list')}
-                  className="wa-kit-focus"
+                  className={`wa-kit-focus ${styles.backButton}`}
                   aria-label={tm('backToMessages')}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 44,
-                    height: 44,
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'var(--wa-text)',
-                    cursor: 'pointer',
-                    borderRadius: 'var(--wa-radius-sm)',
-                  }}
                 >
                   <ArrowLeft size={18} aria-hidden="true" />
                 </button>
               </span>
-              <Avatar initials={activeInitials} size={36} />
+              <Avatar initials={activeInitials} size={40} />
               <div style={{ minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)' }}>{activeName}</div>
                 {/* Role only: an assigned counselor is not a presence signal, so
@@ -382,7 +341,7 @@ export function MemberMessagesKit({
                 </div>
               </div>
             </div>
-            <div style={{ flex: 1, padding: 20, display: 'flex', flexDirection: 'column' }}>
+            <div className={styles.threadBody}>
               {feedbackDraft ? <p className="wa-kit-lede">{tm('feedbackDraftNotice')}</p> : feedbackNotice ? <p role="status" className="wa-kit-lede">{feedbackNotice}</p> : null}
               {error ? (
                 <p role="alert" className="wa-kit-lede" style={{ margin: '0 0 12px', color: 'var(--wa-danger)' }}>
@@ -400,8 +359,16 @@ export function MemberMessagesKit({
               />
             </div>
           </div>
-          </div>
         </div>
+      </div>
     </MemberMessagesFrame>
   );
+}
+
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  const first = parts[0][0] ?? '';
+  const last = parts.length > 1 ? (parts[parts.length - 1][0] ?? '') : '';
+  return (first + last).toUpperCase();
 }

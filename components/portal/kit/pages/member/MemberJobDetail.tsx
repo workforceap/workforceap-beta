@@ -71,17 +71,16 @@ export function MemberJobDetail({
       <div style={{ maxWidth: 720, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <BackLink href={backHref}>{backLabel}</BackLink>
         <PageOpener
-          kicker="Job search"
           title={title}
-          lede={lede}
-          icon={<Briefcase size={13} aria-hidden="true" />}
-          action={
+          meta={lede}
+          aside={
             <span
               aria-hidden="true"
               style={{
                 width: 48,
                 height: 48,
-                borderRadius: 14,
+                borderRadius: 'var(--wa-radius-sm)',
+                border: '1px solid var(--wa-border)',
                 background: 'var(--wa-surface-2)',
                 color: 'var(--wa-accent)',
                 display: 'flex',
@@ -102,14 +101,14 @@ export function MemberJobDetail({
         />
 
         {salary ? (
-          <p style={{ fontSize: 'var(--wa-type-body)', fontWeight: 700, color: 'var(--wa-text)', margin: 0 }}>
-            {salary}
+          <p style={{ margin: 0 }}>
+            <span className="wa-kit-chip wa-kit-chip--neutral">{salary}</span>
           </p>
         ) : null}
 
         {description ? (
           <div className="wa-kit-card">
-            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
+            <h2 className="wa-kit-card-title" style={{ margin: '0 0 8px' }}>
               Description
             </h2>
             <div className="wa-kit-lede" style={{ whiteSpace: 'pre-wrap', color: 'var(--wa-text)' }}>
@@ -120,7 +119,7 @@ export function MemberJobDetail({
 
         {requirements.length > 0 ? (
           <div className="wa-kit-card">
-            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 8px' }}>
+            <h2 className="wa-kit-card-title" style={{ margin: '0 0 8px' }}>
               Requirements
             </h2>
             <ul className="wa-kit-lede" style={{ margin: 0, paddingLeft: 18, color: 'var(--wa-text)' }}>
@@ -133,7 +132,7 @@ export function MemberJobDetail({
 
         {screening && screening.questions.length > 0 ? (
           <div className="wa-kit-card">
-            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 6px' }}>
+            <h2 className="wa-kit-card-title" style={{ margin: '0 0 6px' }}>
               What this employer looks for
             </h2>
             <p className="wa-kit-lede" style={{ margin: '0 0 12px' }}>
@@ -156,13 +155,8 @@ export function MemberJobDetail({
         ) : null}
 
         {referral ? (
-          <div
-            className="wa-kit-card"
-            style={{
-              background: 'var(--wa-accent-soft)',
-            }}
-          >
-            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 6px' }}>
+          <div className="wa-kit-card wa-kit-card--accent-edge">
+            <h2 className="wa-kit-card-title" style={{ margin: '0 0 6px' }}>
               Know someone at {referral.company}?
             </h2>
             <p className="wa-kit-lede" style={{ margin: '0 0 12px' }}>

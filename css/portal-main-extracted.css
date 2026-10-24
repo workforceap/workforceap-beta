@@ -1201,7 +1201,7 @@ html {
     background: var(--wa-shell-header-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid transparent;
+    border-bottom: 1px solid var(--wa-border);
     box-shadow: none;
     position: sticky;
     top: 0;
@@ -1336,7 +1336,7 @@ html.dark .workspace-shell-root,
 html.dark .workspace-shell-header,
 [data-theme='dark'] .workspace-shell-header {
     background: var(--wa-shell-header-bg);
-    border-bottom-color: transparent;
+    border-bottom-color: var(--wa-border);
     box-shadow: none;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);

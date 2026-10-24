@@ -3560,6 +3560,17 @@
         "unknown": "No training approval is recorded yet. Staff update this step once it is decided."
       }
     },
+    "strip": {
+      "done": "Done",
+      "inProgress": "In progress",
+      "waiting": "Not started",
+      "closed": "Closed",
+      "cleared": "Cleared to train",
+      "pending": "Pending review",
+      "closedChip": "Pathway closed",
+      "needsInfo": "Needs your input",
+      "label": "Approval steps"
+    },
     "trainingStatus": {
       "approved": "Training approved",
       "pending": "Not yet approved",

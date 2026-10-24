@@ -10,6 +10,7 @@ import type { NextBestAction } from '@/lib/member/nextBestActions';
 import { resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
 import { trackFunnelEvent } from '@/lib/analytics/events';
 import { postMemberEvent } from '@/lib/events/client';
+import styles from './MemberDoThisNextCard.module.css';
 
 /** Persisted MemberNextBestAction rows have UUID ids; synthetic ones don't and can't be PATCHed. */
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -19,8 +20,9 @@ type MemberDoThisNextCardProps = {
 };
 
 /**
- * Single dominant "Today" CTA on the kit member home (MemberHomeKit), painted
- * with the portal `--wa-*` tokens and `wa-kit-*` classes. Its pre-kit styling
+ * Single dominant "Today" CTA on the kit member home (MemberHomeKit): a calm
+ * hairline card with the 3px crimson edge and one crimson pill, painted with
+ * the portal `--wa-*` tokens and `wa-kit-*` classes. Its pre-kit styling
  * went with the retired `?ui=legacy` home (WAP-195).
  *
  * Acting on the CTA marks the action `COMPLETED` — the CTA is the clearing
@@ -80,27 +82,11 @@ export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardPro
 
   return (
     <section aria-label={t('todayFocus')}>
-      <div
-        className="wa-kit-card wa-kit-card--gradient-crimson"
-        style={{ display: 'flex', flexDirection: 'column', gap: 10, boxShadow: 'var(--wa-shadow-lg)' }}
-      >
-        <div
-          className="wa-flex wa-items-center wa-gap-2"
-          style={{ color: 'color-mix(in srgb, var(--wa-on-accent) 85%, transparent)' }}
-        >
-          <span className="wa-kit-meta" style={{ letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 700, color: 'inherit' }}>
-            {t('todayFocus')}
-          </span>
-        </div>
+      <div className={`wa-kit-card wa-kit-card--accent-edge ${styles.card}`}>
+        <p className={styles.eyebrow}>{t('todayFocus')}</p>
         <h2
-          className="h-font"
+          className={`h-font ${styles.title}`}
           style={{
-            fontSize: 'clamp(1.05rem, 3.2vw, 1.375rem)',
-            fontWeight: 800,
-            letterSpacing: '-0.02em',
-            color: 'var(--wa-on-accent)',
-            margin: 0,
-            lineHeight: 1.25,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             display: '-webkit-box',
@@ -110,40 +96,14 @@ export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardPro
         >
           {action.title}
         </h2>
-        <p
-          className="wa-kit-lede"
-          style={{
-            color: 'color-mix(in srgb, var(--wa-on-accent) 90%, transparent)',
-            margin: 0,
-          }}
-        >
-          {/* WAP-253: no line clamp here; the body often ends with the due date. */}
+        {/* WAP-253: no line clamp here; the body often ends with the due date. */}
+        <p className={`wa-kit-lede ${styles.body}`} style={{ margin: 0, color: 'var(--wa-muted)' }}>
           {action.body}
         </p>
         <Link
           href={actionHref}
           onClick={handleCtaClick}
-          className="wa-kit-focus"
-          style={{
-            marginTop: 4,
-            alignSelf: 'flex-start',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '8px 16px',
-            minHeight: 44,
-            background: 'var(--wa-hero-action-bg)',
-            color: 'var(--wa-hero-action-text)',
-            fontWeight: 700,
-            fontSize: 'var(--wa-type-body)',
-            borderRadius: 999,
-            textDecoration: 'none',
-            maxWidth: '100%',
-            boxSizing: 'border-box',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
+          className={`wa-kit-cta wa-kit-focus ${styles.cta}`}
         >
           {action.cta} <ArrowRight size={14} aria-hidden />
         </Link>

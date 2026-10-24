@@ -55,14 +55,13 @@ export function PipelineFunnelKit({
   funnelTitle = 'Funnel',
   title = 'Applications funnel',
   goal,
-  kicker,
   headerAction,
   children,
 }: PipelineFunnelKitProps) {
   const hasData = funnel.length > 0;
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <PageOpener className="wa-mb-5" title={title} lede={goal} kicker={kicker ?? 'Applications'} action={headerAction} />
+      <PageOpener className="wa-mb-5" title={title} meta={goal} action={headerAction} />
 
       {kpis && kpis.length > 0 ? (
         <KpiStrip cols={kpis.length === 5 ? 5 : 4} items={kpis} />

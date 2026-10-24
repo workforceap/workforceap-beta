@@ -261,18 +261,42 @@ function clampPct(n: number): number {
 
 /* ---- Header and work queue ------------------------------------------------ */
 
+/**
+ * Queue sentence from counts the caller already supplied: how many queues have
+ * work waiting. A row with no `count` is treated as open (its real size is not
+ * known here), a row with count 0 as clear.
+ */
+function queueSummary(items: CommandCenterQueueItem[]): string | undefined {
+  if (items.length === 0) return undefined;
+  const open = items.filter((item) => item.count !== 0).length;
+  if (open === 0) return 'Every queue is clear.';
+  const noun = open === 1 ? 'queue has' : 'queues have';
+  return `${open} of ${items.length} ${noun} work waiting.`;
+}
+
 interface HeaderProps {
   title: string;
   dateLabel: string;
+  /** One contextual sentence built from queue counts the page already computed. */
+  summary?: string;
   onAddStudent?: () => void;
   addStudentHref?: string;
 }
 
-function CommandCenterHeader({ title, dateLabel, onAddStudent, addStudentHref }: HeaderProps) {
+/**
+ * Header = title, one contextual sentence (date plus the queue state), and the
+ * primary action right-aligned (stacked below on phone).
+ */
+function CommandCenterHeader({ title, dateLabel, summary, onAddStudent, addStudentHref }: HeaderProps) {
   return (
     <header className={styles.header}>
-      <h1 className="h-font">{title}</h1>
-      <span className={styles.date}>{dateLabel}</span>
+      <div className={styles.headerCopy}>
+        <h1 className="h-font">{title}</h1>
+        <p className={styles.date}>
+          <span>{dateLabel}</span>
+          {summary ? <span>{`. ${summary}`}</span> : null}
+        </p>
+      </div>
       {addStudentHref ? (
         <AstryxLink href={addStudentHref} as={NextLink as never} color="inherit" isStandalone className={styles.addStudent}>
           <Plus size={16} aria-hidden /> Add student
@@ -289,9 +313,15 @@ function WorkQueueRow({ item, onAction }: { item: CommandCenterQueueItem; onActi
   const titleIncludesCount = titleCount != null && Number(titleCount.replaceAll(',', '')) === item.count;
   return (
     <li className={styles.queueRow}>
+      <span className={styles.queueMark}>
+        {item.urgent && item.count !== 0 ? (
+          <StatusDot variant="accent" label="Needs attention" />
+        ) : (
+          <span className={item.count === 0 ? styles.markClear : styles.markOpen} aria-hidden />
+        )}
+      </span>
       <span className={styles.queueCopy}>
         <span className={styles.queueTitle}>
-          {item.urgent && item.count !== 0 ? <StatusDot variant="accent" label="Needs attention" /> : null}
           {item.count != null && !titleIncludesCount ? `${item.count} ` : null}
           {item.title}
         </span>
@@ -310,7 +340,7 @@ function WorkQueueRow({ item, onAction }: { item: CommandCenterQueueItem; onActi
         ) : null}
       </span>
       {item.href ? (
-        <AstryxLink href={item.href} as={NextLink as never} color="inherit" isStandalone className={styles.queueAction}>
+        <AstryxLink href={item.href} as={NextLink as never} color="inherit" isStandalone className={item.urgent && item.count !== 0 ? `${styles.queueAction} ${styles.queueActionUrgent}` : styles.queueAction}>
           {item.actionLabel}<ChevronRight size={16} aria-hidden />
         </AstryxLink>
       ) : (
@@ -415,7 +445,7 @@ export function CommandCenterKit({
 
   return (
     <DesignSurface surface="dense" className={styles.commandCenter}>
-      <CommandCenterHeader title={title} dateLabel={dateLabel} onAddStudent={onAddStudent} addStudentHref={addStudentHref} />
+      <CommandCenterHeader title={title} dateLabel={dateLabel} summary={queueSummary(queueItems)} onAddStudent={onAddStudent} addStudentHref={addStudentHref} />
       {lead ? <div className={styles.lead}>{lead}</div> : null}
       {queuesFirst ? workQueue : metricsStrip}
       {queuesFirst ? metricsStrip : null}

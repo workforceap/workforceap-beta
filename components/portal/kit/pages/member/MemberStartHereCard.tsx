@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { CheckCircle2, ClipboardCheck, Wand2 } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ClipboardCheck, Wand2 } from 'lucide-react';
+import styles from './MemberStartHereCard.module.css';
 
 /**
  * Pinned "Start here" shortcuts under the home greeting.
@@ -31,7 +32,7 @@ export default function MemberStartHereCard({
       className="wa-kit-card wa-kit-start-here"
       data-testid="member-start-here"
     >
-      <h2 id="member-start-here-heading" className="wa-kit-start-here__heading">
+      <h2 id="member-start-here-heading" className={`wa-kit-start-here__heading ${styles.heading}`}>
         Start here
       </h2>
       <div className="wa-kit-start-here__actions">
@@ -67,17 +68,23 @@ export default function MemberStartHereCard({
           </span>
         </Link>
       </div>
-      <h3 className="wa-kit-start-here__subhead">What the AI Career Tools do</h3>
-      <ul className="wa-kit-start-here__tools" data-testid="member-start-here-tools">
-        {START_HERE_TOOLS.map((tool) => (
-          <li key={tool.href}>
-            <Link href={tool.href} className="wa-kit-start-here__tool wa-kit-focus">
-              <strong>{tool.title}</strong>
-              <span className="wa-kit-meta">{tool.body}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {/* One tap away instead of a 300px list under the two shortcuts. */}
+      <details className={styles.tools}>
+        <summary className={`wa-kit-focus ${styles.toolsSummary}`}>
+          <h3 className={styles.toolsHeading}>What the AI Career Tools do</h3>
+          <ChevronDown className={styles.chevron} size={16} aria-hidden="true" />
+        </summary>
+        <ul className="wa-kit-start-here__tools" data-testid="member-start-here-tools">
+          {START_HERE_TOOLS.map((tool) => (
+            <li key={tool.href}>
+              <Link href={tool.href} className="wa-kit-start-here__tool wa-kit-focus">
+                <strong>{tool.title}</strong>
+                <span className="wa-kit-meta">{tool.body}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </details>
       <Link
         href={`${toolkitHref}?tab=toolkit`}
         className="wa-kit-start-here__see-all wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"

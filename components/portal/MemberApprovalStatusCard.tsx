@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Card } from '@astryxdesign/core/Card';
-import { VStack } from '@astryxdesign/core/VStack';
+import { Check, ChevronDown } from 'lucide-react';
 import { StatusTag } from '@/components/portal/kit/StatusTag';
+import styles from './MemberApprovalStatusCard.module.css';
 import { formatDate } from '@/lib/i18n/date';
 import { isAppLocale, DEFAULT_LOCALE } from '@/lib/i18n/config';
 import {
@@ -37,13 +37,18 @@ const REVIEWER_KEY = {
  * recorded, who owns the next move and what happens next. Stages without a
  * stored start date say so instead of guessing one.
  *
- * Presentation (WAP-91 follow-up): `placement` comes from
- * `memberApprovalCardPlacement`. `primary` is the full card above the
- * dashboard, for a member with a live next step. `demoted` is the same facts
- * collapsed to one summary line, rendered below the dashboard content, for a
- * finished or closed pathway. Either can be dismissed; the dismissal is
- * stored per member and per status, so it lasts until the status moves, and
- * a quiet link keeps the member's own status one click away.
+ * Presentation (C1 redesign): a slim three-step strip (dot or check, label,
+ * one short state line per step, plus a state chip) sits in the page header
+ * (`MemberHomeKit` `approvalSlot`). Every saved fact the old tall card showed
+ * (state, date, who owns the step, what happens next, the reviewer line and
+ * the Coursera note) is still on the page, inside the "Your approval status"
+ * disclosure under the strip. `placement` comes from
+ * `memberApprovalCardPlacement`: `primary` (a live next step) shows the
+ * current next step as the disclosure's one-line summary; `demoted` (finished
+ * or closed pathway) shows the saved state and, when the member owns it, the
+ * next step. Either can be dismissed; the dismissal is stored per member and
+ * per status, so it lasts until the status moves, and a quiet link keeps the
+ * member's own status one click away.
  *
  * `counselorContext` (lib/member/counselorContext.ts) names the assigned
  * counselor who reviews the step the member is waiting on, links to their
@@ -160,14 +165,14 @@ export default function MemberApprovalStatusCard({
       onClick={dismiss}
       aria-label={t('dismissLabel')}
       data-approval-dismiss=""
-      className="wa-kit-focus wa-text-sm wa-text-[var(--wa-muted)] wa-underline wa-bg-transparent wa-border-0 wa-cursor-pointer wa-self-start wa-min-h-[44px] wa-px-0"
+      className={`wa-kit-focus ${styles.quietButton}`}
     >
       {t('dismiss')}
     </button>
   );
 
   const stageList = (
-    <ol className="wa-grid wa-gap-4 sm:wa-grid-cols-3 wa-list-none wa-m-0 wa-p-0">
+    <ol className={styles.stageList}>
       {STAGE_ORDER.map((stage, index) => {
         const view = status.stages[stage];
         const isCurrent = view.state === 'current';
@@ -179,23 +184,22 @@ export default function MemberApprovalStatusCard({
             aria-current={isCurrent ? 'step' : undefined}
             data-stage={stage}
             data-stage-state={view.state}
+            className={styles.stage}
           >
-            <VStack gap={1}>
-              <p className="wa-font-semibold wa-flex wa-items-center wa-gap-2 wa-flex-wrap">
-                <span>{index + 1}. {t(stage)}</span>
-                {isCurrent ? <StatusTag tone="info">{t('currentStep')}</StatusTag> : null}
+            <p className={styles.stageTitle}>
+              <span>{index + 1}. {t(stage)}</span>
+              {isCurrent ? <StatusTag tone="info">{t('currentStep')}</StatusTag> : null}
+            </p>
+            <p className={styles.stageStatus}>{statusText(stage)}</p>
+            {dateLine(stage, view) ? <p className={styles.stageMeta}>{dateLine(stage, view)}</p> : null}
+            {showNext && owner ? (
+              <p className={styles.stageMeta}>{t('whoOwns', { owner })}</p>
+            ) : null}
+            {showNext ? (
+              <p className={styles.stageMeta} data-muted="">
+                {t('whatsNext', { text: t(`next.${stage}.${view.nextKey}`) })}
               </p>
-              <p>{statusText(stage)}</p>
-              {dateLine(stage, view) ? <p className="wa-text-sm">{dateLine(stage, view)}</p> : null}
-              {showNext && owner ? (
-                <p className="wa-text-sm">{t('whoOwns', { owner })}</p>
-              ) : null}
-              {showNext ? (
-                <p className="wa-text-sm wa-text-[var(--wa-muted)]">
-                  {t('whatsNext', { text: t(`next.${stage}.${view.nextKey}`) })}
-                </p>
-              ) : null}
-            </VStack>
+            ) : null}
           </li>
         );
       })}
@@ -207,7 +211,7 @@ export default function MemberApprovalStatusCard({
   // the saved assignment; the wait line only appears when the loader had at
   // least five recent decisions to compute a median from.
   const reviewer = counselorContext?.awaiting ? (
-    <div className="wa-text-sm" data-approval-reviewer={counselorContext.counselor ? 'assigned' : 'unassigned'}>
+    <div className={styles.reviewer} data-approval-reviewer={counselorContext.counselor ? 'assigned' : 'unassigned'}>
       {counselorContext.counselor ? (
         <p>
           {t(REVIEWER_KEY[counselorContext.awaiting], { name: counselorContext.counselor.firstName })}{' '}
@@ -219,7 +223,7 @@ export default function MemberApprovalStatusCard({
         <p>{t('reviewer.unassigned')}</p>
       )}
       {counselorContext.waitEstimate ? (
-        <p className="wa-text-[var(--wa-muted)]" data-approval-wait-estimate="">
+        <p className={styles.muted} data-approval-wait-estimate="">
           {t('reviewer.waitEstimate', {
             days: counselorContext.waitEstimate.medianDays,
             count: counselorContext.waitEstimate.sampleSize,
@@ -231,21 +235,24 @@ export default function MemberApprovalStatusCard({
 
   const details = (
     <>
+      <p className={styles.muted}>
+        {status.currentStage === 'complete' ? t('introComplete') : t('intro')}
+      </p>
       {stageList}
       {reviewer}
-      <p className="wa-text-sm wa-text-[var(--wa-muted)]">{t('providerUnknown')}</p>
-      <Link href="/dashboard/messages" className="wa-kit-focus wa-underline">{t('contact')}</Link>
+      <p className={styles.muted}>{t('providerUnknown')}</p>
+      <Link href="/dashboard/messages" className={`wa-kit-focus ${styles.contact}`}>{t('contact')}</Link>
     </>
   );
 
   // ── Dismissed: one quiet line so nobody loses access to their own status ──
   if (dismissedAt === signature) {
     return (
-      <section className="wa-mb-6" data-approval-card="dismissed">
+      <section className={styles.dismissed} data-approval-card="dismissed">
         <button
           type="button"
           onClick={restore}
-          className="wa-kit-focus wa-text-sm wa-text-[var(--wa-muted)] wa-underline wa-bg-transparent wa-border-0 wa-cursor-pointer wa-min-h-[44px] wa-px-0"
+          className={`wa-kit-focus ${styles.quietButton}`}
         >
           {t('restore')}
         </button>
@@ -253,54 +260,97 @@ export default function MemberApprovalStatusCard({
     );
   }
 
-  // ── Demoted: nothing in flight, so one summary line below the dashboard ──
-  if (placement === 'demoted') {
-    return (
-      <section aria-labelledby="member-approval-title" className="wa-mb-6" data-approval-card="demoted">
-        <Card>
-          <VStack gap={3}>
-            <details>
-              {/* Block summary (not flex) so the browser keeps its own
-                  disclosure marker as the expand affordance. */}
-              <summary className="wa-kit-focus wa-cursor-pointer wa-min-h-[44px]">
-                {/* Title on the marker's line; the saved state and, when the
-                    member owns it, the next step each get their own line, so
-                    the phone-width wrap is structural instead of a run-on. */}
-                <h2 id="member-approval-title" className="wa-kit-stat-label wa-m-0 wa-inline">{t('title')}</h2>
-                <span className="wa-block wa-text-sm wa-text-[var(--wa-muted)]" data-approval-summary="">
-                  {summaryStatus}
-                </span>
-                {summaryAction ? (
-                  <span className="wa-block wa-text-sm" data-approval-summary-action="">{summaryAction}</span>
-                ) : null}
-              </summary>
-              <VStack gap={3}>
-                <p className="wa-text-sm wa-text-[var(--wa-muted)] wa-mt-3">
-                  {status.currentStage === 'complete' ? t('introComplete') : t('intro')}
-                </p>
-                {details}
-              </VStack>
-            </details>
-            {dismissButton}
-          </VStack>
-        </Card>
-      </section>
-    );
-  }
+  // ── Strip: three steps and one state chip ──
+  const stripDetail = (view: MemberApprovalStage) => {
+    const word =
+      view.state === 'complete'
+        ? t('strip.done')
+        : view.state === 'blocked'
+          ? t('strip.closed')
+          : view.state === 'current'
+            ? t('strip.inProgress')
+            : t('strip.waiting');
+    return word;
+  };
 
-  // ── Primary: a live next step keeps the card where it is ──
+  const anyBlocked = STAGE_ORDER.some((stage) => status.stages[stage].state === 'blocked');
+  const needsInput = status.application === 'needs_info' || status.intake === 'needs_info';
+  const chip =
+    status.currentStage === 'complete'
+      ? { tone: 'green', label: t('strip.cleared') }
+      : anyBlocked
+        ? { tone: 'neutral', label: t('strip.closedChip') }
+        : needsInput
+          ? { tone: 'crimson', label: t('strip.needsInfo') }
+          : { tone: 'blue', label: t('strip.pending') };
+
+  const strip = (
+    <div className="wa-kit-status-strip" data-approval-strip="">
+      <ol className="wa-kit-status-strip__steps" aria-label={t('strip.label')}>
+        {STAGE_ORDER.map((stage, index) => {
+          const view = status.stages[stage];
+          const tone = view.state === 'complete' ? 'done' : view.state === 'current' ? 'current' : 'todo';
+          return (
+            <li
+              key={stage}
+              className={`wa-kit-status-step wa-kit-status-step--${tone}`}
+              data-strip-step={stage}
+            >
+              <span className="wa-kit-status-step__dot" aria-hidden="true">
+                {view.state === 'complete' ? <Check /> : index + 1}
+              </span>
+              <span className="wa-kit-status-step__text">
+                <b>{t(stage)}</b>
+                <small>{stripDetail(view)}</small>
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+      <span className={`wa-kit-chip wa-kit-chip--${chip.tone}`} data-approval-chip="">
+        {chip.label}
+      </span>
+    </div>
+  );
+
+  // The one line under the strip. A live pathway names the next saved step; a
+  // finished or closed one names the saved state and, when the member owns it,
+  // what to do next (demoting the card must not hide the one thing left to do).
+  const nextSentence =
+    status.currentStage !== 'complete'
+      ? t(`next.${status.currentStage}.${status.stages[status.currentStage].nextKey}`)
+      : null;
+
   return (
-    <section aria-labelledby="member-approval-title" className="wa-mb-6" data-approval-card="primary">
-      <Card>
-        <VStack gap={3}>
-          <h2 id="member-approval-title" className="wa-kit-stat-label">{t('title')}</h2>
-          <p className="wa-text-sm wa-text-[var(--wa-muted)]">
-            {status.currentStage === 'complete' ? t('introComplete') : t('intro')}
-          </p>
+    <section
+      aria-labelledby="member-approval-title"
+      className={styles.root}
+      data-approval-card={placement === 'demoted' ? 'demoted' : 'primary'}
+    >
+      {strip}
+      <details className={styles.disclosure}>
+        {/* Block summary (not flex) so the line wraps structurally at phone width. */}
+        <summary className={`wa-kit-focus ${styles.summary}`}>
+          <span className={styles.summaryHead}>
+            <h2 id="member-approval-title" className={styles.label}>{t('title')}</h2>
+            <ChevronDown className={styles.chevron} size={16} aria-hidden="true" />
+          </span>
+          {placement === 'demoted' ? (
+            <>
+              <span className={styles.line} data-approval-summary="">{summaryStatus}</span>
+              {summaryAction ? (
+                <span className={`${styles.line} ${styles.lineStrong}`} data-approval-summary-action="">{summaryAction}</span>
+              ) : null}
+            </>
+          ) : (
+            <span className={styles.line} data-approval-next="">{nextSentence ?? summaryStatus}</span>
+          )}
+        </summary>
+        <div className={styles.panel}>
           {details}
           {dismissButton}
-        </VStack>
-      </Card>
+        </div>
+      </details>
     </section>
   );
 }

@@ -91,10 +91,10 @@ describe('MemberHomeKit resume module CTA', () => {
     );
     const link = screen.getByRole('link', { name: /Resume module/ });
     expect(link.getAttribute('href')).toBe('/dashboard/program?program=google-it-support');
-    // The CTA lives in the certification-path card inside the 4-column rail.
+    // The CTA lives in the certification-path card in the main column of the two-column home grid.
     const card = link.closest('.wa-kit-cert-path');
     expect(card).not.toBeNull();
-    expect(card!.parentElement?.className).toBe('lg:wa-col-span-4 wa-min-w-0');
+    expect(card!.parentElement?.className).toBe('wa-kit-home-grid__main');
     expect(container.querySelector('a[href="/dashboard/training"]')).toBeNull();
     expect(container.querySelector('a[href^="/dashboard/training?"]')).toBeNull();
   });

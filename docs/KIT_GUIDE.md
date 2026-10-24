@@ -616,6 +616,33 @@ Reference adopters: `UsersKit` (`/admin/users`) and `components/admin/CourseraCa
 
 ---
 
+## 6b. Calm card language (C1 + C3, 2026-10-24)
+
+Member and staff screens share one card recipe: white `--wa-surface` on the `--wa-bg` canvas, a 1px
+`--wa-border` hairline, 12px radius, no heavy shadow, no gradient feature tile by default (the
+`--gradient-*` variants and `FeatureTile` stay opt-in). Warm and dense differ only in density now.
+Gold means achievement, green success, blue supporting data, crimson the one primary action or current
+state (at most one crimson pill per card). Reusable classes (all in `css/portal-kit.css`, `--wa-*` only):
+
+- Card parts: `.wa-kit-card--flush` (rows/tables), `--accent-edge` (3px crimson "Up next" edge),
+  `.wa-kit-card__head` (+ `--ruled`), `.wa-kit-card-title` (17px/700), `.wa-kit-card-sub`,
+  `.wa-kit-card-count`, `.wa-kit-card-link`.
+- Chips: `.wa-kit-chip--neutral|blue|green|gold|crimson|dark`; `.wa-kit-date-chip` with `--soon` (the
+  due-soonest dark pill), `--done`, `--overdue`.
+- Task rows: `ul.wa-kit-task-list > li.wa-kit-task-row[data-state=todo|current|done]` with
+  `__check`, `__body` (`__title`, `__sub`) and a trailing date chip; `.wa-kit-task-row--link` for anchors.
+- `ol.wa-kit-segments` (`--wa-segments: N`) > `li.wa-kit-segment--done|--current|--todo`: segmented
+  progress with `__bar`, `__state`, `__name` labels.
+- `.wa-kit-status-strip` > `.wa-kit-status-step--done|--current|--todo` (`__dot`, `__text`): the slim approval strip.
+- `.wa-kit-people-card` (`__head`, `__avatar`, `__name`, `__role`, `__time`, `__quote`, `__foot`) and
+  `.wa-kit-date-tile` (`__mon`, `__day`); `.wa-kit-stat-pair` for streak + points.
+- Layout: `.wa-kit-home-grid` (`__head`, `__main`, `__rail`) is one column on phone and main + 352px rail
+  from 1100px; `.wa-kit-stack` is a 16px vertical stack.
+- `PageOpener` greeting mode: omit `kicker`, pass `meta` (one contextual sentence) and optionally `aside`
+  (right-side status, stacked below on phone). Existing `kicker` + `lede` call sites are unchanged.
+  `SectionHeader` titles are 18-20px/700 (`.wa-kit-section-header*`). `QueueRow` / `WorkQueueItem` are
+  surface rows with a toned edge and soft icon tile (`.wa-kit-queue-row--*`, `.wa-kit-work-item`).
+
 ## 7. Icons, styling, and motion
 
 - **lucide-react only.** No other icon set, no inline SVG paths, no emoji-as-icon in kit surfaces.

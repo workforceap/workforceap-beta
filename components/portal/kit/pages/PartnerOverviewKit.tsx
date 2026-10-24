@@ -233,16 +233,16 @@ const CHIP_FG: Record<PartnerQuickAction['tone'], string> = {
 
 export function PartnerQuickActions({ actions }: { actions: PartnerQuickAction[] }) {
   return (
-    <div className="wa-grid wa-grid-cols-1 md:wa-grid-cols-3 wa-gap-3">
+    <div className={styles.actions}>
       {actions.map((a) => (
         <Link
           key={a.title}
           href={a.href}
-          className="wa-kit-card wa-kit-card--hover wa-kit-focus"
+          className={`wa-kit-focus ${styles.action}`}
           style={{
             display: 'flex',
             alignItems: 'flex-start',
-            gap: 10,
+            gap: 12,
             textDecoration: 'none',
             color: 'inherit',
           }}
@@ -265,7 +265,7 @@ export function PartnerQuickActions({ actions }: { actions: PartnerQuickAction[]
             {a.icon}
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--wa-text)' }}>{a.title}</div>
+            <div style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)' }}>{a.title}</div>
             <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>{a.body}</div>
           </div>
         </Link>

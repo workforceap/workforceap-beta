@@ -31,15 +31,10 @@ const TONE_TOKEN: Record<QueueTone, 'pink' | 'yellow' | 'blue'> = {
   blue: 'blue',
 };
 
-const TONE_BG: Record<QueueTone, string> = {
-  red: 'var(--wa-accent-soft)',
-  yellow: 'var(--wa-gold-soft)',
-  blue: 'var(--wa-info-soft)',
-};
-
 /**
  * Triage / attention row — Astryx `Card` + `StatusDot` + `Token`.
- * red = urgent today, yellow = watch, blue = celebrate.
+ * red = urgent today, yellow = watch, blue = celebrate. Calm row: surface +
+ * hairline, tone shown by a 3px edge and a soft icon tile (`.wa-kit-queue-row--*`).
  */
 export function QueueRow({ tone, icon, title, meta, flag, action, onClick }: QueueRowProps) {
   return (
@@ -62,31 +57,16 @@ export function QueueRow({ tone, icon, title, meta, flag, action, onClick }: Que
     >
       <Card>
         <HStack
-          className="wa-kit-queue-row"
+          className={`wa-kit-queue-row wa-kit-queue-row--${tone}`}
           gap={3}
-          style={{ background: TONE_BG[tone], borderRadius: 12, padding: '10px 12px' }}
         >
-          <div
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: 12,
-              background: tone === 'red' ? 'var(--color-accent)' : tone === 'yellow' ? 'var(--wa-gold)' : 'var(--wa-info)',
-              color: 'var(--wa-on-accent)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            {icon}
-          </div>
+          <div className="wa-kit-queue-row__icon">{icon}</div>
           <div className="wa-kit-queue-row__copy" style={{ flex: 1, minWidth: 0 }}>
             <HStack gap={2} align="center">
               <StatusDot variant={TONE_DOT[tone]} label={title} />
-              <div style={{ fontWeight: 700, fontSize: 14 }}>{title}</div>
+              <div className="wa-kit-queue-row__title">{title}</div>
             </HStack>
-            {meta ? <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>{meta}</div> : null}
+            {meta ? <div className="wa-kit-queue-row__meta">{meta}</div> : null}
           </div>
           {flag ? (
             <span className="wa-hidden md:wa-inline">

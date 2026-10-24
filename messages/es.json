@@ -3560,6 +3560,17 @@
         "unknown": "Aún no hay una aprobación de capacitación registrada. El personal actualiza este paso cuando se toma la decisión."
       }
     },
+    "strip": {
+      "done": "Listo",
+      "inProgress": "En curso",
+      "waiting": "Sin iniciar",
+      "closed": "Cerrado",
+      "cleared": "Aprobado para capacitarse",
+      "pending": "En revisión",
+      "closedChip": "Proceso cerrado",
+      "needsInfo": "Necesita tu información",
+      "label": "Pasos de aprobación"
+    },
     "trainingStatus": {
       "approved": "Capacitación aprobada",
       "pending": "Aún no aprobada",

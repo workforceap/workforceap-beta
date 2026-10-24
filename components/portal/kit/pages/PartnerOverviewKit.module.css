@@ -7,7 +7,7 @@
 .stage { min-width: 0; }
 .stage p { display: flex; justify-content: space-between; gap: 0.75rem; margin: 0 0 0.5rem; font-size: var(--wa-type-meta); }
 .stage strong { font-variant-numeric: tabular-nums; }
-.attention { display: flex; gap: 0.75rem; align-items: center; padding-block: 0.5rem; min-height: 2.75rem; color: var(--wa-accent); text-decoration: none; }
+.attention { display: flex; gap: 0.75rem; align-items: center; padding: var(--wa-pad-sm) var(--wa-pad); min-height: 2.75rem; border: 1px solid var(--wa-border); border-inline-start: 3px solid var(--wa-accent); border-radius: var(--wa-radius); background: var(--wa-surface); color: var(--wa-accent-text); text-decoration: none; }
 .attention:hover strong { text-decoration: underline; }
 .attention > svg { flex-shrink: 0; }
 .attentionCopy { display: flex; flex: 1; gap: 0.5rem var(--wa-pad); align-items: baseline; flex-wrap: wrap; min-width: 0; }
@@ -18,3 +18,8 @@
   .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stages { grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
 }
+
+/* Quick actions: hairline rows that fit a rail or the full width. */
+.actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.5rem; }
+.action { min-height: 2.75rem; padding: 0.5rem 0.75rem; border: 1px solid var(--wa-border); border-radius: var(--wa-radius-sm); background: var(--wa-surface); }
+.action:hover { background: var(--wa-surface-2); }

@@ -212,7 +212,12 @@ describe('approval card placement and dismissal', () => {
     expect(memberApprovalCardPlacement(live)).toBe('primary');
     const { container } = show(live, 'primary');
     expect(container.querySelector('[data-approval-card]')).toHaveAttribute('data-approval-card', 'primary');
-    expect(container.querySelector('details')).toBeNull();
+    // C1 strip: the saved facts sit in the "Your approval status" disclosure under the
+    // strip, and the one line under the strip names the current next step.
+    expect(container.querySelector('[data-approval-strip]')).not.toBeNull();
+    expect(container.querySelector('[data-approval-next]')?.textContent)
+      .toBe(messages.memberApproval.next.application.pending);
+    expect(container.querySelector('details')).not.toBeNull();
     expect(screen.getByText('Current step')).toBeInTheDocument();
   });
 

@@ -3503,6 +3503,17 @@
         "unknown": "Ainda não há aprovação de treinamento registrada. A equipe atualiza esta etapa quando a decisão é tomada."
       }
     },
+    "strip": {
+      "done": "Concluído",
+      "inProgress": "Em andamento",
+      "waiting": "Não iniciado",
+      "closed": "Encerrado",
+      "cleared": "Liberado para treinar",
+      "pending": "Em análise",
+      "closedChip": "Processo encerrado",
+      "needsInfo": "Precisa da sua informação",
+      "label": "Etapas de aprovação"
+    },
     "trainingStatus": {
       "approved": "Capacitação aprovada",
       "pending": "Ainda não aprovada",

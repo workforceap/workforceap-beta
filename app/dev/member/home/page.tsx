@@ -17,10 +17,10 @@ import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
  * every new optional prop wired). Preview-only, no auth/DB. See
  * app/dev/dashboard/page.tsx for the pattern.
  *
- * `?approval=live|closed|complete|off` swaps the approval-status card fixture
- * so both placements can be reviewed in the real chrome: `live` (a pending
- * application) keeps the full card above the dashboard, `closed` and
- * `complete` collapse it below the content. Same composition as
+ * `?approval=live|closed|complete|off` swaps the approval-status fixture. The
+ * status is a slim strip in the page header (MemberHomeKit `approvalSlot`):
+ * `live` (a pending application) names the next step under the strip, `closed`
+ * and `complete` name the saved state. Same composition as
  * app/(portal)/dashboard/page.tsx.
  *
  * `?course=zero|zero-stale` drops the Course tile to 0% so the two
@@ -206,8 +206,8 @@ export default async function DevMemberHomePage({
         </PortalEntryClient>
       </PortalEntryErrorBoundary>
     ) : null}
-    {placement === 'primary' ? approvalCard : null}
     <MemberHomeKit
+      approvalSlot={approvalCard}
       showStaffViewBanner={params?.staff === '1'}
       advisor={params?.advisor === 'off' ? null : { name: 'Sample Advisor', firstName: 'Sample', messagingHref: '/dev/member/messages' }}
       programSwitch={programSwitch}
@@ -316,7 +316,6 @@ export default async function DevMemberHomePage({
         },
       ]}
     />
-    {placement === 'demoted' ? approvalCard : null}
     </>
   );
 }
