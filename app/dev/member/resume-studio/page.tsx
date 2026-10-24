@@ -112,11 +112,24 @@ export default async function DevMemberResumeStudioPage({
 
   return (
     <Suspense fallback={null}>
-      <p className="wa-kit-meta" style={{ padding: 16 }}>Sample data preview. Uploads, generation, account access and voice are disabled.</p>
       <ResumeStudioKit
         preview
         hasResume
-        filesSlot={<ResumeClient completeness={75} witData={{ name: 'Jordan Reyes', email: 'jordan@example.test', phone: '', recentEmployer: '', targetJob: 'Cloud Support Associate', skills: 'Support, troubleshooting' }} hasOriginal hasEnhanced layout="side-by-side" previewData={{ originalText: SEED_RESUME, enhancedText: REWRITE }} />}
+        filesSlot={
+          <ResumeClient
+            completeness={75}
+            witData={{ name: 'Jordan Reyes', email: 'jordan@example.test', phone: '', recentEmployer: '', targetJob: 'Cloud Support Associate', skills: 'Support, troubleshooting' }}
+            hasOriginal
+            hasEnhanced
+            layout="side-by-side"
+            previewData={{ originalText: SEED_RESUME, enhancedText: REWRITE }}
+            toolHrefs={{
+              rewrite: '/dev/member/resume-studio?view=rewrite',
+              jobMatch: '/dev/member/job-match',
+              score: '/dev/member/resume-studio?view=score',
+            }}
+          />
+        }
         backHref="/dev/member/toolkit"
         basePath="/dev/member/resume-studio"
         initialResume={filled ? SEED_RESUME : ''}

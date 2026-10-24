@@ -3070,12 +3070,13 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
 }
 
 /* Members keep their five daily destinations in a persistent phone bar.
-   The utility row remains in normal flow below the workspace header, so its
-   ResizeObserver measurement continues to describe the true top chrome. */
+   Utilities scroll away on phones; tablet navigation remains sticky. */
 @media (max-width: 767px) {
   /* A filtered sticky ancestor becomes the containing block for fixed
      descendants. Keep this parent solid so the daily list stays viewport-fixed. */
   .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav {
+    position: relative;
+    top: auto;
     background: var(--wa-shell-header-bg);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -3162,6 +3163,31 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   .workspace-shell-root[data-workspace-role='member'] .workspace-shell-main [id] {
     scroll-margin-bottom: var(--member-portal-bottom-nav-clearance, 4.5rem);
   }
+}
+
+/* Acknowledge a route transition without selecting a page before it arrives.
+   Native Link status also clears feedback when navigation is interrupted. */
+.workspace-navigation-pending {
+  position: absolute;
+  inset-inline: 0.5rem;
+  bottom: 0.125rem;
+  height: 0.1875rem;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-accent-text);
+  pointer-events: none;
+  animation: workspace-navigation-pulse 900ms ease-in-out infinite alternate;
+}
+.workspace-sidebar-link:has(.workspace-navigation-pending) { position: relative; }
+.member-portal-top-nav__link:has(.workspace-navigation-pending),
+.workspace-sidebar-link:has(.workspace-navigation-pending) {
+  background: var(--wa-accent-soft);
+}
+@keyframes workspace-navigation-pulse {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace-navigation-pending { animation: none; }
 }
 
 /* Compact chrome applies to the sticky utility row and the generic nav rules.

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState, type KeyboardEvent } from 'react';
 import { ChevronDown } from 'lucide-react';
+import NavigationPending from './NavigationPending';
 import {
   type NavBadgeKey,
   type PortalNavItem,
@@ -171,6 +172,7 @@ export default function WorkspaceSidebarSections({
         ) : null}
         <span className="workspace-sidebar-link-label">{translateLabel(item.label)}</span>
         {badge > 0 ? <span className="workspace-nav-badge">{badge > 99 ? '99+' : badge}</span> : null}
+        <NavigationPending />
       </Link>
     );
   };

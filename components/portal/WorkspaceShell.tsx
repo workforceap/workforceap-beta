@@ -233,6 +233,11 @@ export default function WorkspaceShell({
   const menuLoadingId = useId();
   const [collapsed, setCollapsed] = useState(false);
   const [wide, setWide] = useState(false);
+  const wideRef = useRef(wide);
+  wideRef.current = wide;
+  const drawerOpenRef = useRef(drawerOpen);
+  drawerOpenRef.current = drawerOpen;
+  const focusDesktopNavAfterResizeRef = useRef(false);
   const [badges, setBadges] = useState<Partial<Record<NavBadgeKey, number>>>({});
   const [badgeFetchError, setBadgeFetchError] = useState(false);
   const isCollapsedDesktop = collapsed && wide;
@@ -315,7 +320,14 @@ export default function WorkspaceShell({
   const currentPageItem = railNavItems.find((item) => item.href === activeHref);
   const currentPageLabel = currentPageItem ? translateLabel(currentPageItem.label) : null;
   const mainRef = useRef<HTMLDivElement>(null);
-  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+  const openDrawer = useCallback(() => {
+    drawerOpenRef.current = true;
+    setDrawerOpen(true);
+  }, []);
+  const closeDrawer = useCallback(() => {
+    drawerOpenRef.current = false;
+    setDrawerOpen(false);
+  }, []);
   const trapRef = useFocusTrap(isMobileDrawer, closeDrawer);
   useWorkspaceMobileScrollChrome();
 
@@ -330,8 +342,8 @@ export default function WorkspaceShell({
     // effects run. Only navigation should close it, never the initial effect.
     if (previousDrawerPathname.current === pathname) return;
     previousDrawerPathname.current = pathname;
-    setDrawerOpen(false);
-  }, [pathname]);
+    closeDrawer();
+  }, [pathname, closeDrawer]);
 
   const collapseKey = `wa_nav_collapsed_${portalRole}`;
 
@@ -380,11 +392,33 @@ export default function WorkspaceShell({
     // Keep in sync with the `(min-width: 769px)` shell rules in
     // css/portal-main-extracted.css.
     const mq = window.matchMedia('(min-width: 769px)');
-    const fn = () => setWide(mq.matches);
+    const fn = () => {
+      const nextWide = mq.matches;
+      const enteringDesktop = nextWide && !wideRef.current;
+      wideRef.current = nextWide;
+      if (enteringDesktop && drawerOpenRef.current) {
+        // The mobile drawer is not a desktop sidebar state. Clear it at the
+        // breakpoint so returning to phone width never reopens it unexpectedly.
+        focusDesktopNavAfterResizeRef.current = true;
+        closeDrawer();
+      }
+      setWide(nextWide);
+    };
     fn();
     mq.addEventListener('change', fn);
     return () => mq.removeEventListener('change', fn);
-  }, []);
+  }, [closeDrawer]);
+
+  useEffect(() => {
+    if (!wide || !focusDesktopNavAfterResizeRef.current) return;
+    focusDesktopNavAfterResizeRef.current = false;
+    const nav = document.querySelector<HTMLElement>('.workspace-sidebar-nav');
+    const target = nav?.tabIndex === -1 ? nav : nav?.querySelector<HTMLElement>('a[href]');
+    // The focus trap restores its trigger during cleanup, but that trigger is
+    // hidden on desktop. Move focus to the visible rail only when a drawer was
+    // open during this breakpoint transition; do not disturb unrelated focus.
+    target?.focus({ preventScroll: true });
+  }, [wide]);
 
   /** Enables `html[data-portal-role="…"]` rules in main.css (e.g. member mobile header chrome). */
   useEffect(() => {
@@ -542,7 +576,7 @@ export default function WorkspaceShell({
           <button
             type="button"
             className="workspace-menu-btn"
-            onClick={() => setDrawerOpen(true)}
+            onClick={openDrawer}
             disabled={!menuReady}
             aria-busy={!menuReady}
             aria-label={tNav('openMenu')}

@@ -198,9 +198,6 @@ export default async function DevMemberHomePage({
 
   return (
     <>
-    <p className="wa-kit-meta wa-px-4 wa-py-3" role="note">
-      Preview only: synthetic progress, sources and confirmation dates. Email, calendar and training connections are not active.
-    </p>
     <PWAInstallPrompt />
     {onboardingFixture ? (
       <PortalEntryErrorBoundary>

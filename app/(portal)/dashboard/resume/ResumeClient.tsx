@@ -47,6 +47,8 @@ type ResumeClientProps = {
   onResumeAvailabilityChange?: (available: boolean) => void;
   /** Synthetic /dev proof only. Account reads, analytics and mutations are disabled. */
   previewData?: { originalText: string; enhancedText: string };
+  /** Destination owners can keep the shortcuts within their workspace. */
+  toolHrefs?: { rewrite?: string; jobMatch?: string; score?: string };
 };
 
 function isPdfPreviewErrorDocument(doc: Document | null): boolean {
@@ -68,6 +70,7 @@ export default function ResumeClient({
   active = true,
   onResumeAvailabilityChange,
   previewData,
+  toolHrefs,
 }: ResumeClientProps) {
   const tw = useTranslations('memberWorkspace.resume');
   const recommendedProfileCompleteness = 50;
@@ -513,9 +516,14 @@ export default function ResumeClient({
               {resumeData?.originalUrl ? (
                 <a
                   href={resumeData.originalUrl} download={previewData ? "sample-original-resume.txt" : undefined}
+                  aria-label="Download original resume"
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="wa-kit-focus"
                   style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    minHeight: 44,
                     color: "var(--wa-accent)",
                     fontWeight: 600,
                     textDecoration: "none",
@@ -621,32 +629,6 @@ export default function ResumeClient({
                 )}
               </div>
             )}
-            {resumeData?.originalExt &&
-              !["pdf", "doc", "docx"].includes(resumeData.originalExt) &&
-              resumeData?.originalUrl && (
-                <div
-                  style={{
-                    padding: "1rem",
-                    textAlign: "center",
-                    background: "var(--wa-surface-2)",
-                  }}
-                >
-                  <a
-                    href={resumeData.originalUrl} download={previewData ? "sample-original-resume.txt" : undefined}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      fontSize: "0.875rem",
-                    }}
-                  >
-                    Open resume
-                  </a>
-                </div>
-              )}
           </div>
         )}
 
@@ -678,9 +660,14 @@ export default function ResumeClient({
               {resumeData?.enhancedUrl ? (
                 <a
                   href={resumeData.enhancedUrl} download={previewData ? "sample-revised-resume.txt" : undefined}
+                  aria-label="Download revised resume"
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="wa-kit-focus"
                   style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    minHeight: 44,
                     color: "var(--wa-accent)",
                     fontWeight: 600,
                     textDecoration: "none",
@@ -748,33 +735,6 @@ export default function ResumeClient({
                 )}
               </div>
             )}
-            {resumeData?.enhancedUrl &&
-              resumeData.enhancedExt &&
-              !["pdf", "doc", "docx"].includes(resumeData.enhancedExt) &&
-              !resumeData.enhancedText && (
-                <div
-                  style={{
-                    padding: "1rem",
-                    textAlign: "center",
-                    background: "var(--wa-surface-2)",
-                  }}
-                >
-                  <a
-                    href={resumeData.enhancedUrl} download={previewData ? "sample-revised-resume.txt" : undefined}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      fontSize: "0.875rem",
-                    }}
-                  >
-                    Open enhanced resume
-                  </a>
-                </div>
-              )}
             {resumeData?.enhancedText &&
               !["pdf", "doc", "docx"].includes(
                 resumeData?.enhancedExt ?? "",
@@ -805,19 +765,19 @@ export default function ResumeClient({
       icon: FileEdit,
       title: "Resume Rewriter",
       desc: "Rewrite and polish your resume for a specific role.",
-      href: "/dashboard/resume?view=rewrite",
+      href: toolHrefs?.rewrite ?? "/dashboard/resume?view=rewrite",
     },
     {
       icon: Target,
       title: "Job Match Scorer",
       desc: "See how well your resume matches a job posting.",
-      href: "/dashboard/ai-tools/job-match-scorer",
+      href: toolHrefs?.jobMatch ?? "/dashboard/ai-tools/job-match-scorer",
     },
     {
       icon: LineChart,
       title: "Resume Analysis",
       desc: "See what is working well and what to strengthen before you apply.",
-      href: "/dashboard/resume?view=score",
+      href: toolHrefs?.score ?? "/dashboard/resume?view=score",
     },
   ];
 

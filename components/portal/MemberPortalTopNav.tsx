@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
+import NavigationPending from './NavigationPending';
 import { getBestActiveHref, type ActiveNavLink } from '@/lib/nav/activeRoute';
 import { MEMBER_PORTAL_NAV_ITEMS, navItemsForActiveRoute, type NavBadgeKey } from '@/lib/nav/portalNav';
 import { splitLocalePrefix } from '@/lib/i18n/config';
@@ -57,7 +58,10 @@ export default function MemberPortalTopNav({
     const el = navRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
     const setVar = () => {
-      document.documentElement.style.setProperty('--member-portal-top-nav-h', `${el.offsetHeight}px`);
+      // Phone utilities scroll with the document; only sticky tablet chrome
+      // belongs in the offset used by focused content and hash destinations.
+      const stickyHeight = getComputedStyle(el).position === 'sticky' ? el.offsetHeight : 0;
+      document.documentElement.style.setProperty('--member-portal-top-nav-h', `${stickyHeight}px`);
       // Compact chrome can expand after native keyboard focus scrolls the page.
       // Keep that focused destination visible as the rail geometry changes.
       const list = listRef.current;
@@ -188,6 +192,7 @@ export default function MemberPortalTopNav({
         {badge && badge > 0 ? (
           <span className="member-portal-top-nav__badge" aria-label={badgeLabel ?? undefined}>{badge > 9 ? '9+' : badge}</span>
         ) : null}
+        <NavigationPending />
       </Link>
     );
   };

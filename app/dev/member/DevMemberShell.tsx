@@ -106,7 +106,13 @@ export default function DevMemberShell({ children }: { children: ReactNode }) {
         marketingSiteLabel="WorkforceAP.org"
         navHrefMap={DEV_HREF}
         footer={<DashboardFooter />}
-        topBanner={<DevReviewBar />}
+        topBanner={<DevReviewBar notice={
+          pathname.endsWith('/home')
+            ? 'Progress, sources and confirmation dates are synthetic. Email, calendar and training connections are not active.'
+            : pathname.includes('/resume-studio')
+              ? 'Uploads, generation, account access and voice are disabled.'
+              : undefined
+        } />}
       >
         {children}
       </WorkspaceShell>

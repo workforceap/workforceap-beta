@@ -73,14 +73,20 @@ Passing the router's internal state back into that wrapper can bypass the update
 Member phone navigation places its same five daily destinations in a persistent
 bottom bar at widths below 768px. Icons and localized short labels stay visible,
 including during scroll; no second copy of the daily links is mounted. The top utility
-row retains the always-visible training preassessment, current secondary page and
-keyboard-accessible More pages disclosure. The bar reserves safe-area content and
-focus clearance. Its sticky ancestor must not establish a fixed containing block
-through a backdrop filter. Tablet widths keep the horizontal top strip.
+row retains training preassessment, the current secondary page and a
+keyboard-accessible More pages disclosure, then scrolls away with the content.
+The bottom bar reserves safe-area content and focus clearance. Its ancestor must
+not establish a fixed containing block through a backdrop filter. Tablet widths
+keep the sticky horizontal top strip; only sticky navigation contributes to the
+top focus and anchor offset.
 Utility links omit redundant icons to keep all three labels together
 at phone width; wrapping remains available for longer translations and text zoom.
 Daily links and desktop rail rows have 48px targets. Navigation selection uses a
 leading or lower marker in addition to its accent fill, while primary actions remain pills.
+Daily links and workspace rail links expose Next's actual pending navigation with
+a short accent indicator and a localized status announcement. Reduced motion
+disables its pulse. Keep `prefetch={false}`: eager Home prefetch loads its heavy
+workspace bundle on unrelated pages. Selection changes only when the route arrives.
 AI Advisor and human Messages remain separate. Skill Mapper's radar
 charts retain numeric alternatives bound to the same data; an occupation's O*NET
 requirements must not be presented as demonstrated member proficiency.
@@ -90,6 +96,9 @@ handler is ready, with an hourglass and localized loading description in all
 four catalogs. Enabling it does not move focus. The pathname effect closes an
 open drawer only for a real normalized-path change, not the initial passive
 effect; Escape, focus trapping and restoration retain the shared hook contract.
+Crossing into desktop closes an open drawer and moves focus to the visible desktop
+navigation. Returning to phone width leaves it closed. Resizing a closed drawer
+does not move focus.
 These guards do not establish physical-device acceptance or prove every earlier
 intermittent phone-menu failure has the same cause.
 
@@ -143,6 +152,10 @@ distinguishes saved, restored, cleared and unavailable storage. Recovery lasts u
 24 hours, ends on sign-out, and does not sync devices or replace uploaded originals.
 Home can offer the last saved view without displaying resume text. Generated results
 and voice-coach drafts keep their existing persistence rules.
+`ResumeClient` accepts optional rewrite, job-match and score destinations so the
+fixture stays within sample screens; live defaults remain unchanged. Each original
+or revised source file has one named download action with a 44px target. PDF error
+recovery remains separate from those source-file actions.
 
 `SkillMapperKit` supplies the same 70rem (1120px at the standard root size)
 workspace to the authenticated route and its synthetic fixture. It avoids an
@@ -156,6 +169,9 @@ proficiency measurement, provider access or authenticated acceptance.
 The preview-only [screen review checklist](qa/portal-consolidation/README.md) inventories
 the actual routes and consolidated query views. Its browser-saved review results are
 manual acceptance notes, not a production gate bypass.
+The fixture review bar keeps a compact, native "Sample data" disclosure next to
+"Review screens". Route-specific notices explain disabled actions and synthetic
+handoff evidence without pushing the actual task below repeated preview paragraphs.
 
 Member Jobs uses a compact two-by-two tracker summary and stacked 48px task links
 below 600px. Preserve all four tracker counts and their distinction from bookmarks

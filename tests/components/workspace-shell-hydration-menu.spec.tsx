@@ -35,12 +35,22 @@ vi.mock('@/hooks/useWorkspaceMobileScrollChrome', () => ({ useWorkspaceMobileScr
 let root: Root | undefined;
 let host: HTMLDivElement;
 let earlyMenuDisabled: boolean | undefined;
+let matchesDesktop: boolean;
+let notifyMediaChange: (() => void) | undefined;
 beforeEach(() => {
   route.pathname = '/dashboard';
   earlyMenuDisabled = undefined;
+  matchesDesktop = false;
+  notifyMediaChange = undefined;
   host = document.createElement('div');
   document.body.append(host);
-  vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  vi.stubGlobal('matchMedia', vi.fn(() => ({
+    get matches() { return matchesDesktop; },
+    addEventListener: (_event: string, listener: EventListener) => {
+      notifyMediaChange = () => listener(new Event('change'));
+    },
+    removeEventListener: vi.fn(),
+  })));
   vi.stubGlobal('scrollTo', vi.fn());
 });
 afterEach(async () => {
@@ -130,5 +140,45 @@ describe('mobile menu during shell hydration', () => {
     await user.keyboard('{Escape}');
     expect(menu).toHaveAttribute('aria-expanded', 'false');
     expect(menu).toHaveFocus();
+  });
+
+  it('closes the phone drawer across desktop resize and keeps it closed when returning to phone', async () => {
+    const view = await hydrate();
+    const menu = view.getByRole('button', { name: 'Open menu' });
+    await userEvent.setup().click(menu);
+    await waitFor(() => expect(view.getByRole('button', { name: 'Close menu' })).toHaveFocus());
+    expect(document.body).toHaveClass('sidebar-open');
+
+    matchesDesktop = true;
+    await act(async () => { notifyMediaChange?.(); });
+    const sidebar = host.querySelector('#workspace-sidebar');
+    const nav = host.querySelector('#workspace-sidebar-nav');
+    await waitFor(() => expect(menu).toHaveAttribute('aria-expanded', 'false'));
+    expect(sidebar).not.toHaveAttribute('role', 'dialog');
+    expect(document.body).not.toHaveClass('sidebar-open');
+    expect(nav).toHaveFocus();
+
+    matchesDesktop = false;
+    await act(async () => { notifyMediaChange?.(); });
+    expect(menu).toHaveAttribute('aria-expanded', 'false');
+    expect(sidebar).toHaveAttribute('inert');
+    expect(nav).toHaveFocus();
+
+    await userEvent.setup().click(menu);
+    expect(menu).toHaveAttribute('aria-expanded', 'true');
+    await waitFor(() => expect(view.getByRole('button', { name: 'Close menu' })).toHaveFocus());
+  });
+
+  it('does not move focus to desktop navigation when resizing with the drawer closed', async () => {
+    const view = await hydrate();
+    const brand = view.getByRole('link', { name: 'WorkforceAP' });
+    brand.focus();
+
+    matchesDesktop = true;
+    await act(async () => { notifyMediaChange?.(); });
+
+    expect(brand).toHaveFocus();
+    expect(host.querySelector('#workspace-sidebar-nav')).not.toHaveFocus();
+    expect(view.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false');
   });
 });
