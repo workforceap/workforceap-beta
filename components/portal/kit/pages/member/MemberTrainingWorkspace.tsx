@@ -95,6 +95,8 @@ export interface MemberTrainingWorkspaceProps {
   practiceUnavailable?: boolean;
   /** Optional route overrides for credential-free fixture owners. */
   trainingNavHrefs?: MemberTrainingNavHrefs;
+  /** Optional route overrides for the course follow-up actions. */
+  secondaryActionHrefs?: Partial<Record<'missions' | 'resume' | 'feedback', string>>;
 }
 
 type Draft = { notes: string; artifactUrl: string };
@@ -109,7 +111,7 @@ function addDays(date: string, days: number) {
 }
 
 /** The member's assigned curriculum, study schedule, and durable work in one place. */
-export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTitle, completedSlugs, destinations, initialCourseSlug, syllabusHours, syllabusBreakdown, modulesNote, trainingEmail, practiceMissions = [], practiceUnavailable = false, trainingNavHrefs }: MemberTrainingWorkspaceProps) {
+export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTitle, completedSlugs, destinations, initialCourseSlug, syllabusHours, syllabusBreakdown, modulesNote, trainingEmail, practiceMissions = [], practiceUnavailable = false, trainingNavHrefs, secondaryActionHrefs }: MemberTrainingWorkspaceProps) {
   const router = useRouter();
   const te = useTranslations('empty');
   const [workspace, setWorkspace] = useState(initialWorkspace);
@@ -317,7 +319,7 @@ export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTi
                     </VStack> : null}
                     <p className="wa-kit-training-muted">A short quiz and written scenario with feedback. This practice does not award a credential or replace your course assessment.</p>
                   </VStack>
-                </section> : practiceUnavailable ? <p className="wa-kit-training-notice">Course practice could not load. <Link href="/dashboard/missions">Try the Skill Missions page</Link>.</p> : null}
+                </section> : practiceUnavailable ? <p className="wa-kit-training-notice">Course practice could not load. <Link href={secondaryActionHrefs?.missions ?? '/dashboard/missions'}>Try the Skill Missions page</Link>.</p> : null}
 
                 <form onSubmit={(event) => { event.preventDefault(); void save('coursework'); }}>
                   <VStack gap={4}>
@@ -331,9 +333,9 @@ export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTi
                 </form>
                 <footer className="wa-kit-training-tools">
                   <h3>Put this learning to work</h3>
-                  <Link href="/dashboard/missions"><FileCheck2 size={18} aria-hidden="true" /><span><strong>Practice with Skill Missions</strong><small>Apply your skills and get feedback.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
-                  <Link href="/dashboard/resume"><Save size={18} aria-hidden="true" /><span><strong>Build your resume</strong><small>Turn the work into a career story.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
-                  <Link href={`/dashboard/messages?${new URLSearchParams({ program: workspace.programSlug, course: selected.slug, curriculum: workspace.curriculumVersion }).toString()}`}><MessageCircle size={18} aria-hidden="true" /><span><strong>Ask for feedback on this course</strong><small>Review a message with this course and your saved project link.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
+                  <Link href={secondaryActionHrefs?.missions ?? '/dashboard/missions'}><FileCheck2 size={18} aria-hidden="true" /><span><strong>Practice with Skill Missions</strong><small>Apply your skills and get feedback.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
+                  <Link href={secondaryActionHrefs?.resume ?? '/dashboard/resume'}><Save size={18} aria-hidden="true" /><span><strong>Build your resume</strong><small>Turn the work into a career story.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
+                  <Link href={secondaryActionHrefs?.feedback ?? `/dashboard/messages?${new URLSearchParams({ program: workspace.programSlug, course: selected.slug, curriculum: workspace.curriculumVersion }).toString()}`}><MessageCircle size={18} aria-hidden="true" /><span><strong>Ask for feedback on this course</strong><small>Review a message with this course and your saved project link.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
                 </footer>
               </VStack> : (
                 // `empty.assignedCourses`: a workspace exists only for a pinned

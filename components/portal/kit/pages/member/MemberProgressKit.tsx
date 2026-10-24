@@ -3,7 +3,7 @@ import { Check, Mic, Zap, Flag } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DesignSurface, PageOpener, ProgressRing, KitEmptyState } from '@/components/portal/kit';
-import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
+import { MemberTrainingNav, type MemberTrainingNavHrefs } from '@/components/portal/MemberCareerSteps';
 import type { ReadinessPriorityAction } from '@/lib/readiness/progressView';
 
 /**
@@ -41,6 +41,10 @@ export interface MemberProgressKitProps {
   statsHeading?: string;
   milestones?: Milestone[];
   readinessCoachHref?: string;
+  /** Optional route overrides for credential-free fixture owners. */
+  trainingNavHrefs?: MemberTrainingNavHrefs;
+  /** Optional Learning Hub route for fixture-owned next actions. */
+  learningHref?: string;
   nextAction?: ReadinessPriorityAction | null;
   /** Honest error when the score breakdown failed to load. */
   loadFailed?: boolean;
@@ -65,11 +69,16 @@ export function MemberProgressKit({
   statsHeading = 'Progress by area',
   milestones = DEFAULT_MILESTONES,
   readinessCoachHref = '/dashboard/ai-tools/studio?tab=session&agent=readiness',
+  trainingNavHrefs,
+  learningHref,
   nextAction = null,
   loadFailed = false,
   summary,
 }: MemberProgressKitProps) {
   const score = Math.max(0, Math.min(100, Math.round(readinessScore)));
+  const action = nextAction?.href === '/dashboard/learning' && learningHref
+    ? { ...nextAction, href: learningHref }
+    : nextAction;
   // `empty.*` (KIT_GUIDE §6). buildReadinessProgressView always emits the four
   // categories, so the lists are empty only when the score read failed (the
   // `loadFailed` branch, `unavailable`/danger) or in previews — the `first`
@@ -82,7 +91,7 @@ export function MemberProgressKit({
         <PageOpener
           title="Readiness"
         />
-        <MemberTrainingNav current="readiness" />
+        <MemberTrainingNav current="readiness" hrefs={trainingNavHrefs} />
         {loadFailed ? (
           <div className="wa-kit-card" data-portal-error-state="member-readiness-load">
             <KitEmptyState
@@ -104,33 +113,33 @@ export function MemberProgressKit({
               Score
             </h2>
             <ProgressRing pct={score} size={160} tone="ok" label="Readiness score" />
-            {nextAction ? (
+            {action ? (
               <p className="wa-kit-lede" style={{ marginTop: 12 }}>
                 Next:{' '}
                 <a
-                  href={nextAction.href}
+                  href={action.href}
                   className="wa-kit-focus hover:wa-opacity-90"
                   style={{ color: 'var(--wa-accent)', fontWeight: 700 }}
                 >
-                  {nextAction.label}
+                  {action.label}
                 </a>
               </p>
             ) : (
               <p className="wa-kit-lede" style={{ marginTop: 12 }}>{readinessNote}</p>
             )}
-            {nextAction ? (
+            {action ? (
               <a
-                href={nextAction.href}
+                href={action.href}
                 className="wa-kit-cta wa-kit-cta--block wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
                 style={{ marginTop: 16 }}
               >
-                {nextAction.ctaLabel}
+                {action.ctaLabel}
               </a>
             ) : null}
             <a
               href={readinessCoachHref}
               className={
-                nextAction
+                action
                   ? 'wa-kit-cta wa-kit-cta--ghost wa-kit-cta--block wa-kit-focus hover:wa-opacity-90'
                   : 'wa-kit-cta wa-kit-cta--block wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none'
               }

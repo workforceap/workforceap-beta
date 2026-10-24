@@ -19,6 +19,13 @@ import {
  */
 export const dynamic = 'force-dynamic';
 
+const PREVIEW_LEARNING_HREF = '/dev/member/program?state=workspace';
+const PREVIEW_TRAINING_NAV_HREFS = {
+  program: '/dev/member/program',
+  learning: PREVIEW_LEARNING_HREF,
+  readiness: '/dev/member/progress',
+} as const;
+
 export default async function DevMemberProgressPage({
   searchParams,
 }: {
@@ -38,6 +45,8 @@ export default async function DevMemberProgressPage({
       readinessNote={empty ? emptyView.readinessNote : view.readinessNote}
       statsHeading="Progress by area"
       readinessCoachHref="/dev/member/toolkit"
+      learningHref={PREVIEW_LEARNING_HREF}
+      trainingNavHrefs={PREVIEW_TRAINING_NAV_HREFS}
       weekStats={empty || error ? [] : view.weekStats}
       milestones={empty || error ? [] : view.milestones}
       nextAction={empty || error ? null : view.priorityAction}
@@ -48,6 +57,7 @@ export default async function DevMemberProgressPage({
           nextAction={empty || error ? null : view.priorityAction}
           breakdown={error ? null : buildReadinessRecapBreakdown(empty ? emptyView : view)}
           coachHref="/dev/member/toolkit"
+          learningHref={PREVIEW_LEARNING_HREF}
           enableGeneration={false}
           loadFailed={error}
         />

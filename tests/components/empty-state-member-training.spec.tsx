@@ -301,6 +301,26 @@ describe('resources', () => {
 });
 
 describe('MemberProgressKit', () => {
+  it('uses fixture-owned training navigation and Learning Hub action routes', () => {
+    const learningHref = '/dev/member/program?state=workspace';
+    const { container } = portal('en', <MemberProgressKit
+      readinessScore={70}
+      nextAction={{ key: 'completePathwaySteps', label: 'Complete training steps.', href: '/dashboard/learning', ctaLabel: 'Open Learning Hub' }}
+      learningHref={learningHref}
+      trainingNavHrefs={{
+        program: '/dev/member/program',
+        learning: learningHref,
+        readiness: '/dev/member/progress',
+      }}
+    />);
+
+    expect(Array.from(container.querySelectorAll('nav a')).map((link) => link.getAttribute('href'))).toEqual([
+      '/dev/member/program', learningHref, '/dev/member/progress',
+    ]);
+    expect(screen.getByRole('link', { name: 'Open Learning Hub' })).toHaveAttribute('href', learningHref);
+    expect(screen.getByRole('link', { name: /Complete training steps/ })).toHaveAttribute('href', learningHref);
+  });
+
   it.each(['en', 'es', 'fr', 'pt'] as const)('%s: empty category scores and milestones are first states with no CTA', (locale) => {
     const m = LOCALES[locale];
     const { container } = portal(locale, <MemberProgressKit readinessScore={0} weekStats={[]} milestones={[]} />);

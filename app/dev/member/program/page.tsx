@@ -63,6 +63,11 @@ const PREVIEW_TRAINING_NAV_HREFS = {
   learning: '/dev/member/program?state=workspace',
   readiness: '/dev/member/progress',
 } as const;
+const PREVIEW_SECONDARY_ACTION_HREFS = {
+  missions: '/dev/member/missions?state=enrolled',
+  resume: '/dev/member/resume-studio',
+  feedback: '/dev/member/messages',
+} as const;
 
 export default async function DevMemberProgramPage({
   searchParams,
@@ -130,6 +135,7 @@ export default async function DevMemberProgramPage({
         workspace={PREVIEW_WORKSPACE}
         programTitle={PREVIEW_WORKSPACE.programTitle}
         trainingNavHrefs={PREVIEW_TRAINING_NAV_HREFS}
+        secondaryActionHrefs={PREVIEW_SECONDARY_ACTION_HREFS}
         completedSlugs={[]}
         destinations={[
           { slug: 'cloud-concepts', moduleHref: '/dev/member/program' },
