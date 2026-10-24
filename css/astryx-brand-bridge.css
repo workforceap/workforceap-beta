@@ -56,7 +56,7 @@ a.astryx-button[data-variant='primary'] {
    Do not swap the label to --wa-on-accent-control instead: dark ink on the
    pinned org accent is 2.78:1 (tests/components/ui-followups-glow-tokens.spec). */
 .astryx-button[data-variant='primary'] {
-  background-color: var(--org-accent, var(--wa-hero-crimson));
+  background-color: var(--org-accent, var(--wa-hero-crimson, #ad2c4d));
 }
 
 /* Member warm surfaces: Stitch uses #fcf9f8 cream, not cool #f7f8fa gray.
