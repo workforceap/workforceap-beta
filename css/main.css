@@ -5306,6 +5306,19 @@ html.dark .sd-field option {
     box-shadow: var(--wa-focus-ring);
 }
 
+/* "Skip to navigation" targets #mobile-bottom-nav, which only exists on phones
+   (the nav is display:none from 768px up, MobileBottomNav) and only on shells
+   that mount it. Elsewhere the link led nowhere, so show it only below 768px
+   when the nav is in the document. */
+a.skip-link[href="#mobile-bottom-nav"] {
+    display: none;
+}
+@media (max-width: 767px) {
+    html:has(nav#mobile-bottom-nav) a.skip-link[href="#mobile-bottom-nav"] {
+        display: block;
+    }
+}
+
 /* Apply form: radio button groups */
 .form-radio-group {
     display: flex;

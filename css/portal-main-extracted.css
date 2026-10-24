@@ -10004,6 +10004,13 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
     box-shadow: none;
     transform: none;
 }
+:is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__link:focus-visible {
+    /* The reset above (box-shadow: none) out-specifies the global
+       a:focus-visible ring, which left keyboard users with no indicator. */
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
+}
 :is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__link--active {
     color: var(--wa-on-accent-control);
     background: var(--wa-accent);
