@@ -34,7 +34,7 @@ for (const theme of ['light', 'dark'] as const) {
         position: getComputedStyle(list).position,
         bottom: list.getBoundingClientRect().bottom,
         height: list.getBoundingClientRect().height,
-        mainPaddingBottom: getComputedStyle(document.querySelector('.workspace-shell-main')!).paddingBottom,
+        innerPaddingBottom: getComputedStyle(document.querySelector('.workspace-shell-main-inner')!).paddingBottom,
         htmlScrollPaddingBottom: getComputedStyle(document.documentElement).scrollPaddingBottom,
         bodyScrollPaddingBottom: getComputedStyle(document.body).scrollPaddingBottom,
         targetScrollMarginBottom: getComputedStyle(document.querySelector('.workspace-shell-main [id]')!).scrollMarginBottom,
@@ -44,7 +44,7 @@ for (const theme of ['light', 'dark'] as const) {
         expect(dailyBar.position).toBe('fixed');
         expect(Math.abs(dailyBar.bottom - 900)).toBeLessThanOrEqual(1);
         expect(dailyBar.height).toBeGreaterThanOrEqual(48);
-        expect(parseFloat(dailyBar.mainPaddingBottom)).toBeGreaterThanOrEqual(64);
+        expect(parseFloat(dailyBar.innerPaddingBottom)).toBeGreaterThanOrEqual(72);
         expect(parseFloat(dailyBar.htmlScrollPaddingBottom)).toBeGreaterThanOrEqual(72);
         expect(parseFloat(dailyBar.bodyScrollPaddingBottom)).toBeGreaterThanOrEqual(72);
         expect(parseFloat(dailyBar.targetScrollMarginBottom)).toBeGreaterThanOrEqual(72);
@@ -71,7 +71,7 @@ for (const theme of ['light', 'dark'] as const) {
         expect(dailyBar.position).not.toBe('fixed');
       }
       // Reach the rail by real Tab rather than assuming a document tab count;
-      // /dev has an extra skip link that the production dashboard excludes.
+      // Both fixtures and production have a responsive navigation skip link.
       for (let i = 0; i < 25; i++) {
         await page.keyboard.press('Tab');
         if (await links.first().evaluate((link) => document.activeElement === link)) break;
