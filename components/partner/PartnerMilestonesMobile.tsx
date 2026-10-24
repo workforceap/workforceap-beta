@@ -87,7 +87,7 @@ export default function PartnerMilestonesMobile({ initialMilestones }: { initial
           {pending.length > 0 && (
             <span
               className="wa-tabular-nums"
-              style={{ padding: '0.125rem 0.5rem', borderRadius: '9999px', background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', fontSize: '0.8125rem', fontWeight: 700 }}
+              style={{ padding: '0.125rem 0.5rem', borderRadius: '9999px', background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)', fontSize: '0.8125rem', fontWeight: 700 }}
             >
               {pending.length}
             </span>

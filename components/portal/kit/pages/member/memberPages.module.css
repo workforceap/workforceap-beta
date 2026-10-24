@@ -365,7 +365,7 @@
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   flex-shrink: 0;
 }
 

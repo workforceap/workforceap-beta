@@ -406,7 +406,10 @@ export default function WorkspaceShell({
 
   useEffect(() => {
     try {
-      setCollapsed(localStorage.getItem(collapseKey) === '1');
+      // No saved preference: the desktop rail starts compact (the icon rail of
+      // the C1+C3 shell). A member who expands it keeps it expanded.
+      const stored = localStorage.getItem(collapseKey);
+      setCollapsed(stored === null ? true : stored === '1');
     } catch {
       /* ignore */
     }

@@ -407,9 +407,10 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
   const ratio = (fg: string, bg: string, tokens: Map<string, string>, scheme: 'light' | 'dark') =>
     contrast(colorOf(fg, tokens, scheme), colorOf(bg, tokens, scheme));
 
-  it('the pairs this fix relies on: --wa-on-accent-control on --wa-accent, --wa-accent-text on the surfaces', () => {
+  it('the pairs this fix relies on: --wa-on-accent-control on --wa-accent-fill, --wa-accent-text on the surfaces', () => {
+    // Solid fills paint --wa-accent-fill (crimson in both modes); --wa-accent is the text-safe hue.
     for (const scheme of ['light', 'dark'] as const) {
-      expect(ratio('var(--wa-on-accent-control)', 'var(--wa-accent)', mainLast, scheme), `${scheme} control text`).toBeGreaterThanOrEqual(4.5);
+      expect(ratio('var(--wa-on-accent-control)', 'var(--wa-accent-fill)', mainLast, scheme), `${scheme} control text`).toBeGreaterThanOrEqual(4.5);
       for (const surface of ['var(--wa-surface)', 'var(--wa-bg)', 'var(--wa-surface-2)', 'var(--wa-accent-soft)']) {
         const bg = over(colorOf(surface, mainLast, scheme), colorOf('var(--wa-surface)', mainLast, scheme));
         expect(contrast(colorOf('var(--wa-accent-text)', mainLast, scheme), bg), `${scheme} accent text on ${surface}`).toBeGreaterThanOrEqual(4.5);
@@ -505,19 +506,19 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
     }
   });
 
-  it.each(['light', 'dark'] as const)('%s: a solid --wa-accent chip reads through --wa-on-accent-control (M14)', async (scheme) => {
+  it.each(['light', 'dark'] as const)('%s: a solid --wa-accent-fill chip reads through --wa-on-accent-control (M14)', async (scheme) => {
     vi.stubGlobal('fetch', vi.fn(async () => json({ milestones: [{ id: 'm1', kind: 'placement_pending', label: 'Pending verification', memberId: 'u1', memberName: 'Ada', at: '2026-09-01T00:00:00Z' }] })));
     const { default: PartnerMilestonesMobile } = await import('@/components/partner/PartnerMilestonesMobile');
     const { container } = render(
       <NextIntlClientProvider locale="en" messages={messages}><PartnerMilestonesMobile /></NextIntlClientProvider>,
     );
     await screen.findByText('Pending Review');
-    const chips = Array.from(container.querySelectorAll<HTMLElement>('[style]')).filter((el) => el.style.background === 'var(--wa-accent)');
+    const chips = Array.from(container.querySelectorAll<HTMLElement>('[style]')).filter((el) => el.style.background === 'var(--wa-accent-fill)');
     expect(chips.length).toBeGreaterThan(0);
     for (const chip of chips) {
       expect(chip.style.color).toBe('var(--wa-on-accent-control)');
       expect(ratio(chip.style.color, chip.style.background, mainLast, scheme)).toBeGreaterThanOrEqual(4.5);
     }
-    expect(ratio('var(--wa-on-accent-control)', 'var(--wa-accent)', mainLast, scheme)).toBeGreaterThanOrEqual(4.5);
+    expect(ratio('var(--wa-on-accent-control)', 'var(--wa-accent-fill)', mainLast, scheme)).toBeGreaterThanOrEqual(4.5);
   });
 });

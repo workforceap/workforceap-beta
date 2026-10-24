@@ -201,7 +201,7 @@ html[data-portal-role][data-theme='dark'] body {
   gap: 6px;
   min-height: 44px;
   padding: 10px 16px;
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
   font-weight: 600;
   font-size: var(--wa-type-body);
@@ -690,7 +690,7 @@ a.wa-kit-tab {
 .wa-kit-bar-fill {
   height: 100%;
   border-radius: 999px;
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
 }
 
 /* WCAG AA focus ring, consistent across the kit. The ring tokens are defined
@@ -1445,7 +1445,7 @@ a.wa-kit-tab {
   transition: transform var(--wa-dur-fast) var(--wa-ease);
 }
 .wa-kit-toggle[data-checked='true'] .wa-kit-toggle-track {
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
 }
 .wa-kit-toggle[data-checked='true'] .wa-kit-toggle-thumb {
   transform: translateX(20px);
@@ -1563,7 +1563,7 @@ a.wa-kit-tab {
   height: 1.75rem;
   flex-shrink: 0;
   border-radius: 999px;
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
   font-size: var(--wa-type-meta);
   font-weight: 700;
@@ -1956,12 +1956,12 @@ a.wa-kit-tab {
   box-shadow: none;
 }
 .workspace-shell-root[data-workspace-role='member'] .btn.btn-primary {
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
   border: none;
 }
 .workspace-shell-root[data-workspace-role='member'] .btn.btn-primary:hover {
-  background: var(--wa-accent-dark);
+  background: var(--wa-accent-fill-hover);
 }
 .workspace-shell-root[data-workspace-role='member'] .btn.btn-secondary,
 .workspace-shell-root[data-workspace-role='member'] .btn.btn-outline,
@@ -2876,7 +2876,7 @@ a.wa-kit-tab {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
 }
 .wa-kit-people-card__quote {
   margin: 16px 24px;

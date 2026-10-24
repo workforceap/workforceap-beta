@@ -52,6 +52,11 @@ beforeEach(() => {
   location.search = '';
   location.wide = true;
   localStorage.clear();
+  // The desktop rail starts compact when nothing is saved; these specs
+  // exercise the expanded rail, so pin the saved preference to expanded.
+  for (const role of ['member', 'employer', 'admin', 'counselor', 'partner']) {
+    localStorage.setItem(`wa_nav_collapsed_${role}`, '0');
+  }
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     matches: location.wide, addEventListener: vi.fn(), removeEventListener: vi.fn(),
   })));

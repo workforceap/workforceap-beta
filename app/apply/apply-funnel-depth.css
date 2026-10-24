@@ -298,7 +298,7 @@ html.dark .afd-footnote {
   width: 2rem;
   height: 2rem;
   border-radius: 9999px;
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
   display: flex;
   align-items: center;

@@ -403,9 +403,12 @@ describe('org-accent fills paint --wa-on-accent (white), not the dark-flipping -
   const defaultOrg = new Map(loadRootTokens(brand, portal, main)).set('--org-accent', '#ad2c4d').set('--color-accent', 'var(--org-accent)');
   const ratio = (fg: string, bg: string, scheme: Scheme) => contrast(colorOf(fg, defaultOrg, scheme), colorOf(bg, defaultOrg, scheme));
 
-  it('before: --wa-on-accent-control on the seeded org accent was 2.78:1 in dark; after: --wa-on-accent is 6.47:1 in both modes', () => {
-    expect(ratio('var(--wa-on-accent-control)', 'var(--color-accent)', 'dark')).toBeCloseTo(2.78, 1);
-    expect(ratio('var(--wa-on-accent-control)', 'var(--color-accent)', 'dark')).toBeLessThan(AA);
+  it('--wa-on-accent-control is white and clears AA on --wa-accent-fill; --wa-on-accent is 6.47:1 on the seeded org accent in both modes', () => {
+    // The dark-ink label is gone: solid fills paint --wa-accent-fill (crimson in both
+    // modes) under a white label, so the control label no longer flips per mode.
+    for (const scheme of SCHEMES) {
+      expect(ratio('var(--wa-on-accent-control)', 'var(--wa-accent-fill)', scheme), `${scheme} control`).toBeGreaterThanOrEqual(AA);
+    }
     for (const scheme of SCHEMES) {
       expect(ratio('var(--wa-on-accent)', 'var(--color-accent)', scheme), `${scheme}`).toBeCloseTo(6.47, 1);
       expect(ratio('var(--wa-on-accent)', 'var(--color-accent)', scheme)).toBeGreaterThanOrEqual(AA);

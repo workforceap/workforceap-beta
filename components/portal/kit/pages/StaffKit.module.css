@@ -171,7 +171,7 @@
 
 .dotRed {
   border-color: var(--wa-accent);
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
 }
 
 .dotYellow {
@@ -277,12 +277,12 @@
 
 .pillPrimary {
   border-color: var(--wa-accent);
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
 }
 
 .pillPrimary:hover {
-  background: var(--wa-accent-dark);
+  background: var(--wa-accent-fill-hover);
 }
 
 .empty {

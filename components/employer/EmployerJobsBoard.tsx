@@ -211,7 +211,7 @@ function FilterPill({ active, href, children }: { active: boolean; href: string;
       aria-current={active ? 'true' : undefined}
       style={{
         ...pillBase,
-        background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
+        background: active ? 'var(--wa-accent-fill)' : 'var(--wa-surface)',
         borderColor: active ? 'var(--wa-accent)' : 'var(--wa-border)',
         // Solid accent control: --wa-on-accent stays white, which is 3.3:1 on
         // the lighter dark-mode accent (KIT_GUIDE §1).

@@ -42,7 +42,7 @@ const primaryPillStyle = {
   alignItems: 'center',
   gap: 6,
   padding: '10px 20px',
-  background: 'var(--wa-accent)',
+  background: 'var(--wa-accent-fill)',
   color: 'var(--wa-on-accent-control)',
   borderRadius: 999,
   border: 'none',

@@ -73,7 +73,7 @@ function pillButton({
   } as const;
   const style =
     variant === 'accent'
-      ? { ...base, background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)' }
+      ? { ...base, background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)' }
       : { ...base, background: 'var(--wa-surface)', color: 'var(--wa-text)', borderColor: 'var(--wa-border)' };
   return (
     <button type="button" className="wa-kit-focus" disabled={disabled} onClick={onClick} style={style}>
@@ -105,7 +105,7 @@ function pillLink({
   } as const;
   const style =
     variant === 'accent'
-      ? { ...base, background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)' }
+      ? { ...base, background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)' }
       : { ...base, background: 'var(--wa-surface)', color: 'var(--wa-text)', borderColor: 'var(--wa-border)' };
 
   return (
@@ -233,7 +233,7 @@ export default function EmployerWorkQueueClient({
               fontWeight: 700,
               cursor: 'pointer',
               border: '1px solid var(--wa-border)',
-              background: focus === k ? 'var(--wa-accent)' : 'var(--wa-surface)',
+              background: focus === k ? 'var(--wa-accent-fill)' : 'var(--wa-surface)',
               color: focus === k ? 'var(--wa-on-accent)' : 'var(--wa-text)',
               borderColor: focus === k ? 'var(--wa-accent)' : 'var(--wa-border)',
             }}

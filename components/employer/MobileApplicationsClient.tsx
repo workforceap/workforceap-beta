@@ -160,7 +160,7 @@ export default function MobileApplicationsClient({
                 // (KIT_GUIDE §1), like the desktop "All" pill in EmployerJobsBoard. The
                 // old --color-accent + #ffffff was 3.28:1 wherever --color-accent
                 // follows the lightened dark accent (no org accent pinned).
-                active ? { background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)' } : { background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' }
+                active ? { background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)' } : { background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' }
               )}
             >
               {f.label}

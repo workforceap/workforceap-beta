@@ -25,7 +25,7 @@ type ProgramPickerProps = {
 const kitPrimaryBtn: CSSProperties = {
   minHeight: 44,
   padding: '10px 16px',
-  background: 'var(--wa-accent)',
+  background: 'var(--wa-accent-fill)',
   color: 'var(--wa-on-accent-control)',
   fontWeight: 600,
   fontSize: 14,

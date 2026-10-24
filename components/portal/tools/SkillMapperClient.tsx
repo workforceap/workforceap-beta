@@ -91,7 +91,7 @@ const primaryPillStyle = {
   gap: '0.375rem',
   minHeight: 44,
   padding: '10px 20px',
-  background: 'var(--wa-accent)',
+  background: 'var(--wa-accent-fill)',
   color: 'var(--wa-on-accent-control)',
   fontWeight: 700,
   fontSize: '0.85rem',
@@ -467,7 +467,7 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                       gap: '0.25rem',
                       padding: '0.35rem 0.5rem',
                       borderRadius: '0.375rem',
-                      background: 'var(--wa-accent)',
+                      background: 'var(--wa-accent-fill)',
                       color: 'var(--wa-on-accent-control)',
                       fontSize: '0.8125rem',
                       fontWeight: 600,
@@ -981,7 +981,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                         <span style={{ color: 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>{s.score}%</span>
                       </div>
                       <div style={{ height: 8, borderRadius: 4, background: 'var(--surface-container-highest)', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${s.score}%`, borderRadius: 4, background: 'var(--wa-accent)', transition: 'width 0.4s ease' }} />
+                        <div style={{ height: '100%', width: `${s.score}%`, borderRadius: 4, background: 'var(--wa-accent-fill)', transition: 'width 0.4s ease' }} />
                       </div>
                     </div>
                   ))}
@@ -1067,7 +1067,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                           )}
                         </div>
                         <Link href={`/programs/${mp.programSlug}`} style={{
-                          background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', borderRadius: 'var(--wa-radius-sm)',
+                          background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)', borderRadius: 'var(--wa-radius-sm)',
                           padding: '0.35rem 0.625rem', fontSize: '0.8125rem', fontWeight: 600,
                           textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0}} onClick={() => trackFunnelEvent('skill_mapper', 'program_recommendation_viewed', { program_slug: mp.programSlug, recommendation_type: mp.recommendationType })}>View →</Link>
                       </div>
@@ -1082,7 +1082,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                       <Link href={`/programs/${matchedPrograms[0].programSlug}`} style={{
                         display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                         padding: '0.5rem 1rem', borderRadius: 999,
-                        background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
+                        background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)',
                         fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none'}} onClick={() => trackFunnelEvent('skill_mapper', 'enroll_cta_clicked', { program_slug: matchedPrograms[0].programSlug })}>
                         {tw('exploreProgram', { program: matchedPrograms[0].programTitle })}
                       </Link>
@@ -1285,7 +1285,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                           </div>
                         </div>
                         <a href={`/programs/${rec.program.slug}`} className={styles.programAction} style={{
-                          background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', borderRadius: '0.5rem',
+                          background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)', borderRadius: '0.5rem',
                           padding: '0.375rem 0.75rem', fontSize: '0.8125rem', fontWeight: 600,
                           textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0}}>{tt('viewProgram')} →</a>
                       </div>
@@ -1341,7 +1341,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                 <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
                   Your current profile is based on certifications and resume. Complete the O*NET Interest Profiler to significantly enrich your radar chart with interest-based signals.
                 </p>
-                <a href="/dashboard/learning/interest-profiler" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.875rem', borderRadius: 999, background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none' }}>
+                <a href="/dashboard/learning/interest-profiler" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.875rem', borderRadius: 999, background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)', fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none' }}>
                   <ArrowRight size={15} aria-hidden="true" />
                   Start 30-question assessment (~10 min)
                 </a>
@@ -1389,7 +1389,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                       padding: '0.35rem 0.75rem', borderRadius: 999,
-                      background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
+                      background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)',
                       fontWeight: 700, fontSize: '0.8125rem', border: 'none',
                       cursor: extractingResume ? 'default' : 'pointer',
                       opacity: extractingResume ? 0.6 : 1}}
@@ -1407,7 +1407,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                       padding: '0.45rem 0.9rem', borderRadius: 999,
-                      background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
+                      background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)',
                       fontWeight: 800, fontSize: '0.8125rem', border: 'none',
                       cursor: extractingResume ? 'default' : 'pointer',
                       opacity: extractingResume ? 0.6 : 1}}
@@ -1436,7 +1436,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                   <a href="/dashboard/resume" style={{
                     display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                     padding: '0.35rem 0.75rem', borderRadius: 999,
-                    background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
+                    background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)',
                     fontWeight: 700, fontSize: '0.8125rem', textDecoration: 'none'}}>
                     <UploadCloud size={14} aria-hidden="true" />
                     Upload resume

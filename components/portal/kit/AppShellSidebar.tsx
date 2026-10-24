@@ -94,7 +94,7 @@ export function AppShellSidebar({ brand, groups, activeId, onNavigate, footer, t
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.label}</span>
                     </span>
                     {it.badge != null ? (
-                      <span style={{ padding: '1px 7px', fontSize: 13, fontWeight: 700, borderRadius: 999, background: 'var(--wa-accent)', color: 'var(--wa-on-accent)' }}>{it.badge}</span>
+                      <span style={{ padding: '1px 7px', fontSize: 13, fontWeight: 700, borderRadius: 999, background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent)' }}>{it.badge}</span>
                     ) : null}
                   </button>
                 );

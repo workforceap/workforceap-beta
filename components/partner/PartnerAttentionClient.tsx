@@ -314,7 +314,7 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
                   padding: '6px 14px',
                   borderRadius: 999,
                   border: `1px solid ${active ? 'var(--wa-accent)' : 'var(--wa-border)'}`,
-                  background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
+                  background: active ? 'var(--wa-accent-fill)' : 'var(--wa-surface)',
                   color: active ? 'var(--wa-on-accent)' : 'var(--wa-text)',
                   cursor: 'pointer',
                 }}

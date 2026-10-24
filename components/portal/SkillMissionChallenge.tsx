@@ -456,7 +456,7 @@ function PhaseQuiz({
             style={{
               height: '100%',
               borderRadius: '9999px',
-              background: 'var(--wa-accent)',
+              background: 'var(--wa-accent-fill)',
               width: `${((currentQ + (isAnswered ? 1 : 0)) / questions.length) * 100}%`,
               transition: 'width var(--wa-dur-slow) var(--wa-ease)',
             }}

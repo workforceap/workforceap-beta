@@ -81,7 +81,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
                 borderRadius: '9999px',
                 fontSize: '0.8125rem',
                 fontWeight: 700,
-                background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
+                background: active ? 'var(--wa-accent-fill)' : 'var(--wa-surface)',
                 color: active ? 'var(--wa-on-accent-control)' : 'var(--wa-muted)',
                 border: `1px solid ${active ? 'var(--wa-accent)' : 'var(--wa-border)'}`,
                 cursor: 'pointer',

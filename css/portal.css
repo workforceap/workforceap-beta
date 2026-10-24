@@ -2978,14 +2978,14 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     padding: 0 0.35rem;
     margin-left: 0.15rem;
     border-radius: 999px;
-    background: var(--wa-accent);
+    background: var(--wa-accent-fill);
     color: var(--wa-on-accent-control);
     font-size: var(--wa-type-meta);
     font-weight: 700;
     line-height: 1;
   }
   .member-portal-top-nav__link--active .member-portal-top-nav__badge {
-    background: var(--wa-accent);
+    background: var(--wa-accent-fill);
     color: var(--wa-on-accent-control);
   }
   .member-portal-top-nav__utilities {

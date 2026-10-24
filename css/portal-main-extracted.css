@@ -9639,7 +9639,7 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
 }
 /* Active = solid crimson fill + white (matches admin-full mockup) */
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active {
-  background: var(--wa-accent, #ad2c4d) !important;
+  background: var(--wa-accent-fill, #ad2c4d) !important;
   color: var(--wa-on-accent-control) !important;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active .workspace-sidebar-icon,
@@ -9674,7 +9674,7 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
   font-size: 0.8125rem;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-nav-badge {
-  background: var(--wa-accent, #ad2c4d) !important;
+  background: var(--wa-accent-fill, #ad2c4d) !important;
   color: var(--wa-on-accent-control) !important;
   border: none !important;
   font-size: 0.8125rem;
@@ -9715,7 +9715,7 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: var(--wa-accent, #ad2c4d);
+  background: var(--wa-accent-fill, #ad2c4d);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -10013,7 +10013,7 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
 }
 :is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__link--active {
     color: var(--wa-on-accent-control);
-    background: var(--wa-accent);
+    background: var(--wa-accent-fill);
 }
 :is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__label {
     color: inherit;
