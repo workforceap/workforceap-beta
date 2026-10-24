@@ -503,7 +503,7 @@ any future kit Dialog/Menu/Combobox must be built on them):
 
 | Hook | Use for |
 |---|---|
-| `useFocusTrap` | overlays (dialogs, drawers, menus). Shared **Escape stack**: nested layers each consume one Escape, top-most first. Visibility-aware tab ring, IME-safe, restores focus to the trigger on close. Prefer native `<dialog>.showModal()` when possible. |
+| `useFocusTrap` | overlays (dialogs, drawers, menus). Shared **Escape stack**: nested layers each consume one Escape, top-most first. Visibility-aware tab ring, IME-safe, restores focus to the trigger on close (pass `returnFocusRef`, or give the container an `id` its trigger names in `aria-controls`, for Safari, which leaves `<body>` focused after a button tap). A container with `tabIndex={-1}` and nothing focusable inside takes focus itself. Prefer native `<dialog>.showModal()` when possible. |
 | `useListFocus` (`kit/hooks/useListFocus`, not in the barrel) | roving tabindex for tablists/menus/result lists — Arrow keys (RTL-aware), Home/End, one tab stop, self-repairing as items mount/unmount. Mark items with `data-kit-list-item`. |
 | `useAnnounce` (barrel) / `announce` (`kit/hooks/useAnnounce`) | screen-reader announcements ("12 results", "Saved"). Singleton persistent live regions — never mount your own `aria-live` div per component (freshly-mounted regions don't announce). |
 
