@@ -179,6 +179,12 @@ because the full chooser still links to signed-in routes. Counselor/readiness, S
 Checkpoints and Training Bridge have no safe fixture override; their authenticated
 flows, plus live voice controls, remain separate acceptance gates. Live callers retain
 the default destinations.
+Program overview and the training workspace accept `trainingNavHrefs` from their
+owner so the sample training navigation stays within Program, its workspace, and
+Progress. The live defaults preserve the selected program query. The Messages
+fixture supplies per-conversation synthetic messages: selecting Support changes its
+header and content, and Back restores focus to that conversation. This opt-in preview
+must not replace live thread messages or enable sending, read markers or realtime.
 
 Member Jobs uses a compact two-by-two tracker summary and stacked 48px task links
 below 600px. Preserve all four tracker counts and their distinction from bookmarks

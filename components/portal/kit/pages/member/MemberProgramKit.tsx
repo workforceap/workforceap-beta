@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { DesignSurface, ProgressRing, PageOpener, KitEmptyState } from '@/components/portal/kit';
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
 import CourseraLaunchErrorNotice from '@/components/portal/CourseraLaunchErrorNotice';
-import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
+import { MemberTrainingNav, type MemberTrainingNavHrefs } from '@/components/portal/MemberCareerSteps';
 import { MemberTrainingWorkspace, type MemberTrainingWorkspaceProps } from './MemberTrainingWorkspace';
 
 /**
@@ -72,6 +72,8 @@ export interface MemberProgramKitProps {
    */
   missionsSummary?: string;
   missionsHref?: string;
+  /** Optional route overrides for credential-free fixture owners. */
+  trainingNavHrefs?: MemberTrainingNavHrefs;
 }
 
 const DEFAULT_MODULES: ProgramModule[] = [];
@@ -126,11 +128,12 @@ export function MemberProgramKit({
   liveSessionDurationMinutes = 60,
   missionsSummary,
   missionsHref = '#',
+  trainingNavHrefs,
 }: MemberProgramKitProps) {
   // The page states the course denominator once; the workspace view must show it where it states the count too.
   // A failed Coursera launch lands here with ?error=; say what happened on both views.
-  if (trainingWorkspace) return <><CourseraLaunchErrorNotice /><MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} modulesNote={modulesNote} {...trainingWorkspace} /></>;
-  return <><CourseraLaunchErrorNotice /><MemberProgramOverview programSlug={programSlug} programTitle={programTitle} progressPercent={progressPercent} modulesComplete={modulesComplete} modulesTotal={modulesTotal} modulesNote={modulesNote} estRemaining={estRemaining} resumeHref={resumeHref} courseraLaunchHref={courseraLaunchHref} modules={modules} liveSessionTitle={liveSessionTitle} liveSessionWhen={liveSessionWhen} liveSessionStart={liveSessionStart} liveSessionDurationMinutes={liveSessionDurationMinutes} missionsSummary={missionsSummary} missionsHref={missionsHref} /></>;
+  if (trainingWorkspace) return <><CourseraLaunchErrorNotice /><MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} modulesNote={modulesNote} {...trainingWorkspace} trainingNavHrefs={trainingNavHrefs ?? trainingWorkspace.trainingNavHrefs} /></>;
+  return <><CourseraLaunchErrorNotice /><MemberProgramOverview programSlug={programSlug} programTitle={programTitle} progressPercent={progressPercent} modulesComplete={modulesComplete} modulesTotal={modulesTotal} modulesNote={modulesNote} estRemaining={estRemaining} resumeHref={resumeHref} courseraLaunchHref={courseraLaunchHref} modules={modules} liveSessionTitle={liveSessionTitle} liveSessionWhen={liveSessionWhen} liveSessionStart={liveSessionStart} liveSessionDurationMinutes={liveSessionDurationMinutes} missionsSummary={missionsSummary} missionsHref={missionsHref} trainingNavHrefs={trainingNavHrefs} /></>;
 }
 
 /** Program overview (no pinned workspace): hooks live here so the early workspace return above stays hook-free. */
@@ -151,8 +154,9 @@ function MemberProgramOverview({
   liveSessionDurationMinutes,
   missionsSummary,
   missionsHref,
+  trainingNavHrefs,
 }: Required<Pick<MemberProgramKitProps, 'programTitle' | 'progressPercent' | 'modulesComplete' | 'modulesTotal' | 'resumeHref' | 'modules' | 'liveSessionDurationMinutes' | 'missionsHref'>> &
-  Pick<MemberProgramKitProps, 'programSlug' | 'modulesNote' | 'estRemaining' | 'courseraLaunchHref' | 'liveSessionTitle' | 'liveSessionWhen' | 'liveSessionStart' | 'missionsSummary'>) {
+  Pick<MemberProgramKitProps, 'programSlug' | 'modulesNote' | 'estRemaining' | 'courseraLaunchHref' | 'liveSessionTitle' | 'liveSessionWhen' | 'liveSessionStart' | 'missionsSummary' | 'trainingNavHrefs'>) {
   const te = useTranslations('empty');
   const pct = Math.max(0, Math.min(100, Math.round(progressPercent)));
 
@@ -201,7 +205,7 @@ function MemberProgramOverview({
         <PageOpener
           title="Certification path"
         />
-        <MemberTrainingNav current="program" programSlug={programSlug} />
+        <MemberTrainingNav current="program" programSlug={programSlug} hrefs={trainingNavHrefs} />
         {/* Gradient hero */}
         <div
           className="wa-kit-card wa-kit-card--gradient-crimson wa-flex wa-flex-col md:wa-flex-row md:wa-items-center"

@@ -13,7 +13,7 @@ import { TextInput } from '@astryxdesign/core/TextInput';
 import { VStack } from '@astryxdesign/core/VStack';
 import { HStack } from '@astryxdesign/core/HStack';
 import { DesignSurface, PageOpener, KitEmptyState, useAnnounce } from '@/components/portal/kit';
-import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
+import { MemberTrainingNav, type MemberTrainingNavHrefs } from '@/components/portal/MemberCareerSteps';
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
 import SkillMissionChallenge from '@/components/portal/SkillMissionChallenge';
 import type { TrainingCoursePractice } from '@/lib/member/trainingCoursePractice';
@@ -93,6 +93,8 @@ export interface MemberTrainingWorkspaceProps {
   trainingEmail?: string | null;
   practiceMissions?: TrainingCoursePractice[];
   practiceUnavailable?: boolean;
+  /** Optional route overrides for credential-free fixture owners. */
+  trainingNavHrefs?: MemberTrainingNavHrefs;
 }
 
 type Draft = { notes: string; artifactUrl: string };
@@ -107,7 +109,7 @@ function addDays(date: string, days: number) {
 }
 
 /** The member's assigned curriculum, study schedule, and durable work in one place. */
-export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTitle, completedSlugs, destinations, initialCourseSlug, syllabusHours, syllabusBreakdown, modulesNote, trainingEmail, practiceMissions = [], practiceUnavailable = false }: MemberTrainingWorkspaceProps) {
+export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTitle, completedSlugs, destinations, initialCourseSlug, syllabusHours, syllabusBreakdown, modulesNote, trainingEmail, practiceMissions = [], practiceUnavailable = false, trainingNavHrefs }: MemberTrainingWorkspaceProps) {
   const router = useRouter();
   const te = useTranslations('empty');
   const [workspace, setWorkspace] = useState(initialWorkspace);
@@ -218,7 +220,7 @@ export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTi
     <DesignSurface surface="warm">
       <main className="wa-kit-training">
         <PageOpener kicker="My program" title="Your training workspace" lede="Learn the skills. Build the work. Keep moving toward your next role." icon={<GraduationCap size={14} aria-hidden="true" />} />
-        <MemberTrainingNav current="program" programSlug={workspace.programSlug} />
+        <MemberTrainingNav current="program" programSlug={workspace.programSlug} hrefs={trainingNavHrefs} />
         <section className="wa-kit-training-overview" aria-label="Your assigned training">
           <VStack gap={3}>
             <p className="wa-kit-training-eyebrow">{totalHours} hours of assigned training</p>
