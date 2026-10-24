@@ -3150,7 +3150,13 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   }
 
   .workspace-shell-root[data-workspace-role='member'] .workspace-shell-main {
-    padding-bottom: calc(1.25rem + var(--member-portal-bottom-nav-clearance, 4.5rem));
+    padding-bottom: 1.25rem;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .workspace-shell-main-inner {
+    /* Keep clearance after in-flow legal links. The inner grows with long forms;
+       clearance on the scroll container alone is consumed by its 100% min-height. */
+    padding-bottom: var(--member-portal-bottom-nav-clearance, 4.5rem);
   }
 
   .workspace-shell-root[data-workspace-role='member'] .workspace-shell-main [id] {
