@@ -5,6 +5,7 @@ import AdminUsersManager from '@/components/admin/AdminUsersManager';
 import { UsersKit } from '@/components/portal/kit/pages/admin-subviews/UsersKit';
 import { DesignSurface } from '@/components/portal/kit/DesignSurface';
 import GlobalSearch from '@/components/portal/GlobalSearch';
+import PageHeader from '@/components/portal/PageHeader';
 import { normalizeDirectorySearch } from '@/lib/admin/directorySearch';
 
 /** Synthetic, credential-free proof of the actual directory components. */
@@ -26,7 +27,7 @@ export default async function PeopleProof({ searchParams }: { searchParams: Prom
     .filter(user => !params.role || user.role === params.role);
   return (
     <DesignSurface surface="dense" className="wa-kit-people-roster">
-      <p>Synthetic directory preview</p>
+      <PageHeader title="People" subtitle="Synthetic directory preview: members, staff and user management." />
       <GlobalSearch />
       <nav aria-label="Preview views" className="wa-flex wa-flex-wrap wa-gap-3 wa-mb-5">
         <Link href="?view=members">Members</Link><Link href="?view=staff">Staff</Link><Link href="?view=manage">Manage users</Link>
