@@ -178,6 +178,9 @@ export default function DevStaffPartnerCommandPage() {
           rows={REFERRAL_ROWS}
           rowKey={(row) => row.id}
           mobile="scroll"
+          caption="Referred members"
+          minWidth={320}
+          scrollCue
           emptyTitle="No referred members yet"
           emptyDescription="New referrals will appear here after members apply through this partner."
         />

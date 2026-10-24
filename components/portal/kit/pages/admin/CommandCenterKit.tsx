@@ -493,7 +493,7 @@ export function CommandCenterKit({
             <h2 id="admin-members-title">Members</h2>
             <AstryxLink href={membersHref} as={NextLink as never} isStandalone>View all</AstryxLink>
           </header>
-          <DataTable<CommandCenterMemberRow> columns={memberColumns} rows={members} rowKey={(row) => row.id} minWidth={560} emptyTitle="No members yet" />
+          <DataTable<CommandCenterMemberRow> columns={memberColumns} rows={members} rowKey={(row) => row.id} minWidth={560} scrollCue caption="Members" emptyTitle="No members yet" />
         </section>
       ) : null}
     </DesignSurface>

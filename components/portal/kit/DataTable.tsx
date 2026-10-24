@@ -193,7 +193,17 @@ export function DataTable<T>({
   return (
     <div ref={ref} className={className} style={style} {...rest}>
       <div className="wa-hidden lg:wa-block">{tableEl}</div>
-      <div className="lg:wa-hidden wa-space-y-2" aria-busy={loading || undefined}>
+      <div
+        className="lg:wa-hidden wa-space-y-2"
+        aria-busy={loading || undefined}
+        // Page-change target for KitTablePager: scroll margin clears the sticky workspace
+        // header; tabIndex -1 lets it take programmatic focus without becoming a tab stop.
+        data-kit-list=""
+        data-kit-list-focus=""
+        tabIndex={-1}
+        style={{ scrollMarginTop: 'calc(var(--workspace-top-offset, 0px) + 8px)', outline: 'none' }}
+        {...(caption ? { role: 'group', 'aria-label': caption } : undefined)}
+      >
         {errorNotice ? (
           <div className="wa-kit-table-notice" role="alert">
             {errorNotice}

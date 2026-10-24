@@ -85,6 +85,9 @@ interface KitTableShellProps extends KitDataAttrs {
   ref?: Ref<HTMLDivElement>;
 }
 
+/** Keeps a list's top edge clear of the sticky workspace header when a page change scrolls to it. */
+const LIST_SCROLL_MARGIN = 'calc(var(--workspace-top-offset, 0px) + 8px)';
+
 function nextSelection(current: string[], key: string, checked: boolean): string[] {
   if (checked) return current.includes(key) ? current : [...current, key];
   return current.filter((k) => k !== key);
@@ -151,12 +154,14 @@ export function KitTableShell({
   const toggleExpanded = (key: string) =>
     setExpanded((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]));
 
-  // --- scroll cue ----------------------------------------------------------
+  // --- scroll cue / scroll region -------------------------------------------
+  // Overflow is measured for every table: a horizontally scrollable box must be
+  // keyboard-focusable and named (WCAG 2.1.1; Safari does not make it focusable
+  // on its own), whether or not the caller asked for the visual cue.
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [scrollable, setScrollable] = useState(false);
   const [atEnd, setAtEnd] = useState(false);
   useEffect(() => {
-    if (!scrollCue) return;
     const el = scrollerRef.current;
     if (!el) return;
     const measure = () => {
@@ -172,7 +177,7 @@ export function KitTableShell({
       el.removeEventListener('scroll', measure);
       observer?.disconnect();
     };
-  }, [scrollCue, rows.length, columns.length]);
+  }, [rows.length, columns.length, loading]);
 
   const leadingColumns = (selectable ? 1 : 0) + (hasSubRows ? 1 : 0);
   const colSpan = columns.length + leadingColumns || 1;
@@ -197,8 +202,9 @@ export function KitTableShell({
         isEmpty && 'wa-kit-table-wrap--empty',
         className,
       )}
-      style={style}
+      style={{ scrollMarginTop: LIST_SCROLL_MARGIN, ...style }}
       aria-busy={loading || undefined}
+      data-kit-list=""
       data-scrollable={scrollCue ? String(scrollable) : undefined}
       data-scroll-end={scrollCue && scrollable ? String(atEnd) : undefined}
       {...rest}
@@ -229,13 +235,21 @@ export function KitTableShell({
         <>
           <div
             ref={scrollerRef}
-            className="wa-overflow-x-auto"
+            className={cx('wa-overflow-x-auto', scrollable && 'wa-kit-focus')}
             style={stickyHeader ? { maxHeight: stickyMaxHeight, overflowY: 'auto' } : undefined}
+            // Only a box that really overflows becomes a tab stop; the label names
+            // it for screen readers ("<table name>, scrollable").
+            {...(scrollable
+              ? { role: 'region', tabIndex: 0, 'aria-label': caption ? `${caption}, scrollable` : 'Scrollable table' }
+              : undefined)}
           >
             <table
               className={cx('wa-kit-table', clickable && 'wa-kit-table--clickable')}
               data-density={density}
-              style={{ minWidth }}
+              data-kit-list-focus=""
+              // Programmatic focus target after a page change (KitTablePager); not a tab stop.
+              tabIndex={-1}
+              style={{ minWidth, outline: 'none' }}
             >
               {caption ? <caption className="wa-sr-only">{caption}</caption> : null}
               <thead>
@@ -377,16 +391,49 @@ export function KitTableShell({
   );
 }
 
-/** Footer pager shared by the table and the stacked-card mobile branch. */
+/**
+ * Footer pager shared by the table and the stacked-card mobile branch.
+ *
+ * Activating a page control leaves the viewport at the pager, i.e. at the bottom
+ * of the new page. Once the new page has rendered, the list's top edge is
+ * scrolled back into view and focus moves to the list (`data-kit-list-focus`,
+ * else the list itself), so keyboard and screen-reader users start at the first
+ * row. "Page N of M" is announced by Astryx Pagination's own polite live region,
+ * so there is deliberately no second one here.
+ */
 export function KitTablePager({ pagination, className }: { pagination: KitTablePagination; className?: string }) {
+  const footerRef = useRef<HTMLDivElement | null>(null);
+  const awaitingPage = useRef(false);
+  const { page, onChange } = pagination;
+
+  const handleChange = useCallback(
+    (next: number) => {
+      awaitingPage.current = next !== page;
+      onChange(next);
+    },
+    [page, onChange],
+  );
+
+  useEffect(() => {
+    if (!awaitingPage.current) return;
+    awaitingPage.current = false;
+    const list = footerRef.current?.closest<HTMLElement>('[data-kit-list]');
+    if (!list) return;
+    // Instant, never smooth: this is a jump to new content, not an animation. ('auto' would
+    // defer to the page's `scroll-behavior: smooth` and land mid-animation when focus moves.)
+    if (list.getBoundingClientRect().top < 0) list.scrollIntoView({ block: 'start', behavior: 'instant' });
+    const target = list.querySelector<HTMLElement>('[data-kit-list-focus]') ?? list;
+    target.focus({ preventScroll: true });
+  }, [page]);
+
   if (pagination.totalItems <= pagination.pageSize) return null;
   return (
-    <div className={cx('wa-kit-table-footer', className)}>
+    <div ref={footerRef} className={cx('wa-kit-table-footer', className)}>
       <Pagination
         page={pagination.page}
         totalItems={pagination.totalItems}
         pageSize={pagination.pageSize}
-        onChange={pagination.onChange}
+        onChange={handleChange}
         isDisabled={pagination.isDisabled}
         variant="compact"
         label={pagination.label ?? 'Table pagination'}

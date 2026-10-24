@@ -136,6 +136,10 @@ export function PartnerPayoutLedger({ rows }: { rows: PartnerPayoutLedgerRow[] }
       rows={rows}
       rowKey={(r) => r.id}
       mobile="scroll"
+      caption="Payout history"
+      // Three short columns: the 600px default floor clipped them at 375px.
+      minWidth={320}
+      scrollCue
     />
   );
 }
