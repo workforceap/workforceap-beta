@@ -172,6 +172,13 @@ manual acceptance notes, not a production gate bypass.
 The fixture review bar keeps a compact, native "Sample data" disclosure next to
 "Review screens". Route-specific notices explain disabled actions and synthetic
 handoff evidence without pushing the actual task below repeated preview paragraphs.
+The Toolkit fixture supplies `VoiceStudioKit.destinationHrefs` for supported sample
+screens. Tool identities and translations use their original route keys, independently
+of overridden destinations. The fixture's Interviews shortcut opens interview practice
+because the full chooser still links to signed-in routes. Counselor/readiness, Skill
+Checkpoints and Training Bridge have no safe fixture override; their authenticated
+flows, plus live voice controls, remain separate acceptance gates. Live callers retain
+the default destinations.
 
 Member Jobs uses a compact two-by-two tracker summary and stacked 48px task links
 below 600px. Preserve all four tracker counts and their distinction from bookmarks

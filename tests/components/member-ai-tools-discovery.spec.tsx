@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 import { pickPortalClientMessages } from '@/lib/i18n/pickRootClientMessages';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import { VoiceStudioKit } from '@/components/portal/kit/pages/VoiceStudioKit';
+import DevMemberToolkitPage from '@/app/dev/member/toolkit/page';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
@@ -71,5 +72,42 @@ describe('member AI Career Tools discovery', () => {
       .toHaveAttribute('href', '/dashboard/ai-tools/cover-letter');
     expect(screen.getByRole('region', { name: 'Coaches' })).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Practice' })).not.toBeInTheDocument();
+  });
+
+  it('keeps supported toolkit destinations inside the credential-free member fixtures', async () => {
+    const page = await DevMemberToolkitPage({ searchParams: Promise.resolve({}) });
+    render(<NextIntlClientProvider locale="en" messages={pickPortalClientMessages(en)}>{page}</NextIntlClientProvider>);
+
+    const start = within(screen.getByRole('region', { name: 'Start with one task' }));
+    expect(start.getByRole('link', { name: 'Improve my resume' })).toHaveAttribute('href', '/dev/member/resume-studio');
+    expect(start.getByRole('link', { name: 'Interviews' })).toHaveAttribute('href', '/dev/member/interview-practice');
+    expect(start.getByRole('link', { name: 'Write a cover letter' })).toHaveAttribute('href', '/dev/member/cover-letter');
+
+    const coaches = within(screen.getByRole('region', { name: 'Coaches' }));
+    expect(coaches.getByRole('link', { name: 'Open full resume coach' })).toHaveAttribute('href', '/dev/member/resume-studio?view=coach');
+    expect(coaches.getByRole('link', { name: 'Message my human counselor' })).toHaveAttribute('href', '/dev/member/messages');
+
+    fireEvent.click(screen.getByRole('radio', { name: 'All Tools' }));
+    const toolkit = within(screen.getByRole('region', { name: 'All career tools' }));
+    expect(toolkit.getByRole('link', { name: /Cover Letter/i })).toHaveAttribute('href', '/dev/member/cover-letter');
+    expect(toolkit.getByRole('link', { name: /Job Match Scorer/i })).toHaveAttribute('href', '/dev/member/job-match');
+    // No fixture exists for these tools, so their default production destinations remain explicit.
+    expect(toolkit.getByRole('link', { name: /Skill Checkpoints/i })).toHaveAttribute('href', '/dashboard/ai-tools/skill-checkpoints');
+    expect(toolkit.getByRole('link', { name: /Training Bridge/i })).toHaveAttribute('href', '/dashboard/ai-tools/training-bridge');
+  });
+
+  it('keeps tool identity labels when multiple production tools share one fixture destination', () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={pickPortalClientMessages(en)}>
+        <VoiceStudioKit initialTab="toolkit" destinationHrefs={{
+          interviews: '/dev/member/interview-practice',
+          'interview-practice': '/dev/member/interview-practice',
+        }} />
+      </NextIntlClientProvider>,
+    );
+    const tools = within(screen.getByRole('region', { name: 'All career tools' }));
+    const interviews = tools.getByRole('link', { name: /Interviews\s*Prepare answers, practice with AI/ });
+    expect(interviews).toHaveAttribute('href', '/dev/member/interview-practice');
+    expect(interviews).toHaveTextContent('Interviews');
   });
 });
