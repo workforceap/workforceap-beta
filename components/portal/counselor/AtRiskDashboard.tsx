@@ -664,17 +664,25 @@ export function AtRiskDashboardView({
 
         {/* Bulk actions */}
         {selectedIds.size > 0 && (
+          // The bar sits above the list, so on a phone it scrolled away as soon
+          // as a row further down was ticked. Below md it pins under the
+          // workspace header (sticky, not fixed: it stays in the flow above the
+          // list and never competes with the bottom nav); from md up the list
+          // fits the screen and it stays static. The accent tint is layered on
+          // the surface so rows scrolling underneath never show through.
           <div
-            className="wa-kit-card wa-kit-card--sm"
+            className="wa-kit-card wa-kit-card--sm wa-sticky wa-z-20 wa-top-[var(--workspace-top-offset,0px)] md:wa-static"
+            data-testid="at-risk-bulk-bar"
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              gap: 16,
-              background: 'var(--wa-accent-soft)',
+              flexWrap: 'wrap',
+              gap: 8,
+              background: 'linear-gradient(var(--wa-accent-soft), var(--wa-accent-soft)), var(--wa-surface)',
               borderColor: 'transparent'}}
           >
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)' }}>
+            <span role="status" style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)' }}>
               {selectedIds.size} selected
               {openSelectedCount !== selectedIds.size ? (
                 <span style={{ fontWeight: 500, opacity: 0.85 }}> · {openSelectedCount} open</span>
@@ -731,7 +739,7 @@ export function AtRiskDashboardView({
                     aria-label="Select all visible"
                     checked={allSelectedOnPage}
                     onChange={toggleSelectAll}
-                    style={{ cursor: 'pointer', width: 15, height: 15 }}
+                    style={{ cursor: 'pointer', width: 15, height: 15, accentColor: 'var(--wa-accent)' }}
                   />
                   Select all visible
                 </label>
@@ -995,6 +1003,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       title={title}
+      aria-pressed={active}
       className="wa-kit-focus"
       style={{
         display: 'inline-flex',
@@ -1104,7 +1113,7 @@ function RiskRow({
           aria-label={`Select ${row.name}`}
           checked={selected}
           onChange={onToggleSelect}
-          style={{ cursor: 'pointer', width: 16, height: 16, marginTop: 10, flexShrink: 0 }}
+          style={{ cursor: 'pointer', width: 16, height: 16, marginTop: 10, flexShrink: 0, accentColor: 'var(--wa-accent)' }}
         />
         <div
           aria-hidden
