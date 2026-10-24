@@ -1702,6 +1702,15 @@ html:not(.dark) .workspace-sidebar.open::before {
     .workspace-sidebar.open .workspace-sidebar-inner {
         padding-top: max(1rem, calc(env(safe-area-inset-top, 0px) + 0.6rem));
     }
+    /* The closed phone drawer sits off-screen but its links are still tabbable.
+       WorkspaceShell marks it inert once mounted; the server HTML cannot (it
+       does not know the viewport, and an SSR inert froze the desktop rail), so
+       CSS hides it from focus and the a11y tree until then. Visibility flips
+       after the slide-out finishes and before the slide-in starts. */
+    .workspace-sidebar:not(.open) {
+        visibility: hidden;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.28s;
+    }
 }
 .workspace-sidebar-label {
     font-size: 0.8125rem;

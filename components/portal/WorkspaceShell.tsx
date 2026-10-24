@@ -24,7 +24,8 @@ import {
 import { withContextualToolRow } from '@/lib/nav/memberToolRoutes';
 import WorkspaceSidebarSections, { navSectionsStorageKey } from './WorkspaceSidebarSections';
 import { useTour } from '@/components/onboarding/TourContext';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
+import { claimEarlyTap } from '@/lib/portal/earlyShellTap';
 import SuperAdminViewSwitcher, { useIsSuperAdmin } from '@/components/super-admin-view-switcher';
 import PortalHeaderActions from './PortalHeaderActions';
 import PortalRoleSwitcher from './PortalRoleSwitcher';
@@ -223,8 +224,21 @@ export default function WorkspaceShell({
         : railNavItems;
   const mobileDrawerNavItems = railNavItems;
   const [drawerOpen, setDrawerOpen] = useState(false);
+  // Close the drawer when the route changes, and only then. A mount-time
+  // reset (the old `useEffect(() => setDrawerOpen(false), [pathname])`) also
+  // ran right after hydration and cancelled a tap that landed between the
+  // hydration commit and the passive effects. Adjusting state while rendering
+  // (React's derived-state pattern) closes it in the same render as the route.
+  const [drawerPathname, setDrawerPathname] = useState(pathname);
+  if (pathname !== drawerPathname) {
+    setDrawerPathname(pathname);
+    setDrawerOpen(false);
+  }
   const [collapsed, setCollapsed] = useState(false);
   const [wide, setWide] = useState(false);
+  // False in the server HTML and through hydration, so the server cannot bake a
+  // phone-only `inert` into the desktop rail (see the <aside> below).
+  const [mounted, setMounted] = useState(false);
   const [badges, setBadges] = useState<Partial<Record<NavBadgeKey, number>>>({});
   const [badgeFetchError, setBadgeFetchError] = useState(false);
   const isCollapsedDesktop = collapsed && wide;
@@ -308,12 +322,26 @@ export default function WorkspaceShell({
   const currentPageLabel = currentPageItem ? translateLabel(currentPageItem.label) : null;
   const mainRef = useRef<HTMLDivElement>(null);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
-  const trapRef = useFocusTrap(isMobileDrawer, closeDrawer);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Focus returns to the trigger on close even where the opener was never
+  // focused (Safari does not focus a button on click, and a replayed early
+  // tap has no focus change at all).
+  const trapRef = useFocusTrap<HTMLElement>(isMobileDrawer, { onEscape: closeDrawer, returnFocusRef: menuBtnRef });
   useWorkspaceMobileScrollChrome();
 
+  // Shell is interactive: replay a menu tap that landed before hydration (the
+  // button is server-rendered and looks enabled long before this runs; see
+  // lib/portal/earlyShellTap.ts) and publish the test marker. Declared after
+  // every other mount effect; replay opens, never toggles, so it is safe even
+  // when React also handled the same tap.
   useEffect(() => {
-    setDrawerOpen(false);
-  }, [pathname]);
+    setMounted(true);
+    const root = rootRef.current;
+    root?.setAttribute('data-shell-ready', 'true');
+    if (claimEarlyTap('menu')) setDrawerOpen(true);
+    return () => root?.removeAttribute('data-shell-ready');
+  }, []);
 
   const collapseKey = `wa_nav_collapsed_${portalRole}`;
 
@@ -499,7 +527,7 @@ export default function WorkspaceShell({
   const minimalHeader = minimalMobileHeader || (portalRole !== 'member' && !wide);
 
   return (
-    <div className="workspace-shell-root" data-workspace-role={portalRole} style={rootStyle}>
+    <div ref={rootRef} className="workspace-shell-root" data-workspace-role={portalRole} style={rootStyle}>
       {/* Mirror the data-portal-role effect at parse time so <html>/<body> take the
           portal canvas on first paint instead of after hydration (WAP-153). The
           value is a fixed PortalRole union member, never user input. */}
@@ -518,8 +546,10 @@ export default function WorkspaceShell({
       >
         <div className="workspace-shell-header__brand">
           <button
+            ref={menuBtnRef}
             type="button"
             className="workspace-menu-btn"
+            data-early-tap="menu"
             onClick={() => setDrawerOpen(true)}
             aria-label={tNav('openMenu')}
             aria-expanded={drawerOpen}
@@ -667,8 +697,13 @@ export default function WorkspaceShell({
         <aside
           id="workspace-sidebar"
           ref={trapRef}
-          inert={!wide && !drawerOpen}
-          aria-hidden={!wide && !drawerOpen ? true : undefined}
+          // The closed phone drawer is inert and hidden from the a11y tree only
+          // once the client knows the viewport. The server HTML cannot know it,
+          // and an SSR `inert` made the visible desktop rail ignore clicks until
+          // hydration; before that, CSS alone hides the closed drawer on phones
+          // (`visibility: hidden` below 769px, css/portal-main-extracted.css).
+          inert={mounted && !wide && !drawerOpen}
+          aria-hidden={mounted && !wide && !drawerOpen ? true : undefined}
           role={isMobileDrawer ? 'dialog' : undefined}
           aria-modal={isMobileDrawer ? true : undefined}
           aria-label={isMobileDrawer ? `${translateLabel(workspaceLabel)} navigation` : undefined}

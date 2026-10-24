@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
-import { useId, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import { getBestActiveHref, type ActiveNavLink } from '@/lib/nav/activeRoute';
 import { MEMBER_PORTAL_NAV_ITEMS, navItemsForActiveRoute, type NavBadgeKey } from '@/lib/nav/portalNav';
 import { splitLocalePrefix } from '@/lib/i18n/config';
 import { localizeHref } from '@/lib/i18n/localizeHref';
+import { claimEarlyTap } from '@/lib/portal/earlyShellTap';
 
 /**
  * The rail's matching rule (href, aliases, `exact`) for each member route,
@@ -50,6 +51,7 @@ export default function MemberPortalTopNav({
   const [moreOpen, setMoreOpen] = useState(false);
   const moreId = useId();
   const navRef = useRef<HTMLElement>(null);
+  const moreBtnRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const activeItemRef = useRef<HTMLLIElement>(null);
 
@@ -89,6 +91,26 @@ export default function MemberPortalTopNav({
     if (!item) return;
     centerRailItem(list, item);
   }, [pathname]);
+
+  // The button is server-rendered and looks live well before hydration. Replay a
+  // tap that landed before this mounted (lib/portal/earlyShellTap.ts); it opens
+  // the list rather than toggling it, so a tap React also handled stays open.
+  useEffect(() => {
+    if (claimEarlyTap('more')) setMoreOpen(true);
+  }, []);
+
+  /**
+   * Escape closes the open "More pages" list and puts focus back on its button
+   * (the same disclosure contract as DashboardProgramSelector). Outside taps
+   * deliberately do not close it: the list is in flow and pushes the page down,
+   * so dismissing it on a stray tap would shift the page under the finger.
+   */
+  const onNavKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key !== 'Escape' || event.nativeEvent.isComposing || !moreOpen) return;
+    event.preventDefault();
+    setMoreOpen(false);
+    moreBtnRef.current?.focus();
+  };
 
   const remap = (href: string) => hrefMap?.[href] ?? href;
 
@@ -184,7 +206,7 @@ export default function MemberPortalTopNav({
   };
 
   return (
-    <nav ref={navRef} className="member-portal-top-nav" aria-label={t('memberPortal')}>
+    <nav ref={navRef} className="member-portal-top-nav" aria-label={t('memberPortal')} onKeyDown={onNavKeyDown}>
       <ul ref={listRef} className="member-portal-top-nav__list">
         {primary.map((tab) => (
             <li
@@ -202,8 +224,10 @@ export default function MemberPortalTopNav({
           {currentSecondary && renderLink(currentSecondary)}
           {extraPages.length > 0 && (
             <button
+              ref={moreBtnRef}
               type="button"
               className="member-portal-top-nav__link member-portal-top-nav__more"
+              data-early-tap="more"
               aria-expanded={moreOpen}
               aria-controls={moreId}
               onClick={() => setMoreOpen((open) => !open)}

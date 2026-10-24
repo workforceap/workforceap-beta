@@ -11,6 +11,7 @@ import JsonLd from '@/components/JsonLd';
 import ConditionalMarketingNav from '@/components/ConditionalMarketingNav';
 import OrgBrandingStyle from '@/components/platform/OrgBrandingStyle';
 import ThemeInitScript from '@/components/theme/ThemeInitScript';
+import EarlyShellTapScript from '@/components/portal/EarlyShellTapScript';
 import UtmCapture from '@/components/marketing/UtmCapture';
 import { Suspense } from 'react';
 import { getRequestOrgBranding } from '@/lib/platform/defaultOrgTheme';
@@ -211,6 +212,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <head>
         <ThemeInitScript nonce={cspNonce} />
+        {/* Records phone-menu taps that land before hydration so the portal shell
+            can replay them once it mounts (lib/portal/earlyShellTap.ts). */}
+        <EarlyShellTapScript nonce={cspNonce} />
         {/* Inline nonce-bearing scripts carry suppressHydrationWarning: browsers
             blank the `nonce` attribute under a header-delivered CSP, which React
             dev otherwise reports as a hydration mismatch (see ThemeInitScript).
