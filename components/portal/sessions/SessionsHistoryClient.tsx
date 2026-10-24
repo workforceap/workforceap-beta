@@ -1,5 +1,6 @@
 'use client';
 
+import { formatPortalDateTime } from '@/lib/formatDate';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Search, Sparkles } from 'lucide-react';
@@ -190,7 +191,7 @@ export default function SessionsHistoryClient({
                   ) : null}
                   {s.toolCount} tool run{s.toolCount === 1 ? '' : 's'}
                   {' · '}
-                  {new Date(s.startedAt).toLocaleString()}
+                  {formatPortalDateTime(s.startedAt)}
                 </div>
               </div>
               <Link

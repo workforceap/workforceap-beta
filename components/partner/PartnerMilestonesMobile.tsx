@@ -5,6 +5,7 @@ import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { ChevronDown } from 'lucide-react';
 import { StatusTag, type KitTone } from '@/components/portal/kit';
 import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
+import { formatPortalDate } from '@/lib/formatDate';
 import styles from './PartnerMilestonesMobile.module.css';
 
 type Milestone = {
@@ -111,7 +112,7 @@ export default function PartnerMilestonesMobile({ initialMilestones }: { initial
                     </PortalRecordLink>
                     <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--wa-accent)', margin: '0 0 0.125rem' }}>{m.label}</p>
                     <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
-                      {new Date(m.at).toLocaleDateString()}
+                      {formatPortalDate(m.at)}
                     </p>
                   </div>
                 </div>
@@ -156,7 +157,7 @@ export default function PartnerMilestonesMobile({ initialMilestones }: { initial
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{ minWidth: 0 }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)', margin: '0 0 0.125rem' }}>{m.memberName}</p>
-                      <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>{m.label} · {new Date(m.at).toLocaleDateString()}</p>
+                      <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>{m.label} · {formatPortalDate(m.at)}</p>
                     </div>
                     <StatusTag tone="ok">Done</StatusTag>
                   </div>

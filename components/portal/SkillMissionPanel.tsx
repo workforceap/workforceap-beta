@@ -1,5 +1,6 @@
 'use client';
 
+import { PORTAL_TIMEZONE } from '@/lib/formatDate';
 import { useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, CheckCircle2, RotateCcw, Flame } from 'lucide-react';
@@ -74,7 +75,7 @@ const kitCtaClass =
 function formatPassedDate(date: Date | null): string {
   if (!date) return '';
   const d = new Date(date);
-  return `Passed ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  return `Passed ${d.toLocaleDateString('en-US', { timeZone: PORTAL_TIMEZONE, month: 'short', day: 'numeric' })}`;
 }
 
 function Chip({

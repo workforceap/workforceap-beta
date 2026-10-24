@@ -1,5 +1,6 @@
 'use client';
 
+import { formatPortalDate } from '@/lib/formatDate';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -114,7 +115,7 @@ export default function TrainingBridgeClient({ assessment, recentAssessments = [
           <FormField label={tw('chooseLookup')} id="training-bridge-result">
             <select id="training-bridge-result" name="result" value={selectedRunId} onChange={event => setSelectedRunId(event.target.value)} required className="wa-kit-focus" style={{ width: '100%', minHeight: 48, padding: '0.55rem 0.75rem', border: '1px solid var(--wa-control-border)', borderRadius: 'var(--wa-radius-sm)', background: 'var(--wa-surface)', color: 'var(--wa-text)', fontSize: 'var(--wa-type-body)' }}>
               <option value="">{tw('selectLookup')}</option>
-              {recentAssessments.map(run => <option key={run.id} value={run.id}>{run.occupationTitle} · {new Date(run.createdAt).toLocaleDateString()}{run.demo ? ` · ${te('sample')}` : ''}</option>)}
+              {recentAssessments.map(run => <option key={run.id} value={run.id}>{run.occupationTitle} · {formatPortalDate(run.createdAt)}{run.demo ? ` · ${te('sample')}` : ''}</option>)}
             </select>
           </FormField>
           <Button type="submit" label={tw('useLookup')} isDisabled={!selectedRunId} />
@@ -124,7 +125,7 @@ export default function TrainingBridgeClient({ assessment, recentAssessments = [
       {assessment ? (
         <div className="wa-kit-card wa-kit-card--sm">
           <p style={{ margin: 0, fontSize: '0.82rem', lineHeight: 1.5, color: 'var(--wa-muted)' }}>
-            <strong>{tw('selectedLookup', { occupation: assessment!.occupationTitle })}</strong> · {assessment!.occupationCode} · {new Date(assessment!.createdAt).toLocaleDateString()}
+            <strong>{tw('selectedLookup', { occupation: assessment!.occupationTitle })}</strong> · {assessment!.occupationCode} · {formatPortalDate(assessment!.createdAt)}
              · {assessment!.demo ? te('sample') : tw('occupationRequirements')}
           </p>
           <p className={styles.context}>{tw('lookupMeaning')}</p>

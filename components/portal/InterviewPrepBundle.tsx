@@ -1,5 +1,6 @@
 'use client';
 
+import { formatPortalDate } from '@/lib/formatDate';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
@@ -329,7 +330,7 @@ export default function InterviewPrepBundle({
               <FileText size={16} aria-hidden="true" style={{ color: 'var(--wa-accent)', flexShrink: 0 }} />
               <span style={{ fontSize: 'var(--wa-type-body)', fontWeight: 700 }}>{item.title}</span>
               <span style={{ marginLeft: 'auto', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', whiteSpace: 'nowrap' }}>
-                {new Date(item.createdAt).toLocaleDateString()}
+                {formatPortalDate(item.createdAt)}
               </span>
             </button>
             <div
