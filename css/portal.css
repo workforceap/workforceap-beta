@@ -3069,6 +3069,152 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   border-bottom-color: transparent;
 }
 
+/* Members keep their five daily destinations in a persistent phone bar.
+   The utility row remains in normal flow below the workspace header, so its
+   ResizeObserver measurement continues to describe the true top chrome. */
+@media (max-width: 767px) {
+  /* A filtered sticky ancestor becomes the containing block for fixed
+     descendants. Keep this parent solid so the daily list stays viewport-fixed. */
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav {
+    background: var(--wa-shell-header-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__list {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 60;
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    justify-content: stretch;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.35rem max(0.5rem, env(safe-area-inset-right, 0.5rem))
+      max(0.5rem, env(safe-area-inset-bottom, 0.5rem))
+      max(0.5rem, env(safe-area-inset-left, 0.5rem));
+    scroll-padding-inline: 0.5rem;
+    background: color-mix(in srgb, var(--wa-shell-header-bg) 94%, transparent);
+    border-top: 1px solid var(--wa-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__item {
+    display: flex;
+    flex: 1 1 0;
+    min-width: 48px;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__list .member-portal-top-nav__link {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    height: auto;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.125rem;
+    padding: 0.25rem 0.125rem;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: normal;
+    line-height: 1.2;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__list .member-portal-top-nav__icon {
+    display: inline-flex;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__list .member-portal-top-nav__short-label {
+    display: none;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__badge {
+    position: absolute;
+    top: 0;
+    left: calc(50% + 3px);
+    margin: 0;
+    transform: none;
+  }
+
+  html[data-portal-role='member'] {
+    --member-portal-bottom-nav-clearance: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: var(--member-portal-bottom-nav-clearance);
+  }
+
+  html[data-portal-role='member'] body {
+    scroll-padding-bottom: var(--member-portal-bottom-nav-clearance);
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .workspace-shell-main {
+    padding-bottom: calc(1.25rem + var(--member-portal-bottom-nav-clearance, 4.5rem));
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .workspace-shell-main [id] {
+    scroll-margin-bottom: var(--member-portal-bottom-nav-clearance, 4.5rem);
+  }
+}
+
+/* Compact chrome applies to the sticky utility row and the generic nav rules.
+   Keep the fixed daily tabs' targets, icon/caption stack and captions intact. */
+@media (max-width: 767px) {
+  html.wap-portal-chrome-compact .workspace-shell-root[data-workspace-role='member']
+    .member-portal-top-nav__list .member-portal-top-nav__link {
+    min-height: 48px;
+    gap: 0.125rem;
+    padding: 0.25rem 0.125rem;
+  }
+
+  html.wap-portal-chrome-compact .workspace-shell-root[data-workspace-role='member']
+    .member-portal-top-nav__list .member-portal-top-nav__icon {
+    display: inline-flex;
+  }
+}
+
+/* MemberWorkspace.module.css deliberately swaps to abbreviated captions at
+   <=480px. These member-shell selectors outrank both that module and compact
+   chrome, which otherwise hide the short captions in the fixed bar. */
+@media (max-width: 480px) {
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__list .member-portal-top-nav__label,
+  html.wap-portal-chrome-compact .workspace-shell-root[data-workspace-role='member']
+    .member-portal-top-nav__list .member-portal-top-nav__label {
+    display: none;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__list .member-portal-top-nav__short-label,
+  html.wap-portal-chrome-compact .workspace-shell-root[data-workspace-role='member']
+    .member-portal-top-nav__list .member-portal-top-nav__short-label {
+    display: block;
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    border: 0;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+  html.wap-portal-chrome-compact .workspace-shell-root[data-workspace-role='member']
+    .member-portal-top-nav__list .member-portal-top-nav__label {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
 /* After Tailwind utilities in main.css: portal/admin mobile stacking, tap targets, DataTable density.
    Lives here so public routes do not ship these rules in the global layout CSS chunk. */
 

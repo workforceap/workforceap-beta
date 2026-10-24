@@ -247,6 +247,8 @@ export default async function DevMemberHomePage({
       nextBadgeRemaining="2 modules"
       currentStreak={12}
       longestStreak={12}
+      assessmentHref="/dev/member/assessment"
+      programHref="/dev/member/program"
       resumeHref="/dev/member/program"
       resumeStudioHref="/dev/member/resume-studio"
       resumeDraftOwnerToken={PREVIEW_RESUME_DRAFT_OWNER}

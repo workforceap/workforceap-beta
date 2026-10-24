@@ -84,6 +84,30 @@ describe('MemberHomeKit certification-path card', () => {
   });
 });
 
+describe('MemberHomeKit fixture-safe destinations', () => {
+  it('keeps production assessment and program destinations as the defaults', () => {
+    renderKit(<MemberHomeKit {...base} />);
+
+    expect(screen.getByRole('link', { name: 'Open preassessment' })).toHaveAttribute('href', '/dashboard/assessment');
+    fireEvent.click(screen.getByText('Progress details').closest('summary')!);
+    expect(screen.getByRole('link', { name: 'Open plan' })).toHaveAttribute('href', '/dashboard/program');
+  });
+
+  it('uses explicit preview destinations for the assessment and program links', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        assessmentHref="/dev/member/assessment"
+        programHref="/dev/member/program"
+      />,
+    );
+
+    expect(screen.getByRole('link', { name: 'Open preassessment' })).toHaveAttribute('href', '/dev/member/assessment');
+    fireEvent.click(screen.getByText('Progress details').closest('summary')!);
+    expect(screen.getByRole('link', { name: 'Open plan' })).toHaveAttribute('href', '/dev/member/program');
+  });
+});
+
 describe('MemberHomeKit résumé to consultation handoff', () => {
   it('keeps disconnected work unknown and provides one confirmation route without demanding another upload', () => {
     renderKit(<MemberHomeKit {...base} />);
@@ -181,20 +205,46 @@ describe('MemberHomeKit résumé to consultation handoff', () => {
 });
 
 describe('MemberHomeKit optional progress details', () => {
-  it('keeps the next action and summary metrics visible while preserving the detailed program destination', () => {
-    renderKit(<MemberHomeKit {...base} coursePercent={50} resumeHref="/dashboard/program?program=aws-cloud" />);
+  it('keeps reporting tiles inside the disclosure and the next action, handoff, and support outside', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        coursePercent={50}
+        resumeHref="/dashboard/program?program=aws-cloud"
+        handoff={{ resume: 'portal_received', consultation: 'unknown', training: 'unknown' }}
+        advisor={{ name: 'Sample Advisor', firstName: 'Sample', messagingHref: '/dashboard/messages' }}
+      />,
+    );
     const disclosure = screen.getByText('Progress details').closest('details')!;
-    const moduleLink = within(disclosure).getByRole('link', { name: /Resume module/ });
+    const tiles = within(disclosure).getAllByTestId('stat-spark-tile');
     const primary = screen.getByRole('link', { name: /Start preassessment/ });
+    const handoff = screen.getByRole('region', { name: 'Your progress so far' });
+    const support = screen.getByTestId('member-advisor-card');
 
     expect(primary).toBeVisible();
-    expect(screen.getByText('Course')).toBeVisible();
+    expect(handoff).toBeVisible();
+    expect(support).toBeVisible();
+    expect(tiles).toHaveLength(4);
     expect(disclosure).not.toHaveAttribute('open');
-    expect(moduleLink).not.toBeVisible();
+    expect(tiles[0]).not.toBeVisible();
+    expect(tiles[0]).toHaveTextContent('50');
+    expect(tiles[0]).toHaveTextContent('Course');
 
     fireEvent.click(screen.getByText('Progress details'));
+    expect(tiles[0]).toBeVisible();
+    expect(tiles[0]).toHaveTextContent('Course');
+    expect(tiles[1]).toHaveTextContent('Active jobs');
+    expect(tiles[2]).toHaveTextContent('Certs');
+    expect(tiles[3]).toHaveTextContent('Points');
+    expect(tiles[1]).toHaveTextContent('0');
+    expect(tiles[2]).toHaveTextContent('0');
+    expect(tiles[3]).toHaveTextContent('0');
+    const moduleLink = within(disclosure).getByRole('link', { name: /Resume module/ });
     expect(moduleLink).toBeVisible();
     expect(moduleLink).toHaveAttribute('href', '/dashboard/program?program=aws-cloud');
+    expect(primary).toBeVisible();
+    expect(handoff).toBeVisible();
+    expect(support).toBeVisible();
 
     fireEvent.click(screen.getByText('Progress details'));
     expect(moduleLink).not.toBeVisible();

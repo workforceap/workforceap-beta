@@ -70,10 +70,14 @@ list refinements must update Next's search-parameter subscribers as well as visi
 state; native `history.replaceState(null, '', href)` lets Next copy its internal state.
 Passing the router's internal state back into that wrapper can bypass the update.
 
-Member phone navigation retains five daily destinations, an always-visible training
-preassessment, the current secondary page and a keyboard-accessible More pages
-disclosure. Labels remain visible in the utility/disclosure rows even when the daily
-strip compacts. Utility links omit redundant icons to keep all three labels together
+Member phone navigation places its same five daily destinations in a persistent
+bottom bar at widths below 768px. Icons and localized short labels stay visible,
+including during scroll; no second copy of the daily links is mounted. The top utility
+row retains the always-visible training preassessment, current secondary page and
+keyboard-accessible More pages disclosure. The bar reserves safe-area content and
+focus clearance. Its sticky ancestor must not establish a fixed containing block
+through a backdrop filter. Tablet widths keep the horizontal top strip.
+Utility links omit redundant icons to keep all three labels together
 at phone width; wrapping remains available for longer translations and text zoom.
 Daily links and desktop rail rows have 48px targets. Navigation selection uses a
 leading or lower marker in addition to its accent fill, while primary actions remain pills.
@@ -118,10 +122,13 @@ A compact disclosure explains how to contact the team without marking a step don
 Home places compact approval status after its next action and evidence; the full
 approval chain remains available in a disclosure. Layout must not infer completion,
 change next-action ranking, or turn a destination click into a completed step.
-The four progress metrics remain visible. Certification, activity, points, pipeline
+The four reporting metrics, certification, activity, points, pipeline
 and badge detail stay mounted inside a native Progress details disclosure. The
 selected program title stays visible in its collapsed summary. Next
 steps, handoff evidence, approval and post-offer actions stay outside that disclosure.
+Fixture owners supply assessment and program destinations explicitly so Home's
+preassessment and Open plan links stay in the sample-screen flow; the production
+defaults remain unchanged. A fixture destination does not authorize a live submission.
 
 Resume uses scoped workspace chrome and descriptive view tabs; phone tabs keep
 their 48px targets and their full descriptions through `aria-describedby`.
@@ -149,6 +156,11 @@ proficiency measurement, provider access or authenticated acceptance.
 The preview-only [screen review checklist](qa/portal-consolidation/README.md) inventories
 the actual routes and consolidated query views. Its browser-saved review results are
 manual acceptance notes, not a production gate bypass.
+
+Member Jobs uses a compact two-by-two tracker summary and stacked 48px task links
+below 600px. Preserve all four tracker counts and their distinction from bookmarks
+of live openings. `JobListingRow` metadata wraps so company, location and compensation
+remain readable; do not silently ellipsize these facts on narrow screens.
 
 The review index starts with the source-covered member/staff fixture catalog and
 named scenarios. Signed-in acceptance remains a separate checklist. Fixture chrome
@@ -192,8 +204,8 @@ omit redundant opener copy. Locked modules and goal milestones keep full-opacity
 text; lock/status indicators communicate availability. Member training navigation
 uses three equal, wrapping columns on phones with complete labels and 44px targets.
 
-Member daily navigation uses five destinations with short localized phone labels
-and 48px targets. The full accessible name includes the visible label and any badge
+Member daily navigation uses five destinations in the phone bottom bar, with short
+localized labels and 48px targets. The full accessible name includes the visible label and any badge
 count; secondary destinations stay in More pages. This is scoped to the member shell,
 including its fixture shell. Resume follow-up actions stack on phones, with Rewrite
 first. Profile pairs short fields and keeps longer fields full width. Returning from

@@ -73,11 +73,11 @@ import styles from './Home.module.css';
  *      an "Up next" list of the following steps paired with the advisor. The evidence summary
  *      beside the next action distinguishes confirmed résumé receipt from
  *      disconnected email, calendar and training access records.
- *   3. A 4-up stat-tile row (course / active jobs / certs / points), each with
- *      an optional inline sparkline + delta chip.
- *   4. One native Progress details disclosure contains the certification
- *      progress ring, weekly-activity chart, points ledger, application
- *      pipeline and badge/goals. The detail cards stay mounted while closed.
+ *   3. One native Progress details disclosure contains the course / active
+ *      jobs / certs / points stat tiles and optional sparklines, followed by
+ *      the certification progress ring, weekly-activity chart, points ledger,
+ *      application pipeline and badge/goals. The detail cards stay mounted
+ *      while closed.
  *      The selected program title stays visible in the disclosure summary.
  *      With more than one enrollment the certification card carries the
  *      view-only program switch (`programSwitch`), which
@@ -194,6 +194,8 @@ export interface MemberHomeKitProps {
   nextBadgeRemaining?: string;
   /** Short list shown in the home "Application pipeline" table. */
   pipeline?: PipelineRow[];
+  /** WIOA assessment destination; defaults to the signed-in member route. */
+  assessmentHref?: string;
   programHref?: string;
   resumeHref?: string;
   toolkitHref?: string;
@@ -588,6 +590,7 @@ export function MemberHomeKit({
   nextBadgeName,
   nextBadgeRemaining,
   pipeline = [],
+  assessmentHref = '/dashboard/assessment',
   programHref = MEMBER_PROGRAM_HREF,
   resumeHref = MEMBER_PROGRAM_HREF,
   toolkitHref = '/dashboard/ai-tools',
@@ -786,7 +789,17 @@ export function MemberHomeKit({
           </div>
         ) : null}
 
-        {/* 3. Stat tiles — icon + delta chip + value/label + optional sparkline. */}
+        {/* Progress details, including optional reporting tiles, stay one disclosure away. */}
+        <details className={styles.progressDetails}>
+          <summary className={`wa-kit-focus ${styles.progressSummary}`}>
+            <span className={styles.progressSummaryCopy}>
+              <span>{t('progressDetails')}</span>
+              {programTitle ? <span className={styles.progressProgram}>{programTitle}</span> : null}
+            </span>
+            <ChevronDown size={18} aria-hidden="true" />
+          </summary>
+          <div className={styles.progressContent}>
+        {/* Stat tiles — icon + delta chip + value/label + optional sparkline. */}
         <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
           {statTiles.map((tile) => {
             const Icon = tile.icon;
@@ -804,16 +817,6 @@ export function MemberHomeKit({
           })}
         </div>
 
-        {/* Summary metrics remain visible; deeper progress stays one native disclosure away. */}
-        <details className={styles.progressDetails}>
-          <summary className={`wa-kit-focus ${styles.progressSummary}`}>
-            <span className={styles.progressSummaryCopy}>
-              <span>{t('progressDetails')}</span>
-              {programTitle ? <span className={styles.progressProgram}>{programTitle}</span> : null}
-            </span>
-            <ChevronDown size={18} aria-hidden="true" />
-          </summary>
-          <div className={styles.progressContent}>
         {/* 4. Mixed row — certification ring, weekly activity, points ledger. */}
         <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
           <div className="lg:wa-col-span-4 wa-min-w-0">
@@ -1093,7 +1096,12 @@ export function MemberHomeKit({
         </details>
 
         {/* Discovery remains available after the member's next step and progress. */}
-        <MemberStartHereCard toolkitHref={toolkitHref} preassessmentCompleted={preassessmentCompleted} variant="preassessment" />
+        <MemberStartHereCard
+          preassessmentHref={assessmentHref}
+          toolkitHref={toolkitHref}
+          preassessmentCompleted={preassessmentCompleted}
+          variant="preassessment"
+        />
         <MemberAiToolsCard toolkitHref={toolkitHref} recommendedTool={recommendedTool} />
 
         {/* Learning Hub remains available after the progress overview. */}

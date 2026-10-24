@@ -3,6 +3,7 @@ import { Briefcase } from 'lucide-react';
 import NextLink from 'next/link';
 import { cx, type KitBaseProps, type KitDataAttrs } from './base';
 import { StatusTag } from './StatusTag';
+import styles from './JobListingRow.module.css';
 
 interface JobListingRowProps extends KitBaseProps<HTMLAnchorElement>, KitDataAttrs {
   href: string;
@@ -83,12 +84,9 @@ export function JobListingRow({
           {title}
         </h3>
         <p
-          className="wa-kit-meta"
+          className={`wa-kit-meta ${styles.meta}`}
           style={{
             margin: '4px 0 0',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
           }}
         >
           {meta}
