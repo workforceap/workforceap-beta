@@ -71,6 +71,14 @@ function show(role: 'member' | 'employer' = 'member') {
 }
 
 describe('workspace navigation', () => {
+  it('exposes a focusable desktop member nav landmark for skip navigation', () => {
+    const { container } = show();
+    const desktopNav = container.querySelector('nav#workspace-sidebar-nav');
+
+    expect(desktopNav).toHaveAttribute('tabindex', '-1');
+    expect(container.querySelectorAll('#workspace-sidebar-nav')).toHaveLength(1);
+  });
+
   it('limits the dynamic-height warm canvas to the mounted workspace, including dark mode', () => {
     const css = readFileSync(join(process.cwd(), 'css/portal-kit.css'), 'utf8');
     const rule = css.match(/(html \.workspace-shell-root\[data-workspace-role\])\s*\{([^}]+)\}/)!;

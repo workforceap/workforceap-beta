@@ -751,7 +751,12 @@ export default function WorkspaceShell({
                 <GlobalSearch />
               </div>
             ) : null}
-            <nav aria-label={`${translateLabel(workspaceLabel)} navigation`} className="workspace-sidebar-nav">
+            <nav
+              id={portalRole === 'member' ? 'workspace-sidebar-nav' : undefined}
+              tabIndex={portalRole === 'member' ? -1 : undefined}
+              aria-label={`${translateLabel(workspaceLabel)} navigation`}
+              className="workspace-sidebar-nav"
+            >
               <ul className="workspace-sidebar-list workspace-sidebar-list--root">
                 {portalRole === 'admin' && !isCollapsedDesktop ? (
                   /* Grouped admin rail: collapsible sections + nested rows. The

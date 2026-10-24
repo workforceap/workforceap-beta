@@ -14,7 +14,7 @@ import ThemeInitScript from '@/components/theme/ThemeInitScript';
 import UtmCapture from '@/components/marketing/UtmCapture';
 import { Suspense } from 'react';
 import { getRequestOrgBranding } from '@/lib/platform/defaultOrgTheme';
-import { WAP_RESERVE_MOBILE_BOTTOM_NAV_HEADER } from '@/lib/nav/mobileBottomNavLayout';
+import { isMemberWorkspacePath, WAP_RESERVE_MOBILE_BOTTOM_NAV_HEADER } from '@/lib/nav/mobileBottomNavLayout';
 import { WAP_PAID_APPLY_HEADER } from '@/lib/apply/paidApplyUtm';
 import { CSP_NONCE_HEADER } from '@/lib/security/csp';
 import {
@@ -194,6 +194,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const htmlDir = isRtlLocale(htmlLang) ? 'rtl' : 'ltr';
   const messages = pickRootClientMessages(await getMessages());
   const reserveMobileBottomNav = h.get(WAP_RESERVE_MOBILE_BOTTOM_NAV_HEADER) === '1';
+  const memberWorkspacePath = isMemberWorkspacePath(h.get('x-pathname') ?? '');
   const hidePaidApplyMarketingNav = Boolean(h.get(WAP_PAID_APPLY_HEADER));
   const htmlClassName = reserveMobileBottomNav ? 'wap-reserve-mobile-bottom-nav' : undefined;
   // Per-request CSP nonce minted in middleware (WAP-36 phase 1). Stamped on
@@ -265,18 +266,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        {/* Second skip link for keyboard users on portal pages with a fixed
-            mobile bottom nav (audit #146). The nav is far from the
-            top tab order; this lets a tab-only user reach it directly.
-            Only render when middleware has signalled that this page
-            actually has the mobile bottom nav — otherwise the link
-            anchored to `#mobile-bottom-nav` lands nowhere on admin / auth
-            / many member portal pages and confuses keyboard users. */}
-        {reserveMobileBottomNav && (
+        {/* Skip link for portal users who want to jump directly to navigation.
+            Members get the responsive shell nav target; routes with the
+            generic fixed nav keep its existing target. */}
+        {memberWorkspacePath ? (
+          <>
+            <a href="#member-portal-top-nav" className="skip-link skip-link--member-mobile-nav">
+              Skip to navigation
+            </a>
+            <a href="#workspace-sidebar-nav" className="skip-link skip-link--member-desktop-nav">
+              Skip to navigation
+            </a>
+          </>
+        ) : reserveMobileBottomNav ? (
           <a href="#mobile-bottom-nav" className="skip-link">
             Skip to navigation
           </a>
-        )}
+        ) : null}
         {GTM_ID && !readOnlyAudit && (
           <>
             <noscript>

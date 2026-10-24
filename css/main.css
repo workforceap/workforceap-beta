@@ -5306,6 +5306,19 @@ html.dark .sd-field option {
     box-shadow: var(--wa-focus-ring);
 }
 
+/* Member workspaces switch between a fixed phone nav and the desktop sidebar.
+   Keep one direct skip target in the tab order at each breakpoint. */
+.skip-link--member-mobile-nav,
+.skip-link--member-desktop-nav {
+    display: none;
+}
+@media (max-width: 768px) {
+    .skip-link--member-mobile-nav { display: block; }
+}
+@media (min-width: 769px) {
+    .skip-link--member-desktop-nav { display: block; }
+}
+
 /* Apply form: radio button groups */
 .form-radio-group {
     display: flex;

@@ -42,6 +42,15 @@ function currentLabels(strip: ReturnType<typeof renderAt>): string[] {
 }
 
 describe('MemberPortalTopNav current tab (WAP-263)', () => {
+  it('exposes a focusable phone navigation landmark for skip navigation', () => {
+    const strip = renderAt('/dashboard');
+    const landmark = screen.getByRole('navigation', { name: 'Member portal' });
+
+    expect(landmark).toHaveAttribute('id', 'member-portal-top-nav');
+    expect(landmark).toHaveAttribute('tabindex', '-1');
+    expect(strip.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/dashboard');
+  });
+
   it.each(['es', 'fr', 'pt'])('on /%s/dashboard/messages, Messages is the current tab', (locale) => {
     const strip = renderAt(`/${locale}/dashboard/messages`, locale);
     expect(strip.getByRole('link', { name: 'Messages' })).toHaveAttribute('aria-current', 'page');

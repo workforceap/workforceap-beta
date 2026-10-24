@@ -193,7 +193,13 @@ export default function MemberPortalTopNav({
   };
 
   return (
-    <nav ref={navRef} className="member-portal-top-nav" aria-label={t('memberPortal')}>
+    <nav
+      id="member-portal-top-nav"
+      ref={navRef}
+      tabIndex={-1}
+      className="member-portal-top-nav"
+      aria-label={t('memberPortal')}
+    >
       <ul ref={listRef} className="member-portal-top-nav__list">
         {primary.map((tab) => (
             <li
