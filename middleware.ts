@@ -179,8 +179,24 @@ function resolvePreferredLocale(request: NextRequest): { locale: AppLocale; from
   return { locale: pickLocaleFromAcceptLanguage(request.headers.get('accept-language')), fromQuery: false };
 }
 
+/** `/dev` or `/dev/...`, also behind a locale prefix (`/en/dev/...`). */
+function isDevFixturePath(pathname: string) {
+  const { pathnameWithoutLocale } = splitLocalePrefix(pathname);
+  return [pathname, pathnameWithoutLocale].some((p) => p === '/dev' || p.startsWith('/dev/'));
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  // /dev holds credential-free review fixtures with synthetic data. In production they answer a plain 404
+  // here, before anything renders: a page-level notFound() streams the dev shell chrome ahead of the 404 and
+  // leaves the HTTP status at 200. Covers every current and future fixture, with or without a locale prefix.
+  if (process.env.VERCEL_ENV === 'production' && isDevFixturePath(pathname)) {
+    return new NextResponse('Not Found', {
+      status: 404,
+      headers: { 'content-type': 'text/plain; charset=utf-8', 'x-robots-tag': 'noindex, nofollow' },
+    });
+  }
   const requestHeaders = new Headers(request.headers);
 
   // Codex P1 catch on PR #1046: `new Headers(request.headers)` preserves any
