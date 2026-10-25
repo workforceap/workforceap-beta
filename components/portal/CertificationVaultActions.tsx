@@ -1,5 +1,6 @@
 'use client';
 
+import { formatPortalDate } from '@/lib/formatDate';
 import { useState } from 'react';
 import { ShareButton } from '@/components/ui/ShareButton';
 import { buildCertificateShare, getBrowserShareOrigin } from '@/lib/og/shareAchievementLinks';
@@ -176,7 +177,7 @@ export function CertificationEarnedRowMobile({
   earnedAt: Date;
 }) {
   const icon = iconForCertName(certName);
-  const earnedLabel = earnedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const earnedLabel = formatPortalDate(earnedAt);
   const earnedIso = earnedAt.toISOString();
   return (
     <div

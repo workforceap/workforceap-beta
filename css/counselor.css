@@ -218,7 +218,7 @@
 }
 .wizard-toggle button:hover { background: var(--surface-container); }
 .wizard-toggle button.active {
-  background: var(--color-accent);
+  background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
   color: #fff;
 }
 .wizard-counselor-notes { margin-top: 1rem; }

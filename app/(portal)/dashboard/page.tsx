@@ -108,8 +108,10 @@ async function renderMemberDashboard(
     requestedProgramSlug: args.requestedProgramSlug,
     provisionIfMissing: () => ensureAppUserProvisioned(user, { readOnlyAudit: args.readOnlyAudit }),
   });
-  // Presentation only: a live approval appears as a compact summary after
-  // the next action; finished/closed pathways remain below the content.
+  // Presentation only: the approval status is a slim strip in the page header
+  // (MemberHomeKit `approvalSlot`). A live pathway names its next step on the
+  // line under the strip; a finished or closed one names the saved state
+  // (memberApprovalCardPlacement).
   const approvalPlacement = memberApprovalCardPlacement(home.approvalStatus);
   // Who reviews the pending step comes from the loader's own user read. The
   // measured wait is a separate read, taken only while the application
@@ -123,7 +125,6 @@ async function renderMemberDashboard(
       status={home.approvalStatus}
       storageUserId={user.id}
       placement={approvalPlacement}
-      variant="compact"
       counselorContext={counselorContext}
     />
   );
@@ -186,8 +187,9 @@ async function renderMemberDashboard(
       </PortalEntryErrorBoundary>
     ) : null}
     <MemberHomeKit
-      approvalSummary={approvalPlacement === 'primary' ? approvalCard : null}
+      approvalSlot={approvalCard}
       resumeDraftOwnerToken={getResumeDraftOwnerToken(user.id)}
+      resumeStudioHref="/dashboard/resume"
       showStaffViewBanner={staffViewer}
       advisor={counselorContext?.counselor ?? null}
       programSwitch={home.programSwitch}
@@ -231,7 +233,6 @@ async function renderMemberDashboard(
       first90={home.first90}
       youthNoticeAge={home.youthNoticeAge}
     />
-    {approvalPlacement === 'demoted' ? approvalCard : null}
     </>
   );
 }

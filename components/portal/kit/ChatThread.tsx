@@ -175,7 +175,7 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
             flexShrink: 0,
             border: 'none',
             borderRadius: 999,
-            background: 'var(--wa-accent)',
+            background: 'var(--wa-accent-fill)',
             color: 'var(--wa-on-accent-control)',
             display: 'inline-flex',
             alignItems: 'center',

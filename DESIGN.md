@@ -211,6 +211,12 @@ Verify critical pairs with your contrast checker before launch.
 
 Same tokens everywhere—**different emphasis**, not different brands.
 
+### Surfaces and dark mode (portal)
+
+- **Warm paper for members, cool canvas for staff.** Member screens (`data-surface="warm"`, and the member `<html>`) sit on `#faf8f6` with a raised fill `#f3efeb` and a `#e9e4df` hairline. Staff, admin and data screens (`data-surface="dense"`) keep `#f7f8fa`, `#f4f4f5` and `#e8e8e8`. Cards are white on both. The canvas is flat: no radial wash. Dark values are the same on both surfaces. Tokens: `css/portal-tokens.css`.
+- **In dark mode the accent is for fills, not text.** A lighter crimson reads as pink, so text accents (`--wa-accent`, `--wa-accent-text`) are a dusty rose (`#dd9fb0`, `#e6b3bf`) and solid fills stay crimson (`--wa-accent-fill`, white label). Text links in cards read near-white with an accent underline; the accent appears on fills, the active item and focus rings. Light mode is unchanged.
+- **Motion is two small transitions** (the certification path fills in on load; a task row strikes through and its check pops when it is done), both off under reduced motion. See `docs/KIT_GUIDE.md` §7.
+
 ---
 
 ## Do / Don’t

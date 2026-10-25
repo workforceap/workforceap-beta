@@ -128,7 +128,9 @@ describe('member PDF preview fallback', () => {
     expect(screen.queryByTitle('Original resume preview')).toBeNull();
     expect(screen.getByTitle('Enhanced resume preview')).toBeInTheDocument();
     expect(screen.getByText("PDF preview isn't available in this browser.")).toBeInTheDocument();
-    expect(screen.getByText('Download to view ↗').closest('a')).toHaveAttribute('href', resumeStatus.originalUrl);
+    // The fallback link names the document it opens (the arrow is decorative), so
+    // the two fallbacks on this page are not both announced as "Download to view".
+    expect(screen.getByRole('link', { name: /^Download to view original resume/ })).toHaveAttribute('href', resumeStatus.originalUrl);
   });
 
   it('keeps the native PDF viewer mounted when its document is opaque or empty', async () => {
@@ -157,7 +159,7 @@ describe('member PDF preview fallback', () => {
 
     expect(screen.queryByTitle('Enhanced resume preview')).toBeNull();
     expect(screen.getByTitle('Original resume preview')).toBeInTheDocument();
-    expect(screen.getByText('Download to view ↗').closest('a')).toHaveAttribute('href', resumeStatus.enhancedUrl);
+    expect(screen.getByRole('link', { name: /^Download to view updated resume/ })).toHaveAttribute('href', resumeStatus.enhancedUrl);
   });
 });
 

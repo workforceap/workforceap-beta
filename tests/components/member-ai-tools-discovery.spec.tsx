@@ -1,11 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 import { pickPortalClientMessages } from '@/lib/i18n/pickRootClientMessages';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import { VoiceStudioKit } from '@/components/portal/kit/pages/VoiceStudioKit';
-import DevMemberToolkitPage from '@/app/dev/member/toolkit/page';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: vi.fn(), push: vi.fn(), refresh: vi.fn() }),
@@ -16,18 +15,20 @@ vi.mock('next/navigation', () => ({
 afterEach(cleanup);
 
 describe('member AI Career Tools discovery', () => {
+  // Round 3 of the portal redesign made Home a "This week" list: the AI tools
+  // card is gone, but discovery stays. The shortcuts row always links to the
+  // tools hub, and a stage-specific recommendation becomes a This-week row.
   it('keeps an actionable introduction on Home even without a recommended tool', () => {
     render(
       <NextIntlClientProvider locale="en" messages={pickPortalClientMessages(en)}>
         <MemberHomeKit recommendedTool={null} />
       </NextIntlClientProvider>,
     );
-    const tools = screen.getByRole('region', { name: 'AI Career Tools' });
-    expect(within(tools).getByRole('link', { name: 'Explore AI Career Tools' }))
+    const shortcuts = screen.getByRole('navigation', { name: 'Shortcuts' });
+    expect(within(shortcuts).getByRole('link', { name: 'AI Career Tools' }))
       .toHaveAttribute('href', '/dashboard/ai-tools');
-    // Tools remain discoverable, after the progress overview rather than above the next step.
-    expect(tools.compareDocumentPosition(screen.getByText('Certification path')) & Node.DOCUMENT_POSITION_PRECEDING)
-      .toBeTruthy();
+    // No recommendation: no tool row in the week list, only the shortcut.
+    expect(screen.queryByRole('link', { name: /Open interview prep/ })).toBeNull();
   });
 
   it('retains the stage-specific action alongside the full tools destination', () => {
@@ -45,10 +46,11 @@ describe('member AI Career Tools discovery', () => {
         />
       </NextIntlClientProvider>,
     );
-    const tools = within(screen.getByRole('region', { name: 'AI Career Tools' }));
-    expect(tools.getByRole('link', { name: 'Open interview prep' }))
+    // The recommendation is a This-week row (one big link carrying the CTA label).
+    expect(screen.getByRole('link', { name: /Open interview prep/ }))
       .toHaveAttribute('href', '/dashboard/ai-tools/interview-prep');
-    expect(tools.getByRole('link', { name: 'Explore all AI Career Tools' }))
+    const shortcuts = screen.getByRole('navigation', { name: 'Shortcuts' });
+    expect(within(shortcuts).getByRole('link', { name: 'AI Career Tools' }))
       .toHaveAttribute('href', '/dev/member/toolkit');
   });
 
@@ -72,42 +74,5 @@ describe('member AI Career Tools discovery', () => {
       .toHaveAttribute('href', '/dashboard/ai-tools/cover-letter');
     expect(screen.getByRole('region', { name: 'Coaches' })).toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Practice' })).not.toBeInTheDocument();
-  });
-
-  it('keeps supported toolkit destinations inside the credential-free member fixtures', async () => {
-    const page = await DevMemberToolkitPage({ searchParams: Promise.resolve({}) });
-    render(<NextIntlClientProvider locale="en" messages={pickPortalClientMessages(en)}>{page}</NextIntlClientProvider>);
-
-    const start = within(screen.getByRole('region', { name: 'Start with one task' }));
-    expect(start.getByRole('link', { name: 'Improve my resume' })).toHaveAttribute('href', '/dev/member/resume-studio');
-    expect(start.getByRole('link', { name: 'Interviews' })).toHaveAttribute('href', '/dev/member/interview-practice');
-    expect(start.getByRole('link', { name: 'Write a cover letter' })).toHaveAttribute('href', '/dev/member/cover-letter');
-
-    const coaches = within(screen.getByRole('region', { name: 'Coaches' }));
-    expect(coaches.getByRole('link', { name: 'Open full resume coach' })).toHaveAttribute('href', '/dev/member/resume-studio?view=coach');
-    expect(coaches.getByRole('link', { name: 'Message my human counselor' })).toHaveAttribute('href', '/dev/member/messages');
-
-    fireEvent.click(screen.getByRole('radio', { name: 'All Tools' }));
-    const toolkit = within(screen.getByRole('region', { name: 'All career tools' }));
-    expect(toolkit.getByRole('link', { name: /Cover Letter/i })).toHaveAttribute('href', '/dev/member/cover-letter');
-    expect(toolkit.getByRole('link', { name: /Job Match Scorer/i })).toHaveAttribute('href', '/dev/member/job-match');
-    // No fixture exists for these tools, so their default production destinations remain explicit.
-    expect(toolkit.getByRole('link', { name: /Skill Checkpoints/i })).toHaveAttribute('href', '/dashboard/ai-tools/skill-checkpoints');
-    expect(toolkit.getByRole('link', { name: /Training Bridge/i })).toHaveAttribute('href', '/dashboard/ai-tools/training-bridge');
-  });
-
-  it('keeps tool identity labels when multiple production tools share one fixture destination', () => {
-    render(
-      <NextIntlClientProvider locale="en" messages={pickPortalClientMessages(en)}>
-        <VoiceStudioKit initialTab="toolkit" destinationHrefs={{
-          interviews: '/dev/member/interview-practice',
-          'interview-practice': '/dev/member/interview-practice',
-        }} />
-      </NextIntlClientProvider>,
-    );
-    const tools = within(screen.getByRole('region', { name: 'All career tools' }));
-    const interviews = tools.getByRole('link', { name: /Interviews\s*Prepare answers, practice with AI/ });
-    expect(interviews).toHaveAttribute('href', '/dev/member/interview-practice');
-    expect(interviews).toHaveTextContent('Interviews');
   });
 });

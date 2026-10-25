@@ -7,6 +7,7 @@ import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { prisma } from '@/lib/db/prisma';
+import { signedInFirstName } from '@/lib/portal/signedInFirstName';
 import { formatPortalDate } from '@/lib/formatDate';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalEmptyState from '@/components/portal/PortalEmptyState';
@@ -56,6 +57,9 @@ export default async function EmployerDashboardPage({
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
   const ctx = await getEmployerForUser(user.id, { isSuperAdminHint: superAdmin, readOnlyAudit });
+  // Person-facing greeting ("Welcome back, {first name}."): the employer context
+  // carries the company, not the person, so read the signed-in user's name once.
+  const employerFirstName = await signedInFirstName(user.id);
   if (!ctx) {
     redirect(await unlinkedEmployerHref(user.id));
   }
@@ -70,6 +74,7 @@ export default async function EmployerDashboardPage({
   // v2 kit is the DEFAULT employer overview; legacy via ?ui=legacy.
   if (params?.ui !== 'legacy') {
     const kitT = await getTranslations('employer');
+    const commonT = await getTranslations('common.disclosures');
     const [
       kitOpenRoles,
       kitTotalCandidates,
@@ -176,6 +181,7 @@ export default async function EmployerDashboardPage({
         </EmployerVoiceCollapse>
 
         <EmployerHomeKit
+          firstName={employerFirstName}
           companyName={ctx.employer.companyName}
           openRoles={kitOpenRoles}
           inPipeline={kitTotalCandidates}
@@ -183,6 +189,7 @@ export default async function EmployerDashboardPage({
           hires={kitHired}
           candidates={kitCandidates}
           candidatesTotal={kitTotalCandidates}
+          whereItGoesLabel={commonT('whereItGoes')}
           openRolesList={kitOpenRolesRows}
         />
 

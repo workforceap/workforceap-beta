@@ -36,7 +36,9 @@ export function Avatar({
     height: size,
     borderRadius: 999,
     background: src ? 'var(--wa-surface-2)' : gradient ? 'var(--wa-accent-soft)' : 'var(--wa-surface-2)',
-    color: gradient ? 'var(--wa-accent)' : 'var(--wa-muted)',
+    // Text twin of the soft tint (KIT_GUIDE §1): the fill hue --wa-accent is
+    // under 4.5:1 on --wa-accent-soft in dark mode.
+    color: gradient ? 'var(--wa-accent-text)' : 'var(--wa-muted)',
     fontSize,
     fontWeight: 700,
     letterSpacing: '-0.02em',

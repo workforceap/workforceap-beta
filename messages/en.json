@@ -181,7 +181,13 @@
     "candidates": "Candidates",
     "impact": "Impact",
     "morePages": "More pages",
-    "newMilestonesCount": "{count} new milestones"
+    "newMilestonesCount": "{count} new milestones",
+    "memberTabsLabel": "Main tabs",
+    "tabHome": "Home",
+    "tabProgram": "Program",
+    "tabJobs": "Jobs",
+    "tabMessages": "Messages",
+    "tabMore": "More"
   },
   "cta": {
     "applyNow": "Apply Now",
@@ -283,7 +289,14 @@
     "languageFr": "French",
     "languageEn": "English",
     "machineTranslationNotice": "This translation is machine-generated and may contain errors.",
-    "machineTranslationNoticeAction": "Switch language"
+    "machineTranslationNoticeAction": "Switch language",
+    "disclosures": {
+      "whatHappensNext": "What happens next",
+      "whereItGoes": "Where it goes",
+      "whatIsCounted": "What is counted",
+      "moreThisWeek": "More this week",
+      "previewActionUnavailable": "Preview only. This action will not be saved."
+    }
   },
   "dashboard": {
     "progressDetails": "Progress details",
@@ -716,7 +729,56 @@
     "programChangeErrorReasonLength": "Please add a reason (at least 10 characters) so the advisor can decide quickly.",
     "programChangeErrorSubmitFailed": "Submit failed (HTTP {status})",
     "programChangeErrorNetwork": "Network error — please try again.",
-    "trainingCoursesComplete": "{complete} of {total} courses complete"
+    "trainingCoursesComplete": "{complete} of {total} courses complete",
+    "home": {
+      "thisWeek": "This week",
+      "welcomeBack": "Welcome back, {firstName}.",
+      "title": "Home",
+      "stepCount": "{count, plural, one {# step} other {# steps}}",
+      "stepsLabel": "Steps for this week",
+      "noSteps": "No steps this week.",
+      "whatNext": "What happens next",
+      "preassessmentTitle": "Take your WIOA Preassessment",
+      "preassessmentSub": "35 questions for your counselor",
+      "start": "Start",
+      "shortcutsLabel": "Shortcuts",
+      "shortcutProgress": "Progress",
+      "shortcutPoints": "Points",
+      "shortcutJobs": "Jobs",
+      "shortcutAiTools": "AI Career Tools",
+      "shortcutLearning": "Learning hub",
+      "moduleNote": "What the module count includes",
+      "studyOfGoal": "{time} of your {goal} goal",
+      "placement": {
+        "title": "Did you accept the role at {company}?",
+        "sub": "Let WorkforceAP know if you accepted the offer.",
+        "yes": "Yes",
+        "yesLabel": "Yes, notify my team",
+        "no": "Not yet",
+        "noLabel": "Not yet, hide this question",
+        "sending": "Sending...",
+        "error": "We could not send that. Please try again.",
+        "next": "We log it as a placement you reported and alert your counselor to confirm the start date and pay. Your support and access do not change.",
+        "ack": {
+          "created": {
+            "title": "Placement logged: {company}",
+            "body": "Logged as a placement you reported. Your counselor has been alerted to confirm the start date and pay."
+          },
+          "corroborated": {
+            "title": "Placement logged: {company}",
+            "body": "Logged as a placement you reported. Your counselor has been alerted to confirm the start date and pay."
+          },
+          "unchanged": {
+            "title": "Already on record: {company}",
+            "body": "Nothing new was sent to your counselor. Your placement was already on record from an earlier confirmation. Let them know if the details have changed."
+          },
+          "failed": {
+            "title": "Saved for review: {company}",
+            "body": "We saved your confirmation, but the placement could not be logged automatically. It is flagged for your team to review."
+          }
+        }
+      }
+    }
   },
   "apply": {
     "createAccountMetaTitle": "Save Your Spot and Create Your Login",
@@ -3205,7 +3267,7 @@
     },
     "thanks": {
       "going_well": "Great to hear! Keep it up. We'll check in with you again soon.",
-      "have_questions": "Thanks for telling us. Your advisor can help — send them a message any time.",
+      "have_questions": "Thanks for telling us. Your advisor can help. Send them a message any time.",
       "having_trouble": "Thanks for telling us. We let your advisor know, and they will reach out. You can also message them now."
     },
     "messageCounselor": "Message your advisor",
@@ -3609,6 +3671,30 @@
       "approved": "Training approved",
       "pending": "Not yet approved",
       "unknown": "Status not recorded"
+    },
+    "strip": {
+      "submittedUnderReview": "Submitted {date}, under review",
+      "submittedNeedsInput": "Submitted {date}, needs your input",
+      "submittedApproved": "Submitted {date}, approved",
+      "underReview": "Under review",
+      "approved": "Approved",
+      "reviewPendingSince": "Review pending since {date}",
+      "inReviewSince": "In review since {date}",
+      "needsInputSince": "Needs your input since {date}",
+      "next": "Next: {step}",
+      "nextStep": {
+        "intake": "intake review",
+        "training": "training approval"
+      },
+      "done": "Done",
+      "inProgress": "In progress",
+      "waiting": "Not started",
+      "closed": "Closed",
+      "cleared": "Cleared to train",
+      "pending": "Pending review",
+      "closedChip": "Pathway closed",
+      "needsInfo": "Needs your input",
+      "label": "Approval steps"
     }
   },
   "wioa": {
@@ -4025,7 +4111,7 @@
     },
     "openings": {
       "title": "No live openings right now",
-      "body": "Employer partners have not posted live roles yet. Update your profile so you are ready when they do, or message your counselor for leads.",
+      "body": "Employer partners have not posted live roles yet. Update your profile so you are ready when they do.",
       "action": "Update profile",
       "secondary": "Message your counselor"
     },
@@ -4619,8 +4705,11 @@
       "nav": "Training and progress",
       "program": "My program",
       "learning": "Learning hub & resources",
-      "readiness": "Career readiness",
+      "readiness": "My progress",
       "learningContext": "My program is your assigned training and course progress. Learning hub adds practice and resources. Career readiness measures preparation for work separately from course completion.",
+      "learningContextShort": "My program is your assigned training. Readiness is measured separately.",
+      "learningContextMoreLabel": "What each page covers",
+      "learningContextMore": "My program is your assigned training and course progress. Learning hub adds practice and resources. Career readiness measures preparation for work separately from course completion.",
       "bridgeIntro": "Connect a saved target occupation to training options, then plan your next step with your counselor.",
       "loadFailed": "Saved occupation lookups could not be loaded. Refresh to try again. Training options below are general until a saved lookup is selected.",
       "selectionUnavailable": "That saved lookup is unavailable in your account or cannot be read. No other result has been substituted. Choose one of your saved lookups below.",
@@ -4641,7 +4730,17 @@
       "assignedProgram": "My assigned program",
       "humanCounselor": "Discuss with my human counselor",
       "application": "View this program’s application",
-      "unchangedAssignment": "Exploring a pathway does not change your assigned program, funding, or provider access."
+      "unchangedAssignment": "Exploring a pathway does not change your assigned program, funding, or provider access.",
+      "disclosures": {
+        "progressLabel": "How progress is counted",
+        "progress": "Planning estimates include the full hours of unfinished courses. Your progress changes only when training completion is recorded.",
+        "labsLabel": "How labs work",
+        "labs": "Save your evidence, submit it for human feedback, and revise your work.",
+        "pendingLabel": "What is still pending",
+        "pending": "Instructional review and time validation are pending; the full 58-hour lab sequence is still being developed.",
+        "lockedLabel": "What you can do now",
+        "locked": "You can keep working on your course notes below."
+      }
     },
     "ai": {
       "lilley": "Lilley · AI career coach",
@@ -4653,6 +4752,32 @@
       "resumeDirectory": "Files, scoring, improvements, and your AI resume coach.",
       "openResumeCoach": "Open full resume coach",
       "resumeCoachContext": "Review your original, draft, accepted changes, and downloads together."
+    }
+  },
+  "progress": {
+    "title": "My progress",
+    "readinessChip": "Readiness {score} of 100",
+    "numbersLabel": "Your numbers",
+    "course": "Course",
+    "applications": "Active applications",
+    "certificates": "Certificates",
+    "points": "Points",
+    "pointsUnit": "points",
+    "pointsThisWeek": "{count} this week",
+    "pointsTitle": "Points",
+    "pointsLink": "Points and levels",
+    "pointsStreakTitle": "Points and streak",
+    "pointsStreakBody": "Your points, level and daily streak are on the Points page.",
+    "pointsStreakLink": "Open points",
+    "recentPoints": "Recent points",
+    "streak": "day streak",
+    "streakBest": "Best {count}"
+  },
+  "memberJobs": {
+    "detail": {
+      "screeningInfoLabel": "Why you see this",
+      "screeningInfo": "Informational, so you can prepare before you apply.",
+      "screeningFallback": "See counselor for details."
     }
   }
 }

@@ -163,7 +163,7 @@ export function CronsMonitorKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <PageOpener className="wa-mb-5" title="Cron Monitor" kicker="System" lede="Scheduled jobs" />
+      <PageOpener className="wa-mb-5" title="Cron Monitor" meta="Scheduled jobs and their latest runs." />
 
       <div className="wa-mb-5">
         <KpiStrip items={kpis} cols={5} />

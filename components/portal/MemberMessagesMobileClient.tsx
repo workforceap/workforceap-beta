@@ -1,5 +1,6 @@
 'use client';
 
+import { PORTAL_TIMEZONE } from '@/lib/formatDate';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
@@ -193,7 +194,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
       ? (messages[messages.length - 1].body ?? '').slice(0, 60)
       : lastMsgText;
     const displayLastTime = messages.length > 0
-      ? new Date(messages[messages.length - 1].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      ? new Date(messages[messages.length - 1].createdAt).toLocaleTimeString('en-US', { timeZone: PORTAL_TIMEZONE, hour: '2-digit', minute: '2-digit' })
       : lastMsgTime;
 
     const q = searchQuery.trim().toLowerCase();
@@ -350,7 +351,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
         ) : (
           messages.map((m) => {
             const mine = m.authorId === memberUserId;
-            const timeStr = new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timeStr = new Date(m.createdAt).toLocaleTimeString('en-US', { timeZone: PORTAL_TIMEZONE, hour: '2-digit', minute: '2-digit' });
             return (
               <div
                 key={m.id}

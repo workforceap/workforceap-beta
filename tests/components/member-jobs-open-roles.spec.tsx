@@ -40,8 +40,9 @@ describe('MemberJobsKit open roles', () => {
     const openings = screen.getByRole('region', { name: 'Open roles' });
     const applications = screen.getByRole('region', { name: 'Applications' });
     expect(openings.compareDocumentPosition(applications)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-    const recommendations = screen.getByRole('heading', { name: 'Recommended' }).closest('details');
-    expect(recommendations).not.toHaveAttribute('open');
+    const recommendations = screen.getByRole('heading', { name: 'Recommended' }).closest('section');
+    expect(recommendations).not.toBeNull();
+    expect(applications.compareDocumentPosition(recommendations!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(within(openings).getAllByRole('link', { name: /Help Desk Technician/ })).toHaveLength(1);
   });
 

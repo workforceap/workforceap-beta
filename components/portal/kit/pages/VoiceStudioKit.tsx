@@ -582,7 +582,7 @@ function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: Sess
       break;
     case 'dark':
       cardStyle = { background: 'var(--wa-sidebar-bg)', color: 'var(--wa-sidebar-text)', border: '1px solid var(--wa-sidebar-border)', boxShadow: DARK_CARD_SHADOW };
-      iconChip = { background: 'var(--wa-accent)' };
+      iconChip = { background: 'var(--wa-accent-fill)' };
       bodyColor = 'rgba(255,255,255,0.9)';
       break;
     case 'gold-light':

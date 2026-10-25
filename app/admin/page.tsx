@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
@@ -365,6 +366,7 @@ export default async function AdminTodayPage({
       hour: 'numeric',
       minute: '2-digit',
     }).format(new Date());
+    const commonT = await getTranslations('common.disclosures');
 
     return (
       <>
@@ -394,6 +396,7 @@ export default async function AdminTodayPage({
           queueItems={queueItems}
           programHealth={programHealth}
           programHealthCaption={PROGRAM_HEALTH_CAPTION}
+          whatIsCountedLabel={commonT('whatIsCounted')}
           placementsByMonth={placementsByMonth}
           placementsSubtitle={`${new Date().getUTCFullYear()} YTD · ${placementsYtd} total`}
           addStudentHref="/admin/members/new"

@@ -15,6 +15,7 @@ import {
 } from '@/components/portal/kit';
 import { PIPELINE_STAGES_ORDERED, type PipelineStage } from '@/lib/pipeline/stage';
 import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
+import { formatPortalDateTime } from '@/lib/formatDate';
 import { useTranslations } from 'next-intl';
 
 type Milestone = {
@@ -178,7 +179,7 @@ export default function PartnerMilestonesView({ initialMilestones }: { initialMi
                       {m.memberName}
                     </PortalRecordLink>
                     {' · '}
-                    {new Date(m.at).toLocaleString()}
+                    {formatPortalDateTime(m.at)}
                   </div>
                 </div>
                 {track ? (

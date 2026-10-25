@@ -607,3 +607,8 @@
     transition: none;
   }
 }
+
+/* Readable radar boundaries and accessible collapsed content. */
+.radarChart { --skill-radar-grid: color-mix(in srgb, var(--wa-muted) 80%, transparent); --skill-radar-grid-quiet: color-mix(in srgb, var(--wa-muted) 45%, transparent); }
+.axisGuideContent[hidden] { display: none; }
+.radarValues tbody th { font-size: var(--wa-type-body); text-transform: none; letter-spacing: normal; }

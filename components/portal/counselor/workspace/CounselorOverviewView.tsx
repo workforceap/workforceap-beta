@@ -4,6 +4,7 @@ import { getUser } from '@/lib/auth/server';
 import { deniedPortalHomeHref } from '@/lib/auth/portalGuards';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
+import { signedInFirstName } from '@/lib/portal/signedInFirstName';
 import { COUNSELOR_ROSTER_CAP } from '@/lib/db/queryCaps';
 import Link from 'next/link';
 import { counselorAffiliationLabel } from '@/lib/counselor/counselorLabels';
@@ -82,6 +83,10 @@ export default async function CounselorOverviewView({
   if (requestedUi !== 'legacy') {
     const kitLoadErrors: string[] = [];
     const kitIsAdmin = await isAdmin(user.id);
+    // Person-facing greeting ("Welcome back, {first name}."), one cheap lookup
+    // that degrades to the workspace title when the name is unavailable.
+    const tCounselor = await getTranslations('counselor');
+    const kitFirstName = await signedInFirstName(user.id);
     const kitCounselor = await prisma.counselor.findFirst({
       where: { userId: user.id, active: true },
       select: { id: true },
@@ -158,6 +163,8 @@ export default async function CounselorOverviewView({
         ))}
         <CounselorHomeKit
         embedded={embedded}
+        firstName={kitFirstName}
+        welcomeTitle={kitFirstName ? tCounselor('welcomeBack', { firstName: kitFirstName }) : undefined}
         assignedCount={assignedCount}
         atRiskCount={kitAttentionLoaded ? kitAttention.totals.byReason.risk_alert : null}
         needsReplyCount={kitCenter ? kitCenter.totals.needsReplyCount : null}

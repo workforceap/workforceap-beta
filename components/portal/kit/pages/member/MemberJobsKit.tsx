@@ -1,18 +1,14 @@
 import NextLink from 'next/link';
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { DesignSurface, DataTable, StatusTag, PageOpener, JobListingRow, KitEmptyState, type Column, type KitTone } from '@/components/portal/kit';
+import { DesignSurface, KpiStrip, DataTable, StatusTag, PageOpener, JobListingRow, KitEmptyState, type Column, type KitTone } from '@/components/portal/kit';
 import { JOBS_BOARD_EMPTY } from '@/lib/member/jobPipelineDisplay';
-import styles from './MemberJobsOverview.module.css';
+import styles from './memberPages.module.css';
 
 /**
  * Member Portal — JOB PIPELINE view.
  * Faithful port of `data-view-panel="jobs"` in
  * docs/mockups/workforceap-member-suite.html.
- * Open roles lead; tracked applications follow. Counts summarize the application
- * tracker (including external jobs), not the separate live-opening bookmarks.
- * Populated recommendations are optional. Their empty/error states stay visible.
- * The opener keeps the board title and task links; section labels carry the structure.
  * Recommended matches use JobListingRow so pipeline, board, and listing share one row.
  *
  * The live open-roles list renders here too (`#open-roles`, JobListingRow →
@@ -71,8 +67,9 @@ export interface MemberJobsKitProps {
   /** Where "Browse openings" / "Browse jobs" go. Defaults to the in-page open-roles list. */
   browseHref?: string;
   profileHref?: string;
+  /** Destination for the help route in the no-openings empty state. */
   messagesHref?: string;
-  /** Match-row destination. Proofs supply a real synthetic job detail route. */
+  /** Match-row destination. Proofs pass a hash so they stay on /dev/member. */
   jobHref?: (jobId: string) => string;
   applications?: ApplicationRow[];
   recommended?: RecommendedJob[];
@@ -143,8 +140,9 @@ export function MemberJobsKit({
     { key: 'stage', header: 'Stage', align: 'right', render: (r) => <StatusTag tone={r.tone}>{r.stage}</StatusTag> },
   ];
   const applicationCard = (row: ApplicationRow) => (
-    <div className="wa-kit-card wa-kit-card--sm">
-      {/* Phones: stack the stage tag under the role. Side by side, the nowrap
+    <div className={styles.applicationRow}>
+      {/* Phones: a hairline row, not a card inside the Applications card.
+          Stack the stage tag under the role. Side by side, the nowrap
           tag took ~104px of the 226px row and squeezed the role column to
           110px, wrapping every title onto 2-3 lines and breaking the applied
           date across lines ("Jun" / "12"). Row layout returns at >=768px. */}
@@ -161,44 +159,45 @@ export function MemberJobsKit({
     </div>
   );
 
+  // One contextual sentence from the pipeline counts the route already loaded.
+  const pipelineTotal = saved + applied + interviewing + offers;
+  const openerMeta = pipelineLoadFailed || pipelineTotal === 0
+    ? 'Applications, matches, next interviews.'
+    : `${applied} applied, ${interviewing} interviewing, ${saved} saved.`;
+
   return (
     <DesignSurface surface="warm">
-      <div className={styles.page}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
           title="Job board"
-          action={
-            <nav aria-label="Job search tasks" className={styles.actions}>
-              <JobsCta href={browseHref}>Browse openings</JobsCta>
-              <NextLink href="#applications" className={`${styles.secondaryAction} wa-kit-focus`}>View applications</NextLink>
-            </nav>
+          meta={openerMeta}
+          aside={
+            <div className="wa-flex wa-items-center wa-gap-2 wa-flex-wrap">
+              <JobsCta href={browseHref} variant="secondary">Browse openings</JobsCta>
+              <NextLink href="#applications" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">View applications</NextLink>
+            </div>
           }
         />
-        <dl className={styles.status} aria-label="Application tracker status">
-          {(
+        <KpiStrip
+          items={(
             [
               ['Saved', saved],
               ['Applied', applied],
               ['Interviewing', interviewing],
               ['Offers', offers],
             ] as const
-          ).map(([label, value]) => (
-            <div key={label} className={styles.statusItem}>
-              <dt>{label}</dt>
-              <dd>{pipelineLoadFailed ? '—' : value}</dd>
-            </div>
-          ))}
-        </dl>
-        {pipelineLoadFailed ? <p className="wa-kit-meta">{t('applicationsUnavailable.kpiCaption')}</p> : null}
+          ).map(([label, value]) =>
+            pipelineLoadFailed
+              ? { label, value: '—', delta: t('applicationsUnavailable.kpiCaption'), deltaTone: 'warn' as const }
+              : { label, value },
+          )}
+        />
 
-        <section id="open-roles" aria-labelledby="open-roles-heading" tabIndex={-1} className={styles.section}>
-          <div className="wa-flex wa-items-end wa-justify-between wa-gap-3 wa-flex-wrap" style={{ marginBottom: 16 }}>
-            <h2 id="open-roles-heading" style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', margin: 0 }}>
-              Open roles
-            </h2>
+        <section id="open-roles" aria-labelledby="open-roles-heading" style={{ scrollMarginTop: 96 }}>
+          <div className={`wa-kit-card__head ${styles.sectionHead}`}>
+            <h2 id="open-roles-heading" className="wa-kit-card-title">Open roles</h2>
             {openRolesCount > 0 && !openRolesLoadFailed ? (
-              <p className="wa-kit-meta" style={{ margin: 0, fontVariantNumeric: 'tabular-nums' }}>
-                {openRolesCount} live opening{openRolesCount === 1 ? '' : 's'}
-              </p>
+              <p className="wa-kit-card-count">{openRolesCount} live opening{openRolesCount === 1 ? '' : 's'}</p>
             ) : null}
           </div>
           {openRolesLoadFailed ? (
@@ -222,7 +221,7 @@ export function MemberJobsKit({
               />
             </div>
           ) : (
-            <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }} data-testid="open-roles-list">
+            <div className="wa-kit-card wa-kit-card--flush" data-testid="open-roles-list">
               {openRoles.map((job, i) => (
                 <JobListingRow
                   key={job.id}
@@ -265,11 +264,11 @@ export function MemberJobsKit({
           ) : null}
         </section>
 
-        <section id="applications" aria-labelledby="applications-heading" tabIndex={-1} className={`wa-kit-card ${styles.section}`}>
-          <div className="wa-flex wa-flex-col md:wa-flex-row md:wa-items-center wa-justify-between wa-gap-3" style={{ marginBottom: 16 }}>
+        <section id="applications" className="wa-kit-card" aria-labelledby="applications-heading">
+          <div className="wa-kit-card__head">
             <div>
-              <h2 id="applications-heading" style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em' }}>Applications</h2>
-              {syncedLabel && !pipelineLoadFailed ? <p className="wa-kit-meta">{syncedLabel}</p> : null}
+              <h2 id="applications-heading" className="wa-kit-card-title">Applications</h2>
+              {syncedLabel && !pipelineLoadFailed ? <p className="wa-kit-card-sub">{syncedLabel}</p> : null}
             </div>
           </div>
           {/* The empty state is the card's own branch: the table below only mounts with rows, so it carries no `empty` prop. */}
@@ -300,9 +299,10 @@ export function MemberJobsKit({
           )}
         </section>
 
-        <details className={styles.recommendations} open={recommendationsLoadFailed || recommended.length === 0}>
-          <summary className="wa-kit-focus"><h2>Recommended</h2>{recommendationsLoadFailed || recommended.length > 0 ? <span>{recommendationsLoadFailed ? 'Unavailable' : `${recommended.length} matches`}</span> : null}</summary>
-          <div className={styles.recommendationsBody}>
+        <section aria-labelledby="recommended-heading">
+          <div className={`wa-kit-card__head ${styles.sectionHead}`}>
+            <h2 id="recommended-heading" className="wa-kit-card-title">Recommended</h2>
+          </div>
           {recommendationsLoadFailed ? (
             <div className="wa-kit-card">
               <KitEmptyState
@@ -325,7 +325,7 @@ export function MemberJobsKit({
               />
             </div>
           ) : (
-            <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div className="wa-kit-card wa-kit-card--flush">
               {recommended.map((job, i) => (
                 <JobListingRow
                   key={job.id}
@@ -343,8 +343,7 @@ export function MemberJobsKit({
               ))}
             </div>
           )}
-          </div>
-        </details>
+        </section>
       </div>
     </DesignSurface>
   );

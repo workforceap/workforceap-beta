@@ -9,24 +9,27 @@ import type { NextBestAction } from '@/lib/member/nextBestActions';
 import { resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
 import { trackFunnelEvent } from '@/lib/analytics/events';
 import { postMemberEvent } from '@/lib/events/client';
+import { MemberTaskRow, WhatNext, splitLead } from '@/components/portal/kit/pages/member/MemberTaskRow';
 import styles from './MemberDoThisNextCard.module.css';
 
-/** Only persisted actions have an entity ID for click telemetry. */
+/** Only persisted actions have an entity ID that can be explicitly dismissed. */
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type MemberDoThisNextCardProps = {
   action: NextBestAction | null;
+  /** `row` renders inside the member home's ordered This week list. */
+  variant?: 'card' | 'row';
+  rowState?: 'current' | 'todo';
+  /** Development fixtures navigate locally without telemetry or DB writes. */
+  previewOnly?: boolean;
 };
 
 /**
- * Single dominant "Today" CTA on the kit member home (MemberHomeKit), painted
- * with the portal `--wa-*` tokens and `wa-kit-*` classes. Its pre-kit styling
- * went with the retired `?ui=legacy` home (WAP-195).
- *
- * Opening a destination is a click, not evidence that the member completed it.
- * Completion belongs to the successful workflow or a verified staff update.
+ * A click opens the suggested destination; it is not evidence of completion.
+ * Persisted suggestions leave only through the separate, explicit dismiss
+ * action. Synthetic fixture actions have no dismiss control.
  */
-export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardProps) {
+export default function MemberDoThisNextCard({ action, variant = 'card', rowState = 'current', previewOnly = false }: MemberDoThisNextCardProps) {
   const t = useTranslations('dashboard');
   const [dismissedId, setDismissedId] = useState<string | null>(null);
   const [dismissing, setDismissing] = useState(false);
@@ -44,7 +47,7 @@ export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardPro
   const actionHref = resolveMemberProgramHref(action.href);
 
   const dismissSuggestion = async () => {
-    if (dismissing) return;
+    if (dismissing || previewOnly) return;
     setDismissing(true);
     setDismissErrorId(null);
     try {
@@ -63,6 +66,7 @@ export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardPro
   };
 
   const handleCtaClick = () => {
+    if (previewOnly) return;
     trackFunnelEvent('member_dashboard', 'dashboard_primary_cta_clicked', {
       action_id: action.id,
       action_label: action.cta,
@@ -83,46 +87,51 @@ export default function MemberDoThisNextCard({ action }: MemberDoThisNextCardPro
     });
   };
 
-  return (
-    <section aria-label={t('todayFocus')} className={styles.section}>
-      <div
-        className={`wa-kit-card wa-kit-card--gradient-crimson ${styles.card}`}
-      >
-        <div className={styles.eyebrow}>
-          <span className={styles.label}>
-            {t('todayFocus')}
+  const dismissControl = UUID_RE.test(actionId) && !previewOnly ? (
+    <button
+      type="button"
+      className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus"
+      disabled={dismissing}
+      onClick={() => void dismissSuggestion()}
+    >
+      {dismissing ? t('dismissingSuggestion') : t('dismissSuggestion')}
+    </button>
+  ) : null;
+
+  if (variant === 'row') {
+    const { lead, rest } = splitLead(action.body);
+    return (
+      <MemberTaskRow
+        state={rowState}
+        testId="member-today-row"
+        title={action.title}
+        sub={lead}
+        trailing={(
+          <span className={styles.rowActions}>
+            <Link href={actionHref} onClick={handleCtaClick} className="wa-kit-cta wa-kit-focus">
+              {action.cta} <ArrowRight size={14} aria-hidden />
+            </Link>
+            {dismissControl}
           </span>
-          {UUID_RE.test(actionId) && (
-            <button
-              type="button"
-              className="wa-kit-focus"
-              disabled={dismissing}
-              onClick={() => void dismissSuggestion()}
-              style={{ minHeight: 44, padding: '8px 12px', border: '1px solid currentColor', borderRadius: 'var(--wa-radius-sm)', background: 'transparent', color: 'var(--wa-on-accent)', fontSize: 'var(--wa-type-meta)', cursor: 'pointer' }}
-            >
-              {t('dismissSuggestion')}
-            </button>
-          )}
+        )}
+      >
+        {dismissErrorId === actionId ? <p role="alert" className={styles.dismissError}>{t('dismissSuggestionError')}</p> : null}
+        {rest ? <WhatNext label={t('home.whatNext')}><p>{rest}</p></WhatNext> : null}
+      </MemberTaskRow>
+    );
+  }
+
+  return (
+    <section aria-label={t('todayFocus')}>
+      <div className={`wa-kit-card wa-kit-card--accent-edge ${styles.card}`}>
+        <div className={styles.cardHead}>
+          <p className={styles.eyebrow}>{t('todayFocus')}</p>
+          {dismissControl}
         </div>
-        {dismissErrorId === actionId && <p role="alert" style={{ margin: 0, color: 'var(--wa-on-accent)' }}>{t('dismissSuggestionError')}</p>}
-        <h2 className={`h-font ${styles.title}`}>
-          {action.title}
-        </h2>
-        <p
-          className={`wa-kit-lede ${styles.body}`}
-          style={{
-            color: 'color-mix(in srgb, var(--wa-on-accent) 90%, transparent)',
-            margin: 0,
-          }}
-        >
-          {/* WAP-253: no line clamp here; the body often ends with the due date. */}
-          {action.body}
-        </p>
-        <Link
-          href={actionHref}
-          onClick={handleCtaClick}
-          className={`wa-kit-focus ${styles.action}`}
-        >
+        {dismissErrorId === actionId ? <p role="alert" className={styles.dismissError}>{t('dismissSuggestionError')}</p> : null}
+        <h2 className={`h-font ${styles.title}`}>{action.title}</h2>
+        <p className={`wa-kit-lede ${styles.body}`}>{action.body}</p>
+        <Link href={actionHref} onClick={handleCtaClick} className={`wa-kit-cta wa-kit-focus ${styles.cta}`}>
           {action.cta} <ArrowRight size={14} aria-hidden />
         </Link>
       </div>

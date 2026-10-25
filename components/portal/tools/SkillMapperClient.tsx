@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useId } from 'react';
+import { useState, useEffect, useRef, useId, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Search,
@@ -92,7 +92,7 @@ const primaryPillStyle = {
   gap: '0.375rem',
   minHeight: 44,
   padding: '10px 20px',
-  background: 'var(--wa-accent)',
+  background: 'var(--wa-accent-fill)',
   color: 'var(--wa-on-accent-control)',
   fontWeight: 700,
   fontSize: 'var(--wa-type-body)',
@@ -115,6 +115,7 @@ const outlinePillStyleSm = {
 
 function AxisLegend({ axes }: { axes: string[] }) {
   const [open, setOpen] = useState(false);
+  const panelId = useId();
   const shown = axes.filter(a => AXIS_DESCRIPTIONS[a]);
   if (shown.length === 0) return null;
   return (
@@ -123,6 +124,7 @@ function AxisLegend({ axes }: { axes: string[] }) {
         type="button"
         onClick={() => setOpen(o => !o)}
         aria-expanded={open}
+        aria-controls={panelId}
         className={`${styles.disclosureButton} wa-kit-focus`}
       >
         <span style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
@@ -131,8 +133,7 @@ function AxisLegend({ axes }: { axes: string[] }) {
         </span>
         <ChevronDown size={16} aria-hidden="true" className={styles.disclosureChevron} style={{ transform: open ? 'rotate(180deg)' : 'none' }} />
       </button>
-      {open && (
-        <div className={styles.axisGuideContent}>
+        <div id={panelId} hidden={!open} className={styles.axisGuideContent}>
           {shown.map(axis => {
             const info = AXIS_DESCRIPTIONS[axis];
             return (
@@ -151,7 +152,6 @@ function AxisLegend({ axes }: { axes: string[] }) {
             Occupation values summarize how much each area matters for the role. Member values estimate a profile from available records; they are not a proficiency assessment.
           </p>
         </div>
-      )}
     </div>
   );
 }
@@ -180,15 +180,15 @@ function RadarChart({ data, member = false, label, valuesId, captionId }: {
   const gridLevels = [0.25, 0.5, 0.75, 1];
   return (
     <svg className={`skill-mapper-radar-chart ${styles.radarChart}`} width={size} height={size} viewBox={`-28 -8 ${size + 56} ${size + 16}`} role="img" aria-label={label} aria-describedby={`${descriptionId} ${captionId}`} aria-details={valuesId}>
-      <desc id={descriptionId}>{member ? 'Estimated member profile. Exact percentages follow this chart.' : 'Occupation requirements. Exact percentages are available in the View radar values disclosure below.'}</desc>
+      <desc id={descriptionId}>{`${member ? 'Estimated member profile.' : 'Occupation requirements.'} Rings mark 25%, 50%, 75% and 100%. Values: ${data.map(d => `${d.axis} ${Math.round(d.value * 100)}%`).join(', ')}. Exact values follow this chart.`}</desc>
       {gridLevels.map(level => (
         <polygon key={level}
           points={data.map((_, i) => { const p = pt(i, level); return `${p.x},${p.y}`; }).join(' ')}
-          fill="none" stroke="var(--wa-border)" strokeWidth="1" />
+          fill="none" stroke={level === 1 ? 'var(--skill-radar-grid)' : 'var(--skill-radar-grid-quiet)'} strokeWidth="1" />
       ))}
       {data.map((_, i) => {
         const p = pt(i, 1);
-        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--wa-border)" strokeWidth="1" />;
+        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--skill-radar-grid)" strokeWidth="1" />;
       })}
       <polygon
         points={data.map((d, i) => { const p = pt(i, d.value); return `${p.x},${p.y}`; }).join(' ')}
@@ -228,15 +228,15 @@ function DualRadarChart({ memberData, targetData, label, valuesId, captionId }: 
 
   return (
     <svg className={`skill-mapper-radar-chart ${styles.radarChart}`} width={size} height={size} viewBox={`-18 0 ${size + 36} ${size}`} role="img" aria-label={label} aria-describedby={`${descriptionId} ${captionId}`} aria-details={valuesId}>
-      <desc id={descriptionId}>Dashed line: estimated member profile. Solid line: occupation requirements. Exact percentages for both series are available in the View radar values disclosure below.</desc>
+      <desc id={descriptionId}>{`Dashed line: estimated member profile. Solid line: occupation requirements. Rings mark 25%, 50%, 75% and 100%. ${axes.map(axis => `${axis} ${Math.round(getValue(memberData, axis) * 100)}% versus ${Math.round(getValue(targetData, axis) * 100)}%`).join(', ')}. Exact values follow this chart.`}</desc>
       {gridLevels.map(level => (
         <polygon key={level}
           points={axes.map((_, i) => { const p = pt(i, level); return `${p.x},${p.y}`; }).join(' ')}
-          fill="none" stroke="var(--wa-border)" strokeWidth="1" />
+          fill="none" stroke={level === 1 ? 'var(--skill-radar-grid)' : 'var(--skill-radar-grid-quiet)'} strokeWidth="1" />
       ))}
       {axes.map((_, i) => {
         const p = pt(i, 1);
-        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--wa-border)" strokeWidth="1" />;
+        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="var(--skill-radar-grid)" strokeWidth="1" />;
       })}
       {/* Target occupation - accent/red */}
       <polygon
@@ -274,10 +274,11 @@ function RadarValues({ id, targetData, memberData }: {
         <p className={styles.caption}>{memberData ? t('estimatedComparison') : t('occupationValues')}</p>
         <DataTable
         className={styles.radarValues}
+        caption={memberData ? t('estimatedComparison') : t('occupationValues')}
         minWidth={0}
         density="compact"
         columns={[
-          { key: 'axis', header: t('axis') },
+          { key: 'axis', header: t('axis'), rowHeader: true },
           ...(memberData ? [{ key: 'member', header: t('memberEstimate'), numeric: true }] : []),
           { key: 'target', header: t('target'), numeric: true },
         ]}
@@ -434,7 +435,7 @@ function CoursePathForGaps({ gaps }: { gaps: Array<{ axis: string; member: numbe
                       gap: '0.25rem',
                       padding: '0.35rem 0.5rem',
                       borderRadius: '0.375rem',
-                      background: 'var(--wa-accent)',
+                      background: 'var(--wa-accent-fill)',
                       color: 'var(--wa-on-accent-control)',
                       fontSize: 'var(--wa-type-body)',
                       fontWeight: 600,
@@ -659,8 +660,10 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
     }
   };
 
-  const loadProfile = () => {
-    if (preview) return;
+  const profileLoadInFlightRef = useRef(false);
+  const loadProfile = useCallback(() => {
+    if (preview || profileLoadInFlightRef.current) return;
+    profileLoadInFlightRef.current = true;
     setLoadingProfile(true);
     fetch('/api/member/skill-profile')
       .then(r => r.json())
@@ -683,12 +686,15 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
         }
       })
       .catch(() => setProfileLoaded(true))
-      .finally(() => setLoadingProfile(false));
-  };
+      .finally(() => {
+        profileLoadInFlightRef.current = false;
+        setLoadingProfile(false);
+      });
+  }, [preview]);
 
   useEffect(() => {
     if (activeTab === 'profile' && !profileLoaded) loadProfile();
-  }, [activeTab, profileLoaded]);  
+  }, [activeTab, profileLoaded, loadProfile]);
 
   useEffect(() => {
     if (activeTab !== 'profile') {
@@ -871,7 +877,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
               />
             </div>
             <button type="button" className={`${styles.searchAction} wa-kit-focus`} onClick={handleSearch} disabled={preview || loading || !query.trim()}
-              style={{ ...primaryPillStyle, opacity: loading || !query.trim() ? 0.6 : 1, cursor: loading || !query.trim() ? 'not-allowed' : 'pointer' }}>
+              style={{ ...primaryPillStyle, opacity: preview || loading || !query.trim() ? 0.6 : 1, cursor: preview || loading || !query.trim() ? 'not-allowed' : 'pointer' }}>
               {loading ? <PortalInlineSpinner size={16} /> : <Search size={16} aria-hidden />}
               Search
             </button>
@@ -963,7 +969,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                   disabled={preview || exportingPdf}
                   aria-busy={exportingPdf}
                   className="wa-kit-focus"
-                  style={{ ...outlinePillStyleSm, cursor: exportingPdf ? 'default' : 'pointer', opacity: exportingPdf ? 0.6 : 1 }}
+                  style={{ ...outlinePillStyleSm, cursor: preview || exportingPdf ? 'not-allowed' : 'pointer', opacity: preview || exportingPdf ? 0.6 : 1 }}
                 >
                   {exportingPdf ? <PortalInlineSpinner size={14} /> : <Download size={14} aria-hidden="true" />}
                   <span aria-live="polite">
@@ -995,7 +1001,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                           <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center', marginTop: '0.2rem', flexWrap: 'wrap' }}>
                             <span style={{
                               background: `color-mix(in srgb, ${mp.categoryColor} 12%, transparent)`,
-                              color: mp.categoryColor,
+                              color: `color-mix(in srgb, ${mp.categoryColor} 40%, var(--wa-text))`,
                               borderRadius: '999px', padding: '0.1rem 0.4rem', fontSize: 'var(--wa-type-meta)', fontWeight: 600}}>{mp.categoryLabel}</span>
                             <span style={{
                               background: mp.recommendationType === 'primary'
@@ -1033,7 +1039,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                         display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                         minHeight: 44,
                         padding: '0.5rem 1rem', borderRadius: 999,
-                        background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
+                        background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)',
                         fontWeight: 700, fontSize: 'var(--wa-type-body)', textDecoration: 'none'}} onClick={() => trackFunnelEvent('skill_mapper', 'enroll_cta_clicked', { program_slug: matchedPrograms[0].programSlug })}>
                         {tw('exploreProgram', { program: matchedPrograms[0].programTitle })}
                       </Link>
@@ -1115,7 +1121,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                       disabled={preview || exportingComparison}
                       aria-busy={exportingComparison}
                       className="wa-kit-focus"
-                      style={{ ...outlinePillStyleSm, cursor: exportingComparison ? 'default' : 'pointer', opacity: exportingComparison ? 0.6 : 1 }}
+                      style={{ ...outlinePillStyleSm, cursor: preview || exportingComparison ? 'not-allowed' : 'pointer', opacity: preview || exportingComparison ? 0.6 : 1 }}
                     >
                       {exportingComparison ? <PortalInlineSpinner size={14} /> : <Download size={14} aria-hidden="true" />}
                       <span aria-live="polite">
@@ -1294,7 +1300,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                 <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
                   Complete the O*NET Interest Profiler to add interest-based signals alongside your available resume and certification records.
                 </p>
-                <a href="/dashboard/learning/interest-profiler" className="wa-kit-focus" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, gap: '0.35rem', padding: '0.4rem 0.875rem', borderRadius: 999, background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', fontWeight: 700, fontSize: 'var(--wa-type-body)', textDecoration: 'none' }}>
+                <a href="/dashboard/learning/interest-profiler" className="wa-kit-focus" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, gap: '0.35rem', padding: '0.4rem 0.875rem', borderRadius: 999, background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)', fontWeight: 700, fontSize: 'var(--wa-type-body)', textDecoration: 'none' }}>
                   <ArrowRight size={15} aria-hidden="true" />
                   Start 30-question assessment (~10 min)
                 </a>
@@ -1342,7 +1348,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                       padding: '0.35rem 0.75rem', borderRadius: 999,
-                      background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
+                      background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)',
                       fontWeight: 700, fontSize: 'var(--wa-type-body)', border: 'none',
                       cursor: extractingResume ? 'default' : 'pointer',
                       opacity: extractingResume ? 0.6 : 1}}
@@ -1360,7 +1366,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                     style={{
                       display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                       padding: '0.45rem 0.9rem', borderRadius: 999,
-                      background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
+                      background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)',
                       fontWeight: 800, fontSize: 'var(--wa-type-body)', border: 'none',
                       cursor: extractingResume ? 'default' : 'pointer',
                       opacity: extractingResume ? 0.6 : 1}}
@@ -1390,7 +1396,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                     display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
                     minHeight: 44,
                     padding: '0.35rem 0.75rem', borderRadius: 999,
-                    background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)',
+                    background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)',
                     fontWeight: 700, fontSize: 'var(--wa-type-body)', textDecoration: 'none'}}>
                     <UploadCloud size={14} aria-hidden="true" />
                     Upload resume

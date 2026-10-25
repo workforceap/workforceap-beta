@@ -218,7 +218,7 @@ describe('credential-free Jobs review flows', () => {
   });
 
   it('keeps requirements and application outside optional preparation disclosures', () => {
-    render(<MemberJobDetail title="Sample role" company="Sample" location="Remote" jobType="Full-time" requirements={['Required credential']} applySlot={<input aria-label="Required application field" />} preparationSlot={<input aria-label="Optional draft" defaultValue="Retained" />} screening={{ packTitle: 'Sample screen', employerLabel: 'Sample', questions: [{ prompt: 'Prepare this answer' }] }} />);
+    render(<NextIntlClientProvider locale="en" messages={en}><MemberJobDetail title="Sample role" company="Sample" location="Remote" jobType="Full-time" requirements={['Required credential']} applySlot={<input aria-label="Required application field" />} preparationSlot={<input aria-label="Optional draft" defaultValue="Retained" />} screening={{ packTitle: 'Sample screen', employerLabel: 'Sample', questions: [{ prompt: 'Prepare this answer' }] }} /></NextIntlClientProvider>);
     expect(screen.getByLabelText('Required application field').closest('details')).toBeNull();
     expect(screen.getByText('Required credential').closest('details')).toBeNull();
     const optional = screen.getByLabelText('Optional draft');

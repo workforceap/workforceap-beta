@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2, ClipboardCheck, Wand2 } from 'lucide-react';
-import styles from './Home.module.css';
+import { ArrowRight, CheckCircle2, ChevronDown, ClipboardCheck, Wand2 } from 'lucide-react';
+import styles from './MemberStartHereCard.module.css';
 
 /**
  * Pinned "Start here" shortcuts under the home greeting.
@@ -12,6 +12,11 @@ import styles from './Home.module.css';
  * had completed the preassessment). These two links are always shown, at the
  * top, as plain large buttons; the preassessment one turns into a quiet
  * "done" link once taken so it never nags.
+ *
+ * The member home ("This week") no longer renders this card: its two actions
+ * became a WIOA preassessment row in the This week list and an "AI Career
+ * Tools" link in the home's quiet link row. The component stays for any
+ * surface that wants the tile pair.
  *
  * Tool list + "See all" use `.wa-kit-start-here-*` (portal-kit.css) so titles,
  * descriptions, and the footer link share hierarchy with other member home
@@ -26,7 +31,7 @@ export default function MemberStartHereCard({
   preassessmentHref?: string;
   toolkitHref?: string;
   preassessmentCompleted: boolean;
-  /** Home already has a contextual AI introduction; keep this entry focused on the assessment. */
+  /** Keeps the standalone Home entry focused on the assessment when requested. */
   variant?: 'full' | 'preassessment';
 }) {
   if (variant === 'preassessment') {
@@ -44,11 +49,7 @@ export default function MemberStartHereCard({
             <p>{preassessmentCompleted ? 'Done. View your results' : '35 questions for your counselor'}</p>
           </div>
         </div>
-        <Link
-          href={preassessmentHref}
-          className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus"
-          data-done={preassessmentCompleted ? 'true' : 'false'}
-        >
+        <Link href={preassessmentHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus" data-done={preassessmentCompleted ? 'true' : 'false'}>
           {preassessmentCompleted ? 'View your results' : 'Open preassessment'}
           <ArrowRight size={16} aria-hidden="true" />
         </Link>
@@ -61,7 +62,7 @@ export default function MemberStartHereCard({
       className="wa-kit-card wa-kit-start-here"
       data-testid="member-start-here"
     >
-      <h2 id="member-start-here-heading" className="wa-kit-start-here__heading">
+      <h2 id="member-start-here-heading" className={`wa-kit-start-here__heading ${styles.heading}`}>
         Start here
       </h2>
       <div className="wa-kit-start-here__actions">
@@ -97,17 +98,23 @@ export default function MemberStartHereCard({
           </span>
         </Link>
       </div>
-      <h3 className="wa-kit-start-here__subhead">What the AI Career Tools do</h3>
-      <ul className="wa-kit-start-here__tools" data-testid="member-start-here-tools">
-        {START_HERE_TOOLS.map((tool) => (
-          <li key={tool.href}>
-            <Link href={tool.href} className="wa-kit-start-here__tool wa-kit-focus">
-              <strong>{tool.title}</strong>
-              <span className="wa-kit-meta">{tool.body}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {/* One tap away instead of a 300px list under the two shortcuts. */}
+      <details className={styles.tools}>
+        <summary className={`wa-kit-focus ${styles.toolsSummary}`}>
+          <h3 className={styles.toolsHeading}>What the AI Career Tools do</h3>
+          <ChevronDown className={styles.chevron} size={16} aria-hidden="true" />
+        </summary>
+        <ul className="wa-kit-start-here__tools" data-testid="member-start-here-tools">
+          {START_HERE_TOOLS.map((tool) => (
+            <li key={tool.href}>
+              <Link href={tool.href} className="wa-kit-start-here__tool wa-kit-focus">
+                <strong>{tool.title}</strong>
+                <span className="wa-kit-meta">{tool.body}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </details>
       <Link
         href={`${toolkitHref}?tab=toolkit`}
         className="wa-kit-start-here__see-all wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"

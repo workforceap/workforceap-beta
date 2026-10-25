@@ -276,20 +276,24 @@ There are **two** live CSS-variable families in this codebase. Only one is canon
 
 Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
 
-- **Brand (constant across modes):** `--wa-accent` (brand magenta) / `--wa-accent-dark` /
+- **Brand hues:** `--wa-accent` (the text accent: crimson in light, dusty rose in dark; never
+  a fill behind white) / `--wa-accent-fill` (solid fills, crimson in both modes) / `--wa-accent-dark` /
   `--wa-accent-soft` / `--wa-on-accent`, `--wa-gold(-dark|-soft)`, `--wa-info(-soft)`,
   `--wa-success(-soft)`, `--wa-danger(-soft)`, `--wa-violet`.
-- **Text-bearing hero gradients:** `--wa-hero-crimson(-dark)` and
-  `--wa-hero-gold(-dark)` stay dark in both themes and pair with `--wa-on-hero`.
+- **Text-bearing hero gradients:** `--wa-hero-crimson(-dark)`,
+  `--wa-hero-gold(-dark)` and `--wa-hero-info` (the employer voice session fill)
+  stay dark in both themes and pair with `--wa-on-hero`.
   A white hero action uses `--wa-hero-action-bg` and `--wa-hero-action-text`;
   do not substitute the theme-adaptive solid-control foreground. Categorical
   KPI totals use neutral text; retain semantic color for an actual state
   (the counselors roster colours "At-Risk Owned" only while it is above zero).
 - **Neutrals (flip in dark mode):** `--wa-bg`, `--wa-surface`, `--wa-surface-2` (raised
   fill: icon tiles, chips), `--wa-text`, `--wa-muted`, `--wa-border`, `--wa-track`, plus the
-  sidebar set (`--wa-sidebar-*`, dark chrome in both modes). `--wa-bg-wave` is the shared
-  member canvas (a restrained 5% accent / 3% gold wash on `--wa-bg`); even where
-  both washes overlap, muted text must retain 4.5:1 contrast. `--wa-shell-header-bg`
+  sidebar set (`--wa-sidebar-*`, dark chrome in both modes). `--wa-bg-wave` is the one
+  painting hook for the portal canvas and it is flat: it equals `--wa-bg`, with no radial
+  wash. On the member surface `--wa-bg`, `--wa-surface-2` and `--wa-border` take the warm
+  paper values (§2); muted text keeps 4.5:1 on both ladders (`lib/ui/portalCanvas.test.ts`).
+  `--wa-shell-header-bg`
   is a 96% canvas fill that keeps sticky navigation readable as content scrolls
   beneath it, with a slight continuation of the canvas tone. Member header and mobile
   nav borders stay transparent; `PageOpener` is never recut as a title bar.
@@ -396,12 +400,19 @@ Tailwind is configured with the **`wa-` prefix** (`tailwind.config.ts`) — util
 
 The kit has one design language with **two densities**, switched by a `data-surface` attribute
 that the token layer reads (`css/portal-tokens.css`). Brand colors are identical in both;
-only radius / padding / pop / shadow change.
+radius / padding / shadow and the LIGHT canvas ladder change. Dark values are shared.
 
-| Mode | Who | Feel | Values |
-|---|---|---|---|
-| `warm` | Member-facing routes | Bold + calm: soft corners, generous space, gradient "pop" tiles on | radius 26/16, pad 28/18, `--wa-pop: 1` |
-| `dense` | Admin / staff / data / rosters / queues | Compact, sharp, pop off | radius 12/8, pad 16/12, `--wa-pop: 0` |
+| Mode | Who | Feel | Light canvas (`--wa-bg` / `--wa-surface-2` / `--wa-border`) | Values |
+|---|---|---|---|---|
+| `warm` | Member-facing routes | Calm: white hairline cards on warm paper, 12px corners, generous space | `#faf8f6` / `#f3efeb` / `#e9e4df` | radius 12/8, pad 24/16, `--wa-pop: 0` |
+| `dense` | Admin / staff / data / rosters / queues | Compact and operational, on the cool canvas | `#f7f8fa` / `#f4f4f5` / `#e8e8e8` | radius 12/8, pad 16/12, `--wa-pop: 0` |
+
+Members feel looked after, staff feel operational, and which side you are on reads from across
+the room. The warm ladder is declared once, in `css/portal-tokens.css`, on both
+`[data-surface='warm']` and `html[data-portal-role='member']` (the shell sets that attribute),
+so the header, rail, `<html>`, `<body>` and the page are one canvas. `--wa-surface` stays white on
+both. The canvas is flat (`--wa-bg-wave` is `--wa-bg`). Any new neutral on the warm ladder must
+clear the pairs in `lib/ui/portalCanvas.test.ts`.
 
 Wrap the **route-group layout**, not individual components:
 
@@ -440,10 +451,21 @@ barrel) returns `'warm' | 'dense'` for the rare component that must branch in JS
   with `html[data-portal-role]` (inline at parse time and on mount) and `css/portal-kit.css` paints
   `<html>`/`<body>` with solid `--wa-bg` for that document, out-ranking the marketing site's
   `html.dark body` cool grey. The strip below a short page, rubber-band overscroll and the body seen
-  through the translucent header therefore continue the shell's warm canvas (WAP-153). Do not paint
-  the wave on body — the radial washes fade into `--wa-bg`, so the solid token is the seam-free
-  continuation. The member cream `--wa-bg` override in the bridge applies to
-  `html[data-portal-role='member']` as well as `[data-surface='warm']`.
+  through the translucent header therefore continue the shell's canvas (WAP-153). Do not paint
+  a second canvas on body: `--wa-bg-wave` is `--wa-bg` (flat, no wash), so the solid token is the
+  seam-free continuation. The member warm paper (`--wa-bg`, `--wa-surface-2`, `--wa-border`) is
+  declared in `css/portal-tokens.css` for `html[data-portal-role='member']` as well as
+  `[data-surface='warm']`; the Astryx bridge no longer carries a copy.
+- **In dark mode the accent is for fills, not text.** A lighter crimson is pink, and pink text
+  reads as a beauty brand, so the dark text accents are a dusty rose: `--wa-accent` `#dd9fb0` and
+  `--wa-accent-text` `#e6b3bf` (8.3:1 and 9.9:1 on `--wa-surface`, 4.5:1 or better on the whole
+  dark ladder and on `--wa-accent-soft`). Solid fills paint `--wa-accent-fill` (crimson, white
+  label `--wa-on-accent-control`). Never paint white on `--wa-accent`: it is 2.2:1 in dark.
+  Text links in cards (`.wa-kit-card-link`, the staff `cardLink`, and anchors that only paint
+  their label with an accent token inline) read `--wa-text` in dark with a 1px accent underline
+  (`css/portal-kit.css`, "Dark mode: the accent is for fills"); buttons, tags and anything with
+  its own background are excluded. The accent otherwise appears on fills, the active item and
+  focus rings. Light mode is unchanged. `lib/ui/brandTokens.test.ts` holds the pairs.
 - Admin and staff surfaces read semantic state through `--wa-*` only: `--wa-info-dark` /
   `--wa-success-dark` / `--wa-gold-dark` for text, the base hue for icons, fills and `color-mix`
   tints. The legacy `--color-blue` / `--color-green` / `--color-gold` are pinned or only
@@ -500,6 +522,10 @@ Mapping when converting components: `success↔ok`, `warning↔warn`, `danger(st
 `--wa-kit-tone-soft`. Use them (with `StatusTag`) instead of `colorVar('gold')`-style inline colours
 when the tone is a *state* (a triage bucket, a risk tier); numbers stay neutral `--wa-text`.
 `toneClass(tone)` (`components/portal/kit/tokens.ts`) returns the hook class for `cx()`.
+Each hook also sets `--wa-kit-tone-text`, the text twin of the fill (the same pairs as
+`textColorVar()` / `TEXT_COLOR_VARS`): the gold and success fills are under 4.5:1 as small
+text, so toned text (`.wa-kit-tone-text`, `.wa-kit-stat-tile__delta`) reads the twin, never
+`--wa-kit-tone`; the edge, icon and bar fills keep the fill hue.
 
 **Stat tiles speak KitTone, not `KitColor`.** `StatTile`, `KpiItem` (`KpiStrip`) and `StatSparkTile`
 take `tone?: KitTone` (plus `deltaTone` for the caption line) and paint only through the hooks: the
@@ -604,12 +630,12 @@ reports any barrel re-export nothing imports — keep that at zero. Direct-impor
 | `SectionHeader` | titled section starts |
 | `PageOpener` | member page start (kicker + h1 + lede, optional quiet `.wa-page-action`) — not `PageHeader` breadcrumbs or an outlined title-bar chip |
 | `ProgressRing`, `ProgressBar` | completion / capacity |
-| `Avatar` | people |
+| `Avatar` | people; initials read `--wa-accent-text` on `--wa-accent-soft` (the fill hue is under AA in dark) |
 | `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Empty rows render `KitEmptyState` from the `empty` prop (`DataTableEmpty`: `kind`, `title` — default "No rows yet" — `description`, actions, icon); the legacy `emptyTitle` / `emptyDescription` pair still works. Row density follows DesignSurface (warm → balanced, dense → compact). Opt-in table standard props (§6a): `stickyHeader`, `selectable` + `bulkBar` + `onSelectionChange`, `pagination`, `renderSubRow`, `scrollCue`, `loading`, `errorNotice`, `density`, per-column `stickyLeft`. |
 | `KitTableToolbar` (+ `KitTableViewChip`; import from `kit/KitTableToolbar`) | table toolbar: labelled search, saved-view chips with counts, a collapsed "Filters · n on" drawer, right-side actions. URL state through `kitTableUrlState.ts` (`readKitTableUrlState`, `writeKitTableUrlState`, `kitTableHref`, `KIT_TABLE_PAGE_SIZE`; import from `kit/kitTableUrlState`). |
 | `KitRowMenu` (+ `KitRowMenuItem`; import from `kit/KitRowMenu`) | one icon trigger per table row, a native `role="menu"` list; disabled items stay visible with a `reason` tooltip (`danger` tone for destructive items). |
 | `FeatureTile` | member-facing gradient/pop tiles. `headingAs` (default `h3`) follows the surrounding outline — pass `h2` when tiles directly follow the page h1 |
-| `QueueRow`, `WorkQueueItem` | staff work queues |
+| `QueueRow`, `WorkQueueItem` | staff work queues; every tone tints from a `--wa-*-soft` token, the flag `Token` sits on `--wa-surface` (not a second tint) and a ghost row action reads `--wa-accent-text` |
 | `KanbanBoard` (+ `KanbanColumnHeader` from `kit/Kanban`) | pipeline boards |
 | `BarChartMini`, `RankBars`, `AreaChartMini`, `TrendPlaceholder` | inline mini charts (`Sparkline` from `kit/Charts`) |
 | `FormField`, `Toggle` | form controls |
@@ -680,7 +706,7 @@ any future kit Dialog/Menu/Combobox must be built on them):
 
 | Hook | Use for |
 |---|---|
-| `useFocusTrap` | overlays (dialogs, drawers, menus). Shared **Escape stack**: nested layers each consume one Escape, top-most first. Visibility-aware tab ring, IME-safe, restores focus to the trigger on close. Prefer native `<dialog>.showModal()` when possible. |
+| `useFocusTrap` | overlays (dialogs, drawers, menus). Shared **Escape stack**: nested layers each consume one Escape, top-most first. Visibility-aware tab ring, IME-safe, restores focus to the trigger on close (pass `returnFocusRef`, or give the container an `id` its trigger names in `aria-controls`, for Safari, which leaves `<body>` focused after a button tap). A container with `tabIndex={-1}` and nothing focusable inside takes focus itself. Prefer native `<dialog>.showModal()` when possible. |
 | `useListFocus` (`kit/hooks/useListFocus`, not in the barrel) | roving tabindex for tablists/menus/result lists — Arrow keys (RTL-aware), Home/End, one tab stop, self-repairing as items mount/unmount. Mark items with `data-kit-list-item`. |
 | `useAnnounce` (barrel) / `announce` (`kit/hooks/useAnnounce`) | screen-reader announcements ("12 results", "Saved"). Singleton persistent live regions — never mount your own `aria-live` div per component (freshly-mounted regions don't announce). |
 
@@ -793,6 +819,33 @@ Reference adopters: `UsersKit` (`/admin/users`) and `components/admin/CourseraCa
 
 ---
 
+## 6b. Calm card language (C1 + C3, 2026-10-24)
+
+Member and staff screens share one card recipe: white `--wa-surface` on the `--wa-bg` canvas, a 1px
+`--wa-border` hairline, 12px radius, no heavy shadow, no gradient feature tile by default (the
+`--gradient-*` variants and `FeatureTile` stay opt-in). Warm and dense differ only in density now.
+Gold means achievement, green success, blue supporting data, crimson the one primary action or current
+state (at most one crimson pill per card). Reusable classes (all in `css/portal-kit.css`, `--wa-*` only):
+
+- Card parts: `.wa-kit-card--flush` (rows/tables), `--accent-edge` (3px crimson "Up next" edge),
+  `.wa-kit-card__head` (+ `--ruled`), `.wa-kit-card-title` (17px/700), `.wa-kit-card-sub`,
+  `.wa-kit-card-count`, `.wa-kit-card-link`.
+- Chips: `.wa-kit-chip--neutral|blue|green|gold|crimson|dark`; `.wa-kit-date-chip` with `--soon` (the
+  due-soonest dark pill), `--done`, `--overdue`.
+- Task rows: `ul.wa-kit-task-list > li.wa-kit-task-row[data-state=todo|current|done]` with
+  `__check`, `__body` (`__title`, `__sub`) and a trailing date chip; `.wa-kit-task-row--link` for anchors.
+- `ol.wa-kit-segments` (`--wa-segments: N`) > `li.wa-kit-segment--done|--current|--todo`: segmented
+  progress with `__bar`, `__state`, `__name` labels.
+- `.wa-kit-status-strip` > `.wa-kit-status-step--done|--current|--todo` (`__dot`, `__text`): the slim approval strip.
+- `.wa-kit-people-card` (`__head`, `__avatar`, `__name`, `__role`, `__time`, `__quote`, `__foot`) and
+  `.wa-kit-date-tile` (`__mon`, `__day`); `.wa-kit-stat-pair` for streak + points.
+- Layout: `.wa-kit-home-grid` (`__head`, `__main`, `__rail`) is one column on phone and main + 352px rail
+  from 1100px; `.wa-kit-stack` is a 16px vertical stack.
+- `PageOpener` greeting mode: omit `kicker`, pass `meta` (one contextual sentence) and optionally `aside`
+  (right-side status, stacked below on phone). Existing `kicker` + `lede` call sites are unchanged.
+  `SectionHeader` titles are 18-20px/700 (`.wa-kit-section-header*`). `QueueRow` / `WorkQueueItem` are
+  surface rows with a toned edge and soft icon tile (`.wa-kit-queue-row--*`, `.wa-kit-work-item`).
+
 ## 7. Icons, styling, and motion
 
 - **lucide-react only.** No other icon set, no inline SVG paths, no emoji-as-icon in kit surfaces.
@@ -826,6 +879,25 @@ Reference adopters: `UsersKit` (`/admin/users`) and `components/admin/CourseraCa
   back to its edge). Direction should match the action (drawer from the edge it lives on).
   The tokens zero themselves under `prefers-reduced-motion`; JS-driven animation must still gate
   on `matchMedia('(prefers-reduced-motion: reduce)')` (see `VoiceOrb`).
+- **Rule of thumb: motion helps when it confirms something the member just did or shows what
+  just loaded; it never loops, never replays when a component re-renders, and always has a
+  reduced-motion twin.** The kit has exactly two orchestrated transitions, both CSS-only, both
+  inside `@media (prefers-reduced-motion: no-preference)` and on the `--wa-dur-*` / `--wa-ease`
+  tokens (`lib/ui/portalKitMotion.test.ts` holds the rules):
+  1. **Certification path fills in once** (`.wa-kit-segments`). Each `.wa-kit-segment__bar > i`
+     scales in from the left (`scaleX` 0 to 1, `--wa-dur-slow`), staggered by position with
+     `--wa-stagger` (70ms) up to the eighth segment. It is a CSS animation on mount, so a width
+     change or a re-render does not restart it.
+  2. **A task row strikes through and its check pops** (`.wa-kit-task-row[data-state='done']`).
+     The strike is a background strip on the title that draws in left to right over
+     `--wa-dur-base` (it follows every wrapped line; the title is inline in this block and the
+     body line-height is pinned so the row is the same height with motion off). The check pops
+     once, `scale` 0.8 to 1 over `--wa-dur-base`. The strike is a transition (plays when the row
+     becomes done); the pop is a keyframe animation whose name only changes when the row becomes
+     done, so a re-render of a done row does not replay it. A done row that mounts already done
+     pops its check once and shows the strike with no animation.
+  Under reduced motion the segments are simply full and the done title keeps the native
+  `line-through`. Do not add a third transition without a reason of this kind.
 - Hover-only affordances belong under `@media (hover: hover)`.
 
 ---
@@ -878,7 +950,14 @@ The Astryx design system is installed site-wide (`app/layout.tsx` imports `reset
   `member/MemberHomeKit.tsx`) — same brand-token bridge as everywhere else Astryx is used.
   A navigational action that should look like a button is `KitLinkButton`
   (`components/portal/kit/KitLinkButton.tsx`): one Next link with Astryx Button styling and the
-  kit focus ring. Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
+  kit focus ring. Its primary label colour comes from `css/astryx-brand-bridge.css`
+  (`a.astryx-button[data-variant='primary']`), because the global `a { color: inherit }` would
+  otherwise beat Astryx's layered foreground; do not override it per surface.
+  The primary fill is the next rule in that file: the org accent (`--org-accent`), else the
+  mode-constant `--wa-hero-crimson`, never the dark-lightened `--wa-accent`, so the white label holds
+  6.47:1 in both themes (2.2:1 on the dusty-rose dark `--wa-accent`, `#dd9fb0`). Do not retarget the label to
+  `--wa-on-accent-control` instead: dark ink on the pinned org accent is 2.78:1.
+  Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
   which is invalid and gives keyboard users two tab stops per action (WAP-252). The lint rule
   `wap-kit/no-button-in-link` (`scripts/lint/eslint-plugin-wap-kit.mjs`) fails `npm run lint` on
   a `Button` placed directly inside a `Link` or `AstryxLink` (WAP-268).

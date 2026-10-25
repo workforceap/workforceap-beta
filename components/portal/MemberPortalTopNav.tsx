@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
-import NavigationPending from './NavigationPending';
 import { getBestActiveHref, type ActiveNavLink } from '@/lib/nav/activeRoute';
 import { MEMBER_PORTAL_NAV_ITEMS, navItemsForActiveRoute, type NavBadgeKey } from '@/lib/nav/portalNav';
 import { splitLocalePrefix } from '@/lib/i18n/config';
@@ -51,6 +50,7 @@ export default function MemberPortalTopNav({
   const [moreOpen, setMoreOpen] = useState(false);
   const moreId = useId();
   const navRef = useRef<HTMLElement>(null);
+  const moreBtnRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const activeItemRef = useRef<HTMLLIElement>(null);
 
@@ -58,10 +58,7 @@ export default function MemberPortalTopNav({
     const el = navRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return undefined;
     const setVar = () => {
-      // Phone utilities scroll with the document; only sticky tablet chrome
-      // belongs in the offset used by focused content and hash destinations.
-      const stickyHeight = getComputedStyle(el).position === 'sticky' ? el.offsetHeight : 0;
-      document.documentElement.style.setProperty('--member-portal-top-nav-h', `${stickyHeight}px`);
+      document.documentElement.style.setProperty('--member-portal-top-nav-h', `${el.offsetHeight}px`);
       // Compact chrome can expand after native keyboard focus scrolls the page.
       // Keep that focused destination visible as the rail geometry changes.
       const list = listRef.current;
@@ -94,6 +91,25 @@ export default function MemberPortalTopNav({
     centerRailItem(list, item);
   }, [pathname]);
 
+  // No early-tap replay here. The strip is display:none on phones while the
+  // member bottom tab bar is mounted (css/portal-main-extracted.css) and above
+  // 768px (css/portal.css), so no tap can land on this button before
+  // hydration, and the shared `more` early-tap kind now belongs to the bar's
+  // More button, claimed by WorkspaceShell alone (lib/portal/earlyShellTap.ts).
+
+  /**
+   * Escape closes the open "More pages" list and puts focus back on its button
+   * (the same disclosure contract as DashboardProgramSelector). Outside taps
+   * deliberately do not close it: the list is in flow and pushes the page down,
+   * so dismissing it on a stray tap would shift the page under the finger.
+   */
+  const onNavKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key !== 'Escape' || event.nativeEvent.isComposing || !moreOpen) return;
+    event.preventDefault();
+    setMoreOpen(false);
+    moreBtnRef.current?.focus();
+  };
+
   const remap = (href: string) => hrefMap?.[href] ?? href;
 
   /**
@@ -103,11 +119,11 @@ export default function MemberPortalTopNav({
    * is also visible while that list is closed.
    */
   const tabs = [
-    { canonical: '/dashboard', label: t('dashboard'), shortLabel: t('dashboardShort'), icon: 'home', primary: true },
-    { canonical: '/dashboard/program', label: t('myProgram'), shortLabel: t('myProgramShort'), icon: 'school', primary: true },
-    { canonical: '/dashboard/jobs', label: t('jobBoard'), shortLabel: t('jobBoardShort'), icon: 'work', primary: true },
-    { canonical: '/dashboard/ai-tools', label: t('careerToolkit'), shortLabel: t('careerToolkitShort'), icon: 'auto_awesome', primary: true },
-    { canonical: '/dashboard/messages', label: t('counselorChat'), shortLabel: t('counselorChatShort'), icon: 'chat', badgeKey: 'counselor_messages_unread' as NavBadgeKey, primary: true },
+    { canonical: '/dashboard', label: t('dashboard'), icon: 'home', primary: true },
+    { canonical: '/dashboard/program', label: t('myProgram'), icon: 'school', primary: true },
+    { canonical: '/dashboard/jobs', label: t('jobBoard'), icon: 'work', primary: true },
+    { canonical: '/dashboard/ai-tools', label: t('careerToolkit'), icon: 'auto_awesome', primary: true },
+    { canonical: '/dashboard/messages', label: t('counselorChat'), icon: 'chat', badgeKey: 'counselor_messages_unread' as NavBadgeKey, primary: true },
     // Ops (10/8/26): members were not finding the preassessment; keep it a tap away.
     { canonical: '/dashboard/assessment', label: t('wioaPreassessment'), icon: 'assignment_turned_in' },
     { canonical: '/dashboard/readiness', label: t('myProgress'), icon: 'check_circle' },
@@ -152,15 +168,6 @@ export default function MemberPortalTopNav({
     const href = explicitLocale ? localizeHref(mappedHref, explicitLocale) : mappedHref;
     const active = tab.canonical === activeCanonical;
     const badge = tab.badgeKey ? badgeCounts?.[tab.badgeKey] : undefined;
-    const badgeLabel = badge && badge > 0
-      ? tab.badgeKey === 'applications_new'
-        ? t('pendingApplicationsCount', { count: badge })
-        : t('unreadCount', { count: badge })
-      : null;
-    const shortLabel = inPrimary && 'shortLabel' in tab ? tab.shortLabel : null;
-    const accessibleTabLabel = shortLabel && !tab.label.toLowerCase().includes(shortLabel.toLowerCase())
-      ? `${shortLabel}, ${tab.label}`
-      : tab.label;
     return (
       <Link
         href={href}
@@ -181,30 +188,23 @@ export default function MemberPortalTopNav({
           });
         }}
         className={`member-portal-top-nav__link${active ? ' member-portal-top-nav__link--active' : ''}`}
-        aria-label={badgeLabel ? `${accessibleTabLabel}, ${badgeLabel}` : accessibleTabLabel}
         aria-current={active ? 'page' : undefined}
       >
         <LegacyGlyph name={tab.icon} size={17} className="member-portal-top-nav__icon" />
         <span className="member-portal-top-nav__label">{tab.label}</span>
-        {inPrimary && 'shortLabel' in tab ? (
-          <span className="member-portal-top-nav__short-label" aria-hidden="true">{tab.shortLabel}</span>
-        ) : null}
         {badge && badge > 0 ? (
-          <span className="member-portal-top-nav__badge" aria-label={badgeLabel ?? undefined}>{badge > 9 ? '9+' : badge}</span>
+          <span className="member-portal-top-nav__badge" aria-label={
+            tab.badgeKey === 'applications_new'
+              ? t('pendingApplicationsCount', { count: badge })
+              : t('unreadCount', { count: badge })
+          }>{badge > 9 ? '9+' : badge}</span>
         ) : null}
-        <NavigationPending />
       </Link>
     );
   };
 
   return (
-    <nav
-      id="member-portal-top-nav"
-      ref={navRef}
-      tabIndex={-1}
-      className="member-portal-top-nav"
-      aria-label={t('memberPortal')}
-    >
+    <nav id="member-portal-top-nav" ref={navRef} tabIndex={-1} className="member-portal-top-nav" aria-label={t('memberPortal')} onKeyDown={onNavKeyDown}>
       <ul ref={listRef} className="member-portal-top-nav__list">
         {primary.map((tab) => (
             <li
@@ -222,6 +222,7 @@ export default function MemberPortalTopNav({
           {currentSecondary && renderLink(currentSecondary)}
           {extraPages.length > 0 && (
             <button
+              ref={moreBtnRef}
               type="button"
               className="member-portal-top-nav__link member-portal-top-nav__more"
               aria-expanded={moreOpen}

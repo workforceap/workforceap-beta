@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { Target } from 'lucide-react';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
@@ -77,10 +76,8 @@ export default async function SkillMissionsPage() {
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker="Missions"
           title="Skill missions"
-          lede="One pass per course. Resume bullet and STAR story."
-          icon={<Target size={13} aria-hidden="true" />}
+          meta="One pass per course. Resume bullet and STAR story."
         />
 
         {summary ? (

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { DesignSurface, PageOpener } from '@/components/portal/kit';
+import { DesignSurface, PageOpener, SectionHeader } from '@/components/portal/kit';
 import { LinkTabs } from '@/components/portal/kit/LinkTabs';
 import {
   COUNSELOR_ATTENTION_FILTERS,
@@ -12,8 +12,7 @@ import {
 } from '@/lib/counselor/workspace';
 
 /** One counselor workspace, with link navigation so only the selected view
- * loads. The active tab provides visible orientation; its heading remains
- * available to assistive technology without repeating the tab above the queue. */
+ * loads. Existing queue components and their real actions live inside it. */
 export default function CounselorWorkspace({
   view,
   filter = 'all',
@@ -32,6 +31,7 @@ export default function CounselorWorkspace({
     <DesignSurface surface="dense" className="wa-p-4 md:wa-p-6">
       <PageOpener
         title={t('title')}
+        meta={t('lede')}
         action={<Link href="/counselor/students" className="wa-page-action" data-tour="tour-today-roster">{t('allMembers')}</Link>}
       />
       <LinkTabs label={t('viewsLabel')} activeKey={view} className="wa-my-5">
@@ -41,6 +41,7 @@ export default function CounselorWorkspace({
           </Link>
         ))}
       </LinkTabs>
+      <SectionHeader title={t(`views.${current.id}.label`)} goal={t(`views.${current.id}.description`)} />
       {view === 'attention' ? (
         <nav aria-label={t('filtersLabel')} className="wa-flex wa-flex-wrap wa-gap-2 wa-mb-5">
           {COUNSELOR_ATTENTION_FILTERS.map((item) => (
@@ -57,7 +58,6 @@ export default function CounselorWorkspace({
         </nav>
       ) : null}
       <section aria-label={t('region', { view: t(`views.${current.id}.label`) })} data-counselor-workspace-view={view}>
-        <h2 className="sr-only">{t(`views.${current.id}.label`)}</h2>
         {children}
       </section>
     </DesignSurface>

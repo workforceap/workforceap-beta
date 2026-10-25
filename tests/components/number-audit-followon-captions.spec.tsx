@@ -8,6 +8,8 @@ import { buildEnrollmentOutcomesPanel, type EnrollmentOutcomesSource } from '@/l
 import { CommandCenterKit } from '@/components/portal/kit/pages/admin/CommandCenterKit';
 import { PROGRAM_HEALTH_CAPTION } from '@/lib/admin/commandCenterHelpers';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
+import { MemberProgressKit } from '@/components/portal/kit/pages/member/MemberProgressKit';
+import { MemberPipelineTable } from '@/components/portal/kit/pages/member/MemberPipelineTable';
 import { toneClass } from '@/components/portal/kit';
 
 /**
@@ -84,10 +86,15 @@ describe('1. reporting hub Overview qualifies the metrics numbers (S29 follow-on
   });
 });
 
-describe('2. member home tiles colour by state, not by column (WAP-99 / #2434)', () => {
+describe('2. member surfaces colour by state, not by column (WAP-99 / #2434)', () => {
   /** Legacy names and brand hues written inline — the tone hook is the sanctioned path. */
   const LEGACY_INLINE = /--color-|var\(--wa-(?:gold|info|success|danger)(?:-dark|-soft)?\)/;
 
+  // Round 3 of the portal redesign moved the four stat tiles off Home onto the
+  // Progress numbers strip (a flat KpiStrip: no icon chip, no sparkline) and the
+  // application pipeline into MemberPipelineTable. The rule is unchanged: a tile
+  // or a track paints only from a state tone, never from the column it sits in.
+  // The stale-course nudge is a counselor row on Home now, not a tile tone.
   function renderHome(props: Record<string, unknown> = {}) {
     return render(
       <NextIntlClientProvider locale="en" messages={en}>
@@ -106,71 +113,50 @@ describe('2. member home tiles colour by state, not by column (WAP-99 / #2434)',
     );
   }
 
-  function tileFor(container: HTMLElement, label: string): HTMLElement {
-    const labelEl = Array.from(container.querySelectorAll<HTMLElement>('div')).find(
-      (el) => el.childElementCount === 0 && el.textContent === label,
+  function renderProgress(props: Record<string, unknown> = {}) {
+    return render(
+      <NextIntlClientProvider locale="en" messages={en}>
+        <MemberProgressKit coursePercent={42} activeJobs={2} certs={1} points={640} {...props} />
+      </NextIntlClientProvider>,
     );
-    expect(labelEl, `stat tile "${label}"`).toBeTruthy();
-    // The home tiles are the kit StatSparkTile (an Astryx Card, not `.wa-kit-card`);
-    // the marked element is the one that declares the tone hook itself.
-    return labelEl!.closest('[data-testid="stat-spark-tile"]') as HTMLElement;
   }
 
-  /** The tile's tone hook lives on the tile element itself or a descendant. */
-  function toned(tile: HTMLElement, selector: string): Element | null {
-    return tile.matches(selector) ? tile : tile.querySelector(selector);
+  function tiles(container: HTMLElement): HTMLElement[] {
+    return Array.from(container.querySelectorAll<HTMLElement>('.wa-kit-stat-tile'));
   }
 
-  it('gives no tile a tone just for being in its column', () => {
-    const { container } = renderHome();
-    // 42% course, 2 jobs, 1 cert, 640 points: only the two "you have some"
-    // states paint. Nothing is magenta-because-first or gold-because-third.
-    expect(toned(tileFor(container, 'Course'), '[class*="wa-kit-tone--"]')).toBeNull();
-    expect(toned(tileFor(container, 'Points'), '[class*="wa-kit-tone--"]')).toBeNull();
-    expect(toned(tileFor(container, 'Active jobs'), `.${toneClass('ok')}`)).not.toBeNull();
-    expect(toned(tileFor(container, 'Certs'), `.${toneClass('ok')}`)).not.toBeNull();
-  });
+  function tileFor(container: HTMLElement, label: string): HTMLElement {
+    const tile = tiles(container).find((el) => el.querySelector('.wa-kit-stat-label')?.textContent === label);
+    expect(tile, `stat tile "${label}"`).toBeTruthy();
+    return tile!;
+  }
 
-  it('paints the course tile from its value: ok when finished, warn only once not-started has gone stale', () => {
-    const done = renderHome({ coursePercent: 100 });
-    expect(toned(tileFor(done.container, 'Course'), `.${toneClass('ok')}`)).not.toBeNull();
-    cleanup();
-
-    // Enrolled and not started is only worth a nudge once the shared
-    // staleness threshold has passed; 0% an hour after enrolling is not.
-    const fresh = renderHome({ coursePercent: 0 });
-    expect(toned(tileFor(fresh.container, 'Course'), '[class*="wa-kit-tone--"]')).toBeNull();
-    cleanup();
-
-    const unstarted = renderHome({ coursePercent: 0, courseProgressStale: true });
-    expect(toned(tileFor(unstarted.container, 'Course'), `.${toneClass('warn')}`)).not.toBeNull();
-    cleanup();
-
-    // No program to be behind on, so nothing to warn about.
-    const noProgram = renderHome({ coursePercent: 0, courseProgressStale: true, programTitle: undefined });
-    expect(noProgram.container.querySelector(`.${toneClass('warn')}`)).toBeNull();
-  });
-
-  it('keeps the icon chip and trend line on the tone hook, never an inline hue', () => {
-    const { container } = renderHome({ activeJobsSpark: { series: [1, 2, 3], delta: '1' } });
-    const chips = container.querySelectorAll<HTMLElement>('.wa-kit-tone-icon');
-    // Guard the loop: with no chips in the tree it would pass vacuously.
-    expect(chips.length).toBeGreaterThan(0);
-    for (const chip of chips) {
-      expect(chip.getAttribute('style')).toBeNull();
+  it('gives no Progress tile a tone just for being in its column', () => {
+    const { container } = renderProgress();
+    // 42% course, 2 applications, 1 certificate, 640 points: nothing is a
+    // finished state, so nothing paints. No magenta-because-first, no gold-because-third.
+    expect(tiles(container)).toHaveLength(4);
+    for (const label of ['Course', 'Active applications', 'Certificates', 'Points']) {
+      expect(tileFor(container, label).className).not.toMatch(/wa-kit-tone--/);
     }
-    const strokes = Array.from(container.querySelectorAll('polyline')).map((p) => p.getAttribute('stroke'));
-    expect(strokes.length).toBeGreaterThan(0);
-    for (const stroke of strokes) expect(stroke === 'var(--wa-kit-tone)' || stroke === 'var(--wa-accent)').toBe(true);
+  });
+
+  it('paints the course tile from its value: ok only once finished', () => {
+    const done = renderProgress({ coursePercent: 100 });
+    expect(tileFor(done.container, 'Course').classList.contains(toneClass('ok')!)).toBe(true);
+    cleanup();
+
+    const fresh = renderProgress({ coursePercent: 0 });
+    expect(tileFor(fresh.container, 'Course').className).not.toMatch(/wa-kit-tone--/);
   });
 
   it('keeps every tile number neutral', () => {
-    const { container } = renderHome();
-    for (const label of ['Course', 'Active jobs', 'Certs', 'Points']) {
-      const tile = tileFor(container, label);
-      const value = tile.querySelector<HTMLElement>('div[style*="font-size: 26px"]');
-      expect(value, `value of "${label}"`).not.toBeNull();
-      expect(value!.style.color).toBe('var(--wa-text)');
+    const { container } = renderProgress();
+    for (const tile of tiles(container)) {
+      const value = tile.querySelector<HTMLElement>('.wa-kit-stat-value');
+      expect(value, 'tile value').not.toBeNull();
+      // Class-painted (--wa-text through .wa-kit-stat-value); no inline hue.
+      expect(value!.getAttribute('style')).toBeNull();
     }
   });
 
@@ -197,9 +183,13 @@ describe('2. member home tiles colour by state, not by column (WAP-99 / #2434)',
   });
 
   it('paints the pipeline stage track from the row tone instead of a named hue', () => {
-    const { container } = renderHome({
-      pipeline: [{ role: 'Help Desk Analyst', company: 'Acme', stage: 'Interviewing', tone: 'warn', stageIndex: 2, stageTotal: 3 }],
-    });
+    const { container } = render(
+      <NextIntlClientProvider locale="en" messages={en}>
+        <MemberPipelineTable
+          rows={[{ role: 'Help Desk Analyst', company: 'Acme', stage: 'Interviewing', tone: 'warn', stageIndex: 2, stageTotal: 3 }]}
+        />
+      </NextIntlClientProvider>,
+    );
     const track = container.querySelector<HTMLElement>(`.${toneClass('warn')}.wa-flex.wa-items-center.wa-gap-1`);
     expect(track).not.toBeNull();
     const trackSegments = track!.querySelectorAll<HTMLElement>('span');

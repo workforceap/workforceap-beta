@@ -1,5 +1,6 @@
 'use client';
 
+import { formatPortalDateTime } from '@/lib/formatDate';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { scrollBehavior } from '@/lib/a11y/scrollBehavior';
 import { useTranslations } from 'next-intl';
@@ -158,7 +159,7 @@ export default function EmployerApplicationChatClient({
               >
                 <div className="member-counselor-chat__bubble-body">{m.body}</div>
                 <time className="member-counselor-chat__bubble-time" dateTime={m.createdAt}>
-                  {new Date(m.createdAt).toLocaleString()}
+                  {formatPortalDateTime(m.createdAt)}
                 </time>
               </div>
             );

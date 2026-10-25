@@ -1,5 +1,6 @@
 "use client";
 
+import { formatPortalDate } from '@/lib/formatDate';
 import { useState } from "react";
 import type { CSSProperties } from "react";
 import { useTranslations } from "next-intl";
@@ -55,11 +56,7 @@ function MobileApplicationCard({
 
   const formatDate = (date: Date | null) => {
     if (!date) return "";
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    return formatPortalDate(date);
   };
 
   const handleSave = () => {

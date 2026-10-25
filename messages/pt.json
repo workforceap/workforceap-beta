@@ -180,7 +180,13 @@
     "candidates": "Candidatos",
     "impact": "Impacto",
     "morePages": "Mais páginas",
-    "newMilestonesCount": "{count} novos marcos"
+    "newMilestonesCount": "{count} novos marcos",
+    "memberTabsLabel": "Abas principais",
+    "tabHome": "Início",
+    "tabProgram": "Programa",
+    "tabJobs": "Vagas",
+    "tabMessages": "Mensagens",
+    "tabMore": "Mais"
   },
   "cta": {
     "applyNow": "Candidatar-se Agora",
@@ -282,7 +288,14 @@
     "languageFr": "Francês",
     "languageEn": "Inglês",
     "machineTranslationNotice": "Esta tradução foi gerada automaticamente e pode conter erros.",
-    "machineTranslationNoticeAction": "Mudar de idioma"
+    "machineTranslationNoticeAction": "Mudar de idioma",
+    "disclosures": {
+      "whatHappensNext": "O que acontece depois",
+      "whereItGoes": "Onde aparece",
+      "whatIsCounted": "O que é contabilizado",
+      "moreThisWeek": "Mais nesta semana",
+      "previewActionUnavailable": "Somente prévia. Esta ação não será salva."
+    }
   },
   "dashboard": {
     "progressDetails": "Detalhes do progresso",
@@ -678,7 +691,56 @@
     "firstCertProgressBarLabel": "{percent}% de progresso da capacitação",
     "firstCertTrainingStage": "Progresso dos cursos registrado",
     "stepsComplete": "{complete} de {total} etapas",
-    "trainingCoursesComplete": "{complete} de {total} cursos concluídos"
+    "trainingCoursesComplete": "{complete} de {total} cursos concluídos",
+    "home": {
+      "thisWeek": "Esta semana",
+      "welcomeBack": "Bem-vindo de volta, {firstName}.",
+      "title": "Início",
+      "stepCount": "{count, plural, one {# etapa} other {# etapas}}",
+      "stepsLabel": "Etapas desta semana",
+      "noSteps": "Nenhuma etapa esta semana.",
+      "whatNext": "O que acontece depois",
+      "preassessmentTitle": "Faça sua pré-avaliação WIOA",
+      "preassessmentSub": "35 perguntas para seu conselheiro",
+      "start": "Começar",
+      "shortcutsLabel": "Atalhos",
+      "shortcutProgress": "Progresso",
+      "shortcutPoints": "Pontos",
+      "shortcutJobs": "Vagas",
+      "shortcutAiTools": "AI Career Tools",
+      "shortcutLearning": "Central de aprendizado",
+      "moduleNote": "O que a contagem de módulos inclui",
+      "studyOfGoal": "{time} da sua meta de {goal}",
+      "placement": {
+        "title": "Você aceitou a vaga em {company}?",
+        "sub": "Avise a WorkforceAP se você aceitou a oferta.",
+        "yes": "Sim",
+        "yesLabel": "Sim, avisar minha equipe",
+        "no": "Ainda não",
+        "noLabel": "Ainda não, ocultar esta pergunta",
+        "sending": "Enviando...",
+        "error": "Não foi possível enviar. Tente novamente.",
+        "next": "Registramos como uma colocação informada por você e avisamos seu conselheiro para confirmar a data de início e o pagamento. Seu apoio e seu acesso não mudam.",
+        "ack": {
+          "created": {
+            "title": "Colocação registrada: {company}",
+            "body": "Registrada como uma colocação informada por você. Seu conselheiro foi avisado para confirmar a data de início e o pagamento."
+          },
+          "corroborated": {
+            "title": "Colocação registrada: {company}",
+            "body": "Registrada como uma colocação informada por você. Seu conselheiro foi avisado para confirmar a data de início e o pagamento."
+          },
+          "unchanged": {
+            "title": "Já está registrada: {company}",
+            "body": "Nada novo foi enviado ao seu conselheiro. Sua colocação já estava registrada por uma confirmação anterior. Avise-o se os detalhes mudaram."
+          },
+          "failed": {
+            "title": "Salvo para análise: {company}",
+            "body": "Salvamos sua confirmação, mas não foi possível registrar a colocação automaticamente. Ela foi sinalizada para sua equipe analisar."
+          }
+        }
+      }
+    }
   },
   "apply": {
     "step1": "Informações pessoais",
@@ -3111,7 +3173,7 @@
     },
     "thanks": {
       "going_well": "Que ótimo! Continue assim. Em breve vamos falar com você de novo.",
-      "have_questions": "Obrigado por nos contar. Seu conselheiro pode ajudar — envie uma mensagem quando quiser.",
+      "have_questions": "Obrigado por nos contar. Seu conselheiro pode ajudar. Envie uma mensagem quando quiser.",
       "having_trouble": "Obrigado por nos contar. Avisamos seu conselheiro e ele vai entrar em contato. Você também pode escrever para ele agora."
     },
     "messageCounselor": "Enviar mensagem ao seu conselheiro",
@@ -3515,6 +3577,30 @@
       "approved": "Capacitação aprovada",
       "pending": "Ainda não aprovada",
       "unknown": "Status não registrado"
+    },
+    "strip": {
+      "submittedUnderReview": "Enviada em {date}, em análise",
+      "submittedNeedsInput": "Enviada em {date}, precisa da sua informação",
+      "submittedApproved": "Enviada em {date}, aprovada",
+      "underReview": "Em análise",
+      "approved": "Aprovada",
+      "reviewPendingSince": "Análise pendente desde {date}",
+      "inReviewSince": "Em análise desde {date}",
+      "needsInputSince": "Precisa da sua informação desde {date}",
+      "next": "Próximo: {step}",
+      "nextStep": {
+        "intake": "análise de admissão",
+        "training": "aprovação da capacitação"
+      },
+      "done": "Concluído",
+      "inProgress": "Em andamento",
+      "waiting": "Não iniciado",
+      "closed": "Encerrado",
+      "cleared": "Liberado para treinar",
+      "pending": "Em análise",
+      "closedChip": "Processo encerrado",
+      "needsInfo": "Precisa da sua informação",
+      "label": "Etapas de aprovação"
     }
   },
   "wioa": {
@@ -3931,7 +4017,7 @@
     },
     "openings": {
       "title": "Nenhuma vaga ativa no momento",
-      "body": "Os empregadores parceiros ainda não publicaram vagas ativas. Atualize seu perfil para estar pronto quando publicarem, ou fale com seu orientador para pedir indicações.",
+      "body": "Os empregadores parceiros ainda não publicaram vagas ativas. Atualize seu perfil para estar pronto quando publicarem.",
       "action": "Atualizar perfil",
       "secondary": "Falar com seu orientador"
     },
@@ -4427,8 +4513,11 @@
       "nav": "Formação e progresso",
       "program": "Meu programa",
       "learning": "Central de aprendizagem e recursos",
-      "readiness": "Preparação profissional",
+      "readiness": "Meu progresso",
       "learningContext": "Meu programa mostra sua formação atribuída e o progresso dos cursos. A Central de aprendizagem acrescenta prática e recursos. Preparação profissional mede sua preparação para o trabalho separadamente da conclusão dos cursos.",
+      "learningContextShort": "Meu programa é a sua formação atribuída. A preparação é medida separadamente.",
+      "learningContextMoreLabel": "O que cada página cobre",
+      "learningContextMore": "Meu programa mostra sua formação atribuída e o progresso dos cursos. A Central de aprendizagem acrescenta prática e recursos. Preparação profissional mede sua preparação para o trabalho separadamente da conclusão dos cursos.",
       "bridgeIntro": "Conecte uma ocupação desejada salva a opções de formação e planeje o próximo passo com seu conselheiro.",
       "loadFailed": "Não foi possível carregar as consultas de ocupações salvas. Atualize a página para tentar novamente. As opções abaixo são gerais até que você selecione uma consulta salva.",
       "selectionUnavailable": "Essa consulta salva não está disponível na sua conta ou não pode ser lida. Nenhum outro resultado foi usado no lugar dela. Escolha uma das suas consultas salvas abaixo.",
@@ -4449,7 +4538,17 @@
       "assignedProgram": "Meu programa atribuído",
       "humanCounselor": "Conversar com meu conselheiro humano",
       "application": "Ver a inscrição deste programa",
-      "unchangedAssignment": "Explorar um percurso não altera seu programa atribuído, financiamento nem acesso ao provedor."
+      "unchangedAssignment": "Explorar um percurso não altera seu programa atribuído, financiamento nem acesso ao provedor.",
+      "disclosures": {
+        "progressLabel": "Como o progresso é calculado",
+        "progress": "As estimativas incluem todas as horas dos cursos inacabados. Seu progresso só muda quando a conclusão da formação é registrada.",
+        "labsLabel": "Como funcionam os laboratórios",
+        "labs": "Salve suas evidências, envie-as para avaliação humana e revise seu trabalho.",
+        "pendingLabel": "O que ainda está pendente",
+        "pending": "A revisão pedagógica e a validação do tempo estão pendentes; a sequência completa de laboratórios de 58 horas ainda está em desenvolvimento.",
+        "lockedLabel": "O que você pode fazer agora",
+        "locked": "Você pode continuar trabalhando nas notas do curso abaixo."
+      }
     },
     "ai": {
       "lilley": "Lilley · orientadora profissional com IA",
@@ -4461,6 +4560,32 @@
       "resumeDirectory": "Arquivos, pontuações, melhorias e seu orientador de currículo com IA.",
       "openResumeCoach": "Abrir o orientador de currículo completo",
       "resumeCoachContext": "Revise juntos seu original, rascunho, alterações aceitas e downloads."
+    }
+  },
+  "progress": {
+    "title": "Meu progresso",
+    "readinessChip": "Preparação {score} de 100",
+    "numbersLabel": "Seus números",
+    "course": "Curso",
+    "applications": "Candidaturas ativas",
+    "certificates": "Certificados",
+    "points": "Pontos",
+    "pointsUnit": "pontos",
+    "pointsThisWeek": "{count} esta semana",
+    "pointsTitle": "Pontos",
+    "pointsLink": "Pontos e níveis",
+    "pointsStreakTitle": "Pontos e sequência",
+    "pointsStreakBody": "Seus pontos, seu nível e sua sequência diária ficam na página de Pontos.",
+    "pointsStreakLink": "Abrir pontos",
+    "recentPoints": "Pontos recentes",
+    "streak": "dias seguidos",
+    "streakBest": "Melhor: {count}"
+  },
+  "memberJobs": {
+    "detail": {
+      "screeningInfoLabel": "Por que você vê isto",
+      "screeningInfo": "Informações para se preparar antes de se candidatar.",
+      "screeningFallback": "Consulte seu orientador para saber os detalhes."
     }
   }
 }

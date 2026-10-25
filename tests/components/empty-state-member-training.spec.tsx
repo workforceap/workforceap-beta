@@ -126,7 +126,7 @@ describe('MemberProgramKit', () => {
     const { container } = portal(locale, <MemberProgramKit modules={[]} resumeHref="/dashboard/learning" missionsHref="/dashboard/missions" />);
     const empty = emptyOf(container, 'unavailable');
     expectCounselorRoute(empty, LOCALES[locale], 'modules');
-    expect(within(empty).getByRole('heading', { level: 4 })).toBeInTheDocument();
+    expect(within(empty).getByRole('heading', { level: 3 })).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/No modules on this path yet\./);
   });
 
@@ -334,7 +334,7 @@ describe('MemberProgressKit', () => {
       expect(empty.textContent).not.toMatch(RAW_KEY);
     }
     expect(within(empties[0]).getByRole('heading', { level: 3 })).toHaveTextContent(m.empty.categoryScores.title);
-    expect(within(empties[1]).getByRole('heading', { level: 4 })).toHaveTextContent(m.empty.milestones.title);
+    expect(within(empties[1]).getByRole('heading', { level: 3 })).toHaveTextContent(m.empty.milestones.title);
     expect(screen.queryByRole('link', { name: 'Open profile' })).toBeNull();
   });
 

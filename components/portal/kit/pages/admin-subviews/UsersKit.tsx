@@ -342,7 +342,7 @@ export function UsersKit({
 
   return (
     <DesignSurface surface="dense" className="wa-kit-people-roster">
-      <PageOpener className="wa-mb-5" title="Staff & admins" kicker="People" lede="Find a staff account and manage access."
+      <PageOpener className="wa-mb-5" title="Staff & admins" meta="Find a staff account and manage access."
         action={<div className="wa-flex wa-flex-wrap wa-items-center wa-gap-2">
           <KitLinkButton href="/admin/users?ui=legacy" label="All accounts" variant="secondary" size="md" />
           <KitLinkButton href="/admin/invites/new" label="Invite staff" variant="primary" size="md" icon={<Plus size={16} aria-hidden />} />

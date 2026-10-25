@@ -77,7 +77,7 @@
 }
 
 .tab[aria-selected='true'] .tabIcon {
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
 }
 

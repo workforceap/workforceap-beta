@@ -1376,7 +1376,7 @@ a.home-program-card:active {
   }
 
   .apply-mobile-step-nav__item--active .apply-mobile-step-nav__index {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
   }
 

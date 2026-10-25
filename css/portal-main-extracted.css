@@ -214,7 +214,7 @@
     color: var(--color-green);
 }
 .readiness-progress-value {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: white;
     font-size: 0.8125rem;
     padding: 0.15rem 0.5rem;
@@ -754,7 +754,7 @@
     color: var(--wa-accent-text);
 }
 .application-tracker-filter-chip.active {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     border-color: var(--color-accent);
     color: var(--color-white);
 }
@@ -1201,7 +1201,7 @@ html {
     background: var(--wa-shell-header-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid transparent;
+    border-bottom: 1px solid var(--wa-border);
     box-shadow: none;
     position: sticky;
     top: 0;
@@ -1336,7 +1336,7 @@ html.dark .workspace-shell-root,
 html.dark .workspace-shell-header,
 [data-theme='dark'] .workspace-shell-header {
     background: var(--wa-shell-header-bg);
-    border-bottom-color: transparent;
+    border-bottom-color: var(--wa-border);
     box-shadow: none;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -1435,7 +1435,7 @@ html.dark .workspace-shell-header,
     justify-content: center;
     padding: 0.35rem 0.85rem;
     border-radius: var(--radius-sm);
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: #fff;
     font-weight: 700;
     font-size: 0.8125rem;
@@ -1713,6 +1713,15 @@ html:not(.dark) .workspace-sidebar.open::before {
     }
     .workspace-sidebar.open .workspace-sidebar-inner {
         padding-top: max(1rem, calc(env(safe-area-inset-top, 0px) + 0.6rem));
+    }
+    /* The closed phone drawer sits off-screen but its links are still tabbable.
+       WorkspaceShell marks it inert once mounted; the server HTML cannot (it
+       does not know the viewport, and an SSR inert froze the desktop rail), so
+       CSS hides it from focus and the a11y tree until then. Visibility flips
+       after the slide-out finishes and before the slide-in starts. */
+    .workspace-sidebar:not(.open) {
+        visibility: hidden;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.28s;
     }
 }
 .workspace-sidebar-label {
@@ -2186,10 +2195,31 @@ html.dark .workspace-sidebar-group-label {
     width: 100%;
     background: transparent;
 }
-/* Mobile bottom nav: `main#main-content` + WorkspaceShell `.workspace-shell-main` (marketing.css). */
-@media (max-width: 767px) {
-    html[data-portal-role="member"] .workspace-shell-main {
-        padding-bottom: max(1.75rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
+/* Member phone tabs (components/portal/MemberBottomTabs). The bar shows at or
+   below the drawer breakpoint (<=768px, where the rail becomes a drawer). Its
+   height is one shell metric; the member main column, anchor/focus scrolling
+   and the legal footer all clear it by that amount plus the home indicator. */
+:root {
+    --member-bottom-tabs-h: 56px;
+}
+@media (max-width: 768px) {
+    /* Specificity is deliberate: /dev proofs also carry html.wap-reserve-mobile-bottom-nav
+       (css/marketing.css), whose rules pad the same elements for the marketing bar. */
+    :root[data-portal-role="member"] {
+        scroll-padding-bottom: calc(var(--member-bottom-tabs-h) + env(safe-area-inset-bottom, 0px));
+    }
+    html[data-portal-role="member"] .workspace-shell-root[data-member-tabs] .workspace-shell-main {
+        padding-bottom: calc(var(--member-bottom-tabs-h) + env(safe-area-inset-bottom, 0px));
+    }
+    /* Fixed overlays inside the member shell (PWAInstallPrompt) read this to float
+       above the bar; it is unset, so 0, everywhere the bar does not render. */
+    html[data-portal-role="member"] .workspace-shell-root[data-member-tabs] {
+        --member-tabs-clearance: var(--member-bottom-tabs-h);
+    }
+    /* The tab bar replaces the old top strip of member links on phones. Hidden,
+       not removed: the markup (and its server-rendered links) stay in the DOM. */
+    .workspace-shell-root[data-member-tabs] .member-portal-top-nav {
+        display: none;
     }
 }
 .workspace-super-admin-banner {
@@ -3444,7 +3474,7 @@ html.dark .workspace-sidebar-group-label {
     flex-wrap: wrap;
 }
 .blog-cta-buttons .btn-accent {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
 }
 .blog-cta-buttons .btn.btn-secondary,
@@ -3562,7 +3592,7 @@ html.dark .blog-filter-chip[data-active="true"] {
     padding: 2.5rem clamp(1rem, 4vw, 2rem);
     border-radius: 16px;
     text-align: center;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: #fff;
 }
 .blog-listing-bottom-cta h3 {
@@ -6153,7 +6183,7 @@ html.dark .admin-members-search-input {
     border-radius: 999px;
     font-size: 0.8125rem;
     font-weight: 800;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: #fff;
 }
 
@@ -6653,7 +6683,7 @@ td.admin-members-col-select {
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
     font-weight: 700;
     font-size: 1.125rem;
@@ -6759,7 +6789,7 @@ td.admin-members-col-select {
     top: -0.75rem;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
     font-size: 0.8125rem;
     font-weight: 600;
@@ -7291,7 +7321,8 @@ td.admin-members-col-select {
     top: 0.75rem;
     z-index: 10000;
     padding: 0.5rem 1rem;
-    background: var(--color-primary);
+    /* Solid accent fill: crimson in both modes under white (dark --color-primary is the text-safe rose). */
+    background: var(--wa-accent-fill, var(--color-primary));
     color: var(--color-white);
     font-weight: 600;
     font-size: 0.9375rem;
@@ -9233,7 +9264,7 @@ a.employer-jobs-board__pagination-link.btn-outline:hover {
 .portal-resources-cta-primary {
     display: inline-block;
     padding: 0.75rem 1.25rem;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: white;
     border-radius: 6px;
     text-decoration: none;
@@ -9644,7 +9675,7 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
 }
 /* Active = solid crimson fill + white (matches admin-full mockup) */
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active {
-  background: var(--wa-accent, #ad2c4d) !important;
+  background: var(--wa-accent-fill, #ad2c4d) !important;
   color: var(--wa-on-accent-control) !important;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active .workspace-sidebar-icon,
@@ -9679,7 +9710,7 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
   font-size: 0.8125rem;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-nav-badge {
-  background: var(--wa-accent, #ad2c4d) !important;
+  background: var(--wa-accent-fill, #ad2c4d) !important;
   color: var(--wa-on-accent-control) !important;
   border: none !important;
   font-size: 0.8125rem;
@@ -9687,11 +9718,13 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
 }
-/* On an active (accent) row the badge inverts: solid on-accent pill, accent text.
-   The old translucent white read 2.41:1 on the dark-mode accent. */
+/* On an active (accent) row the badge inverts: solid on-accent pill, crimson text.
+   The old translucent white read 2.41:1 on the dark-mode accent. The text is the
+   fill token, not --wa-accent: the dark text accent is a dusty rose that reads
+   2.2:1 on the white pill, while the crimson fill hue holds 5.1:1 (6.5:1 light). */
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active .workspace-nav-badge {
   background: var(--wa-on-accent-control) !important;
-  color: var(--wa-accent, #ad2c4d) !important;
+  color: var(--wa-accent-fill, #ad2c4d) !important;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-toolbar,
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-inner {
@@ -9720,7 +9753,7 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: var(--wa-accent, #ad2c4d);
+  background: var(--wa-accent-fill, #ad2c4d);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -10019,9 +10052,16 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
     box-shadow: none;
     transform: none;
 }
+:is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__link:focus-visible {
+    /* The reset above (box-shadow: none) out-specifies the global
+       a:focus-visible ring, which left keyboard users with no indicator. */
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
+}
 :is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__link--active {
     color: var(--wa-on-accent-control);
-    background: var(--wa-accent);
+    background: var(--wa-accent-fill);
 }
 :is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__label {
     color: inherit;

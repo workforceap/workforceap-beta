@@ -607,7 +607,7 @@ export function StudentsRosterKit({
     <EmbeddableFrame
       embedded={embedded}
       action={showViewNav ? viewNav : undefined}
-      opener={<PageOpener className="wa-mb-5" title={copy.title} kicker={copy.kicker} lede={copy.lede} action={viewNav} />}
+      opener={<PageOpener className="wa-mb-5" title={copy.title} meta={copy.lede} action={viewNav} />}
     >
       {notice ? (
         <p role="status" className="wa-kit-training-notice" data-testid="students-roster-notice">

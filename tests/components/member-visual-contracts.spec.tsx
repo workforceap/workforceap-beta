@@ -59,15 +59,14 @@ describe('categorical totals retain their value without status-like colors', () 
 });
 
 describe('program and coach presentation preserves actions', () => {
-  it.each([false, true])('uses the independent hero action pair without changing course navigation (Coursera=%s)', (coursera) => {
+  it.each([false, true])('keeps the resume action and missions link without changing course navigation (Coursera=%s)', (coursera) => {
     const href = coursera ? '/api/member/coursera/launch?course=fixture' : '/dashboard/learning';
     render(<NextIntlClientProvider locale="en" messages={en}><MemberProgramKit courseraLaunchHref={coursera ? href : undefined} resumeHref={href} missionsHref="/dashboard/missions" /></NextIntlClientProvider>);
     const action = screen.getByRole('link', { name: coursera ? 'Resume in Coursera' : 'Open Learning Hub' });
     expect(action).toHaveAttribute('href', href);
-    expect(action.style.background).toBe('var(--wa-hero-action-bg)');
-    expect(action.style.color).toBe('var(--wa-hero-action-text)');
+    // C1 path card: the resume action is a plain kit CTA on a calm card, not a hero-gradient action.
+    expect(action).toHaveClass('wa-kit-cta');
     expect(action.style.whiteSpace).toBe('normal');
-    expect(action).toHaveClass('wa-kit-focus--on-dark');
     if (coursera) expect(action).toHaveAttribute('rel', 'noopener noreferrer');
     expect(screen.getByRole('link', { name: 'Open missions' }).style.color).toBe('var(--wa-gold-dark)');
   });

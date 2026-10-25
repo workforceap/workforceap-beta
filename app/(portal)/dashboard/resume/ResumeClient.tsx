@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import Link from "next/link";
-import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { Button } from '@astryxdesign/core/Button';
 import {
@@ -17,7 +16,6 @@ import {
   FileText as FileTextIcon,
 } from 'lucide-react';
 
-const MarkdownPreview = dynamic(() => import('@/components/MarkdownPreview'), { ssr: false });
 import {
   RESUME_UPLOAD_ACCEPT,
   RESUME_UPLOAD_FORMAT_LABEL,
@@ -50,6 +48,11 @@ type ResumeClientProps = {
   /** Destination owners can keep the shortcuts within their workspace. */
   toolHrefs?: { rewrite?: string; jobMatch?: string; score?: string };
 };
+
+/** Words only a screen reader needs after visible link text; the space lives outside the span so the name reads "Download original resume". */
+function SrOnly({ children }: { children: ReactNode }) {
+  return <>{" "}<span className="wa-sr-only">{children}</span></>;
+}
 
 function isPdfPreviewErrorDocument(doc: Document | null): boolean {
   // Native PDF viewers may expose no DOM at all. Treat only a recognizable
@@ -341,6 +344,9 @@ export default function ResumeClient({
 
   const hasOriginal = resumeData?.hasOriginal ?? initialHasOriginal;
   const hasEnhanced = resumeData?.hasEnhanced ?? initialHasEnhanced;
+  // Screen-reader hint for target=_blank links. The /dev fixture sets a download attribute, so it stays silent there.
+  const newTabHint = previewData ? "" : " (opens in a new tab)";
+  const newTabNote = newTabHint ? <SrOnly>{newTabHint.trim()}</SrOnly> : null;
 
   // ── Section elements ──────────────────────────────────────────────────────
 
@@ -451,7 +457,7 @@ export default function ResumeClient({
           gap: 6,
           minHeight: 40,
           padding: "8px 18px",
-          background: "var(--wa-accent)",
+          background: "var(--wa-accent-fill)",
           color: "var(--wa-on-accent-control)",
           fontWeight: 700,
           fontSize: 13,
@@ -499,15 +505,17 @@ export default function ResumeClient({
             <div
               style={{
                 display: "flex",
+                flexWrap: "wrap",
                 alignItems: "center",
                 justifyContent: "space-between",
+                gap: 8,
                 padding: "0.6rem 0.9rem",
                 background: "var(--wa-surface-2)",
                 borderBottom: "1px solid var(--wa-border)",
                 fontSize: "0.85rem",
               }}
             >
-              <span className="wa-flex wa-items-center wa-gap-2" style={{ fontWeight: 600 }}>
+              <span className="wa-flex wa-items-center wa-gap-2" style={{ fontWeight: 600, whiteSpace: "nowrap" }}>
                 Original Resume
                 <StatusTag tone={resumeData?.originalUrl ? "ok" : "muted"}>
                   {resumeData?.originalUrl ? "Available" : "On file"}
@@ -527,9 +535,10 @@ export default function ResumeClient({
                     color: "var(--wa-accent)",
                     fontWeight: 600,
                     textDecoration: "none",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  Download ↗
+                  Download<SrOnly>original resume{newTabHint}</SrOnly><span aria-hidden="true"> ↗</span>
                 </a>
               ) : loading ? (
                 <span
@@ -578,7 +587,7 @@ export default function ResumeClient({
                     <FileWarning size={30} color="var(--wa-muted)" aria-hidden="true" style={{ display: 'block', margin: '0 auto 0.5rem' }} />
                     <p style={{ fontSize: '0.85rem', color: 'var(--wa-muted)', margin: '0 0 0.75rem' }}>PDF preview isn't available in this browser.</p>
                     {resumeData.originalUrl && (
-                      <a href={resumeData.originalUrl} download={previewData ? "sample-original-resume.txt" : undefined} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ fontSize: '0.875rem' }}>Download to view ↗</a>
+                      <a href={resumeData.originalUrl} download={previewData ? "sample-original-resume.txt" : undefined} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ fontSize: '0.875rem' }}>Download to view<SrOnly>original resume{newTabHint}</SrOnly><span aria-hidden="true"> ↗</span></a>
                     )}
                   </div>
                 ) : (
@@ -645,15 +654,17 @@ export default function ResumeClient({
             <div
               style={{
                 display: "flex",
+                flexWrap: "wrap",
                 alignItems: "center",
                 justifyContent: "space-between",
+                gap: 8,
                 padding: "0.6rem 0.9rem",
                 background: "var(--wa-surface-2)",
                 borderBottom: "1px solid var(--wa-border)",
                 fontSize: "0.85rem",
               }}
             >
-              <span className="wa-flex wa-items-center wa-gap-2" style={{ fontWeight: 600 }}>
+              <span className="wa-flex wa-items-center wa-gap-2" style={{ fontWeight: 600, whiteSpace: "nowrap" }}>
                 Updated Resume
                 <StatusTag tone="info">AI-built</StatusTag>
               </span>
@@ -671,9 +682,10 @@ export default function ResumeClient({
                     color: "var(--wa-accent)",
                     fontWeight: 600,
                     textDecoration: "none",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  Download ↗
+                  Download<SrOnly>updated resume{newTabHint}</SrOnly><span aria-hidden="true"> ↗</span>
                 </a>
               ) : null}
             </div>
@@ -684,7 +696,7 @@ export default function ResumeClient({
                     <FileWarning size={30} color="var(--wa-muted)" aria-hidden="true" style={{ display: 'block', margin: '0 auto 0.5rem' }} />
                     <p style={{ fontSize: '0.85rem', color: 'var(--wa-muted)', margin: '0 0 0.75rem' }}>PDF preview isn't available in this browser.</p>
                     {resumeData.enhancedUrl && (
-                      <a href={resumeData.enhancedUrl} download={previewData ? "sample-revised-resume.txt" : undefined} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ fontSize: '0.875rem' }}>Download to view ↗</a>
+                      <a href={resumeData.enhancedUrl} download={previewData ? "sample-revised-resume.txt" : undefined} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ fontSize: '0.875rem' }}>Download to view<SrOnly>updated resume{newTabHint}</SrOnly><span aria-hidden="true"> ↗</span></a>
                     )}
                   </div>
                 ) : (
@@ -739,9 +751,14 @@ export default function ResumeClient({
               !["pdf", "doc", "docx"].includes(
                 resumeData?.enhancedExt ?? "",
               ) && (
-                <article
+                // The stored revised resume is a plain-text file: show its lines and
+                // bullet markers as written, not as collapsed Markdown paragraphs.
+                // No inline box-shadow here: it would replace the focus ring.
+                <div
                   key={resumeData.enhancedText.slice(0, 120)}
-                  className="markdown-body"
+                  role="region"
+                  tabIndex={0}
+                  aria-label="Updated resume text"
                   style={{
                     padding: "1.25rem",
                     background: "var(--wa-bg)",
@@ -750,10 +767,12 @@ export default function ResumeClient({
                     maxHeight: "min(70vh, 720px)",
                     overflowY: "auto",
                     color: "var(--wa-text)",
+                    whiteSpace: "pre-wrap",
+                    overflowWrap: "anywhere",
                   }}
                 >
-                <MarkdownPreview>{resumeData.enhancedText}</MarkdownPreview>
-                </article>
+                  {resumeData.enhancedText}
+                </div>
               )}
           </div>
         )}
@@ -907,7 +926,7 @@ export default function ResumeClient({
           gap: 6,
           minHeight: 40,
           padding: "8px 16px",
-          background: "var(--wa-accent)",
+          background: "var(--wa-accent-fill)",
           color: "var(--wa-on-accent-control)",
           fontWeight: 700,
           fontSize: 13,

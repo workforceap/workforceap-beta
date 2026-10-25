@@ -1,9 +1,11 @@
 'use client';
 
 import type { LucideIcon } from 'lucide-react';
-import { Briefcase, Users, CalendarClock, Award, ChevronRight, HeartHandshake, SquarePen } from 'lucide-react';
+import { Briefcase, Users, CalendarClock, Award, SquarePen } from 'lucide-react';
+import NextLink from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
-import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
+import { Button } from '@astryxdesign/core/Button';
+import { Link as AstryxLink } from '@astryxdesign/core/Link';
 import {
   DataTable,
   DesignSurface,
@@ -11,15 +13,24 @@ import {
   StatSparkTile,
   StageTrack,
   StatusTag,
-  CardHead,
-  QueueRow,
-  FeatureTile,
   Avatar,
   type Column,
   type KitColor,
   type KitTone,
   type SparkStat,
 } from '@/components/portal/kit';
+import {
+  StaffCard,
+  StaffDisclosure,
+  StaffEmpty,
+  StaffKpiGroup,
+  StaffLead,
+  StaffSplit,
+  StaffTaskList,
+  StaffTaskRow,
+  staffLinkClass,
+  staffWelcomeTitle,
+} from '../StaffKit';
 
 /**
  * Employer Portal — HOME view ("Command Center" redesign).
@@ -28,16 +39,18 @@ import {
  * employer persona: open roles, pipeline volume, and the candidate table are
  * the hero — an employer's first question on landing is "who do I need to
  * look at today," not a KPI wall. Layout, top to bottom:
- *   1. Page opener (PageOpener "Hiring" + employer name eyebrow) with a
- *      "Post a role" CTA as one native navigation link.
- *   2. A 4-up KPI row: open roles / in pipeline / interviews / hires, each
- *      with an optional sparkline + delta chip.
+ *   1. Page opener: "Welcome back, {first name}." (or "Hiring" when the page
+ *      has no first name) + one sentence from the counts, with a
+ *      "Post a role" CTA.
+ *   2. A 4-up KPI strip: open roles / in pipeline / interviews / hires, flat
+ *      hairline tiles with an optional 1.5px accent sparkline + delta chip.
  *   3. The candidate pipeline table (hero) — avatar/name/role, AI fit score
  *      (when available), a 4-stage tracker (Applied → Screen → Interview →
  *      Offer), and a status pill — alongside a side column with the open
- *      roles queue and a "Community impact" banner (WorkforceAP's 10%
- *      first-year-salary giveback). The banner states the policy; it names a
- *      dollar figure only when the caller passes a real one (WAP-210).
+ *      roles queue and a "Community impact" card (WorkforceAP's 10%
+ *      first-year-salary giveback). The card states the policy in one line and
+ *      keeps where it goes in a disclosure; it names a dollar figure only when
+ *      the caller passes a real one (WAP-210).
  *
  * All data is optional/degrading: every prop has a safe default so the page
  * renders sensibly with zero live data (new employer, empty pipeline) and
@@ -77,6 +90,10 @@ export interface EmployerOpenRoleItem {
 }
 
 export interface EmployerHomeKitProps {
+  /** Person-facing greeting: "Welcome back, {firstName}." Omit it and the heading stays "Hiring". */
+  firstName?: string;
+  /** Already-translated "Welcome back, {firstName}." for pages that localize; English fallback when omitted. */
+  welcomeTitle?: string;
   companyName?: string;
   /** Count of currently-live job postings. */
   openRoles?: number;
@@ -109,6 +126,13 @@ export interface EmployerHomeKitProps {
    * employer's own (WAP-210).
    */
   givebackFigure?: string;
+  /** Localized disclosure summary supplied by the route; direct kit consumers use English. */
+  whereItGoesLabel?: string;
+  /**
+   * Accepted for callers that still pass it. The Community impact card no
+   * longer links anywhere (it was a whole-tile link to the post-a-role form,
+   * which the header action already is).
+   */
   givebackHref?: string;
   postRoleHref?: string;
   jobsHref?: string;
@@ -122,6 +146,10 @@ export interface EmployerHomeKitProps {
 
 function clampPct(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+function plural(count: number, noun: string): string {
+  return `${count} ${noun}${count === 1 ? '' : 's'}`;
 }
 
 function titleCase(s: string): string {
@@ -255,6 +283,8 @@ function candidateCard(row: EmployerCandidateRow) {
 /* ---------------------------------------------------------------------- */
 
 export function EmployerHomeKit({
+  firstName,
+  welcomeTitle,
   companyName = 'Your company',
   openRoles = 0,
   openRolesSpark,
@@ -268,7 +298,7 @@ export function EmployerHomeKit({
   openRolesList = [],
   candidatesTotal,
   givebackFigure,
-  givebackHref = '/employer/jobs/new',
+  whereItGoesLabel = 'Where it goes',
   postRoleHref = '/employer/jobs/new',
   jobsHref = '/employer/jobs',
   pipelineHref = '/employer/applications',
@@ -281,102 +311,106 @@ export function EmployerHomeKit({
     { key: 'hires', icon: Award, label: 'Hires', value: hires, spark: hiresSpark },
   ];
 
+  // One sentence from the counts the page already holds; an empty account gets the existing empty-state line.
+  const headerSentence =
+    openRoles === 0 && inPipeline === 0
+      ? `${companyName}. Post a role to start building your pipeline.`
+      : `${companyName}: ${plural(openRoles, 'open role')} and ${plural(inPipeline, 'candidate')} in your pipeline.`;
+
   return (
     <DesignSurface surface="dense" className="wa-p-6">
       <div className="wa-space-y-6">
-        {/* 1. Page opener — "Hiring" + employer-name eyebrow, with a Post a role CTA. */}
+        {/* 1. Header: greeting (or title) + one contextual sentence + right-aligned primary action. */}
         <PageOpener
-          kicker={companyName}
-          title="Hiring"
+          title={firstName ? (welcomeTitle ?? staffWelcomeTitle(firstName)) : 'Hiring'}
+          meta={headerSentence}
           action={
             /* `tour-post-job`: step 2 of the employer guided tour (lib/tours/registry.ts). */
             <span data-tour="tour-post-job" style={{ display: 'inline-flex' }}>
-              <KitLinkButton
-                href={postRoleHref}
-                label="Post a role"
-                variant="primary"
-                size="md"
-                style={{ background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)' }}
-                icon={<SquarePen size={16} aria-hidden />}
-              />
+              <AstryxLink href={postRoleHref} as={NextLink as never} isStandalone>
+                <Button
+                  label="Post a role"
+                  variant="primary"
+                  size="sm"
+                  icon={<SquarePen size={14} aria-hidden />}
+                />
+              </AstryxLink>
             </span>
           }
         />
 
-        {/* 2. KPI row — icon chip + optional delta chip + sparkline. */}
-        <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
+        {/* 2. KPI strip: muted inline icon, optional delta chip and 1.5px accent sparkline. */}
+        <StaffKpiGroup cols={4}>
           {kpiTiles.map((t) => (
             <StatSparkTile key={t.key} icon={<t.icon size={16} />} label={t.label} value={t.value} spark={t.spark} />
           ))}
-        </div>
+        </StaffKpiGroup>
 
-        {/* 3. Hero candidate pipeline table + side column (open roles, impact banner). */}
-        <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
-          <div className="wa-kit-card lg:wa-col-span-8">
-            <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 12 }}>
-              <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', textWrap: 'balance' }}>Candidate pipeline</h2>
-              <a
-                href={pipelineHref}
-                className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none' }}
+        {/* 3. Candidate pipeline (main) + open roles and impact (right rail). */}
+        <StaffSplit
+          main={
+            <StaffCard
+              id="employer-candidate-pipeline"
+              title="Candidate pipeline"
+              action={
+                <a href={pipelineHref} className={staffLinkClass}>
+                  View all{typeof candidatesTotal === 'number' && candidatesTotal > 0 ? ` ${candidatesTotal}` : ''} &rarr;
+                </a>
+              }
+            >
+              <DataTable<EmployerCandidateRow>
+                columns={candidateColumns}
+                rows={candidates}
+                rowKey={(row) => row.id}
+                mobile="cards"
+                cardRender={candidateCard}
+                minWidth={560}
+                emptyTitle="No candidates yet"
+                emptyDescription="New job applications will appear here as candidates enter the pipeline."
+              />
+            </StaffCard>
+          }
+          rail={
+            <>
+              <StaffCard
+                id="employer-open-roles"
+                title="Open roles"
+                flush
+                action={<a href={jobsHref} className={staffLinkClass}>Manage</a>}
               >
-                View all{typeof candidatesTotal === 'number' && candidatesTotal > 0 ? ` ${candidatesTotal}` : ''} &rarr;
-              </a>
-            </div>
-            <DataTable<EmployerCandidateRow>
-              columns={candidateColumns}
-              rows={candidates}
-              rowKey={(row) => row.id}
-              mobile="cards"
-              cardRender={candidateCard}
-              minWidth={560}
-              emptyTitle="No candidates yet"
-              emptyDescription="New job applications will appear here as candidates enter the pipeline."
-            />
-          </div>
-
-          <div className="lg:wa-col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <Card>
-              <CardHead title="Open roles" linkLabel="Manage" linkHref={jobsHref} />
-              {openRolesList.length === 0 ? (
-                <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
-                  Post a role to start building your pipeline.
-                </p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {openRolesList.map((item) => (
-                    <a key={item.id} href={item.href ?? jobsHref} style={{ textDecoration: 'none', color: 'inherit' }}>
-                      <QueueRow
+                {openRolesList.length === 0 ? (
+                  <StaffEmpty>Post a role to start building your pipeline.</StaffEmpty>
+                ) : (
+                  <StaffTaskList label="Open roles">
+                    {openRolesList.map((item) => (
+                      <StaffTaskRow
+                        key={item.id}
                         tone="blue"
-                        icon={<Briefcase size={16} aria-hidden />}
-                        title={item.title}
-                        meta={
+                        title={<a href={item.href ?? jobsHref} style={{ color: 'inherit', textDecoration: 'none' }}>{item.title}</a>}
+                        subline={
                           item.location
                             ? `${item.applicants} applicant${item.applicants === 1 ? '' : 's'} · ${item.location}`
                             : `${item.applicants} applicant${item.applicants === 1 ? '' : 's'}`
                         }
-                        action={<ChevronRight size={16} aria-hidden style={{ color: 'var(--wa-muted)' }} />}
                       />
-                    </a>
-                  ))}
-                </div>
-              )}
-            </Card>
+                    ))}
+                  </StaffTaskList>
+                )}
+              </StaffCard>
 
-            <FeatureTile
-              icon={<HeartHandshake size={22} aria-hidden />}
-              title="Community impact"
-              body={
-                hires > 0 && givebackFigure
-                  ? `WorkforceAP reinvests 10% of every first-year salary from your hires into scholarships and training for the next cohort — an estimated ${givebackFigure} from your hires so far.`
-                  : 'WorkforceAP reinvests 10% of every first-year salary from your hires into scholarships and training for the next cohort.'
-              }
-              badge="10% GIVEBACK"
-              tone="gold"
-              href={givebackHref}
-            />
-          </div>
-        </div>
+              <StaffCard id="employer-community-impact" title="Community impact">
+                <StaffLead>WorkforceAP reinvests 10% of every first-year salary from your hires.</StaffLead>
+                <StaffDisclosure label={whereItGoesLabel}>
+                  <p>
+                    {hires > 0 && givebackFigure
+                      ? `It funds scholarships and training for the next cohort, an estimated ${givebackFigure} from your hires so far.`
+                      : 'It funds scholarships and training for the next cohort.'}
+                  </p>
+                </StaffDisclosure>
+              </StaffCard>
+            </>
+          }
+        />
       </div>
     </DesignSurface>
   );

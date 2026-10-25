@@ -46,12 +46,20 @@ export default function SuperAdminViewSwitcher({
   const isSuperAdmin = useIsSuperAdmin(initialIsSuperAdmin);
   const currentView = getCurrentView(pathname ?? '');
   const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const closeAll = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
     if (!open) return;
-    const onEscape = (e: KeyboardEvent) => e.key === 'Escape' && closeAll();
+    const onEscape = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      // The focused option unmounts with the panel; without this focus drops to <body>.
+      const focusInside = !document.activeElement || document.activeElement === document.body ||
+        panelRef.current?.contains(document.activeElement);
+      closeAll();
+      if (focusInside) triggerRef.current?.focus();
+    };
     const onClick = (e: MouseEvent) => {
       if (panelRef.current && !panelRef.current.contains(e.target as Node)) closeAll();
     };
@@ -66,6 +74,7 @@ export default function SuperAdminViewSwitcher({
   const handleSelect = (view: (typeof VIEWS)[number]) => {
     const path = view.path;
     closeAll();
+    triggerRef.current?.focus();
     if (pathname !== path && !pathname?.startsWith(`${path}/`)) router.push(path);
   };
 
@@ -91,11 +100,11 @@ export default function SuperAdminViewSwitcher({
         Admin
       </span>
       <button
+        ref={triggerRef}
         type="button"
         className="super-admin-view-switcher__trigger"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        aria-haspopup="listbox"
         aria-label={`View: ${currentLabel}. Switch portal view`}
       >
         <span className="super-admin-view-switcher__label" title={currentLabel}>
@@ -107,18 +116,22 @@ export default function SuperAdminViewSwitcher({
       {open && (
         <div className="super-admin-view-switcher__panel">
           <div className="super-admin-view-switcher__header">Switch portal view</div>
+          {/* A disclosure of navigation buttons, not a listbox: the entries go to
+              other portals, Tab moves between them, and the current one is
+              marked with aria-current. (A listbox promises arrow-key
+              selection that this control does not implement.) */}
           <ul
             className="super-admin-view-switcher__dropdown"
-            role="listbox"
             aria-label="Portal view options"
           >
             {VIEWS.map((view) => {
               const isActive = currentView === view.id;
               return (
-                <li key={view.id} role="option" aria-selected={isActive}>
+                <li key={view.id}>
                   <button
                     type="button"
                     className={`super-admin-view-switcher__option${isActive ? ' active' : ''}`}
+                    aria-current={isActive ? 'true' : undefined}
                     onClick={() => handleSelect(view)}
                   >
                     {view.label}

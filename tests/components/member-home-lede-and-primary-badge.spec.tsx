@@ -53,7 +53,8 @@ describe('MemberDoThisNextCard body line (WAP-253 item 1)', () => {
     expect(body.style.overflow).not.toBe('hidden');
     expect(body.style.display).not.toBe('-webkit-box');
     expect(body.style.margin).toBe('0px');
-    expect(body.style.color).toContain('--wa-on-accent');
+    // The card is a white hairline card now (C1+C3 redesign), so the body reads on --wa-muted, not white on crimson.
+    expect(body.style.color).toContain('--wa-muted');
   });
 
   it('keeps the full action title available instead of clipping the task at two lines', () => {

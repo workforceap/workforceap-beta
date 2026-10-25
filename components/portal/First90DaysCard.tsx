@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useId, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { Briefcase, CheckCircle2, Circle, CircleHelp, Headset, MessagesSquare } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { submitFirst90DaysCheckIn } from '@/app/(portal)/dashboard/first90DaysAction';
+import { MemberTaskRow, TaskRowActions, WhatNext } from '@/components/portal/kit/pages/member/MemberTaskRow';
 import {
   FIRST90_STAGES,
   type First90Response,
@@ -53,20 +54,35 @@ export default function First90DaysCard({
   currentStageResponse,
   completedStages,
   variant = 'legacy',
+  rowState = 'todo',
+  previewOnly = false,
 }: First90DaysCardProps & {
   /**
    * `legacy` (default, `?ui=legacy` home) keeps the section's own 1.25rem
    * gutter and top padding. `kit` drops it: the kit home's column sets the
    * inline edge and the gap between cards, so the card lines up with them.
+   * `row` is the member home "This week" list: one `<li>` task row (the
+   * question and the three answers inline, the supervisor scripts and the
+   * advisor note under "What happens next"). It must sit inside an `<ol>`.
    */
-  variant?: 'legacy' | 'kit';
+  variant?: 'legacy' | 'kit' | 'row';
+  /** Row variant only: the dot state while the check-in is unanswered. */
+  rowState?: 'current' | 'todo';
+  /** Shows fixture responses without calling the first-90-days server action. */
+  previewOnly?: boolean;
 }) {
   const t = useTranslations('first90');
+  const tHome = useTranslations('dashboard');
+  const tCommon = useTranslations('common.disclosures');
   const [isPending, startTransition] = useTransition();
   const [savedResponse, setSavedResponse] = useState<First90Response | null>(currentStageResponse);
   const [error, setError] = useState(false);
+  // The three answers are one group named by the question (the buttons alone
+  // read "Going well" / "I have questions" with nothing to say what about).
+  const questionId = useId();
 
   const submit = (response: First90Response) => {
+    if (previewOnly) return;
     setError(false);
     startTransition(async () => {
       try {
@@ -77,6 +93,101 @@ export default function First90DaysCard({
       }
     });
   };
+
+  if (variant === 'row') {
+    const answered = Boolean(savedResponse);
+    const whatNext = (
+      <WhatNext label={tHome('home.whatNext')}>
+        <p>{t('footerNote')}</p>
+        <p>
+          <strong style={{ color: 'var(--wa-text)' }}>{t('scriptsTitle')}.</strong> {t('scriptsIntro')}
+        </p>
+        {(['s1', 's2'] as const).map((key) => (
+          <blockquote
+            key={key}
+            style={{
+              margin: 0,
+              padding: '10px 14px',
+              borderLeft: `3px solid ${accentTint(35)}`,
+              borderRadius: '0 var(--wa-radius-sm) var(--wa-radius-sm) 0',
+              background: accentTint(5),
+              fontSize: 'var(--wa-type-body)',
+              color: 'var(--wa-text)',
+              lineHeight: 1.5,
+            }}
+          >
+            “{t(`scripts.${stage}.${key}`)}”
+          </blockquote>
+        ))}
+      </WhatNext>
+    );
+    return (
+      <MemberTaskRow
+        state={answered ? 'done' : rowState}
+        testId="member-first90-row"
+        title={t('title', { employerName })}
+        sub={
+          answered && savedResponse
+            ? t(`thanks.${savedResponse}`)
+            : `${t('eyebrow')} · ${t('dayCount', { days: Math.max(daysSincePlacement, 0) })}`
+        }
+      >
+        {answered ? (
+          <>
+            {savedResponse !== 'going_well' ? (
+            <Link
+              href="/dashboard/messages"
+              className="wa-kit-focus"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                minHeight: 44,
+                fontSize: 'var(--wa-type-body)',
+                fontWeight: 700,
+                color: 'var(--wa-accent-text)',
+                textDecoration: 'none',
+              }}
+            >
+              {t('messageCounselor')}
+            </Link>
+            ) : null}
+            {whatNext}
+          </>
+        ) : (
+          <>
+            <p id={questionId} style={{ margin: '8px 0 0', fontSize: 'var(--wa-type-body)', fontWeight: 700, color: 'var(--wa-text)' }}>
+              {t('question')}
+            </p>
+            <TaskRowActions labelledBy={questionId}>
+              {RESPONSE_OPTIONS.map((opt) => {
+                const Icon = opt.icon;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus"
+                    disabled={isPending || previewOnly}
+                    onClick={() => submit(opt.value)}
+                    aria-label={t(`responses.${opt.value}`)}
+                  >
+                    <Icon size={16} aria-hidden />
+                    {t(`responses.${opt.value}`)}
+                  </button>
+                );
+              })}
+              {previewOnly ? <p role="note" style={{ margin: 0, fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>{tCommon('previewActionUnavailable')}</p> : null}
+              {whatNext}
+            </TaskRowActions>
+            {error && (
+              <p role="alert" style={{ margin: '8px 0 0', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-accent-text)' }}>
+                {t('saveError')}
+              </p>
+            )}
+          </>
+        )}
+      </MemberTaskRow>
+    );
+  }
 
   return (
     <section style={variant === 'kit' ? undefined : { padding: '1rem 1.25rem 0' }} aria-labelledby="first90-card-title">
@@ -198,10 +309,10 @@ export default function First90DaysCard({
           </div>
         ) : (
           <div>
-            <p style={{ margin: '0 0 10px', fontSize: 'var(--wa-type-body)', fontWeight: 700, color: 'var(--wa-text)' }}>
+            <p id={questionId} style={{ margin: '0 0 10px', fontSize: 'var(--wa-type-body)', fontWeight: 700, color: 'var(--wa-text)' }}>
               {t('question')}
             </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div role="group" aria-labelledby={questionId} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {RESPONSE_OPTIONS.map((opt) => {
                 const Icon = opt.icon;
                 return (

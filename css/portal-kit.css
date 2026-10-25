@@ -26,9 +26,11 @@ html .workspace-shell-root[data-workspace-role] {
  * portal's warm dark canvas stopped at the shell edge. WorkspaceShell marks
  * the document with `data-portal-role` for as long as a shell is mounted
  * (inline at parse time and again on mount), so only portal documents take
- * the portal canvas; marketing bodies are untouched. Solid --wa-bg, not the
- * wave: the radial washes fade into --wa-bg, so the canvas continues the
- * shell without a second gradient origin. The compound selectors out-rank
+ * the portal canvas; marketing bodies are untouched. Solid --wa-bg: the
+ * canvas is flat now (--wa-bg-wave is --wa-bg), so shell, html and body are
+ * one colour with no seam. A member document (data-portal-role='member')
+ * resolves --wa-bg to the warm paper and a staff document to the cool canvas
+ * (css/portal-tokens.css). The compound selectors out-rank
  * `html.dark body` (0,1,2) regardless of stylesheet order. */
 html[data-portal-role],
 html[data-portal-role].dark,
@@ -90,6 +92,51 @@ html[data-portal-role][data-theme='dark'] body {
   border: 0;
   box-shadow: none;
   padding-block: 0.25rem;
+}
+
+/* Greeting mode (PageOpener without a kicker): title + ONE contextual sentence,
+   with an optional compact status element (`aside`) at the right on desktop and
+   stacked below on phone. */
+.wa-page-opener--greeting {
+  align-items: center;
+  gap: 16px 24px;
+}
+.wa-page-opener__main {
+  min-width: 0;
+}
+.wa-page-opener__title {
+  margin: 0;
+  font-size: clamp(22px, 5.5vw, 24px);
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.wa-page-opener--greeting .wa-page-opener__title {
+  margin-top: 0;
+}
+.wa-page-opener__meta {
+  margin: 4px 0 0;
+  font-size: var(--wa-type-body);
+  line-height: 1.45;
+  color: var(--wa-muted);
+}
+.wa-page-opener__aside {
+  min-width: 0;
+  max-width: 100%;
+}
+@media (max-width: 1099px) {
+  .wa-page-opener--greeting .wa-page-opener__aside {
+    flex: 1 1 100%;
+  }
+}
+@media (min-width: 1100px) {
+  .wa-page-opener--greeting {
+    flex-wrap: nowrap;
+  }
+  .wa-page-opener--greeting .wa-page-opener__aside {
+    flex: 0 1 auto;
+  }
 }
 
 /* Quiet PageOpener action — stays on the wash instead of becoming a header chip. */
@@ -171,7 +218,7 @@ html[data-portal-role][data-theme='dark'] body {
   gap: 6px;
   min-height: 44px;
   padding: 10px 16px;
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
   font-weight: 600;
   font-size: var(--wa-type-body);
@@ -253,11 +300,13 @@ html[data-portal-role][data-theme='dark'] body {
    their specificity below variants: a dark-theme generic card rule must
    never replace a text-bearing hero gradient or a dense semantic tint. */
 .wa-kit-card--sm {
-  border-radius: var(--wa-radius-sm);
+  /* Same 12px corner as every card: only the padding shrinks. */
+  border-radius: var(--wa-radius);
   padding: var(--wa-pad-sm);
 }
 .wa-kit-card--hover:hover {
   box-shadow: var(--wa-shadow-lg);
+  border-color: var(--wa-control-border);
 }
 .wa-kit-card--hover:active {
   box-shadow: var(--wa-shadow);
@@ -310,7 +359,7 @@ html[data-portal-role][data-theme='dark'] body {
 }
 .wa-kit-stat-value {
   font-variant-numeric: tabular-nums;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.02em;
 }
@@ -331,10 +380,10 @@ html[data-portal-role][data-theme='dark'] body {
    tokens (statusColors.ts pattern), so dark mode needs no per-class override. */
 .wa-kit-tag--ok {
   color: light-dark(#2e7d32, #74c878);
-  background: light-dark(
-    color-mix(in srgb, var(--wa-success) 12%, transparent),
-    color-mix(in srgb, var(--wa-success) 18%, transparent)
-  );
+  /* Opaque pastel in light like the other tones: the old 12% alpha tint let a
+     grey backdrop (--wa-surface-2, --wa-bg) pull the text under 4.5:1. Dark
+     keeps the same 18% overlay. */
+  background: var(--wa-success-soft);
 }
 .wa-kit-tag--warn {
   color: light-dark(#7a5e29, #d8b25e);
@@ -423,26 +472,32 @@ html[data-portal-role][data-theme='dark'] body {
 .wa-kit-tone--ok {
   --wa-kit-tone: var(--wa-success);
   --wa-kit-tone-soft: var(--wa-success-soft);
+  --wa-kit-tone-text: var(--wa-success-dark);
 }
 .wa-kit-tone--warn {
   --wa-kit-tone: var(--wa-gold);
   --wa-kit-tone-soft: var(--wa-gold-soft);
+  --wa-kit-tone-text: var(--wa-gold-dark);
 }
 .wa-kit-tone--alert {
   --wa-kit-tone: var(--wa-accent);
   --wa-kit-tone-soft: var(--wa-accent-soft);
+  --wa-kit-tone-text: var(--wa-accent-text);
 }
 .wa-kit-tone--danger {
   --wa-kit-tone: var(--wa-danger);
   --wa-kit-tone-soft: var(--wa-danger-soft);
+  --wa-kit-tone-text: var(--wa-danger-text);
 }
 .wa-kit-tone--info {
   --wa-kit-tone: var(--wa-info);
   --wa-kit-tone-soft: var(--wa-info-soft);
+  --wa-kit-tone-text: var(--wa-info-dark);
 }
 .wa-kit-tone--muted {
   --wa-kit-tone: var(--wa-muted);
   --wa-kit-tone-soft: var(--wa-surface-2);
+  --wa-kit-tone-text: var(--wa-muted);
 }
 /* Toned edge on a card / row (queue rows, signal cards). */
 .wa-kit-tone-edge {
@@ -460,9 +515,10 @@ html[data-portal-role][data-theme='dark'] body {
   background: var(--wa-kit-tone-soft, var(--wa-surface-2));
   color: var(--wa-kit-tone, var(--wa-muted));
 }
-/* Toned inline text (a level, a count) — 13px floor, bold. */
+/* Toned inline text (a level, a count) — 13px floor, bold. Reads the tone's
+   text twin: the fill hues (gold, success) are under 4.5:1 as small text. */
 .wa-kit-tone-text {
-  color: var(--wa-kit-tone, var(--wa-text));
+  color: var(--wa-kit-tone-text, var(--wa-text));
   font-size: var(--wa-type-meta);
   font-weight: 700;
   white-space: nowrap;
@@ -526,7 +582,9 @@ html[data-portal-role][data-theme='dark'] body {
 .wa-kit-stat-tile__delta {
   margin-top: 4px;
   font-weight: 700;
-  color: var(--wa-kit-tone, var(--wa-muted));
+  /* Caption text reads the tone's text twin (TEXT_COLOR_VARS in kit/tokens.ts);
+     the fill hues (gold, success) are under 4.5:1 as 13px text. */
+  color: var(--wa-kit-tone-text, var(--wa-muted));
 }
 
 /* Section tabs (Tabs / TabPanel in components/portal/kit/Tabs.tsx). One row
@@ -651,7 +709,7 @@ a.wa-kit-tab {
 .wa-kit-bar-fill {
   height: 100%;
   border-radius: 999px;
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
 }
 
 /* WCAG AA focus ring, consistent across the kit. The ring tokens are defined
@@ -680,9 +738,78 @@ a.wa-kit-tab {
    not collapse underneath or collide with the button. */
 .wa-kit-queue-row {
   align-items: center;
+  box-sizing: border-box;
+  background: var(--wa-surface);
+  border: 1px solid var(--wa-border);
+  border-left: 3px solid var(--wa-kit-tone, var(--wa-border));
+  border-radius: var(--wa-radius);
+  padding: 10px 12px;
+}
+.wa-kit-queue-row--red {
+  --wa-kit-tone: var(--wa-accent);
+  --wa-kit-tone-soft: var(--wa-accent-soft);
+  --wa-kit-tone-text: var(--wa-accent-text);
+}
+.wa-kit-queue-row--yellow {
+  --wa-kit-tone: var(--wa-gold);
+  --wa-kit-tone-soft: var(--wa-gold-soft);
+  --wa-kit-tone-text: light-dark(#7a5e29, #d8b25e);
+}
+.wa-kit-queue-row--blue {
+  --wa-kit-tone: var(--wa-info);
+  --wa-kit-tone-soft: var(--wa-info-soft);
+  --wa-kit-tone-text: var(--wa-info-dark);
+}
+.wa-kit-queue-row__icon,
+.wa-kit-work-item__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--wa-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--wa-kit-tone-soft, var(--wa-info-soft));
+  color: var(--wa-kit-tone-text, var(--wa-info-dark));
+}
+.wa-kit-queue-row__title,
+.wa-kit-work-item__title {
+  font-weight: 600;
+  font-size: var(--wa-type-body);
+  line-height: 1.3;
+}
+.wa-kit-queue-row__meta,
+.wa-kit-work-item__detail {
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+  margin-top: 2px;
+}
+.wa-kit-work-item {
+  box-sizing: border-box;
+  background: var(--wa-surface);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius);
+  padding: 10px 12px;
+}
+.wa-kit-work-item--urgent {
+  border-left: 3px solid var(--wa-accent);
+  --wa-kit-tone-soft: var(--wa-accent-soft);
+  --wa-kit-tone-text: var(--wa-accent-text);
 }
 .wa-kit-queue-row__action {
   flex-shrink: 0;
+}
+/* The row already carries its tone tint. A flag Token tinted the same way
+   stacks a second translucent layer in dark mode (4.2:1) and vanishes as a pill
+   in light, so it sits on the surface instead. Unlayered, so it beats the
+   Astryx layer. */
+.wa-kit-queue-row .astryx-token {
+  background-color: var(--wa-surface);
+}
+/* Ghost "View" actions on a gold / info / accent row tint: the fill hue
+   --wa-accent drops under 4.5:1 there in dark mode; use its text twin. */
+.wa-kit-queue-row .wa-kit-cta--ghost {
+  color: var(--wa-accent-text);
 }
 @media (max-width: 480px) {
   .wa-kit-queue-row {
@@ -757,6 +884,8 @@ a.wa-kit-tab {
   text-align: left;
   padding: 10px 14px;
   background: var(--wa-bg);
+  /* Hairline under the header row, same weight as the row dividers. */
+  border-bottom: 1px solid var(--wa-border);
 }
 .wa-kit-table td {
   padding: 10px 14px;
@@ -1335,7 +1464,7 @@ a.wa-kit-tab {
   transition: transform var(--wa-dur-fast) var(--wa-ease);
 }
 .wa-kit-toggle[data-checked='true'] .wa-kit-toggle-track {
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
 }
 .wa-kit-toggle[data-checked='true'] .wa-kit-toggle-thumb {
   transform: translateX(20px);
@@ -1453,7 +1582,7 @@ a.wa-kit-tab {
   height: 1.75rem;
   flex-shrink: 0;
   border-radius: 999px;
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
   font-size: var(--wa-type-meta);
   font-weight: 700;
@@ -1846,12 +1975,12 @@ a.wa-kit-tab {
   box-shadow: none;
 }
 .workspace-shell-root[data-workspace-role='member'] .btn.btn-primary {
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
   border: none;
 }
 .workspace-shell-root[data-workspace-role='member'] .btn.btn-primary:hover {
-  background: var(--wa-accent-dark);
+  background: var(--wa-accent-fill-hover);
 }
 .workspace-shell-root[data-workspace-role='member'] .btn.btn-secondary,
 .workspace-shell-root[data-workspace-role='member'] .btn.btn-outline,
@@ -1866,6 +1995,21 @@ a.wa-kit-tab {
   background: color-mix(in srgb, var(--wa-accent) 8%, transparent);
   color: var(--wa-accent);
   border-color: var(--wa-accent);
+}
+/* Legacy .btn-ghost paints var(--color-accent), which OrgBrandingStyle pins to
+   the org's light primary (#ad2c4d) in both themes: 2.8:1 on the dark surface.
+   Inside any portal surface, read the adaptive --wa-accent instead (identical in
+   light). :where() keeps these at (0,2,0)/(0,2,1) so they beat main.css's
+   .btn-ghost / a.btn-ghost:hover (this file loads later) but still lose to the
+   contextual rules (admin jobs filter tabs, employer jobs board, the member
+   retarget below). Do not unpin --color-accent instead: Astryx primary buttons
+   paint it behind white text. */
+:where([data-surface]) .btn.btn-ghost {
+  color: var(--wa-accent);
+}
+:where([data-surface]) .btn.btn-ghost:where(:hover),
+:where([data-surface]) a.btn.btn-ghost:where(:hover) {
+  color: var(--wa-accent-text);
 }
 .workspace-shell-root[data-workspace-role='member'] .btn.btn-ghost,
 .workspace-shell-root[data-workspace-role='member'] .btn.btn-tertiary {
@@ -2186,7 +2330,9 @@ a.wa-kit-tab {
   color: var(--wa-muted);
 }
 .wa-kit-start-here__cta:not(.wa-kit-cta--ghost) .wa-kit-start-here__cta-copy .wa-kit-meta {
-  color: color-mix(in srgb, var(--wa-on-accent-control) 85%, transparent);
+  /* Fully opaque: an 85% mix on the dark-mode accent fell to 4.47:1. The
+     16px/700 strong vs 13px/400 meta still carries the hierarchy. */
+  color: var(--wa-on-accent-control);
 }
 .wa-kit-start-here__subhead {
   margin: var(--wa-pad) 0 0.375rem;
@@ -2239,4 +2385,808 @@ a.wa-kit-tab {
   font-weight: 700;
   color: var(--wa-accent);
   text-decoration: none;
+}
+
+/* ==========================================================================
+ * C1 + C3 SHARED LANGUAGE (calm cards, section titles, chips, task rows,
+ * segmented progress, status strip, people card, two-column home layout).
+ * Documented in docs/KIT_GUIDE.md ("Calm card language"). Tokens only; every
+ * colour pair below is a light-dark() token or a *-text twin so it holds AA in
+ * both modes. Gold = achievement, green = success, blue = supporting data,
+ * crimson = the single primary action / current state.
+ * ======================================================================== */
+
+/* Cards that hold rows, lists or tables: no inner padding, clipped corners. */
+.wa-kit-card--flush {
+  padding: 0;
+  overflow: hidden;
+}
+/* "Up next" card: hairline card with a 3px crimson edge on the left. */
+.wa-kit-card--accent-edge {
+  border-left: 3px solid var(--wa-accent);
+}
+
+/* Card header row: title (+ sub) left, count / link right. */
+.wa-kit-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  min-width: 0;
+}
+.wa-kit-card--flush > .wa-kit-card__head,
+.wa-kit-card__head--padded {
+  padding: 16px 24px 8px;
+}
+.wa-kit-card__head--ruled {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--wa-border);
+}
+.wa-kit-card-title {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--wa-text);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.wa-kit-card-title small,
+.wa-kit-card-sub {
+  font-size: var(--wa-type-meta);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--wa-muted);
+}
+.wa-kit-card-title small {
+  margin-left: 8px;
+}
+.wa-kit-card-sub {
+  margin: 2px 0 0;
+  line-height: 1.45;
+}
+.wa-kit-card-count {
+  font-size: var(--wa-type-meta);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--wa-muted);
+  white-space: nowrap;
+}
+.wa-kit-card-count b {
+  color: var(--wa-text);
+  font-weight: 700;
+}
+.wa-kit-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  font-size: var(--wa-type-meta);
+  font-weight: 600;
+  color: var(--wa-accent-text);
+  text-decoration: none;
+}
+.wa-kit-card-link:hover {
+  text-decoration: underline;
+}
+
+/*
+ * Dark mode: the accent is for fills, not text. A lighter crimson reads as
+ * pink, so text links in cards ("View all", "See all", "Open missions", the
+ * staff card-header links) read --wa-text in dark and carry the accent as a
+ * 1px underline instead (2px on hover). Light mode is unchanged. The rule is
+ * deliberately narrow: the kit's own text-link classes, plus anchors that only
+ * paint their label with an accent token inline. A link that carries its own
+ * non-accent colour inline (the gold Open missions link) keeps it. Buttons
+ * (.wa-kit-cta, *button*), tags and anything with its own background are
+ * excluded, so crimson fills keep their white label. The inline-style variant
+ * needs !important to out-rank the style attribute. React serialises inline
+ * styles without a space after the colon (`color:var(--wa-accent-text)`) and
+ * the CSSOM writes one back (`color: var(...)`), so both spellings are listed.
+ */
+:is(html.dark, html[data-theme='dark']) :is(
+    a.wa-kit-card-link:not([style*='color']),
+    a[class*='cardLink']:not([style*='color']),
+    .wa-kit-card a:is([style^='color:var(--wa-accent'], [style^='color: var(--wa-accent'], [style*=';color:var(--wa-accent'], [style*='; color: var(--wa-accent'])
+  ):not(.wa-kit-cta):not([class*='button']):not(.wa-kit-tag):not([style*='background']) {
+  color: var(--wa-text);
+  text-decoration-line: underline;
+  text-decoration-color: var(--wa-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+:is(html.dark, html[data-theme='dark']) .wa-kit-card a:is([style^='color:var(--wa-accent'], [style^='color: var(--wa-accent'], [style*=';color:var(--wa-accent'], [style*='; color: var(--wa-accent']):not(.wa-kit-cta):not([class*='button']):not(.wa-kit-tag):not([style*='background']) {
+  color: var(--wa-text) !important;
+}
+:is(html.dark, html[data-theme='dark']) :is(
+    a.wa-kit-card-link:not([style*='color']),
+    a[class*='cardLink']:not([style*='color']),
+    .wa-kit-card a:is([style^='color:var(--wa-accent'], [style^='color: var(--wa-accent'], [style*=';color:var(--wa-accent'], [style*='; color: var(--wa-accent'])
+  ):not(.wa-kit-cta):not([class*='button']):not(.wa-kit-tag):not([style*='background']):hover {
+  text-decoration-thickness: 2px;
+}
+
+/* Chips: 24px pills. Date chips are the due-date variant used in task rows. */
+.wa-kit-chip,
+.wa-kit-date-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-sizing: border-box;
+  min-height: 24px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: var(--wa-type-meta);
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.wa-kit-chip svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.wa-kit-chip--neutral {
+  background: var(--wa-surface-2);
+  border-color: var(--wa-border);
+  color: var(--wa-muted-strong);
+}
+.wa-kit-chip--blue {
+  background: var(--wa-info-soft);
+  color: var(--wa-info-dark);
+}
+.wa-kit-chip--green {
+  background: var(--wa-success-soft);
+  color: light-dark(#2e7d32, #74c878);
+}
+.wa-kit-chip--gold {
+  background: var(--wa-gold-soft);
+  color: light-dark(#7a5e29, #d8b25e);
+}
+.wa-kit-chip--crimson {
+  background: var(--wa-accent-soft);
+  color: var(--wa-accent-text);
+}
+/* Dark pill: the strongest emphasis, one per list at most. Inverts in dark mode. */
+.wa-kit-chip--dark {
+  background: var(--wa-text);
+  color: var(--wa-bg);
+}
+.wa-kit-date-chip {
+  padding-inline: 12px;
+  background: var(--wa-surface-2);
+  border-color: var(--wa-border);
+  color: var(--wa-text);
+}
+.wa-kit-date-chip--soon {
+  background: var(--wa-text);
+  border-color: var(--wa-text);
+  color: var(--wa-bg);
+}
+.wa-kit-date-chip--done {
+  background: var(--wa-success-soft);
+  border-color: transparent;
+  color: light-dark(#2e7d32, #74c878);
+}
+.wa-kit-date-chip--overdue {
+  background: var(--wa-accent-soft);
+  border-color: transparent;
+  color: var(--wa-accent-text);
+}
+
+/* Task list rows ("This week"). */
+.wa-kit-task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.wa-kit-task-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  min-height: 60px;
+  padding: 10px 24px;
+  border-top: 1px solid var(--wa-border);
+  color: var(--wa-text);
+  text-decoration: none;
+}
+/* li-wrapped rows: the first row only gets a rule when a header sits above it. */
+.wa-kit-task-list > .wa-kit-task-row:first-child {
+  border-top: 0;
+}
+.wa-kit-card__head ~ .wa-kit-task-list > .wa-kit-task-row:first-child {
+  border-top: 1px solid var(--wa-border);
+}
+.wa-kit-task-row--link {
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .wa-kit-task-row--link:hover {
+    background: var(--wa-bg);
+  }
+}
+.wa-kit-task-row--link:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--wa-focus-ring);
+}
+.wa-kit-task-row__check {
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--wa-control-border);
+  background: var(--wa-surface);
+  display: inline-grid;
+  place-items: center;
+  color: var(--wa-on-accent);
+  flex: none;
+}
+.wa-kit-task-row__check svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 3;
+}
+.wa-kit-task-row[data-state='current'] .wa-kit-task-row__check {
+  border-color: var(--wa-accent);
+}
+.wa-kit-task-row[data-state='done'] .wa-kit-task-row__check,
+.wa-kit-task-row--done .wa-kit-task-row__check {
+  background: var(--wa-success-dark);
+  border-color: var(--wa-success-dark);
+  color: var(--wa-on-success);
+}
+.wa-kit-task-row__body {
+  min-width: 0;
+}
+.wa-kit-task-row__title {
+  margin: 0;
+  font-size: var(--wa-type-body);
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.wa-kit-task-row__sub {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--wa-type-meta);
+  line-height: 1.45;
+  color: var(--wa-muted);
+}
+.wa-kit-task-row__sub svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.wa-kit-task-row[data-state='done'] .wa-kit-task-row__title,
+.wa-kit-task-row--done .wa-kit-task-row__title {
+  font-weight: 500;
+  color: var(--wa-muted);
+  text-decoration: line-through;
+  text-decoration-color: var(--wa-control-border);
+}
+
+/*
+ * Motion 1 of 2: checking a task. Only when the member has not asked for
+ * reduced motion; there the native line-through above shows instantly.
+ *  - The strike draws in left to right over --wa-dur-base. It is a background
+ *    strip on the title, so the title is inline here: the strip then follows
+ *    each wrapped line to the end of its text (a bar on a block title would
+ *    run past a short last line, and one absolutely positioned bar could only
+ *    cross one line). The body's line-height is pinned to the title's so the
+ *    first line box is as tall as the block title was, and the body's other
+ *    children go back to the page line-height (--line-height-normal, 1.6, the
+ *    value they inherited), so the row is exactly as tall as it is with motion
+ *    off. It is a transition: it plays when a row flips to done and not when an
+ *    already-done row is rendered again.
+ *  - The check pops once, scale 0.8 to 1, from a keyframe animation. The
+ *    animation name only changes when the row becomes done, so a re-render of
+ *    a done row does not replay it. Nothing loops.
+ * The native line-through is switched off here so the two strikes never stack.
+ */
+@keyframes wa-kit-check-pop {
+  from {
+    transform: scale(0.8);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wa-kit-task-row__body {
+    line-height: 1.35;
+  }
+  /* Zero specificity: it only fills the gap the pinned body line-height would
+     otherwise leave; any class that sets its own line-height still wins. */
+  :where(.wa-kit-task-row__body > :not(.wa-kit-task-row__title)) {
+    line-height: var(--line-height-normal, 1.6);
+  }
+  .wa-kit-task-row .wa-kit-task-row__title {
+    display: inline;
+    background-image: linear-gradient(
+      to bottom,
+      transparent calc(50% - 0.75px),
+      var(--wa-control-border) calc(50% - 0.75px),
+      var(--wa-control-border) calc(50% + 0.75px),
+      transparent calc(50% + 0.75px)
+    );
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: 0% 100%;
+    transition: background-size var(--wa-dur-base) var(--wa-ease), color var(--wa-dur-base) var(--wa-ease);
+  }
+  .wa-kit-task-row[data-state='done'] .wa-kit-task-row__title,
+  .wa-kit-task-row--done .wa-kit-task-row__title {
+    text-decoration: none;
+    background-size: 100% 100%;
+  }
+  .wa-kit-task-row[data-state='done'] .wa-kit-task-row__check,
+  .wa-kit-task-row--done .wa-kit-task-row__check {
+    animation: wa-kit-check-pop var(--wa-dur-base) var(--wa-ease);
+  }
+}
+
+@media (max-width: 520px) {
+  .wa-kit-task-row {
+    grid-template-columns: 24px minmax(0, 1fr);
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  .wa-kit-task-row > :nth-child(n + 3) {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+/* Segmented progress with labels (certification path). */
+.wa-kit-segments {
+  --wa-segments: 6;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--wa-segments), minmax(0, 1fr));
+  gap: 16px 8px;
+}
+.wa-kit-segment {
+  min-width: 0;
+}
+.wa-kit-segment__bar {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--wa-track);
+  overflow: hidden;
+}
+.wa-kit-segment__bar > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 4px;
+  background: var(--wa-info);
+}
+.wa-kit-segment--done .wa-kit-segment__bar > i {
+  width: 100%;
+}
+.wa-kit-segment__label {
+  display: block;
+  margin-top: 8px;
+  font-size: var(--wa-type-meta);
+  line-height: 1.35;
+  color: var(--wa-muted);
+}
+.wa-kit-segment__state {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--wa-muted-strong);
+}
+.wa-kit-segment__state svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.5;
+  flex: none;
+  color: light-dark(#2e7d32, #74c878);
+}
+.wa-kit-segment__name {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.wa-kit-segment--current .wa-kit-segment__state {
+  color: var(--wa-info-dark);
+}
+.wa-kit-segment--current .wa-kit-segment__name {
+  color: var(--wa-text);
+}
+.wa-kit-segment--done .wa-kit-segment__state {
+  color: var(--wa-text);
+}
+
+/*
+ * Motion 2 of 2: the certification path fills in once on mount. Each bar's
+ * fill scales in from the left over --wa-dur-slow, staggered by position
+ * (--wa-stagger, 70ms, per segment, capped at the eighth). A CSS animation on the fill, so it
+ * plays when the list is mounted and does not restart when the page re-renders
+ * or a width changes. Only when reduced motion has not been requested. The
+ * backwards fill holds each bar empty through its delay.
+ */
+@keyframes wa-kit-segment-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wa-kit-segment__bar > i {
+    transform-origin: left center;
+    animation: wa-kit-segment-fill var(--wa-dur-slow) var(--wa-ease) backwards;
+    animation-delay: calc(var(--wa-segment-index, 0) * var(--wa-stagger, 70ms));
+  }
+  .wa-kit-segment:nth-child(2) {
+    --wa-segment-index: 1;
+  }
+  .wa-kit-segment:nth-child(3) {
+    --wa-segment-index: 2;
+  }
+  .wa-kit-segment:nth-child(4) {
+    --wa-segment-index: 3;
+  }
+  .wa-kit-segment:nth-child(5) {
+    --wa-segment-index: 4;
+  }
+  .wa-kit-segment:nth-child(6) {
+    --wa-segment-index: 5;
+  }
+  .wa-kit-segment:nth-child(7) {
+    --wa-segment-index: 6;
+  }
+  .wa-kit-segment:nth-child(n + 8) {
+    --wa-segment-index: 7;
+  }
+}
+@media (max-width: 899px) {
+  .wa-kit-segments {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .wa-kit-segments {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Approval status strip: three steps and a state chip in one hairline bar. */
+.wa-kit-status-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
+  padding: 4px 12px 4px 20px;
+  min-height: 56px;
+  background: var(--wa-surface);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius);
+  box-shadow: var(--wa-shadow);
+}
+.wa-kit-status-strip__title {
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--wa-muted);
+}
+.wa-kit-status-strip__steps {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.wa-kit-status-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 16px;
+}
+.wa-kit-status-step + .wa-kit-status-step {
+  border-left: 1px solid var(--wa-border);
+}
+.wa-kit-status-step__dot {
+  box-sizing: border-box;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  border: 2px solid var(--wa-control-border);
+  background: var(--wa-surface);
+  color: var(--wa-muted);
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+}
+.wa-kit-status-step__dot svg {
+  width: 13px;
+  height: 13px;
+  stroke-width: 3;
+}
+.wa-kit-status-step--done .wa-kit-status-step__dot {
+  background: var(--wa-success-dark);
+  border-color: var(--wa-success-dark);
+  color: var(--wa-on-success);
+}
+.wa-kit-status-step--current .wa-kit-status-step__dot {
+  border-color: var(--wa-accent);
+  color: var(--wa-accent-text);
+  box-shadow: 0 0 0 3px var(--wa-accent-soft);
+}
+.wa-kit-status-step__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+.wa-kit-status-step__text b {
+  font-size: var(--wa-type-meta);
+  font-weight: 600;
+  color: var(--wa-text);
+}
+.wa-kit-status-step__text small {
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+}
+.wa-kit-status-step--todo .wa-kit-status-step__text b {
+  color: var(--wa-muted-strong);
+}
+@media (max-width: 1099px) {
+  .wa-kit-status-strip {
+    width: 100%;
+  }
+}
+@media (max-width: 719px) {
+  .wa-kit-status-strip {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 16px;
+  }
+  .wa-kit-status-strip__steps {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .wa-kit-status-step {
+    padding: 8px 0;
+  }
+  .wa-kit-status-step + .wa-kit-status-step {
+    border-left: 0;
+    border-top: 1px solid var(--wa-border);
+  }
+  .wa-kit-status-strip > .wa-kit-chip {
+    align-self: flex-start;
+  }
+}
+
+/* People card (counselor / advisor). */
+.wa-kit-people-card {
+  padding: 0;
+  overflow: hidden;
+}
+.wa-kit-people-card__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px 0;
+}
+.wa-kit-people-card__head > div {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.3;
+}
+.wa-kit-people-card__avatar {
+  box-sizing: border-box;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  background: var(--wa-text);
+  color: var(--wa-bg);
+}
+.wa-kit-people-card__name {
+  margin: 0;
+  font-size: var(--wa-type-body);
+  font-weight: 700;
+  color: var(--wa-text);
+  overflow-wrap: anywhere;
+}
+.wa-kit-people-card__role {
+  margin: 0;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+}
+.wa-kit-people-card__time {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+  white-space: nowrap;
+}
+.wa-kit-people-card__time[data-unread='true']::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--wa-accent-fill);
+}
+.wa-kit-people-card__quote {
+  margin: 16px 24px;
+  padding: 12px 16px;
+  background: var(--wa-bg);
+  border: 1px solid var(--wa-border);
+  border-radius: 4px var(--wa-radius) var(--wa-radius) var(--wa-radius);
+  font-size: var(--wa-type-body);
+  line-height: 1.55;
+  color: var(--wa-text);
+  overflow-wrap: anywhere;
+}
+.wa-kit-people-card > .wa-kit-cta {
+  width: calc(100% - 48px);
+  margin: 0 24px 20px;
+}
+.wa-kit-people-card__foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--wa-border);
+  background: var(--wa-bg);
+}
+.wa-kit-people-card__foot > div {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+/* Calendar tile (MON / 26). */
+.wa-kit-date-tile {
+  box-sizing: border-box;
+  width: 52px;
+  height: 56px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-align: center;
+  border: 1px solid var(--wa-control-border);
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-surface);
+}
+.wa-kit-date-tile__mon {
+  display: block;
+  background: var(--wa-hero-crimson);
+  color: var(--wa-on-hero);
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 18px;
+  text-transform: uppercase;
+}
+.wa-kit-date-tile__day {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--wa-text);
+}
+
+/* Two-column home layout: main flow + right rail from 1100px. */
+.wa-kit-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.wa-kit-home-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px 24px;
+  align-items: start;
+}
+.wa-kit-home-grid > * {
+  min-width: 0;
+}
+.wa-kit-home-grid__main,
+.wa-kit-home-grid__rail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+@media (min-width: 1100px) {
+  .wa-kit-home-grid {
+    grid-template-columns: minmax(0, 1fr) 352px;
+  }
+  .wa-kit-home-grid__head {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Streak + points (two stat cells in one card). */
+.wa-kit-stat-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0;
+  overflow: hidden;
+}
+.wa-kit-stat-pair__cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 16px 24px;
+  min-width: 0;
+}
+.wa-kit-stat-pair__cell + .wa-kit-stat-pair__cell {
+  border-left: 1px solid var(--wa-border);
+}
+.wa-kit-stat-pair__value {
+  font-size: 24px;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--wa-text);
+}
+.wa-kit-stat-pair__label {
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted);
+}
+
+/* SectionHeader: a calm section title (18px/700), not a second page title. */
+.wa-kit-section-header__kicker {
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--wa-accent-text);
+}
+.wa-kit-section-header__title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--wa-text);
+}
+.wa-kit-section-header__goal {
+  margin: 4px 0 0;
+  font-size: var(--wa-type-meta);
+  line-height: 1.45;
+  color: var(--wa-muted);
+}
+@media (min-width: 640px) {
+  .wa-kit-section-header__title {
+    font-size: 20px;
+  }
 }

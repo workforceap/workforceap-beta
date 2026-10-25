@@ -1,5 +1,6 @@
 'use client';
 
+import { formatPortalDate } from '@/lib/formatDate';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { PartyPopper } from 'lucide-react';
@@ -106,7 +107,7 @@ export default function CounselorInactiveView({ embedded = false }: { embedded?:
 
   const formatDate = (d: string | null) => {
     if (!d) return t('never');
-    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return formatPortalDate(d);
   };
 
   // Risk tiers match the CRITICAL/HIGH/MEDIUM palette used elsewhere in the

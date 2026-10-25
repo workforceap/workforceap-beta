@@ -7,7 +7,8 @@ import { postMemberEvent } from '@/lib/events/client';
 import { trackFunnelEvent } from '@/lib/analytics/events';
 
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
-vi.mock('next/link', () => ({ default: (props: ComponentProps<'a'>) => <a {...props} /> }));
+vi.mock('next/link', () => ({ default: ({ children, ...props }: ComponentProps<'a'>) => <a {...props}>{children}</a> }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), back: vi.fn() }) }));
 vi.mock('@/lib/analytics/events', () => ({ trackFunnelEvent: vi.fn() }));
 vi.mock('@/lib/events/client', () => ({ postMemberEvent: vi.fn() }));
 

@@ -56,7 +56,9 @@ export default function DevStaffPartnerPage() {
   return (
     <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6 wa-p-6">
       <PageOpener
+        kicker="Partner dashboard"
         title="Skillpoint Alliance"
+        lede="Skillpoint Alliance referrals, progress, and placement outcomes in one place."
       />
 
       <PartnerKpiGrid
@@ -130,6 +132,9 @@ export default function DevStaffPartnerPage() {
           rows={REFERRAL_ROWS}
           rowKey={(row) => row.id}
           mobile="scroll"
+          caption="Referred members"
+          minWidth={320}
+          scrollCue
           emptyTitle="No referred members yet"
           emptyDescription="New referrals will appear here after members apply through this partner."
         />

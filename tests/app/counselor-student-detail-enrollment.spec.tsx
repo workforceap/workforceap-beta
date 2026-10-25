@@ -1,5 +1,6 @@
 process.env.TZ = 'UTC';
 
+import { formatPortalDate } from '@/lib/formatDate';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -162,7 +163,8 @@ function identityText(doc: Document): string {
   return meta.parentElement.textContent ?? '';
 }
 
-const day = (d: Date) => d.toLocaleDateString();
+// The timeline prints in the portal timezone (server and browser agree), not the runtime's.
+const day = (d: Date) => formatPortalDate(d);
 
 describe('counselor member record reads the canonical enrollment (C05 part 2)', () => {
   beforeEach(() => {

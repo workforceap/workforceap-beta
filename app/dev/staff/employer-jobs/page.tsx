@@ -1,15 +1,20 @@
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+import EmployerJobsActions from '@/components/employer/EmployerJobsActions';
 import EmployerJobsBoard, { type EmployerJobBoardItem } from '@/components/employer/EmployerJobsBoard';
-import { jobPostingStatusLabel } from '@/lib/status/jobPostingStatusVocabulary';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
-import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import { DesignSurface } from '@/components/portal/kit';
+import PortalPageFrame from '@/components/portal/PortalPageFrame';
+import { jobPostingStatusLabel } from '@/lib/status/jobPostingStatusVocabulary';
 
 /**
  * Storybook-lite showcase — the employer "My Jobs" board in the Command
  * Center visual language (mixed statuses, applicant counts, readiness
- * cues). Preview-only, no auth/DB. See app/dev/staff/jobs-board/page.tsx
- * for the admin-side sibling of this pattern.
+ * cues). Preview-only, no auth/DB. Framed like app/(portal)/employer/jobs/
+ * page.tsx (PortalPageFrame + EmployerPageOpener h1). The outer DesignSurface
+ * stands in for the portal shell: it supplies the gutter and paints the canvas
+ * so the opener is not left on the marketing body grey in dark mode. See
+ * app/dev/staff/jobs-board/page.tsx for the admin-side sibling of this pattern.
  */
 export const dynamic = 'force-dynamic';
 
@@ -181,15 +186,18 @@ const JOBS: EmployerJobBoardItem[] = [
 
 const TITLE_BY_ID: Record<string, string> = Object.fromEntries(JOBS.map((j) => [j.id, j.title]));
 
-export default function DevEmployerJobsBoardPage() {
+export default async function DevEmployerJobsBoardPage() {
   if (process.env.VERCEL_ENV === 'production') notFound();
+  const t = await getTranslations('employer');
 
   return (
-    <DesignSurface surface="dense" className="wa-p-6">
+    <DesignSurface surface="dense" className="wa-p-4 md:wa-p-6">
       <PortalPageFrame>
         <EmployerPageOpener
-          kicker="Employer workspace"
-          title="Job postings"
+          kicker={t('employerPortal')}
+          title={t('jobPostings')}
+          subtitle={t('managePostingsAndCandidates')}
+          action={<EmployerJobsActions labels={{ nav: t('jobsWorkspaceActions'), jobs: t('myJobs'), post: t('postAJobBtn'), import: t('importJobsBtn') }} />}
         />
         <EmployerJobsBoard
           jobs={JOBS}

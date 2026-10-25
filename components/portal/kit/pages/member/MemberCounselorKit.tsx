@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { MessagesSquare, ArrowRight } from 'lucide-react';
-import { Card } from '@astryxdesign/core/Card';
+import { ArrowRight } from 'lucide-react';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
 
 /**
@@ -35,10 +34,8 @@ export function MemberCounselorKit({ title, subtitle, voiceSurface, pastSessions
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 900, margin: '0 auto', padding: 16 }} className="wa-space-y-6">
         <PageOpener
-          kicker="AI career coach"
-          icon={<MessagesSquare size={13} aria-hidden="true" />}
           title={title}
-          lede={subtitle}
+          meta={subtitle}
         />
 
         <p className="wa-kit-lede">{t('humanDescription')} <Link href="/dashboard/messages" className="wa-page-action wa-kit-focus">{t('humanLink')}</Link></p>
@@ -46,33 +43,36 @@ export function MemberCounselorKit({ title, subtitle, voiceSurface, pastSessions
         <div style={{ maxWidth: 640, margin: '0 auto', width: '100%' }}>{voiceSurface}</div>
 
         {pastSessions.length > 0 ? (
-          <div>
-            <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>{pastSessionsLabel}</h2>
-            <div className="wa-space-y-2">
-              {pastSessions.map((session) => (
-                <Link
-                  key={session.id}
-                  href={`/dashboard/counselor/${session.id}`}
-                  className="wa-kit-focus"
-                  style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
-                >
-                  <Card>
-                    <div className="wa-flex wa-items-center wa-justify-between wa-gap-3">
-                      <p style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', fontVariantNumeric: 'tabular-nums' }}>{session.dateLabel}</p>
-                      <ArrowRight size={13} aria-hidden="true" style={{ color: 'var(--wa-muted)', flexShrink: 0 }} />
-                    </div>
-                    {session.steps.length > 0 ? (
-                      <ul style={{ margin: '6px 0 0', padding: '0 0 0 1.1rem', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {session.steps.map((step, i) => (
-                          <li key={i} style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-text)' }}>{step}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                  </Card>
-                </Link>
-              ))}
+          <section aria-labelledby="counselor-sessions-title">
+            <div className="wa-kit-card__head" style={{ marginBottom: 12 }}>
+              <h2 id="counselor-sessions-title" className="wa-kit-card-title">{pastSessionsLabel}</h2>
             </div>
-          </div>
+            <div className="wa-kit-card wa-kit-card--flush">
+              <ul className="wa-kit-task-list">
+                {pastSessions.map((session) => (
+                  <li key={session.id}>
+                    <Link
+                      href={`/dashboard/counselor/${session.id}`}
+                      className="wa-kit-task-row wa-kit-task-row--link wa-kit-focus"
+                      style={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                      <div className="wa-kit-task-row__body">
+                        <p className="wa-kit-task-row__title" style={{ fontVariantNumeric: 'tabular-nums' }}>{session.dateLabel}</p>
+                        {session.steps.length > 0 ? (
+                          <ul style={{ margin: '6px 0 0', padding: '0 0 0 1.1rem', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            {session.steps.map((step, i) => (
+                              <li key={i} style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>{step}</li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </div>
+                      <ArrowRight size={14} aria-hidden="true" style={{ color: 'var(--wa-muted)', flexShrink: 0 }} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
         ) : null}
       </div>
     </DesignSurface>

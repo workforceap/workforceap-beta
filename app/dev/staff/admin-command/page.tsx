@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { Briefcase, TriangleAlert, Award, UserPlus, Bell } from 'lucide-react';
 import {
   CommandCenterKit,
@@ -159,8 +160,9 @@ const MEMBERS: CommandCenterMemberRow[] = [
   { id: 'm5', name: 'Linh Pham', program: 'Data & AI', progress: 88, status: 'Interviewing', statusTone: 'info', lastActive: '30m ago' },
 ];
 
-export default function DevStaffAdminCommandPage() {
+export default async function DevStaffAdminCommandPage() {
   if (process.env.VERCEL_ENV === 'production') notFound();
+  const commonT = await getTranslations('common.disclosures');
 
   return (
     <CommandCenterKit
@@ -169,6 +171,7 @@ export default function DevStaffAdminCommandPage() {
       queueItems={QUEUE_ITEMS}
       programHealth={PROGRAM_HEALTH}
       programHealthCaption={PROGRAM_HEALTH_CAPTION}
+      whatIsCountedLabel={commonT('whatIsCounted')}
       placementsByMonth={PLACEMENTS_BY_MONTH}
       placementsSubtitle="2026 YTD · 213 total"
       addStudentHref="/admin/members/new"

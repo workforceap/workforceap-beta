@@ -8,8 +8,10 @@ import { readCss, loadRootTokens, colorOf, contrast as tokenContrast, splitTopLe
 /**
  * The member portal's white CTA pills keep `background: #fff` in both
  * colour modes. Their label used to be `var(--color-accent)`, which is
- * #ad2c4d in light mode (6.5:1) but #e0658a in dark mode — 3.28:1 on the
- * still-white pill. A white pill's label must clear WCAG AA on white.
+ * #ad2c4d in light mode (6.5:1) but the lightened dark accent in dark mode
+ * (#e0658a, 3.28:1 on the still-white pill; the dusty rose #dd9fb0 that
+ * replaced it is lighter still, 2.2:1). A white pill's label must clear WCAG AA
+ * on white.
  * (The mobile State A pill went with the retired ?ui=legacy home, WAP-195.)
  */
 

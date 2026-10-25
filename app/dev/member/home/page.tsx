@@ -14,23 +14,24 @@ import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
 import { PREVIEW_RESUME_DRAFT_OWNER } from '@/lib/resume/studioDraft';
 
 /**
- * Storybook-lite showcase — MemberHomeKit "Command Center" (fully populated,
- * every new optional prop wired). Preview-only, no auth/DB. See
- * app/dev/dashboard/page.tsx for the pattern.
- * `?handoff=unknown|pending|received|confirmed` shows synthetic handoff evidence.
- * `confirmed` is a contract preview only: the live Home loader has no calendar
- * booking or provider access receipt source and returns unknown for both.
+ * Storybook-lite showcase: MemberHomeKit "This week" (fully populated, every
+ * optional prop wired). Preview-only, no auth/DB. See app/dev/dashboard/page.tsx
+ * for the pattern. The props the home no longer renders (stat sparks, pipeline,
+ * points ledger, streak) are still passed, as the live route passes them; the
+ * kit ignores them, and Progress and Jobs use them.
  *
- * `?approval=live|closed|complete|off` swaps the approval-status card fixture
- * so both placements can be reviewed in the real chrome: `live` (a pending
- * application) keeps a compact current-step summary after the main action, `closed` and
- * `complete` collapse it below the content. Same composition as
+ * `?handoff=unknown|pending|received|confirmed` shows synthetic handoff evidence.
+ * `confirmed` is a contract preview only; the live loader has no calendar or provider receipt source.
+ * `?approval=live|closed|complete|off` swaps the approval-status fixture. The
+ * status is a slim strip in the page header (MemberHomeKit `approvalSlot`):
+ * `live` (a pending application) names the next step under the strip, `closed`
+ * and `complete` name the saved state. Same composition as
  * app/(portal)/dashboard/page.tsx.
  *
- * `?course=zero|zero-stale` drops the Course tile to 0% so the two
- * not-started states can be reviewed: a member who just enrolled (no warning)
- * and one whose training has been quiet past the staleness threshold (gold,
- * plus the counselor row the loader adds to "Up next").
+ * `?course=zero|zero-stale` drops the course to 0% so the two not-started
+ * states can be reviewed: a member who just enrolled and one whose training
+ * has been quiet past the staleness threshold (the counselor row the loader
+ * adds to "This week").
  *
  * The pieces moved over from the `?ui=legacy` home (WAP-188) are on by
  * default so the populated page shows them; each has a switch:
@@ -39,7 +40,7 @@ import { PREVIEW_RESUME_DRAFT_OWNER } from '@/lib/resume/studioDraft';
  *     (default day_30, with the week 1 check-in answered). Built with the
  *     loader's own `buildFirst90Card`.
  *   `?youth=<age>` shows the youth notice for a member of that age (under 18).
- *   `?goals=none` empties the goals so the Next badge tile shows "Set a goal".
+ *   `?goals=none` empties the goals so the Next badge card shows "Set a goal".
  * The four owner-approved pieces (WAP-194), each off by default:
  *   `?onboarding=on` opens the first-login wizard (PortalEntryClient
  *     portal="member", the same mount as the live home), pre-filled with a
@@ -53,9 +54,9 @@ import { PREVIEW_RESUME_DRAFT_OWNER } from '@/lib/resume/studioDraft';
  *   `?advisor=off` hides the career advisor card (no active assignment).
  *   The app-install prompt is always mounted; the browser only fires its
  *     `beforeinstallprompt` from the second visit, so it rarely shows here.
- * The strip and the check-in call real server actions, which refuse without a
- * signed-in member: a click here shows their error state. So do the wizard's
- * `/api/onboarding/*` saves.
+ * `previewOnly` keeps Today telemetry/completion, offer confirmation, and
+ * First 90 Days submissions inert here. Local offer dismissal and ordinary
+ * links still work.
  */
 export const dynamic = 'force-dynamic';
 
@@ -193,7 +194,7 @@ export default async function DevMemberHomePage({
   const status = fixture ? buildMemberApprovalStatus(fixture) : null;
   const placement = status ? memberApprovalCardPlacement(status) : null;
   const approvalCard = status ? (
-    <MemberApprovalStatusCard status={status} storageUserId="dev-member" placement={placement ?? 'primary'} variant="compact" messagesHref="/dev/member/messages" />
+    <MemberApprovalStatusCard status={status} storageUserId="dev-member" placement={placement ?? 'primary'} messagesHref="/dev/member/messages" />
   ) : null;
 
   return (
@@ -203,13 +204,14 @@ export default async function DevMemberHomePage({
       <PortalEntryErrorBoundary>
         <PortalEntryClient
           portal="member"
+          previewOnly
           tourStorageUserId={`dev-member-${Date.now()}`}
           showOnboardingWizard={onboardingFixture === 'on'}
           showTour={onboardingFixture === 'tour'}
           isSuperAdmin={false}
           tourSteps={MEMBER_PORTAL_TOUR_STEPS}
           wizardProps={{
-            initialFullName: 'Alex Sample',
+            initialFullName: 'Mike Brown',
             initialPhone: '',
             initialAddress: '',
             initialCity: 'Austin',
@@ -227,11 +229,15 @@ export default async function DevMemberHomePage({
       </PortalEntryErrorBoundary>
     ) : null}
     <MemberHomeKit
-      approvalSummary={placement === 'primary' ? approvalCard : null}
+      previewOnly
+      approvalSlot={approvalCard}
+      handoff={handoff}
+      resumeStudioHref="/dev/member/resume-studio"
+      resumeDraftOwnerToken={PREVIEW_RESUME_DRAFT_OWNER}
       showStaffViewBanner={params?.staff === '1'}
       advisor={params?.advisor === 'off' ? null : { name: 'Sample Advisor', firstName: 'Sample', messagingHref: '/dev/member/messages' }}
       programSwitch={programSwitch}
-      firstName="Alex"
+      firstName="Mike"
       coursePercent={coursePercent}
       courseProgressStale={courseProgressStale}
       activeJobs={4}
@@ -244,16 +250,13 @@ export default async function DevMemberHomePage({
       nextBadgeRemaining="2 modules"
       currentStreak={12}
       longestStreak={12}
-      assessmentHref="/dev/member/assessment"
-      programHref="/dev/member/program"
       resumeHref="/dev/member/program"
-      resumeStudioHref="/dev/member/resume-studio"
-      resumeDraftOwnerToken={PREVIEW_RESUME_DRAFT_OWNER}
-      handoff={handoff}
       toolkitHref="/dev/member/toolkit"
       jobsHref="/dev/member/jobs"
       coursesHref="/dev/member/program"
       goalsHref="/dev/member/progress"
+      progressHref="/dev/member/progress"
+      preassessmentHref="/dev/member/assessment"
       jobOffers={jobOffers}
       first90={first90}
       youthNoticeAge={youthNoticeAge}
@@ -268,7 +271,7 @@ export default async function DevMemberHomePage({
       } : {
         id: 'resume-module',
         title: 'Shared Responsibility Model',
-        body: '~25 min · Module 8 of 9 · AWS Cloud Practitioner — due Thursday.',
+        body: '~25 min · Module 8 of 9 · AWS Cloud Practitioner · due Thursday.',
         href: '/dev/member/program',
         cta: 'Resume module',
         variant: 'urgent',
@@ -300,6 +303,7 @@ export default async function DevMemberHomePage({
         { day: 'Sun', minutes: 58 },
       ]}
       weeklyActivityDeltaLabel="+41% vs last week"
+      weeklyStudyGoalMinutes={240}
       pointsThisWeek={85}
       pointsLedger={[
         { label: 'Module complete', amount: 40, color: 'accent' },
@@ -349,7 +353,6 @@ export default async function DevMemberHomePage({
         },
       ]}
     />
-    {placement === 'demoted' ? approvalCard : null}
     </>
   );
 }

@@ -3,15 +3,14 @@
 import { useEffect, useMemo, useState, useCallback, type ReactNode } from 'react';
 import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useLocale, useTranslations } from 'next-intl';
-import { formatDate } from '@/lib/i18n/date';
-import { DEFAULT_LOCALE, isAppLocale } from '@/lib/i18n/config';
+import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 import { describeMemberRequestException, readMemberRequestFailure } from '@/lib/portal/memberRequestFailure';
 import { ATTENTION_REASON_META } from '@/lib/attention/reasons';
 import { toAtRiskMemberRow, type AtRiskFactor, type AtRiskMember, type SavedAtRiskCase } from '@/lib/member/atRiskRow';
 import {
+  BookOpen,
   Check,
   Filter,
   MessageSquare,
@@ -33,8 +32,8 @@ import {
   type KitColor,
   type KitTone} from '@/components/portal/kit';
 import AtRiskDetailModal from './AtRiskDetailModal';
-import { programDisplayTitle } from '@/lib/content/programTitle';
 import styles from './AtRiskDashboard.module.css';
+import { programDisplayTitle } from '@/lib/content/programTitle';
 
 /**
  * Counselor "At-risk members" — Command Center redesign.
@@ -52,8 +51,6 @@ import styles from './AtRiskDashboard.module.css';
  * `AtRiskDashboardView` that takes members + a couple of mutation callbacks
  * as props — so app/dev/staff/counselor-atrisk can render the exact same
  * surface against static mock data, with no auth/DB dependency.
- * Triage guidance is optional disclosure content; the counted-case definition
- * remains visible. Checkbox labels carry the touch target around a normal glyph.
  */
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -141,6 +138,26 @@ const STATUS_TOOLTIP: Record<AtRiskMember['status'], string> = {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
+// Fixed en-US/UTC so the server render and the browser print the same text.
+// `toLocaleDateString()` used the runtime's timezone and locale: a Vercel (UTC)
+// render and a browser in another timezone or locale disagree on the calendar
+// date or format, React reports a hydration text mismatch (#418) and falls back
+// to client-rendering the root, which strips the `class="dark"` that
+// ThemeInitScript put on <html>. Same convention as LabReviewQueue.
+const ACTIVITY_DATE_FORMAT = new Intl.DateTimeFormat('en-US', {
+  month: 'numeric',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+function formatDate(d: string | null): string {
+  if (!d) return '—';
+  const date = new Date(d);
+  // Intl's format() throws on an invalid date, where toLocaleDateString did not.
+  return Number.isNaN(date.getTime()) ? '—' : ACTIVITY_DATE_FORMAT.format(date);
+}
+
 function scoreLevel(score: number): AtRiskMember['riskLevel'] {
   if (score >= 70) return 'CRITICAL';
   if (score >= 50) return 'HIGH';
@@ -148,9 +165,17 @@ function scoreLevel(score: number): AtRiskMember['riskLevel'] {
   return 'LOW';
 }
 
+/** Opaque-in-light soft tints, each paired with its text twin (KIT_GUIDE §1). */
+const SOFT_TINT: Partial<Record<KitColor, string>> = {
+  accent: 'var(--wa-accent-soft)',
+  gold: 'var(--wa-gold-soft)',
+  info: 'var(--wa-info-soft)',
+  success: 'var(--wa-success-soft)'};
+
 function ScoreBadge({ score }: { score: number }) {
   const level = scoreLevel(score);
-  const c = colorVar(RISK_CONFIG[level].color);
+  const tierColor = RISK_CONFIG[level].color;
+  const c = colorVar(tierColor);
   return (
     <span
       title={`Risk score ${score}. ${SEVERITY_TOOLTIP[level]}`}
@@ -163,8 +188,10 @@ function ScoreBadge({ score }: { score: number }) {
         borderRadius: '50%',
         fontWeight: 800,
         fontSize: 13,
-        color: textColorVar(RISK_CONFIG[level].color),
-        background: `color-mix(in srgb, ${c} 14%, transparent)`,
+        // The fill hue is for the ring only; the number uses the text twin
+        // on the matching soft tint so it clears 4.5:1 in both themes.
+        color: textColorVar(tierColor),
+        background: SOFT_TINT[tierColor] ?? 'var(--wa-surface-2)',
         border: `2px solid color-mix(in srgb, ${c} 40%, transparent)`,
         flexShrink: 0,
         fontVariantNumeric: 'tabular-nums'}}
@@ -453,23 +480,36 @@ export function AtRiskDashboardView({
   return (
     <DesignSurface surface="dense">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        <div className={styles.guidance}>
-          <p>
-            <strong>Counted here:</strong>{' '}
+        {/* How-to-use runbook tip */}
+        <div className="wa-kit-card wa-kit-card--sm" style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div
+            aria-hidden
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 9,
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'var(--wa-info-soft)',
+              color: 'var(--wa-info)'}}
+          >
+            <BookOpen size={15} />
+          </div>
+          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.55, color: 'var(--wa-muted)' }}>
+            <strong style={{ color: 'var(--wa-text)' }}>How to use this screen:</strong>{' '}
+            Turn on <strong>Only unacknowledged</strong>, sort <strong>Severity ↑</strong>, then{' '}
+            <strong>Message</strong> or call top rows. Click <strong>Ack</strong> after you reach out; click{' '}
+            <strong>Resolve</strong> only when disengagement is fixed or the case is closed.
+            <br />
+            <strong style={{ color: 'var(--wa-text)' }}>Counted here:</strong>{' '}
             {RISK_ALERT_REASON.definition} &mdash; the same &ldquo;{RISK_ALERT_REASON.label}&rdquo; rule Today uses.
           </p>
-          <details>
-            <summary className="wa-kit-focus">Triage guidance</summary>
-            <p>
-              Turn on <strong>Only unacknowledged</strong>, sort <strong>Severity ↑</strong>, then{' '}
-              <strong>Message</strong> or call top rows. Click <strong>Ack</strong> after you reach out; click{' '}
-              <strong>Resolve</strong> only when disengagement is fixed or the case is closed.
-            </p>
-          </details>
         </div>
 
         {/* Severity KPI row */}
-        <div className={`wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3 ${styles.riskMetrics}`}>
+        <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
           {RISK_LEVEL_ORDER.map((level) => {
             const Icon = RISK_CONFIG[level].icon;
             return (
@@ -539,7 +579,6 @@ export function AtRiskDashboardView({
             />
             {programOptions.length > 0 && (
               <select
-                aria-label="Program"
                 value={programFilter}
                 onChange={(e) => setProgramFilter(e.target.value)}
                 className="wa-kit-focus"
@@ -577,7 +616,6 @@ export function AtRiskDashboardView({
               </SortModeButton>
             </div>
             <label
-              className={styles.checkboxTarget}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -595,6 +633,7 @@ export function AtRiskDashboardView({
                 type="checkbox"
                 checked={unacknowledgedOnly}
                 onChange={(e) => setUnacknowledgedOnly(e.target.checked)}
+                style={{ cursor: 'pointer', width: 15, height: 15 }}
               />
               Only unacknowledged
             </label>
@@ -626,17 +665,25 @@ export function AtRiskDashboardView({
 
         {/* Bulk actions */}
         {selectedIds.size > 0 && (
+          // The bar sits above the list, so on a phone it scrolled away as soon
+          // as a row further down was ticked. Below md it pins under the
+          // workspace header (sticky, not fixed: it stays in the flow above the
+          // list and never competes with the bottom nav); from md up the list
+          // fits the screen and it stays static. The accent tint is layered on
+          // the surface so rows scrolling underneath never show through.
           <div
-            className="wa-kit-card wa-kit-card--sm"
+            className="wa-kit-card wa-kit-card--sm wa-sticky wa-z-20 wa-top-[var(--workspace-top-offset,0px)] md:wa-static"
+            data-testid="at-risk-bulk-bar"
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              gap: 16,
-              background: 'var(--wa-accent-soft)',
+              flexWrap: 'wrap',
+              gap: 8,
+              background: 'linear-gradient(var(--wa-accent-soft), var(--wa-accent-soft)), var(--wa-surface)',
               borderColor: 'transparent'}}
           >
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)' }}>
+            <span role="status" style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)' }}>
               {selectedIds.size} selected
               {openSelectedCount !== selectedIds.size ? (
                 <span style={{ fontWeight: 500, opacity: 0.85 }}> · {openSelectedCount} open</span>
@@ -679,19 +726,21 @@ export function AtRiskDashboardView({
           </p>
         )}
 
-        {/* Results header */}
+        {/* Results header. Not "Needs attention": CounselorWorkspace already
+            renders that h2 above this dashboard, so it would repeat. */}
         <SectionHeader
-          title="Needs attention"
+          title="At-risk cases"
           goal={`Showing ${filteredMembers.length} member${filteredMembers.length === 1 ? '' : 's'}${loading ? ' · Refreshing…' : ''}`}
           action={
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               {filteredMembers.length > 0 ? (
-                <label className={styles.checkboxTarget} style={{ gap: 8, fontSize: 13, fontWeight: 600, color: 'var(--wa-muted)' }}>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', color: 'var(--wa-muted)' }}>
                   <input
                     type="checkbox"
                     aria-label="Select all visible"
                     checked={allSelectedOnPage}
                     onChange={toggleSelectAll}
+                    style={{ cursor: 'pointer', width: 15, height: 15, accentColor: 'var(--wa-accent)' }}
                   />
                   Select all visible
                 </label>
@@ -955,6 +1004,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       title={title}
+      aria-pressed={active}
       className="wa-kit-focus"
       style={{
         display: 'inline-flex',
@@ -1016,7 +1066,7 @@ function FactorChips({ factors }: { factors: AtRiskFactor[] }) {
             padding: '3px 9px',
             borderRadius: 999,
             background: 'var(--wa-border)',
-            color: 'var(--wa-muted)',
+            color: 'var(--wa-muted-strong)',
             fontWeight: 600}}
         >
           {f.description}
@@ -1045,7 +1095,6 @@ function RiskRow({
   acting: boolean;
 }) {
   const cfg = RISK_CONFIG[row.riskLevel];
-  const locale = useLocale();
   const c = colorVar(cfg.color);
   const Icon = cfg.icon;
 
@@ -1108,7 +1157,7 @@ function RiskRow({
                 padding: '2px 8px',
                 borderRadius: 999,
                 background: 'var(--wa-accent-soft)',
-                color: 'var(--wa-accent)'}}
+                color: 'var(--wa-accent-text)'}}
             >
               {RISK_ALERT_REASON.label}
             </span>
@@ -1118,7 +1167,7 @@ function RiskRow({
             {row.phone ? ` · ${row.phone}` : ''}
           </div>
           <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 4 }}>
-            {row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : 'Not enrolled'} · {row.lastActivityAt ? `last activity ${formatDate(row.lastActivityAt, isAppLocale(locale) ? locale : DEFAULT_LOCALE)}` : 'No activity recorded'}
+            {row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : 'Not enrolled'} · {row.lastActivityAt ? `last activity ${formatDate(row.lastActivityAt)}` : 'No activity recorded'}
           </div>
           <FactorChips factors={row.factors} />
         </div>
@@ -1126,23 +1175,13 @@ function RiskRow({
       </div>
 
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-        <PortalRecordLink
-          returnTo={returnTo}
-          href={`/counselor/students/${encodeURIComponent(row.userId)}#counselor-member-messages`}
-          className="btn btn-primary btn-sm"
-          style={{ fontSize: 13, padding: '8px 12px', minHeight: 44 }}
-          title="Open the counselor message thread with this member"
-        >
-          <MessageSquare size={12} style={{ marginRight: 6, verticalAlign: 'middle' }} />
-          Message
-        </PortalRecordLink>
         {row.status === 'open' && (
           <button
             type="button"
-            className="btn btn-outline btn-sm"
+            className="btn btn-muted btn-sm"
             disabled={acting}
             onClick={onAcknowledge}
-            style={{ fontSize: 13, padding: '8px 12px', minHeight: 44 }}
+            style={{ fontSize: 13, padding: '5px 10px' }}
             title="Mark that you have started outreach or taken ownership"
           >
             {acting ? <PortalInlineSpinner size={12} /> : 'Ack'}
@@ -1151,10 +1190,10 @@ function RiskRow({
         {row.status !== 'resolved' && (
           <button
             type="button"
-            className="btn btn-muted btn-sm"
+            className="btn btn-primary btn-sm"
             disabled={acting}
             onClick={onResolve}
-            style={{ fontSize: 13, padding: '8px 12px', minHeight: 44 }}
+            style={{ fontSize: 13, padding: '5px 10px' }}
             title="Close this alert when risk is cleared, member is placed/exited, or outcome documented"
           >
             {acting ? <PortalInlineSpinner size={12} /> : 'Resolve'}
@@ -1162,9 +1201,19 @@ function RiskRow({
         )}
         <PortalRecordLink
           returnTo={returnTo}
+          href={`/counselor/students/${encodeURIComponent(row.userId)}#counselor-member-messages`}
+          className="btn btn-outline btn-sm"
+          style={{ fontSize: 13, padding: '5px 10px' }}
+          title="Open the counselor message thread with this member"
+        >
+          <MessageSquare size={12} style={{ marginRight: 6, verticalAlign: 'middle' }} />
+          Message
+        </PortalRecordLink>
+        <PortalRecordLink
+          returnTo={returnTo}
           href={`/counselor/students/${row.userId}`}
           className="btn btn-outline btn-sm"
-          style={{ fontSize: 13, padding: '8px 12px', minHeight: 44 }}
+          style={{ fontSize: 13, padding: '5px 10px' }}
           title="Counselor student profile and history"
         >
           View

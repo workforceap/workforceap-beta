@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
-import { DesignSurface, PageOpener } from '@/components/portal/kit';
+import { DesignSurface } from '@/components/portal/kit';
+import PageHeader from '@/components/portal/PageHeader';
 import PartnerMembersList from '@/components/portal/PartnerMembersList';
 import PartnerReferredMembersMobile from '@/components/partner/PartnerReferredMembersMobile';
 
@@ -97,8 +98,9 @@ export default function DevStaffPartnerMembersPage() {
 
   return (
     <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6 wa-p-6">
-      <PageOpener
-        title="Referred Members"
+      <PageHeader
+        title="Referred members"
+        subtitle="Search and filter everyone your organization has referred to WorkforceAP."
       />
 
       <div className="wa-block md:wa-hidden">

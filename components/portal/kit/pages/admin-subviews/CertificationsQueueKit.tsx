@@ -149,7 +149,7 @@ export function CertificationsQueueKit({
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <PageOpener className="wa-mb-5" title="Certifications queue" kicker="Approval queue" />
+      <PageOpener className="wa-mb-5" title="Certifications queue" meta="Review certification requests and approve them." />
 
       {/* Gold "achievement" banner. wa-kit-card--gradient-gold falls back to a
           calm gold tint in the dense surface (per the kit). */}

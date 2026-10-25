@@ -219,8 +219,7 @@ export function PlacementsKit({
     <DesignSurface surface="dense" className="wa-p-6">
       <PageOpener className="wa-mb-5"
         title="Placements"
-        kicker="Outcomes"
-        lede="Confirmed hires & wage data"
+        meta="Confirmed hires and wage data."
         action={
           // Wraps like UsersKit's action row: three nowrap buttons in a single
           // flex line pushed the shell to 415px at a 390px viewport.

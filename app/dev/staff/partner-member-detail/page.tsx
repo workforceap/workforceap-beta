@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
+import PageHeader from '@/components/portal/PageHeader';
 import PartnerMemberJourney, { type PartnerJourneyStep } from '@/components/partner/PartnerMemberJourney';
 import PartnerPlacementCard, { type PartnerPlacementView } from '@/components/partner/PartnerPlacementCard';
 import PartnerStageBadge from '@/components/partner/PartnerStageBadge';
 import type { PartnerMemberStage } from '@/lib/partner/memberStage';
-import { PageOpener } from '@/components/portal/kit';
 
 /**
  * Showcase-only render of the partner member detail pieces
@@ -81,14 +81,19 @@ function heading(title: string) {
 export default function DevStaffPartnerMemberDetailPage() {
   if (process.env.VERCEL_ENV === 'production') notFound();
 
+  // app/layout.tsx already renders <main id="main-content">; a second <main>
+  // here would nest landmarks, so this wrapper is a plain div.
   return (
-    <main style={{ padding: '2rem 1rem', maxWidth: '72rem', margin: '0 auto', display: 'grid', gap: '2.5rem' }}>
-      <PageOpener kicker="Partner workspace" title="Partner member scenarios" lede="Sample journeys and placement states" />
+    <div style={{ padding: '2rem 1rem', maxWidth: '72rem', margin: '0 auto', display: 'grid', gap: '2.5rem' }}>
+      <PageHeader
+        title="Partner member detail"
+        subtitle="Sample data in three states: verified placement, placement awaiting verification, and a referral-track partner."
+      />
       {SCENARIOS.map((scenario) => (
         <section key={scenario.key} data-scenario={scenario.key} style={{ display: 'grid', gap: '1rem' }}>
           <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--wa-muted-strong)' }}>{scenario.title}</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
-            <h2 style={{ margin: 0, fontSize: '1.75rem' }}>{scenario.name}</h2>
+            <h2 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 700 }}>{scenario.name}</h2>
             <PartnerStageBadge stage={scenario.stage} />
           </div>
           <div className="wa-grid wa-grid-cols-1 md:wa-grid-cols-2 wa-gap-4">
@@ -105,6 +110,6 @@ export default function DevStaffPartnerMemberDetailPage() {
           </div>
         </section>
       ))}
-    </main>
+    </div>
   );
 }

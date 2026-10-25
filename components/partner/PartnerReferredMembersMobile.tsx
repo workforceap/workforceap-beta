@@ -61,8 +61,9 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
 
   return (
     <>
-      {/* The owning page supplies the inset; nested padding squeezes phone records. */}
-      <div role="group" aria-label="Filter referred members" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', paddingBottom: '1rem' }}>
+      {/* Wraps instead of scrolling sideways: four chips need ~341px, wider
+          than a phone rail, and a clipped "At Risk" gave no scroll cue. */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', padding: '0 1.5rem 1rem' }}>
         {chips.map((chip) => {
           const active = filter === chip.key;
           return (
@@ -75,12 +76,12 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
               className="wa-kit-focus"
               style={{
                 flexShrink: 0,
-                minHeight: 44,
-                padding: '0.375rem 0.625rem',
+                minHeight: '2.75rem',
+                padding: '0.375rem 0.875rem',
                 borderRadius: '9999px',
                 fontSize: '0.8125rem',
                 fontWeight: 700,
-                background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
+                background: active ? 'var(--wa-accent-fill)' : 'var(--wa-surface)',
                 color: active ? 'var(--wa-on-accent-control)' : 'var(--wa-muted)',
                 border: `1px solid ${active ? 'var(--wa-accent)' : 'var(--wa-border)'}`,
                 cursor: 'pointer',
@@ -89,14 +90,14 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
             >
               {chip.label}
               {chip.count > 0 ? (
-                <span className="wa-tabular-nums" style={{ marginLeft: '0.375rem', fontSize: '0.8125rem', opacity: 0.85 }}>{chip.count}</span>
+                <span className="wa-tabular-nums" style={{ marginLeft: '0.375rem', fontSize: '0.8125rem' }}>{chip.count}</span>
               ) : null}
             </button>
           );
         })}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+      <div style={{ padding: '0 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
         {rows.length === 0 ? (
           <PartnerEmptyState variant="referrals" framed hideSecondary />
         ) : filtered.length === 0 ? (
@@ -112,9 +113,9 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
             const isPlaced = row.stage === 'placed';
 
             return (
-              <PortalRecordLink key={row.id} href={`/partner/referred-members/${row.id}`} className="wa-kit-focus" style={{ textDecoration: 'none' }}>
+              <PortalRecordLink key={row.id} href={`/partner/referred-members/${row.id}`} style={{ textDecoration: 'none' }}>
                 <div
-                  className="wa-kit-card wa-kit-card--sm wa-kit-card--hover"
+                  className="wa-kit-card wa-kit-card--sm wa-kit-card--hover wa-kit-focus"
                   style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}
                 >
                   <Avatar initials={initials} size={38} gradient={isPlaced} />

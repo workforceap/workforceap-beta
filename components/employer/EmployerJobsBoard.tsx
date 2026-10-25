@@ -217,7 +217,7 @@ function FilterPill({ active, href, children }: { active: boolean; href: string;
       aria-current={active ? 'true' : undefined}
       style={{
         ...pillBase,
-        background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
+        background: active ? 'var(--wa-accent-fill)' : 'var(--wa-surface)',
         borderColor: active ? 'var(--wa-accent)' : 'var(--wa-border)',
         color: active ? 'var(--wa-on-accent-control)' : 'var(--wa-muted)',
       }}

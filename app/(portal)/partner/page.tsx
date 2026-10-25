@@ -7,6 +7,8 @@ import { getUser } from '@/lib/auth/server';
 import { getPartnerForUser } from '@/lib/auth/roles';
 import { unlinkedPartnerHref } from '@/lib/auth/portalGuards';
 import { prisma } from '@/lib/db/prisma';
+import { signedInFirstName } from '@/lib/portal/signedInFirstName';
+import { staffWelcomeTitle } from '@/components/portal/kit/pages/StaffKit';
 import { formatPortalDateTime } from '@/lib/formatDate';
 import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 
@@ -49,10 +51,10 @@ import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import {
   DesignSurface,
   SectionHeader as KitSectionHeader,
-  PageOpener,
   DataTable as KitDataTable,
   QueueRow,
   StatusTag,
+  PageOpener,
 } from '@/components/portal/kit';
 import {
   PartnerKpiGrid,
@@ -94,6 +96,9 @@ export default async function PartnerDashboardPage({
 
   const ctx = await getPartnerForUser(user.id, { isSuperAdminHint: superAdmin, readOnlyAudit });
   if (!ctx) redirect(await unlinkedPartnerHref(user.id));
+  // Person-facing greeting ("Welcome back, {first name}."): the partner context
+  // carries the organisation, not the person, so read the signed-in user's name once.
+  const partnerFirstName = await signedInFirstName(user.id);
 
   let partnerRow:
     | {
@@ -447,8 +452,10 @@ export default async function PartnerDashboardPage({
         {partnerSchemaCompatibilityFallback ? <span hidden data-portal-error-state="partner-schema-compatibility-fallback" /> : null}
         <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6">
           {isPendingApproval && <PendingApprovalBanner />}
+          {/* Person-facing greeting ("Welcome back, {first name}."), the partner name when unknown. */}
           <PageOpener
-            title={ctx.partner.name}
+            title={partnerFirstName ? staffWelcomeTitle(partnerFirstName) : ctx.partner.name}
+            meta={t('referralsProgressOutcomes', { partnerName: ctx.partner.name })}
           />
 
           {/* `tour-referral-link`: step 1 of the partner guided tour (lib/tours/registry.ts). */}
