@@ -228,9 +228,8 @@ export function JobsBoardKit({
                 <div
                   style={{
                     fontWeight: 700,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
+                    overflowWrap: 'anywhere',
+                    whiteSpace: 'normal',
                   }}
                 >
                   {row.role}

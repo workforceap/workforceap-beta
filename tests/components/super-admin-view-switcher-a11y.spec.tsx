@@ -9,14 +9,16 @@ import SuperAdminViewSwitcher from '@/components/super-admin-view-switcher';
  */
 
 const push = vi.fn();
+let pathname = '/admin';
 vi.mock('next/navigation', () => ({
-  usePathname: () => '/admin',
+  usePathname: () => pathname,
   useRouter: () => ({ push }),
 }));
 
 afterEach(() => {
   cleanup();
   push.mockClear();
+  pathname = '/admin';
 });
 
 const trigger = () => screen.getByRole('button', { name: /Switch portal view/ });
@@ -64,5 +66,14 @@ describe('SuperAdminViewSwitcher keyboard behavior', () => {
     expect(screen.queryAllByRole('option')).toHaveLength(0);
     expect(screen.getByRole('button', { name: 'Admin Portal' })).toHaveAttribute('aria-current', 'true');
     expect(screen.getByRole('button', { name: 'Partner Portal' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('shows Admin as the active portal in the no-auth admin shell fixture', () => {
+    pathname = '/dev/staff/admin-shell';
+    render(<SuperAdminViewSwitcher initialIsSuperAdmin />);
+
+    expect(trigger()).toHaveAccessibleName('View: Admin Portal. Switch portal view');
+    fireEvent.click(trigger());
+    expect(screen.getByRole('button', { name: 'Admin Portal' })).toHaveAttribute('aria-current', 'true');
   });
 });

@@ -373,7 +373,7 @@
   margin-block: 1.5rem;
 }
 .followThrough :global(a[data-variant='primary']) {
-  background-color: var(--wa-accent);
+  background-color: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
 }
 .focusTarget {

@@ -16,6 +16,9 @@ const VIEWS = [
 type ViewId = (typeof VIEWS)[number]['id'];
 
 function getCurrentView(pathname: string): ViewId {
+  // Staff showcase routes render the same role shells without an auth session.
+  // Keep their portal selector aligned with the shell being photographed.
+  if (pathname?.startsWith('/dev/staff/admin-')) return 'admin';
   if (pathname?.startsWith('/admin')) return 'admin';
   if (pathname?.startsWith('/partner')) return 'partner';
   if (pathname?.startsWith('/employer')) return 'employer';

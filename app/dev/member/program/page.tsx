@@ -151,9 +151,9 @@ export default async function DevMemberProgramPage({
   return (
     <MemberProgramKit
       programTitle="AWS Cloud Practitioner Essentials"
-      progressPercent={78}
-      modulesComplete={7}
-      modulesTotal={9}
+      progressPercent={40}
+      modulesComplete={2}
+      modulesTotal={5}
       estRemaining="4 hrs remaining"
       resumeHref="/dev/member/program?state=workspace"
       modules={[

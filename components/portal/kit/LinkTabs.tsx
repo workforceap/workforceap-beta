@@ -22,26 +22,44 @@ export function LinkTabs({ label, activeKey, children, className, style, ref, ..
     const viewport = nav.getBoundingClientRect();
     const item = link.getBoundingClientRect();
     const gutter = 4;
-    if (item.left < viewport.left + gutter) nav.scrollLeft += item.left - viewport.left - gutter;
-    else if (item.right > viewport.right - gutter) nav.scrollLeft += item.right - viewport.right + gutter;
+    const leftFade = nav.dataset.scrollable === 'true' && nav.dataset.scrollStart !== 'true' ? 24 : 0;
+    const rightFade = nav.dataset.scrollable === 'true' && nav.dataset.scrollEnd !== 'true' ? 24 : 0;
+    if (item.left < viewport.left + gutter + leftFade) nav.scrollLeft += item.left - viewport.left - gutter - leftFade;
+    else if (item.right > viewport.right - gutter - rightFade) {
+      nav.scrollLeft += item.right - viewport.right + gutter + rightFade;
+    }
+  }, []);
+
+  const updateScrollCue = useCallback(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const maxScroll = Math.max(0, nav.scrollWidth - nav.clientWidth);
+    nav.dataset.scrollable = String(maxScroll > 1);
+    nav.dataset.scrollStart = String(nav.scrollLeft <= 1);
+    nav.dataset.scrollEnd = String(nav.scrollLeft >= maxScroll - 1);
   }, []);
 
   useLayoutEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
+    updateScrollCue();
     const revealCurrent = () => {
       const focused = document.activeElement;
       const link = focused instanceof HTMLElement && nav.contains(focused)
         ? focused : nav.querySelector<HTMLElement>('a[aria-current="page"]');
       if (link) reveal(link);
+      updateScrollCue();
     };
     revealCurrent();
-    if (typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(revealCurrent);
-    observer.observe(nav);
-    nav.querySelectorAll('a').forEach((link) => observer.observe(link));
-    return () => observer.disconnect();
-  }, [activeKey, reveal]);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(revealCurrent);
+    observer?.observe(nav);
+    nav.querySelectorAll('a').forEach((link) => observer?.observe(link));
+    nav.addEventListener('scroll', updateScrollCue, { passive: true });
+    return () => {
+      observer?.disconnect();
+      nav.removeEventListener('scroll', updateScrollCue);
+    };
+  }, [activeKey, reveal, updateScrollCue]);
 
   return (
     <nav

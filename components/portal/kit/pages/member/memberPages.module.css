@@ -385,6 +385,13 @@
   min-width: 0;
 }
 
+@media (max-width: 767px) {
+  .threadBody .messageComposer {
+    margin-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    background: var(--wa-surface);
+  }
+}
+
 .backButton {
   display: inline-flex;
   align-items: center;

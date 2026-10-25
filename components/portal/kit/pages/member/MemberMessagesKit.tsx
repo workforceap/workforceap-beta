@@ -385,6 +385,7 @@ export function MemberMessagesKit({
                 onSend={canSend ? handleSend : undefined}
                 initialText={feedbackDraft?.text}
                 multiline={Boolean(feedbackDraft)}
+                composerClassName={styles.messageComposer}
                 empty={{ title: t('thread.title'), description: t('thread.body'), action: t('thread.action') }}
               />
             </div>

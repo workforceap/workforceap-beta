@@ -1404,6 +1404,12 @@
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
+@media (max-width: 767px) {
+  .portal-messages-shell--thread .portal-messages-compose {
+    margin-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 .portal-messages-compose-input {
   background: var(--surface-container);
   border: 1px solid rgba(222, 191, 194, 0.2);
