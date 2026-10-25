@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import styles from './InterestProfilerClient.module.css';
+import { skillMapperHref } from '@/lib/member/memberWorkspace';
 import { getProgramBySlug } from '@/lib/content/programs';
 import {
   INTEREST_PROFILER_STORAGE_KEY,
@@ -22,6 +23,7 @@ type ScoreResponse = {
   careersTotal: number;
   riasec: InterestProfilerRiasec | null;
   programSlugs: string[];
+  resultId?: string | null;
 };
 
 const LIKERT = [
@@ -34,6 +36,7 @@ const LIKERT = [
 
 export default function InterestProfilerClient() {
   const tCommon = useTranslations('common');
+  const tw = useTranslations('memberWorkspace.exploration');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [questions, setQuestions] = useState<QuestionRow[]>([]);
@@ -76,7 +79,9 @@ export default function InterestProfilerClient() {
           ? ['## Mapped WorkforceAP programs', ...programLines, '']
           : []),
         '## How to use this',
-        'These results are saved to your Skill Profile and blended into the Skill Mapper radar so you can compare against any O*NET occupation.',
+        payload.resultId
+          ? tw('interestExportSaved')
+          : tw('interestExportUnsaved'),
       ].join('\n');
 
       const response = await fetch('/api/ai/export-pdf', {
@@ -113,7 +118,7 @@ export default function InterestProfilerClient() {
     } finally {
       setExportingPdf(false);
     }
-  }, [tCommon]);
+  }, [tCommon, tw]);
 
   useEffect(() => {
     let cancelled = false;
@@ -316,7 +321,7 @@ export default function InterestProfilerClient() {
             <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.7 }}>
               {score.careers.slice(0, 12).map((c) => (
                 <li key={c.code}>
-                  {c.title} <span style={{ color: 'var(--color-on-surface-variant)' }}>({c.code})</span>
+                  <Link href={skillMapperHref({ occupationCode: c.code, occupationTitle: c.title })} className="wa-page-action wa-kit-focus">{tw('exploreSkills', { occupation: c.title })}</Link> <span style={{ color: 'var(--color-on-surface-variant)' }}>({c.code})</span>
                   {c.fit ? ` — ${c.fit}` : ''}
                 </li>
               ))}
@@ -359,14 +364,14 @@ export default function InterestProfilerClient() {
           <span className="material-symbols-outlined" style={{ color: 'var(--wa-accent-text)', fontSize: '1.375rem', flexShrink: 0, marginTop: '0.125rem', fontVariationSettings: "'FILL' 1" }}>radar</span>
           <div>
             <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--color-on-surface)', margin: '0 0 0.25rem' }}>
-              Your answers are feeding your Skill Profile
+              {score.resultId ? tw('interestSaved') : tw('interestNotSaved')}
             </p>
             <p style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', margin: 0, lineHeight: 1.5 }}>
-              These results have been saved and blended into your radar chart in the{' '}
+              {score.resultId ? tw('interestConnectionSaved') : tw('interestConnectionUnsaved')}{' '}
               <Link href="/dashboard/ai-tools/skill-mapper" style={{ color: 'var(--wa-accent-text)', fontWeight: 700 }}>
                 Skill Mapper
               </Link>
-              . Go there to compare your profile against any O*NET occupation.
+              {' '}{tw('interestNext')}
             </p>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   findProfile: vi.fn(),
   getMemberState: vi.fn(),
+  readOnlyAudit: false,
 }));
 
 vi.mock('next/dynamic', () => ({ default: () => function ResumeClientStub() { return null; } }));
@@ -16,7 +17,7 @@ vi.mock('@/lib/member/getMemberState', () => ({ getMemberState: mocks.getMemberS
 vi.mock('@/lib/db/prisma', () => ({ prisma: { profile: { findUnique: mocks.findProfile } } }));
 vi.mock('@/lib/db/withDbRetry', () => ({ withDbRetry: (read: () => unknown) => read() }));
 vi.mock('@/lib/member/ensureAppUser', () => ({ ensureAppUserProvisioned: vi.fn() }));
-vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: () => false }));
+vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: () => mocks.readOnlyAudit }));
 
 import DashboardResumePage from '@/app/(portal)/dashboard/resume/page';
 
@@ -24,14 +25,15 @@ type GuideProps = { witData: { phone: string }; hasOriginal: boolean };
 
 function collectGuideProps(node: React.ReactNode): GuideProps[] {
   if (!React.isValidElement(node)) return [];
-  const props = node.props as { witData?: GuideProps['witData']; hasOriginal?: boolean; children?: React.ReactNode };
+  const props = node.props as { witData?: GuideProps['witData']; hasOriginal?: boolean; children?: React.ReactNode; filesSlot?: React.ReactNode };
   const current = props.witData ? [{ witData: props.witData, hasOriginal: !!props.hasOriginal }] : [];
-  return [...current, ...React.Children.toArray(props.children).flatMap(collectGuideProps)];
+  return [...current, ...React.Children.toArray([props.children, props.filesSlot]).flatMap(collectGuideProps)];
 }
 
 describe('Resume page WorkInTexas contact source', () => {
   beforeEach(() => {
     mocks.findProfile.mockReset();
+    mocks.readOnlyAudit = false;
     mocks.getMemberState.mockReset().mockResolvedValue({
       fullName: 'Jordan Example', email: 'jordan@example.org', profileCompletenessPct: 60,
     });
@@ -51,11 +53,25 @@ describe('Resume page WorkInTexas contact source', () => {
     const page = await DashboardResumePage();
     const guideProps = collectGuideProps(page);
 
-    expect(guideProps).toHaveLength(2);
+    expect(guideProps).toHaveLength(1);
     expect(guideProps.every((props) => props.witData.phone === (contactPhone ?? '') && props.hasOriginal === hasOriginal)).toBe(true);
     expect(mocks.findProfile).toHaveBeenCalledWith(expect.objectContaining({
       where: { userId: 'member-1' },
       select: { resumeOriginalPath: true, resumeEnhancedPath: true },
     }));
+  });
+
+  it.each([false, true])('rejects a resume profile outage instead of rendering a missing-resume state (readOnlyAudit=%s)', async (readOnlyAudit) => {
+    mocks.readOnlyAudit = readOnlyAudit;
+    const failure = new Error('Synthetic resume profile read failure');
+    mocks.findProfile.mockRejectedValue(failure);
+
+    await expect(DashboardResumePage()).rejects.toBe(failure);
+
+    expect(mocks.getMemberState).toHaveBeenCalledWith('member-1', { readOnlyAudit });
+    expect(mocks.findProfile).toHaveBeenCalledWith({
+      where: { userId: 'member-1' },
+      select: { resumeOriginalPath: true, resumeEnhancedPath: true },
+    });
   });
 });

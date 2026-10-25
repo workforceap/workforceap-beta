@@ -214,7 +214,7 @@
     color: var(--color-green);
 }
 .readiness-progress-value {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: white;
     font-size: 0.8125rem;
     padding: 0.15rem 0.5rem;
@@ -754,7 +754,7 @@
     color: var(--wa-accent-text);
 }
 .application-tracker-filter-chip.active {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     border-color: var(--color-accent);
     color: var(--color-white);
 }
@@ -1201,7 +1201,7 @@ html {
     background: var(--wa-shell-header-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid transparent;
+    border-bottom: 1px solid var(--wa-border);
     box-shadow: none;
     position: sticky;
     top: 0;
@@ -1294,8 +1294,8 @@ html {
         gap: 0.4rem 0.65rem;
     }
     html.wap-portal-chrome-compact .workspace-menu-btn {
-        min-width: 40px;
-        min-height: 40px;
+        min-width: 44px;
+        min-height: 44px;
         padding: 0.32rem;
     }
     html.wap-portal-chrome-compact .workspace-shell-header__meta .workspace-shell-context--chip,
@@ -1336,7 +1336,7 @@ html.dark .workspace-shell-root,
 html.dark .workspace-shell-header,
 [data-theme='dark'] .workspace-shell-header {
     background: var(--wa-shell-header-bg);
-    border-bottom-color: transparent;
+    border-bottom-color: var(--wa-border);
     box-shadow: none;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -1345,17 +1345,28 @@ html.dark .workspace-shell-header,
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 44px;
-    min-height: 44px;
+    min-width: 48px;
+    min-height: 48px;
     padding: 0.45rem;
-    background: transparent;
-    border: 1px solid var(--outline-variant);
-    border-radius: var(--radius-sm);
+    background: var(--wa-surface);
+    border: 1px solid var(--wa-border);
+    border-radius: var(--wa-radius-sm);
     cursor: pointer;
-    color: var(--color-on-surface);
+    color: var(--wa-text);
+    box-shadow: var(--wa-shadow);
+    transition: background-color var(--wa-dur-fast) var(--wa-ease), border-color var(--wa-dur-fast) var(--wa-ease);
 }
 .workspace-menu-btn:hover {
-    background: var(--surface-container-high);
+    background: var(--wa-accent-soft);
+    border-color: var(--wa-control-border);
+}
+.workspace-shell-root .workspace-menu-btn:disabled,
+.workspace-shell-root .workspace-menu-btn:disabled:hover {
+    background: var(--wa-surface);
+    border-color: var(--wa-border);
+    color: var(--wa-muted);
+    box-shadow: none;
+    cursor: wait;
 }
 .workspace-shell-brand-block {
     display: flex;
@@ -1364,9 +1375,10 @@ html.dark .workspace-shell-header,
     min-width: 0;
 }
 .workspace-shell-brand {
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: var(--color-on-surface);
+    letter-spacing: -0.035em;
+    color: var(--wa-text);
     line-height: 1.2;
 }
 .workspace-shell-brand:hover {
@@ -1391,8 +1403,8 @@ html.dark .workspace-shell-header,
     align-items: center;
     gap: 0.35rem;
     font-size: 0.8125rem;
-    font-weight: 700;
-    color: var(--wa-accent-text);
+    font-weight: 500;
+    color: var(--wa-muted);
     text-decoration: none;
     max-width: 100%;
 }
@@ -1423,7 +1435,7 @@ html.dark .workspace-shell-header,
     justify-content: center;
     padding: 0.35rem 0.85rem;
     border-radius: var(--radius-sm);
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: #fff;
     font-weight: 700;
     font-size: 0.8125rem;
@@ -1701,6 +1713,15 @@ html:not(.dark) .workspace-sidebar.open::before {
     }
     .workspace-sidebar.open .workspace-sidebar-inner {
         padding-top: max(1rem, calc(env(safe-area-inset-top, 0px) + 0.6rem));
+    }
+    /* The closed phone drawer sits off-screen but its links are still tabbable.
+       WorkspaceShell marks it inert once mounted; the server HTML cannot (it
+       does not know the viewport, and an SSR inert froze the desktop rail), so
+       CSS hides it from focus and the a11y tree until then. Visibility flips
+       after the slide-out finishes and before the slide-in starts. */
+    .workspace-sidebar:not(.open) {
+        visibility: hidden;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.28s;
     }
 }
 .workspace-sidebar-label {
@@ -2034,7 +2055,7 @@ html.dark .workspace-sidebar-group-label {
     background: color-mix(in srgb, var(--color-accent) 6%, var(--surface-container-high) 94%);
     color: var(--color-on-surface);
     border-color: color-mix(in srgb, var(--color-accent) 14%, transparent 86%);
-    transform: translateX(1px);
+    transform: none;
 }
 .workspace-sidebar-link.active {
     background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 12%, var(--color-white) 88%), color-mix(in srgb, var(--color-accent) 7%, var(--color-white) 93%));
@@ -2174,10 +2195,31 @@ html.dark .workspace-sidebar-group-label {
     width: 100%;
     background: transparent;
 }
-/* Mobile bottom nav: `main#main-content` + WorkspaceShell `.workspace-shell-main` (marketing.css). */
-@media (max-width: 767px) {
-    html[data-portal-role="member"] .workspace-shell-main {
-        padding-bottom: max(1.75rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
+/* Member phone tabs (components/portal/MemberBottomTabs). The bar shows at or
+   below the drawer breakpoint (<=768px, where the rail becomes a drawer). Its
+   height is one shell metric; the member main column, anchor/focus scrolling
+   and the legal footer all clear it by that amount plus the home indicator. */
+:root {
+    --member-bottom-tabs-h: 56px;
+}
+@media (max-width: 768px) {
+    /* Specificity is deliberate: /dev proofs also carry html.wap-reserve-mobile-bottom-nav
+       (css/marketing.css), whose rules pad the same elements for the marketing bar. */
+    :root[data-portal-role="member"] {
+        scroll-padding-bottom: calc(var(--member-bottom-tabs-h) + env(safe-area-inset-bottom, 0px));
+    }
+    html[data-portal-role="member"] .workspace-shell-root[data-member-tabs] .workspace-shell-main {
+        padding-bottom: calc(var(--member-bottom-tabs-h) + env(safe-area-inset-bottom, 0px));
+    }
+    /* Fixed overlays inside the member shell (PWAInstallPrompt) read this to float
+       above the bar; it is unset, so 0, everywhere the bar does not render. */
+    html[data-portal-role="member"] .workspace-shell-root[data-member-tabs] {
+        --member-tabs-clearance: var(--member-bottom-tabs-h);
+    }
+    /* The tab bar replaces the old top strip of member links on phones. Hidden,
+       not removed: the markup (and its server-rendered links) stay in the DOM. */
+    .workspace-shell-root[data-member-tabs] .member-portal-top-nav {
+        display: none;
     }
 }
 .workspace-super-admin-banner {
@@ -2241,6 +2283,10 @@ html.dark .workspace-sidebar-group-label {
     background: rgba(173, 44, 77, 0.12);
     border-radius: 0.25rem;
     cursor: help;
+}
+/* Dark mode: the light-mode crimson reads 2.4:1 on the tinted pill. The adaptive accent text token clears AA. */
+html.dark .super-admin-view-switcher__badge {
+    color: var(--wa-accent-text);
 }
 .super-admin-view-switcher__header {
     padding: 0.5rem 0.75rem;
@@ -2374,7 +2420,9 @@ html.dark .workspace-sidebar-group-label {
     .workspace-shell-body {
         flex-direction: row;
         align-items: stretch;
-        overflow: hidden;
+        /* Only the main workspace and rail destinations scroll. Hidden still
+           permits focus/scrollIntoView to shift this entire chrome ancestor. */
+        overflow: clip;
     }
     .workspace-shell-main {
         flex: 1 1 auto;
@@ -3430,7 +3478,7 @@ html.dark .workspace-sidebar-group-label {
     flex-wrap: wrap;
 }
 .blog-cta-buttons .btn-accent {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
 }
 .blog-cta-buttons .btn.btn-secondary,
@@ -3548,7 +3596,7 @@ html.dark .blog-filter-chip[data-active="true"] {
     padding: 2.5rem clamp(1rem, 4vw, 2rem);
     border-radius: 16px;
     text-align: center;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: #fff;
 }
 .blog-listing-bottom-cta h3 {
@@ -6139,7 +6187,7 @@ html.dark .admin-members-search-input {
     border-radius: 999px;
     font-size: 0.8125rem;
     font-weight: 800;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: #fff;
 }
 
@@ -6639,7 +6687,7 @@ td.admin-members-col-select {
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
     font-weight: 700;
     font-size: 1.125rem;
@@ -6745,7 +6793,7 @@ td.admin-members-col-select {
     top: -0.75rem;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
     font-size: 0.8125rem;
     font-weight: 600;
@@ -7277,7 +7325,8 @@ td.admin-members-col-select {
     top: 0.75rem;
     z-index: 10000;
     padding: 0.5rem 1rem;
-    background: var(--color-primary);
+    /* Solid accent fill: crimson in both modes under white (dark --color-primary is the text-safe rose). */
+    background: var(--wa-accent-fill, var(--color-primary));
     color: var(--color-white);
     font-weight: 600;
     font-size: 0.9375rem;
@@ -9219,7 +9268,7 @@ a.employer-jobs-board__pagination-link.btn-outline:hover {
 .portal-resources-cta-primary {
     display: inline-block;
     padding: 0.75rem 1.25rem;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: white;
     border-radius: 6px;
     text-decoration: none;
@@ -9630,7 +9679,7 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
 }
 /* Active = solid crimson fill + white (matches admin-full mockup) */
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active {
-  background: var(--wa-accent, #ad2c4d) !important;
+  background: var(--wa-accent-fill, #ad2c4d) !important;
   color: var(--wa-on-accent-control) !important;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active .workspace-sidebar-icon,
@@ -9665,7 +9714,7 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
   font-size: 0.8125rem;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-nav-badge {
-  background: var(--wa-accent, #ad2c4d) !important;
+  background: var(--wa-accent-fill, #ad2c4d) !important;
   color: var(--wa-on-accent-control) !important;
   border: none !important;
   font-size: 0.8125rem;
@@ -9673,11 +9722,13 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
 }
-/* On an active (accent) row the badge inverts: solid on-accent pill, accent text.
-   The old translucent white read 2.41:1 on the dark-mode accent. */
+/* On an active (accent) row the badge inverts: solid on-accent pill, crimson text.
+   The old translucent white read 2.41:1 on the dark-mode accent. The text is the
+   fill token, not --wa-accent: the dark text accent is a dusty rose that reads
+   2.2:1 on the white pill, while the crimson fill hue holds 5.1:1 (6.5:1 light). */
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active .workspace-nav-badge {
   background: var(--wa-on-accent-control) !important;
-  color: var(--wa-accent, #ad2c4d) !important;
+  color: var(--wa-accent-fill, #ad2c4d) !important;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-toolbar,
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-inner {
@@ -9706,7 +9757,7 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: var(--wa-accent, #ad2c4d);
+  background: var(--wa-accent-fill, #ad2c4d);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -9919,11 +9970,21 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
     opacity: 1;
 }
 .workspace-shell-root[data-workspace-role] .workspace-sidebar-link {
-    min-height: 2.75rem;
+    min-height: 3rem;
     font-size: 1rem;
     font-weight: 500;
     gap: 0.625rem;
     transition: background-color var(--wa-dur-fast) var(--wa-ease), color var(--wa-dur-fast) var(--wa-ease);
+}
+.workspace-shell-root[data-workspace-role] .workspace-sidebar-list {
+    gap: 0.375rem;
+}
+.workspace-shell-root[data-workspace-role] .workspace-sidebar-link.active {
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 var(--wa-on-accent-control);
+}
+.workspace-shell-root[data-workspace-role] .workspace-sidebar-link.active::after {
+    display: none;
 }
 .workspace-shell-root[data-workspace-role] .workspace-sidebar-group {
     margin-bottom: 0.5rem !important;
@@ -9995,9 +10056,16 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
     box-shadow: none;
     transform: none;
 }
+:is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__link:focus-visible {
+    /* The reset above (box-shadow: none) out-specifies the global
+       a:focus-visible ring, which left keyboard users with no indicator. */
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: var(--wa-focus-ring);
+}
 :is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__link--active {
     color: var(--wa-on-accent-control);
-    background: var(--wa-accent);
+    background: var(--wa-accent-fill);
 }
 :is(.workspace-shell-root[data-workspace-role], .wa-dev-partner-nav) .marketing-bottom-nav__label {
     color: inherit;

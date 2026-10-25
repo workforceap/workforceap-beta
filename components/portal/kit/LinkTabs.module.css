@@ -1,0 +1,34 @@
+.nav {
+  /* Leave the existing focus ring inside the horizontal clipping boundary. */
+  position: relative;
+  padding: 4px;
+  scroll-padding-inline: 4px;
+}
+
+.nav[data-scrollable='true']:not([data-scroll-end='true'])::after {
+  content: '';
+  position: sticky;
+  right: 0;
+  flex: 0 0 1.5rem;
+  width: 1.5rem;
+  margin-left: -1.5rem;
+  align-self: stretch;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, var(--wa-bg));
+}
+
+.nav[data-scrollable='true']:not([data-scroll-start='true'])::before {
+  content: '';
+  position: sticky;
+  left: 0;
+  flex: 0 0 1.5rem;
+  width: 1.5rem;
+  margin-right: -1.5rem;
+  align-self: stretch;
+  pointer-events: none;
+  background: linear-gradient(to left, transparent, var(--wa-bg));
+}
+
+.nav :global(.wa-kit-tab) {
+  margin-bottom: 0;
+}

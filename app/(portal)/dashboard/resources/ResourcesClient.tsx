@@ -109,7 +109,7 @@ export default function ResourcesClient({ resources }: { resources: Resource[] }
                         gap: '0.375rem',
                         minHeight: 40,
                         padding: '0.5rem 1.125rem',
-                        background: 'var(--wa-accent)',
+                        background: 'var(--wa-accent-fill)',
                         color: 'var(--wa-on-accent-control)',
                         borderRadius: 999,
                         fontSize: '0.875rem',

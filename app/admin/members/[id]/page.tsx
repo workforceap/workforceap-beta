@@ -21,6 +21,7 @@ import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import { buildMemberProgramOptions } from '@/lib/admin/assignableProgramOptions';
 import { isMemberWioaVerified } from '@/lib/platform/trainingEnrollmentGate';
 import AdminMemberResumeSection from '@/components/admin/AdminMemberResumeSection';
+import PortalBackLink from '@/components/portal/PortalBackLink';
 // Use the client-safe questions file — the "Full Q&A" details list only
 // renders question text + recorded answer, no correctness check.
 import AssessmentAnswersReadonly from '@/components/admin/AssessmentAnswersReadonly';
@@ -796,7 +797,7 @@ export default async function AdminMemberDetailPage({
               Readiness
             </Link>
             <Link href={`/admin/members/${id}/billing`} className={`btn btn-outline ${styles.headerAction} ${styles.headerActionWide}`}>J5 / J6 billing</Link>
-            <Link href="/admin/members" className={`btn btn-outline ${styles.headerAction} ${styles.headerActionWide}`}>Back to Members</Link>
+            <PortalBackLink fallbackHref="/admin/members" fallbackLabel="Back to Members" className={`btn btn-outline ${styles.headerAction} ${styles.headerActionWide}`} />
           </div>
         }
       />

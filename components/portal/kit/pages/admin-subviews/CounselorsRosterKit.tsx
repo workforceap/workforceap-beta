@@ -223,8 +223,7 @@ export function CounselorsRosterKit({
     <DesignSurface surface="dense" className="wa-p-6">
       <PageOpener className="wa-mb-5"
         title="Counselors"
-        kicker="People"
-        lede="Staff caseload & performance"
+        meta="Caseload, at-risk members and response time for each counselor."
       />
 
       <div className="wa-mb-5">

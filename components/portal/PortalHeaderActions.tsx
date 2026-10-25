@@ -17,6 +17,7 @@ export default function PortalHeaderActions({
   knownIsAdmin,
   helpTourKey,
   helpGuideHref,
+  previewMode = false,
 }: {
   badges?: Partial<Record<NavBadgeKey, number>>;
   hidePublicSite?: boolean;
@@ -27,12 +28,14 @@ export default function PortalHeaderActions({
   helpTourKey?: TourKey | null;
   /** Optional guide page linked from the Help menu. */
   helpGuideHref?: string;
+  /** Synthetic fixture chrome has no live notification or sign-out session. */
+  previewMode?: boolean;
 }) {
   return (
     <div className="portal-shell-header__actions">
       {/* Help sits beside the bell so the tour can be reopened at every breakpoint. */}
-      {helpTourKey ? <PortalHelpMenu tourKey={helpTourKey} guideHref={helpGuideHref} /> : null}
-      <NotificationBell badges={badges} readOnlyAudit={readOnlyAudit} />
+      {helpTourKey ? <PortalHelpMenu tourKey={helpTourKey} guideHref={helpGuideHref} previewMode={previewMode} /> : null}
+      {!previewMode ? <NotificationBell badges={badges} readOnlyAudit={readOnlyAudit} /> : null}
       {/* One bell at every breakpoint; only the other actions are hidden. */}
       <div className="portal-shell-header__actions portal-header-actions-desktop">
         <DevViewToggle knownIsAdmin={knownIsAdmin} />
@@ -41,7 +44,7 @@ export default function PortalHeaderActions({
             {PRODUCT_COPY.publicSiteLabel}
           </Link>
         ) : null}
-        <SignOutButton className="wa-shell-text-action wa-kit-focus" />
+        {!previewMode ? <SignOutButton className="wa-shell-text-action wa-kit-focus" /> : null}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import {
   TriangleAlert,
   MailWarning,
@@ -40,8 +41,9 @@ import { CounselorApprovalQueue } from './CounselorApprovalQueue';
  *      this counselor, oldest first with an age clock
  *      (`CounselorApprovalQueue`, lib/counselor/approvalQueue.ts).
  *   4. One section per group (`TODAY_GROUP_ORDER`), each with its rows as
- *      severity-coded QueueRows and its own empty state. On-track members
- *      are never listed — the queue must not list everyone.
+ *      severity-coded QueueRows and its own empty state. Empty groups keep
+ *      their title/count/message without repeating rule explanations; metrics
+ *      use two columns on phones. On-track members are never listed.
  *
  * Pure and serializable: every string is computed from the queue so a render
  * test can drive it with the shared fixture roster.
@@ -55,6 +57,11 @@ import { CounselorApprovalQueue } from './CounselorApprovalQueue';
  */
 
 export interface CounselorTodayKitProps {
+  /** The shared Today workspace supplies the page heading and gutter. */
+  embedded?: boolean;
+  /** Decisions can live in their own workspace view while the count stays visible. */
+  showApprovals?: boolean;
+  approvalSummaryHref?: string;
   queue: TodayQueue;
   /** True when the attention queue could not be loaded; the page then shows only the failed-load card. */
   loadError?: boolean;
@@ -119,7 +126,7 @@ function TodayTile({
 }: {
   id: string;
   label: string;
-  value: number;
+  value: number | string;
   caption: string;
   tone?: KitTone;
 }) {
@@ -154,9 +161,9 @@ function TodayRowItem({ row, memberHrefBase }: { row: TodayRow; memberHrefBase: 
                 Open thread
               </Link>
             ) : null}
-            <Link href={memberHref} className="wa-kit-cta wa-kit-cta--ghost" aria-label={`View member ${row.memberName}`}>
+            <PortalRecordLink href={memberHref} className="wa-kit-cta wa-kit-cta--ghost" aria-label={`View member ${row.memberName}`}>
               View member
-            </Link>
+            </PortalRecordLink>
           </div>
         }
       />
@@ -185,7 +192,7 @@ function TodayGroupSection({ group, memberHrefBase }: { group: TodayGroup; membe
         </h2>
         <StatusTag tone={countTone}>{plural(count, 'member')}</StatusTag>
       </div>
-      <p className="wa-kit-meta" style={{ margin: 0, color: 'var(--wa-muted)' }}>{group.description}</p>
+      {count > 0 ? <p className="wa-kit-meta" style={{ margin: 0, color: 'var(--wa-muted)' }}>{group.description}</p> : null}
       {count === 0 ? (
         <KitEmptyState title={group.emptyTitle} headingAs="h3" />
       ) : (
@@ -200,6 +207,9 @@ function TodayGroupSection({ group, memberHrefBase }: { group: TodayGroup; membe
 }
 
 export function CounselorTodayKit({
+  embedded = false,
+  showApprovals = true,
+  approvalSummaryHref,
   queue,
   loadError = false,
   approvals = null,
@@ -210,7 +220,7 @@ export function CounselorTodayKit({
 }: CounselorTodayKitProps) {
   const { totals } = queue;
   const approvalQueue = approvals ?? emptyApprovalQueue();
-  const awaiting = approvalsLoadError ? 0 : approvalQueue.rows.length;
+  const awaiting = approvalsLoadError ? '—' : approvalQueue.rows.length;
   const awaitingTone: KitTone | undefined = approvalQueue.totals.overDoubleSla > 0
     ? 'alert'
     : approvalQueue.totals.overSla > 0
@@ -224,8 +234,8 @@ export function CounselorTodayKit({
 
   return (
     <DesignSurface surface="dense">
-      <div style={{ padding: 'clamp(1rem, 4vw, 1.5rem)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        <PageOpener
+      <div style={{ padding: embedded ? 0 : 'clamp(1rem, 4vw, 1.5rem)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {!embedded ? <PageOpener
           kicker="Counselor"
           title="Today"
           lede={lede}
@@ -234,7 +244,13 @@ export function CounselorTodayKit({
               All members
             </Link>
           }
-        />
+        /> : null}
+
+        {approvalSummaryHref ? (
+          <Link href={approvalSummaryHref} className="wa-page-action">
+            {approvalsLoadError ? 'Review decisions · approval count unavailable' : `Review decisions · ${approvalQueue.rows.length} waiting on you`}
+          </Link>
+        ) : null}
 
         {loadError ? (
           <div className="wa-kit-card" data-portal-error-state="counselor-today-load-failed" role="alert" style={{ textAlign: 'center' }}>
@@ -252,7 +268,7 @@ export function CounselorTodayKit({
           </div>
         ) : (
           <>
-            <div className="wa-grid wa-grid-cols-1 sm:wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3" data-tour="tour-today-attention">
+            <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3" data-tour="tour-today-attention">
               <TodayTile
                 id="flagged"
                 label="Needs attention"
@@ -281,12 +297,12 @@ export function CounselorTodayKit({
               <TodayTile id="on-track" label="On track" value={totals.onTrack} caption="No flags today" tone="ok" />
             </div>
 
-            <CounselorApprovalQueue
+            {showApprovals ? <CounselorApprovalQueue
               queue={approvalQueue}
               loadError={approvalsLoadError}
               memberHrefBase={memberHrefBase}
               retryHref={retryHref}
-            />
+            /> : null}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} data-tour="tour-today-queue">
               {queue.groups.map((group) => (

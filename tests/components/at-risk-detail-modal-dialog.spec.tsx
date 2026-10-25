@@ -119,3 +119,67 @@ describe('AtRiskDetailModal on the kit dialog primitive', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 });
+
+describe('AtRiskDetailModal activity and notes loading', () => {
+  const json = (body: unknown, status = 200) => ({ ok: status < 400, status, json: async () => body });
+  const route = (handlers: { timeline: () => unknown; notes: () => unknown }) => {
+    fetchMock.mockImplementation((async (url: string) => {
+      const result = String(url).includes('activity-timeline') ? handlers.timeline() : handlers.notes();
+      if (result instanceof Error) throw result;
+      return result;
+    }) as never);
+  };
+
+  it('says nothing is recorded only after a successful, empty answer', async () => {
+    route({ timeline: () => json({ events: [] }), notes: () => json([]) });
+    render(<AtRiskDetailModal member={member} onClose={vi.fn()} onStatusChange={vi.fn()} />);
+    expect(await screen.findByText('No recent activity recorded.')).toBeInTheDocument();
+    expect(await screen.findByText('No notes yet.')).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('shows an honest error with a retry when both requests fail, never the empty copy', async () => {
+    route({ timeline: () => json({ error: 'boom' }, 500), notes: () => new TypeError('Failed to fetch') });
+    render(<AtRiskDetailModal member={member} onClose={vi.fn()} onStatusChange={vi.fn()} />);
+    const timelineAlert = await screen.findByTestId('at-risk-timeline-error');
+    const notesAlert = await screen.findByTestId('at-risk-notes-error');
+    expect(timelineAlert).toHaveAttribute('role', 'alert');
+    expect(timelineAlert).toHaveTextContent('Couldn’t load recent activity.');
+    expect(timelineAlert).toHaveTextContent('temporarily unavailable');
+    expect(notesAlert).toHaveTextContent('Couldn’t load notes.');
+    expect(notesAlert).toHaveTextContent('could not reach WorkforceAP');
+    expect(screen.queryByText('No recent activity recorded.')).toBeNull();
+    expect(screen.queryByText('No notes yet.')).toBeNull();
+    expect(screen.getAllByRole('button', { name: 'Try again' })).toHaveLength(2);
+  });
+
+  it('retries only the failed section and swaps the error for the loaded rows', async () => {
+    let notesCalls = 0;
+    route({
+      timeline: () => json({ events: [{ id: 'e1', eventName: 'lesson_completed', sourcePage: '/learn', metadata: null, createdAt: '2026-10-01T15:00:00.000Z' }] }),
+      notes: () => (++notesCalls === 1
+        ? json({ error: 'nope' }, 500)
+        : json([{ id: 'n1', content: 'Left a voicemail', createdAt: '2026-10-02T15:00:00.000Z', author: { fullName: 'Casey Counselor', email: 'casey@example.com' } }])),
+    });
+    render(<AtRiskDetailModal member={member} onClose={vi.fn()} onStatusChange={vi.fn()} />);
+    expect(await screen.findByText('lesson_completed')).toBeInTheDocument();
+    expect(screen.queryByTestId('at-risk-timeline-error')).toBeNull();
+    fireEvent.click(await screen.findByRole('button', { name: 'Try again' }));
+    // The real route returns a bare array of rows with an author object.
+    expect(await screen.findByText('Left a voicemail')).toBeInTheDocument();
+    expect(screen.getByText(/Casey Counselor · Oct 2, 2026/)).toBeInTheDocument();
+    expect(screen.queryByTestId('at-risk-notes-error')).toBeNull();
+    expect(notesCalls).toBe(2);
+  });
+
+  it('adds a saved note from the created-row response', async () => {
+    route({ timeline: () => json({ events: [] }), notes: () => json([]) });
+    render(<AtRiskDetailModal member={member} onClose={vi.fn()} onStatusChange={vi.fn()} />);
+    await screen.findByText('No notes yet.');
+    fetchMock.mockImplementationOnce((async () => json({ id: 'n2', content: 'Called back', createdAt: '2026-10-03T15:00:00.000Z', author: { fullName: null, email: 'casey@example.com' }, canDelete: true }, 201)) as never);
+    fireEvent.change(screen.getByPlaceholderText('Add a note…'), { target: { value: 'Called back' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    expect(await screen.findByText('Called back')).toBeInTheDocument();
+    expect(screen.getByText(/casey@example.com · Oct 3, 2026/)).toBeInTheDocument();
+  });
+});

@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
-import { GraduationCap } from 'lucide-react';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
@@ -25,6 +24,7 @@ import StaffViewBanner from '@/components/portal/StaffViewBanner';
 import CourseraProgressCoverageNotice from '@/components/portal/CourseraProgressCoverageNotice';
 import { formatDate } from '@/lib/i18n/date';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
+import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
 import { MemberProgramKit } from '@/components/portal/kit/pages/member/MemberProgramKit';
 import { describeCourseDenominator } from '@/lib/coursera/progressTileSummary';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
@@ -127,11 +127,10 @@ export default async function ProgramPage({
           {catalogResult.loadFailed ? <span hidden data-portal-error-state="member-program-catalog-load" /> : null}
           {staffViewer && <StaffViewBanner page="program" />}
           <PageOpener
-            kicker="Program"
             title="Choose your program"
-            lede="Funding covers one program at a time. Your counselor can help you switch later."
-            icon={<GraduationCap size={13} aria-hidden="true" />}
+            meta="Funding covers one program at a time. Your counselor can help you switch later."
           />
+          <MemberTrainingNav current="program" />
           <ProgramPicker programs={pickerPrograms.length ? pickerPrograms : []} />
         </div>
       </DesignSurface>
@@ -266,6 +265,7 @@ export default async function ProgramPage({
       ) : null}
       <CourseraProgressCoverageNotice coverage={trainingView?.providerCoverage} />
       <MemberProgramKit
+        programSlug={enrolledSlug}
         trainingWorkspace={workspaceResult.workspace ? {
           workspace: workspaceResult.workspace,
           programTitle: program.title,

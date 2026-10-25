@@ -75,7 +75,7 @@ export const MEMBER_PORTAL_NAV_ITEMS_I18N: PortalNavItem[] = [
     aliases: ['/dashboard/ai-tools/application-tracker', '/applications'],
     badgeKey: 'applications_new',
   },
-  { href: '/dashboard/resume', label: 'nav:resume', group: 'workflows', tab: 'jobs', Icon: FileText },
+  { href: '/dashboard/resume', label: 'nav:resume', group: 'workflows', tab: 'jobs', Icon: FileText, aliases: ['/dashboard/ai-tools/resume-studio', '/dashboard/ai-tools/resume-analysis', '/dashboard/ai-tools/resume-rewriter', '/dashboard/ai-tools/resume-coach'] },
   {
     href: '/dashboard/learning',
     label: 'nav:learningHub',

@@ -37,7 +37,7 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/admin/members',
   useSearchParams: () => new URLSearchParams(),
 }));
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/app/(portal)/dashboard/_actions/analyticsActions', () => ({
   logCourseraLaunchFromPortal: vi.fn().mockResolvedValue(undefined),
 }));
@@ -145,7 +145,8 @@ describe('M3 member /dashboard/program: "Continue this course" is the kit CTA', 
 
     const decls = blockDeclarations(readCss('css/portal-kit.css'), '.wa-kit-cta');
     expect(decls.get('color')).toBe('var(--wa-on-accent-control)');
-    expect(decls.get('background')).toBe('var(--wa-accent)');
+    // Solid CTAs paint --wa-accent-fill (crimson in both modes); --wa-accent is the text accent.
+    expect(decls.get('background')).toBe('var(--wa-accent-fill)');
     expect(Number.parseFloat(decls.get('min-height') ?? '0')).toBeGreaterThanOrEqual(40);
 
     const tokens = portalTokens();
@@ -327,22 +328,27 @@ describe('M7 employer match percentages read the -dark text tokens', () => {
 describe('M8 employer voice card: "Start voice session" fill / label pair', () => {
   const start = () => screen.getByRole('button', { name: 'Start voice session' });
 
-  it('the employer accent props paint --wa-info-dark under --wa-on-accent-control: AA in both modes', () => {
+  it('the employer accent props paint the mode-constant --wa-hero-info under --wa-on-hero: AA in both modes', () => {
     render(<PortalVoiceSession sessionEndpoint="/api/employer/voice-session" title="Employer assistant" description="Ask about postings." {...employerVoiceSessionAccent} />);
     const btn = start();
-    expect(btn.style.background).toBe('var(--wa-info-dark)');
-    expect(btn.style.color).toBe('var(--wa-on-accent-control)');
+    expect(btn.style.background).toBe('var(--wa-hero-info)');
+    expect(btn.style.color).toBe('var(--wa-on-hero)');
     const tokens = portalTokens();
     for (const scheme of SCHEMES) {
       expect(contrast(colorOf(btn.style.color, tokens, scheme), colorOf(btn.style.background, tokens, scheme)), `${scheme} start label`).toBeGreaterThanOrEqual(AA);
     }
     // The defect: the panel's white label on --wa-info, which lightens to #77ade6 in dark.
     expect(contrast(colorOf('var(--wa-sidebar-text)', tokens, 'dark'), colorOf('var(--wa-info)', tokens, 'dark'))).toBeLessThan(AA);
+    // The adaptive pair this replaces (--wa-info-dark under the now-constant white
+    // --wa-on-accent-control) fails in dark, where --wa-info-dark lightens to #74b3e3.
+    expect(contrast(colorOf('var(--wa-on-accent-control)', tokens, 'dark'), colorOf('var(--wa-info-dark)', tokens, 'dark'))).toBeLessThan(AA);
     // Both CTA tokens are brand tokens (css/wa-brand-tokens.css :root), so any route that
     // mounts the panel with this pair resolves them without the portal token layer.
     const brand = loadRootTokens(readCss('css/wa-brand-tokens.css'));
-    expect(brand.has('--wa-info-dark')).toBe(true);
-    expect(brand.has('--wa-on-accent-control')).toBe(true);
+    expect(brand.has('--wa-hero-info')).toBe(true);
+    expect(brand.has('--wa-on-hero')).toBe(true);
+    // Mode-constant: the same hex in both schemes.
+    expect(colorOf('var(--wa-hero-info)', tokens, 'light')).toEqual(colorOf('var(--wa-hero-info)', tokens, 'dark'));
   });
 
   it('the default crimson panel (public /wioa-qualification mount) is unchanged and still AA', () => {

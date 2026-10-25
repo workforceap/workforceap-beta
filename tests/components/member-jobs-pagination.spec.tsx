@@ -1,5 +1,6 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
+import { renderToString } from 'react-dom/server';
 import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GucContext } from '@/lib/db/gucContext';
@@ -199,6 +200,78 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe('WAP-272 jobs pagination through the actual route and member page', () => {
+  it.each(['en', 'es'])('opens canonical member search from Browse while preserving the %s URL locale', async (locale) => {
+    member(30);
+    state.jobs = [job(1)];
+    const overview = await runWithGucContext(state.context, () => JobsPage({ searchParams: Promise.resolve({}) }));
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(<NextIntlClientProvider locale={locale} messages={en}>{overview}</NextIntlClientProvider>);
+    const browse = container.querySelector<HTMLAnchorElement>('a[href="?view=openings"]');
+    expect(browse).not.toBeNull();
+    const destination = new URL(browse!.getAttribute('href')!, `http://localhost/${locale}/dashboard/jobs`);
+    expect(destination.pathname).toBe(`/${locale}/dashboard/jobs`);
+    expect(destination.search).toBe('?view=openings');
+    const searchPage = await runWithGucContext(state.context, () => JobsPage({ searchParams: Promise.resolve(Object.fromEntries(destination.searchParams)) }));
+    container.innerHTML = renderToString(<NextIntlClientProvider locale={locale} messages={en}>{searchPage}</NextIntlClientProvider>);
+    expect(container.querySelector('input[type="search"]')).not.toBeNull();
+    expect(within(container).getByRole('button', { name: 'Save job' })).toHaveAttribute('type', 'button');
+    expect(container.querySelector('a[href="?view=overview#applications"]')).not.toBeNull();
+    expect(container.querySelector('[href*="ui=legacy"]')).toBeNull();
+  });
+
+  it('keeps unknown member views on the application overview', async () => {
+    member(30);
+    await showPage({ view: 'unrecognized' });
+    expect(screen.getByRole('region', { name: 'Applications' })).toBeInTheDocument();
+    expect(screen.queryByRole('searchbox')).toBeNull();
+  });
+
+  it.each([false, true])('labels a partial unfiltered inventory honestly and only offers member pagination (member: %s)', async (authenticated) => {
+    if (authenticated) member(30);
+    const ui = await runWithGucContext(state.context, () => JobsPage({ searchParams: Promise.resolve({ view: 'openings' }) }));
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(<NextIntlClientProvider locale="en" messages={en}>{ui}</NextIntlClientProvider>);
+    expect(within(container).getByText('Showing 20 of 130 openings')).toBeTruthy();
+    expect(within(container).queryByText('20 jobs found')).toBeNull();
+    const more = within(container).queryByRole('link', { name: 'See all 130 openings' });
+    if (authenticated) {
+      expect(more).toHaveAttribute('href', '?view=all#open-roles');
+      expect(new URL(more!.getAttribute('href')!, 'http://localhost/es/dashboard/jobs?view=openings').pathname).toBe('/es/dashboard/jobs');
+    } else expect(more).toBeNull();
+  });
+
+  it.each([1, 20])('does not advertise a larger inventory or pagination for %i complete openings', async (count) => {
+    member(30);
+    state.jobs = state.jobs.slice(0, count);
+    const ui = await runWithGucContext(state.context, () => JobsPage({ searchParams: Promise.resolve({ view: 'openings' }) }));
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(<NextIntlClientProvider locale="en" messages={en}>{ui}</NextIntlClientProvider>);
+    expect(within(container).getByText(`${count} ${count === 1 ? 'job' : 'jobs'} found`)).toBeTruthy();
+    expect(within(container).queryByRole('link', { name: /See all/ })).toBeNull();
+  });
+
+  it('keeps canonical search subject to the same under-14 exploration boundary', async () => {
+    member(12);
+    const ui = await runWithGucContext(state.context, () => JobsPage({ searchParams: Promise.resolve({ view: 'openings' }) }));
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(<NextIntlClientProvider locale="en" messages={en}>{ui}</NextIntlClientProvider>);
+    expect(within(container).getByText('careerExplorationYoung')).toBeTruthy();
+    expect(within(container).queryByRole('searchbox')).toBeNull();
+    expect(within(container).queryByRole('button', { name: 'Save job' })).toBeNull();
+  });
+
+  it.each([false, true])('puts searchable openings before supplementary boards for the legacy route (member: %s)', async (authenticated) => {
+    if (authenticated) member(30);
+    state.jobs = [job(1)];
+    const ui = await runWithGucContext(state.context, () => JobsPage({ searchParams: Promise.resolve({ ui: 'legacy' }) }));
+    const container = document.createElement('div');
+    container.innerHTML = renderToString(<NextIntlClientProvider locale="en" messages={en}>{ui}</NextIntlClientProvider>);
+    const search = container.querySelector('input[type="search"]')!;
+    const supplementary = within(container).getByText('searchBeyondBoard');
+    expect(search.compareDocumentPosition(supplementary)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(within(container).getByRole('link', { name: /Support role 1/ })).toHaveAttribute('href', authenticated ? '/dashboard/jobs/job-00001' : '/login?redirectTo=%2Fdashboard%2Fjobs%2Fjob-00001');
+  });
+
   it('returns distinct first and second API pages with the exact 130-job total', async () => {
     state.jobs.reverse(); // Equal timestamps must use a unique tie-breaker, not database arrival order.
     const first = await request('?page=1&pageSize=100');
@@ -353,7 +426,7 @@ describe('WAP-272 jobs pagination through the actual route and member page', () 
     expect(section.queryByText('Support role 131')).toBeNull();
     expect(section.queryByText(/fixture/)).toBeNull();
     expect(section.queryByRole('link', { name: 'Next page' })).toBeNull();
-    expect(screen.getByRole('link', { name: 'Browse openings' })).toHaveAttribute('href', '#open-roles');
+    for (const link of screen.getAllByRole('link', { name: 'Browse openings' })) expect(link).toHaveAttribute('href', '?view=openings');
   });
 
   it('shows the existing unavailable state without counts or pagination when server inspection exceeds its bound', async () => {

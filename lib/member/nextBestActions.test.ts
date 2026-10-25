@@ -75,7 +75,7 @@ describe('buildNextBestActions', () => {
     expect(actions.some((a) => a.id === 'career_readiness')).toBe(true);
   });
 
-  test('routes missing resume to resume rewriter', () => {
+  test('routes a missing resume to the consultation-safe resume workspace', () => {
     const actions = buildNextBestActions({
       state: 'D',
       noApplicationOnFile: false,
@@ -92,7 +92,8 @@ describe('buildNextBestActions', () => {
     });
 
     const resumeAction = actions.find((a) => a.id === 'upload_resume');
-    expect(resumeAction?.href).toBe('/dashboard/ai-tools/resume-studio?view=rewrite');
+    expect(resumeAction?.href).toBe('/dashboard/resume');
+    expect(resumeAction?.title).toBe('Review your résumé for your consultation');
   });
 
   test('prioritizes starter profile review for counselor-created members', () => {

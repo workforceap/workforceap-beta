@@ -1,5 +1,3 @@
-'use client';
-
 import type { ReactNode } from 'react';
 import { Card } from '@astryxdesign/core/Card';
 import { Badge } from '@astryxdesign/core/Badge';
@@ -24,33 +22,15 @@ export function WorkQueueItem({ icon, title, detail, action, urgent = false }: W
       <HStack
         gap={3}
         align="center"
-        style={{
-          background: urgent ? 'var(--wa-accent-soft)' : 'var(--wa-surface)',
-          borderRadius: 12,
-          padding: '10px 12px',
-        }}
+        className={urgent ? 'wa-kit-work-item wa-kit-work-item--urgent' : 'wa-kit-work-item'}
       >
-        <div
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 10,
-            flexShrink: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'var(--wa-on-accent)',
-            background: urgent ? 'var(--wa-accent)' : 'var(--wa-info)',
-          }}
-        >
-          {icon}
-        </div>
+        <div className="wa-kit-work-item__icon">{icon}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <HStack gap={2} align="center">
-            <div style={{ fontWeight: 700, fontSize: 14 }}>{title}</div>
+            <div className="wa-kit-work-item__title">{title}</div>
             {urgent ? <Badge label="Urgent" variant="error" /> : null}
           </HStack>
-          {detail ? <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 2 }}>{detail}</div> : null}
+          {detail ? <div className="wa-kit-work-item__detail">{detail}</div> : null}
         </div>
         {action}
       </HStack>

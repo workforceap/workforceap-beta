@@ -17,6 +17,7 @@ import {
   mapPipelineRows,
   mapPointsLedger,
   pointsLedgerColor,
+  buildMemberHandoffEvidence,
 } from './loadMemberDashboardHome';
 
 import { getProgramBySlug } from '@/lib/content/programs';
@@ -25,6 +26,27 @@ import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 const FIXTURE_PROGRAM_SLUG = 'it-support-professional-certificate-ibm';
+
+test('Home handoff distinguishes a portal résumé from disconnected email, booking and activation evidence', () => {
+  assert.deepEqual(buildMemberHandoffEvidence(), { resume: 'unknown', consultation: 'unknown', training: 'unknown' });
+  for (const profile of [{ resumeOriginalPath: 'private/resume.pdf' }, { resumeEnhancedPath: 'private/enhanced.pdf' }]) {
+    assert.deepEqual(buildMemberHandoffEvidence(profile), { resume: 'portal_received', consultation: 'unknown', training: 'unknown' });
+  }
+});
+
+test('Home enrollment, approval and member-editable progress never masquerade as confirmed training access or a booked consultation', async () => {
+  const db = mockDb({ row: makeRow({
+    profile: { resumeOriginalPath: 'private/resume.pdf' },
+    enrolledProgram: FIXTURE_PROGRAM_SLUG,
+    enrolledAt: new Date(),
+    courseraEnrollmentApproved: true,
+    assessmentCompleted: true,
+    courseProgress: [{ programSlug: FIXTURE_PROGRAM_SLUG, courseSlug: 'intro', courseId: null, percentComplete: 100, status: 'COMPLETED' }],
+  }) });
+  const view = await loadMemberDashboardHome({ userId: 'fixture' }, db.db);
+  assert.deepEqual(view.handoff, { resume: 'portal_received', consultation: 'unknown', training: 'unknown' });
+  assert.equal(db.counts().findUniqueCalls, 1, 'handoff uses the existing bounded member read');
+});
 
 /** Module names in program order for the fixture program (what /dashboard/program lists). */
 function fixtureModuleNames(): string[] {

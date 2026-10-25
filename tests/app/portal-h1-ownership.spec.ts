@@ -68,7 +68,6 @@ const RAW_H1_ALLOWLIST = new Set(['app/admin/blog/preview/[slug]/page.tsx', 'app
  * these should collapse to one `PageOpener`/`PageHeader` outside the split.
  */
 const LEGACY_SR_ONLY_H1 = new Set([
-  'app/(portal)/counselor/overview/page.tsx',
   'app/(portal)/dashboard/certifications/page.tsx',
   'app/(portal)/dashboard/learning/page.tsx',
   'app/(portal)/dashboard/profile/page.tsx',
@@ -100,6 +99,27 @@ describe('portal route h1 ownership', () => {
     const hidden = source.match(/<h1 className="wa-sr-only"/g)?.length ?? 0;
     expect(total).toBeGreaterThan(0);
     expect(hidden).toBe(total);
+  });
+
+  it('counselor overview delegates its h1 to the shared workspace in both layouts', () => {
+    const routePath = 'app/(portal)/counselor/overview/page.tsx';
+    const route = read(routePath);
+    const workspace = read('components/portal/counselor/CounselorWorkspace.tsx');
+    const overview = read('components/portal/counselor/workspace/CounselorOverviewView.tsx');
+    const kit = read('components/portal/kit/pages/counselor/CounselorHomeKit.tsx');
+
+    // The compatibility route now shares Today's page heading. Its extracted
+    // default kit and legacy mobile/desktop split must not add another h1.
+    expect(reachesHeader(join(root, routePath))).toBe(true);
+    expect(route).toMatch(/CounselorOverviewView\(\{[^}]*embedded:\s*true/);
+    expect(route).toMatch(/<CounselorWorkspace\s+view="overview">/);
+    expect(workspace.match(/<PageOpener[\s>]/g) ?? []).toHaveLength(1);
+    expect(workspace).not.toMatch(RAW_H1);
+    expect(overview).not.toMatch(RAW_H1);
+    expect(overview).toMatch(/<CounselorHomeKit\b[^>]*\bembedded=\{embedded\}/);
+    expect(overview.match(/<PageHeader[\s>]/g) ?? []).toHaveLength(1);
+    expect(overview).toMatch(/<PageHeader\b[^>]*\btitleHeadingLevel=\{2\}/);
+    expect(kit).toMatch(/\{\s*!embedded\s*\?\s*<PageOpener\b/);
   });
 });
 

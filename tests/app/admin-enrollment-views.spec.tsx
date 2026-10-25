@@ -8,6 +8,10 @@ import { buildProgramHealthRows } from '@/lib/admin/commandCenterHelpers';
 
 const db = vi.hoisted(() => ({ member: vi.fn(), count: vi.fn(), programHealth: vi.fn() }));
 vi.mock('next/navigation', () => ({ redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); }, notFound: () => { throw new Error('NOT_FOUND'); } }));
+vi.mock('next-intl/server', () => ({
+  getTranslations: async (namespace: string) => (key: string) =>
+    namespace === 'common.disclosures' && key === 'whatIsCounted' ? 'What is counted' : key,
+}));
 vi.mock('next/link', () => ({ default: ({ children, href }: React.ComponentProps<'a'>) => <a href={href}>{children}</a> }));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: async () => ({}) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: async () => ({ id: 'admin-1' }), withAuthGuc: (fn: () => unknown) => fn() }));

@@ -1,6 +1,8 @@
+import { withPortalIntl } from '@/tests/helpers/withPortalIntl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import { emptyAttentionQueue } from '@/lib/attention/evaluate';
+import { prisma } from '@/lib/db/prisma';
 import en from '@/messages/en.json';
 
 /**
@@ -38,12 +40,14 @@ vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     counselor: { findFirst: vi.fn(async () => ({ id: 'counselor-1' })) },
     counselorAssignment: { count: vi.fn(async () => 7) },
+    user: { findUnique: vi.fn(async () => ({ fullName: 'Riley Park' })) },
   },
 }));
 vi.mock('@/lib/counselor/commandCenter', () => ({ getCounselorCommandCenter: loaders.commandCenter }));
 vi.mock('@/lib/attention/counselor', () => ({ getCounselorAttention: loaders.attention }));
 
 import CounselorOverviewPage from '@/app/(portal)/counselor/overview/page';
+import CounselorOverviewView from '@/components/portal/counselor/workspace/CounselorOverviewView';
 
 function attentionWith(riskAlerts: number, onTrack: number) {
   const queue = emptyAttentionQueue();
@@ -64,12 +68,11 @@ const center = {
 };
 
 async function renderPage() {
-  render(await CounselorOverviewPage({ searchParams: Promise.resolve({}) }));
+  render(withPortalIntl(await CounselorOverviewPage({ searchParams: Promise.resolve({}) })));
 }
 
 function tile(label: string) {
-  const labelNode = screen.getByText(label);
-  const tileNode = labelNode.closest('[data-testid="stat-spark-tile"]');
+  const tileNode = screen.getAllByText(label).map(node => node.closest('[data-testid="stat-spark-tile"]')).find(Boolean);
   if (!tileNode) throw new Error(`no tile for ${label}`);
   return tileNode as HTMLElement;
 }
@@ -179,5 +182,35 @@ describe('counselor Overview failed-load states offer a retry (WAP-206 follow-up
     expect(screen.getByText('Interview practice · last 7 days')).toBeInTheDocument();
     expect(screen.queryByText('Today / this week')).toBeNull();
     expect(screen.getByText('No member ran interview practice in the last 7 days.')).toBeInTheDocument();
+  });
+});
+
+describe('counselor Overview greeting name read', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    loaders.commandCenter.mockResolvedValue(center);
+    loaders.attention.mockResolvedValue(attentionWith(2, 3));
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ fullName: 'Riley Park' } as never);
+  });
+
+  it('reads the name next to the counselor row, scoped to the signed-in user', async () => {
+    let release!: (row: { fullName: string }) => void;
+    vi.mocked(prisma.user.findUnique).mockReturnValueOnce(new Promise((resolve) => { release = resolve; }) as never);
+    // Not embedded: the greeting is the page's own heading, so the name read is what the member-facing title needs.
+    const pending = CounselorOverviewView({ searchParams: Promise.resolve({}), embedded: false });
+    // The name read is still open while the counselor row read has already started: they overlap.
+    await vi.waitFor(() => expect(prisma.counselor.findFirst).toHaveBeenCalled());
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { id: 'counselor-user-1' }, select: { fullName: true } });
+    release({ fullName: 'Riley Park' });
+    render(withPortalIntl(await pending));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^Welcome back,/);
+  });
+
+  it('keeps the workspace title when the name read fails', async () => {
+    vi.mocked(prisma.user.findUnique).mockRejectedValueOnce(new Error('db down'));
+    render(withPortalIntl(await CounselorOverviewView({ searchParams: Promise.resolve({}), embedded: false })));
+    expect(screen.getByRole('heading', { level: 1 })).not.toHaveTextContent(/Welcome back/);
   });
 });

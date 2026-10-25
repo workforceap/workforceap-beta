@@ -1,6 +1,13 @@
 import { redirect } from 'next/navigation';
+import { resumeWorkspaceHref } from '@/lib/member/memberWorkspace';
 
-/** Resume & Experience Enhancer is now the coach view inside Resume Studio. Deep links keep working. */
-export default function ResumeCoachRedirect() {
-  redirect('/dashboard/ai-tools/resume-studio?view=coach');
+/** Legacy deep links retain their view and saved-result context. */
+export default async function ResumeToolRedirect({ searchParams }: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(await searchParams ?? {})) {
+    for (const item of Array.isArray(value) ? value : value === undefined ? [] : [value]) params.append(key, item);
+  }
+  redirect(resumeWorkspaceHref('coach', params));
 }

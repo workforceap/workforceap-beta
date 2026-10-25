@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AlertTriangle, Bell, Clock, Eye, MessageSquare } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -313,7 +314,7 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
                   padding: '6px 14px',
                   borderRadius: 999,
                   border: `1px solid ${active ? 'var(--wa-accent)' : 'var(--wa-border)'}`,
-                  background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
+                  background: active ? 'var(--wa-accent-fill)' : 'var(--wa-surface)',
                   color: active ? 'var(--wa-on-accent)' : 'var(--wa-text)',
                   cursor: 'pointer',
                 }}
@@ -361,9 +362,9 @@ export default function PartnerAttentionClient({ initialTier = 'high' as TierFil
                     meta={`${m.stageLabel} · ${m.programTitle} · member record updated ${m.staleDays}d ago`}
                     flag={m.riskTier.toUpperCase()}
                     action={
-                      <Link href={`/partner/referred-members/${m.memberId}`} className="portal-section-action">
+                      <PortalRecordLink href={`/partner/referred-members/${m.memberId}`} className="portal-section-action">
                         Review
-                      </Link>
+                      </PortalRecordLink>
                     }
                   />
                   <div style={{ paddingLeft: 50, fontSize: 13, color: 'var(--wa-text)' }}>

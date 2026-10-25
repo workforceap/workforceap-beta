@@ -21,6 +21,7 @@ vi.mock('@/lib/db/prisma', () => ({
     job: { count: vi.fn(), findMany: vi.fn() },
     jobPostingApplication: { count: vi.fn(), findMany: vi.fn() },
     aIJobMatch: { findMany: vi.fn() },
+    user: { findUnique: vi.fn() },
   },
 }));
 vi.mock('@/components/portal/PageHeader', () => ({ default: () => null }));
@@ -33,8 +34,11 @@ vi.mock('@/components/portal/VoiceAgentSurface', () => ({
 }));
 vi.mock('@/components/onboarding/PortalEntryClient', () => ({ default: () => null }));
 vi.mock('@/components/portal/kit/pages/employer/EmployerHomeKit', () => ({
-  EmployerHomeKit: ({ candidates }: { candidates: Array<{ id: string; appliedLabel?: string }> }) => (
-    <ul>{candidates.map((c) => <li key={c.id}>{c.appliedLabel ?? '—'}</li>)}</ul>
+  EmployerHomeKit: ({ candidates, firstName }: { candidates: Array<{ id: string; appliedLabel?: string }>; firstName?: string }) => (
+    <>
+      <p data-testid="first-name">{firstName ?? 'no-first-name'}</p>
+      <ul>{candidates.map((c) => <li key={c.id}>{c.appliedLabel ?? '—'}</li>)}</ul>
+    </>
   ),
 }));
 
@@ -63,11 +67,35 @@ describe('EmployerDashboardPage applied dates', () => {
       },
     ] as never);
     vi.mocked(prisma.aIJobMatch.findMany).mockResolvedValue([] as never);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ fullName: 'Jordan Lee' } as never);
   });
 
   it('labels the kit candidate row with the Central calendar day', async () => {
     const html = renderToStaticMarkup(await EmployerDashboardPage({ searchParams: Promise.resolve({}) }));
     expect(html).toContain('Sep 18, 2026');
     expect(html).not.toContain('Sep 19');
+  });
+
+  it('reads the greeting name inside the same batch as the kit counts, scoped to the signed-in user', async () => {
+    let release!: (row: { fullName: string }) => void;
+    vi.mocked(prisma.user.findUnique).mockReturnValueOnce(new Promise((resolve) => { release = resolve; }) as never);
+    const pending = EmployerDashboardPage({ searchParams: Promise.resolve({}) });
+    // The name read is still open while the first count has already started: they overlap.
+    await vi.waitFor(() => expect(prisma.job.count).toHaveBeenCalled());
+    expect(prisma.user.findUnique).toHaveBeenCalledTimes(1);
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { id: 'employer-user-1' }, select: { fullName: true } });
+    release({ fullName: 'Jordan Lee' });
+    expect(renderToStaticMarkup(await pending)).toContain('Jordan');
+  });
+
+  it('falls back to the workspace title when the name read fails, and never reads it before the role guard', async () => {
+    vi.mocked(prisma.user.findUnique).mockRejectedValueOnce(new Error('db down'));
+    const html = renderToStaticMarkup(await EmployerDashboardPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain('no-first-name');
+
+    vi.mocked(prisma.user.findUnique).mockClear();
+    vi.mocked(getEmployerForUser).mockResolvedValue(null as never);
+    await expect(EmployerDashboardPage({ searchParams: Promise.resolve({}) })).rejects.toThrow(/REDIRECT/);
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 });

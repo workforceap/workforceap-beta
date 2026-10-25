@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import PortalBackLink from '@/components/portal/PortalBackLink';
 import { redirect, notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import { buildPageMetadataAsync } from '@/app/seo';
@@ -72,9 +72,7 @@ export default async function EmployerJobEditPage({ params }: Props) {
         title={t('editJobPosting')}
         subtitle={t('updateDetails')}
         action={
-          <Link href={`/employer/jobs/${id}`} className="btn btn-outline btn-sm">
-            {t('backToJob')}
-          </Link>
+          <PortalBackLink fallbackHref={`/employer/jobs/${id}`} fallbackLabel={t('backToJob')} className="btn btn-outline btn-sm" />
         }
       />
       <div className="md:wa-hidden" style={{ paddingBottom: '6rem' }}>

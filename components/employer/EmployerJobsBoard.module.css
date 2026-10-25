@@ -1,0 +1,51 @@
+/* Posting inventory takes precedence over optional batch controls. */
+.counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--wa-pad-sm);
+  margin: 0;
+  padding-block: var(--wa-pad-sm);
+  border-block: 1px solid var(--wa-border);
+}
+
+.counts > div {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.counts dt {
+  color: var(--wa-muted);
+  font-size: var(--wa-type-meta);
+  line-height: 1.5;
+}
+
+.counts dd {
+  margin: 0;
+  color: var(--wa-text);
+  font-size: 1.5rem;
+  font-weight: 750;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.bulk {
+  border-bottom: 1px solid var(--wa-border);
+}
+
+.bulk > summary {
+  min-height: 3rem;
+  padding-block: 0.75rem;
+  cursor: pointer;
+  color: var(--wa-text);
+  font-size: var(--wa-type-body);
+  font-weight: 650;
+}
+
+.bulkContent {
+  display: grid;
+  gap: var(--wa-pad-sm);
+  padding-bottom: var(--wa-pad-sm);
+}

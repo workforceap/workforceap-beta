@@ -83,7 +83,7 @@ describe('root portal guards during parallel layout and page renders', () => {
       mocks.deniedPortalHomeHref.mockResolvedValue(home);
       const results = await Promise.allSettled([
         CounselorLayout({ children: null }),
-        CounselorTodayPage(),
+        CounselorTodayPage({}),
       ]);
 
       expect(results).toHaveLength(2);

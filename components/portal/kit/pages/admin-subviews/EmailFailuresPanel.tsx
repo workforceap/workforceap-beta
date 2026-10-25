@@ -1,5 +1,6 @@
 'use client';
 
+import { PORTAL_TIMEZONE } from '@/lib/formatDate';
 import { useState } from 'react';
 import { Card } from '@astryxdesign/core/Card';
 import { Button } from '@astryxdesign/core/Button';
@@ -64,7 +65,7 @@ type RowState = { pending: boolean; message: string | null; ok: boolean | null; 
 function formatWhen(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleString('en-US', { timeZone: PORTAL_TIMEZONE, month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 export function EmailFailuresPanel({ rows, failures24h, windowDays, threshold }: EmailFailuresPanelProps) {

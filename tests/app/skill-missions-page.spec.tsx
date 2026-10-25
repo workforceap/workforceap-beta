@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
+import { createTranslator, type AbstractIntlMessages } from 'next-intl';
+import en from '@/messages/en.json';
+import es from '@/messages/es.json';
+
+const catalogs: Record<string, unknown> = { en, es };
+const activeLocale = vi.hoisted(() => ({ value: 'en' }));
 
 /**
  * /dashboard/missions resolves the member's program through the shared
@@ -13,6 +19,11 @@ vi.mock('next/navigation', () => ({
     throw new Error(`REDIRECT:${url}`);
   }),
 }));
+vi.mock('next-intl/server', () => ({
+  getTranslations: vi.fn(async (namespace: string) =>
+    createTranslator({ locale: activeLocale.value, messages: catalogs[activeLocale.value] as AbstractIntlMessages, namespace }),
+  ),
+}));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn(async (input: unknown) => input) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn() }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: { user: { findUnique: vi.fn() } } }));
@@ -20,7 +31,7 @@ vi.mock('@/lib/member/getActiveProgramForDashboard', () => ({ getActiveProgramFo
 vi.mock('@/lib/member/skillMissions', () => ({ loadSkillMissionSummary: vi.fn() }));
 vi.mock('@/components/portal/SkillMissionPanel', () => ({ default: () => <div>Mission panel fixture</div> }));
 
-import SkillMissionsPage from '@/app/(portal)/dashboard/missions/page';
+import SkillMissionsPage, { generateMetadata } from '@/app/(portal)/dashboard/missions/page';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getActiveProgramForDashboard } from '@/lib/member/getActiveProgramForDashboard';
@@ -40,6 +51,7 @@ describe('/dashboard/missions page', () => {
   beforeEach(() => {
     cleanup();
     vi.clearAllMocks();
+    activeLocale.value = 'en';
     vi.mocked(getUser).mockResolvedValue({ id: 'user-1' } as never);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ courseProgress: [] } as never);
     vi.mocked(loadSkillMissionSummary).mockResolvedValue(null);
@@ -103,5 +115,58 @@ describe('/dashboard/missions page', () => {
 
     expect(screen.getByText('Mission panel fixture')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /Choose program|Continue training/ })).toBeNull();
+  });
+
+  it('puts one sentence from the member own counts under the title', async () => {
+    vi.mocked(getActiveProgramForDashboard).mockResolvedValue(
+      view({ activeProgramSlug: 'comptia-a-professional-certificate', programTitle: 'CompTIA A+' }),
+    );
+    vi.mocked(loadSkillMissionSummary).mockResolvedValue({
+      totalMissions: 8, passedCount: 3, readyCount: 2, retryCount: 1, missions: [],
+    } as never);
+
+    render(await SkillMissionsPage());
+
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(screen.getByText('3 of 8 missions passed. 2 ready to start.')).toBeInTheDocument();
+  });
+
+  it('renders the title, sentence and empty state in the member locale, with the same numbers', async () => {
+    activeLocale.value = 'es';
+    vi.mocked(getActiveProgramForDashboard).mockResolvedValue(
+      view({ activeProgramSlug: 'comptia-a-professional-certificate', programTitle: 'CompTIA A+' }),
+    );
+    vi.mocked(loadSkillMissionSummary).mockResolvedValue({
+      totalMissions: 8, passedCount: 3, readyCount: 2, retryCount: 1, missions: [],
+    } as never);
+
+    render(await SkillMissionsPage());
+    expect(screen.getByRole('heading', { level: 1, name: 'Misiones de habilidades' })).toBeInTheDocument();
+    expect(screen.getByText('3 de 8 misiones aprobadas. 2 listas para empezar.')).toBeInTheDocument();
+
+    cleanup();
+    vi.mocked(loadSkillMissionSummary).mockResolvedValue(null);
+    vi.mocked(getActiveProgramForDashboard).mockResolvedValue(view());
+    render(await SkillMissionsPage());
+    expect(screen.getByRole('heading', { name: 'Sin programa inscrito' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Elegir programa' })).toHaveAttribute('href', '/dashboard/program');
+  });
+
+  it('titles the page from messages in the member locale', async () => {
+    expect(await generateMetadata()).toMatchObject({ title: 'Skill Missions', path: '/dashboard/missions' });
+    activeLocale.value = 'es';
+    expect(await generateMetadata()).toMatchObject({ title: 'Misiones de habilidades', path: '/dashboard/missions' });
+  });
+
+  it('sends a signed-out visitor to sign in and back to missions', async () => {
+    vi.mocked(getUser).mockResolvedValue(null as never);
+    await expect(SkillMissionsPage()).rejects.toThrow('REDIRECT:/login?redirectTo=/dashboard/missions');
+    expect(loadSkillMissionSummary).not.toHaveBeenCalled();
+  });
+
+  it('reads the signed-in member only', async () => {
+    vi.mocked(getActiveProgramForDashboard).mockResolvedValue(view());
+    render(await SkillMissionsPage());
+    expect(vi.mocked(prisma.user.findUnique).mock.calls[0]![0]!.where).toEqual({ id: 'user-1' });
   });
 });

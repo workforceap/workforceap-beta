@@ -30,6 +30,40 @@ function show(
 const stage = (container: HTMLElement, key: string) =>
   container.querySelector(`[data-stage="${key}"]`) as HTMLElement;
 
+describe('compact Home approval summary', () => {
+  beforeEach(() => window.localStorage.clear());
+
+  it('keeps the current saved status and owner visible while disclosing every stage, date and provider boundary', async () => {
+    const user = userEvent.setup();
+    const submittedAt = new Date('2026-09-10T15:00:00Z');
+    const status = buildMemberApprovalStatus({ applications: [{ status: 'PENDING', submittedAt }], wioaReviewStatus: null, courseraEnrollmentApproved: false });
+    const { container } = render(<NextIntlClientProvider locale="en" messages={messages}>
+      <MemberApprovalStatusCard status={status} storageUserId={MEMBER_ID} variant="compact" messagesHref="/dev/member/messages" />
+    </NextIntlClientProvider>);
+    expect(container.querySelector('[data-approval-card]')).toHaveAttribute('data-approval-card', 'compact');
+    expect(screen.getByRole('heading', { name: 'Your approval status' })).toBeVisible();
+    const summary = screen.getByText('View details').closest('summary')!;
+    expect(within(summary).getByText("Who's on it: WorkforceAP staff")).toBeVisible();
+    expect(within(summary).getByText(/^Application: /)).toBeVisible();
+    expect(stage(container, 'application')).not.toBeVisible();
+    await user.click(summary);
+    for (const key of ['application', 'intake', 'training']) expect(stage(container, key)).toBeVisible();
+    expect(screen.getByText(`Submitted ${formatPortalDate(submittedAt)}`)).toBeVisible();
+    expect(screen.getByText(/invitation and acceptance are not confirmed here/i)).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Contact your team' })).toHaveAttribute('href', '/dev/member/messages');
+  });
+
+  it('keeps a member-owned request visible before expanding', () => {
+    const status = buildMemberApprovalStatus({ applications: [{ status: 'NEEDS_INFO', submittedAt: null }], wioaReviewStatus: null, courseraEnrollmentApproved: false });
+    render(<NextIntlClientProvider locale="en" messages={messages}>
+      <MemberApprovalStatusCard status={status} storageUserId={MEMBER_ID} variant="compact" />
+    </NextIntlClientProvider>);
+    const summary = screen.getByText('View details').closest('summary')!;
+    expect(within(summary).getByText("Who's on it: You")).toBeVisible();
+    expect(within(summary).getByText(/Send the information your team asked for/)).toBeVisible();
+  });
+});
+
 describe('truthful member status surfaces', () => {
   it('shows saved staff facts, actual portal dates and unconfirmed provider acceptance', () => {
     const submitted = new Date('2026-09-19T01:00:00Z');
@@ -212,7 +246,12 @@ describe('approval card placement and dismissal', () => {
     expect(memberApprovalCardPlacement(live)).toBe('primary');
     const { container } = show(live, 'primary');
     expect(container.querySelector('[data-approval-card]')).toHaveAttribute('data-approval-card', 'primary');
-    expect(container.querySelector('details')).toBeNull();
+    // C1 strip: the saved facts sit in the "Your approval status" disclosure under the
+    // strip, and the one line under the strip names the current next step.
+    expect(container.querySelector('[data-approval-strip]')).not.toBeNull();
+    expect(container.querySelector('[data-approval-next]')?.textContent)
+      .toBe(messages.memberApproval.next.application.pending);
+    expect(container.querySelector('details')).not.toBeNull();
     expect(screen.getByText('Current step')).toBeInTheDocument();
   });
 

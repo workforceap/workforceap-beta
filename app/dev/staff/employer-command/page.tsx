@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import {
   EmployerHomeKit,
   type EmployerCandidateRow,
@@ -31,11 +32,13 @@ const OPEN_ROLES: EmployerOpenRoleItem[] = [
   { id: 'r5', title: 'Business Systems Analyst', applicants: 1, location: 'Remote', href: '#' },
 ];
 
-export default function DevEmployerCommandPage() {
+export default async function DevEmployerCommandPage() {
   if (process.env.VERCEL_ENV === 'production') notFound();
+  const commonT = await getTranslations('common.disclosures');
 
   return (
     <EmployerHomeKit
+      firstName="Jordan"
       companyName="Deloitte"
       openRoles={5}
       openRolesSpark={{ series: [3, 3, 4, 4, 4, 5, 5], delta: '2', direction: 'up' }}
@@ -51,6 +54,7 @@ export default function DevEmployerCommandPage() {
       jobsHref="#"
       pipelineHref="#"
       givebackHref="#"
+      whereItGoesLabel={commonT('whereItGoes')}
     />
   );
 }

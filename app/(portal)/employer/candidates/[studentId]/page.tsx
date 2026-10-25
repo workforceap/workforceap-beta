@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
+import PortalBackLink from '@/components/portal/PortalBackLink';
 import { CheckCircle } from 'lucide-react';
 import { notFound, redirect } from 'next/navigation';
 import { CourseProgressStatus } from '@prisma/client';
@@ -220,9 +222,7 @@ export default async function EmployerCandidateProfilePage({
           </>
         }
         action={
-          <Link href="/employer/matches" className="btn btn-outline btn-sm">
-            {t('backToMatches')}
-          </Link>
+          <PortalBackLink fallbackHref="/employer/matches" fallbackLabel={t('backToMatches')} className="btn btn-outline btn-sm" />
         }
       />
 
@@ -391,9 +391,9 @@ export default async function EmployerCandidateProfilePage({
                   <div key={match.id} style={{ padding: '0.85rem', borderRadius: '0.75rem', background: 'var(--surface-container-low)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', alignItems: 'flex-start' }}>
                       <div style={{ minWidth: 0 }}>
-                        <Link href={`/employer/jobs/${match.jobId}`} className="hover:wa-underline" style={{ fontWeight: 700, color: 'var(--color-on-surface)', textDecoration: 'none' }}>
+                        <PortalRecordLink href={`/employer/jobs/${match.jobId}`} className="hover:wa-underline" style={{ fontWeight: 700, color: 'var(--color-on-surface)', textDecoration: 'none' }}>
                           {match.job.title}
-                        </Link>
+                        </PortalRecordLink>
                         <p style={{ margin: '0.25rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
                           Added {formatDateTime(match.createdAt)}
                         </p>
@@ -427,9 +427,9 @@ export default async function EmployerCandidateProfilePage({
               <div style={{ display: 'grid', gap: '0.75rem', marginTop: '0.75rem' }}>
                 {applications.map((application) => (
                   <div key={application.id} style={{ padding: '0.85rem', borderRadius: '0.75rem', background: 'var(--surface-container-low)' }}>
-                    <Link href={`/employer/jobs/${application.jobId}`} className="hover:wa-underline" style={{ fontWeight: 700, color: 'var(--color-on-surface)', textDecoration: 'none' }}>
+                    <PortalRecordLink href={`/employer/jobs/${application.jobId}`} className="hover:wa-underline" style={{ fontWeight: 700, color: 'var(--color-on-surface)', textDecoration: 'none' }}>
                       {application.job.title}
-                    </Link>
+                    </PortalRecordLink>
                     <div style={{ marginTop: '0.35rem' }}>
                       <StatusTag tone={badgeVariantToKitTone(employerJobPostingApplicationStatusBadgeVariant(application.status))}>
                         {employerJobPostingApplicationStatusLabel(application.status)}
@@ -627,7 +627,7 @@ export default async function EmployerCandidateProfilePage({
                       <div key={match.id} style={{ padding: '0.95rem 1rem', borderRadius: '0.9rem', background: 'var(--surface-container-low)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start' }}>
                           <div style={{ minWidth: 0 }}>
-                            <Link href={`/employer/jobs/${match.jobId}`} style={{ fontWeight: 700 }}>{match.job.title}</Link>
+                            <PortalRecordLink href={`/employer/jobs/${match.jobId}`} style={{ fontWeight: 700 }}>{match.job.title}</PortalRecordLink>
                             <p style={{ margin: '0.3rem 0 0', color: 'var(--color-on-surface-variant)', fontSize: '0.85rem' }}>
                               Added {formatDateTime(match.createdAt)}
                             </p>
@@ -660,7 +660,7 @@ export default async function EmployerCandidateProfilePage({
                       <div key={application.id} style={{ padding: '0.95rem 1rem', borderRadius: '0.9rem', background: 'var(--surface-container-low)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start' }}>
                           <div style={{ minWidth: 0 }}>
-                            <Link href={`/employer/jobs/${application.jobId}`} style={{ fontWeight: 700 }}>{application.job.title}</Link>
+                            <PortalRecordLink href={`/employer/jobs/${application.jobId}`} style={{ fontWeight: 700 }}>{application.job.title}</PortalRecordLink>
                             <p style={{ margin: '0.3rem 0 0', color: 'var(--color-on-surface-variant)', fontSize: '0.85rem' }}>
                               Applied {formatDateTime(application.appliedAt)}
                             </p>
@@ -685,7 +685,7 @@ export default async function EmployerCandidateProfilePage({
                       Review the {selectedMatch.job.title} match first, then decide whether to move this candidate forward in your pipeline.
                     </p>
                     <div style={{ display: 'grid', gap: '0.65rem', marginTop: '1rem' }}>
-                      <Link href={`/employer/jobs/${selectedMatch.jobId}`} className="btn btn-primary">Open role</Link>
+                      <PortalRecordLink href={`/employer/jobs/${selectedMatch.jobId}`} className="btn btn-primary">Open role</PortalRecordLink>
                       <Link href="/employer/messages" className="btn btn-outline">Message candidate</Link>
                     </div>
                   </>
@@ -695,7 +695,7 @@ export default async function EmployerCandidateProfilePage({
                       This member has already applied. Review the application status and keep outreach moving.
                     </p>
                     <div style={{ display: 'grid', gap: '0.65rem', marginTop: '1rem' }}>
-                      <Link href={`/employer/jobs/${latestApplication.jobId}`} className="btn btn-primary">Open latest application</Link>
+                      <PortalRecordLink href={`/employer/applications/${latestApplication.id}`} className="btn btn-primary">Open latest application</PortalRecordLink>
                       <Link href="/employer/pipeline" className="btn btn-outline">Open pipeline</Link>
                     </div>
                   </>

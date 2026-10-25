@@ -123,7 +123,7 @@ export function programHealthOtherLabel(hiddenPrograms: number): string {
  * Captions and colours only — no number here changes.
  */
 export const PROGRAM_HEALTH_CAPTION =
-  `Enrolled members per program — member accounts only, staff and test accounts excluded. Each bar is that program's ${PROGRAM_HEALTH_SHARE_LABEL}, not a completion or health score.` as const;
+  `Enrolled members per program: member accounts only, staff and test accounts excluded. Each bar is that program's ${PROGRAM_HEALTH_SHARE_LABEL}, not a completion or health score.` as const;
 
 /**
  * Pure projection of a per-program groupBy onto `AdminProgramHealthRow`s.

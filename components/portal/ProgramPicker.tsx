@@ -1,5 +1,6 @@
 'use client';
 
+import { formatPortalDate } from '@/lib/formatDate';
 import { useMemo, useState, type CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -24,7 +25,7 @@ type ProgramPickerProps = {
 const kitPrimaryBtn: CSSProperties = {
   minHeight: 44,
   padding: '10px 16px',
-  background: 'var(--wa-accent)',
+  background: 'var(--wa-accent-fill)',
   color: 'var(--wa-on-accent-control)',
   fontWeight: 600,
   fontSize: 14,
@@ -51,7 +52,7 @@ const CURRICULUM_ACTIVATION_NOTICE =
 function formatSubmittedDate(value: Date | string): string {
   const date = typeof value === 'string' ? new Date(value) : value;
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return formatPortalDate(date);
 }
 
 function WioaErrorMessage({

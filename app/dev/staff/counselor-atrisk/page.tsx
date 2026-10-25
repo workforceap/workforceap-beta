@@ -1,11 +1,16 @@
 import { notFound } from 'next/navigation';
 import type { AtRiskMember } from '@/components/portal/counselor/AtRiskDashboard';
+import CounselorWorkspace from '@/components/portal/counselor/CounselorWorkspace';
 import AtRiskShowcaseClient from './AtRiskShowcaseClient';
 
 /**
  * Storybook-lite showcase — AtRiskDashboard "Command Center" redesign
- * (fully populated, no auth/DB). See app/dev/staff/counselor-command/page.tsx
- * for the pattern this mirrors.
+ * (fully populated, no auth/DB). Mirrors app/(portal)/counselor/at-risk/page.tsx:
+ * the dashboard sits inside the shared CounselorWorkspace (its PageOpener is the
+ * page h1, and its DesignSurface supplies the gutter and canvas). Workspace tab
+ * and filter links stay on the /dev/staff/counselor-workspace fixture. No
+ * PortalPageFrame: without the portal rail its 80rem cap would indent the list
+ * from the workspace header at desktop widths.
  */
 export const dynamic = 'force-dynamic';
 
@@ -121,5 +126,9 @@ const MOCK_MEMBERS: AtRiskMember[] = [
 export default function DevStaffCounselorAtRiskPage() {
   if (process.env.VERCEL_ENV === 'production') notFound();
 
-  return <AtRiskShowcaseClient initialMembers={MOCK_MEMBERS} />;
+  return (
+    <CounselorWorkspace view="attention" filter="at-risk" baseHref="/dev/staff/counselor-workspace">
+      <AtRiskShowcaseClient initialMembers={MOCK_MEMBERS} />
+    </CounselorWorkspace>
+  );
 }

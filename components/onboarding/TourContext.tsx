@@ -90,6 +90,8 @@ function persistTourState(
 
 interface TourProviderProps {
   children: ReactNode;
+  /** Synthetic fixtures keep the tour local without writing progress or analytics. */
+  previewMode?: boolean;
 }
 
 interface RunningTour {
@@ -99,7 +101,7 @@ interface RunningTour {
   role: string;
 }
 
-export function TourProvider({ children }: TourProviderProps) {
+export function TourProvider({ children, previewMode = false }: TourProviderProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -120,9 +122,11 @@ export function TourProvider({ children }: TourProviderProps) {
     setTourKey(running.key);
     setCurrentStep(0);
     setIsOpen(true);
-    void persistTourState(running.key, { version: running.version, status: 'STARTED', lastStep: 0 });
-    trackTourEvent('started', running.key, { version: running.version, role: running.role });
-  }, []);
+    if (!previewMode) {
+      void persistTourState(running.key, { version: running.version, status: 'STARTED', lastStep: 0 });
+      trackTourEvent('started', running.key, { version: running.version, role: running.role });
+    }
+  }, [previewMode]);
 
   const startTour = useCallback(
     (newSteps: TourStep[], newPortal: PortalType) => {
@@ -154,22 +158,22 @@ export function TourProvider({ children }: TourProviderProps) {
 
   const endTour = useCallback(() => {
     const running = runningRef.current;
-    if (isOpenRef.current && running) {
+    if (!previewMode && isOpenRef.current && running) {
       const lastStep = currentStepRef.current;
       void persistTourState(running.key, { version: running.version, status: 'DISMISSED', lastStep });
       trackTourEvent('dismissed', running.key, { version: running.version, last_step: lastStep, role: running.role });
     }
     close();
-  }, [close]);
+  }, [close, previewMode]);
 
   const completeTour = useCallback(async () => {
     const running = runningRef.current;
     const lastStep = Math.max(0, steps.length - 1);
-    if (running) {
+    if (!previewMode && running) {
       void persistTourState(running.key, { version: running.version, status: 'COMPLETED', lastStep });
       trackTourEvent('completed', running.key, { version: running.version, last_step: lastStep, role: running.role });
     }
-    if (!running || running.portal) {
+    if (!previewMode && (!running || running.portal)) {
       // Legacy per-portal timestamp; the home pages still read it for auto-start (wave 4 retires it).
       try {
         await fetch('/api/onboarding/tour-complete', {
@@ -182,8 +186,8 @@ export function TourProvider({ children }: TourProviderProps) {
       }
     }
     close();
-    router.refresh();
-  }, [steps.length, portal, close, router]);
+    if (!previewMode) router.refresh();
+  }, [steps.length, portal, close, router, previewMode]);
 
   const nextStep = useCallback(() => {
     setCurrentStep((prev) => {

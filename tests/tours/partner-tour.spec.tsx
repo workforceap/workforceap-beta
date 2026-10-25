@@ -6,6 +6,8 @@ import PartnerPortalShell, { PARTNER_GUIDE_HREF } from '@/components/portal/Part
 import { TourProvider } from '@/components/onboarding/TourContext';
 import { GuidedTour } from '@/components/portal/kit/GuidedTour';
 import { TOUR_REGISTRY, getHomeTourForRole } from '@/lib/tours/registry';
+import PartnerImpactHeader from '@/components/partner/PartnerImpactHeader';
+import { partnerImpactCopy } from '@/lib/partner/impactWorkspace';
 
 const location = vi.hoisted(() => ({ pathname: '/partner' }));
 vi.mock('next/navigation', () => ({
@@ -34,7 +36,7 @@ const STEP_TITLES = [
   'Referred members',
   'Attention queue',
   'Payouts',
-  'Exports',
+  'Impact and reports',
   'Messages',
   'Come back any time',
 ];
@@ -75,12 +77,12 @@ function Overview({ referralPartner = true }: { referralPartner?: boolean }) {
 type Gate = { key: 'partner.home'; enabled: boolean; offer: boolean } | null;
 
 /** The real partner shell (WorkspaceShell + partner nav + header actions) with the gate the layout passes. */
-function Portal({ tour = { key: 'partner.home', enabled: true, offer: false }, referralPartner = true }: { tour?: Gate; referralPartner?: boolean }) {
+function Portal({ tour = { key: 'partner.home', enabled: true, offer: false }, referralPartner = true, children }: { tour?: Gate; referralPartner?: boolean; children?: React.ReactNode }) {
   return (
     <NextIntlClientProvider locale="en" messages={en}>
       <TourProvider>
         <PartnerPortalShell partnerName="Community Works" tour={tour}>
-          <Overview referralPartner={referralPartner} />
+          {children ?? <Overview referralPartner={referralPartner} />}
         </PartnerPortalShell>
         <GuidedTour />
       </TourProvider>
@@ -107,10 +109,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('partner guided tour (wave 3)', () => {
-  it('is the home tour the partner shell offers and walks referrals → members → attention → payouts → exports → messages', () => {
+describe('partner guided tour (workspace consolidation, v4)', () => {
+  it('is the home tour the partner shell offers and walks referrals → members → attention → payouts → Impact → messages', () => {
     expect(getHomeTourForRole('partner')?.key).toBe('partner.home');
-    expect(TOUR.version).toBe(3);
+    expect(TOUR.version).toBe(4);
     expect(TOUR.route).toBe('/partner');
     expect(TOUR.steps.map((s) => s.target)).toEqual([
       'tour-referral-link',
@@ -124,16 +126,30 @@ describe('partner guided tour (wave 3)', () => {
   });
 
   it('every registry step has exactly one real anchor in the partner shell or on the overview', () => {
-    render(<Portal />);
+    const { rerender } = render(<Portal />);
     for (const step of TOUR.steps) {
       const anchors = document.querySelectorAll(`[data-tour="${step.target}"]`);
       expect(anchors, step.target).toHaveLength(1);
     }
     expect(document.querySelector('[data-tour="tour-members"]')).toHaveAttribute('href', '/partner/referred-members');
     expect(document.querySelector('[data-tour="tour-attention"]')).toHaveAttribute('href', '/partner/attention');
-    expect(document.querySelector('[data-tour="tour-exports"]')).toHaveAttribute('href', '/partner/exports');
+    expect(document.querySelector('[data-tour="tour-exports"]')).toHaveAttribute('href', '/partner/impact');
     expect(document.querySelector('[data-tour="tour-messages"]')).toHaveAttribute('href', '/partner/messages');
     expect(document.querySelector('[data-tour="tour-help"]')).toBe(screen.getByRole('button', { name: 'Help' }));
+
+    location.pathname = '/partner/impact';
+    rerender(
+      <Portal>
+        <PartnerImpactHeader activeView="exports" copy={partnerImpactCopy((key) => en.partner[key])} title={en.partner.exportsTitle} />
+      </Portal>,
+    );
+    expect(document.querySelectorAll('[data-tour="tour-exports"]')).toHaveLength(1);
+    const views = within(screen.getByRole('navigation', { name: en.partner.impactWorkspaceViews }));
+    expect(document.querySelector('[data-tour="tour-outcomes"]')).toBe(views.getByRole('link', { name: 'Outcomes' }));
+    expect(views.getByRole('link', { name: 'Outcomes' })).toHaveAttribute('href', '/partner/impact?view=outcomes');
+    expect(views.getByRole('link', { name: 'Milestones' })).toHaveAttribute('href', '/partner/impact?view=milestones');
+    expect(views.getByRole('link', { name: 'Exports' })).toHaveAttribute('href', '/partner/impact?view=exports');
+    expect(views.getByRole('link', { name: 'Exports' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('walks a new referral partner through all seven steps in order and records COMPLETED', async () => {
@@ -144,6 +160,7 @@ describe('partner guided tour (wave 3)', () => {
     for (let i = 0; i < STEP_TITLES.length; i++) {
       await waitFor(() => expect(screen.getByRole('heading', { level: 2, name: STEP_TITLES[i] })).toBeInTheDocument());
       expect(screen.getByRole('dialog')).toHaveTextContent(`Step ${i + 1} of 7`);
+      if (i === 4) expect(screen.getByRole('dialog')).toHaveTextContent('Outcomes, Milestones and Exports');
       if (i < STEP_TITLES.length - 1) fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     }
     expect(screen.getByRole('dialog')).toHaveTextContent(/Help reopens this tour/);
@@ -158,7 +175,7 @@ describe('partner guided tour (wave 3)', () => {
       ]),
     );
     const completed = posted().find((p) => p.body.status === 'COMPLETED');
-    expect(completed?.body).toMatchObject({ version: 3, lastStep: 6 });
+    expect(completed?.body).toMatchObject({ version: 4, lastStep: 6 });
     await waitFor(() => expect(posted().some((p) => p.url === '/api/onboarding/tour-complete')).toBe(true));
   });
 
@@ -171,7 +188,7 @@ describe('partner guided tour (wave 3)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Attention queue'));
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-    await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Exports'));
+    await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Impact and reports'));
     expect(screen.getByRole('dialog')).toHaveTextContent('Step 5 of 7');
   });
 
@@ -204,7 +221,7 @@ describe('partner guided tour (wave 3)', () => {
     await waitFor(() => expect(screen.queryByTestId('tour-offer-strip')).toBeNull());
     await waitFor(() => expect(posted()).toHaveLength(1));
     expect(posted()[0].url).toBe('/api/tours/partner.home');
-    expect(posted()[0].body).toMatchObject({ version: 3, status: 'DISMISSED', lastStep: 0 });
+    expect(posted()[0].body).toMatchObject({ version: 4, status: 'DISMISSED', lastStep: 0 });
     unmount();
 
     render(<Portal tour={{ key: 'partner.home', enabled: true, offer: false }} />);

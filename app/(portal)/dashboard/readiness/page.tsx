@@ -6,6 +6,7 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getUser } from '@/lib/auth/server';
 import { getScoreBreakdownSafeResult } from '@/lib/readiness/score';
+import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
 import PageHeader from '@/components/portal/PageHeader';
 import ReadinessMemberClient from './ReadinessMemberClient';
 import ReadinessMobileScoreCard from '@/components/portal/ReadinessMobileScoreCard';
@@ -14,6 +15,7 @@ import ReadinessCoachReturnButton from '@/components/portal/ReadinessCoachReturn
 import { ReadinessProgressSummary } from '@/components/portal/ReadinessProgressSummary';
 import { getMemberReadinessSections } from '@/lib/readiness/memberReadinessSections';
 import { MemberProgressKit } from '@/components/portal/kit/pages/member/MemberProgressKit';
+import { UNKNOWN_PROGRESS_METRICS, loadProgressMetrics } from '@/lib/member/loadProgressMetrics';
 import { buildReadinessProgressView } from '@/lib/readiness/progressView';
 import {
   READINESS_SCORE_LOAD_ERROR,
@@ -49,12 +51,19 @@ export default async function DashboardReadinessPage({
   const params = await searchParams;
   const requestedUi = typeof params?.ui === 'string' ? params.ui : null;
 
-  const [scoreResult, checklistSections] = await Promise.all([
+  // The member numbers (course %, applications, certificates, points, streak)
+  // load beside the score and checklist, not after them. The legacy view does
+  // not show them, so it skips the three reads. The loader never throws; the
+  // catch is only a guard so a numbers failure can never take the page down.
+  const [scoreResult, checklistSections, metrics] = await Promise.all([
     getScoreBreakdownSafeResult(user.id),
     getMemberReadinessSections(user.id).catch((e) => {
       console.error('[dashboard/readiness] checklist load failed', e);
       return null;
     }),
+    requestedUi === 'legacy'
+      ? Promise.resolve(UNKNOWN_PROGRESS_METRICS)
+      : loadProgressMetrics(user.id).catch(() => UNKNOWN_PROGRESS_METRICS),
   ]);
   const scoreLoadFailed = scoreResult.loadFailed;
   const checklistLoadFailed = checklistSections === null;
@@ -92,6 +101,17 @@ export default async function DashboardReadinessPage({
           milestones={scoreLoadFailed ? [] : view.milestones}
           nextAction={scoreLoadFailed ? null : view.priorityAction}
           loadFailed={scoreLoadFailed}
+          // `null` means that read failed or has nothing to measure: the kit
+          // leaves the tile or block out (unknown is not zero). Without points
+          // data it shows its link card to /dashboard/points instead.
+          coursePercent={metrics.coursePercent ?? undefined}
+          activeJobs={metrics.activeApplications ?? undefined}
+          certs={metrics.certificates ?? undefined}
+          points={metrics.points ?? undefined}
+          pointsThisWeek={metrics.pointsThisWeek ?? undefined}
+          pointsLedger={metrics.ledger ?? undefined}
+          currentStreak={metrics.currentStreak ?? undefined}
+          longestStreak={metrics.longestStreak ?? undefined}
           summary={
             <ReadinessProgressSummary
               factualSummary={factualSummary}
@@ -121,6 +141,7 @@ export default async function DashboardReadinessPage({
         }
         breadcrumbs={[{ label: 'Member Portal', href: '/dashboard' }, { label: 'Job Readiness' }]}
       />
+      <MemberTrainingNav current="readiness" />
       <div className="md:wa-hidden" style={{ paddingBottom: '6rem' }}>
         <ReadinessMobileScoreCard
           overallScore={overallScore}

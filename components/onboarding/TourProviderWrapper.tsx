@@ -5,9 +5,9 @@ import { TourProvider } from './TourContext';
 import TourAutoStart from './TourAutoStart';
 import { GuidedTour } from '@/components/portal/kit/GuidedTour';
 
-export default function TourProviderWrapper({ children }: { children: React.ReactNode }) {
+export default function TourProviderWrapper({ children, previewMode = false }: { children: React.ReactNode; previewMode?: boolean }) {
   return (
-    <TourProvider>
+    <TourProvider previewMode={previewMode}>
       {children}
       <GuidedTour />
       <Suspense fallback={null}>

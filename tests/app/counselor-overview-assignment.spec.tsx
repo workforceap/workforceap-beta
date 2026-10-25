@@ -1,3 +1,4 @@
+import { withPortalIntl } from '@/tests/helpers/withPortalIntl';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import en from '@/messages/en.json';
@@ -37,7 +38,7 @@ describe('legacy counselor overview confirmed assignments', () => {
         courseEnrollments: [{ programSlug: 'different-history', isPrimary: false, curriculumVersion: 'legacy-v1', enrolledAt: new Date('2026-09-01') }] } },
     ];
     const doc = document.implementation.createHTMLDocument('Overview');
-    doc.body.innerHTML = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({ ui: 'legacy' }) }));
+    doc.body.innerHTML = renderToStaticMarkup(withPortalIntl(await Page({ searchParams: Promise.resolve({ ui: 'legacy' }) })));
     const metrics = [...doc.querySelectorAll('.portal-metric-card')];
     const enrolled = metrics.filter((tile) => tile.querySelector('.portal-metric-card__label')?.textContent === en.counselor.inAProgram);
     expect(enrolled).toHaveLength(2);

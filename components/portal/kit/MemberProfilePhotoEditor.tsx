@@ -142,7 +142,7 @@ export function MemberProfilePhotoEditor({
               height: 36,
               borderRadius: 999,
               border: '2px solid var(--wa-surface)',
-              background: 'var(--wa-accent)',
+              background: 'var(--wa-accent-fill)',
               color: 'var(--wa-on-accent-control)',
               display: 'inline-flex',
               alignItems: 'center',

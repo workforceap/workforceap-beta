@@ -1,3 +1,4 @@
+import { withPortalIntl } from '@/tests/helpers/withPortalIntl';
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -96,7 +97,7 @@ async function search(params: Record<string, string>) {
 
 describe('/admin/students', () => {
   it('renders the roster preset by default from the members-only loader', async () => {
-    const { container } = render(await AdminStudentsPage({ searchParams: search({}) }));
+    const { container } = render(withPortalIntl(await AdminStudentsPage({ searchParams: search({}) })));
     expect(mocks.loadStudentsRoster).toHaveBeenCalledTimes(1);
     expect(mocks.loadTrainingRoster).not.toHaveBeenCalled();
     expect(mocks.kit).toHaveBeenLastCalledWith(expect.objectContaining({
@@ -109,7 +110,7 @@ describe('/admin/students', () => {
   });
 
   it('renders the training preset for ?view=training and keeps the students audit marker', async () => {
-    const { container } = render(await AdminStudentsPage({ searchParams: search({ view: 'training' }) }));
+    const { container } = render(withPortalIntl(await AdminStudentsPage({ searchParams: search({ view: 'training' }) })));
     expect(mocks.loadTrainingRoster).toHaveBeenCalledTimes(1);
     expect(mocks.loadStudentsRoster).not.toHaveBeenCalled();
     expect(mocks.kit).toHaveBeenLastCalledWith(expect.objectContaining({
@@ -122,7 +123,7 @@ describe('/admin/students', () => {
   });
 
   it('falls back to the roster preset for an unknown view', async () => {
-    render(await AdminStudentsPage({ searchParams: search({ view: 'bogus' }) }));
+    render(withPortalIntl(await AdminStudentsPage({ searchParams: search({ view: 'bogus' }) })));
     expect(mocks.kit).toHaveBeenLastCalledWith(expect.objectContaining({ view: 'roster' }));
   });
 

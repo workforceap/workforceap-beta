@@ -1,5 +1,5 @@
 import React from 'react';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   readCss, loadRootTokens, loadBlockTokens, colorOf, contrast, luminance, over, parseColor, resolve, splitTopLevel, type Scheme,
@@ -403,9 +403,12 @@ describe('org-accent fills paint --wa-on-accent (white), not the dark-flipping -
   const defaultOrg = new Map(loadRootTokens(brand, portal, main)).set('--org-accent', '#ad2c4d').set('--color-accent', 'var(--org-accent)');
   const ratio = (fg: string, bg: string, scheme: Scheme) => contrast(colorOf(fg, defaultOrg, scheme), colorOf(bg, defaultOrg, scheme));
 
-  it('before: --wa-on-accent-control on the seeded org accent was 2.78:1 in dark; after: --wa-on-accent is 6.47:1 in both modes', () => {
-    expect(ratio('var(--wa-on-accent-control)', 'var(--color-accent)', 'dark')).toBeCloseTo(2.78, 1);
-    expect(ratio('var(--wa-on-accent-control)', 'var(--color-accent)', 'dark')).toBeLessThan(AA);
+  it('--wa-on-accent-control is white and clears AA on --wa-accent-fill; --wa-on-accent is 6.47:1 on the seeded org accent in both modes', () => {
+    // The dark-ink label is gone: solid fills paint --wa-accent-fill (crimson in both
+    // modes) under a white label, so the control label no longer flips per mode.
+    for (const scheme of SCHEMES) {
+      expect(ratio('var(--wa-on-accent-control)', 'var(--wa-accent-fill)', scheme), `${scheme} control`).toBeGreaterThanOrEqual(AA);
+    }
     for (const scheme of SCHEMES) {
       expect(ratio('var(--wa-on-accent)', 'var(--color-accent)', scheme), `${scheme}`).toBeCloseTo(6.47, 1);
       expect(ratio('var(--wa-on-accent)', 'var(--color-accent)', scheme)).toBeGreaterThanOrEqual(AA);
@@ -530,14 +533,14 @@ describe('VoiceStudioKit cards cast their shadow from tokens (were rgba(120,20,3
       expectNoLiteralShadows(container, `${scheme} Coaches tab`);
     });
 
-    it(`${scheme}: the Resume Studio banner and the "Resume coach" card tint --wa-accent under their --wa-accent gradient`, () => {
+    it(`${scheme}: the Resume Studio banner and the "Resume coach" card keep deep crimson gradients with accent shadows that follow the theme`, () => {
       // The "Resume coach" card renders once a resume is on file and scored.
       const { container } = renderIn(scheme, <NextIntlClientProvider locale="en" messages={en}><VoiceStudioKit initialTab="studio" resumeStudio={{ hasResume: true, structuralScore: 72, issues: [] }} /></NextIntlClientProvider>);
       const banner = shadowHost(screen.getByRole('heading', { name: 'Resume Studio' }));
-      expect(computed(banner, 'background')).toContain('var(--wa-accent)');
+      expect(gradientStops(computed(banner, 'background'))).toEqual(['var(--wa-hero-crimson)', 'var(--wa-hero-crimson-dark)']);
       expect(computed(banner, 'box-shadow')).toBe(ACCENT_SHADOW);
       const coach = screen.getByText('Resume coach').closest('a') as HTMLElement;
-      expect(computed(coach, 'background')).toContain('var(--wa-accent)');
+      expect(gradientStops(computed(coach, 'background'))).toEqual(['var(--wa-hero-crimson)', 'var(--wa-hero-crimson-dark)']);
       expect(computed(coach, 'box-shadow')).toBe(ACCENT_SHADOW);
       expectTokensResolve(ACCENT_SHADOW, scheme, 'accent card shadow');
       const tokens = tokensFor(scheme);
@@ -780,6 +783,27 @@ describe('First90DaysCard is a kit card on --wa-* tokens only', () => {
     const section = container.querySelector('section') as HTMLElement;
     expect(section.style.padding).toBe('1rem 1.25rem 0px');
     expect((section.firstElementChild as HTMLElement).className).toContain('wa-kit-card');
+  });
+
+  it('row check-in answers stay in three equal phone columns and keep preview guidance collapsed', () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="en" messages={en}>
+        <ol>
+          <First90DaysCard stage="day_30" daysSincePlacement={20} employerName="Acme" currentStageResponse={null} completedStages={[]} variant="row" previewOnly />
+        </ol>
+      </NextIntlClientProvider>,
+    );
+    const group = container.querySelector('[role="group"][aria-labelledby]') as HTMLElement;
+    const question = document.getElementById(group.getAttribute('aria-labelledby')!);
+    expect(question).toBeInTheDocument();
+    const answers = within(group).getAllByRole('button');
+    expect(answers).toHaveLength(3);
+    for (const answer of answers) expect(answer).toHaveStyle({ width: '100%', minHeight: '44px' });
+    expect(group).toHaveStyle({ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' });
+    expect(answers[0]).toBeDisabled();
+    const disclosure = group.querySelector('details')!;
+    expect(disclosure).not.toHaveAttribute('open');
+    expect(disclosure.querySelector('[role="note"]')).toHaveTextContent(en.common.disclosures.previewActionUnavailable);
   });
 });
 

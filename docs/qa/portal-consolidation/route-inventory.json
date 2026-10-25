@@ -1,0 +1,2107 @@
+{
+  "schemaVersion": 1,
+  "scope": "Member, counselor, employer, partner, admin, shared portal and entry page files. Includes compatibility redirects. Source inventory is not functional acceptance.",
+  "routes": [
+    {
+      "route": "/admin",
+      "source": "app/admin/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin"
+    },
+    {
+      "route": "/admin/agent-inbox",
+      "source": "app/admin/agent-inbox/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/agent-inbox"
+    },
+    {
+      "route": "/admin/ai-tools",
+      "source": "app/admin/ai-tools/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/ai-tools"
+    },
+    {
+      "route": "/admin/analytics",
+      "source": "app/admin/analytics/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/analytics"
+    },
+    {
+      "route": "/admin/analytics/ai-efficacy",
+      "source": "app/admin/analytics/ai-efficacy/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/analytics/ai-efficacy"
+    },
+    {
+      "route": "/admin/assessments",
+      "source": "app/admin/assessments/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/assessments"
+    },
+    {
+      "route": "/admin/audit-logs",
+      "source": "app/admin/audit-logs/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/audit-logs"
+    },
+    {
+      "route": "/admin/billing/preview",
+      "source": "app/admin/billing/preview/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/billing/preview"
+    },
+    {
+      "route": "/admin/blog",
+      "source": "app/admin/blog/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/blog"
+    },
+    {
+      "route": "/admin/blog/[id]/edit",
+      "source": "app/admin/blog/[id]/edit/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/blog"
+    },
+    {
+      "route": "/admin/blog/ai",
+      "source": "app/admin/blog/ai/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/blog/ai"
+    },
+    {
+      "route": "/admin/blog/new",
+      "source": "app/admin/blog/new/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/blog/new"
+    },
+    {
+      "route": "/admin/blog/preview/[slug]",
+      "source": "app/admin/blog/preview/[slug]/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/blog"
+    },
+    {
+      "route": "/admin/board",
+      "source": "app/admin/board/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/board"
+    },
+    {
+      "route": "/admin/board/print",
+      "source": "app/admin/board/print/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/board/print"
+    },
+    {
+      "route": "/admin/career-mappings",
+      "source": "app/admin/career-mappings/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/career-mappings"
+    },
+    {
+      "route": "/admin/certifications",
+      "source": "app/admin/certifications/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/certifications"
+    },
+    {
+      "route": "/admin/chapters",
+      "source": "app/(portal)/admin/chapters/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/chapters"
+    },
+    {
+      "route": "/admin/command-center",
+      "source": "app/admin/command-center/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/command-center"
+    },
+    {
+      "route": "/admin/counselors",
+      "source": "app/admin/counselors/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/counselors"
+    },
+    {
+      "route": "/admin/coursera",
+      "source": "app/admin/coursera/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/coursera"
+    },
+    {
+      "route": "/admin/coursera/csv-import",
+      "source": "app/admin/coursera/csv-import/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/coursera/csv-import"
+    },
+    {
+      "route": "/admin/coursera/enrollment",
+      "source": "app/admin/coursera/enrollment/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/coursera/enrollment"
+    },
+    {
+      "route": "/admin/coursera/health",
+      "source": "app/admin/coursera/health/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/coursera/health"
+    },
+    {
+      "route": "/admin/coursera/learners/[userId]",
+      "source": "app/admin/coursera/learners/[userId]/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/coursera"
+    },
+    {
+      "route": "/admin/coursera/learners/unmatched/[externalEmail]",
+      "source": "app/admin/coursera/learners/unmatched/[externalEmail]/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/coursera"
+    },
+    {
+      "route": "/admin/coursera/learners/unmatched/[externalEmail]/events",
+      "source": "app/admin/coursera/learners/unmatched/[externalEmail]/events/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/coursera"
+    },
+    {
+      "route": "/admin/coursera/provisioning",
+      "source": "app/admin/coursera/provisioning/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/coursera/provisioning"
+    },
+    {
+      "route": "/admin/crons",
+      "source": "app/admin/crons/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/crons"
+    },
+    {
+      "route": "/admin/csp-report",
+      "source": "app/admin/csp-report/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/csp-report"
+    },
+    {
+      "route": "/admin/dashboard",
+      "source": "app/admin/dashboard/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/dashboard"
+    },
+    {
+      "route": "/admin/data-retention",
+      "source": "app/admin/data-retention/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/data-retention"
+    },
+    {
+      "route": "/admin/diagnostics",
+      "source": "app/admin/diagnostics/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/diagnostics"
+    },
+    {
+      "route": "/admin/email-crons",
+      "source": "app/admin/email-crons/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/email-crons"
+    },
+    {
+      "route": "/admin/email-templates",
+      "source": "app/admin/email-templates/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/email-templates"
+    },
+    {
+      "route": "/admin/employer-screening-packs",
+      "source": "app/admin/employer-screening-packs/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/employer-screening-packs"
+    },
+    {
+      "route": "/admin/employers",
+      "source": "app/admin/employers/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/employers"
+    },
+    {
+      "route": "/admin/employers/[id]",
+      "source": "app/admin/employers/[id]/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/employers"
+    },
+    {
+      "route": "/admin/enrollment-agreements",
+      "source": "app/admin/enrollment-agreements/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/enrollment-agreements"
+    },
+    {
+      "route": "/admin/enrollment-agreements/archive",
+      "source": "app/admin/enrollment-agreements/archive/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/enrollment-agreements/archive"
+    },
+    {
+      "route": "/admin/exports",
+      "source": "app/admin/exports/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/exports"
+    },
+    {
+      "route": "/admin/feature-flags",
+      "source": "app/admin/feature-flags/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/feature-flags"
+    },
+    {
+      "route": "/admin/feedback",
+      "source": "app/admin/feedback/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/feedback"
+    },
+    {
+      "route": "/admin/growth",
+      "source": "app/admin/growth/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/growth"
+    },
+    {
+      "route": "/admin/guide",
+      "source": "app/admin/guide/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/guide"
+    },
+    {
+      "route": "/admin/health",
+      "source": "app/admin/health/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/health"
+    },
+    {
+      "route": "/admin/invites",
+      "source": "app/admin/invites/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/invites"
+    },
+    {
+      "route": "/admin/invites/new",
+      "source": "app/admin/invites/new/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/invites/new"
+    },
+    {
+      "route": "/admin/jobs",
+      "source": "app/admin/jobs/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/jobs"
+    },
+    {
+      "route": "/admin/jobs/[id]",
+      "source": "app/admin/jobs/[id]/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/jobs"
+    },
+    {
+      "route": "/admin/members",
+      "source": "app/admin/members/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/members"
+    },
+    {
+      "route": "/admin/members/[id]",
+      "source": "app/admin/members/[id]/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/members"
+    },
+    {
+      "route": "/admin/members/[id]/billing",
+      "source": "app/admin/members/[id]/billing/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/members"
+    },
+    {
+      "route": "/admin/members/[id]/lifecycle",
+      "source": "app/admin/members/[id]/lifecycle/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/members"
+    },
+    {
+      "route": "/admin/members/[id]/readiness",
+      "source": "app/admin/members/[id]/readiness/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/members"
+    },
+    {
+      "route": "/admin/members/[id]/stakeholder",
+      "source": "app/admin/members/[id]/stakeholder/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/members"
+    },
+    {
+      "route": "/admin/members/duplicates",
+      "source": "app/admin/members/duplicates/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/members/duplicates"
+    },
+    {
+      "route": "/admin/members/interview-ready",
+      "source": "app/admin/members/interview-ready/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/members/interview-ready"
+    },
+    {
+      "route": "/admin/members/job-ready",
+      "source": "app/admin/members/job-ready/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/members/job-ready"
+    },
+    {
+      "route": "/admin/members/merge",
+      "source": "app/admin/members/merge/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/members/merge"
+    },
+    {
+      "route": "/admin/members/new",
+      "source": "app/admin/members/new/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/members/new"
+    },
+    {
+      "route": "/admin/members/training",
+      "source": "app/admin/members/training/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/members/training"
+    },
+    {
+      "route": "/admin/mentors",
+      "source": "app/admin/mentors/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/mentors"
+    },
+    {
+      "route": "/admin/messages",
+      "source": "app/admin/messages/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/messages"
+    },
+    {
+      "route": "/admin/metrics",
+      "source": "app/admin/metrics/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/metrics"
+    },
+    {
+      "route": "/admin/outcomes",
+      "source": "app/admin/outcomes/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/outcomes"
+    },
+    {
+      "route": "/admin/outcomes/methodology",
+      "source": "app/admin/outcomes/methodology/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/outcomes/methodology"
+    },
+    {
+      "route": "/admin/overview",
+      "source": "app/admin/overview/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/overview"
+    },
+    {
+      "route": "/admin/partner-signups",
+      "source": "app/admin/partner-signups/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/partner-signups"
+    },
+    {
+      "route": "/admin/partners",
+      "source": "app/admin/partners/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/partners"
+    },
+    {
+      "route": "/admin/partners/[id]",
+      "source": "app/admin/partners/[id]/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/partners"
+    },
+    {
+      "route": "/admin/partners/[id]/quarterly-outcomes",
+      "source": "app/admin/partners/[id]/quarterly-outcomes/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/partners"
+    },
+    {
+      "route": "/admin/partners/new",
+      "source": "app/admin/partners/new/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/partners/new"
+    },
+    {
+      "route": "/admin/pipeline",
+      "source": "app/admin/pipeline/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/pipeline"
+    },
+    {
+      "route": "/admin/placement-surveys",
+      "source": "app/admin/placement-surveys/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/placement-surveys"
+    },
+    {
+      "route": "/admin/placements",
+      "source": "app/admin/placements/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/placements"
+    },
+    {
+      "route": "/admin/placements/new",
+      "source": "app/admin/placements/new/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/placements/new"
+    },
+    {
+      "route": "/admin/placements/retention",
+      "source": "app/admin/placements/retention/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/placements/retention"
+    },
+    {
+      "route": "/admin/program-change-requests",
+      "source": "app/admin/program-change-requests/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/program-change-requests"
+    },
+    {
+      "route": "/admin/programs",
+      "source": "app/admin/programs/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/programs"
+    },
+    {
+      "route": "/admin/public-inquiries",
+      "source": "app/admin/public-inquiries/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/public-inquiries"
+    },
+    {
+      "route": "/admin/reporting",
+      "source": "app/admin/reporting/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/reporting"
+    },
+    {
+      "route": "/admin/reports/quarterly-outcomes",
+      "source": "app/admin/reports/quarterly-outcomes/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/reports/quarterly-outcomes"
+    },
+    {
+      "route": "/admin/sessions",
+      "source": "app/admin/sessions/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/sessions"
+    },
+    {
+      "route": "/admin/sessions/[memberId]/run",
+      "source": "app/admin/sessions/[memberId]/run/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/sessions"
+    },
+    {
+      "route": "/admin/sessions/walk-in",
+      "source": "app/admin/sessions/walk-in/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/sessions/walk-in"
+    },
+    {
+      "route": "/admin/settings",
+      "source": "app/admin/settings/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/settings"
+    },
+    {
+      "route": "/admin/students",
+      "source": "app/admin/students/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/students"
+    },
+    {
+      "route": "/admin/subgroups",
+      "source": "app/admin/subgroups/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/subgroups"
+    },
+    {
+      "route": "/admin/subgroups/[id]",
+      "source": "app/admin/subgroups/[id]/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/subgroups"
+    },
+    {
+      "route": "/admin/subgroups/[id]/edit",
+      "source": "app/admin/subgroups/[id]/edit/page.tsx",
+      "role": "admin",
+      "dynamic": true,
+      "openFrom": "/admin/subgroups"
+    },
+    {
+      "route": "/admin/subgroups/new",
+      "source": "app/admin/subgroups/new/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/subgroups/new"
+    },
+    {
+      "route": "/admin/testimonials",
+      "source": "app/admin/testimonials/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/testimonials"
+    },
+    {
+      "route": "/admin/training-progress",
+      "source": "app/admin/training-progress/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/training-progress"
+    },
+    {
+      "route": "/admin/users",
+      "source": "app/admin/users/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/users"
+    },
+    {
+      "route": "/admin/users/deleted",
+      "source": "app/admin/users/deleted/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/users/deleted"
+    },
+    {
+      "route": "/admin/webhook-events",
+      "source": "app/admin/webhook-events/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/webhook-events"
+    },
+    {
+      "route": "/admin/weekly-recap",
+      "source": "app/admin/weekly-recap/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/weekly-recap"
+    },
+    {
+      "route": "/admin/what-workforceap-does",
+      "source": "app/admin/what-workforceap-does/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/what-workforceap-does"
+    },
+    {
+      "route": "/admin/wioa-screening",
+      "source": "app/admin/wioa-screening/page.tsx",
+      "role": "admin",
+      "dynamic": false,
+      "openFrom": "/admin/wioa-screening"
+    },
+    {
+      "route": "/counselor",
+      "source": "app/(portal)/counselor/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor"
+    },
+    {
+      "route": "/counselor/at-risk",
+      "source": "app/(portal)/counselor/at-risk/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/at-risk"
+    },
+    {
+      "route": "/counselor/guide",
+      "source": "app/(portal)/counselor/guide/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/guide"
+    },
+    {
+      "route": "/counselor/inactive-members",
+      "source": "app/(portal)/counselor/inactive-members/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/inactive-members"
+    },
+    {
+      "route": "/counselor/inbox",
+      "source": "app/(portal)/counselor/inbox/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/inbox"
+    },
+    {
+      "route": "/counselor/lab-reviews",
+      "source": "app/(portal)/counselor/lab-reviews/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/lab-reviews"
+    },
+    {
+      "route": "/counselor/lab-reviews/[submissionId]",
+      "source": "app/(portal)/counselor/lab-reviews/[submissionId]/page.tsx",
+      "role": "counselor",
+      "dynamic": true,
+      "openFrom": "/counselor/lab-reviews"
+    },
+    {
+      "route": "/counselor/messages",
+      "source": "app/(portal)/counselor/messages/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/messages"
+    },
+    {
+      "route": "/counselor/notifications",
+      "source": "app/(portal)/counselor/notifications/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/notifications"
+    },
+    {
+      "route": "/counselor/overview",
+      "source": "app/(portal)/counselor/overview/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/overview"
+    },
+    {
+      "route": "/counselor/placements",
+      "source": "app/(portal)/counselor/placements/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/placements"
+    },
+    {
+      "route": "/counselor/profile",
+      "source": "app/(portal)/counselor/profile/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/profile"
+    },
+    {
+      "route": "/counselor/queue",
+      "source": "app/(portal)/counselor/queue/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/queue"
+    },
+    {
+      "route": "/counselor/resources",
+      "source": "app/(portal)/counselor/resources/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/resources"
+    },
+    {
+      "route": "/counselor/sessions",
+      "source": "app/(portal)/counselor/sessions/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/sessions"
+    },
+    {
+      "route": "/counselor/sessions/[memberId]/run",
+      "source": "app/(portal)/counselor/sessions/[memberId]/run/page.tsx",
+      "role": "counselor",
+      "dynamic": true,
+      "openFrom": "/counselor/sessions"
+    },
+    {
+      "route": "/counselor/sessions/walk-in",
+      "source": "app/(portal)/counselor/sessions/walk-in/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/sessions/walk-in"
+    },
+    {
+      "route": "/counselor/students",
+      "source": "app/(portal)/counselor/students/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/students"
+    },
+    {
+      "route": "/counselor/students/[memberId]",
+      "source": "app/(portal)/counselor/students/[memberId]/page.tsx",
+      "role": "counselor",
+      "dynamic": true,
+      "openFrom": "/counselor/students"
+    },
+    {
+      "route": "/counselor/today",
+      "source": "app/(portal)/counselor/today/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/today"
+    },
+    {
+      "route": "/counselor/triage",
+      "source": "app/(portal)/counselor/triage/page.tsx",
+      "role": "counselor",
+      "dynamic": false,
+      "openFrom": "/counselor/triage"
+    },
+    {
+      "route": "/employer",
+      "source": "app/(portal)/employer/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer"
+    },
+    {
+      "route": "/employer/applications",
+      "source": "app/(portal)/employer/applications/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/applications"
+    },
+    {
+      "route": "/employer/applications/[id]",
+      "source": "app/(portal)/employer/applications/[id]/page.tsx",
+      "role": "employer",
+      "dynamic": true,
+      "openFrom": "/employer/applications"
+    },
+    {
+      "route": "/employer/billing",
+      "source": "app/(portal)/employer/billing/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/billing"
+    },
+    {
+      "route": "/employer/candidates",
+      "source": "app/(portal)/employer/candidates/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/candidates"
+    },
+    {
+      "route": "/employer/candidates/[studentId]",
+      "source": "app/(portal)/employer/candidates/[studentId]/page.tsx",
+      "role": "employer",
+      "dynamic": true,
+      "openFrom": "/employer/candidates"
+    },
+    {
+      "route": "/employer/guide",
+      "source": "app/(portal)/employer/guide/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/guide"
+    },
+    {
+      "route": "/employer/jobs",
+      "source": "app/(portal)/employer/jobs/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/jobs"
+    },
+    {
+      "route": "/employer/jobs/[id]",
+      "source": "app/(portal)/employer/jobs/[id]/page.tsx",
+      "role": "employer",
+      "dynamic": true,
+      "openFrom": "/employer/jobs"
+    },
+    {
+      "route": "/employer/jobs/[id]/applicants",
+      "source": "app/(portal)/employer/jobs/[id]/applicants/page.tsx",
+      "role": "employer",
+      "dynamic": true,
+      "openFrom": "/employer/jobs"
+    },
+    {
+      "route": "/employer/jobs/[id]/edit",
+      "source": "app/(portal)/employer/jobs/[id]/edit/page.tsx",
+      "role": "employer",
+      "dynamic": true,
+      "openFrom": "/employer/jobs"
+    },
+    {
+      "route": "/employer/jobs/import",
+      "source": "app/(portal)/employer/jobs/import/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/jobs/import"
+    },
+    {
+      "route": "/employer/jobs/new",
+      "source": "app/(portal)/employer/jobs/new/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/jobs/new"
+    },
+    {
+      "route": "/employer/jobs/post",
+      "source": "app/(portal)/employer/jobs/post/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/jobs/post"
+    },
+    {
+      "route": "/employer/loi",
+      "source": "app/employer/loi/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/loi"
+    },
+    {
+      "route": "/employer/matches",
+      "source": "app/(portal)/employer/matches/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/matches"
+    },
+    {
+      "route": "/employer/messages",
+      "source": "app/(portal)/employer/messages/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/messages"
+    },
+    {
+      "route": "/employer/outcomes",
+      "source": "app/employer/outcomes/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/outcomes"
+    },
+    {
+      "route": "/employer/pipeline",
+      "source": "app/(portal)/employer/pipeline/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/pipeline"
+    },
+    {
+      "route": "/employer/settings",
+      "source": "app/(portal)/employer/settings/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/settings"
+    },
+    {
+      "route": "/employer/thank-you",
+      "source": "app/employer/thank-you/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/thank-you"
+    },
+    {
+      "route": "/employer/work-queue",
+      "source": "app/(portal)/employer/work-queue/page.tsx",
+      "role": "employer",
+      "dynamic": false,
+      "openFrom": "/employer/work-queue"
+    },
+    {
+      "route": "/apply",
+      "source": "app/apply/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/apply"
+    },
+    {
+      "route": "/apply/confirmation",
+      "source": "app/apply/confirmation/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/apply/confirmation"
+    },
+    {
+      "route": "/apply/create-account",
+      "source": "app/apply/create-account/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/apply/create-account"
+    },
+    {
+      "route": "/apply/results",
+      "source": "app/apply/results/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/apply/results"
+    },
+    {
+      "route": "/apply/status",
+      "source": "app/apply/status/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/apply/status"
+    },
+    {
+      "route": "/apply/status/view",
+      "source": "app/apply/status/view/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/apply/status/view"
+    },
+    {
+      "route": "/consent/[token]",
+      "source": "app/consent/[token]/page.tsx",
+      "role": "entry",
+      "dynamic": true,
+      "openFrom": null
+    },
+    {
+      "route": "/employers/signup",
+      "source": "app/employers/signup/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/employers/signup"
+    },
+    {
+      "route": "/enroll/[school]",
+      "source": "app/enroll/[school]/page.tsx",
+      "role": "entry",
+      "dynamic": true,
+      "openFrom": null
+    },
+    {
+      "route": "/forgot-password",
+      "source": "app/(auth)/forgot-password/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/forgot-password"
+    },
+    {
+      "route": "/invite",
+      "source": "app/invite/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/invite"
+    },
+    {
+      "route": "/join/[code]",
+      "source": "app/join/[code]/page.tsx",
+      "role": "entry",
+      "dynamic": true,
+      "openFrom": null
+    },
+    {
+      "route": "/login",
+      "source": "app/(auth)/login/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/login"
+    },
+    {
+      "route": "/mentor/apply",
+      "source": "app/mentor/apply/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/mentor/apply"
+    },
+    {
+      "route": "/org/[slug]/outcomes",
+      "source": "app/org/[slug]/outcomes/page.tsx",
+      "role": "entry",
+      "dynamic": true,
+      "openFrom": null
+    },
+    {
+      "route": "/org/onboard",
+      "source": "app/org/onboard/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/org/onboard"
+    },
+    {
+      "route": "/partner-signup",
+      "source": "app/partner-signup/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/partner-signup"
+    },
+    {
+      "route": "/placement-survey",
+      "source": "app/placement-survey/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/placement-survey"
+    },
+    {
+      "route": "/pwa-start",
+      "source": "app/pwa-start/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/pwa-start"
+    },
+    {
+      "route": "/q/[token]",
+      "source": "app/q/[token]/page.tsx",
+      "role": "entry",
+      "dynamic": true,
+      "openFrom": null
+    },
+    {
+      "route": "/reset-password",
+      "source": "app/(auth)/reset-password/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/reset-password"
+    },
+    {
+      "route": "/setup-mfa",
+      "source": "app/(auth)/setup-mfa/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/setup-mfa"
+    },
+    {
+      "route": "/share/achievement",
+      "source": "app/share/achievement/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/share/achievement"
+    },
+    {
+      "route": "/signup",
+      "source": "app/(auth)/signup/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/signup"
+    },
+    {
+      "route": "/survey/placement/[token]",
+      "source": "app/survey/placement/[token]/page.tsx",
+      "role": "entry",
+      "dynamic": true,
+      "openFrom": null
+    },
+    {
+      "route": "/verify-mfa",
+      "source": "app/(auth)/verify-mfa/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/verify-mfa"
+    },
+    {
+      "route": "/wioa-qualification",
+      "source": "app/wioa-qualification/page.tsx",
+      "role": "entry",
+      "dynamic": false,
+      "openFrom": "/wioa-qualification"
+    },
+    {
+      "route": "/dashboard",
+      "source": "app/(portal)/dashboard/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard"
+    },
+    {
+      "route": "/dashboard/[...slug]",
+      "source": "app/(portal)/dashboard/[...slug]/page.tsx",
+      "role": "member",
+      "dynamic": true,
+      "openFrom": "/dashboard"
+    },
+    {
+      "route": "/dashboard/account",
+      "source": "app/(portal)/dashboard/account/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/account"
+    },
+    {
+      "route": "/dashboard/ai-tools",
+      "source": "app/(portal)/dashboard/ai-tools/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools"
+    },
+    {
+      "route": "/dashboard/ai-tools/application-tracker",
+      "source": "app/(portal)/dashboard/ai-tools/application-tracker/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/application-tracker"
+    },
+    {
+      "route": "/dashboard/ai-tools/benefits-cliff",
+      "source": "app/(portal)/dashboard/ai-tools/benefits-cliff/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/benefits-cliff"
+    },
+    {
+      "route": "/dashboard/ai-tools/career-business-coach",
+      "source": "app/(portal)/dashboard/ai-tools/career-business-coach/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/career-business-coach"
+    },
+    {
+      "route": "/dashboard/ai-tools/cover-letter",
+      "source": "app/(portal)/dashboard/ai-tools/cover-letter/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/cover-letter"
+    },
+    {
+      "route": "/dashboard/ai-tools/elevator-pitch",
+      "source": "app/(portal)/dashboard/ai-tools/elevator-pitch/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/elevator-pitch"
+    },
+    {
+      "route": "/dashboard/ai-tools/gap-analyzer",
+      "source": "app/(portal)/dashboard/ai-tools/gap-analyzer/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/gap-analyzer"
+    },
+    {
+      "route": "/dashboard/ai-tools/history",
+      "source": "app/(portal)/dashboard/ai-tools/history/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/history"
+    },
+    {
+      "route": "/dashboard/ai-tools/interview-coach",
+      "source": "app/(portal)/dashboard/ai-tools/interview-coach/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/interview-coach"
+    },
+    {
+      "route": "/dashboard/ai-tools/interview-practice",
+      "source": "app/(portal)/dashboard/ai-tools/interview-practice/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/interview-practice"
+    },
+    {
+      "route": "/dashboard/ai-tools/interview-prep",
+      "source": "app/(portal)/dashboard/ai-tools/interview-prep/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/interview-prep"
+    },
+    {
+      "route": "/dashboard/ai-tools/interviews",
+      "source": "app/(portal)/dashboard/ai-tools/interviews/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/interviews"
+    },
+    {
+      "route": "/dashboard/ai-tools/job-match-scorer",
+      "source": "app/(portal)/dashboard/ai-tools/job-match-scorer/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/job-match-scorer"
+    },
+    {
+      "route": "/dashboard/ai-tools/linkedin-about",
+      "source": "app/(portal)/dashboard/ai-tools/linkedin-about/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/linkedin-about"
+    },
+    {
+      "route": "/dashboard/ai-tools/linkedin-headline",
+      "source": "app/(portal)/dashboard/ai-tools/linkedin-headline/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/linkedin-headline"
+    },
+    {
+      "route": "/dashboard/ai-tools/readiness-coach",
+      "source": "app/(portal)/dashboard/ai-tools/readiness-coach/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/readiness-coach"
+    },
+    {
+      "route": "/dashboard/ai-tools/resume-analysis",
+      "source": "app/(portal)/dashboard/ai-tools/resume-analysis/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/resume-analysis"
+    },
+    {
+      "route": "/dashboard/ai-tools/resume-coach",
+      "source": "app/(portal)/dashboard/ai-tools/resume-coach/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/resume-coach"
+    },
+    {
+      "route": "/dashboard/ai-tools/resume-rewriter",
+      "source": "app/(portal)/dashboard/ai-tools/resume-rewriter/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/resume-rewriter"
+    },
+    {
+      "route": "/dashboard/ai-tools/resume-studio",
+      "source": "app/(portal)/dashboard/ai-tools/resume-studio/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/resume-studio"
+    },
+    {
+      "route": "/dashboard/ai-tools/salary-negotiation",
+      "source": "app/(portal)/dashboard/ai-tools/salary-negotiation/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/salary-negotiation"
+    },
+    {
+      "route": "/dashboard/ai-tools/skill-checkpoints",
+      "source": "app/(portal)/dashboard/ai-tools/skill-checkpoints/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/skill-checkpoints"
+    },
+    {
+      "route": "/dashboard/ai-tools/skill-mapper",
+      "source": "app/(portal)/dashboard/ai-tools/skill-mapper/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/skill-mapper"
+    },
+    {
+      "route": "/dashboard/ai-tools/studio",
+      "source": "app/(portal)/dashboard/ai-tools/studio/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/studio"
+    },
+    {
+      "route": "/dashboard/ai-tools/training-bridge",
+      "source": "app/(portal)/dashboard/ai-tools/training-bridge/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/training-bridge"
+    },
+    {
+      "route": "/dashboard/ai-tools/voice-interview",
+      "source": "app/(portal)/dashboard/ai-tools/voice-interview/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/ai-tools/voice-interview"
+    },
+    {
+      "route": "/dashboard/assessment",
+      "source": "app/(portal)/dashboard/assessment/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/assessment"
+    },
+    {
+      "route": "/dashboard/assessments",
+      "source": "app/(portal)/dashboard/assessments/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/assessments"
+    },
+    {
+      "route": "/dashboard/career-brief",
+      "source": "app/(portal)/dashboard/career-brief/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/career-brief"
+    },
+    {
+      "route": "/dashboard/career-brief/[slug]",
+      "source": "app/(portal)/dashboard/career-brief/[slug]/page.tsx",
+      "role": "member",
+      "dynamic": true,
+      "openFrom": "/dashboard/career-brief"
+    },
+    {
+      "route": "/dashboard/career-library",
+      "source": "app/(portal)/dashboard/career-library/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/career-library"
+    },
+    {
+      "route": "/dashboard/career-library/[id]",
+      "source": "app/(portal)/dashboard/career-library/[id]/page.tsx",
+      "role": "member",
+      "dynamic": true,
+      "openFrom": "/dashboard/career-library"
+    },
+    {
+      "route": "/dashboard/certifications",
+      "source": "app/(portal)/dashboard/certifications/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/certifications"
+    },
+    {
+      "route": "/dashboard/counselor",
+      "source": "app/(portal)/dashboard/counselor/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/counselor"
+    },
+    {
+      "route": "/dashboard/counselor/[id]",
+      "source": "app/(portal)/dashboard/counselor/[id]/page.tsx",
+      "role": "member",
+      "dynamic": true,
+      "openFrom": "/dashboard/counselor"
+    },
+    {
+      "route": "/dashboard/coursera",
+      "source": "app/(portal)/dashboard/coursera/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/coursera"
+    },
+    {
+      "route": "/dashboard/documents",
+      "source": "app/(portal)/dashboard/documents/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/documents"
+    },
+    {
+      "route": "/dashboard/eligibility",
+      "source": "app/(portal)/dashboard/eligibility/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/eligibility"
+    },
+    {
+      "route": "/dashboard/guide",
+      "source": "app/(portal)/dashboard/guide/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/guide"
+    },
+    {
+      "route": "/dashboard/help",
+      "source": "app/(portal)/dashboard/help/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/help"
+    },
+    {
+      "route": "/dashboard/job-applications",
+      "source": "app/(portal)/dashboard/job-applications/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/job-applications"
+    },
+    {
+      "route": "/dashboard/jobs",
+      "source": "app/(portal)/dashboard/jobs/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/jobs"
+    },
+    {
+      "route": "/dashboard/jobs/[id]",
+      "source": "app/(portal)/dashboard/jobs/[id]/page.tsx",
+      "role": "member",
+      "dynamic": true,
+      "openFrom": "/dashboard/jobs"
+    },
+    {
+      "route": "/dashboard/learning",
+      "source": "app/(portal)/dashboard/learning/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/learning"
+    },
+    {
+      "route": "/dashboard/learning/find-your-career",
+      "source": "app/(portal)/dashboard/learning/find-your-career/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/learning/find-your-career"
+    },
+    {
+      "route": "/dashboard/learning/interest-profiler",
+      "source": "app/(portal)/dashboard/learning/interest-profiler/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/learning/interest-profiler"
+    },
+    {
+      "route": "/dashboard/learning/labs/[labId]",
+      "source": "app/(portal)/dashboard/learning/labs/[labId]/page.tsx",
+      "role": "member",
+      "dynamic": true,
+      "openFrom": "/dashboard/learning"
+    },
+    {
+      "route": "/dashboard/learning/modules/[courseSlug]",
+      "source": "app/(portal)/dashboard/learning/modules/[courseSlug]/page.tsx",
+      "role": "member",
+      "dynamic": true,
+      "openFrom": "/dashboard/learning"
+    },
+    {
+      "route": "/dashboard/learning/wioa-qualification",
+      "source": "app/(portal)/dashboard/learning/wioa-qualification/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/learning/wioa-qualification"
+    },
+    {
+      "route": "/dashboard/mentor",
+      "source": "app/(portal)/dashboard/mentor/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/mentor"
+    },
+    {
+      "route": "/dashboard/mentors",
+      "source": "app/(portal)/dashboard/mentors/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/mentors"
+    },
+    {
+      "route": "/dashboard/mentors/[mentorId]",
+      "source": "app/(portal)/dashboard/mentors/[mentorId]/page.tsx",
+      "role": "member",
+      "dynamic": true,
+      "openFrom": "/dashboard/mentors"
+    },
+    {
+      "route": "/dashboard/messages",
+      "source": "app/(portal)/dashboard/messages/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/messages"
+    },
+    {
+      "route": "/dashboard/missions",
+      "source": "app/(portal)/dashboard/missions/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/missions"
+    },
+    {
+      "route": "/dashboard/points",
+      "source": "app/(portal)/dashboard/points/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/points"
+    },
+    {
+      "route": "/dashboard/profile",
+      "source": "app/(portal)/dashboard/profile/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/profile"
+    },
+    {
+      "route": "/dashboard/program",
+      "source": "app/(portal)/dashboard/program/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/program"
+    },
+    {
+      "route": "/dashboard/program/change",
+      "source": "app/(portal)/dashboard/program/change/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/program/change"
+    },
+    {
+      "route": "/dashboard/program/coursera-enrollment",
+      "source": "app/(portal)/dashboard/program/coursera-enrollment/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/program/coursera-enrollment"
+    },
+    {
+      "route": "/dashboard/program/employer-screening",
+      "source": "app/(portal)/dashboard/program/employer-screening/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/program/employer-screening"
+    },
+    {
+      "route": "/dashboard/program/start",
+      "source": "app/(portal)/dashboard/program/start/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/program/start"
+    },
+    {
+      "route": "/dashboard/readiness",
+      "source": "app/(portal)/dashboard/readiness/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/readiness"
+    },
+    {
+      "route": "/dashboard/referrals",
+      "source": "app/(portal)/dashboard/referrals/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/referrals"
+    },
+    {
+      "route": "/dashboard/resources",
+      "source": "app/(portal)/dashboard/resources/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/resources"
+    },
+    {
+      "route": "/dashboard/resume",
+      "source": "app/(portal)/dashboard/resume/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/resume"
+    },
+    {
+      "route": "/dashboard/settings",
+      "source": "app/(portal)/dashboard/settings/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/settings"
+    },
+    {
+      "route": "/dashboard/skills-assessment",
+      "source": "app/(portal)/dashboard/skills-assessment/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/skills-assessment"
+    },
+    {
+      "route": "/dashboard/survey",
+      "source": "app/(portal)/dashboard/survey/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/survey"
+    },
+    {
+      "route": "/dashboard/toolkit",
+      "source": "app/(portal)/dashboard/toolkit/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/toolkit"
+    },
+    {
+      "route": "/dashboard/training",
+      "source": "app/(portal)/dashboard/training/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/training"
+    },
+    {
+      "route": "/dashboard/weekly-recap",
+      "source": "app/(portal)/dashboard/weekly-recap/page.tsx",
+      "role": "member",
+      "dynamic": false,
+      "openFrom": "/dashboard/weekly-recap"
+    },
+    {
+      "route": "/partner",
+      "source": "app/(portal)/partner/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner"
+    },
+    {
+      "route": "/partner/attention",
+      "source": "app/(portal)/partner/attention/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner/attention"
+    },
+    {
+      "route": "/partner/exports",
+      "source": "app/(portal)/partner/exports/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner/exports"
+    },
+    {
+      "route": "/partner/guide",
+      "source": "app/(portal)/partner/guide/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner/guide"
+    },
+    {
+      "route": "/partner/impact",
+      "source": "app/(portal)/partner/impact/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner/impact"
+    },
+    {
+      "route": "/partner/members",
+      "source": "app/(portal)/partner/members/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner/members"
+    },
+    {
+      "route": "/partner/members/[id]",
+      "source": "app/(portal)/partner/members/[id]/page.tsx",
+      "role": "partner",
+      "dynamic": true,
+      "openFrom": "/partner/members"
+    },
+    {
+      "route": "/partner/messages",
+      "source": "app/(portal)/partner/messages/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner/messages"
+    },
+    {
+      "route": "/partner/milestones",
+      "source": "app/(portal)/partner/milestones/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner/milestones"
+    },
+    {
+      "route": "/partner/outcomes",
+      "source": "app/(portal)/partner/outcomes/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner/outcomes"
+    },
+    {
+      "route": "/partner/referred-members",
+      "source": "app/(portal)/partner/referred-members/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner/referred-members"
+    },
+    {
+      "route": "/partner/referred-members/[memberId]",
+      "source": "app/(portal)/partner/referred-members/[memberId]/page.tsx",
+      "role": "partner",
+      "dynamic": true,
+      "openFrom": "/partner/referred-members"
+    },
+    {
+      "route": "/partner/resources",
+      "source": "app/(portal)/partner/resources/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner/resources"
+    },
+    {
+      "route": "/partner/settings",
+      "source": "app/(portal)/partner/settings/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner/settings"
+    },
+    {
+      "route": "/partner/signup",
+      "source": "app/(portal)/partner/signup/page.tsx",
+      "role": "partner",
+      "dynamic": false,
+      "openFrom": "/partner/signup"
+    },
+    {
+      "route": "/account",
+      "source": "app/(portal)/account/page.tsx",
+      "role": "shared",
+      "dynamic": false,
+      "openFrom": "/account"
+    },
+    {
+      "route": "/account/privacy",
+      "source": "app/(portal)/account/privacy/page.tsx",
+      "role": "shared",
+      "dynamic": false,
+      "openFrom": "/account/privacy"
+    },
+    {
+      "route": "/applications",
+      "source": "app/(portal)/applications/page.tsx",
+      "role": "shared",
+      "dynamic": false,
+      "openFrom": "/applications"
+    },
+    {
+      "route": "/certifications",
+      "source": "app/(portal)/certifications/page.tsx",
+      "role": "shared",
+      "dynamic": false,
+      "openFrom": "/certifications"
+    },
+    {
+      "route": "/coach",
+      "source": "app/(portal)/coach/page.tsx",
+      "role": "shared",
+      "dynamic": false,
+      "openFrom": "/coach"
+    },
+    {
+      "route": "/help",
+      "source": "app/(portal)/help/page.tsx",
+      "role": "shared",
+      "dynamic": false,
+      "openFrom": "/help"
+    },
+    {
+      "route": "/leader/dashboard",
+      "source": "app/(portal)/leader/dashboard/page.tsx",
+      "role": "shared",
+      "dynamic": false,
+      "openFrom": "/leader/dashboard"
+    },
+    {
+      "route": "/profile",
+      "source": "app/(portal)/profile/page.tsx",
+      "role": "shared",
+      "dynamic": false,
+      "openFrom": "/profile"
+    },
+    {
+      "route": "/resources",
+      "source": "app/(portal)/resources/page.tsx",
+      "role": "shared",
+      "dynamic": false,
+      "openFrom": "/resources"
+    },
+    {
+      "route": "/resources/[id]",
+      "source": "app/(portal)/resources/[id]/page.tsx",
+      "role": "shared",
+      "dynamic": true,
+      "openFrom": "/resources"
+    }
+  ],
+  "focusCases": [
+    {
+      "role": "member",
+      "route": "/dashboard/resume?view=files",
+      "title": "Resume · Files",
+      "checks": "Upload a real test resume. Switch views and return. Download the original and a revised copy; check that existing application snapshots are unchanged."
+    },
+    {
+      "role": "member",
+      "route": "/dashboard/resume?view=score",
+      "title": "Resume · Score",
+      "checks": "Choose or paste a resume, score it, and reopen the saved result. Confirm the selected source and score history."
+    },
+    {
+      "role": "member",
+      "route": "/dashboard/resume?view=rewrite",
+      "title": "Resume · Rewrite",
+      "checks": "Enter a draft, change views, return, and confirm the draft survives. Generate and download a revised copy without replacing the original."
+    },
+    {
+      "role": "member",
+      "route": "/dashboard/resume?view=coach",
+      "title": "Resume · Coach",
+      "checks": "Open coaching for the selected resume. Check its source label, provider failure/retry and return to Files."
+    },
+    {
+      "role": "member",
+      "route": "/dashboard/learning/interest-profiler",
+      "title": "Career path · Interests",
+      "checks": "Complete or open saved interests, inspect suggested occupations, and continue to Skill Mapper."
+    },
+    {
+      "role": "member",
+      "route": "/dashboard/ai-tools/skill-mapper",
+      "title": "Career path · O*NET and graph",
+      "checks": "Look up an occupation. Check O*NET identity/source, skills, related occupations, graph/list controls and a saved run. Continue to Training Bridge from that exact run."
+    },
+    {
+      "role": "member",
+      "route": "/dashboard/ai-tools/training-bridge",
+      "title": "Career path · Training Bridge",
+      "checks": "Open from a saved Skill Mapper result. Confirm the occupation and source, distinguish occupation evidence from personal proficiency, then review the program/curriculum handoff. A bad result ID must not select another run."
+    },
+    {
+      "role": "member",
+      "route": "/dashboard/ai-tools/interviews",
+      "title": "Interview practice · Choose a format",
+      "checks": "Open each offered interview mode. Verify written, voice and coaching labels match the actual tool, and histories still open."
+    },
+    {
+      "role": "member",
+      "route": "/dashboard/program",
+      "title": "My program · Learning handoff",
+      "checks": "Open assigned training, the Learning Hub and provider launch. Confirm enrollment, progress and prerequisite gates remain accurate."
+    },
+    {
+      "role": "member",
+      "route": "/dashboard/messages",
+      "title": "Messages · Human counselor",
+      "checks": "Confirm the destination is the human counselor conversation, separate from the AI Advisor. Use test accounts for any send."
+    },
+    {
+      "role": "counselor",
+      "route": "/counselor/today?view=attention",
+      "title": "Today · Needs attention",
+      "checks": "Check the same scoped members and reasons, counts, partial-load warning and per-member actions. Open a record and return to this view."
+    },
+    {
+      "role": "counselor",
+      "route": "/counselor/today?view=attention&filter=priorities",
+      "title": "Today · By priority",
+      "checks": "Compare urgency ordering and row actions with the legacy triage URL."
+    },
+    {
+      "role": "counselor",
+      "route": "/counselor/today?view=attention&filter=at-risk",
+      "title": "Today · At-risk cases",
+      "checks": "Check risk reasons, filters and member access. Reopen the guided tour and its at-risk step."
+    },
+    {
+      "role": "counselor",
+      "route": "/counselor/today?view=attention&filter=inactive",
+      "title": "Today · Inactive members",
+      "checks": "Check scoped members, inactivity windows and contact details. Use a designated test record to check outreach success and failure feedback."
+    },
+    {
+      "role": "counselor",
+      "route": "/counselor/today?view=replies",
+      "title": "Today · Awaiting reply",
+      "checks": "Open the waiting member thread. Check unread/reply-age counts and message actions without combining notification counts."
+    },
+    {
+      "role": "counselor",
+      "route": "/counselor/today?view=decisions",
+      "title": "Today · Decisions",
+      "checks": "Review application and intake actions with authorized test records. Check decision feedback and oldest-first order."
+    },
+    {
+      "role": "counselor",
+      "route": "/counselor/today?view=followup",
+      "title": "Today · Follow-up",
+      "checks": "Prepare a follow-up, record a test contact, and verify the next handoff/status."
+    },
+    {
+      "role": "counselor",
+      "route": "/counselor/today?view=overview",
+      "title": "Today · Overview",
+      "checks": "Check caseload, sessions and activity. Verify all old overview links still reach their tools."
+    },
+    {
+      "role": "admin",
+      "route": "/admin/students?view=roster",
+      "title": "Students · Roster",
+      "checks": "Filter, sort and page the roster; open a member and return with the same search, filters and page."
+    },
+    {
+      "role": "admin",
+      "route": "/admin/students?view=manage",
+      "title": "Students · Manage",
+      "checks": "Check program/status/partner/date/staff filters, selected rows, bulk actions and matching CSV export. Use test records for writes."
+    },
+    {
+      "role": "admin",
+      "route": "/admin/students?view=training",
+      "title": "Students · Training",
+      "checks": "Check curriculum, provider coverage, pace and unmatched records. Verify progress definitions match the existing view."
+    },
+    {
+      "role": "admin",
+      "route": "/admin/students?view=readiness",
+      "title": "Students · Interview ready",
+      "checks": "Check interview eligibility and its evidence. Verify the old interview-ready link still works."
+    },
+    {
+      "role": "admin",
+      "route": "/admin/students?view=readiness&readiness=job",
+      "title": "Students · Training 70%+",
+      "checks": "Check training completion separately from interview eligibility. Verify the old job-ready link still works."
+    },
+    {
+      "role": "admin",
+      "route": "/admin/reporting?tab=overview",
+      "title": "Reporting · overview",
+      "checks": "Check selected period, population, definitions and download context. Compare on-screen totals with the matching export, accounting for distinct metric definitions."
+    },
+    {
+      "role": "admin",
+      "route": "/admin/reporting?tab=outcomes",
+      "title": "Reporting · outcomes",
+      "checks": "Check selected period, population, definitions and download context. Compare on-screen totals with the matching export, accounting for distinct metric definitions."
+    },
+    {
+      "role": "admin",
+      "route": "/admin/reporting?tab=training",
+      "title": "Reporting · training",
+      "checks": "Check selected period, population, definitions and download context. Compare on-screen totals with the matching export, accounting for distinct metric definitions."
+    },
+    {
+      "role": "admin",
+      "route": "/admin/reporting?tab=coursera",
+      "title": "Reporting · coursera",
+      "checks": "Check selected period, population, definitions and download context. Compare on-screen totals with the matching export, accounting for distinct metric definitions."
+    },
+    {
+      "role": "admin",
+      "route": "/admin/reporting?tab=exports",
+      "title": "Reporting · exports",
+      "checks": "Check selected period, population, definitions and download context. Compare on-screen totals with the matching export, accounting for distinct metric definitions."
+    },
+    {
+      "role": "employer",
+      "route": "/employer/jobs",
+      "title": "Jobs · Post and import",
+      "checks": "Check Post and Import on phone and desktop. Open full, quick and import flows; confirm draft/pending counts and return filters."
+    },
+    {
+      "role": "employer",
+      "route": "/employer/candidates?view=applicants",
+      "title": "Candidates · Applicants",
+      "checks": "Filter by job/status and open an application. Check evidence, status actions, pagination and return context."
+    },
+    {
+      "role": "employer",
+      "route": "/employer/candidates?view=matches",
+      "title": "Candidates · Matches",
+      "checks": "Review AI suggestions for the chosen posting. Keep suggested matches distinct from submitted applications and preserve filters."
+    },
+    {
+      "role": "employer",
+      "route": "/employer/candidates?view=pipeline",
+      "title": "Candidates · Pipeline",
+      "checks": "Move an authorized test candidate through a hiring stage. Check mobile alternatives, feedback, persistence and the candidate detail return."
+    },
+    {
+      "role": "partner",
+      "route": "/partner/impact?view=outcomes",
+      "title": "Impact · Outcomes",
+      "checks": "Check the period, population and placement definition. Compare with the old Outcomes URL."
+    },
+    {
+      "role": "partner",
+      "route": "/partner/impact?view=milestones",
+      "title": "Impact · Milestones",
+      "checks": "Check milestone filters, details and new counts. Keep reported milestones distinct from verified placements."
+    },
+    {
+      "role": "partner",
+      "route": "/partner/impact?view=exports",
+      "title": "Impact · Exports",
+      "checks": "Download an authorized test CSV and verify scope, headers, consent restrictions and dates."
+    },
+    {
+      "role": "partner",
+      "route": "/partner/referred-members",
+      "title": "Partner members · Return context",
+      "checks": "Filter by stage and search on phone and desktop, open a member, then return with the same list."
+    }
+  ]
+}

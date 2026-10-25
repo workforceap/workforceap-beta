@@ -23,11 +23,12 @@ export type HelpAssistantAvailability =
  * row is absent or off). One request per shell mount; any failure reads as
  * "off", so an outage hides the entry instead of breaking the Help menu.
  */
-export function useHelpAssistantAvailability(): HelpAssistantAvailability {
+export function useHelpAssistantAvailability(enabled = true): HelpAssistantAvailability {
   const pathname = usePathname();
   const [state, setState] = useState<HelpAssistantAvailability>({ status: 'loading' });
 
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
     const controller = new AbortController();
     const query = pathname ? `?pathname=${encodeURIComponent(pathname)}` : '';
@@ -57,7 +58,7 @@ export function useHelpAssistantAvailability(): HelpAssistantAvailability {
     };
     // Availability depends on the flag and roles, not the page; resolve once per mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [enabled]);
 
-  return state;
+  return enabled ? state : { status: 'off' };
 }

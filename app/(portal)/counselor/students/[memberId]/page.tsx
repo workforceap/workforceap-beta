@@ -11,6 +11,7 @@ import { prisma } from '@/lib/db/prisma';
 import { formatPortalDate } from '@/lib/formatDate';
 import { MEMBER_HISTORY_CAP, isListTruncated, showingFirstLabel } from '@/lib/db/queryCaps';
 import PageHeader from '@/components/portal/PageHeader';
+import PortalBackLink from '@/components/portal/PortalBackLink';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import AdminMemberCounselorChatClient from '@/components/admin/AdminMemberCounselorChatClient';
 import Link from 'next/link';
@@ -103,6 +104,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
   if (!counselor && !adminUser) redirect('/dashboard');
 
   const t = await getTranslations('counselor');
+  const tWorkspace = await getTranslations('portalWorkspaces');
   if (!(await assertStaffCanAccessMemberRecord(user.id, memberId))) notFound();
 
   const member = await prisma.user.findFirst({
@@ -588,6 +590,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
         ]}
         action={
           <div className={styles.headerActions}>
+            <PortalBackLink fallbackHref="/counselor/students" fallbackLabel={tWorkspace('backToMembers')} className="btn btn-outline btn-sm" />
             <Link href={messageHref} className="btn btn-outline btn-sm">
               <span className={`material-symbols-outlined ${styles.actionIcon}`} aria-hidden="true">
                 chat

@@ -1,5 +1,6 @@
 'use client';
 
+import { formatPortalDate } from '@/lib/formatDate';
 import { useMemo } from 'react';
 
 export type TimelineStage =
@@ -200,7 +201,7 @@ export default function MemberProgressTimeline({ events }: Props) {
                 </div>
                 {event.date ? (
                   <p style={{ margin: '0.15rem 0 0', fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-                    {new Date(event.date).toLocaleDateString()}
+                    {formatPortalDate(event.date)}
                     {event.durationDays != null ? ` · ${event.durationDays}d` : null}
                   </p>
                 ) : (

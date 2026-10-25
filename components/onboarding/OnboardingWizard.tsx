@@ -20,6 +20,8 @@ export interface OnboardingWizardProps {
   hideFooterOnLastStep?: boolean;
   /** Re-hydrate from DB so returning users resume where they left off. */
   initialStep?: number;
+  /** Runs the flow locally without persisting progress or completion. */
+  previewOnly?: boolean;
 }
 
 export default function OnboardingWizard({
@@ -29,6 +31,7 @@ export default function OnboardingWizard({
   stepHooks,
   hideFooterOnLastStep,
   initialStep = 0,
+  previewOnly = false,
 }: OnboardingWizardProps) {
   const [step, setStep] = useState(() => Math.min(Math.max(initialStep, 0), steps.length - 1));
   const [exiting, setExiting] = useState(false);
@@ -38,6 +41,7 @@ export default function OnboardingWizard({
   /** Persist current step index to DB so returning users resume where they left off.
    *  Returns true on success, false on failure so callers can react. */
   const persistStep = useCallback(async (nextStep: number) => {
+    if (previewOnly) return true;
     try {
       const res = await fetch('/api/onboarding/step', {
         method: 'POST',
@@ -48,7 +52,7 @@ export default function OnboardingWizard({
     } catch {
       return false;
     }
-  }, [portal]);
+  }, [portal, previewOnly]);
 
   /** Re-hydrate the DB with the current step on mount so partially-completed
    *  sessions that were restored from DB are immediately re-persisted. This
@@ -63,18 +67,20 @@ export default function OnboardingWizard({
   }, [step, steps.length, persistStep]);
 
   const finish = useCallback(async () => {
-    try {
-      await fetch('/api/onboarding/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ portal }),
-      });
-    } catch {
-      /* still dismiss */
+    if (!previewOnly) {
+      try {
+        await fetch('/api/onboarding/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ portal }),
+        });
+      } catch {
+        /* still dismiss */
+      }
     }
     setExiting(true);
     setTimeout(() => onComplete(), 200);
-  }, [onComplete, portal]);
+  }, [onComplete, portal, previewOnly]);
 
   /** Skip the rest of onboarding and mark it complete. */
   const skip = useCallback(() => {
@@ -92,6 +98,7 @@ export default function OnboardingWizard({
   /** Persist current step before the user closes the tab so partially-
    *  completed steps are not lost. Uses sendBeacon for reliability. */
   useEffect(() => {
+    if (previewOnly) return;
     const onBeforeUnload = () => {
       const data = JSON.stringify({ portal, step });
       const blob = new Blob([data], { type: 'application/json' });
@@ -99,7 +106,7 @@ export default function OnboardingWizard({
     };
     window.addEventListener('beforeunload', onBeforeUnload);
     return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, [portal, step]);
+  }, [portal, step, previewOnly]);
 
   useEffect(() => {
     const root = panelRef.current;

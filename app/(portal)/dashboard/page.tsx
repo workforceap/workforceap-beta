@@ -21,6 +21,7 @@ import { memberApprovalCardPlacement } from '@/lib/member/memberApprovalCardPlac
 import { legacyDashboardRedirectTarget } from '@/lib/member/dashboardLegacyRedirect';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
 import { MemberHomeViewEvents } from '@/components/portal/kit/pages/member/MemberHomeViewEvents';
+import { getResumeDraftOwnerToken } from '@/lib/resume/resumeProfileRevision';
 
 const PWAInstallPrompt = dynamic(() => import('@/components/pwa/PWAInstallPrompt'), {
   loading: () => null,
@@ -107,9 +108,10 @@ async function renderMemberDashboard(
     requestedProgramSlug: args.requestedProgramSlug,
     provisionIfMissing: () => ensureAppUserProvisioned(user, { readOnlyAudit: args.readOnlyAudit }),
   });
-  // Presentation only: a pathway with a live next step keeps the approval
-  // card above the dashboard; a finished or closed one drops below the
-  // content as a single collapsed line (memberApprovalCardPlacement).
+  // Presentation only: the approval status is a slim strip in the page header
+  // (MemberHomeKit `approvalSlot`). A live pathway names its next step on the
+  // line under the strip; a finished or closed one names the saved state
+  // (memberApprovalCardPlacement).
   const approvalPlacement = memberApprovalCardPlacement(home.approvalStatus);
   // Who reviews the pending step comes from the loader's own user read. The
   // measured wait is a separate read, taken only while the application
@@ -124,6 +126,7 @@ async function renderMemberDashboard(
       storageUserId={user.id}
       placement={approvalPlacement}
       counselorContext={counselorContext}
+      variant="compact"
     />
   );
   // Staff looking at a member home see the same notice My Program shows
@@ -184,8 +187,10 @@ async function renderMemberDashboard(
         </PortalEntryClient>
       </PortalEntryErrorBoundary>
     ) : null}
-    {approvalPlacement === 'primary' ? approvalCard : null}
     <MemberHomeKit
+      approvalSlot={approvalCard}
+      resumeDraftOwnerToken={getResumeDraftOwnerToken(user.id)}
+      resumeStudioHref="/dashboard/resume"
       showStaffViewBanner={staffViewer}
       advisor={counselorContext?.counselor ?? null}
       programSwitch={home.programSwitch}
@@ -220,6 +225,7 @@ async function renderMemberDashboard(
       toolkitHref={home.toolkitHref}
       jobsHref={home.jobsHref}
       doThisNext={home.doThisNext}
+      handoff={home.handoff}
       upNext={home.upNext}
       recommendedTool={home.recommendedTool}
       preassessmentCompleted={home.preassessmentCompleted}
@@ -228,7 +234,6 @@ async function renderMemberDashboard(
       first90={home.first90}
       youthNoticeAge={home.youthNoticeAge}
     />
-    {approvalPlacement === 'demoted' ? approvalCard : null}
     </>
   );
 }

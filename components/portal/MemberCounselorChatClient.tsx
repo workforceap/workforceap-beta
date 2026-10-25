@@ -1,5 +1,6 @@
 'use client';
 
+import { formatPortalDateTime } from '@/lib/formatDate';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import VoiceAgentSurface from '@/components/portal/VoiceAgentSurface';
@@ -222,7 +223,7 @@ export default function MemberCounselorChatClient({
               >
                 <div className="member-counselor-chat__bubble-body">{m.body}</div>
                 <time className="member-counselor-chat__bubble-time" dateTime={m.createdAt}>
-                  {new Date(m.createdAt).toLocaleString()}
+                  {formatPortalDateTime(m.createdAt)}
                 </time>
               </div>
             );

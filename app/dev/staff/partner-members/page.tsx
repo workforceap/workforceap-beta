@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
-import { DesignSurface, SectionHeader } from '@/components/portal/kit';
+import { DesignSurface } from '@/components/portal/kit';
+import PageHeader from '@/components/portal/PageHeader';
 import PartnerMembersList from '@/components/portal/PartnerMembersList';
 import PartnerReferredMembersMobile from '@/components/partner/PartnerReferredMembersMobile';
 
@@ -97,10 +98,9 @@ export default function DevStaffPartnerMembersPage() {
 
   return (
     <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6 wa-p-6">
-      <SectionHeader
-        kicker="Partner Dashboard"
-        title="Referred Members"
-        goal="Enrollment and placement dates across every referral milestone stage"
+      <PageHeader
+        title="Referred members"
+        subtitle="Search and filter everyone your organization has referred to WorkforceAP."
       />
 
       <div className="wa-block md:wa-hidden">

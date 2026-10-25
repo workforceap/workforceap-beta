@@ -1,0 +1,169 @@
+/*
+ * Skill missions list. Calm kit cards on the warm canvas: hairline borders,
+ * 12px corners, status carried by a small icon + one chip, one crimson fill
+ * (the CTA) per card. Colours are tokens only; success text uses
+ * --wa-success-dark and never --wa-success (a fill colour, 3.1:1 as text).
+ */
+
+.panel {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.heading {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--wa-text);
+}
+
+.lede {
+  margin: 4px 0 0;
+  font-size: var(--wa-type-body);
+  line-height: 1.5;
+  color: var(--wa-muted-strong);
+}
+
+/* ── Progress card ─────────────────────────────────────────────────────── */
+
+.progress {
+  display: grid;
+  gap: 12px;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skillsBlock {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--wa-border);
+}
+
+.skillsLabel {
+  margin: 0;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  color: var(--wa-muted-strong);
+}
+
+/* ── Mission list ──────────────────────────────────────────────────────── */
+
+.listSection {
+  display: grid;
+  gap: 12px;
+}
+
+.list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mission {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.missionHead {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--wa-surface-2);
+  color: var(--wa-muted-strong);
+}
+
+.icon[data-tone='success'] {
+  background: var(--wa-success-soft);
+  color: var(--wa-success-dark);
+}
+
+.icon[data-tone='accent'] {
+  background: var(--wa-accent-soft);
+  color: var(--wa-accent-text);
+}
+
+.missionMain {
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--wa-text);
+  overflow-wrap: anywhere;
+}
+
+/* The title takes focus after a mission closes and its card changes state.
+   The ring is the kit recipe (.wa-kit-focus on the heading); only the corner radius is local. */
+.title:focus-visible {
+  border-radius: 4px;
+}
+
+.sub {
+  margin: 4px 0 0;
+  font-size: var(--wa-type-body);
+  line-height: 1.45;
+  color: var(--wa-muted-strong);
+}
+
+.quote {
+  margin: 0;
+  padding: 0 0 0 12px;
+  border-left: 3px solid var(--wa-border);
+  font-size: var(--wa-type-body);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--wa-muted-strong);
+}
+
+.coaching {
+  margin: 0;
+  font-size: var(--wa-type-body);
+  line-height: 1.5;
+  color: var(--wa-muted-strong);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Locked missions stay legible: muted ink, not reduced opacity. */
+.mission[data-status='locked'] .title {
+  color: var(--wa-muted-strong);
+}
+
+@media (max-width: 520px) {
+  .missionHead {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .statusChip {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

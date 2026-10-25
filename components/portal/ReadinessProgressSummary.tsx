@@ -121,6 +121,7 @@ export function ReadinessProgressSummary({
   nextAction,
   breakdown = null,
   coachHref = '/dashboard/ai-tools/studio?tab=session&agent=readiness',
+  learningHref,
   enableGeneration = true,
   loadFailed = false,
 }: {
@@ -128,9 +129,14 @@ export function ReadinessProgressSummary({
   nextAction: ReadinessPriorityAction | null;
   breakdown?: ReadinessRecapBreakdown | null;
   coachHref?: string;
+  /** Optional Learning Hub route for fixture-owned next actions. */
+  learningHref?: string;
   enableGeneration?: boolean;
   loadFailed?: boolean;
 }) {
+  const nextActionHref = nextAction?.href === '/dashboard/learning' && learningHref
+    ? learningHref
+    : nextAction?.href;
   const announce = useAnnounce();
   const [summary, setSummary] = useState(factualSummary);
   const [source, setSource] = useState<ReadinessSummarySource>(loadFailed ? 'error' : 'factual');
@@ -202,7 +208,7 @@ export function ReadinessProgressSummary({
       <div className="wa-flex wa-flex-wrap wa-gap-3" style={{ marginTop: 16 }}>
         {nextAction ? (
           <a
-            href={nextAction.href}
+            href={nextActionHref}
             className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
           >
             <ArrowRight size={14} aria-hidden="true" />

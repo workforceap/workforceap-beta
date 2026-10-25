@@ -7,6 +7,8 @@ import { getUser } from '@/lib/auth/server';
 import { getPartnerForUser } from '@/lib/auth/roles';
 import { unlinkedPartnerHref } from '@/lib/auth/portalGuards';
 import { prisma } from '@/lib/db/prisma';
+import { signedInFirstName } from '@/lib/portal/signedInFirstName';
+import { staffWelcomeTitle } from '@/components/portal/kit/pages/StaffKit';
 import { formatPortalDateTime } from '@/lib/formatDate';
 import { ADMIN_SSR_LIST_CAP } from '@/lib/db/queryCaps';
 
@@ -49,10 +51,10 @@ import { MEMBER_ONLY_WHERE } from '@/lib/admin/memberOnlyWhere';
 import {
   DesignSurface,
   SectionHeader as KitSectionHeader,
-  PageOpener,
   DataTable as KitDataTable,
   QueueRow,
   StatusTag,
+  PageOpener,
 } from '@/components/portal/kit';
 import {
   PartnerKpiGrid,
@@ -216,6 +218,7 @@ export default async function PartnerDashboardPage({
       payoutEvents,
       pendingPlacementCount,
       attentionCount,
+      partnerFirstName,
     ] = await Promise.all([
         prisma.partnerReferral.count({
           where: {
@@ -304,6 +307,10 @@ export default async function PartnerDashboardPage({
           console.error('[partner overview] attention count failed', err);
           return null;
         }),
+        // Person-facing greeting ("Welcome back, {first name}."): the partner
+        // context carries the organisation, not the person. Runs inside this batch
+        // so it adds no serial round trip, and only on the path that renders it.
+        signedInFirstName(user.id),
       ]);
 
     const placementRate =
@@ -447,10 +454,10 @@ export default async function PartnerDashboardPage({
         {partnerSchemaCompatibilityFallback ? <span hidden data-portal-error-state="partner-schema-compatibility-fallback" /> : null}
         <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6">
           {isPendingApproval && <PendingApprovalBanner />}
+          {/* Person-facing greeting ("Welcome back, {first name}."), the partner name when unknown. */}
           <PageOpener
-            kicker={t('partnerDashboard')}
-            title={ctx.partner.name}
-            lede={t('referralsProgressOutcomes', { partnerName: ctx.partner.name })}
+            title={partnerFirstName ? staffWelcomeTitle(partnerFirstName) : ctx.partner.name}
+            meta={t('referralsProgressOutcomes', { partnerName: ctx.partner.name })}
           />
 
           {/* `tour-referral-link`: step 1 of the partner guided tour (lib/tours/registry.ts). */}
@@ -515,7 +522,7 @@ export default async function PartnerDashboardPage({
             href="/partner/attention"
           />
 
-          <PartnerAssistantAccordion title={t('partnerAssistant')} hint="(tap to open)">
+          <PartnerAssistantAccordion title={t('partnerAssistant')}>
             <VoiceAgentSurface {...partnerVoiceSurface}>
               <PortalVoiceSessionLazy
                 sessionEndpoint="/api/partner/voice-session"

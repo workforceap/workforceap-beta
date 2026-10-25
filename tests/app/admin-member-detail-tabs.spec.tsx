@@ -3,6 +3,7 @@ process.env.TZ = 'UTC';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { withPortalIntl } from '@/tests/helpers/withPortalIntl';
 
 /**
  * Admin audit gap map (wave 16): the admin member record reads as seven tabs
@@ -48,6 +49,8 @@ afterAll(() => dialogMethods.forEach((name, i) => {
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh: routerRefresh }),
+  usePathname: () => window.location.pathname,
+  useSearchParams: () => new URLSearchParams(window.location.search),
   redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); },
   notFound: () => { throw new Error('NOT_FOUND'); },
 }));
@@ -174,11 +177,16 @@ const PANELS_BY_TAB: Record<(typeof TAB_IDS)[number], string[]> = {
 };
 
 async function renderPage(searchParams?: Record<string, string | string[] | undefined>): Promise<Document> {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(searchParams ?? {})) {
+    for (const entry of Array.isArray(value) ? value : value === undefined ? [] : [value]) query.append(key, entry);
+  }
+  window.history.replaceState(null, '', `/admin/members/member-1${query.size ? `?${query}` : ''}`);
   const html = renderToStaticMarkup(
-    await AdminMemberDetailPage({
+    withPortalIntl(await AdminMemberDetailPage({
       params: Promise.resolve({ id: 'member-1' }),
       ...(searchParams ? { searchParams: Promise.resolve(searchParams) } : {}),
-    }),
+    })),
   );
   const doc = document.implementation.createHTMLDocument('member detail');
   doc.body.innerHTML = html;
@@ -199,6 +207,7 @@ function tab(doc: Document, id: string): HTMLElement {
 
 describe('AdminMemberDetailPage record tabs (server render)', () => {
   beforeEach(() => {
+    window.history.replaceState(null, '', '/admin/members/member-1');
     vi.stubEnv('ENROLLMENT_AGREEMENTS_ENABLED', 'true');
     for (const key of Object.keys(db.overrides)) delete db.overrides[key];
     db.overrides['user.findFirst'] = async () => ({
@@ -398,7 +407,7 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     vi.stubGlobal('fetch', request);
     vi.stubGlobal('scrollTo', vi.fn());
     vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
-    render(await AdminMemberDetailPage({ params: Promise.resolve({ id: 'member-1' }), searchParams: Promise.resolve({ tab: 'eligibility' }) }));
+    render(withPortalIntl(await AdminMemberDetailPage({ params: Promise.resolve({ id: 'member-1' }), searchParams: Promise.resolve({ tab: 'eligibility' }) })));
     const section = screen.getByRole('region', { name: 'Preassessment retake' });
     expect(section.closest('[role="tabpanel"]')?.id).toBe(`${BASE}-panel-eligibility`);
     expect(section.previousElementSibling).toHaveAttribute('data-panel', 'assessment');
@@ -420,7 +429,7 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     db.overrides['user.findFirst'] = async (args) => ({
       ...(await baseUser(args) as object), assessmentCompleted: true, assessmentAttemptCount: 1,
     });
-    render(await AdminMemberDetailPage({ params: Promise.resolve({ id: 'member-1' }), searchParams: Promise.resolve({ tab: 'overview' }) }));
+    render(withPortalIntl(await AdminMemberDetailPage({ params: Promise.resolve({ id: 'member-1' }), searchParams: Promise.resolve({ tab: 'overview' }) })));
     fireEvent.click(screen.getByRole('link', { name: 'Review answers & retake' }));
     await waitFor(() => expect(screen.getByRole('region', { name: 'Preassessment retake' })).toBeVisible());
     expect(screen.getByRole('tab', { name: 'Eligibility' })).toHaveAttribute('aria-selected', 'true');
@@ -451,10 +460,10 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
   ])('submits %s from the member record with its application ID after confirmation', async (label, status, outcome) => {
     const request = vi.fn(async () => ({ ok: true, json: async () => ({}) }));
     vi.stubGlobal('fetch', request);
-    render(await AdminMemberDetailPage({
+    render(withPortalIntl(await AdminMemberDetailPage({
       params: Promise.resolve({ id: 'member-1' }),
       searchParams: Promise.resolve({ tab: 'eligibility' }),
-    }));
+    })));
     const review = within(screen.getByTestId('counselor-intake-review-panel'));
     fireEvent.change(review.getByRole('textbox', { name: /Decision notes/ }), { target: { value: 'Reviewed intake documents' } });
     fireEvent.click(review.getByRole('button', { name: label }));

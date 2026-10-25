@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { useRouter } from 'next/navigation';
 import { flushSync } from 'react-dom';
-import { useState, useMemo, useEffect, useId, useCallback, type RefObject } from 'react';
+import { useState, useMemo, useEffect, useId, useCallback, useRef, type RefObject } from 'react';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
-import { Briefcase, ListFilter, Users, TriangleAlert, Info, CheckCircle2 } from 'lucide-react';
+import { Users, TriangleAlert, Info, CheckCircle2 } from 'lucide-react';
 import { trackEmployerJobAction, trackEmployerBulkDelete } from '@/lib/analytics/events';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { readinessLabel, type JobReadinessIssue, type JobReadinessLevel } from '@/lib/employer/jobReadiness';
@@ -19,13 +20,18 @@ import {
 import { EMPLOYER_JOB_SUBMIT_REVIEW_DRAFT_FLASH } from '@/lib/employer/employerJobFormFlash';
 import { employerJobPortalBadgeVariant, employerJobPortalStatusLabel } from '@/lib/employer/jobStatusDisplay';
 import { JOB_POSTING_STATUS_WORDS } from '@/lib/status/jobPostingStatusVocabulary';
-import { DesignSurface, StatusTag, StatSparkTile, type KitTone } from '@/components/portal/kit';
+import { DesignSurface, StatusTag, type KitTone } from '@/components/portal/kit';
 import { KitEmptyState } from '@/components/portal/kit/KitEmptyState';
+import styles from './EmployerJobsBoard.module.css';
 
 /**
  * Employer "My Jobs" board — Command Center visual language.
  * Reskin only: every handler, request shape, sessionStorage flash key, modal
  * flow and prop contract below is unchanged from the legacy CSS-class version.
+ * Counts stay compact; optional bulk controls use a native disclosure that
+ * opens when a posting is selected and stays open after clearing/completing
+ * selection so modal focus restoration has a visible destination. Confirmation
+ * and selection scope are unchanged.
  */
 
 function chunkIds<T>(items: T[], size: number): T[][] {
@@ -207,12 +213,13 @@ function FilterPill({ active, href, children }: { active: boolean; href: string;
   return (
     <Link
       href={href}
+      className="wa-kit-focus"
       aria-current={active ? 'true' : undefined}
       style={{
         ...pillBase,
-        background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
+        background: active ? 'var(--wa-accent-fill)' : 'var(--wa-surface)',
         borderColor: active ? 'var(--wa-accent)' : 'var(--wa-border)',
-        color: active ? 'var(--wa-on-accent)' : 'var(--wa-muted)',
+        color: active ? 'var(--wa-on-accent-control)' : 'var(--wa-muted)',
       }}
     >
       {children}
@@ -253,6 +260,8 @@ export default function EmployerJobsBoard({
   const [pausingId, setPausingId] = useState<string | null>(null);
   const [closingId, setClosingId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [bulkControlsOpen, setBulkControlsOpen] = useState(false);
+  const bulkSummaryRef = useRef<HTMLElement>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmMode, setConfirmMode] = useState<'delete' | 'close'>('delete');
   const [bulkBusy, setBulkBusy] = useState(false);
@@ -368,6 +377,7 @@ export default function EmployerJobsBoard({
   const closeModalTrapRef = useFocusTrap(!!closeModal, () => setCloseModal(null));
 
   const toggleOne = useCallback((id: string, checked: boolean) => {
+    if (checked) setBulkControlsOpen(true);
     setSelected((prev) => {
       const next = new Set(prev);
       if (checked) next.add(id);
@@ -392,7 +402,12 @@ export default function EmployerJobsBoard({
     setSelected(new Set(closableIdsOnPage));
   }, [closableIdsOnPage]);
 
-  const clearSelection = useCallback(() => setSelected(new Set()), []);
+  const clearSelection = useCallback(() => {
+    setSelected(new Set());
+    // Clear disappears and Remove/Mark filled become disabled after completion.
+    // Give focus a stable, visible destination before those controls update.
+    bulkSummaryRef.current?.focus();
+  }, []);
 
   const resolveTitle = useCallback(
     (id: string) => titleByIdInFilter[id] ?? jobs.find((j) => j.id === id)?.title ?? id,
@@ -732,11 +747,11 @@ export default function EmployerJobsBoard({
       )}
 
       {/* KPI strip — accurate, prop-derived counts only (no new queries). */}
-      <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-3 wa-gap-3">
-        <StatSparkTile icon={<Briefcase size={16} />} label="All postings" value={totalInDb} />
-        <StatSparkTile icon={<ListFilter size={16} />} label="In this view" value={totalInFilter} />
-        <StatSparkTile icon={<Users size={16} />} label="Applicants (this page)" value={applicantsOnPage} />
-      </div>
+      <dl className={styles.counts}>
+        <div><dt>All postings</dt><dd>{totalInDb}</dd></div>
+        <div><dt>In this view</dt><dd>{totalInFilter}</dd></div>
+        <div><dt>Applicants (this page)</dt><dd>{applicantsOnPage}</dd></div>
+      </dl>
 
       <div className="wa-flex wa-flex-wrap wa-gap-2" role="toolbar" aria-label="Filter by hiring stage">
         {FILTERS.map((f) => (
@@ -746,102 +761,110 @@ export default function EmployerJobsBoard({
         ))}
       </div>
 
-      {showBulkDelete && (
-        <div className="wa-flex wa-flex-wrap wa-items-center wa-gap-3">
-          <button
-            type="button"
-            className="btn btn-outline btn-sm"
-            onClick={handleMassDelete}
-            disabled={bulkBusy}
-          >
-            Mass delete…
-          </button>
-          <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>
-            Selects every removable posting in this view ({deletableIdsInFilter.length}) and asks for confirmation.
-            Live jobs cannot be removed here.
-          </span>
-        </div>
-      )}
-
       {(showBulkDelete || showBulkClose) && (
-        <div
-          className="wa-kit-card wa-kit-card--sm wa-flex wa-flex-wrap wa-items-center wa-justify-between wa-gap-3"
-          role="region"
-          aria-label="Bulk actions for selected postings"
-        >
-          <p style={{ margin: 0, fontSize: 13 }} aria-live="polite">
-            {selected.size === 0 ? (
-              <span style={{ color: 'var(--wa-muted)' }}>Select postings below for bulk actions.</span>
-            ) : (
-              <>
-                <strong>{selected.size}</strong> selected
-              </>
-            )}
-          </p>
-          <div className="wa-flex wa-flex-wrap wa-items-center wa-gap-2">
+        <details className={styles.bulk} open={bulkControlsOpen} onToggle={(event) => setBulkControlsOpen(event.currentTarget.open)}>
+          <summary ref={bulkSummaryRef} className="wa-kit-focus">
+            Bulk actions
+            {selected.size > 0 ? <span aria-live="polite"> · {selected.size} selected</span> : null}
+          </summary>
+          <div className={styles.bulkContent}>
             {showBulkDelete && (
-              <>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={selectAllDeletableOnPage}
-                  disabled={deletableIdsOnPage.length === 0 || allDeletableOnPageSelected}
-                >
-                  All deletable (this page)
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={selectAllDeletable}
-                  disabled={allDeletableSelected}
-                >
-                  All deletable (entire filter)
-                </button>
+              <div className="wa-flex wa-flex-wrap wa-items-center wa-gap-3">
                 <button
                   type="button"
                   className="btn btn-outline btn-sm"
-                  disabled={selectedDeletable.length === 0 || bulkBusy}
-                  onClick={() => openConfirm('delete')}
+                  onClick={handleMassDelete}
+                  disabled={bulkBusy}
                 >
-                  Remove ({selectedDeletable.length})
+                  Mass delete…
                 </button>
-              </>
+                <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>
+                  Selects every removable posting in this view ({deletableIdsInFilter.length}) and asks for confirmation.
+                  Live jobs cannot be removed here.
+                </span>
+              </div>
             )}
-            {showBulkClose && (
-              <>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={selectAllClosableOnPage}
-                  disabled={closableIdsOnPage.length === 0 || allClosableOnPageSelected}
-                >
-                  All closable (this page)
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={selectAllClosable}
-                  disabled={allClosableSelected}
-                >
-                  All closable (entire filter)
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-outline btn-sm"
-                  disabled={selectedClosable.length === 0 || bulkBusy}
-                  onClick={() => openConfirm('close')}
-                >
-                  Mark filled ({selectedClosable.length})
-                </button>
-              </>
-            )}
-            {selected.size > 0 && (
-              <button type="button" className="btn btn-ghost btn-sm" onClick={clearSelection}>
-                Clear
-              </button>
-            )}
+
+            <div
+              className="wa-kit-card wa-kit-card--sm wa-flex wa-flex-wrap wa-items-center wa-justify-between wa-gap-3"
+              role="region"
+              aria-label="Bulk actions for selected postings"
+            >
+              <p style={{ margin: 0, fontSize: 13 }} aria-live="polite">
+                {selected.size === 0 ? (
+                  <span style={{ color: 'var(--wa-muted)' }}>Select postings below for bulk actions.</span>
+                ) : (
+                  <>
+                    <strong>{selected.size}</strong> selected
+                  </>
+                )}
+              </p>
+              <div className="wa-flex wa-flex-wrap wa-items-center wa-gap-2">
+                {showBulkDelete && (
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={selectAllDeletableOnPage}
+                      disabled={deletableIdsOnPage.length === 0 || allDeletableOnPageSelected}
+                    >
+                      All deletable (this page)
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={selectAllDeletable}
+                      disabled={allDeletableSelected}
+                    >
+                      All deletable (entire filter)
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      disabled={selectedDeletable.length === 0 || bulkBusy}
+                      onClick={() => openConfirm('delete')}
+                    >
+                      Remove ({selectedDeletable.length})
+                    </button>
+                  </>
+                )}
+                {showBulkClose && (
+                  <>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={selectAllClosableOnPage}
+                      disabled={closableIdsOnPage.length === 0 || allClosableOnPageSelected}
+                    >
+                      All closable (this page)
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={selectAllClosable}
+                      disabled={allClosableSelected}
+                    >
+                      All closable (entire filter)
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      disabled={selectedClosable.length === 0 || bulkBusy}
+                      onClick={() => openConfirm('close')}
+                    >
+                      Mark filled ({selectedClosable.length})
+                    </button>
+                  </>
+                )}
+                {selected.size > 0 && (
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={clearSelection}>
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        </details>
       )}
 
       {totalInFilter === 0 ? (
@@ -944,13 +967,14 @@ export default function EmployerJobsBoard({
                     </p>
 
                     <div className="wa-flex wa-flex-wrap wa-gap-2" style={{ borderTop: '1px solid var(--wa-border)', paddingTop: 12 }}>
-                      <Link
+                      <PortalRecordLink
                         href={`/employer/jobs/${j.id}`}
                         className="btn btn-primary btn-sm"
+                        style={{ background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)' }}
                         onClick={() => trackEmployerJobAction('edit', j.id, { status: j.status })}
                       >
                         {j.status === 'draft' ? 'Edit draft' : 'View & edit'}
-                      </Link>
+                      </PortalRecordLink>
                       {j.status === 'draft' && (
                         <button
                           type="button"
@@ -992,13 +1016,13 @@ export default function EmployerJobsBoard({
                         </button>
                       )}
                       {j.status !== 'draft' && (
-                        <Link
+                        <PortalRecordLink
                           href={`/employer/jobs/${encodeURIComponent(j.id)}/applicants`}
                           className="btn btn-ghost btn-sm"
                           onClick={() => trackEmployerJobAction('view_applications', j.id, { status: j.status })}
                         >
                           View applicants
-                        </Link>
+                        </PortalRecordLink>
                       )}
                     </div>
                   </article>

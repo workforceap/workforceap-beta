@@ -1,12 +1,15 @@
 'use client';
 
-import { Play, Check, Lock, CalendarDays, Target, ArrowRight, GraduationCap } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { Play, Check, CalendarDays, Target, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { DesignSurface, ProgressRing, PageOpener, KitEmptyState } from '@/components/portal/kit';
+import { DesignSurface, PageOpener, KitEmptyState } from '@/components/portal/kit';
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
 import CourseraLaunchErrorNotice from '@/components/portal/CourseraLaunchErrorNotice';
+import { MemberTrainingNav, type MemberTrainingNavHrefs } from '@/components/portal/MemberCareerSteps';
+import { MemberContextNote } from './MemberDisclosure';
 import { MemberTrainingWorkspace, type MemberTrainingWorkspaceProps } from './MemberTrainingWorkspace';
+import { MemberPathSegments, type PathSegment } from './MemberPathSegments';
+import styles from './memberPages.module.css';
 
 /**
  * Member Portal — program / certification path (kit ProgressRing + modules +
@@ -40,6 +43,9 @@ export interface MemberProgramKitProps {
   /** Durable, authenticated workspace when the member has a pinned enrollment. */
   trainingWorkspace?: MemberTrainingWorkspaceProps;
   programTitle?: string;
+  /** Optional route overrides for credential-free fixture owners. */
+  trainingNavHrefs?: MemberTrainingNavHrefs;
+  programSlug?: string | null;
   /** 0–100. */
   progressPercent?: number;
   modulesComplete?: number;
@@ -72,41 +78,12 @@ export interface MemberProgramKitProps {
 
 const DEFAULT_MODULES: ProgramModule[] = [];
 
-const MODULE_META: Record<ModuleState, { label: string; color: string; icon: LucideIcon; iconSize: number; bg: string; border?: string; iconBg: string; iconColor: string }> = {
-  done: {
-    label: 'Done',
-    color: 'var(--wa-success-dark)',
-    icon: Check,
-    iconSize: 14,
-    bg: 'var(--wa-surface-2)',
-    iconBg: 'var(--wa-success)',
-    iconColor: 'var(--wa-on-accent-control)',
-  },
-  active: {
-    label: 'In progress',
-    color: 'var(--wa-accent-text)',
-    icon: Play,
-    iconSize: 14,
-    bg: 'var(--wa-accent-soft)',
-    border: '1px solid var(--wa-accent-soft)',
-    iconBg: 'var(--wa-accent)',
-    iconColor: 'var(--wa-on-accent-control)',
-  },
-  locked: {
-    label: 'Locked',
-    color: 'var(--wa-muted)',
-    icon: Lock,
-    iconSize: 14,
-    bg: 'var(--wa-surface)',
-    border: '1px solid var(--wa-border)',
-    iconBg: 'var(--wa-surface-2)',
-    iconColor: 'var(--wa-muted)',
-  },
-};
+const MODULE_STATE_LABEL: Record<ModuleState, string> = { done: 'Done', active: 'In progress', locked: 'Locked' };
 
 export function MemberProgramKit({
   trainingWorkspace,
   programTitle = 'Your program',
+  programSlug,
   progressPercent = 0,
   modulesComplete = 0,
   modulesTotal = 0,
@@ -120,17 +97,19 @@ export function MemberProgramKit({
   liveSessionStart,
   liveSessionDurationMinutes = 60,
   missionsSummary,
-  missionsHref = '#',
+  missionsHref = '/dashboard/missions',
+  trainingNavHrefs,
 }: MemberProgramKitProps) {
   // The page states the course denominator once; the workspace view must show it where it states the count too.
   // A failed Coursera launch lands here with ?error=; say what happened on both views.
-  if (trainingWorkspace) return <><CourseraLaunchErrorNotice /><MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} modulesNote={modulesNote} {...trainingWorkspace} /></>;
-  return <><CourseraLaunchErrorNotice /><MemberProgramOverview programTitle={programTitle} progressPercent={progressPercent} modulesComplete={modulesComplete} modulesTotal={modulesTotal} modulesNote={modulesNote} estRemaining={estRemaining} resumeHref={resumeHref} courseraLaunchHref={courseraLaunchHref} modules={modules} liveSessionTitle={liveSessionTitle} liveSessionWhen={liveSessionWhen} liveSessionStart={liveSessionStart} liveSessionDurationMinutes={liveSessionDurationMinutes} missionsSummary={missionsSummary} missionsHref={missionsHref} /></>;
+  if (trainingWorkspace) return <><CourseraLaunchErrorNotice /><MemberTrainingWorkspace key={`${trainingWorkspace.workspace.programSlug}:${trainingWorkspace.workspace.curriculumVersion}`} modulesNote={modulesNote} {...trainingWorkspace} trainingNavHrefs={trainingNavHrefs ?? trainingWorkspace.trainingNavHrefs} /></>;
+  return <><CourseraLaunchErrorNotice /><MemberProgramOverview programSlug={programSlug} programTitle={programTitle} progressPercent={progressPercent} modulesComplete={modulesComplete} modulesTotal={modulesTotal} modulesNote={modulesNote} estRemaining={estRemaining} resumeHref={resumeHref} courseraLaunchHref={courseraLaunchHref} modules={modules} liveSessionTitle={liveSessionTitle} liveSessionWhen={liveSessionWhen} liveSessionStart={liveSessionStart} liveSessionDurationMinutes={liveSessionDurationMinutes} missionsSummary={missionsSummary} missionsHref={missionsHref} trainingNavHrefs={trainingNavHrefs} /></>;
 }
 
 /** Program overview (no pinned workspace): hooks live here so the early workspace return above stays hook-free. */
 function MemberProgramOverview({
   programTitle,
+  programSlug,
   progressPercent,
   modulesComplete,
   modulesTotal,
@@ -145,9 +124,11 @@ function MemberProgramOverview({
   liveSessionDurationMinutes,
   missionsSummary,
   missionsHref,
+  trainingNavHrefs,
 }: Required<Pick<MemberProgramKitProps, 'programTitle' | 'progressPercent' | 'modulesComplete' | 'modulesTotal' | 'resumeHref' | 'modules' | 'liveSessionDurationMinutes' | 'missionsHref'>> &
-  Pick<MemberProgramKitProps, 'modulesNote' | 'estRemaining' | 'courseraLaunchHref' | 'liveSessionTitle' | 'liveSessionWhen' | 'liveSessionStart' | 'missionsSummary'>) {
+  Pick<MemberProgramKitProps, 'programSlug' | 'modulesNote' | 'estRemaining' | 'courseraLaunchHref' | 'liveSessionTitle' | 'liveSessionWhen' | 'liveSessionStart' | 'missionsSummary' | 'trainingNavHrefs'>) {
   const te = useTranslations('empty');
+  const tw = useTranslations('memberWorkspace.training');
   const pct = Math.max(0, Math.min(100, Math.round(progressPercent)));
 
   // Only show the Next Live Session card when we have a real session to show.
@@ -189,227 +170,186 @@ function MemberProgramOverview({
     URL.revokeObjectURL(url);
   };
 
+  const activeIndex = modules.findIndex((module) => module.state === 'active');
+  const segments: PathSegment[] = modules.map((module, index) => ({
+    key: `${index}-${module.slug ?? module.title}`,
+    name: module.title,
+    state: module.state === 'done' ? 'done' : module.state === 'active' ? 'current' : 'todo',
+  }));
+  const allDone = modulesTotal > 0 && modulesComplete >= modulesTotal;
+  const progressLine = `${modulesComplete} of ${modulesTotal} modules complete${estRemaining ? `, ${estRemaining}` : ''}`;
+  // One contextual sentence from the data the route already passes; with no
+  // modules yet the page keeps its plain description rather than "0 of 0".
+  const openerMeta = modulesTotal > 0 ? `${programTitle}. ${progressLine}.` : 'Modules, live sessions, and missions.';
+  const cta = courseraLaunchHref ? (
+    <TrackedCourseraLaunchLink
+      href={courseraLaunchHref}
+      courseSlug={activeCourseSlug}
+      className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
+      style={{ whiteSpace: 'normal', textAlign: 'center' }}
+    >
+      Resume in Coursera <Play size={14} aria-hidden="true" />
+    </TrackedCourseraLaunchLink>
+  ) : (
+    <a
+      href={resumeHref}
+      className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
+      style={{ whiteSpace: 'normal', textAlign: 'center' }}
+    >
+      Open Learning Hub <Play size={14} aria-hidden="true" />
+    </a>
+  );
+
   return (
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker="Program"
           title="Certification path"
-          lede="Modules, live sessions, and missions."
-          icon={<GraduationCap size={13} aria-hidden="true" />}
+          meta={openerMeta}
+          aside={
+            activeIndex >= 0 ? (
+              <span className="wa-kit-chip wa-kit-chip--blue">Module {activeIndex + 1} of {modules.length}</span>
+            ) : allDone ? (
+              <span className="wa-kit-chip wa-kit-chip--green">All modules complete</span>
+            ) : undefined
+          }
         />
-        {/* Gradient hero */}
-        <div
-          className="wa-kit-card wa-kit-card--gradient-crimson wa-flex wa-flex-col md:wa-flex-row md:wa-items-center"
-          style={{ gap: 24 }}
-        >
-          <div style={{ flexShrink: 0, margin: '0 auto' }}>
-            <ProgressRing pct={pct} size={120} onDark label="Program progress" />
-          </div>
-          <div style={{ flex: 1 }}>
-            <div className="wa-kit-meta" style={{ fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'inherit' }}>
-              Current program
-            </div>
-            <h2 className="h-font" style={{ fontSize: 'clamp(21px, 5.5vw, 28px)', fontWeight: 800, letterSpacing: '-0.03em', marginTop: 4, textWrap: 'balance' }}>
-              {programTitle}
-            </h2>
-            <p className="wa-kit-lede" style={{ marginTop: 4, fontVariantNumeric: 'tabular-nums', color: 'inherit' }}>
-              {modulesComplete} of {modulesTotal} modules complete
-              {estRemaining ? ` · ${estRemaining}` : ''}
-            </p>
-            {modulesNote ? (
-              <p data-testid="program-courses-note" style={{ marginTop: 4, fontSize: 'var(--wa-type-meta)', opacity: 0.85 }}>
-                {modulesNote}
-              </p>
-            ) : null}
-          </div>
-          {courseraLaunchHref ? (
-            <TrackedCourseraLaunchLink
-              href={courseraLaunchHref}
-              courseSlug={activeCourseSlug}
-              className="wa-kit-cta wa-kit-focus wa-kit-focus--on-dark hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
-              style={{
-                background: 'var(--wa-hero-action-bg)',
-                color: 'var(--wa-hero-action-text)',
-                fontWeight: 700,
-                whiteSpace: 'normal',
-                textAlign: 'center',
-              }}
-            >
-              Resume in Coursera <Play size={14} aria-hidden="true" />
-            </TrackedCourseraLaunchLink>
-          ) : (
-            <a
-              href={resumeHref}
-              className="wa-kit-cta wa-kit-focus wa-kit-focus--on-dark hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
-              style={{
-                background: 'var(--wa-hero-action-bg)',
-                color: 'var(--wa-hero-action-text)',
-                fontWeight: 700,
-                whiteSpace: 'normal',
-                textAlign: 'center',
-              }}
-            >
-              Open Learning Hub <Play size={14} aria-hidden="true" />
-            </a>
-          )}
-        </div>
+        <MemberTrainingNav current="program" programSlug={programSlug} hrefs={trainingNavHrefs} />
+        <MemberContextNote line={tw('learningContextShort')} moreLabel={tw('learningContextMoreLabel')} more={tw('learningContextMore')} />
 
-        <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-3 wa-gap-5">
-          {/* Modules list (2-wide) */}
-          <div className="wa-kit-card lg:wa-col-span-2">
-            <div className="wa-flex wa-items-center wa-justify-between wa-gap-3" style={{ marginBottom: 16 }}>
-              <h3 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', textWrap: 'balance' }}>Modules</h3>
-              <a
-                href={resumeHref}
-                className="wa-page-action wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-              >
-                Learning Hub <ArrowRight size={14} aria-hidden="true" />
-              </a>
-            </div>
-            <div className="wa-space-y-2">
+        <div className="wa-kit-home-grid">
+          <div className="wa-kit-home-grid__main wa-kit-stack">
+            <section className={`wa-kit-card wa-kit-card--accent-edge ${styles.pathCard}`} aria-labelledby="program-path-title">
+              <div className="wa-kit-card__head">
+                <div style={{ minWidth: 0 }}>
+                  <h2 id="program-path-title" className="wa-kit-card-title">{programTitle}</h2>
+                  <p className="wa-kit-card-sub">Current program</p>
+                </div>
+                <span className="wa-kit-card-count"><b>{pct}%</b> complete</span>
+              </div>
+              <MemberPathSegments segments={segments} label="Modules in this program" />
+              {modulesNote ? (
+                <p data-testid="program-courses-note" className={styles.pathNote}>
+                  {modulesNote}
+                </p>
+              ) : null}
+              <div className={styles.pathFoot}>
+                {cta}
+              </div>
+            </section>
+
+            <section className="wa-kit-card wa-kit-card--flush" aria-labelledby="program-modules-title">
+              <div className="wa-kit-card__head wa-kit-card__head--ruled">
+                <h2 id="program-modules-title" className="wa-kit-card-title">Modules</h2>
+                <a href={resumeHref} className="wa-kit-card-link wa-kit-focus">
+                  Learning Hub <ArrowRight size={14} aria-hidden="true" />
+                </a>
+              </div>
               {modules.length === 0 ? (
                 // `empty.modules`: the route only reaches this card with a pinned
                 // enrollment, so an empty list is a curriculum not published yet —
                 // not a first step the member can take.
-                <KitEmptyState
-                  kind="unavailable"
-                  tone="info"
-                  headingAs="h4"
-                  title={te('modules.title')}
-                  description={te('modules.body')}
-                  primaryAction={{ href: '/dashboard/messages', label: te('modules.action') }}
-                />
-              ) : null}
-              {modules.map((m) => {
-                const meta = MODULE_META[m.state];
-                const Icon = meta.icon;
-                const dim = m.state === 'locked';
-                const isActive = m.state === 'active';
-                const moduleHref =
-                  m.launchHref
-                  ?? m.moduleHref
-                  ?? (m.slug ? `${resumeHref}#course-${m.slug}` : resumeHref);
-                return (
-                  <div
-                    key={m.title}
-                    className="wa-flex wa-items-center wa-gap-3 wa-flex-wrap"
-                    style={{
-                      padding: 12,
-                      borderRadius: 'var(--wa-radius-sm)',
-                      background: meta.bg,
-                      border: meta.border,
-                      opacity: dim ? 0.7 : 1,
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 999,
-                        background: meta.iconBg,
-                        color: meta.iconColor,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Icon size={meta.iconSize} aria-hidden="true" />
-                    </div>
-                    <span style={{ fontWeight: 600, fontSize: 'var(--wa-type-body)', flex: 1, color: dim ? 'var(--wa-muted)' : 'var(--wa-text)' }}>
-                      {m.title}
-                    </span>
-                    {isActive && m.launchHref ? (
-                      <TrackedCourseraLaunchLink
-                        href={moduleHref}
-                        courseSlug={m.slug}
-                        className="wa-page-action wa-kit-focus hover:wa-opacity-90 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                        style={{ whiteSpace: 'nowrap' }}
+                <div style={{ padding: 'var(--wa-pad)' }}>
+                  <KitEmptyState
+                    kind="unavailable"
+                    tone="info"
+                    headingAs="h3"
+                    title={te('modules.title')}
+                    description={te('modules.body')}
+                    primaryAction={{ href: '/dashboard/messages', label: te('modules.action') }}
+                  />
+                </div>
+              ) : (
+                <ul className="wa-kit-task-list">
+                  {modules.map((m) => {
+                    const isActive = m.state === 'active';
+                    const moduleHref =
+                      m.launchHref
+                      ?? m.moduleHref
+                      ?? (m.slug ? `${resumeHref}#course-${m.slug}` : resumeHref);
+                    return (
+                      <li
+                        key={m.title}
+                        className="wa-kit-task-row"
+                        data-state={m.state === 'done' ? 'done' : isActive ? 'current' : 'todo'}
                       >
-                        Continue in Coursera <ArrowRight size={14} aria-hidden="true" />
-                      </TrackedCourseraLaunchLink>
-                    ) : isActive ? (
-                      <a
-                        href={moduleHref}
-                        className="wa-kit-cta wa-kit-cta--xl wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
-                      >
-                        Continue <ArrowRight size={14} aria-hidden="true" />
-                      </a>
-                    ) : m.state === 'done' && m.moduleHref && !m.launchHref ? (
-                      <a
-                        href={moduleHref}
-                        className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus hover:wa-opacity-90 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                      >
-                        Open <ArrowRight size={14} aria-hidden="true" />
-                      </a>
-                    ) : (
-                      <span className="wa-kit-meta" style={{ fontWeight: 700, color: meta.color }}>
-                        {meta.label}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                        <span className="wa-kit-task-row__check" aria-hidden="true">
+                          {m.state === 'done' ? <Check /> : null}
+                        </span>
+                        <div className="wa-kit-task-row__body">
+                          <p className="wa-kit-task-row__title">{m.title}</p>
+                        </div>
+                        {isActive && m.launchHref ? (
+                          <TrackedCourseraLaunchLink
+                            href={moduleHref}
+                            courseSlug={m.slug}
+                            className="wa-page-action wa-kit-focus"
+                          >
+                            Continue in Coursera <ArrowRight size={14} aria-hidden="true" />
+                          </TrackedCourseraLaunchLink>
+                        ) : isActive ? (
+                          <a href={moduleHref} className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none">
+                            Continue <ArrowRight size={14} aria-hidden="true" />
+                          </a>
+                        ) : m.state === 'done' && m.moduleHref && !m.launchHref ? (
+                          <a href={moduleHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">
+                            Open <ArrowRight size={14} aria-hidden="true" />
+                          </a>
+                        ) : (
+                          <span className={`wa-kit-chip ${m.state === 'done' ? 'wa-kit-chip--green' : 'wa-kit-chip--neutral'}`}>
+                            {MODULE_STATE_LABEL[m.state]}
+                          </span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
           </div>
 
-          {/* Sidebar: live session + missions */}
-          <div className="wa-space-y-5">
+          <div className="wa-kit-home-grid__rail wa-kit-stack">
             {hasLiveSession && (
-              <div className="wa-kit-card">
-                <div className="wa-flex wa-items-center wa-gap-2" style={{ color: 'var(--wa-accent)', marginBottom: 8 }}>
-                  <CalendarDays size={15} aria-hidden="true" />
-                  <h3 style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}>Next live session</h3>
+              <section className={`wa-kit-card ${styles.railCard}`} aria-labelledby="program-live-title">
+                <div className={styles.headRow}>
+                  <CalendarDays size={16} aria-hidden="true" style={{ color: 'var(--wa-accent-text)' }} />
+                  <h2 id="program-live-title" className="wa-kit-card-title">Next live session</h2>
                 </div>
-                <p style={{ fontSize: 'var(--wa-type-body)', fontWeight: 700 }}>{liveSessionTitle}</p>
-                {liveSessionWhen && (
-                  <p className="wa-kit-meta" style={{ marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>{liveSessionWhen}</p>
-                )}
+                <div>
+                  <p style={{ fontSize: 'var(--wa-type-body)', fontWeight: 600 }}>{liveSessionTitle}</p>
+                  {liveSessionWhen && (
+                    <p className="wa-kit-meta" style={{ marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>{liveSessionWhen}</p>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={handleAddToCalendar}
-                  className="wa-kit-cta wa-kit-cta--block wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
-                  style={{ marginTop: 12 }}
+                  className="wa-kit-cta wa-kit-cta--ghost wa-kit-cta--block wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
                 >
                   Add to calendar
                 </button>
-              </div>
+              </section>
             )}
 
-            {/* Quiet bordered surface with a small gold accent chip — the
-                gradient hero above is the page's one filled color block, so
-                this stays a calm card rather than a second full-tint tile. */}
-            <div className="wa-kit-card">
-              <div className="wa-flex wa-items-center wa-gap-2" style={{ marginBottom: 8 }}>
-                <div
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: 'var(--wa-radius-sm)',
-                    background: 'var(--wa-gold-soft)',
-                    color: 'var(--wa-gold-dark)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Target size={14} aria-hidden="true" />
-                </div>
-                <h3 style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}>Skill missions</h3>
+            {/* Gold marks achievement: a small chip is the only gold on the page. */}
+            <section className={`wa-kit-card ${styles.railCard}`} aria-labelledby="program-missions-title">
+              <div className={styles.headRow}>
+                <span className={`${styles.tile} ${styles.tileGold}`}>
+                  <Target size={15} aria-hidden="true" />
+                </span>
+                <h2 id="program-missions-title" className="wa-kit-card-title">Skill missions</h2>
               </div>
               <p className="wa-kit-lede">
                 {missionsSummary ?? 'Missions unlock as you finish courses. Open missions to see what is ready.'}
               </p>
               <a
                 href={missionsHref}
-                className="wa-page-action wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                style={{ marginTop: 12, color: 'var(--wa-gold-dark)' }}
+                className="wa-kit-card-link wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
+                style={{ color: 'var(--wa-gold-dark)' }}
               >
                 Open missions <ArrowRight size={14} aria-hidden="true" />
               </a>
-            </div>
+            </section>
           </div>
         </div>
       </div>

@@ -78,6 +78,24 @@ describe('NotificationBell', () => {
     });
   });
 
+  it('moves focus into the panel on open even when it has nothing focusable, and returns it to the bell on Escape', async () => {
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: true,
+      json: async () => ({ notifications: [], unreadCount: 0 }),
+    } as Response);
+
+    render(<NotificationBell />);
+    const bell = screen.getByLabelText('Notifications');
+    fireEvent.click(bell);
+
+    const panel = await screen.findByRole('dialog', { name: 'Notifications' });
+    await waitFor(() => expect(document.activeElement).toBe(panel));
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Notifications' })).toBeNull());
+    expect(document.activeElement).toBe(bell);
+  });
+
   it('marks all read only via the explicit action, not on open', async () => {
     const mockFetch = vi.fn();
     global.fetch = mockFetch;

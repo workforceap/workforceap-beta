@@ -52,6 +52,11 @@ beforeEach(() => {
   location.search = '';
   location.wide = true;
   localStorage.clear();
+  // The desktop rail starts compact when nothing is saved; these specs
+  // exercise the expanded rail, so pin the saved preference to expanded.
+  for (const role of ['member', 'employer', 'admin', 'counselor', 'partner']) {
+    localStorage.setItem(`wa_nav_collapsed_${role}`, '0');
+  }
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     matches: location.wide, addEventListener: vi.fn(), removeEventListener: vi.fn(),
   })));
@@ -71,6 +76,14 @@ function show(role: 'member' | 'employer' = 'member') {
 }
 
 describe('workspace navigation', () => {
+  it('exposes a focusable desktop member nav landmark for skip navigation', () => {
+    const { container } = show();
+    const desktopNav = container.querySelector('nav#workspace-sidebar-nav');
+
+    expect(desktopNav).toHaveAttribute('tabindex', '-1');
+    expect(container.querySelectorAll('#workspace-sidebar-nav')).toHaveLength(1);
+  });
+
   it('limits the dynamic-height warm canvas to the mounted workspace, including dark mode', () => {
     const css = readFileSync(join(process.cwd(), 'css/portal-kit.css'), 'utf8');
     const rule = css.match(/(html \.workspace-shell-root\[data-workspace-role\])\s*\{([^}]+)\}/)!;
@@ -403,6 +416,54 @@ describe('workspace navigation', () => {
   });
 });
 
+describe('member phone tabs (round 3, Addendum A4)', () => {
+  const bar = () => screen.getByRole('navigation', { name: 'Main tabs' });
+  const more = () => screen.getByRole('button', { name: 'More' });
+
+  it('renders four links and one More button, for members only', () => {
+    location.wide = false;
+    location.pathname = '/dashboard/program';
+    const m = show();
+    expect(bar()).toHaveAttribute('id', 'mobile-bottom-nav');
+    const links = within(bar()).getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/dashboard', '/dashboard/program', '/dashboard/jobs', '/dashboard/messages']);
+    expect(links.filter((a) => a.getAttribute('aria-current') === 'page').map((a) => a.textContent)).toEqual(['Program']);
+    expect(within(bar()).getAllByRole('button')).toHaveLength(1);
+    expect(more()).toHaveAttribute('type', 'button');
+    expect(more()).toHaveAttribute('aria-controls', 'workspace-sidebar');
+    m.unmount();
+    show('employer');
+    expect(screen.queryByRole('navigation', { name: 'Main tabs' })).not.toBeInTheDocument();
+  });
+
+  it('More flips aria-expanded with the drawer and focus returns to More after Escape', async () => {
+    location.wide = false;
+    const user = userEvent.setup();
+    const { container } = show();
+    const rail = container.querySelector('.workspace-sidebar');
+    expect(more()).toHaveAttribute('aria-expanded', 'false');
+    await user.click(more());
+    expect(screen.getByRole('dialog', { name: 'Member portal navigation' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'More', hidden: true })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'true');
+    expect(rail?.contains(document.activeElement)).toBe(true);
+    await user.keyboard('{Escape}');
+    expect(rail).toHaveAttribute('inert');
+    expect(more()).toHaveAttribute('aria-expanded', 'false');
+    expect(document.activeElement).toBe(more());
+  });
+
+  it('focus returns to the hamburger after Escape when the hamburger opened the drawer', async () => {
+    location.wide = false;
+    const user = userEvent.setup();
+    show();
+    const hamburger = screen.getByRole('button', { name: 'Open menu' });
+    await user.click(hamburger);
+    await user.keyboard('{Escape}');
+    expect(document.activeElement).toBe(hamburger);
+  });
+});
+
 describe('active-route specificity', () => {
   it('ranks the matched alias, not the length of its unrelated canonical href', () => {
     expect(getBestActiveHref('/dashboard/ai-tools/application-tracker/123', [
@@ -544,24 +605,25 @@ describe('AI Career Tools contextual tool row', () => {
     [...container.querySelectorAll('.workspace-sidebar-nav a.workspace-sidebar-link--nested')];
 
   it('marks the tool as current on a tool route instead of highlighting the hub', () => {
-    location.pathname = '/dashboard/ai-tools/resume-studio';
+    location.pathname = '/dashboard/ai-tools/skill-mapper';
     const { container } = show();
     const current = container.querySelectorAll('.workspace-sidebar [aria-current="page"]');
     expect(current).toHaveLength(1);
-    expect(current[0]).toHaveAttribute('href', '/dashboard/ai-tools/resume-studio');
-    expect(current[0]).toHaveTextContent('Resume studio');
+    expect(current[0]).toHaveAttribute('href', '/dashboard/ai-tools/skill-mapper');
+    expect(current[0]).toHaveTextContent('Skill mapper');
     expect(container.querySelector('.workspace-sidebar')).toHaveAttribute(
       'data-contextual-tool',
-      '/dashboard/ai-tools/resume-studio',
+      '/dashboard/ai-tools/skill-mapper',
     );
   });
 
-  it('marks the tool as current on every AI Career Tools tool route', () => {
+  it('marks each independent AI Career Tools destination current on its own route', () => {
     const slugs = [
-      ['resume-studio', 'Resume studio'],
       ['cover-letter', 'Cover letter'],
+      ['interviews', 'Interview practice'],
       ['interview-practice', 'Interview practice'],
       ['interview-coach', 'Interview coach'],
+      ['interview-prep', 'Interview prep'],
       ['job-match-scorer', 'Job match scorer'],
       ['skill-mapper', 'Skill mapper'],
       ['training-bridge', 'Training bridge'],
@@ -574,8 +636,8 @@ describe('AI Career Tools contextual tool row', () => {
       ['elevator-pitch', 'Elevator pitch'],
       ['career-business-coach', 'Career & business coach'],
       ['readiness-coach', 'Readiness coach'],
-      ['resume-rewriter', 'Resume rewriter'],
       ['voice-interview', 'Voice interview'],
+      ['history', 'My AI results'],
     ] as const;
     for (const [slug, label] of slugs) {
       location.pathname = `/dashboard/ai-tools/${slug}`;
@@ -584,8 +646,29 @@ describe('AI Career Tools contextual tool row', () => {
       expect(current, slug).toHaveLength(1);
       expect(current[0], slug).toHaveAttribute('href', `/dashboard/ai-tools/${slug}`);
       expect(current[0], slug).toHaveTextContent(label);
+      expect(nestedRows(container), slug).toEqual([current[0]]);
       cleanup();
     }
+  });
+
+  it.each([
+    '/dashboard/resume',
+    '/dashboard/ai-tools/resume-studio',
+    '/dashboard/ai-tools/resume-analysis',
+    '/dashboard/ai-tools/resume-rewriter',
+    '/dashboard/ai-tools/resume-coach',
+  ])('keeps the single canonical Resume row current and visible on %s', (pathname) => {
+    location.pathname = pathname;
+    const { container } = show();
+    const current = container.querySelectorAll('.workspace-sidebar [aria-current="page"]');
+    expect(current).toHaveLength(1);
+    expect(current[0]).toHaveAttribute('href', '/dashboard/resume');
+    expect(current[0]).toHaveTextContent('Resume');
+    expect(container.querySelectorAll('.workspace-sidebar a[href="/dashboard/resume"]')).toHaveLength(1);
+    expect(current[0].closest('details')).toHaveAttribute('open');
+    expect(nestedRows(container)).toEqual([]);
+    expect(container.querySelector('.workspace-sidebar')).not.toHaveAttribute('data-contextual-tool');
+    expect(container.querySelector('.workspace-shell-current-page')).toHaveTextContent('Resume');
   });
 
   it('nests exactly one tool row directly under AI Career Tools and never more', () => {
@@ -656,36 +739,39 @@ describe('AI Career Tools contextual tool row', () => {
     ]);
   });
 
-  it('measures the visible rail row count on a tool page, the hub and /dashboard', () => {
-    const counts: Record<string, number> = {};
-    const totals: Record<string, number> = {};
-    for (const [name, pathname] of [
-      ['tool', '/dashboard/ai-tools/resume-studio'],
-      ['hub', '/dashboard/ai-tools'],
-      ['dashboard', '/dashboard'],
+  it('preserves every canonical destination and the exact primary rows across tool, hub and Resume routes', () => {
+    const primary = [
+      '/dashboard',
+      '/dashboard/program',
+      '/dashboard/jobs',
+      '/dashboard/ai-tools',
+      '/dashboard/messages',
+    ];
+    for (const [pathname, contextualHref] of [
+      ['/dashboard/ai-tools/skill-mapper', '/dashboard/ai-tools/skill-mapper'],
+      ['/dashboard/ai-tools', null],
+      ['/dashboard', null],
+      ['/dashboard/resume', null],
+      ['/dashboard/ai-tools/resume-studio', null],
     ] as const) {
       location.pathname = pathname;
       const { container } = show();
-      // Rows the member sees without opening a disclosure.
-      counts[name] = [
+      const primaryHrefs = [
         ...container.querySelectorAll(
           '.workspace-sidebar-list--root > .workspace-sidebar-group > .workspace-sidebar-list > li > a.workspace-sidebar-link',
         ),
-      ].length;
-      totals[name] = railRows(container).length;
+      ].map((link) => link.getAttribute('href'));
+      expect(primaryHrefs, pathname).toEqual(contextualHref
+        ? [...primary.slice(0, 4), contextualHref, primary[4]]
+        : primary);
+      const allHrefs = railRows(container).map((link) => link.getAttribute('href'));
+      const expectedHrefs = MEMBER_PORTAL_NAV_ITEMS.map((item) => item.href);
+      if (contextualHref) expectedHrefs.push(contextualHref);
+      expect(new Set(allHrefs), pathname).toEqual(new Set(expectedHrefs));
+      expect(allHrefs, pathname).toHaveLength(new Set(allHrefs).size);
+      expect(allHrefs.filter((href) => href === '/dashboard/resume'), pathname).toEqual(['/dashboard/resume']);
       cleanup();
     }
-    console.log(
-      '[rail rows] visible-without-disclosure:',
-      JSON.stringify(counts),
-      '| all rows incl. collapsed groups:',
-      JSON.stringify(totals),
-    );
-    // WAP-189: five always-visible rows (was seven under PR #2322).
-    expect(counts.hub).toBe(5);
-    expect(counts.dashboard).toBe(5);
-    // One extra row on a tool page — not 18.
-    expect(counts.tool).toBe(6);
   });
 
   it('names the current page in the mobile header band', () => {

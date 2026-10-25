@@ -126,7 +126,7 @@ describe('MemberProgramKit', () => {
     const { container } = portal(locale, <MemberProgramKit modules={[]} resumeHref="/dashboard/learning" missionsHref="/dashboard/missions" />);
     const empty = emptyOf(container, 'unavailable');
     expectCounselorRoute(empty, LOCALES[locale], 'modules');
-    expect(within(empty).getByRole('heading', { level: 4 })).toBeInTheDocument();
+    expect(within(empty).getByRole('heading', { level: 3 })).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/No modules on this path yet\./);
   });
 
@@ -213,7 +213,7 @@ describe('/dashboard/learning page', () => {
       courseProgress: [{ programSlug, courseSlug: first.slug, courseId: first.courseraCourseId, status: 'IN_PROGRESS', percentComplete: 55, scoreScaled: 0.85 }],
       courseraCourseProgress: [{ programSlug, courseraCourseId: second.courseraCourseId, overallProgress: 0, isCompleted: false, isRemovedFromProgram: false, courseGrade: null }],
     } as never);
-    const { container } = portal('en', <>{await LearningPage()}</>);
+    const { container } = portal('en', <>{await LearningPage({})}</>);
     const firstCard = container.querySelector<HTMLElement>(`.training-course-card[data-course-slug="${first.slug}"]`)!;
     expect(within(firstCard).getByRole('progressbar', { name: `${first.name} progress` })).toHaveAttribute('aria-valuenow', '55');
     expect(within(firstCard).getByText('Grade: 85% (Coursera)')).toBeInTheDocument();
@@ -228,7 +228,7 @@ describe('/dashboard/learning page', () => {
 
   it('no enrolled program → first pathway state (digital basics + choose a program) in both layouts, plus the first-kind course list', async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ enrolledProgram: null, assessmentCompleted: false, courseraEnrollmentApproved: false, courseEnrollments: [], courseProgress: [] } as never);
-    const { container } = portal('en', <>{await LearningPage()}</>);
+    const { container } = portal('en', <>{await LearningPage({})}</>);
     noLegacyEmpty(container);
     const pathway = container.querySelectorAll<HTMLElement>('.wa-kit-empty[data-kind="first"]');
     expect(pathway).toHaveLength(3); // mobile + desktop pathway state, enrolled-courses section
@@ -244,7 +244,7 @@ describe('/dashboard/learning page', () => {
 
   it('an enrolled program the catalog cannot resolve → unavailable pathway state with a counselor route, no "choose a program"', async () => {
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ enrolledProgram: 'retired-program-fixture', assessmentCompleted: true, courseraEnrollmentApproved: true, courseEnrollments: [], courseProgress: [] } as never);
-    const { container } = portal('en', <>{await LearningPage()}</>);
+    const { container } = portal('en', <>{await LearningPage({})}</>);
     const unavailable = container.querySelectorAll<HTMLElement>('.wa-kit-empty[data-kind="unavailable"]');
     expect(unavailable).toHaveLength(3); // mobile + desktop pathway state, enrolled-courses section
     expectCounselorRoute(unavailable[0], en, 'learningPathwayUnavailable');
@@ -301,6 +301,26 @@ describe('resources', () => {
 });
 
 describe('MemberProgressKit', () => {
+  it('uses fixture-owned training navigation and Learning Hub action routes', () => {
+    const learningHref = '/dev/member/program?state=workspace';
+    const { container } = portal('en', <MemberProgressKit
+      readinessScore={70}
+      nextAction={{ key: 'completePathwaySteps', label: 'Complete training steps.', href: '/dashboard/learning', ctaLabel: 'Open Learning Hub' }}
+      learningHref={learningHref}
+      trainingNavHrefs={{
+        program: '/dev/member/program',
+        learning: learningHref,
+        readiness: '/dev/member/progress',
+      }}
+    />);
+
+    expect(Array.from(container.querySelectorAll('nav a')).map((link) => link.getAttribute('href'))).toEqual([
+      '/dev/member/program', learningHref, '/dev/member/progress',
+    ]);
+    expect(screen.getByRole('link', { name: 'Open Learning Hub' })).toHaveAttribute('href', learningHref);
+    expect(screen.getByRole('link', { name: /Complete training steps/ })).toHaveAttribute('href', learningHref);
+  });
+
   it.each(['en', 'es', 'fr', 'pt'] as const)('%s: empty category scores and milestones are first states with no CTA', (locale) => {
     const m = LOCALES[locale];
     const { container } = portal(locale, <MemberProgressKit readinessScore={0} weekStats={[]} milestones={[]} />);
@@ -314,7 +334,7 @@ describe('MemberProgressKit', () => {
       expect(empty.textContent).not.toMatch(RAW_KEY);
     }
     expect(within(empties[0]).getByRole('heading', { level: 3 })).toHaveTextContent(m.empty.categoryScores.title);
-    expect(within(empties[1]).getByRole('heading', { level: 4 })).toHaveTextContent(m.empty.milestones.title);
+    expect(within(empties[1]).getByRole('heading', { level: 3 })).toHaveTextContent(m.empty.milestones.title);
     expect(screen.queryByRole('link', { name: 'Open profile' })).toBeNull();
   });
 

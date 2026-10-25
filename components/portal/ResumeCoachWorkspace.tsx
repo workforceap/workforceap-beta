@@ -596,7 +596,7 @@ export default function ResumeCoachWorkspace() {
               marginBottom: '0.5rem',
             }}
           >
-            <h4 style={{ fontSize: '0.95rem', margin: 0 }}>Live Resume Draft</h4>
+            <h3 style={{ fontSize: '0.95rem', margin: 0 }}>Live Resume Draft</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               {hydrated && resumeText.trim() && (
                 <CopyDraftButton text={resumeText} />

@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { JOB_READY_TRAINING_PCT } from '@/lib/member/trainingProgress';
 import DataTable from '@/components/portal/ui/DataTable';
 import { programDisplayTitle } from '@/lib/content/programTitle';
@@ -44,7 +44,7 @@ export default function AdminJobReadyTable({ rows }: { rows: JobReadyRow[] }) {
             header: 'Member',
             cell: (r) => (
               <>
-                <Link href={`/admin/members/${r.id}`}>{r.fullName}</Link>
+                <PortalRecordLink href={`/admin/members/${r.id}`}>{r.fullName}</PortalRecordLink>
                 <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{r.email}</div>
                 {r.phone ? (
                   <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{r.phone}</div>
@@ -79,9 +79,9 @@ export default function AdminJobReadyTable({ rows }: { rows: JobReadyRow[] }) {
             key: 'actions',
             header: 'Actions',
             cell: (r) => (
-              <Link href={`/admin/members/${r.id}`} className="btn btn-outline btn-sm">
+              <PortalRecordLink href={`/admin/members/${r.id}`} className="btn btn-outline btn-sm">
                 Open
-              </Link>
+              </PortalRecordLink>
             ),
           },
         ]}

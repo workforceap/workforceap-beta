@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { BarChart3, Download, Target } from 'lucide-react';
 import {
   DesignSurface,
+  PageOpener,
   SectionHeader,
   DataTable,
   QueueRow,
@@ -54,10 +55,10 @@ export default function DevStaffPartnerPage() {
 
   return (
     <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6 wa-p-6">
-      <SectionHeader
-        kicker="Partner Dashboard"
+      <PageOpener
+        kicker="Partner dashboard"
         title="Skillpoint Alliance"
-        goal="Referrals, progress & outcomes for Skillpoint Alliance"
+        lede="Skillpoint Alliance referrals, progress, and placement outcomes in one place."
       />
 
       <PartnerKpiGrid
@@ -75,7 +76,7 @@ export default function DevStaffPartnerPage() {
         href="/partner/attention"
       />
 
-      <PartnerAssistantAccordion title="Partner assistant" hint="(tap to open)">
+      <PartnerAssistantAccordion title="Partner assistant">
         <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0, lineHeight: 1.6 }}>
           Ask about referrals, member progress, or using the partner portal. Voice session preview
           omitted in this showcase.
@@ -131,6 +132,9 @@ export default function DevStaffPartnerPage() {
           rows={REFERRAL_ROWS}
           rowKey={(row) => row.id}
           mobile="scroll"
+          caption="Referred members"
+          minWidth={320}
+          scrollCue
           emptyTitle="No referred members yet"
           emptyDescription="New referrals will appear here after members apply through this partner."
         />

@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { ClipboardCheck, ShieldCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
@@ -113,7 +114,7 @@ function ApprovalRow({ row, href }: { row: ApprovalQueueRow; href: string }) {
   const tagTone: KitTone = row.tone;
   return (
     <li>
-      <Link
+      <PortalRecordLink
         href={href}
         className={cx('wa-kit-card wa-kit-card--sm wa-kit-focus', toned && toneClass(row.tone), 'wa-kit-tone-edge')}
         data-testid="approval-row"
@@ -130,7 +131,7 @@ function ApprovalRow({ row, href }: { row: ApprovalQueueRow; href: string }) {
           <span className="wa-kit-meta" style={{ color: 'var(--wa-muted)' }}>{rowMeta(row)}</span>
         </span>
         <StatusTag tone={tagTone} style={{ flexShrink: 0 }}>{row.ageLabel}</StatusTag>
-      </Link>
+      </PortalRecordLink>
     </li>
   );
 }

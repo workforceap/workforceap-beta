@@ -6,7 +6,7 @@ import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
 import AtRiskDashboard from '@/components/portal/counselor/AtRiskDashboard';
 import type { AtRiskMember } from '@/lib/member/atRiskRow';
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/dev/test', useSearchParams: () => new URLSearchParams(), useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock('@/components/portal/counselor/AtRiskDetailModal', () => ({ default: () => null }));
 vi.mock('@/components/portal/PortalInlineSpinner', () => ({ PortalInlineSpinner: () => <span aria-hidden="true" /> }));
 

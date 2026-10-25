@@ -51,6 +51,15 @@ describe('PortalHelpMenu with help_assistant_v1', () => {
     vi.unstubAllGlobals();
   });
 
+  it('keeps the guided tour available in fixtures without requesting live help availability', () => {
+    render(<PortalHelpMenu tourKey="member.home" previewMode />);
+    fireEvent.click(screen.getByTestId('portal-help-trigger'));
+    expect(screen.queryByTestId('portal-help-ask-assistant')).toBeNull();
+    fireEvent.click(screen.getByTestId('portal-help-take-tour'));
+    expect(start).toHaveBeenCalledWith('member.home');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('hides "Ask for help" when the availability check is 404 (flag off)', async () => {
     fetchMock.mockResolvedValue(jsonResponse({ error: 'Not found' }, 404));
     render(<PortalHelpMenu tourKey="counselor.home" guideHref="/counselor/guide" />);

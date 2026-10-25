@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { Mic } from 'lucide-react';
 import InterviewPracticeForm from '@/components/portal/tools/InterviewPracticeForm';
 import InterviewPracticeSaved from '@/components/portal/tools/InterviewPracticeSaved';
@@ -49,10 +50,11 @@ export function InterviewPracticeKit({
   preview = false,
   previewQuestions,
 }: InterviewPracticeKitProps) {
+  const t = useTranslations('memberWorkspace.interviews');
   return (
     <ToolkitToolChrome
-      title="Interview practice"
-      lede="Role-specific questions with STAR answer frames."
+      title={t('answersTitle')}
+      lede={t('answersIntro')}
       icon={<Mic size={13} aria-hidden="true" />}
       backHref={backHref}
       maxWidth={1000}
@@ -60,6 +62,7 @@ export function InterviewPracticeKit({
       <div className="wa-kit-card">
         <InterviewPracticeForm
           memberId={memberId}
+          workspaceNavigation
           initialData={initialData}
           preview={preview}
           previewQuestions={previewQuestions}

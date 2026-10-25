@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { getMemberDashboardAccess } from '@/lib/auth/memberDashboardAccess';
@@ -13,6 +14,11 @@ import { ensureAppUserProvisioned } from '@/lib/member/ensureAppUser';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getTranslations } from 'next-intl/server';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
+import ResumeStudioClient from '@/components/portal/ResumeStudioClient';
+import ToolHistoryPanel from '@/components/portal/ToolHistoryPanel';
+import styles from '@/components/portal/MemberWorkspace.module.css';
+import resumeStyles from '@/components/portal/ResumeStudio.module.css';
+import { getResumeDraftOwnerToken } from '@/lib/resume/resumeProfileRevision';
 
 const ResumeClient = dynamic(() => import('./ResumeClient'), {
   loading: () => (
@@ -35,9 +41,10 @@ const ResumeClient = dynamic(() => import('./ResumeClient'), {
 });
 
 export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('memberWorkspace.resume');
   return buildPageMetadataAsync({
-    title: 'My Resume',
-    description: 'Upload, view, and AI-generate your professional resume.',
+    title: t('metaTitle'),
+    description: t('metaDescription'),
     path: '/dashboard/resume',
   });
 }
@@ -48,6 +55,7 @@ export default async function DashboardResumePage() {
   const access = await getMemberDashboardAccess(user.id);
   if (access.redirectTo) redirect(access.redirectTo);
   const t = await getTranslations('profile');
+  const tw = await getTranslations('memberWorkspace.resume');
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
   // Single source of truth: getMemberState returns consistent profile % across
@@ -88,61 +96,37 @@ export default async function DashboardResumePage() {
 
   return (
     <DesignSurface surface="warm">
-      <div style={{ padding: "1.25rem 1rem 0", borderBottom: "1px solid var(--wa-border)", background: "var(--wa-surface)" }}>
+      <div className={styles.workspace}>
         <PageOpener
-          className="wa-mb-5"
-          kicker="AI Career Tools"
+          className={resumeStyles.opener}
           title={t('resume')}
-          lede="Upload your resume, review it inline, or build one from your profile."
           action={
-            <Link href="/dashboard/ai-tools" className="wa-kit-cta wa-kit-cta--ghost">
-              AI Career Tools
+            <Link href="/dashboard/ai-tools" className="wa-page-action wa-kit-focus">
+              {tw('design.backToTools')}
             </Link>
           }
         />
-      </div>
-      {readOnlyAudit && (
-        <span hidden data-portal-audit-suppressed="resume-storage-provider-and-member-state-cache" />
-      )}
-      {/* ── Mobile ── */}
-      <div className="md:wa-hidden" style={{ paddingBottom: "6rem" }}>
-        <div style={{ padding: "1rem" }}>
-          <ResumeClient
-            completeness={completeness}
-            witData={{
-              name: fields.name,
-              email: fields.email,
-              phone: fields.phone,
-              recentEmployer: "",
-              targetJob: "",
-              skills: "",
-            }}
-            hasOriginal={!!profile?.resumeOriginalPath}
-            hasEnhanced={!!profile?.resumeEnhancedPath}
+        {readOnlyAudit && (
+          <span hidden data-portal-audit-suppressed="resume-storage-provider-and-member-state-cache" />
+        )}
+        <Suspense fallback={null}>
+          <ResumeStudioClient
+            draftOwnerToken={getResumeDraftOwnerToken(user.id)}
+            basePath="/dashboard/resume"
+            hasResume={!!(profile?.resumeOriginalPath || profile?.resumeEnhancedPath)}
+            filesSlot={
+              <ResumeClient
+                completeness={completeness}
+                witData={{ ...fields, recentEmployer: '', targetJob: '', skills: '' }}
+                hasOriginal={!!profile?.resumeOriginalPath}
+                hasEnhanced={!!profile?.resumeEnhancedPath}
+                layout="side-by-side"
+              />
+            }
+            scoreHistorySlot={<ToolHistoryPanel userId={user.id} toolType="resume_analysis" />}
+            rewriteHistorySlot={<ToolHistoryPanel userId={user.id} toolType="resume_rewriter" title={tw('rewriteHistory')} />}
           />
-        </div>      </div>
-
-      {/* ── Desktop ── */}
-      <div
-        className="wa-hidden md:wa-block"
-        style={{ background: "var(--wa-bg)", minHeight: "100vh" }}
-      >
-        <div style={{ padding: "2rem" }}>
-          <ResumeClient
-            completeness={completeness}
-            witData={{
-              name: fields.name,
-              email: fields.email,
-              phone: fields.phone,
-              recentEmployer: "",
-              targetJob: "",
-              skills: "",
-            }}
-            hasOriginal={!!profile?.resumeOriginalPath}
-            hasEnhanced={!!profile?.resumeEnhancedPath}
-            layout="side-by-side"
-          />
-        </div>
+        </Suspense>
       </div>
     </DesignSurface>
   );
