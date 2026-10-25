@@ -116,7 +116,7 @@ page's section always opens on arrival, and a running guided tour opens them all
 | Content | Blog (Email templates ⚿ · What WorkforceAP does ⚿) |
 | Security & system ⚿ | Settings (Feature flags · Data retention) · Users · Audit logs (CSP reports) · Exports · System Health (Diagnostics · Cron Monitor · Email & Crons · Webhook events · Agent inbox) |
 
-The collapsed icon rail lists every row flat. `/dev/staff/admin-shell` renders this chrome without
+The collapsed icon rail lists the top-level rows only; a nested current page highlights its parent. `/dev/staff/admin-shell` renders this chrome without
 auth or a database for screenshots.
 
 ### Dashboard & Analytics

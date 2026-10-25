@@ -14,6 +14,7 @@ import {
   CheckCircle,
   ClipboardCheck,
   ClipboardList,
+  Contact,
   Compass,
   Download,
   FileText,
@@ -39,6 +40,7 @@ import {
   Timer,
   TrendingUp,
   User,
+  UserCog,
   Users,
   UsersRound,
 } from 'lucide-react';
@@ -112,7 +114,8 @@ export type PortalNavItem = {
   /**
    * Admin rail only: nests this row under the top-level row with that href
    * (same `group`). The rail shows it when its parent is opened or when it or
-   * a sibling is the current page; the collapsed icon rail lists it flat.
+   * a sibling is the current page. The collapsed icon rail leaves it out and
+   * highlights its parent while it is the current page.
    */
   parentHref?: string;
   /**
@@ -491,7 +494,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { href: '/admin/partners', label: 'Partners', group: 'partnersEmployers', Icon: Handshake },
   { href: '/admin/placements', label: 'Placements', group: 'partnersEmployers', Icon: Briefcase },
   { href: '/admin/placement-surveys', label: 'Placement surveys', group: 'partnersEmployers', Icon: ClipboardCheck, parentHref: '/admin/placements' },
-  { href: '/admin/counselors', label: 'Counselors', group: 'partnersEmployers', Icon: Users },
+  { href: '/admin/counselors', label: 'Counselors', group: 'partnersEmployers', Icon: Contact },
   { href: '/admin/mentors', label: 'Mentors', group: 'partnersEmployers', Icon: GraduationCap },
 
   // ── Reporting — one hub row; the pages it absorbs are its children ──
@@ -534,7 +537,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { href: '/admin/settings', label: 'Settings', group: 'system', Icon: Settings, requiresSuperAdminContext: true, tourTarget: 'tour-settings' },
   { href: '/admin/feature-flags', label: 'Feature flags', group: 'system', Icon: Flag, requiresSuperAdminContext: true, parentHref: '/admin/settings' },
   { href: '/admin/data-retention', label: 'Data retention', group: 'system', Icon: Shield, requiresSuperAdminContext: true, parentHref: '/admin/settings' },
-  { href: '/admin/users', label: 'Users', group: 'system', Icon: User, requiresSuperAdminContext: true },
+  { href: '/admin/users', label: 'Users', group: 'system', Icon: UserCog, requiresSuperAdminContext: true },
   { href: '/admin/audit-logs', label: 'Audit logs', group: 'system', Icon: Shield, requiresSuperAdminContext: true },
   { href: '/admin/csp-report', label: 'CSP reports', group: 'system', Icon: Shield, requiresSuperAdminContext: true, parentHref: '/admin/audit-logs' },
   { href: '/admin/exports', label: 'Exports', group: 'system', Icon: Download, requiresSuperAdminContext: true },

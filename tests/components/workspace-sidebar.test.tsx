@@ -52,8 +52,8 @@ beforeEach(() => {
   location.search = '';
   location.wide = true;
   localStorage.clear();
-  // The desktop rail starts compact when nothing is saved; these specs
-  // exercise the expanded rail, so pin the saved preference to expanded.
+  // The member rail starts compact when nothing is saved (staff rails start
+  // expanded); these specs exercise the expanded rail, so pin that choice.
   for (const role of ['member', 'employer', 'admin', 'counselor', 'partner']) {
     localStorage.setItem(`wa_nav_collapsed_${role}`, '0');
   }
@@ -987,15 +987,22 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     expect(JSON.parse(localStorage.getItem(ADMIN_SECTIONS_KEY)!)).toEqual({ 'section:reporting': true, 'item:/admin/reporting': true });
   });
 
-  it('the collapsed icon rail lists every destination flat and marks one current page', async () => {
+  it('the collapsed icon rail lists top-level destinations plus the current page, and marks one current page', async () => {
     const user = userEvent.setup();
     location.pathname = '/admin/coursera';
     const { container } = showAdmin();
     await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
     expect(container.querySelector('.workspace-sidebar-section-btn')).toBeNull();
     const hrefs = [...container.querySelectorAll('.workspace-sidebar-nav a')].map((a) => a.getAttribute('href'));
-    expect(new Set(hrefs)).toEqual(new Set(ADMIN_PORTAL_NAV_ITEMS.map((item) => item.href)));
-    expect(container.querySelectorAll('.workspace-sidebar [aria-current="page"]')).toHaveLength(1);
+    // Post-launch review: the flat list of every row (57 icons, several of them the same
+    // person glyph) read as noise. Nested rows open from the expanded rail; on a nested
+    // page (Coursera, under Training progress) the parent row carries the highlight.
+    expect(new Set(hrefs)).toEqual(new Set(navTopLevelItems(ADMIN_PORTAL_NAV_ITEMS).map((item) => item.href)));
+    const marked = container.querySelectorAll<HTMLAnchorElement>('.workspace-sidebar-nav a[aria-current]');
+    expect(marked).toHaveLength(1);
+    expect(marked[0].getAttribute('href')).toBe('/admin/training-progress');
+    expect(marked[0].getAttribute('aria-current')).toBe('true');
+    expect(marked[0]).toHaveClass('active');
   });
 
   it('the mobile drawer uses the same sections', async () => {
@@ -1006,5 +1013,94 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     expect(sectionButtons(container)).toHaveLength(6);
     expect(container.querySelector('.workspace-sidebar-section-label[data-section="dailyWork"]')).not.toBeNull();
     expect(visibleRows(container).length).toBeLessThanOrEqual(20);
+  });
+});
+
+describe('rail defaults and the collapsed admin rail (post-launch review)', () => {
+  const renderAdmin = () =>
+    render(
+      <NextIntlClientProvider locale="en" messages={pickAdminClientMessages(messages)}>
+        <WorkspaceShell portalRole="admin" navItems={ADMIN_PORTAL_NAV_ITEMS}
+          workspaceLabel="Admin workspace" contextLabel="Administrator" readOnlyAudit>
+          <h1>Admin content</h1>
+        </WorkspaceShell>
+      </NextIntlClientProvider>,
+    );
+  const railHrefs = (container: HTMLElement) =>
+    [...container.querySelectorAll<HTMLAnchorElement>('.workspace-sidebar-nav a.workspace-sidebar-link')]
+      .map((link) => link.getAttribute('href'));
+
+  beforeEach(() => { location.pathname = '/admin'; });
+
+  it('starts the admin rail expanded when nothing is saved, with the WorkforceAP brand and sections', () => {
+    localStorage.removeItem('wa_nav_collapsed_admin');
+    const { container } = renderAdmin();
+    const rail = container.querySelector('.workspace-sidebar')!;
+    expect(rail).not.toHaveClass('workspace-sidebar--collapsed');
+    expect(container.querySelector('.workspace-sidebar-brand')?.textContent).toContain('WorkforceAP');
+    expect(container.querySelector('.workspace-sidebar-section-label[data-section="dailyWork"]')).not.toBeNull();
+    expect(localStorage.getItem('wa_nav_collapsed_admin')).toBeNull();
+  });
+
+  it('still starts the member rail compact when nothing is saved', () => {
+    localStorage.removeItem('wa_nav_collapsed_member');
+    location.pathname = '/dashboard';
+    const { container } = show();
+    expect(container.querySelector('.workspace-sidebar')).toHaveClass('workspace-sidebar--collapsed');
+  });
+
+  it('keeps a saved choice for staff: a collapsed admin rail stays collapsed', () => {
+    localStorage.setItem('wa_nav_collapsed_admin', '1');
+    const { container } = renderAdmin();
+    expect(container.querySelector('.workspace-sidebar')).toHaveClass('workspace-sidebar--collapsed');
+  });
+
+  it('collapsed, the admin rail lists top-level destinations only and keeps the brand mark', () => {
+    localStorage.setItem('wa_nav_collapsed_admin', '1');
+    const { container } = renderAdmin();
+    const hrefs = railHrefs(container);
+    const topLevel = navTopLevelItems(ADMIN_PORTAL_NAV_ITEMS).map((item) => item.href);
+    expect(hrefs).toEqual(topLevel);
+    expect(hrefs.length).toBeLessThan(ADMIN_PORTAL_NAV_ITEMS.length);
+    for (const nested of ['/admin/subgroups', '/admin/chapters', '/admin/billing/preview']) {
+      expect(hrefs, nested).not.toContain(nested);
+    }
+    expect(container.querySelector('.workspace-sidebar-brand-mark')).not.toBeNull();
+  });
+
+  it('collapsed on a nested page, the parent row is highlighted and names the page, with no extra icon', () => {
+    localStorage.setItem('wa_nav_collapsed_admin', '1');
+    location.pathname = '/admin/subgroups';
+    const { container } = renderAdmin();
+    expect(railHrefs(container)).not.toContain('/admin/subgroups');
+    const parent = container.querySelector<HTMLAnchorElement>('.workspace-sidebar-nav a[aria-current]');
+    expect(parent?.getAttribute('href')).toBe('/admin/students');
+    expect(parent?.getAttribute('aria-current')).toBe('true');
+    expect(parent?.getAttribute('title')).toBe('Students: Subgroups');
+    expect(container.querySelectorAll('.workspace-sidebar-nav a.active')).toHaveLength(1);
+  });
+
+  it.each(['employer', 'counselor', 'partner'] as const)('starts the %s rail expanded when nothing is saved', (role) => {
+    localStorage.removeItem(`wa_nav_collapsed_${role}`);
+    const { container } = render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <WorkspaceShell portalRole={role} navItems={EMPLOYER_PORTAL_NAV_ITEMS}
+          workspaceLabel="Staff workspace" contextLabel="Account" readOnlyAudit>
+          <h1>Staff content</h1>
+        </WorkspaceShell>
+      </NextIntlClientProvider>,
+    );
+    expect(container.querySelector('.workspace-sidebar')).not.toHaveClass('workspace-sidebar--collapsed');
+  });
+
+  it('keeps person glyphs apart: Students, Counselors and Users each use a different icon', () => {
+    const icon = (href: string) => ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === href)!.Icon;
+    expect(new Set([icon('/admin/students'), icon('/admin/counselors'), icon('/admin/users')]).size).toBe(3);
+  });
+
+  it('gives Students and Counselors different icons in the admin rail', () => {
+    const students = ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === '/admin/students')!;
+    const counselors = ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === '/admin/counselors')!;
+    expect(students.Icon).not.toBe(counselors.Icon);
   });
 });
