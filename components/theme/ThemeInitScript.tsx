@@ -15,7 +15,7 @@ export default function ThemeInitScript({ nonce }: { nonce?: string } = {}) {
       nonce={nonce}
       suppressHydrationWarning
       dangerouslySetInnerHTML={{
-        __html: `(function(){try{var KEY='wap-theme';var theme=localStorage.getItem(KEY);var systemDark=window.matchMedia('(prefers-color-scheme: dark)').matches;if(theme==='dark'){document.documentElement.classList.add('dark');document.documentElement.setAttribute('data-theme','dark');}else if(theme==='light'){document.documentElement.classList.remove('dark');document.documentElement.setAttribute('data-theme','light');}else{if(systemDark){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}document.documentElement.removeAttribute('data-theme');}}catch(e){}})();`,
+        __html: `(function(){try{var KEY='wap-theme';var media=window.matchMedia('(prefers-color-scheme: dark)');var read=function(){try{var value=localStorage.getItem(KEY);return value==='light'||value==='dark'?value:'system';}catch(_e){return 'system';}};var apply=function(theme){var root=document.documentElement;if(theme==='dark'){root.classList.add('dark');root.setAttribute('data-theme','dark');}else if(theme==='light'){root.classList.remove('dark');root.setAttribute('data-theme','light');}else{if(media.matches){root.classList.add('dark');}else{root.classList.remove('dark');}root.removeAttribute('data-theme');}};var sync=function(){apply(read());};sync();media.addEventListener('change',function(){if(read()==='system')sync();});window.addEventListener('storage',function(event){if(event.key===KEY)sync();});}catch(e){}})();`,
       }}
     />
   );
