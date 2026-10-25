@@ -51,7 +51,7 @@ function ratio(fg: string, bgTint: string, bgUnder: string): number {
   return contrast(over(parseColor(fg), under), over(parseColor(bgTint), under));
 }
 
-const read = (file: string) => readFileSync(path.join(root, file), 'utf8');
+const read = (file: string) => readFileSync(path.join(root, file), 'utf8').replace(/\r\n/g, '\n');
 
 describe('text-on-tint tokens clear AA for 13px text in both modes', () => {
   const bg = lightDark('--wa-bg');
@@ -75,12 +75,15 @@ describe('text-on-tint tokens clear AA for 13px text in both modes', () => {
 });
 
 describe('member surfaces paint small status text with the -dark text tokens', () => {
-  it('home: points-this-week chip, weekly delta and the Learning hub link', () => {
+  it('home: weekly study delta reads the success text token and the shortcut links paint no brand hue', () => {
+    // Round 3 moved the points chip to Progress; the study delta is a class in the Home module now.
     const src = read('components/portal/kit/pages/member/MemberHomeKit.tsx');
-    expect(src).toMatch(/color: 'var\(--wa-success-dark\)',\s*\n\s*background: 'var\(--wa-success-soft\)'/);
-    expect(src).toContain("color: 'var(--wa-success-dark)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>\n                      {weeklyActivityDeltaLabel}");
-    expect(src).toContain("style={{ ...HOME_TEXT_LINK, color: 'var(--wa-info-dark)' }}");
-    expect(src).not.toMatch(/HOME_TEXT_LINK, color: 'var\(--wa-info\)'/);
+    const css = read('components/portal/kit/pages/member/MemberHomeKit.module.css');
+    expect(css).toMatch(/\.studyDelta\s*\{[^}]*color: var\(--wa-success-dark\)/);
+    expect(css).not.toMatch(/\.studyDelta\s*\{[^}]*color: var\(--wa-success\)\s*;/);
+    expect(src).toContain('className={styles.studyDelta}');
+    // The shortcut links take their colour from the module, never an inline brand hue.
+    expect(src).not.toMatch(/styles\.shortcut[^>]*style=\{\{[^}]*color: 'var\(--wa-info\)'/);
   });
 
   it('profile: readiness / certs / streak pills and the save status line', () => {
@@ -127,11 +130,13 @@ describe('solid-accent controls and hero actions clear AA in dark mode (WAP-145 
   });
 
   it('call sites read the adaptive pairs', () => {
-    expect(read('components/portal/kit/ChatThread.tsx')).toContain("background: 'var(--wa-accent)',\n            color: 'var(--wa-on-accent-control)',");
-    expect(read('components/portal/kit/MemberProfilePhotoEditor.tsx')).toContain("background: 'var(--wa-accent)',\n              color: 'var(--wa-on-accent-control)',");
+    expect(read('components/portal/kit/ChatThread.tsx')).toContain("background: 'var(--wa-accent-fill)',\n            color: 'var(--wa-on-accent-control)',");
+    expect(read('components/portal/kit/MemberProfilePhotoEditor.tsx')).toContain("background: 'var(--wa-accent-fill)',\n              color: 'var(--wa-on-accent-control)',");
     const card = read('components/portal/MemberDoThisNextCard.tsx');
     expect(card).not.toMatch(/background: 'var\(--wa-on-accent\)',\s*\n\s*color: 'var\(--wa-accent\)'/);
-    expect(card.match(/background: 'var\(--wa-hero-action-bg\)',\s*\n\s*color: 'var\(--wa-hero-action-text\)'/g)?.length).toBe(1);
+    // The card is a white hairline card now: its CTA is the shared crimson pill, not an inline hero pair.
+    expect(card).toContain('wa-kit-cta');
+    expect(card).not.toContain('--wa-hero-action-bg');
   });
 
   it('legacy .btn family keeps its labels and borders readable in dark mode', () => {
