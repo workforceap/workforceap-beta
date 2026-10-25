@@ -2284,6 +2284,10 @@ html.dark .workspace-sidebar-group-label {
     border-radius: 0.25rem;
     cursor: help;
 }
+/* Dark mode: the light-mode crimson reads 2.4:1 on the tinted pill. The adaptive accent text token clears AA. */
+html.dark .super-admin-view-switcher__badge {
+    color: var(--wa-accent-text);
+}
 .super-admin-view-switcher__header {
     padding: 0.5rem 0.75rem;
     font-size: 0.8125rem;

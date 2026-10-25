@@ -4,6 +4,10 @@ import { useEffect, useMemo, useState, useCallback, type ReactNode } from 'react
 import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
+// "last activity" prints through the shared formatter: the active app locale and
+// a fixed IANA zone (PORTAL_TIMEZONE, America/Chicago), never the runtime's own
+// zone. A UTC server render and a browser elsewhere therefore print the same
+// text, so React raises no hydration mismatch (#418, which dropped html.dark).
 import { formatDate } from '@/lib/i18n/date';
 import { DEFAULT_LOCALE, isAppLocale } from '@/lib/i18n/config';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
@@ -140,12 +144,6 @@ const STATUS_TOOLTIP: Record<AtRiskMember['status'], string> = {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-// Fixed en-US/UTC so the server render and the browser print the same text.
-// `toLocaleDateString()` used the runtime's timezone and locale: a Vercel (UTC)
-// render and a browser in another timezone or locale disagree on the calendar
-// date or format, React reports a hydration text mismatch (#418) and falls back
-// to client-rendering the root, which strips the `class="dark"` that
-// ThemeInitScript put on <html>. Same convention as LabReviewQueue.
 function scoreLevel(score: number): AtRiskMember['riskLevel'] {
   if (score >= 70) return 'CRITICAL';
   if (score >= 50) return 'HIGH';

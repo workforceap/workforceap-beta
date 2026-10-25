@@ -255,6 +255,7 @@ export default async function DevMemberHomePage({
       toolkitHref="/dev/member/toolkit"
       jobsHref="/dev/member/jobs"
       coursesHref="/dev/member/program"
+      missionsHref="/dev/member/missions"
       goalsHref="/dev/member/progress"
       progressHref="/dev/member/progress"
       preassessmentHref="/dev/member/assessment"

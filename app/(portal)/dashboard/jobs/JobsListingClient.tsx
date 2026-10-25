@@ -719,7 +719,7 @@ export default function JobsListingClient({
       )}
       {isAuthenticated && (loadingMatches || matchedJobs.length > 0) && (
         <details className={styles.matches}>
-          <summary className="wa-kit-focus">Best matches for you <span>{loadingMatches ? 'Loading…' : `${Math.min(matchedJobs.length, 3)} matches`}</span></summary>
+          <summary className="wa-kit-focus">{t('bestMatchesForYou')} <span>{loadingMatches ? t('loadingMatches') : t('matchCount', { count: Math.min(matchedJobs.length, 3) })}</span></summary>
           <div
             className="wa-flex wa-flex-wrap wa-items-center"
             style={{
@@ -730,14 +730,14 @@ export default function JobsListingClient({
           >
             <div>
               <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--wa-muted)' }}>
-                Ranked from your program, readiness, certifications, and activity.
+                {t('matchesBasis')}
               </p>
             </div>
-            <KitCta href={preview ? '/dev/member/progress' : '/dashboard/readiness'}>Improve readiness</KitCta>
+            <KitCta href={preview ? '/dev/member/progress' : '/dashboard/readiness'}>{t('improveReadiness')}</KitCta>
           </div>
           {loadingMatches ? (
             <p style={{ margin: 0, padding: '8px 18px 16px', fontSize: 13, color: 'var(--wa-muted)' }}>
-              Loading matches…
+              {t('loadingMatches')}
             </p>
           ) : (
             matchedJobs.slice(0, 3).map((job) => (

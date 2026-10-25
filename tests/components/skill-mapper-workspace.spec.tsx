@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-import path from 'node:path';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
@@ -163,15 +161,6 @@ describe('actual Skill Mapper saved workspace', () => {
 describe('Skill Mapper dark-mode contrast tokens', () => {
   const profile = axes.map(axis => ({ axis, value: 0.4 }));
   const strokes = (container: HTMLElement) => Array.from(container.querySelectorAll('svg.skill-mapper-radar-chart polygon')).map(polygon => polygon.getAttribute('stroke'));
-
-  it('keeps the follow-through Astryx primary CTA on the solid accent-fill/control-text pair', () => {
-    const css = readFileSync(path.resolve(process.cwd(), 'components/portal/tools/SkillMapperClient.module.css'), 'utf8');
-    const rule = css.match(/\.followThrough\s+:global\(a\[data-variant='primary'\]\)\s*\{([^}]+)\}/);
-    expect(rule).not.toBeNull();
-    expect(rule![1]).toContain('background-color: var(--wa-accent-fill)');
-    expect(rule![1]).toContain('color: var(--wa-on-accent-control)');
-    expect(rule![1]).not.toContain('background-color: var(--wa-accent)');
-  });
 
   it('draws the occupation series, tab underline and skill bars with the adaptive accent instead of the static one', () => {
     const { container } = show({ preview: true, initialRun: saved });

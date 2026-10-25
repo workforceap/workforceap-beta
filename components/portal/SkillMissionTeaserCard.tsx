@@ -73,7 +73,7 @@ export default function SkillMissionTeaserCard({
             fontWeight: 700,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
-            color: 'var(--wa-accent)',
+            color: 'var(--wa-accent-text)',
           }}
         >
           <Target size={13} aria-hidden="true" /> Skill missions
@@ -87,14 +87,14 @@ export default function SkillMissionTeaserCard({
                 gap: '0.2rem',
                 fontSize: 'var(--wa-type-meta)',
                 fontWeight: 700,
-                color: 'var(--wa-gold)',
+                color: 'var(--wa-gold-dark)',
                 background: 'var(--wa-gold-soft)',
                 padding: '0.12rem 0.5rem',
                 borderRadius: '9999px',
                 whiteSpace: 'nowrap',
               }}
             >
-              <Flame size={12} aria-hidden="true" /> {data.streak} streak
+              <Flame size={12} aria-hidden="true" /> {data.streak} in a row
             </span>
           )}
           {data && (
@@ -102,7 +102,7 @@ export default function SkillMissionTeaserCard({
               style={{
                 fontSize: 'var(--wa-type-meta)',
                 fontWeight: 700,
-                color: 'var(--wa-muted)',
+                color: 'var(--wa-muted-strong)',
                 whiteSpace: 'nowrap',
               }}
             >
@@ -113,9 +113,9 @@ export default function SkillMissionTeaserCard({
       </div>
 
       {hasReady && data?.nextMissionName ? (
-        <h3 style={{ margin: '0 0 0.25rem', fontSize: 'var(--wa-type-body)', fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--wa-text)' }}>
+        <h2 style={{ margin: '0 0 0.25rem', fontSize: 'var(--wa-type-body)', fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--wa-text)' }}>
           {data.nextMissionName}
-        </h3>
+        </h2>
       ) : null}
 
       <p

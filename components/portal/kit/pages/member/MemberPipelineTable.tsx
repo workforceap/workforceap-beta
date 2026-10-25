@@ -1,5 +1,3 @@
-'use client';
-
 import { useTranslations } from 'next-intl';
 import { DataTable, StatusTag, cx, toneClass, type Column, type KitTone } from '@/components/portal/kit';
 import { isExcludedPublicEmployerName } from '@/lib/jobs/publicJobFilters';

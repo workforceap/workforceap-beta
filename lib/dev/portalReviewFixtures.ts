@@ -47,7 +47,7 @@ export const PORTAL_REVIEW_FIXTURES: PortalReviewFixture[] = [
     ['Locked', 'state=locked'], ['About you', 'state=form'], ['Questions', 'state=questions'], ['Submitted result', 'state=confirm'],
   ]),
   fixture('member', 'missions', 'Skill missions', 'Empty, active, challenge and passed mission presentations.', 'Inspect challenge controls and ready, retry, passed and locked states.', 'Preview challenges do not submit evidence or save résumé bullets. Real grading and persistence remain blocked.', [
-    ['Enrolled, no missions', 'state=enrolled'], ['Active journey', 'state=active'], ['Challenge', 'state=challenge'], ['Passed challenge', 'state=passed'], ['Home teaser', 'state=teaser'],
+    ['Enrolled, no missions', 'state=enrolled'], ['Active journey', 'state=active'], ['Challenge', 'state=challenge'], ['Passed challenge', 'state=passed'], ['Teaser card', 'state=teaser'],
   ]),
   fixture('member', 'progress', 'Readiness progress', 'Sample readiness scores, milestones and unavailable data.', 'Inspect category details and distinct empty/error presentations.', 'Sample scores do not verify real readiness calculations or eligibility.', [['Empty progress', 'state=empty'], ['Load error', 'state=error']]),
   fixture('member', 'messages', 'Human counselor messages', 'Populated inbox, provisioning state and empty thread.', 'Inspect conversation layout and the local composer where available.', 'No message delivery or realtime session is connected. Support email links leave the preview; no send is part of this review.', [['Inbox unavailable', 'state=empty'], ['Empty thread', 'state=thread-empty']]),

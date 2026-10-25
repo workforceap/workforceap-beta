@@ -57,9 +57,6 @@ export default async function EmployerDashboardPage({
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
   const ctx = await getEmployerForUser(user.id, { isSuperAdminHint: superAdmin, readOnlyAudit });
-  // Person-facing greeting ("Welcome back, {first name}."): the employer context
-  // carries the company, not the person, so read the signed-in user's name once.
-  const employerFirstName = await signedInFirstName(user.id);
   if (!ctx) {
     redirect(await unlinkedEmployerHref(user.id));
   }
@@ -83,6 +80,7 @@ export default async function EmployerDashboardPage({
       kitRecent,
       kitOpenRolesList,
       kitHiringIntents,
+      employerFirstName,
     ] = await Promise.all([
       prisma.job.count({ where: { employerId: ctx.employerId, status: 'live' } }),
       prisma.jobPostingApplication.count({
@@ -127,6 +125,10 @@ export default async function EmployerDashboardPage({
           return null;
         }
       })(),
+      // Person-facing greeting ("Welcome back, {first name}."): the employer
+      // context carries the company, not the person. Runs inside this batch so it
+      // adds no serial round trip, and only on the path that renders it.
+      signedInFirstName(user.id),
     ]);
 
     // Cheap, indexed fit-score lookup for the handful of candidates shown in

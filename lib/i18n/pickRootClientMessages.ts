@@ -49,6 +49,9 @@ export const PORTAL_CLIENT_NAMESPACES = [
   // components/portal/kit/pages/member/MemberMessagesKit — /dashboard/messages
   // inbox chrome, composer and send errors (WAP-262).
   'messages',
+  // components/portal/SkillMissionPanel + SkillMissionChallenge — /dashboard/missions,
+  // the Learning hub panel and the training workspace practice dialog.
+  'skillMissions',
 ] as const;
 
 /**

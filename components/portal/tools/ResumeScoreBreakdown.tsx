@@ -1,5 +1,3 @@
-'use client';
-
 import type { ReactNode } from 'react';
 import { CheckCircle2, AlertCircle, Target, Briefcase } from 'lucide-react';
 

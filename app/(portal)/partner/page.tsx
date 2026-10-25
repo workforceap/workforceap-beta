@@ -96,9 +96,6 @@ export default async function PartnerDashboardPage({
 
   const ctx = await getPartnerForUser(user.id, { isSuperAdminHint: superAdmin, readOnlyAudit });
   if (!ctx) redirect(await unlinkedPartnerHref(user.id));
-  // Person-facing greeting ("Welcome back, {first name}."): the partner context
-  // carries the organisation, not the person, so read the signed-in user's name once.
-  const partnerFirstName = await signedInFirstName(user.id);
 
   let partnerRow:
     | {
@@ -221,6 +218,7 @@ export default async function PartnerDashboardPage({
       payoutEvents,
       pendingPlacementCount,
       attentionCount,
+      partnerFirstName,
     ] = await Promise.all([
         prisma.partnerReferral.count({
           where: {
@@ -309,6 +307,10 @@ export default async function PartnerDashboardPage({
           console.error('[partner overview] attention count failed', err);
           return null;
         }),
+        // Person-facing greeting ("Welcome back, {first name}."): the partner
+        // context carries the organisation, not the person. Runs inside this batch
+        // so it adds no serial round trip, and only on the path that renders it.
+        signedInFirstName(user.id),
       ]);
 
     const placementRate =

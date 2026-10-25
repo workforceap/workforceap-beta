@@ -97,7 +97,7 @@ export function MemberProgramKit({
   liveSessionStart,
   liveSessionDurationMinutes = 60,
   missionsSummary,
-  missionsHref = '#',
+  missionsHref = '/dashboard/missions',
   trainingNavHrefs,
 }: MemberProgramKitProps) {
   // The page states the course denominator once; the workspace view must show it where it states the count too.

@@ -103,6 +103,9 @@
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 2px;
+  /* The link sits in a sentence, so it stays inline. Vertical padding on an inline box grows its
+     tap area (a phone wants 44px) without moving any text. */
+  padding-block: 14px;
 }
 .certDue {
   color: var(--wa-accent-text);
@@ -301,8 +304,7 @@
   border-top: 1px solid var(--wa-border);
 }
 
-.moreStepsDisclosure > details > summary,
-.handoffDisclosure > summary {
+.moreStepsDisclosure > details > summary {
   display: flex;
   align-items: center;
   min-height: 48px;
@@ -338,14 +340,6 @@
   padding: 0 12px 12px;
 }
 
-.handoffDisclosure {
-  margin-top: 8px;
-}
-
-.handoffDisclosure > summary {
-  justify-content: center;
-  border-radius: 8px;
-}
 .shortcut {
   display: inline-flex;
   align-items: center;

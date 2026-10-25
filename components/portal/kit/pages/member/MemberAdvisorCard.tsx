@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { MessageSquare } from 'lucide-react';
 import { Avatar } from '@/components/portal/kit/Avatar';
 import type { AssignedCounselor } from '@/lib/member/counselorContext';
@@ -10,6 +11,7 @@ import type { AssignedCounselor } from '@/lib/member/counselorContext';
  * It states no presence or availability: we don't record either.
  */
 export default function MemberAdvisorCard({ advisor }: { advisor: AssignedCounselor | null | undefined }) {
+  const t = useTranslations('dashboard');
   if (!advisor) return null;
   const initials = advisor.name
     .split(/\s+/)
@@ -33,7 +35,7 @@ export default function MemberAdvisorCard({ advisor }: { advisor: AssignedCounse
           <h3 id="member-advisor-heading" className="wa-kit-people-card__name" style={{ overflowWrap: 'anywhere' }}>
             {advisor.name}
           </h3>
-          <p className="wa-kit-people-card__role">Your career advisor</p>
+          <p className="wa-kit-people-card__role">{t('home.advisorRole')}</p>
         </div>
       </div>
       <Link
@@ -42,7 +44,7 @@ export default function MemberAdvisorCard({ advisor }: { advisor: AssignedCounse
         style={{ marginTop: 16 }}
       >
         <MessageSquare size={18} aria-hidden />
-        Message {advisor.firstName}
+        {t('home.messageAdvisor', { name: advisor.firstName })}
       </Link>
     </section>
   );

@@ -57,7 +57,7 @@ describe('synthetic Resume file proof', () => {
     expect(downloads.some(link => link.getAttribute('href')?.includes('ORIGINAL%20SAMPLE'))).toBe(true);
     expect(downloads.some(link => link.getAttribute('href')?.includes('REVISED%20SAMPLE'))).toBe(true);
     expect(screen.getByRole('link', { name: 'Download original resume' })).toHaveAttribute('download', 'sample-original-resume.txt');
-    expect(screen.getByRole('link', { name: 'Download revised resume' })).toHaveAttribute('download', 'sample-revised-resume.txt');
+    expect(screen.getByRole('link', { name: 'Download updated resume' })).toHaveAttribute('download', 'sample-revised-resume.txt');
     expect(screen.getByRole('link', { name: /^Resume Rewriter/ })).toHaveAttribute('href', '/dashboard/resume?view=rewrite');
     expect(screen.getByRole('link', { name: /^Job Match Scorer/ })).toHaveAttribute('href', '/dashboard/ai-tools/job-match-scorer');
     expect(screen.getByRole('link', { name: /^Resume Analysis/ })).toHaveAttribute('href', '/dashboard/resume?view=score');
@@ -73,7 +73,7 @@ describe('synthetic Resume file proof', () => {
     expect(screen.getByRole('link', { name: /^Job Match Scorer/ })).toHaveAttribute('href', '/dev/member/job-match');
     expect(screen.getByRole('link', { name: /^Resume Analysis/ })).toHaveAttribute('href', '/dev/member/resume-studio?view=score');
     expect(screen.getByRole('link', { name: 'Download original resume' })).toHaveAttribute('download', 'sample-original-resume.txt');
-    expect(screen.getByRole('link', { name: 'Download revised resume' })).toHaveAttribute('download', 'sample-revised-resume.txt');
+    expect(screen.getByRole('link', { name: 'Download updated resume' })).toHaveAttribute('download', 'sample-revised-resume.txt');
     expect(fetcher).not.toHaveBeenCalled();
   });
 
@@ -104,12 +104,12 @@ describe('member PDF preview fallback', () => {
     })));
     render(<ResumeClient completeness={60} witData={{ name: 'Jordan Example', email: 'jordan@example.invalid', phone: '', recentEmployer: '', targetJob: '', skills: '' }} hasOriginal hasEnhanced />);
 
-    const original = await screen.findByRole('link', { name: 'Download original resume' });
-    const revised = screen.getByRole('link', { name: 'Download revised resume' });
+    const original = await screen.findByRole('link', { name: 'Download original resume (opens in a new tab)' });
+    const updated = screen.getByRole('link', { name: 'Download updated resume (opens in a new tab)' });
     expect(original).toHaveAttribute('href', resumeStatus.originalUrl);
-    expect(revised).toHaveAttribute('href', resumeStatus.enhancedUrl);
+    expect(updated).toHaveAttribute('href', resumeStatus.enhancedUrl);
     expect(screen.getAllByRole('link').filter(link => link.getAttribute('href') === resumeStatus.originalUrl)).toEqual([original]);
-    expect(screen.getAllByRole('link').filter(link => link.getAttribute('href') === resumeStatus.enhancedUrl)).toEqual([revised]);
+    expect(screen.getAllByRole('link').filter(link => link.getAttribute('href') === resumeStatus.enhancedUrl)).toEqual([updated]);
   });
 
   it('replaces a nonempty JSON API error with the download fallback for only that preview', async () => {

@@ -1,5 +1,3 @@
-'use client';
-
 import { useTranslations } from 'next-intl';
 import { HStack, VStack } from '@astryxdesign/core/Layout';
 import { ArrowRight, Wand2 } from 'lucide-react';

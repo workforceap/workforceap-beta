@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ArrowRight, CalendarDays, Check, ChevronDown, Clock3, FileText, GraduationCap } from 'lucide-react';
@@ -59,15 +57,16 @@ export default function MemberHandoffSummary({
           const validDate = date && Number.isFinite(date.getTime()) ? date : null;
           return (
             <div key={key} className={styles.step} data-confirmed={confirmed} data-pending={pending}>
-              <span className={styles.stepIcon} aria-hidden="true">{confirmed ? <Check size={18} /> : pending ? <Clock3 size={18} /> : <Icon size={18} />}</span>
-              <div>
-                <dt>{t(key)}</dt>
-                <dd className={styles.status}>{t(pending ? 'pendingConfirmation' : status)}</dd>
-                {source ? <dd className={styles.receipt}>
-                  <span>{t(`source.${source}`)}</span>
-                  {validDate ? <time dateTime={recordedAt}>{t('confirmedOn', { date: new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(validDate) })}</time> : null}
-                </dd> : null}
-              </div>
+              {/* dl > div > dt + dd only: the decorative icon lives inside the dt and is positioned by CSS. */}
+              <dt>
+                <span className={styles.stepIcon} aria-hidden="true">{confirmed ? <Check size={18} /> : pending ? <Clock3 size={18} /> : <Icon size={18} />}</span>
+                {t(key)}
+              </dt>
+              <dd className={styles.status}>{t(pending ? 'pendingConfirmation' : status)}</dd>
+              {source ? <dd className={styles.receipt}>
+                <span>{t(`source.${source}`)}</span>
+                {validDate ? <time dateTime={recordedAt}>{t('confirmedOn', { date: new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(validDate) })}</time> : null}
+              </dd> : null}
             </div>
           );
         })}

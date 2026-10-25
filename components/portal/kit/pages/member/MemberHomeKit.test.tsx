@@ -337,20 +337,28 @@ describe('MemberHomeKit one-screen "This week" home', () => {
     expect(screen.queryByText('What the AI Career Tools do')).toBeNull();
   });
 
-  it('keeps one quiet row of links to Progress, Points, Jobs, AI Career Tools and the Learning hub', () => {
+  it('keeps one quiet row of links to Progress, Points, Jobs, Skill missions, AI Career Tools and the Learning hub', () => {
     // Points joined the row (Addendum A1): the streak and the ledger left Home and
     // the signed-in points page is the only route that still shows them. Jobs
     // joined it too (Addendum A5): the application pipeline left Home for the
-    // Job board, which already lists the member's applications.
-    renderKit(<MemberHomeKit {...base} progressHref="/dev/member/progress" pointsHref="/dashboard/points" jobsHref="/dev/member/jobs" toolkitHref="/dev/member/toolkit" coursesHref="/dev/member/program" />);
+    // Job board, which already lists the member's applications. Skill missions is
+    // a plain link: Home runs no mission query (its loader budget is 2).
+    renderKit(<MemberHomeKit {...base} progressHref="/dev/member/progress" pointsHref="/dashboard/points" jobsHref="/dev/member/jobs" missionsHref="/dev/member/missions" toolkitHref="/dev/member/toolkit" coursesHref="/dev/member/program" />);
     const nav = within(screen.getByRole('navigation', { name: 'Shortcuts' }));
     expect(nav.getAllByRole('link').map((a) => [a.textContent?.trim(), a.getAttribute('href')])).toEqual([
       ['Progress', '/dev/member/progress'],
       ['Points', '/dashboard/points'],
       ['Jobs', '/dev/member/jobs'],
+      ['Skill missions', '/dev/member/missions'],
       ['AI Career Tools', '/dev/member/toolkit'],
       ['Learning hub', '/dev/member/program'],
     ]);
+  });
+
+  it('defaults the Skill missions shortcut to the real missions page and names it in the row', () => {
+    renderKit(<MemberHomeKit {...base} />);
+    const link = within(screen.getByRole('navigation', { name: 'Shortcuts' })).getByRole('link', { name: 'Skill missions' });
+    expect(link).toHaveAttribute('href', '/dashboard/missions');
   });
 
   it('defaults the Progress link to the real My progress route, Points to the points page and Jobs to the Job board', () => {

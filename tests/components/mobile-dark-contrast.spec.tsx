@@ -37,7 +37,7 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/admin/members',
   useSearchParams: () => new URLSearchParams(),
 }));
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('@/app/(portal)/dashboard/_actions/analyticsActions', () => ({
   logCourseraLaunchFromPortal: vi.fn().mockResolvedValue(undefined),
 }));

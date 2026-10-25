@@ -1,4 +1,4 @@
-import { NextIntlClientProvider } from 'next-intl';
+import { NextIntlClientProvider, createTranslator, type AbstractIntlMessages } from 'next-intl';
 import en from '@/messages/en.json';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
@@ -13,6 +13,9 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 // /dashboard/missions: auth, DB and loaders are stubbed so the page renders its empty shell.
+vi.mock('next-intl/server', () => ({
+  getTranslations: vi.fn(async (namespace: string) => createTranslator({ locale: 'en', messages: en as unknown as AbstractIntlMessages, namespace })),
+}));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn(async (input: unknown) => input) }));
 vi.mock('@/lib/auth/server', () => ({ getUser: vi.fn(async () => ({ id: 'user-1' })) }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: { user: { findUnique: vi.fn(async () => ({ courseProgress: [] })) } } }));

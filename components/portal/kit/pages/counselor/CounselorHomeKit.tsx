@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import {

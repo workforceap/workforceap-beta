@@ -48,6 +48,7 @@ export default async function JobsPage({
   const requestedUi = typeof params?.ui === 'string' ? params.ui : null;
 
   const t = await getTranslations('dashboard');
+  const tm = await getTranslations('memberJobs');
 
   let ageGroup: 'under14' | 'youth14to17' | 'adult18plus' = 'adult18plus';
   let profileCity: string | null = null;
@@ -417,7 +418,7 @@ export default async function JobsPage({
           title={t('jobBoard')}
           meta={t('jobBoardSubtitle')}
           action={user && openingsView ? (
-            <Link href="?view=overview#applications" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">View applications</Link>
+            <Link href="?view=overview#applications" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">{tm('viewApplications')}</Link>
           ) : undefined}
         />
         {user ? (

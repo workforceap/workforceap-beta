@@ -111,7 +111,7 @@ export function MemberJobDetail({
             <span className="wa-kit-chip wa-kit-chip--neutral">{salary}</span>
           </p>
         ) : null}
-        {applySlot ? <a href="#job-application" className="wa-kit-cta wa-kit-focus">Review application</a> : null}
+        {applySlot ? <a href="#job-application" className="wa-kit-cta wa-kit-focus">{td('reviewApplication')}</a> : null}
 
         {description ? (
           <div className="wa-kit-card">
@@ -139,7 +139,7 @@ export function MemberJobDetail({
 
         {applySlot ? (
           <section id="job-application" aria-labelledby="job-application-heading" tabIndex={-1} className="wa-kit-card">
-            <h2 id="job-application-heading" className="wa-kit-card-title" style={{ margin: '0 0 12px' }}>Your application</h2>
+            <h2 id="job-application-heading" className="wa-kit-card-title" style={{ margin: '0 0 12px' }}>{td('yourApplication')}</h2>
             {applySlot}
           </section>
         ) : null}
@@ -197,7 +197,7 @@ export function MemberJobDetail({
           </div>
         ) : null}
 
-        {preparationSlot ? <MemberDisclosure summary="Tailor your resume">{preparationSlot}</MemberDisclosure> : null}
+        {preparationSlot ? <MemberDisclosure summary={td('tailorResume')}>{preparationSlot}</MemberDisclosure> : null}
       </div>
     </DesignSurface>
   );

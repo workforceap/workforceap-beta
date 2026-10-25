@@ -114,30 +114,37 @@ retaining descriptions for assistive technology; the selected panel starts with 
 source status and labeled controls rather than repeating the tab title. Draft recovery
 status stays visible as a compact strip, separate from source-file status.
 
-Home is an intentional task-first exception to the shared opener scale. Its
-scoped `Home.module.css` keeps the greeting at 22–26px, omits the redundant kicker
-and lede, and lets the phone greeting and streak wrap naturally. The next-action
-title is 26–30px and never line-clamped; its CTA wraps
-and keeps a 48px target. At widths of at least 1100px, the action and handoff
-evidence use a 60/40 layout, followed by paired advisor and Up next panels when
-both exist. Narrow screens retain action-first document order. The compact
-Home preassessment variant preserves the completed state; one contextual AI
-introduction remains below progress instead of repeating a tool catalogue.
+Home (`MemberHomeKit`) is the "This week" screen. The header is the greeting with
+the approval status as a slim three-step strip at its right, stacked below on phone;
+the staff-view, no-program and youth notices follow only when they apply.
+`.wa-kit-home-grid` is one column on phone and the main column plus a 352px rail from
+1100px. The main column is one "This week" card of task rows (today's next action,
+then only the rows that apply: the job-offer confirmation, the First 90 Days check-in
+and the WIOA preassessment while it is not on file, with the remaining next-best
+actions and the stage-specific tool under a "More this week" disclosure), the
+resume-to-consultation handoff evidence summary, the certification path, and one row
+of links (Progress, Points, Jobs, Skill missions, AI Career Tools, Learning hub). The
+rail holds the advisor card and a "Study and goals" disclosure (study minutes, next
+badge and goals). A destination click navigates and records click telemetry; it never
+marks a row done, and a row shows as done only for a real completion (a confirmed offer
+or an answered First 90 Days check-in). Layout must not infer completion or change
+next-action ranking. The full approval chain stays in the strip's disclosure.
 The evidence summary distinguishes confirmed, awaiting-confirmation and unknown
 steps. Receipt sources and UTC dates render only when supplied for a confirmed
 step; profile modification dates are never receipt evidence. Email/calendar/provider
 state remains unknown in the live loader until an authoritative source is wired.
 A compact disclosure explains how to contact the team without marking a step done.
-Home places compact approval status after its next action and evidence; the full
-approval chain remains available in a disclosure. Layout must not infer completion,
-change next-action ranking, or turn a destination click into a completed step.
-The four reporting metrics, certification, activity, points, pipeline
-and badge detail stay mounted inside a native Progress details disclosure. The
-selected program title stays visible in its collapsed summary. Next
-steps, handoff evidence, approval and post-offer actions stay outside that disclosure.
 Fixture owners supply assessment and program destinations explicitly so Home's
 preassessment and Open plan links stay in the sample-screen flow; the production
 defaults remain unchanged. A fixture destination does not authorize a live submission.
+
+Home no longer renders the four stat tiles, the application pipeline, the recent-points
+ledger, the streak or an AI Career Tools introduction. Points, the streak and the ledger
+are on `/dashboard/points` and, with course %, active applications, certificates and
+points this week, on Progress (`/dashboard/readiness`, below). The pipeline is on Jobs.
+`MemberAiToolsCard` and `MemberStartHereCard` are no longer mounted on Home (AI Career
+Tools is a shortcut plus the stage-specific tool row). Home adds no query for Skill
+missions: its "Skill missions" shortcut is a plain link to `/dashboard/missions`.
 
 Resume uses scoped workspace chrome and descriptive view tabs; phone tabs keep
 their 48px targets and their full descriptions through `aria-describedby`.
@@ -738,7 +745,7 @@ by every consumer, a 60s freshness window, and `resetCurrentUserCache()` on
 sign-out. Do not call `fetch('/api/auth/me')` from a component; pass a
 server-known `superAdmin` into `useIsSuperAdmin(known)` to skip the read.
 
-`MemberProgressKit` (`/dashboard/readiness`, proof `/dev/member/progress`) shows the weighted readiness score, four area percents, milestones, and a kit-token progress summary. Numbers come from `getScoreBreakdown` via `buildReadinessProgressView` — never invented weekly counters. The summary starts as a factual recap of those same points and may be replaced by an AI rewrite that is rejected if it cites unknown percents. Score-load failure is an explicit empty/error, not a 0% ring. Do not mix Astryx primitives inside this kit page.
+`MemberProgressKit` (`/dashboard/readiness`, proof `/dev/member/progress`) shows the weighted readiness score, four area percents, milestones, and a kit-token progress summary. Numbers come from `getScoreBreakdown` via `buildReadinessProgressView` — never invented weekly counters. Above them sits the numbers strip the Home dropped (course %, active applications, certificates, points with points this week) and a Points card (recent ledger, streak), fed by `loadProgressMetrics(userId)` (`lib/member/loadProgressMetrics.ts`): three bounded reads of the signed-in member's own row, run beside the readiness load and skipped on `?ui=legacy`. A read that fails or has nothing to measure is `null`, and the kit leaves that tile or block out (unknown is not zero, WAP-206); a real zero stays `0`. With no points data the kit shows its "Points and streak" link card to `/dashboard/points`. The summary starts as a factual recap of those same points and may be replaced by an AI rewrite that is rejected if it cites unknown percents. Score-load failure is an explicit empty/error, not a 0% ring. Do not mix Astryx primitives inside this kit page.
 
 `UsersKit` is the staff/admin directory at `/admin/users`. Its loader searches
 and counts before pagination; `useDirectoryNavigation` keeps URL search, role,

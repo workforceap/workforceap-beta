@@ -1,5 +1,3 @@
-'use client';
-
 import type { LucideIcon } from 'lucide-react';
 import { Briefcase, Users, CalendarClock, Award, SquarePen } from 'lucide-react';
 import { Card } from '@astryxdesign/core/Card';
@@ -383,7 +381,7 @@ export function EmployerHomeKit({
                       <StaffTaskRow
                         key={item.id}
                         tone="blue"
-                        title={<a href={item.href ?? jobsHref} style={{ color: 'inherit', textDecoration: 'none' }}>{item.title}</a>}
+                        title={<a href={item.href ?? jobsHref} style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', minHeight: 44 }}>{item.title}</a>}
                         subline={
                           item.location
                             ? `${item.applicants} applicant${item.applicants === 1 ? '' : 's'} · ${item.location}`

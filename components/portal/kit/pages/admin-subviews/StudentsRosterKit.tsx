@@ -659,7 +659,7 @@ export function StudentsRosterKit({
       </div>
 
       {visible.length > KIT_TABLE_PAGE_SIZE ? <div className="lg:wa-hidden wa-mb-3" data-testid="students-roster-top-pagination">
-        <KitTablePager pagination={pagination} />
+        <KitTablePager pagination={{ ...pagination, label: 'Roster pagination, top' }} />
       </div> : null}
 
       <DataTable<StudentRow>

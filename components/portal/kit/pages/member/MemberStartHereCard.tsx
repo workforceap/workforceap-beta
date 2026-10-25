@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, ChevronDown, ClipboardCheck, Wand2 } from 'lucide-react';
 import styles from './MemberStartHereCard.module.css';

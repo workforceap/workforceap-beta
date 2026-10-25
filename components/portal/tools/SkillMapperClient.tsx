@@ -143,7 +143,7 @@ function AxisLegend({ axes }: { axes: string[] }) {
                 </span>
                 <div>
                   <strong>{info.plain}</strong>
-                  <span className={styles.muted}> — {info.examples}</span>
+                  <span className={styles.muted}> · {info.examples}</span>
                 </div>
               </div>
             );
@@ -896,7 +896,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                 <button type="button" key={occ.code} disabled={preview} onClick={() => handleSelect(occ.code, occ.title)}
                   className={`${styles.occupationOption} wa-kit-focus`}>
                   <strong style={{ color: 'var(--wa-text)' }}>{occ.title}</strong>
-                  <span style={{ display: 'block', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 2 }}>{occ.code} — {occ.description?.slice(0, 120)}</span>
+                  <span style={{ display: 'block', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', marginTop: 2 }}>{occ.code} · {occ.description?.slice(0, 120)}</span>
                 </button>
               ))}
             </div>
@@ -912,10 +912,10 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                   <p className={styles.eyebrow}>{usingDemo ? 'Sample occupation requirements' : 'Occupation requirements'}</p>
                   <h2>{selectedTitle}</h2>
                 </div>
-                <aside className={styles.resultMeta}>
+                <div className={styles.resultMeta}>
                   {selectedCode && <span className={styles.occupationCode}>O*NET {selectedCode}</span>}
                   {savedResultId && <Link href={trainingBridgeHref(savedResultId)} className="wa-page-action wa-kit-focus">{tw('trainingForLookup')} <ArrowRight size={16} aria-hidden="true" /></Link>}
-                </aside>
+                </div>
               </div>
               {usingDemo && !preview && (
                 <div className={styles.sampleWarning} role="note" aria-label="Sample occupation data">
@@ -1268,7 +1268,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                   <ListChecks size={20} aria-hidden="true" style={{ color: 'var(--wa-accent)', flexShrink: 0 }} />
                   <div>
                     <p style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-accent)', margin: '0 0 0.2rem' }}>Take the 30-question Interest Profiler</p>
-                    <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', margin: 0 }}>About 10 minutes — adds O*NET interest data to your estimated profile</p>
+                    <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', margin: 0 }}>About 10 minutes. Adds O*NET interest data to your estimated profile</p>
                   </div>
                 </a>
                 <a href="/dashboard/resume?view=rewrite" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.875rem', background: 'var(--wa-surface)', border: '1px solid var(--wa-border)', borderRadius: 'var(--wa-radius-sm)', textDecoration: 'none' }}>

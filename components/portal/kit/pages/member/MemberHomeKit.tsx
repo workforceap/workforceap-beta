@@ -1,5 +1,3 @@
-'use client';
-
 import { type CSSProperties, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { Play, Medal, GraduationCap, ArrowRight, Briefcase, Check, Star, Target, TrendingUp, Wand2 } from 'lucide-react';
@@ -41,10 +39,10 @@ export type { PipelineRow } from './MemberPipelineTable';
  *
  * Built on the portal design kit (warm surface + --wa-* tokens + wa-kit-*
  * classes + lucide icons). Layout, top to bottom:
- *   1. Header: greeting + ONE contextual sentence (today's date and the next
- *      lesson), with the approval strip at the right on desktop
- *      (`approvalSlot`, rendered through PageOpener `aside`) and stacked below
- *      on phone. Under it, only when they apply: the staff-view notice
+ *   1. Header: the greeting only (no kicker or lede: the due date and next
+ *      lesson live in the "This week" rows), with the approval strip at the
+ *      right on desktop (`approvalSlot`, rendered through PageOpener `aside`)
+ *      and stacked below on phone. Under it, only when they apply: the staff-view notice
  *      (`showStaffViewBanner`), the no-program notice, and the youth notice for
  *      a member under 18 (`youthNoticeAge`).
  *   2. Two columns from 1100px (main about 2/3, right rail 352px); one column
@@ -63,8 +61,9 @@ export type { PipelineRow } from './MemberPipelineTable';
  *           than one enrollment it carries the view-only program switch,
  *           `programSwitch`, which reloads `/dashboard?program=<slug>` and never
  *           changes an enrollment).
- *        c. One quiet row of links: Progress, Points, Jobs, AI Career Tools,
- *           Learning hub.
+ *        c. One quiet row of links: Progress, Points, Jobs, Skill missions
+ *           (`missionsHref`, a plain link: Home runs no mission query), AI
+ *           Career Tools, Learning hub.
  *      Rail: the assigned counselor (`advisor`), study this week (minutes, and
  *      the share of `weeklyStudyGoalMinutes` when a goal is passed) and the
  *      next badge with goals folded in.
@@ -178,6 +177,8 @@ export interface MemberHomeKitProps {
   progressHref?: string;
   /** Where the "Points" link goes: the signed-in points page (total, level, streak and the recent-points ledger). */
   pointsHref?: string;
+  /** Where the "Skill missions" link goes: the missions page (`/dashboard/missions`). A plain link, so Home runs no mission query. */
+  missionsHref?: string;
   /** Where the WIOA preassessment row goes. */
   preassessmentHref?: string;
   /** Not rendered on Home (Progress shows the streak). Accepted and ignored. */
@@ -336,15 +337,8 @@ function formatStudyMinutes(total: number): string {
   return m === 0 ? `${h}h` : `${h}h ${m}m`;
 }
 
-const DAY_LONG: Record<string, string> = {
-  Mon: 'Monday',
-  Tue: 'Tuesday',
-  Wed: 'Wednesday',
-  Thu: 'Thursday',
-  Fri: 'Friday',
-  Sat: 'Saturday',
-  Sun: 'Sunday',
-};
+/** Day codes `weeklyActivity` carries; their names live in `dashboard.home.days.*`. */
+const KNOWN_DAYS: ReadonlySet<string> = new Set(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
 
 /** The path of an href without its query or hash, for matching an action to a known page. */
 function hrefPath(href: string): string {
@@ -381,6 +375,7 @@ export function MemberHomeKit({
   coursesHref = '/dashboard/learning',
   progressHref = '/dashboard/readiness',
   pointsHref = '/dashboard/points',
+  missionsHref = '/dashboard/missions',
   preassessmentHref = '/dashboard/assessment',
   goals = [],
   goalsHref = '/dashboard/career-brief#goals',
@@ -413,6 +408,7 @@ export function MemberHomeKit({
   const tTools = useTranslations('aiToolsDiscovery');
   const tDisclosure = useTranslations('common.disclosures');
   const pct = clampPct(coursePercent);
+  const dayName = (day: string) => (KNOWN_DAYS.has(day) ? t(`home.days.${day}`) : day);
 
   const showProgramSwitch = Boolean(programSwitch && programSwitch.options.length > 1 && programSwitch.activeProgramSlug);
   const hasModuleRow = typeof certModulesDone === 'number' && typeof certModulesTotal === 'number' && certModulesTotal > 0;
@@ -460,10 +456,8 @@ export function MemberHomeKit({
 
                 {noProgram ? (
                   <div className={cx('wa-kit-card', styles.notice)} role="status">
-                    <StatusTag tone="warn">No program</StatusTag>
-                    <p className={styles.noticeText}>
-                      Your Coursera progress is saved. A counselor still needs to enroll you in a WorkforceAP program.
-                    </p>
+                    <StatusTag tone="warn">{t('home.noProgramTag')}</StatusTag>
+                    <p className={styles.noticeText}>{t('home.noProgramNotice')}</p>
                   </div>
                 ) : null}
 
@@ -564,16 +558,14 @@ export function MemberHomeKit({
 
             {!programTitle && ungatedDigitalBasicsHref ? (
               <div className={cx('wa-kit-card', styles.basicsCard)}>
-                <p className={styles.basicsEyebrow}>No application needed</p>
-                <h2 className={styles.basicsTitle}>Start digital basics</h2>
-                <p className={cx('wa-kit-lede', styles.basicsBody)}>
-                  Ten self-paced computer lessons. Open lesson 1 now.
-                </p>
+                <p className={styles.basicsEyebrow}>{t('home.basicsEyebrow')}</p>
+                <h2 className={styles.basicsTitle}>{t('home.basicsTitle')}</h2>
+                <p className={cx('wa-kit-lede', styles.basicsBody)}>{t('home.basicsBody')}</p>
                 <Link
                   href={ungatedDigitalBasicsHref}
                   className="wa-kit-cta wa-kit-cta--xl wa-kit-cta--block wa-kit-focus hover:wa-opacity-90"
                 >
-                  Start this lesson
+                  {t('home.basicsCta')}
                 </Link>
               </div>
             ) : null}
@@ -581,8 +573,8 @@ export function MemberHomeKit({
             {/* Certification path: segmented module progress. */}
             <section className="wa-kit-card wa-kit-cert-path" aria-labelledby="member-cert-path-heading">
               <div className="wa-kit-card__head">
-                <h2 id="member-cert-path-heading" className="wa-kit-card-title">Certification path</h2>
-                <a href={programHref} className="wa-kit-card-link wa-kit-focus">Open plan</a>
+                <h2 id="member-cert-path-heading" className="wa-kit-card-title">{t('home.certPathTitle')}</h2>
+                <a href={programHref} className="wa-kit-card-link wa-kit-focus">{t('home.openPlan')}</a>
               </div>
               {showProgramSwitch && programSwitch ? (
                 <div data-testid="home-program-switch" className={styles.certSwitch}>
@@ -594,15 +586,15 @@ export function MemberHomeKit({
                 </div>
               ) : null}
               <div className={styles.certTop}>
-                <ProgressRing pct={pct} size={72} tone={pct >= 100 ? 'ok' : undefined} label="Course completion" />
+                <ProgressRing pct={pct} size={72} tone={pct >= 100 ? 'ok' : undefined} label={t('home.courseCompletion')} />
                 <div className={styles.certCopy}>
                   <div className={styles.certTitleRow}>
-                    <h3 className={styles.certTitle}>{programTitle ?? 'No program enrolled'}</h3>
+                    <h3 className={styles.certTitle}>{programTitle ?? t('home.noProgramEnrolled')}</h3>
                     {programStatus ? <StatusTag tone="info">{programStatus}</StatusTag> : null}
                   </div>
                   {nextLesson ? (
                     <p className={styles.certMeta}>
-                      Next:{' '}
+                      {t('home.nextLesson')}{' '}
                       {nextLessonHref ? (
                         <Link href={nextLessonHref} className={cx('wa-kit-focus', styles.certMetaLink)}>
                           {nextLesson}
@@ -619,7 +611,7 @@ export function MemberHomeKit({
                     </p>
                   ) : (
                     <p className={styles.certMeta}>
-                      {programTitle ? 'No next module on file.' : 'Choose a program to start.'}
+                      {programTitle ? t('home.noNextModule') : t('home.chooseProgramToStart')}
                     </p>
                   )}
                 </div>
@@ -628,11 +620,11 @@ export function MemberHomeKit({
                 <div
                   className={styles.certSegments}
                   role="progressbar"
-                  aria-label="Certification module progress"
+                  aria-label={t('home.moduleProgressLabel')}
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-valuenow={Math.round((moduleDone / moduleTotal) * 100)}
-                  aria-valuetext={`${moduleDone} of ${moduleTotal} modules`}
+                  aria-valuetext={t('home.modulesValueText', { done: moduleDone, total: moduleTotal })}
                 >
                   <ol
                     className={cx('wa-kit-segments', segmentsCompact && styles.certSegmentsCompact)}
@@ -650,7 +642,7 @@ export function MemberHomeKit({
                                 {state === 'done' ? <Check size={13} /> : null}
                                 {i + 1}
                               </b>
-                              <span className="wa-kit-segment__name">Module {i + 1}</span>
+                              <span className="wa-kit-segment__name">{t('home.moduleN', { n: i + 1 })}</span>
                             </span>
                           )}
                         </li>
@@ -673,11 +665,11 @@ export function MemberHomeKit({
                 >
                   {programTitle ? (
                     <>
-                      Resume module <Play size={13} aria-hidden />
+                      {t('home.resumeModule')} <Play size={13} aria-hidden />
                     </>
                   ) : (
                     <>
-                      Choose program <ArrowRight size={13} aria-hidden />
+                      {t('home.chooseProgram')} <ArrowRight size={13} aria-hidden />
                     </>
                   )}
                 </Link>
@@ -697,6 +689,9 @@ export function MemberHomeKit({
               <Link href={jobsHref} className={cx('wa-kit-focus', styles.shortcut)}>
                 <Briefcase size={16} aria-hidden /> {t('home.shortcutJobs')}
               </Link>
+              <Link href={missionsHref} className={cx('wa-kit-focus', styles.shortcut)}>
+                <Target size={16} aria-hidden /> {t('home.shortcutMissions')}
+              </Link>
               <Link href={toolkitHref} className={cx('wa-kit-focus', styles.shortcut)}>
                 <Wand2 size={16} aria-hidden /> {t('home.shortcutAiTools')}
               </Link>
@@ -707,7 +702,7 @@ export function MemberHomeKit({
           </div>
 
           {/* ───────── Right rail: people and rhythm ───────── */}
-          <aside className="wa-kit-home-grid__rail" aria-label="Your people and progress">
+          <aside className="wa-kit-home-grid__rail" aria-label={t('home.railLabel')}>
             <MemberAdvisorCard advisor={advisor} />
 
             <details className={cx('wa-kit-card', styles.studyGoalsDisclosure)}>
@@ -715,7 +710,7 @@ export function MemberHomeKit({
               <div className={styles.studyGoalsContent}>
             <section className={cx('wa-kit-card', styles.railCard)} aria-labelledby="member-study-heading">
               <div className="wa-kit-card__head">
-                <h2 id="member-study-heading" className="wa-kit-card-title">Study this week</h2>
+                <h2 id="member-study-heading" className="wa-kit-card-title">{t('home.studyTitle')}</h2>
               </div>
               {hasStudyWeek ? (
                 <>
@@ -730,7 +725,7 @@ export function MemberHomeKit({
                         aria-valuenow={clampPct((studyMinutes / studyGoal) * 100)}
                         aria-valuemin={0}
                         aria-valuemax={100}
-                        aria-label="Study goal progress"
+                        aria-label={t('home.studyGoalLabel')}
                       >
                         <div className="wa-kit-bar-fill" style={{ width: `${clampPct((studyMinutes / studyGoal) * 100)}%` }} />
                       </div>
@@ -738,13 +733,13 @@ export function MemberHomeKit({
                   ) : (
                     <p className={styles.studyTotal}>{formatStudyMinutes(studyMinutes)}</p>
                   )}
-                  <ul className={styles.studyDays} aria-label="Study days this week">
+                  <ul className={styles.studyDays} aria-label={t('home.studyDaysLabel')}>
                     {weeklyActivity.map((d) => (
                       <li key={d.day} className={styles.studyDay} data-active={d.minutes > 0 ? 'true' : 'false'}>
                         <span className={styles.studyDot} aria-hidden="true" />
-                        <span aria-hidden="true">{d.day.charAt(0)}</span>
+                        <span aria-hidden="true">{dayName(d.day).charAt(0)}</span>
                         <span className={styles.srOnly}>
-                          {DAY_LONG[d.day] ?? d.day}: {d.minutes} minutes
+                          {t('home.studyDayMinutes', { day: dayName(d.day), minutes: d.minutes })}
                         </span>
                       </li>
                     ))}
@@ -754,10 +749,10 @@ export function MemberHomeKit({
               ) : (
                 <p className={cx('wa-kit-lede', styles.studyEmpty)}>
                   {typeof pointsThisWeek === 'number' && pointsThisWeek > 0
-                    ? 'Study minutes are not tracked for this program yet. '
-                    : 'No study minutes this week. '}
+                    ? t('home.studyUntracked')
+                    : t('home.studyNone')}{' '}
                   <a href={programHref} className={cx('wa-kit-focus', styles.inlineLink)}>
-                    Open program
+                    {t('home.openProgram')}
                   </a>
                 </p>
               )}
@@ -765,24 +760,24 @@ export function MemberHomeKit({
 
             <section className={cx('wa-kit-card', styles.railCard)} aria-labelledby="member-next-badge-heading">
               <div className="wa-kit-card__head">
-                <h2 id="member-next-badge-heading" className="wa-kit-card-title">Next badge</h2>
+                <h2 id="member-next-badge-heading" className="wa-kit-card-title">{t('home.nextBadge')}</h2>
               </div>
               <div className={styles.badgeRow}>
                 <div aria-hidden className={styles.badgeIcon}>
                   <Medal size={22} />
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <p className={styles.badgeName}>{nextBadgeName ?? 'Next badge'}</p>
-                  {nextBadgeRemaining ? <p className={styles.badgeSub}>{nextBadgeRemaining} to go</p> : null}
+                  <p className={styles.badgeName}>{nextBadgeName ?? t('home.nextBadge')}</p>
+                  {nextBadgeRemaining ? <p className={styles.badgeSub}>{t('home.badgeToGo', { remaining: nextBadgeRemaining })}</p> : null}
                 </div>
               </div>
               {/* Progress toward the next badge is neutral: there is no good or bad
                   value, only how far along it is (WAP-99). */}
-              <SegmentedProgress pct={nextBadgePercent} segments={7} label={`${nextBadgeName} badge progress`} />
+              <SegmentedProgress pct={nextBadgePercent} segments={7} label={t('home.badgeProgressLabel', { name: nextBadgeName ?? t('home.nextBadge') })} />
               {goals.length > 0 ? (
                 <div className={styles.goals}>
                   <p className={styles.goalsLabel}>
-                    <Target size={14} aria-hidden /> Goals
+                    <Target size={14} aria-hidden /> {t('home.goalsLabel')}
                   </p>
                   {goals.slice(0, 2).map((g) => (
                     <div key={g.title}>
@@ -790,19 +785,19 @@ export function MemberHomeKit({
                         <span className={styles.goalTitle}>{g.title}</span>
                         <span className={styles.goalPct}>{g.percent}%</span>
                       </div>
-                      <div className="wa-kit-bar-track" role="progressbar" aria-valuenow={g.percent} aria-valuemin={0} aria-valuemax={100} aria-label={`${g.title} progress`}>
+                      <div className="wa-kit-bar-track" role="progressbar" aria-valuenow={g.percent} aria-valuemin={0} aria-valuemax={100} aria-label={t('home.goalProgress', { title: g.title })}>
                         <div className="wa-kit-bar-fill" style={{ width: `${g.percent}%` }} />
                       </div>
                     </div>
                   ))}
                   <a href={goalsHref} className="wa-kit-card-link wa-kit-focus">
-                    Open goals
+                    {t('home.openGoals')}
                   </a>
                 </div>
               ) : (
                 // No active goal: one quiet way to set one, not an empty goals block.
                 <a href={goalsHref} className={cx('wa-kit-card-link wa-kit-focus', styles.setGoal)}>
-                  <Target size={14} aria-hidden /> Set a goal
+                  <Target size={14} aria-hidden /> {t('home.setGoal')}
                 </a>
               )}
             </section>

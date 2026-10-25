@@ -132,6 +132,7 @@ export function MemberJobsKit({
 }: MemberJobsKitProps) {
   const t = useTranslations('empty');
   const tDashboard = useTranslations('dashboard');
+  const tm = useTranslations('memberJobs');
   const openRolesCount = Math.max(openRolesTotal ?? 0, openRoles.length);
   const columns: Column<ApplicationRow>[] = [
     { key: 'role', header: 'Role', render: (r) => <span style={{ fontWeight: 700 }}>{r.role}</span> },
@@ -170,12 +171,12 @@ export function MemberJobsKit({
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          title="Job board"
+          title={tDashboard('jobBoard')}
           meta={openerMeta}
           aside={
             <div className="wa-flex wa-items-center wa-gap-2 wa-flex-wrap">
-              <JobsCta href={browseHref} variant="secondary">Browse openings</JobsCta>
-              <NextLink href="#applications" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">View applications</NextLink>
+              <JobsCta href={browseHref} variant="secondary">{t('applications.action')}</JobsCta>
+              <NextLink href="#applications" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">{tm('viewApplications')}</NextLink>
             </div>
           }
         />
