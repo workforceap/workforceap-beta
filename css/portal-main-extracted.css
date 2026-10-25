@@ -214,7 +214,7 @@
     color: var(--color-green);
 }
 .readiness-progress-value {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: white;
     font-size: 0.8125rem;
     padding: 0.15rem 0.5rem;
@@ -754,7 +754,7 @@
     color: var(--wa-accent-text);
 }
 .application-tracker-filter-chip.active {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     border-color: var(--color-accent);
     color: var(--color-white);
 }
@@ -1423,7 +1423,7 @@ html.dark .workspace-shell-header,
     justify-content: center;
     padding: 0.35rem 0.85rem;
     border-radius: var(--radius-sm);
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: #fff;
     font-weight: 700;
     font-size: 0.8125rem;
@@ -2183,10 +2183,31 @@ html.dark .workspace-sidebar-group-label {
     width: 100%;
     background: transparent;
 }
-/* Mobile bottom nav: `main#main-content` + WorkspaceShell `.workspace-shell-main` (marketing.css). */
-@media (max-width: 767px) {
-    html[data-portal-role="member"] .workspace-shell-main {
-        padding-bottom: max(1.75rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
+/* Member phone tabs (components/portal/MemberBottomTabs). The bar shows at or
+   below the drawer breakpoint (<=768px, where the rail becomes a drawer). Its
+   height is one shell metric; the member main column, anchor/focus scrolling
+   and the legal footer all clear it by that amount plus the home indicator. */
+:root {
+    --member-bottom-tabs-h: 56px;
+}
+@media (max-width: 768px) {
+    /* Specificity is deliberate: /dev proofs also carry html.wap-reserve-mobile-bottom-nav
+       (css/marketing.css), whose rules pad the same elements for the marketing bar. */
+    :root[data-portal-role="member"] {
+        scroll-padding-bottom: calc(var(--member-bottom-tabs-h) + env(safe-area-inset-bottom, 0px));
+    }
+    html[data-portal-role="member"] .workspace-shell-root[data-member-tabs] .workspace-shell-main {
+        padding-bottom: calc(var(--member-bottom-tabs-h) + env(safe-area-inset-bottom, 0px));
+    }
+    /* Fixed overlays inside the member shell (PWAInstallPrompt) read this to float
+       above the bar; it is unset, so 0, everywhere the bar does not render. */
+    html[data-portal-role="member"] .workspace-shell-root[data-member-tabs] {
+        --member-tabs-clearance: var(--member-bottom-tabs-h);
+    }
+    /* The tab bar replaces the old top strip of member links on phones. Hidden,
+       not removed: the markup (and its server-rendered links) stay in the DOM. */
+    .workspace-shell-root[data-member-tabs] .member-portal-top-nav {
+        display: none;
     }
 }
 .workspace-super-admin-banner {
@@ -3439,7 +3460,7 @@ html.dark .workspace-sidebar-group-label {
     flex-wrap: wrap;
 }
 .blog-cta-buttons .btn-accent {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
 }
 .blog-cta-buttons .btn.btn-secondary,
@@ -3557,7 +3578,7 @@ html.dark .blog-filter-chip[data-active="true"] {
     padding: 2.5rem clamp(1rem, 4vw, 2rem);
     border-radius: 16px;
     text-align: center;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: #fff;
 }
 .blog-listing-bottom-cta h3 {
@@ -6148,7 +6169,7 @@ html.dark .admin-members-search-input {
     border-radius: 999px;
     font-size: 0.8125rem;
     font-weight: 800;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: #fff;
 }
 
@@ -6648,7 +6669,7 @@ td.admin-members-col-select {
     width: 3rem;
     height: 3rem;
     border-radius: 50%;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
     font-weight: 700;
     font-size: 1.125rem;
@@ -6754,7 +6775,7 @@ td.admin-members-col-select {
     top: -0.75rem;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
     font-size: 0.8125rem;
     font-weight: 600;
@@ -7286,7 +7307,8 @@ td.admin-members-col-select {
     top: 0.75rem;
     z-index: 10000;
     padding: 0.5rem 1rem;
-    background: var(--color-primary);
+    /* Solid accent fill: crimson in both modes under white (dark --color-primary is the text-safe rose). */
+    background: var(--wa-accent-fill, var(--color-primary));
     color: var(--color-white);
     font-weight: 600;
     font-size: 0.9375rem;
@@ -9228,7 +9250,7 @@ a.employer-jobs-board__pagination-link.btn-outline:hover {
 .portal-resources-cta-primary {
     display: inline-block;
     padding: 0.75rem 1.25rem;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: white;
     border-radius: 6px;
     text-decoration: none;
@@ -9682,11 +9704,13 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
 }
-/* On an active (accent) row the badge inverts: solid on-accent pill, accent text.
-   The old translucent white read 2.41:1 on the dark-mode accent. */
+/* On an active (accent) row the badge inverts: solid on-accent pill, crimson text.
+   The old translucent white read 2.41:1 on the dark-mode accent. The text is the
+   fill token, not --wa-accent: the dark text accent is a dusty rose that reads
+   2.2:1 on the white pill, while the crimson fill hue holds 5.1:1 (6.5:1 light). */
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-link.active .workspace-nav-badge {
   background: var(--wa-on-accent-control) !important;
-  color: var(--wa-accent, #ad2c4d) !important;
+  color: var(--wa-accent-fill, #ad2c4d) !important;
 }
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-toolbar,
 :is(html[data-portal-role], .workspace-shell-root[data-workspace-role]) .workspace-sidebar-inner {

@@ -29,6 +29,17 @@ export const staffPillClass = {
 /** Right-aligned card header link ("Manage", "View all"). */
 export const staffLinkClass: string = styles.cardLink;
 
+/**
+ * The one greeting for a person-facing home (counselor, employer, partner,
+ * and the member Home): "Welcome back, Alex." Workspace pages keep their own
+ * title ("Command Center", "Students"). A page that translates passes its own
+ * string through the kit's `welcomeTitle` prop; this is the English fallback
+ * for the dev showcase and direct renders.
+ */
+export function staffWelcomeTitle(firstName: string): string {
+  return `Welcome back, ${firstName.trim()}.`;
+}
+
 export function StaffCard({
   title,
   meta,
@@ -123,6 +134,33 @@ export function StaffTaskRow({
         </span>
       ) : null}
     </li>
+  );
+}
+
+/** One sentence that is the main line of a card (body size, full ink). */
+export function StaffLead({ children }: { children: ReactNode }) {
+  return <p className={styles.lead}>{children}</p>;
+}
+
+/**
+ * A collapsed "why" or "what happens next" under a one-line primary text.
+ * Native details: works before hydration, keyboard and screen reader friendly,
+ * 44px summary target. Children stay in the DOM while collapsed.
+ */
+export function StaffDisclosure({
+  label,
+  children,
+  ...rest
+}: {
+  label: string;
+  children: ReactNode;
+  [dataAttr: `data-${string}`]: string | undefined;
+}) {
+  return (
+    <details className={styles.disclosure} {...rest}>
+      <summary className={`${styles.disclosureSummary} wa-kit-focus`}>{label}</summary>
+      <div className={styles.disclosureBody}>{children}</div>
+    </details>
   );
 }
 

@@ -32,6 +32,7 @@ import {
   StaffTaskRow,
   staffLinkClass,
   staffPillClass,
+  staffWelcomeTitle,
   type StaffTone,
 } from '../StaffKit';
 
@@ -41,9 +42,11 @@ import {
  * Sibling to MemberHomeKit — same warm/dense kit language (--wa-* tokens,
  * wa-kit-* classes, lucide icons), ported for the counselor's caseload
  * instead of a member's learning journey. Layout order, top to bottom:
- *   1. Page opener (eyebrow + "Caseload" heading + goal caption).
- *   2. A 4-up KPI row (assigned / needs attention / awaiting reply / on
- *      track), each an optional inline sparkline + delta chip.
+ *   1. Page opener: "Welcome back, {first name}." (or "Caseload" when the
+ *      page has no first name) + one sentence from the queue counts.
+ *   2. A 4-up KPI strip (assigned / needs attention / awaiting reply / on
+ *      track): flat hairline tiles, muted inline icon, optional 1.5px accent
+ *      sparkline + delta chip.
  *   3. "Needs attention" — the priority queue as severity-coded QueueRows.
  *      This is the hero of the view; everything else is secondary.
  *   4. A side column: "Interview practice · last 7 days" (interview-prep tool runs) +
@@ -120,10 +123,10 @@ export interface CounselorHomeLoadFailedCopy {
 
 const DEFAULT_LOAD_FAILED_COPY: CounselorHomeLoadFailedCopy = {
   countsTitle: "Some caseload counts couldn't load",
-  countsBody: 'A tile showing — is unknown, not zero. Try again; if this keeps happening, tell an admin.',
+  countsBody: 'A tile with a dash is unknown, not zero. Try again, or tell an admin if it keeps happening.',
   tileCaption: "Couldn't load",
   queueTitle: "Couldn't load who needs you",
-  queueBody: 'The list did not answer, so this is not an empty queue. Try again; if this keeps happening, tell an admin.',
+  queueBody: 'The list did not answer, so this is not an empty queue. Try again, or tell an admin if it keeps happening.',
   queueSecondary: 'Open Today',
   sessions: "Couldn't load recent interview practice.",
   breakdown: "Couldn't load the caseload breakdown.",
@@ -133,7 +136,11 @@ const DEFAULT_LOAD_FAILED_COPY: CounselorHomeLoadFailedCopy = {
 export interface CounselorHomeKitProps {
   /** The shared Today workspace owns the page heading and gutter. */
   embedded?: boolean;
+  /** Person-facing greeting: "Welcome back, {firstName}." Omit it and the heading falls back to `greeting`. */
   firstName?: string;
+  /** Already-translated "Welcome back, {firstName}." for pages that localize; English fallback when omitted. */
+  welcomeTitle?: string;
+  /** Heading when there is no first name. */
   greeting?: string;
 
   /**
@@ -273,6 +280,7 @@ function SessionListRow({ row, fallbackHref }: { row: CounselorSessionRow; fallb
 export function CounselorHomeKit({
   embedded = false,
   firstName,
+  welcomeTitle,
   greeting = 'Caseload',
   assignedCount = 0,
   atRiskCount = 0,
@@ -377,7 +385,7 @@ export function CounselorHomeKit({
 
         {/* 1. Header: title + one contextual sentence + right-aligned action. */}
         {!embedded ? <PageOpener
-          title={firstName ? `Hey, ${firstName}.` : greeting}
+          title={firstName ? (welcomeTitle ?? staffWelcomeTitle(firstName)) : greeting}
           meta={headerSentence}
           action={<Link href={rosterHref} className={staffPillClass.base}>View roster</Link>}
         /> : null}

@@ -27,8 +27,23 @@
 
 :root {
   /* — brand (mirrors DESIGN.md + tailwind.config.ts wa-brand-*) — */
-  --wa-accent: light-dark(#ad2c4d, #e0658a);
-  --wa-accent-dark: light-dark(#8c0f37, #c94e75);
+  /* Dark rule: the accent is for FILLS. A lighter crimson is pink, and pink
+     text reads as a beauty brand, so the dark text accents are a dusty rose
+     (#dd9fb0 / #e6b3bf), desaturated from the old #e0658a / #f39ab5. Measured
+     on the dark ladder (--wa-bg #130d0f, --wa-surface #1e1417, --wa-surface-2
+     #25181c): --wa-accent 8.9 / 8.3 / 7.9:1, --wa-accent-text 10.6 / 9.9 / 9.4:1.
+     Crimson stays on fills (--wa-accent-fill) and the dark links in kit cards
+     read --wa-text with an accent underline (css/portal-kit.css). Nothing may
+     paint white on --wa-accent: it is 2.2:1 in dark. --wa-accent also stays
+     40+ RGB units from --wa-muted so categorical chart series stay distinct. */
+  --wa-accent: light-dark(#ad2c4d, #dd9fb0);
+  /* Darker accent: used as a fill behind white labels, as a gradient start
+     (job-application actions, voice orb) and as a 3px accent edge on cards
+     (partner milestones). Dark is a crimson one step above the fill hover so it
+     holds both jobs: white on it 5.7:1, and as a UI edge 3.2:1 on --wa-surface
+     and 3.0:1 on --wa-surface-2 (the fill hover #b52d52 is 2.96:1 there). The
+     old #c94e75 was the pink this rule removes. */
+  --wa-accent-dark: light-dark(#8c0f37, #bb3156);
   /* Solid accent FILLS (primary buttons, feature tiles, the active nav row):
      crimson in both modes with a white label, so dark mode keeps the brand
      instead of flipping to pink. The dark value lifts the hue only enough to
@@ -40,13 +55,18 @@
   /* Label on a solid accent fill. White in both modes now that fills paint
      from --wa-accent-fill. Do not use it on --wa-accent-soft tints. */
   --wa-on-accent-control: #ffffff;
-  --wa-accent-text: light-dark(#8c0f37, #f39ab5);
+  --wa-accent-text: light-dark(#8c0f37, #e6b3bf);
   /* Text-bearing gradients stay dark in either theme; solid controls use the
      adaptive accent tokens above. Dedicated pairs prevent white-on-pink. */
   --wa-hero-crimson: #ad2c4d;
   --wa-hero-crimson-dark: #8c0f37;
   --wa-hero-gold: #7d5f26;
   --wa-hero-gold-dark: #5d461a;
+  /* Mode-constant info fill for a text-bearing control that must keep a white
+     label in dark (the employer voice session button): the light --wa-info-dark
+     value, 7.5:1 under --wa-on-hero in both modes. --wa-info-dark itself
+     lightens to #74b3e3 in dark, where white is 2.3:1. */
+  --wa-hero-info: #1f5a87;
   --wa-on-hero: #ffffff;
   --wa-hero-action-bg: #ffffff;
   --wa-hero-action-text: #8c0f37;
@@ -70,7 +90,7 @@
   /* brand soft-tints: opaque pastels in light; translucent overlays in dark
      (opaque pastels "glow" on dark bodies) — dark rgba derived from the
      dark-mode hex above so the tint and its solid counterpart stay in family */
-  --wa-accent-soft: light-dark(#fdf2f4, rgba(224, 101, 138, 0.18));
+  --wa-accent-soft: light-dark(#fdf2f4, rgba(221, 159, 176, 0.16));
   --wa-gold-soft: light-dark(#fef3c7, rgba(212, 173, 90, 0.2));
   --wa-info-soft: light-dark(#eef5fb, rgba(119, 173, 230, 0.18));
   --wa-success-soft: light-dark(#eef6ee, rgba(111, 201, 154, 0.18));

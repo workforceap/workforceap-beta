@@ -13,6 +13,11 @@ import styles from './MemberStartHereCard.module.css';
  * top, as plain large buttons; the preassessment one turns into a quiet
  * "done" link once taken so it never nags.
  *
+ * The member home ("This week") no longer renders this card: its two actions
+ * became a WIOA preassessment row in the This week list and an "AI Career
+ * Tools" link in the home's quiet link row. The component stays for any
+ * surface that wants the tile pair.
+ *
  * Tool list + "See all" use `.wa-kit-start-here-*` (portal-kit.css) so titles,
  * descriptions, and the footer link share hierarchy with other member home
  * kit cards — not bare magenta link blocks.

@@ -1,0 +1,135 @@
+/*
+ * Member bottom tab bar (phone). Hidden above the drawer breakpoint, where the
+ * rail takes over. Keep the 768px edge in step with WorkspaceShell's
+ * `(min-width: 769px)` rail query and css/portal-main-extracted.css.
+ *
+ * Bar height is `--member-bottom-tabs-h` (56px, declared with the other shell
+ * metrics in css/portal-main-extracted.css) plus the home-indicator inset; the
+ * member main column pads by the same amount so nothing hides under the bar.
+ */
+.bar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .bar {
+    display: block;
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    /* Kit scale: same band as in-flow sticky chrome, below the drawer overlay and panel. */
+    z-index: var(--z-sticky);
+    box-sizing: border-box;
+    padding: 0 4px env(safe-area-inset-bottom, 0px);
+    background: var(--wa-surface);
+    /* Hairline as a shadow so the bar is exactly the shell metric tall. */
+    box-shadow: 0 -1px 0 var(--wa-border);
+  }
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  height: var(--member-bottom-tabs-h, 56px);
+  box-sizing: border-box;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 2px;
+}
+
+.item {
+  min-width: 0;
+  display: flex;
+}
+
+/* Link and More button share one look. The 4px bar padding keeps the kit focus
+   ring (outer box-shadow) from being clipped at the screen edge. */
+.tab {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin: 0;
+  padding: 0 2px;
+  border: 0;
+  border-radius: var(--wa-radius-sm, 8px);
+  background: transparent;
+  color: var(--wa-muted);
+  font: inherit;
+  font-size: var(--wa-type-meta, 13px);
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab:active {
+  background: var(--wa-surface-2);
+}
+
+.tab[aria-current='page'],
+.tab[aria-expanded='true'] {
+  color: var(--wa-accent-text);
+}
+
+/* Current-page marker: a short bar on the top edge in the text accent (not the fill). */
+.tab[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 28px;
+  height: 3px;
+  margin-left: -14px;
+  border-radius: 0 0 3px 3px;
+  background: currentColor;
+}
+
+.iconWrap {
+  position: relative;
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+}
+
+.label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Unread count: the one place the crimson fill token appears on this bar. */
+.badge {
+  position: absolute;
+  top: -6px;
+  left: 11px;
+  box-sizing: border-box;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  border: 2px solid var(--wa-surface);
+  background: var(--wa-accent-fill);
+  color: var(--wa-on-accent-control);
+  font-size: var(--wa-type-meta, 13px);
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (forced-colors: active) {
+  .tab[aria-current='page']::before {
+    background: Highlight;
+  }
+}

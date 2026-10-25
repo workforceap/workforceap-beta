@@ -32,6 +32,7 @@ import PortalRoleSwitcher from './PortalRoleSwitcher';
 import { SignOutButton } from './SignOutButton';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import MemberPortalTopNav from './MemberPortalTopNav';
+import MemberBottomTabs from './MemberBottomTabs';
 import GlobalSearch from './GlobalSearch';
 import type { PortalSwitcherRole } from '@/lib/auth/portalRoleSwitcher';
 import type { TourKey } from '@/lib/tours/registry';
@@ -45,9 +46,10 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useWorkspaceMobileScrollChrome } from '@/hooks/useWorkspaceMobileScrollChrome';
 import { recordWorkspaceShellPathname } from '@/lib/observability/portalHydrationClientTrace';
 
-// Map non-member portal roles to MobileBottomNav variants. Member uses
-// MemberPortalTopNav (sticky-top horizontal-scroll) per /plan-design-review
-// Decision 3 (2026-04-25).
+// Map non-member portal roles to MobileBottomNav variants. Member gets its own
+// bottom tab bar (MemberBottomTabs: Home, Program, Jobs, Messages, More); the
+// older MemberPortalTopNav strip stays in the DOM but is hidden on phones while
+// the bar is present (css/portal-main-extracted.css, `data-member-tabs`).
 const ROLE_TO_NAV_VARIANT: Partial<Record<PortalRole, 'employer' | 'partner' | 'counselor' | 'admin'>> = {
   employer: 'employer',
   partner: 'partner',
@@ -323,25 +325,37 @@ export default function WorkspaceShell({
   const mainRef = useRef<HTMLDivElement>(null);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
+  // The member bar's More button (MemberBottomTabs); null for staff shells.
+  const moreBtnRef = useRef<HTMLButtonElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
-  // Focus returns to the trigger on close even where the opener was never
-  // focused (Safari does not focus a button on click, and a replayed early
-  // tap has no focus change at all).
-  const trapRef = useFocusTrap<HTMLElement>(isMobileDrawer, { onEscape: closeDrawer, returnFocusRef: menuBtnRef });
+  // Whichever trigger opened the drawer (hamburger or More), set at open time.
+  // Focus returns there on close even where the opener was never focused
+  // (Safari does not focus a button on click, and a replayed early tap has no
+  // focus change at all).
+  const drawerOpenerRef = useRef<HTMLElement | null>(null);
+  const openDrawer = useCallback((trigger: HTMLElement | null) => {
+    drawerOpenerRef.current = trigger ?? menuBtnRef.current;
+    setDrawerOpen(true);
+  }, []);
+  const trapRef = useFocusTrap<HTMLElement>(isMobileDrawer, { onEscape: closeDrawer, returnFocusRef: drawerOpenerRef });
   useWorkspaceMobileScrollChrome();
 
-  // Shell is interactive: replay a menu tap that landed before hydration (the
-  // button is server-rendered and looks enabled long before this runs; see
-  // lib/portal/earlyShellTap.ts) and publish the test marker. Declared after
-  // every other mount effect; replay opens, never toggles, so it is safe even
-  // when React also handled the same tap.
+  // Shell is interactive: replay a menu or More tap that landed before
+  // hydration (both buttons are server-rendered and look enabled long before
+  // this runs; see lib/portal/earlyShellTap.ts) and publish the test marker.
+  // This shell is the one owner of both early-tap kinds, so both are claimed
+  // here whether or not the member bar is mounted. Declared after every other
+  // mount effect; replay opens, never toggles, so it is safe even when React
+  // also handled the same tap.
   useEffect(() => {
     setMounted(true);
     const root = rootRef.current;
     root?.setAttribute('data-shell-ready', 'true');
-    if (claimEarlyTap('menu')) setDrawerOpen(true);
+    const menuTapped = claimEarlyTap('menu');
+    const moreTapped = claimEarlyTap('more');
+    if (menuTapped || moreTapped) openDrawer(moreTapped && !menuTapped ? moreBtnRef.current : menuBtnRef.current);
     return () => root?.removeAttribute('data-shell-ready');
-  }, []);
+  }, [openDrawer]);
 
   const collapseKey = `wa_nav_collapsed_${portalRole}`;
 
@@ -530,7 +544,13 @@ export default function WorkspaceShell({
   const minimalHeader = minimalMobileHeader || (portalRole !== 'member' && !wide);
 
   return (
-    <div ref={rootRef} className="workspace-shell-root" data-workspace-role={portalRole} style={rootStyle}>
+    <div
+      ref={rootRef}
+      className="workspace-shell-root"
+      data-workspace-role={portalRole}
+      data-member-tabs={portalRole === 'member' ? 'true' : undefined}
+      style={rootStyle}
+    >
       {/* Mirror the data-portal-role effect at parse time so <html>/<body> take the
           portal canvas on first paint instead of after hydration (WAP-153). The
           value is a fixed PortalRole union member, never user input. */}
@@ -553,7 +573,7 @@ export default function WorkspaceShell({
             type="button"
             className="workspace-menu-btn"
             data-early-tap="menu"
-            onClick={() => setDrawerOpen(true)}
+            onClick={() => openDrawer(menuBtnRef.current)}
             aria-label={tNav('openMenu')}
             aria-expanded={drawerOpen}
             aria-controls="workspace-sidebar"
@@ -906,7 +926,20 @@ export default function WorkspaceShell({
           </div>
         </div>
       </div>
-      {/* Mobile bottom nav for non-member roles. Members use MemberPortalTopNav.
+      {/* Member phone tabs. Outside `mainRef` on purpose: the drawer makes the main
+          column inert, and the bar carries its own `inert` while the drawer is open.
+          More opens the same drawer as the hamburger; its early-tap kind (`more`)
+          is claimed in the mount effect above, and focus returns to it on close. */}
+      {portalRole === 'member' ? (
+        <MemberBottomTabs
+          badgeCounts={badges}
+          hrefMap={navHrefMap}
+          menuOpen={drawerOpen}
+          moreRef={moreBtnRef}
+          onMore={openDrawer}
+        />
+      ) : null}
+      {/* Mobile bottom nav for non-member roles. Members use MemberBottomTabs.
           `superAdmin` is the prop the admin rail is filtered on (AdminPortalShell),
           so the admin tabs never offer a page the rail hides; `search` is the
           query the rail matched on, so a tab and its rail row agree. */}

@@ -440,7 +440,7 @@
 
 /* ── Portal Promo Card — accent background with CTA ── */
 .portal-promo-card {
-  background: var(--color-accent);
+  background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
   padding: 1.5rem;
   border-radius: 0.75rem;
   color: #fff;
@@ -662,7 +662,7 @@
     width: 3.5rem;
     height: 3.5rem;
     border-radius: 50%;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: white;
     display: flex;
     align-items: center;
@@ -1377,7 +1377,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-accent);
+  background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
 }
 
 .portal-messages-bubble--mine {
@@ -1848,7 +1848,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-action-card__badge--accent {
-  background: var(--color-accent);
+  background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
   color: #fff;
 }
 .portal-action-card__badge--gold {

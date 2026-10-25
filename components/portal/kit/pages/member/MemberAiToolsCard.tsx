@@ -6,7 +6,13 @@ import { ArrowRight, Wand2 } from 'lucide-react';
 import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 import type { MemberToolRecommendation } from '@/lib/member/recommendMemberTool';
 
-/** A permanent home entry point; a missing stage recommendation must not hide the tools. */
+/**
+ * The AI Career Tools introduction card. The member home ("This week") no
+ * longer renders it: the stage-specific pick is the last row of the This week
+ * list and the tools are one link in the quiet link row. Kept for any surface
+ * that wants a full introduction; a missing stage recommendation must not hide
+ * the tools.
+ */
 export default function MemberAiToolsCard({
   toolkitHref,
   recommendedTool,

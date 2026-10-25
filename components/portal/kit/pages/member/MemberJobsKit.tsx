@@ -137,8 +137,9 @@ export function MemberJobsKit({
     { key: 'stage', header: 'Stage', align: 'right', render: (r) => <StatusTag tone={r.tone}>{r.stage}</StatusTag> },
   ];
   const applicationCard = (row: ApplicationRow) => (
-    <div className="wa-kit-card wa-kit-card--sm">
-      {/* Phones: stack the stage tag under the role. Side by side, the nowrap
+    <div className={styles.applicationRow}>
+      {/* Phones: a hairline row, not a card inside the Applications card.
+          Stack the stage tag under the role. Side by side, the nowrap
           tag took ~104px of the 226px row and squeezed the role column to
           110px, wrapping every title onto 2-3 lines and breaking the applied
           date across lines ("Jun" / "12"). Row layout returns at >=768px. */}

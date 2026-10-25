@@ -36,6 +36,7 @@ export default function DevEmployerCommandPage() {
 
   return (
     <EmployerHomeKit
+      firstName="Jordan"
       companyName="Deloitte"
       openRoles={5}
       openRolesSpark={{ series: [3, 3, 4, 4, 4, 5, 5], delta: '2', direction: 'up' }}

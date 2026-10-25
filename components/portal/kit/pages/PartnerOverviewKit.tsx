@@ -3,8 +3,10 @@
  *
  * These compose existing kit primitives + the .wa-kit-* token CSS to render the
  * mockup sections that have no standalone primitive yet:
- *   - <PartnerKpiGrid>          Compact StatTile metrics with captions inside;
- *     supplied trend data keeps the richer StatSparkTile variant.
+ *   - <PartnerHomeOpener>       "Welcome back, {first name}." + one sentence.
+ *   - <PartnerKpiGrid>          The shared flat hairline KPI strip (StaffKpiGroup):
+ *     compact StatTile metrics with captions inside; supplied trend data keeps
+ *     the StatSparkTile variant (muted inline icon, 1.5px accent sparkline).
  *   - <PartnerReferralFunnel>   Referred → Enrolled → Placed in one desktop row.
  *   - <PartnerPayoutLedger>     Payout history as a period/amount/status table.
  *   - <PartnerAttentionCard>    "Review member progress" accent CTA card
@@ -22,6 +24,7 @@ import { ChevronRight, Users } from 'lucide-react';
 import {
   CardHead,
   DataTable,
+  PageOpener,
   ProgressBar,
   StatTile,
   StatSparkTile,
@@ -31,7 +34,40 @@ import {
   type SparkStat,
 } from '@/components/portal/kit';
 import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
+import { StaffKpiGroup, staffWelcomeTitle } from './StaffKit';
 import styles from './PartnerOverviewKit.module.css';
+
+// ── Header: one greeting, one contextual sentence ─────────────────────────────
+
+/**
+ * The partner home opener. A person-facing home greets by first name, like the
+ * counselor, employer and member homes. Without a first name it falls back to
+ * the partner's name as the title. `meta` is one sentence the page already has
+ * the data for (for example the pending-placement count).
+ */
+export function PartnerHomeOpener({
+  firstName,
+  welcomeTitle,
+  partnerName,
+  meta,
+  action,
+}: {
+  firstName?: string;
+  /** Already-translated "Welcome back, {firstName}."; English fallback when omitted. */
+  welcomeTitle?: string;
+  /** Title when there is no first name. */
+  partnerName: string;
+  meta?: ReactNode;
+  action?: ReactNode;
+}) {
+  return (
+    <PageOpener
+      title={firstName ? (welcomeTitle ?? staffWelcomeTitle(firstName)) : partnerName}
+      meta={meta}
+      action={action}
+    />
+  );
+}
 
 // ── KPI grid: StatSparkTile (icon + delta chip + optional sparkline) ──────────
 
@@ -54,7 +90,7 @@ export interface PartnerKpiTile {
 
 export function PartnerKpiGrid({ items }: { items: PartnerKpiTile[] }) {
   return (
-    <div className={styles.metrics}>
+    <StaffKpiGroup cols={4}>
       {items.map((it) => (
         it.spark ? <div key={it.label} className={styles.trendMetric}>
           <StatSparkTile
@@ -69,7 +105,7 @@ export function PartnerKpiGrid({ items }: { items: PartnerKpiTile[] }) {
           ) : null}
         </div> : <StatTile key={it.label} label={it.label} value={it.value} tone={it.tone} delta={it.subtitle} deltaTone="muted" className={styles.metric} />
       ))}
-    </div>
+    </StaffKpiGroup>
   );
 }
 

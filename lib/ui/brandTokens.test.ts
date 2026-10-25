@@ -141,3 +141,46 @@ test('categorical and semantic Astryx text meets AA on public surfaces using the
     }
   }
 });
+
+/**
+ * Round 3, item 5 — dark mode: the accent is for fills, not text. A lighter
+ * crimson is pink, so the dark text accents are a desaturated dusty rose and
+ * the crimson stays on solid fills (--wa-accent-fill, white label).
+ */
+function saturation(hex: string): number {
+  const { r, g, b } = colorOf(hex, brand, 'dark');
+  const max = Math.max(r, g, b);
+  return max === 0 ? 0 : (max - Math.min(r, g, b)) / max;
+}
+
+test('dark: the text accents are a dusty rose that clears AA on the whole dark ladder, the fill stays crimson', () => {
+  const palette = loadRootTokens(BRAND_CSS, PORTAL_CSS);
+  for (const token of ['--wa-accent', '--wa-accent-text']) {
+    assert.ok(saturation(`var(${token})`) <= 0.3, `${token} dark should be desaturated, saturation ${saturation(`var(${token})`).toFixed(2)}`);
+    const fg = colorOf(`var(${token})`, palette, 'dark');
+    for (const surface of ['--wa-bg', '--wa-surface', '--wa-surface-2']) {
+      const ratio = contrast(fg, colorOf(`var(${surface})`, palette, 'dark'));
+      assert.ok(ratio >= 4.5, `dark ${token} on ${surface} is ${ratio.toFixed(2)}:1`);
+      const tinted = over(colorOf('var(--wa-accent-soft)', palette, 'dark'), colorOf(`var(${surface})`, palette, 'dark'));
+      const onTint = contrast(fg, tinted);
+      assert.ok(onTint >= 4.5, `dark ${token} on --wa-accent-soft over ${surface} is ${onTint.toFixed(2)}:1`);
+    }
+  }
+  // The fill keeps the brand: saturated crimson with a white label at AA.
+  assert.ok(saturation('var(--wa-accent-fill)') >= 0.6, 'dark --wa-accent-fill stays a saturated crimson');
+  assert.ok(contrast(colorOf('var(--wa-on-accent-control)', palette, 'dark'), colorOf('var(--wa-accent-fill)', palette, 'dark')) >= 4.5);
+  assert.ok(contrast(colorOf('var(--wa-on-accent-control)', palette, 'dark'), colorOf('var(--wa-accent-fill-hover)', palette, 'dark')) >= 4.5);
+  // --wa-accent-dark is used behind white labels (job-application actions), so it must hold white too.
+  assert.ok(contrast(colorOf('#ffffff', palette, 'dark'), colorOf('var(--wa-accent-dark)', palette, 'dark')) >= 4.5, 'dark --wa-accent-dark holds a white label');
+  // Light mode is unchanged.
+  assert.deepEqual(colorOf('var(--wa-accent)', palette, 'light'), colorOf('#ad2c4d', palette, 'light'));
+  assert.deepEqual(colorOf('var(--wa-accent-text)', palette, 'light'), colorOf('#8c0f37', palette, 'light'));
+});
+
+test('dark: --wa-accent-soft is derived from the dusty-rose hue, not the old pink', () => {
+  const palette = loadRootTokens(BRAND_CSS);
+  const accent = colorOf('var(--wa-accent)', palette, 'dark');
+  const soft = colorOf('var(--wa-accent-soft)', palette, 'dark');
+  assert.deepEqual({ r: soft.r, g: soft.g, b: soft.b }, { r: accent.r, g: accent.g, b: accent.b });
+  assert.ok(soft.a > 0 && soft.a < 0.25, 'dark soft tint stays a translucent overlay');
+});

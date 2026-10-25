@@ -981,7 +981,7 @@ export default function SkillMapperClient({ initialRun = null, initialTarget, se
                         <span style={{ color: 'var(--color-on-surface-variant)', fontVariantNumeric: 'tabular-nums' }}>{s.score}%</span>
                       </div>
                       <div style={{ height: 8, borderRadius: 4, background: 'var(--surface-container-highest)', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${s.score}%`, borderRadius: 4, background: 'var(--wa-accent-fill)', transition: 'width 0.4s ease' }} />
+                        <div style={{ height: '100%', width: `${s.score}%`, borderRadius: 4, background: 'var(--wa-accent)', transition: 'width 0.4s ease' }} />
                       </div>
                     </div>
                   ))}

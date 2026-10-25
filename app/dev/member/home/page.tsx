@@ -13,9 +13,11 @@ import PortalEntryErrorBoundary from '@/components/portal/PortalEntryErrorBounda
 import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
 
 /**
- * Storybook-lite showcase — MemberHomeKit "Command Center" (fully populated,
- * every new optional prop wired). Preview-only, no auth/DB. See
- * app/dev/dashboard/page.tsx for the pattern.
+ * Storybook-lite showcase: MemberHomeKit "This week" (fully populated, every
+ * optional prop wired). Preview-only, no auth/DB. See app/dev/dashboard/page.tsx
+ * for the pattern. The props the home no longer renders (stat sparks, pipeline,
+ * points ledger, streak) are still passed, as the live route passes them; the
+ * kit ignores them, and Progress and Jobs use them.
  *
  * `?approval=live|closed|complete|off` swaps the approval-status fixture. The
  * status is a slim strip in the page header (MemberHomeKit `approvalSlot`):
@@ -23,10 +25,10 @@ import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
  * and `complete` name the saved state. Same composition as
  * app/(portal)/dashboard/page.tsx.
  *
- * `?course=zero|zero-stale` drops the Course tile to 0% so the two
- * not-started states can be reviewed: a member who just enrolled (no warning)
- * and one whose training has been quiet past the staleness threshold (gold,
- * plus the counselor row the loader adds to "Up next").
+ * `?course=zero|zero-stale` drops the course to 0% so the two not-started
+ * states can be reviewed: a member who just enrolled and one whose training
+ * has been quiet past the staleness threshold (the counselor row the loader
+ * adds to "This week").
  *
  * The pieces moved over from the `?ui=legacy` home (WAP-188) are on by
  * default so the populated page shows them; each has a switch:
@@ -35,7 +37,7 @@ import { MEMBER_PORTAL_TOUR_STEPS } from '@/lib/onboarding/portalTourSteps';
  *     (default day_30, with the week 1 check-in answered). Built with the
  *     loader's own `buildFirst90Card`.
  *   `?youth=<age>` shows the youth notice for a member of that age (under 18).
- *   `?goals=none` empties the goals so the Next badge tile shows "Set a goal".
+ *   `?goals=none` empties the goals so the Next badge card shows "Set a goal".
  * The four owner-approved pieces (WAP-194), each off by default:
  *   `?onboarding=on` opens the first-login wizard (PortalEntryClient
  *     portal="member", the same mount as the live home), pre-filled with a
@@ -229,13 +231,15 @@ export default async function DevMemberHomePage({
       jobsHref="/dev/member/jobs"
       coursesHref="/dev/member/program"
       goalsHref="/dev/member/progress"
+      progressHref="/dev/member/progress"
+      preassessmentHref="/dev/member/assessment"
       jobOffers={jobOffers}
       first90={first90}
       youthNoticeAge={youthNoticeAge}
       doThisNext={{
         id: 'resume-module',
         title: 'Shared Responsibility Model',
-        body: '~25 min · Module 8 of 9 · AWS Cloud Practitioner — due Thursday.',
+        body: '~25 min · Module 8 of 9 · AWS Cloud Practitioner · due Thursday.',
         href: '/dev/member/program',
         cta: 'Resume module',
         variant: 'urgent',
@@ -267,6 +271,7 @@ export default async function DevMemberHomePage({
         { day: 'Sun', minutes: 58 },
       ]}
       weeklyActivityDeltaLabel="+41% vs last week"
+      weeklyStudyGoalMinutes={240}
       pointsThisWeek={85}
       pointsLedger={[
         { label: 'Module complete', amount: 40, color: 'accent' },

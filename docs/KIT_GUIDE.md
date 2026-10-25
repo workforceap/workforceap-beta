@@ -95,20 +95,24 @@ There are **two** live CSS-variable families in this codebase. Only one is canon
 
 Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
 
-- **Brand (constant across modes):** `--wa-accent` (brand magenta) / `--wa-accent-dark` /
+- **Brand hues:** `--wa-accent` (the text accent: crimson in light, dusty rose in dark; never
+  a fill behind white) / `--wa-accent-fill` (solid fills, crimson in both modes) / `--wa-accent-dark` /
   `--wa-accent-soft` / `--wa-on-accent`, `--wa-gold(-dark|-soft)`, `--wa-info(-soft)`,
   `--wa-success(-soft)`, `--wa-danger(-soft)`, `--wa-violet`.
-- **Text-bearing hero gradients:** `--wa-hero-crimson(-dark)` and
-  `--wa-hero-gold(-dark)` stay dark in both themes and pair with `--wa-on-hero`.
+- **Text-bearing hero gradients:** `--wa-hero-crimson(-dark)`,
+  `--wa-hero-gold(-dark)` and `--wa-hero-info` (the employer voice session fill)
+  stay dark in both themes and pair with `--wa-on-hero`.
   A white hero action uses `--wa-hero-action-bg` and `--wa-hero-action-text`;
   do not substitute the theme-adaptive solid-control foreground. Categorical
   KPI totals use neutral text; retain semantic color for an actual state
   (the counselors roster colours "At-Risk Owned" only while it is above zero).
 - **Neutrals (flip in dark mode):** `--wa-bg`, `--wa-surface`, `--wa-surface-2` (raised
   fill: icon tiles, chips), `--wa-text`, `--wa-muted`, `--wa-border`, `--wa-track`, plus the
-  sidebar set (`--wa-sidebar-*`, dark chrome in both modes). `--wa-bg-wave` is the shared
-  member canvas (a restrained 5% accent / 3% gold wash on `--wa-bg`); even where
-  both washes overlap, muted text must retain 4.5:1 contrast. `--wa-shell-header-bg`
+  sidebar set (`--wa-sidebar-*`, dark chrome in both modes). `--wa-bg-wave` is the one
+  painting hook for the portal canvas and it is flat: it equals `--wa-bg`, with no radial
+  wash. On the member surface `--wa-bg`, `--wa-surface-2` and `--wa-border` take the warm
+  paper values (§2); muted text keeps 4.5:1 on both ladders (`lib/ui/portalCanvas.test.ts`).
+  `--wa-shell-header-bg`
   is a 96% canvas fill that keeps sticky navigation readable as content scrolls
   beneath it, with a slight continuation of the canvas tone. Member header and mobile
   nav borders stay transparent; `PageOpener` is never recut as a title bar.
@@ -215,12 +219,19 @@ Tailwind is configured with the **`wa-` prefix** (`tailwind.config.ts`) — util
 
 The kit has one design language with **two densities**, switched by a `data-surface` attribute
 that the token layer reads (`css/portal-tokens.css`). Brand colors are identical in both;
-only radius / padding / pop / shadow change.
+radius / padding / shadow and the LIGHT canvas ladder change. Dark values are shared.
 
-| Mode | Who | Feel | Values |
-|---|---|---|---|
-| `warm` | Member-facing routes | Bold + calm: soft corners, generous space, gradient "pop" tiles on | radius 26/16, pad 28/18, `--wa-pop: 1` |
-| `dense` | Admin / staff / data / rosters / queues | Compact, sharp, pop off | radius 12/8, pad 16/12, `--wa-pop: 0` |
+| Mode | Who | Feel | Light canvas (`--wa-bg` / `--wa-surface-2` / `--wa-border`) | Values |
+|---|---|---|---|---|
+| `warm` | Member-facing routes | Calm: white hairline cards on warm paper, 12px corners, generous space | `#faf8f6` / `#f3efeb` / `#e9e4df` | radius 12/8, pad 24/16, `--wa-pop: 0` |
+| `dense` | Admin / staff / data / rosters / queues | Compact and operational, on the cool canvas | `#f7f8fa` / `#f4f4f5` / `#e8e8e8` | radius 12/8, pad 16/12, `--wa-pop: 0` |
+
+Members feel looked after, staff feel operational, and which side you are on reads from across
+the room. The warm ladder is declared once, in `css/portal-tokens.css`, on both
+`[data-surface='warm']` and `html[data-portal-role='member']` (the shell sets that attribute),
+so the header, rail, `<html>`, `<body>` and the page are one canvas. `--wa-surface` stays white on
+both. The canvas is flat (`--wa-bg-wave` is `--wa-bg`). Any new neutral on the warm ladder must
+clear the pairs in `lib/ui/portalCanvas.test.ts`.
 
 Wrap the **route-group layout**, not individual components:
 
@@ -259,10 +270,21 @@ barrel) returns `'warm' | 'dense'` for the rare component that must branch in JS
   with `html[data-portal-role]` (inline at parse time and on mount) and `css/portal-kit.css` paints
   `<html>`/`<body>` with solid `--wa-bg` for that document, out-ranking the marketing site's
   `html.dark body` cool grey. The strip below a short page, rubber-band overscroll and the body seen
-  through the translucent header therefore continue the shell's warm canvas (WAP-153). Do not paint
-  the wave on body — the radial washes fade into `--wa-bg`, so the solid token is the seam-free
-  continuation. The member cream `--wa-bg` override in the bridge applies to
-  `html[data-portal-role='member']` as well as `[data-surface='warm']`.
+  through the translucent header therefore continue the shell's canvas (WAP-153). Do not paint
+  a second canvas on body: `--wa-bg-wave` is `--wa-bg` (flat, no wash), so the solid token is the
+  seam-free continuation. The member warm paper (`--wa-bg`, `--wa-surface-2`, `--wa-border`) is
+  declared in `css/portal-tokens.css` for `html[data-portal-role='member']` as well as
+  `[data-surface='warm']`; the Astryx bridge no longer carries a copy.
+- **In dark mode the accent is for fills, not text.** A lighter crimson is pink, and pink text
+  reads as a beauty brand, so the dark text accents are a dusty rose: `--wa-accent` `#dd9fb0` and
+  `--wa-accent-text` `#e6b3bf` (8.3:1 and 9.9:1 on `--wa-surface`, 4.5:1 or better on the whole
+  dark ladder and on `--wa-accent-soft`). Solid fills paint `--wa-accent-fill` (crimson, white
+  label `--wa-on-accent-control`). Never paint white on `--wa-accent`: it is 2.2:1 in dark.
+  Text links in cards (`.wa-kit-card-link`, the staff `cardLink`, and anchors that only paint
+  their label with an accent token inline) read `--wa-text` in dark with a 1px accent underline
+  (`css/portal-kit.css`, "Dark mode: the accent is for fills"); buttons, tags and anything with
+  its own background are excluded. The accent otherwise appears on fills, the active item and
+  focus rings. Light mode is unchanged. `lib/ui/brandTokens.test.ts` holds the pairs.
 - Admin and staff surfaces read semantic state through `--wa-*` only: `--wa-info-dark` /
   `--wa-success-dark` / `--wa-gold-dark` for text, the base hue for icons, fills and `color-mix`
   tints. The legacy `--color-blue` / `--color-green` / `--color-gold` are pinned or only
@@ -676,6 +698,25 @@ state (at most one crimson pill per card). Reusable classes (all in `css/portal-
   back to its edge). Direction should match the action (drawer from the edge it lives on).
   The tokens zero themselves under `prefers-reduced-motion`; JS-driven animation must still gate
   on `matchMedia('(prefers-reduced-motion: reduce)')` (see `VoiceOrb`).
+- **Rule of thumb: motion helps when it confirms something the member just did or shows what
+  just loaded; it never loops, never replays when a component re-renders, and always has a
+  reduced-motion twin.** The kit has exactly two orchestrated transitions, both CSS-only, both
+  inside `@media (prefers-reduced-motion: no-preference)` and on the `--wa-dur-*` / `--wa-ease`
+  tokens (`lib/ui/portalKitMotion.test.ts` holds the rules):
+  1. **Certification path fills in once** (`.wa-kit-segments`). Each `.wa-kit-segment__bar > i`
+     scales in from the left (`scaleX` 0 to 1, `--wa-dur-slow`), staggered by position with
+     `--wa-stagger` (70ms) up to the eighth segment. It is a CSS animation on mount, so a width
+     change or a re-render does not restart it.
+  2. **A task row strikes through and its check pops** (`.wa-kit-task-row[data-state='done']`).
+     The strike is a background strip on the title that draws in left to right over
+     `--wa-dur-base` (it follows every wrapped line; the title is inline in this block and the
+     body line-height is pinned so the row is the same height with motion off). The check pops
+     once, `scale` 0.8 to 1 over `--wa-dur-base`. The strike is a transition (plays when the row
+     becomes done); the pop is a keyframe animation whose name only changes when the row becomes
+     done, so a re-render of a done row does not replay it. A done row that mounts already done
+     pops its check once and shows the strike with no animation.
+  Under reduced motion the segments are simply full and the done title keeps the native
+  `line-through`. Do not add a third transition without a reason of this kind.
 - Hover-only affordances belong under `@media (hover: hover)`.
 
 ---
@@ -733,7 +774,7 @@ The Astryx design system is installed site-wide (`app/layout.tsx` imports `reset
   otherwise beat Astryx's layered foreground; do not override it per surface.
   The primary fill is the next rule in that file: the org accent (`--org-accent`), else the
   mode-constant `--wa-hero-crimson`, never the dark-lightened `--wa-accent`, so the white label holds
-  6.47:1 in both themes (3.28:1 on `#e0658a`). Do not retarget the label to
+  6.47:1 in both themes (2.2:1 on the dusty-rose dark `--wa-accent`, `#dd9fb0`). Do not retarget the label to
   `--wa-on-accent-control` instead: dark ink on the pinned org accent is 2.78:1.
   Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
   which is invalid and gives keyboard users two tab stops per action (WAP-252). The lint rule

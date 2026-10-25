@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { BarChart3, Download, GraduationCap, Percent, Target, Users, Wallet } from 'lucide-react';
-import { DesignSurface, DataTable, PageOpener, type Column } from '@/components/portal/kit';
+import { DesignSurface, DataTable, type Column } from '@/components/portal/kit';
 import {
   StaffCard,
   StaffSplit,
@@ -11,6 +11,7 @@ import {
   staffPillClass,
 } from '@/components/portal/kit/pages/StaffKit';
 import {
+  PartnerHomeOpener,
   PartnerKpiGrid,
   PartnerAttentionCard,
   PartnerAssistantAccordion,
@@ -70,9 +71,10 @@ export default function DevStaffPartnerCommandPage() {
 
   return (
     <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6 wa-p-6">
-      <PageOpener
-        title="Skillpoint Alliance"
-        meta="Referrals, progress and placement outcomes in one place. 2 placements are waiting for your confirmation."
+      <PartnerHomeOpener
+        firstName="Sam"
+        partnerName="Skillpoint Alliance"
+        meta="Skillpoint Alliance: 2 placements are waiting for your confirmation."
         action={
           <Link href="/partner/exports" className={staffPillClass.base}>
             Export data

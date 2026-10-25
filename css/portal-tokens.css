@@ -55,13 +55,12 @@
   /* Foreground on a solid --wa-success-dark fill (placement strip): white in
      light; dark ink in dark, where that fill lightens to #8fd9b0. */
   --wa-on-success: light-dark(#ffffff, #0f2a16);
-  /* Shared portal canvas: a restrained brand wash on --wa-bg. The two washes
-     can overlap, so their strongest composition must still carry muted text
-     at AA contrast. Shell paints it; pages inside stay transparent. */
-  --wa-bg-wave:
-    radial-gradient(circle at 38% -8%, color-mix(in srgb, var(--wa-accent) 5%, transparent) 0, transparent 32rem),
-    radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--wa-gold) 3%, transparent) 0, transparent 26rem),
-    var(--wa-bg);
+  /* Shared portal canvas. Flat: the radial brand wash is gone, so the warm
+     member canvas and the cool staff canvas read as paper rather than as a
+     gradient. The token stays as the one painting hook (the shell, [data-surface]
+     and the extracted portal CSS all paint it) and always equals --wa-bg of the
+     surface it is read on. Shell paints it; pages inside stay transparent. */
+  --wa-bg-wave: var(--wa-bg);
   /* Stable reading surface while content scrolls beneath sticky navigation.
      Reads as a white (surface) top bar with a hairline, like the C1/C3 mockups. */
   --wa-shell-header-bg: color-mix(in srgb, var(--wa-surface) 96%, transparent);
@@ -120,6 +119,7 @@
   --wa-dur-fast: 120ms; /* hovers, color/border feedback */
   --wa-dur-base: 200ms; /* most transitions (shadow, background) */
   --wa-dur-slow: 300ms; /* larger movements: drawers, surface morphs */
+  --wa-stagger: 70ms; /* delay step between siblings that animate in together (certification path) */
   --wa-ease: cubic-bezier(0.2, 0, 0, 1);
 
   /* Type floors. Warm member UI: body ≥16px, metadata ≥13px. Dense may
@@ -206,6 +206,28 @@ html.dark [data-surface],
   --color-primary: var(--wa-accent);
 }
 
+/*
+ * WARM canvas (member) vs COOL canvas (staff). The neutral ladder above is the
+ * cool one and is what dense (admin / staff / data) screens use: canvas
+ * #f7f8fa, raised fill #f4f4f5, hairline #e8e8e8. Member screens take a warm
+ * paper instead: canvas #faf8f6, raised fill #f3efeb, hairline #e9e4df, with
+ * white cards on top. Members feel looked after, staff feel operational, and
+ * which side you are on reads from across the room. Dark values are unchanged
+ * (the dark ladder is already warm). Both selectors are needed: the surface
+ * wrapper covers the page, and the member <html> (set by WorkspaceShell from
+ * `data-portal-role`) covers the shell chrome that sits outside it, so the
+ * header, rail, body and page share one canvas. Muted text stays on the shared
+ * tokens (--wa-muted 5.0:1 on the warm canvas, 4.7:1 on the raised fill);
+ * lib/ui/portalCanvas.test.ts holds the warm pairs at AA.
+ */
+[data-surface='warm'],
+html[data-portal-role='member'] {
+  --wa-bg: light-dark(#faf8f6, #130d0f);
+  --wa-surface-2: light-dark(#f3efeb, #25181c);
+  --wa-border: light-dark(#e9e4df, #372830);
+  --wa-bg-wave: var(--wa-bg);
+}
+
 /* WARM — member surfaces: calm card recipe (C1 + C3). Hairline cards on the
    canvas, 12px corners, 8px grid, no gradient feature tiles by default
    (gradient variants stay opt-in classes). Keeps more air than dense. */
@@ -235,7 +257,8 @@ html.dark [data-surface],
  * resolves to its dark value automatically. Activated by the app's existing
  * theme system, which sets `html.dark` (system preference or explicit) and
  * `[data-theme="dark"]` (explicit) — see components/theme/ThemeInitScript.tsx.
- * Works under both surfaces (warm/dense only change radius/pad/pop, not color).
+ * Works under both surfaces. Warm and dense only change radius / pad / pop and
+ * the LIGHT canvas ladder (see the WARM block above); dark values are shared.
  */
 html.dark,
 [data-theme='dark'] {
@@ -249,5 +272,6 @@ html.dark,
     --wa-dur-fast: 0s;
     --wa-dur-base: 0s;
     --wa-dur-slow: 0s;
+    --wa-stagger: 0s;
   }
 }

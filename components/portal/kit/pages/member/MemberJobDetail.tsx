@@ -2,6 +2,7 @@ import { Briefcase } from 'lucide-react';
 import NextLink from 'next/link';
 import type { ReactNode } from 'react';
 import { DesignSurface, PageOpener } from '@/components/portal/kit';
+import { MemberDisclosure } from './MemberDisclosure';
 
 /**
  * Member Portal — JOB DETAIL (open role).
@@ -135,9 +136,12 @@ export function MemberJobDetail({
             <h2 className="wa-kit-card-title" style={{ margin: '0 0 6px' }}>
               What this employer looks for
             </h2>
-            <p className="wa-kit-lede" style={{ margin: '0 0 12px' }}>
-              {screening.packTitle} — shared by {screening.employerLabel}. Informational, so you can prepare before you apply.
+            <p className="wa-kit-lede" style={{ margin: 0 }}>
+              {screening.packTitle}, shared by {screening.employerLabel}.
             </p>
+            <MemberDisclosure summary="Why you see this">
+              Informational, so you can prepare before you apply.
+            </MemberDisclosure>
             <ol className="wa-kit-lede" style={{ margin: 0, paddingLeft: 18, display: 'grid', gap: 8, color: 'var(--wa-text)' }}>
               {screening.questions.map((q, i) => (
                 <li key={q.id ?? i}>

@@ -824,7 +824,7 @@ html.dark .footer-cta p {
     color: #f9fafb;
 }
 html.dark .footer-cta .btn-primary {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: #ffffff;
 }
 html.dark .footer-cta .btn-primary:hover {
@@ -2295,7 +2295,7 @@ html:not(.dark) .main-nav.scrolled .nav-menu .nav-login-flyout-trigger {
     font-weight: 700;
     text-decoration: none;
     color: var(--color-white);
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     border-radius: var(--radius-md) 0 0 var(--radius-md);
     white-space: nowrap;
     transition: background var(--transition-fast), transform var(--transition-fast);
@@ -2312,7 +2312,7 @@ html:not(.dark) .main-nav.scrolled .nav-menu .nav-login-flyout-trigger {
     min-width: 2rem;
     min-height: 44px;
     margin: 0;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     border: none;
     border-left: 1px solid rgba(255,255,255,0.2);
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
@@ -2419,7 +2419,7 @@ html:not(.dark) .main-nav.scrolled .nav-menu .nav-login-flyout-trigger {
 }
 .nav-login-btn:hover { opacity: 0.8; }
 .nav-apply-btn {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
     padding: 0.75rem 1.5rem;
     border-radius: var(--radius-md);
@@ -2599,7 +2599,7 @@ body.mobile-nav-open {
 .btn-primary,
 a.btn-primary,
 button.btn-primary {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     /* --color-white flips to the dark canvas in dark mode (2.85:1 on the accent, WAP-145);
        the label on a solid accent stays white in both themes. */
     color: var(--wa-on-accent);
@@ -2765,7 +2765,7 @@ button:disabled.btn,
 }
 .btn-dark,
 a.btn-dark {
-    background: var(--color-primary);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-primary)));
     color: var(--color-white);
 }
 .btn-dark:hover {
@@ -2996,7 +2996,7 @@ html.dark .homepage .hero-program-count {
 }
 .btn-accent,
 a.btn-accent {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
     border: none;
     box-shadow: var(--shadow-glow-accent);
@@ -4511,7 +4511,7 @@ html.dark .employer-dash-empty-jobs p {
 /* What You Get section replaces standalone loaner laptop card */
 .what-you-get-section {
     padding: 5rem 0;
-    background: var(--color-primary);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-primary)));
     color: var(--color-white);
 }
 .what-you-get-section .section-header {
@@ -4612,7 +4612,7 @@ html.dark .employer-dash-empty-jobs p {
    FOOTER CTA
    ============================================= */
 .footer-cta {
-    background: var(--color-primary);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-primary)));
     color: var(--color-white);
     padding: 6rem 0;
     text-align: center;
@@ -4729,7 +4729,7 @@ html.dark .employer-dash-empty-jobs p {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
     display: flex;
     align-items: center;
@@ -4751,7 +4751,7 @@ html.dark .employer-dash-empty-jobs p {
    ============================================= */
 .impact-section {
     padding: 5rem 0;
-    background: var(--color-primary);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-primary)));
     color: var(--color-white);
     text-align: center;
     position: relative;
@@ -5289,7 +5289,7 @@ html.dark .sd-field option {
     top: 0.75rem;
     z-index: 10000;
     padding: 0.5rem 1rem;
-    background: var(--color-primary);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-primary)));
     color: var(--color-white);
     font-weight: 600;
     font-size: 0.9375rem;
@@ -5391,7 +5391,7 @@ html:not(.dark) .apply-location-callout strong {
     font-weight: 700;
 }
 .apply-alert {
-    background: var(--color-primary);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-primary)));
     color: var(--color-white);
     padding: 1rem 1.5rem;
     border-radius: 8px;
@@ -5838,7 +5838,7 @@ fieldset.apply-fieldset {
     font-size: 0.9375rem;
 }
 .salary-table th, .comparison-table th {
-    background: var(--color-primary);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-primary)));
     color: var(--color-white);
     padding: 1rem 1.25rem;
     text-align: left;
@@ -6324,7 +6324,7 @@ html.dark .faq-quick-link {
     cursor: pointer;
 }
 .faq-category-tab--active {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: #ffffff;
 }
 html.dark .faq-category-tab:not(.faq-category-tab--active) {
@@ -6472,7 +6472,7 @@ html.dark .faq-section-heading {
     font-size: 1.5rem;
     margin-bottom: 1.25rem;
 }
-.mv-icon.mission { background: var(--color-accent); color: var(--color-white); }
+.mv-icon.mission { background: var(--org-accent, var(--wa-accent-fill, var(--color-accent))); color: var(--color-white); }
 .mv-icon.vision { background: var(--color-gold); color: var(--color-white); }
 
 .legacy-section {
@@ -6610,7 +6610,7 @@ html:not(.dark) .program-filters::after {
     position: relative;
 }
 .filter-chip.active {
-    background: var(--color-primary);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-primary)));
     color: var(--color-white);
     box-shadow: 0 2px 12px rgba(26,26,26,0.25);
 }
@@ -6896,7 +6896,7 @@ html:not(.dark) .program-filters::after {
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
     font-size: 0.875rem;
     font-weight: 700;
@@ -8195,7 +8195,7 @@ html.dark .apply-barrier-option input:checked {
     color: var(--color-white);
 }
 .apply-status-step.active .apply-status-dot {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
     box-shadow: 0 0 0 3px rgba(173, 44, 77, 0.15);
     transform: scale(1.1);
@@ -8584,7 +8584,7 @@ html.dark .apply-barrier-option input:checked {
     flex-wrap: wrap;
 }
 .blog-cta-buttons .btn-accent {
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: var(--color-white);
 }
 .blog-cta-buttons .btn.btn-secondary,
@@ -8702,7 +8702,7 @@ html.dark .blog-filter-chip[data-active="true"] {
     padding: 2.5rem clamp(1rem, 4vw, 2rem);
     border-radius: 16px;
     text-align: center;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: #fff;
 }
 .blog-listing-bottom-cta h3 {

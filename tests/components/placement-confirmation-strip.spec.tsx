@@ -32,7 +32,8 @@ describe('PlacementConfirmationStrip tells the member what the confirmation did'
   it('first confirmation: the placement was logged as reported and the counselor alerted', async () => {
     const { status } = await confirmAcme('created');
     expect(mocks.confirmPlacement).toHaveBeenCalledWith('o1');
-    expect(status).toHaveTextContent(/Placement logged — Acme/);
+    // Copy rule (round 3): no em dashes; the kicker reads "Placement logged: Acme", like the home row title.
+    expect(status).toHaveTextContent(/Placement logged: Acme/);
     expect(status).toHaveTextContent(/logged as a placement you reported/i);
     expect(status).toHaveTextContent(/counselor has been alerted/i);
     expect(screen.queryByText(/Did you accept the role at Acme/)).toBeNull();

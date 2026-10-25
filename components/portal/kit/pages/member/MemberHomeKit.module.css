@@ -66,17 +66,6 @@
   margin: 0;
 }
 
-/* This week list: trailing action on each row. */
-.rowAction {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: var(--wa-type-meta);
-  font-weight: 600;
-  color: var(--wa-accent-text);
-  white-space: nowrap;
-}
-
 /* Certification path */
 .certTop {
   display: flex;
@@ -135,10 +124,7 @@
   gap: 4px !important;
 }
 .certNote {
-  margin: 12px 0 0;
-  font-size: var(--wa-type-meta);
-  line-height: 1.5;
-  color: var(--wa-muted);
+  margin: 8px 0 0;
 }
 .certFoot {
   display: flex;
@@ -148,56 +134,7 @@
   margin-top: 16px;
 }
 
-/* Rail: streak value carries its flame inline. */
-.streakValue {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.streakValue svg {
-  color: var(--wa-gold-dark);
-}
-
-/* Rail: points ledger + study week */
-.ledger {
-  list-style: none;
-  margin: 8px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-.ledgerRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 40px;
-  border-top: 1px solid var(--wa-border);
-  font-size: var(--wa-type-meta);
-}
-.ledgerRow:first-child {
-  border-top: 0;
-}
-.ledgerLabel {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  color: var(--wa-muted);
-  font-weight: 500;
-}
-.ledgerDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  flex: none;
-}
-.ledgerAmount {
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--wa-text);
-}
-
+/* Rail: study week */
 .studyTotal {
   margin: 8px 0 0;
   font-size: 24px;
@@ -330,21 +267,52 @@
   margin-top: 8px;
 }
 
-/* Stat tiles row at the foot of the main column */
-.tiles {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-@media (min-width: 720px) {
-  .tiles {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
+/* Empty "This week" state. */
+.noSteps {
+  margin: 0;
+  padding: 16px 24px 20px;
+  font-size: var(--wa-type-body);
+  color: var(--wa-muted);
 }
 
-.footLinks {
+/* Study this week with a goal: one line, one bar. */
+.studyGoalLine {
+  margin: 8px 0 0;
+  font-size: var(--wa-type-body);
+  font-weight: 700;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+.studyBar {
+  margin-top: 8px;
+}
+
+/* One quiet row of links under the certification path. */
+.shortcuts {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
-  gap: 8px 20px;
+  align-items: center;
+  gap: 4px 24px;
+  padding-inline: 8px;
+}
+.shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: var(--wa-type-body);
+  font-weight: 600;
+  color: var(--wa-accent-text);
+  text-decoration: none;
+}
+.shortcut:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Phones: rail cards sit tighter so the page does not run long. */
+@media (max-width: 520px) {
+  section.railCard {
+    padding: 16px;
+  }
 }

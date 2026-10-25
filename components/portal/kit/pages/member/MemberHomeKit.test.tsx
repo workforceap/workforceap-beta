@@ -1,9 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import type { ReactElement } from 'react';
 import messages from '@/messages/en.json';
 import { MemberHomeKit } from './MemberHomeKit';
+import { MemberPipelineTable } from './MemberPipelineTable';
+import { splitLead } from './MemberTaskRow';
 
 // The kit's cards use next/navigation hooks that need a mounted app router.
 vi.mock('next/navigation', () => ({
@@ -11,10 +13,19 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/dashboard',
   useSearchParams: () => new URLSearchParams(),
 }));
-// The placement strip and the First 90 Days card call server actions; the
-// render tests never click them.
-vi.mock('@/app/(portal)/dashboard/placementAction', () => ({ confirmPlacement: vi.fn() }));
-vi.mock('@/app/(portal)/dashboard/first90DaysAction', () => ({ submitFirst90DaysCheckIn: vi.fn() }));
+// The placement row and the First 90 Days row call server actions; the render
+// tests only click them against these mocks.
+const actions = vi.hoisted(() => ({
+  confirmPlacement: vi.fn(),
+  submitFirst90DaysCheckIn: vi.fn(),
+}));
+vi.mock('@/app/(portal)/dashboard/placementAction', () => ({ confirmPlacement: actions.confirmPlacement }));
+vi.mock('@/app/(portal)/dashboard/first90DaysAction', () => ({ submitFirst90DaysCheckIn: actions.submitFirst90DaysCheckIn }));
+
+beforeEach(() => {
+  actions.confirmPlacement.mockReset();
+  actions.submitFirst90DaysCheckIn.mockReset();
+});
 
 function renderKit(ui: ReactElement) {
   return render(<NextIntlClientProvider locale="en" messages={messages}>{ui}</NextIntlClientProvider>);
@@ -58,7 +69,7 @@ describe('MemberHomeKit certification-path card', () => {
     const link = screen.getByRole('link', { name: 'Introduction to Technical Support' });
     expect(link.getAttribute('href')).toBe('/dashboard/program?course=introduction-to-technical-support');
     expect(screen.queryByText('No next module on file.')).toBeNull();
-    // Hero CTA is untouched.
+    // Today's action keeps its CTA.
     expect(screen.getByRole('link', { name: /Start preassessment/ })).toBeTruthy();
   });
 
@@ -81,6 +92,16 @@ describe('MemberHomeKit certification-path card', () => {
     expect(screen.getByRole('progressbar', { name: 'Certification module progress' })).toHaveAttribute('aria-valuenow', '50');
     expect(screen.getByText('In progress')).toBeTruthy();
     expect(screen.queryByText(/certifi(ed|cation earned)|certificate earned/i)).toBeNull();
+  });
+
+  it('keeps the WorkforceAP lab note one tap away under "What the module count includes"', () => {
+    const note = 'Nine courses: eight on the Coursera path plus the WorkforceAP Lab.';
+    renderKit(<MemberHomeKit {...base} programCoursesNote={note} />);
+    const text = screen.getByTestId('program-courses-note');
+    expect(text.textContent).toBe(note);
+    const disclosure = text.closest('details') as HTMLDetailsElement;
+    expect(disclosure.open).toBe(false);
+    expect(within(disclosure).getByText('What the module count includes')).toBeTruthy();
   });
 });
 
@@ -110,58 +131,11 @@ describe('MemberHomeKit resume module CTA', () => {
 });
 
 /**
- * The Course tile used to warn purely because progress was 0%, so a member who
- * enrolled an hour ago opened the dashboard to a gold chip. The warn tone now
- * waits for the shared staleness threshold (`STALE_TRAINING_ACTIVITY_DAYS`,
- * 14 days) that the loader evaluates.
+ * The home is "This week": one card of ordered task rows. The four totals
+ * tiles, the application pipeline, the points ledger, the streak pair and the
+ * Start-here tiles left it (points and the pipeline live on Progress and Jobs).
  */
-describe('MemberHomeKit Course tile warning', () => {
-  /**
-   * Locates the Course stat tile and proves the row is really there first: a
-   * `querySelector` that stops matching would otherwise make every tone
-   * assertion below vacuously true.
-   */
-  function courseTileTone(): string | null {
-    // The home tiles are the kit StatSparkTile: the marked inner element declares
-    // the tone hook itself and sits inside an Astryx Card, whose parent is the row.
-    const tile = screen.getByText('Course').closest<HTMLElement>('[data-testid="stat-spark-tile"]');
-    expect(tile).not.toBeNull();
-    const card = tile!.parentElement!;
-    const row = card.parentElement!;
-    expect(row.children).toHaveLength(4);
-    expect(row.children[0]).toBe(card);
-    expect(row.children[1].textContent).toContain('Active jobs');
-    const toned = tile!.matches('[class*="wa-kit-tone--"]') ? tile : tile!.querySelector<HTMLElement>('[class*="wa-kit-tone--"]');
-    return toned ? toned.className.match(/wa-kit-tone--(\w+)/)![1] : null;
-  }
-
-  it('does not warn at 0% for a member whose training has not gone stale', () => {
-    renderKit(<MemberHomeKit {...base} coursePercent={0} courseProgressStale={false} />);
-    expect(courseTileTone()).toBeNull();
-  });
-
-  it('defaults to no warning when the caller supplies no staleness signal', () => {
-    renderKit(<MemberHomeKit {...base} coursePercent={0} />);
-    expect(courseTileTone()).toBeNull();
-  });
-
-  it('warns at 0% once the staleness threshold has been crossed', () => {
-    renderKit(<MemberHomeKit {...base} coursePercent={0} courseProgressStale />);
-    expect(courseTileTone()).toBe('warn');
-  });
-
-  it('never warns without an enrolled program, stale or not', () => {
-    renderKit(<MemberHomeKit {...base} programTitle={undefined} coursePercent={0} courseProgressStale />);
-    expect(courseTileTone()).toBeNull();
-  });
-
-  it('still reads as done at 100%, and staleness does not override it', () => {
-    renderKit(<MemberHomeKit {...base} coursePercent={100} courseProgressStale />);
-    expect(courseTileTone()).toBe('ok');
-  });
-});
-
-describe('MemberHomeKit up next + recommended tool', () => {
+describe('MemberHomeKit one-screen "This week" home', () => {
   const upNext = [
     {
       id: 'upload_resume',
@@ -189,48 +163,205 @@ describe('MemberHomeKit up next + recommended tool', () => {
     href: '/dashboard/ai-tools/interview-prep',
     cta: 'Open interview prep',
   };
+  const offers = [{ id: 'o1', role: 'IT Support Specialist', company: 'Acme Health' }];
+  const first90 = {
+    stage: 'day_30' as const,
+    daysSincePlacement: 20,
+    employerName: 'Acme Health',
+    currentStageResponse: null,
+    completedStages: ['week_1' as const],
+  };
 
-  it('lists each next step as one link to its page, in order', () => {
-    renderKit(<MemberHomeKit {...base} upNext={upNext} />);
-    const list = screen.getByRole('list', { name: 'Up next' });
-    const links = Array.from(list.querySelectorAll('a'));
-    expect(links.map((a) => a.getAttribute('href'))).toEqual([
-      '/dashboard/ai-tools/resume-studio?view=rewrite',
-      '/dashboard/readiness',
-    ]);
-    expect(links[0]?.textContent).toContain('Add your resume');
-    expect(links[0]?.textContent).toContain('Try resume rewriter');
-  });
+  function weekList() {
+    return screen.getByRole('list', { name: 'Steps for this week' });
+  }
 
-  it('names the recommended tool and keeps the way to every tool', () => {
-    renderKit(<MemberHomeKit {...base} upNext={upNext} recommendedTool={recommendedTool} />);
-    const card = screen.getByTestId('recommended-tool');
-    expect(card.getAttribute('data-tool')).toBe('interview-prep');
-    expect(screen.getByRole('link', { name: /Open interview prep/ }).getAttribute('href')).toBe(
-      '/dashboard/ai-tools/interview-prep',
-    );
-    expect(screen.getByRole('link', { name: 'Explore all AI Career Tools' }).getAttribute('href')).toBe('/dashboard/ai-tools');
-  });
-
-  it('omits empty next-step and recommendation blocks while retaining the tools introduction', () => {
-    renderKit(<MemberHomeKit {...base} />);
-    expect(screen.queryByRole('list', { name: 'Up next' })).toBeNull();
-    expect(screen.queryByTestId('recommended-tool')).toBeNull();
-    expect(screen.getByRole('link', { name: 'Explore AI Career Tools' })).toHaveAttribute('href', '/dashboard/ai-tools');
-  });
-});
-
-/**
- * WAP-188 Phase A: what only the `?ui=legacy` home showed now renders on the
- * kit home, each piece only for the members it applies to, and the goals
- * links stay on kit pages.
- */
-describe('MemberHomeKit application pipeline company line', () => {
-  it('hides QA / demo / sandbox employers and keeps real ones', () => {
+  it('puts today first, then the rows that apply, in order', () => {
     renderKit(
       <MemberHomeKit
         {...base}
-        pipeline={[
+        doThisNext={{ ...base.doThisNext, id: 'resume-module', title: 'Shared Responsibility Model', href: '/dashboard/program', cta: 'Resume module' }}
+        jobOffers={offers}
+        first90={first90}
+        upNext={upNext}
+        recommendedTool={recommendedTool}
+      />,
+    );
+    expect(screen.getByRole('heading', { level: 2, name: 'This week' })).toBeTruthy();
+    const rows = Array.from(weekList().children) as HTMLElement[];
+    const titles = rows.map((row) => row.querySelector('.wa-kit-task-row__title')?.textContent);
+    expect(titles).toEqual([
+      'Shared Responsibility Model',
+      'Did you accept the role at Acme Health?',
+      'Your new job at Acme Health',
+      'Take your WIOA Preassessment',
+      'Add your resume',
+      'Build your job readiness plan',
+      'Try this next: Get ready for your interview',
+    ]);
+    expect(screen.getByText('7 steps')).toBeTruthy();
+    // Exactly one row carries the crimson "current" ring: the first.
+    const states = rows.map((row) => (row.matches('[data-state]') ? row : row.querySelector('[data-state]'))?.getAttribute('data-state'));
+    expect(states).toEqual(['current', 'todo', 'todo', 'todo', 'todo', 'todo', 'todo']);
+  });
+
+  it('lists each next step as one link to its page, with its CTA as the row action', () => {
+    renderKit(<MemberHomeKit {...base} upNext={upNext} />);
+    const links = Array.from(weekList().querySelectorAll('a'));
+    // Today's CTA first, then the preassessment is NOT repeated (today already is it).
+    expect(links.map((a) => a.getAttribute('href'))).toEqual([
+      '/dashboard/assessment',
+      '/dashboard/ai-tools/resume-studio?view=rewrite',
+      '/dashboard/readiness',
+    ]);
+    expect(links[1]?.textContent).toContain('Add your resume');
+    expect(links[1]?.textContent).toContain('Try resume rewriter');
+  });
+
+  it('names the recommended tool as the last row and keeps the way to every tool', () => {
+    renderKit(<MemberHomeKit {...base} upNext={upNext} recommendedTool={recommendedTool} />);
+    const row = screen.getByTestId('recommended-tool');
+    expect(row.getAttribute('data-tool')).toBe('interview-prep');
+    expect(row.getAttribute('href')).toBe('/dashboard/ai-tools/interview-prep');
+    expect(row.textContent).toContain('Open interview prep');
+    expect(weekList().lastElementChild?.contains(row)).toBe(true);
+    // The quiet link row still reaches every tool.
+    expect(within(screen.getByRole('navigation', { name: 'Shortcuts' })).getByRole('link', { name: 'AI Career Tools' })).toHaveAttribute(
+      'href',
+      '/dashboard/ai-tools',
+    );
+  });
+
+  it('shows the WIOA preassessment as a row only while it is pending and not already today', () => {
+    // Pending, and today is something else: its own row.
+    const { unmount } = renderKit(
+      <MemberHomeKit {...base} doThisNext={{ ...base.doThisNext, id: 'resume-module', title: 'Resume module', href: '/dashboard/program' }} />,
+    );
+    const row = screen.getByTestId('member-preassessment-row');
+    expect(row.getAttribute('href')).toBe('/dashboard/assessment');
+    expect(row.textContent).toContain('35 questions for your counselor');
+    unmount();
+
+    // Already on file: no row.
+    const done = renderKit(
+      <MemberHomeKit {...base} preassessmentCompleted doThisNext={{ ...base.doThisNext, id: 'resume-module', title: 'Resume module', href: '/dashboard/program' }} />,
+    );
+    expect(screen.queryByTestId('member-preassessment-row')).toBeNull();
+    done.unmount();
+
+    // Pending but today already is the preassessment: one row, not two.
+    renderKit(<MemberHomeKit {...base} />);
+    expect(screen.queryByTestId('member-preassessment-row')).toBeNull();
+    expect(screen.getAllByRole('link', { name: /preassessment/i })).toHaveLength(1);
+  });
+
+  it('says so, plainly, when there are no steps', () => {
+    renderKit(<MemberHomeKit {...base} doThisNext={null} preassessmentCompleted />);
+    expect(screen.queryByRole('list', { name: 'Steps for this week' })).toBeNull();
+    expect(screen.getByText('No steps this week.')).toBeTruthy();
+  });
+
+  it('no longer renders the totals tiles, pipeline, points ledger, streak or Start-here tiles', () => {
+    const { container } = renderKit(
+      <MemberHomeKit
+        {...base}
+        activeJobs={4}
+        certs={2}
+        points={1240}
+        currentStreak={12}
+        longestStreak={12}
+        pointsThisWeek={85}
+        pointsLedger={[{ label: 'Module complete', amount: 40 }]}
+        pipeline={[{ role: 'Help Desk Analyst', company: 'Acme', stage: 'Applied', tone: 'muted' }]}
+        courseSpark={{ series: [1, 2, 3], delta: '4%' }}
+      />,
+    );
+    expect(container.querySelector('[data-testid="stat-spark-tile"]')).toBeNull();
+    expect(screen.queryByText('Application pipeline')).toBeNull();
+    expect(screen.queryByText('Help Desk Analyst')).toBeNull();
+    expect(screen.queryByText('Recent points')).toBeNull();
+    expect(screen.queryByText(/day streak/)).toBeNull();
+    expect(screen.queryByText('1,240')).toBeNull();
+    expect(screen.queryByTestId('member-start-here')).toBeNull();
+    expect(screen.queryByText('What the AI Career Tools do')).toBeNull();
+  });
+
+  it('keeps one quiet row of links to Progress, Points, Jobs, AI Career Tools and the Learning hub', () => {
+    // Points joined the row (Addendum A1): the streak and the ledger left Home and
+    // the signed-in points page is the only route that still shows them. Jobs
+    // joined it too (Addendum A5): the application pipeline left Home for the
+    // Job board, which already lists the member's applications.
+    renderKit(<MemberHomeKit {...base} progressHref="/dev/member/progress" pointsHref="/dashboard/points" jobsHref="/dev/member/jobs" toolkitHref="/dev/member/toolkit" coursesHref="/dev/member/program" />);
+    const nav = within(screen.getByRole('navigation', { name: 'Shortcuts' }));
+    expect(nav.getAllByRole('link').map((a) => [a.textContent?.trim(), a.getAttribute('href')])).toEqual([
+      ['Progress', '/dev/member/progress'],
+      ['Points', '/dashboard/points'],
+      ['Jobs', '/dev/member/jobs'],
+      ['AI Career Tools', '/dev/member/toolkit'],
+      ['Learning hub', '/dev/member/program'],
+    ]);
+  });
+
+  it('defaults the Progress link to the real My progress route, Points to the points page and Jobs to the Job board', () => {
+    renderKit(<MemberHomeKit {...base} />);
+    expect(screen.getByRole('link', { name: 'Progress' })).toHaveAttribute('href', '/dashboard/readiness');
+    expect(screen.getByRole('link', { name: 'Points' })).toHaveAttribute('href', '/dashboard/points');
+    expect(screen.getByRole('link', { name: 'Jobs' })).toHaveAttribute('href', '/dashboard/jobs');
+  });
+
+  it('shows study minutes against the weekly goal when there is one, and no points', () => {
+    const week = [
+      { day: 'Mon', minutes: 120 },
+      { day: 'Tue', minutes: 128 },
+    ];
+    const { unmount } = renderKit(<MemberHomeKit {...base} weeklyActivity={week} weeklyStudyGoalMinutes={240} pointsThisWeek={85} />);
+    expect(screen.getByText('4h 8m of your 4h goal')).toBeTruthy();
+    expect(screen.getByRole('progressbar', { name: 'Study goal progress' })).toHaveAttribute('aria-valuenow', '100');
+    // No points number anywhere on Home; the only "Points" text is the shortcut link to the points page.
+    expect(within(screen.getByRole('region', { name: 'Study this week' })).queryByText(/points/i)).toBeNull();
+    expect(screen.queryByText(/\d+ points/i)).toBeNull();
+    unmount();
+
+    // No goal on file: the total alone, nothing invented.
+    renderKit(<MemberHomeKit {...base} weeklyActivity={week} />);
+    expect(screen.getByText('4h 8m')).toBeTruthy();
+    expect(screen.queryByText(/of your .* goal/i)).toBeNull();
+    expect(screen.queryByRole('progressbar', { name: 'Study goal progress' })).toBeNull();
+  });
+
+  it('puts the long part of today\'s subline under "What happens next"', () => {
+    const body = 'Confirm your contact details. Your counselor uses them to reach you and to review your file.';
+    renderKit(<MemberHomeKit {...base} doThisNext={{ ...base.doThisNext, body }} />);
+    const row = screen.getByTestId('member-today-row');
+    expect(row.querySelector('.wa-kit-task-row__sub')?.textContent).toBe('Confirm your contact details.');
+    const more = row.querySelector('details') as HTMLDetailsElement;
+    expect(more.open).toBe(false);
+    expect(more.textContent).toContain('Your counselor uses them to reach you and to review your file.');
+    expect(within(more).getByText('What happens next')).toBeTruthy();
+  });
+});
+
+describe('splitLead', () => {
+  it('returns short text whole', () => {
+    expect(splitLead('Short preassessment.')).toEqual({ lead: 'Short preassessment.', rest: '' });
+  });
+  it('splits a long body on its first sentence and drops nothing', () => {
+    const body = 'First sentence is short. The second sentence carries the long explanation that would crowd a single row line.';
+    const { lead, rest } = splitLead(body, 60);
+    expect(lead).toBe('First sentence is short.');
+    expect(`${lead} ${rest}`).toBe(body);
+  });
+  it('keeps a long single sentence whole instead of cutting it', () => {
+    const body = 'One long sentence with no break inside the limit that still has to be shown in full to the member.';
+    expect(splitLead(body, 40)).toEqual({ lead: body, rest: '' });
+  });
+});
+
+describe('MemberPipelineTable company line (moved off the home)', () => {
+  it('hides QA / demo / sandbox employers and keeps real ones', () => {
+    renderKit(
+      <MemberPipelineTable
+        rows={[
           { role: 'Browser Tester', company: 'QA Audit Co', stage: 'Applied', tone: 'muted', appliedLabel: 'Apr 21' },
           { role: 'IT Support Technician', company: 'Dell Technologies', stage: 'Applied', tone: 'muted', appliedLabel: 'Apr 15' },
         ]}
@@ -252,26 +383,65 @@ describe('MemberHomeKit pieces moved over from the legacy home', () => {
     completedStages: ['week_1' as const],
   };
 
-  it('asks about each OFFER application, below the hero', () => {
+  it('asks about each OFFER application as a row, below today', () => {
     renderKit(<MemberHomeKit {...base} jobOffers={[{ id: 'o1', role: 'IT Support Specialist', company: 'Acme Health' }]} />);
-    const question = screen.getByRole('heading', { name: 'Did you accept the role at Acme Health?' });
+    const question = screen.getByText('Did you accept the role at Acme Health?');
     expect(screen.getByRole('button', { name: /notify my team/ })).toBeTruthy();
     const hero = screen.getByRole('link', { name: /Start preassessment/ });
     expect(hero.compareDocumentPosition(question) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    // Flush in the kit column: no legacy 1.25rem gutter or trailing margin on the strip or its card.
-    const strip = question.closest('section') as HTMLElement;
-    expect(strip.style.padding).toBe('');
-    expect(strip.style.marginBottom).toBe('');
-    expect((strip.firstElementChild as HTMLElement).style.marginBottom).toBe('');
+    // A row in the This week list, not a card with its own gutter.
+    const row = question.closest('li') as HTMLElement;
+    expect(row.getAttribute('data-testid')).toBe('member-offer-row');
+    expect(row.className).toContain('wa-kit-task-row');
+    expect(row.parentElement?.tagName).toBe('OL');
+    expect(row.style.padding).toBe('');
+    expect(row.style.marginBottom).toBe('');
+    // The long explanation is under "What happens next", not on the main line.
+    expect(within(row).getByText('What happens next')).toBeTruthy();
+    expect((row.querySelector('details') as HTMLDetailsElement).open).toBe(false);
   });
 
-  it('shows the First 90 Days check-in for a placed member', () => {
+  it('confirming an offer logs it and leaves a done row that says what happened', async () => {
+    actions.confirmPlacement.mockResolvedValue({ placementOutcome: 'created' });
+    renderKit(<MemberHomeKit {...base} jobOffers={[{ id: 'o1', role: 'IT Support Specialist', company: 'Acme Health' }]} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, notify my team' }));
+    const status = await screen.findByRole('status');
+    expect(actions.confirmPlacement).toHaveBeenCalledWith('o1');
+    expect(status).toHaveTextContent('Placement logged: Acme Health');
+    expect(status).toHaveTextContent(/counselor has been alerted/i);
+    expect(status.closest('li')).toHaveAttribute('data-state', 'done');
+    expect(screen.queryByRole('heading', { name: /Did you accept the role/ })).toBeNull();
+  });
+
+  it('"Not yet" hides the question for the session', () => {
+    renderKit(<MemberHomeKit {...base} jobOffers={[{ id: 'o1', role: 'IT Support Specialist', company: 'Acme Health' }]} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Not yet, hide this question' }));
+    expect(screen.queryByRole('heading', { name: /Did you accept the role/ })).toBeNull();
+    expect(actions.confirmPlacement).not.toHaveBeenCalled();
+  });
+
+  it('shows the First 90 Days check-in as a row for a placed member', () => {
     renderKit(<MemberHomeKit {...base} first90={first90} />);
     expect(screen.getByText('Your new job at Acme Health')).toBeTruthy();
     expect(screen.getByText("How's the job going?")).toBeTruthy();
-    // Flush in the kit column: no legacy 1rem / 1.25rem section padding.
-    const card = screen.getByRole('region', { name: 'First 90 Days' });
-    expect(card.style.padding).toBe('');
+    const row = screen.getByTestId('member-first90-row');
+    expect(row.className).toContain('wa-kit-task-row');
+    expect(row.style.padding).toBe('');
+    // Scripts and the advisor note sit under "What happens next".
+    const more = row.querySelector('details') as HTMLDetailsElement;
+    expect(more.open).toBe(false);
+    expect(more.textContent).toContain('Talk to your supervisor');
+    expect(more.textContent).toContain('no-cost to members');
+  });
+
+  it('answering the check-in turns the row into a done row with the thank-you line', async () => {
+    actions.submitFirst90DaysCheckIn.mockResolvedValue(undefined);
+    renderKit(<MemberHomeKit {...base} first90={first90} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Going well' }));
+    await waitFor(() => expect(screen.getByTestId('member-first90-row')).toHaveAttribute('data-state', 'done'));
+    expect(actions.submitFirst90DaysCheckIn).toHaveBeenCalledWith('day_30', 'going_well');
+    expect(screen.getByTestId('member-first90-row')).toHaveTextContent(/Great to hear/);
+    expect(screen.queryByText("How's the job going?")).toBeNull();
   });
 
   it('shows the youth notice for a member under 18', () => {
@@ -294,7 +464,7 @@ describe('MemberHomeKit pieces moved over from the legacy home', () => {
     expect(container.querySelector('a[href*="ui=legacy"]')).toBeNull();
   });
 
-  it('offers a quiet "Set a goal" link in the Next badge tile when there are no goals', () => {
+  it('offers a quiet "Set a goal" link in the Next badge card when there are no goals', () => {
     const { container } = renderKit(<MemberHomeKit {...base} goals={[]} />);
     const link = screen.getByRole('link', { name: /Set a goal/ });
     expect(link.getAttribute('href')).toBe('/dashboard/career-brief#goals');

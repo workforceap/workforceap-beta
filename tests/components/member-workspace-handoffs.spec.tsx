@@ -65,6 +65,7 @@ describe('training context handoff', () => {
     const nav = within(screen.getByRole('navigation', { name: 'Training and progress' }));
     expect(nav.getByRole('link', { name: 'My program' })).toHaveAttribute('href', '/dashboard/program?program=secondary-program');
     expect(nav.getByRole('link', { name: 'Learning hub & resources' })).toHaveAttribute('aria-current', 'page');
-    expect(nav.getByRole('link', { name: 'Career readiness' })).toHaveAttribute('href', '/dashboard/readiness');
+    // The tab names its destination: /dashboard/readiness is titled "My progress" (rail label and page h1).
+    expect(nav.getByRole('link', { name: 'My progress' })).toHaveAttribute('href', '/dashboard/readiness');
   });
 });

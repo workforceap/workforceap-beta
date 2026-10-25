@@ -1,7 +1,7 @@
 'use client';
 
 import type { LucideIcon } from 'lucide-react';
-import { Briefcase, Users, CalendarClock, Award, HeartHandshake, SquarePen } from 'lucide-react';
+import { Briefcase, Users, CalendarClock, Award, SquarePen } from 'lucide-react';
 import NextLink from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
 import { Button } from '@astryxdesign/core/Button';
@@ -13,7 +13,6 @@ import {
   StatSparkTile,
   StageTrack,
   StatusTag,
-  FeatureTile,
   Avatar,
   type Column,
   type KitColor,
@@ -22,12 +21,15 @@ import {
 } from '@/components/portal/kit';
 import {
   StaffCard,
+  StaffDisclosure,
   StaffEmpty,
   StaffKpiGroup,
+  StaffLead,
   StaffSplit,
   StaffTaskList,
   StaffTaskRow,
   staffLinkClass,
+  staffWelcomeTitle,
 } from '../StaffKit';
 
 /**
@@ -37,16 +39,18 @@ import {
  * employer persona: open roles, pipeline volume, and the candidate table are
  * the hero — an employer's first question on landing is "who do I need to
  * look at today," not a KPI wall. Layout, top to bottom:
- *   1. Page opener (PageOpener "Hiring" + employer name eyebrow) with a
+ *   1. Page opener: "Welcome back, {first name}." (or "Hiring" when the page
+ *      has no first name) + one sentence from the counts, with a
  *      "Post a role" CTA.
- *   2. A 4-up KPI row: open roles / in pipeline / interviews / hires, each
- *      with an optional sparkline + delta chip.
+ *   2. A 4-up KPI strip: open roles / in pipeline / interviews / hires, flat
+ *      hairline tiles with an optional 1.5px accent sparkline + delta chip.
  *   3. The candidate pipeline table (hero) — avatar/name/role, AI fit score
  *      (when available), a 4-stage tracker (Applied → Screen → Interview →
  *      Offer), and a status pill — alongside a side column with the open
- *      roles queue and a "Community impact" banner (WorkforceAP's 10%
- *      first-year-salary giveback). The banner states the policy; it names a
- *      dollar figure only when the caller passes a real one (WAP-210).
+ *      roles queue and a "Community impact" card (WorkforceAP's 10%
+ *      first-year-salary giveback). The card states the policy in one line and
+ *      keeps where it goes in a disclosure; it names a dollar figure only when
+ *      the caller passes a real one (WAP-210).
  *
  * All data is optional/degrading: every prop has a safe default so the page
  * renders sensibly with zero live data (new employer, empty pipeline) and
@@ -86,6 +90,10 @@ export interface EmployerOpenRoleItem {
 }
 
 export interface EmployerHomeKitProps {
+  /** Person-facing greeting: "Welcome back, {firstName}." Omit it and the heading stays "Hiring". */
+  firstName?: string;
+  /** Already-translated "Welcome back, {firstName}." for pages that localize; English fallback when omitted. */
+  welcomeTitle?: string;
   companyName?: string;
   /** Count of currently-live job postings. */
   openRoles?: number;
@@ -118,6 +126,11 @@ export interface EmployerHomeKitProps {
    * employer's own (WAP-210).
    */
   givebackFigure?: string;
+  /**
+   * Accepted for callers that still pass it. The Community impact card no
+   * longer links anywhere (it was a whole-tile link to the post-a-role form,
+   * which the header action already is).
+   */
   givebackHref?: string;
   postRoleHref?: string;
   jobsHref?: string;
@@ -131,6 +144,10 @@ export interface EmployerHomeKitProps {
 
 function clampPct(n: number): number {
   return Math.max(0, Math.min(100, Math.round(n)));
+}
+
+function plural(count: number, noun: string): string {
+  return `${count} ${noun}${count === 1 ? '' : 's'}`;
 }
 
 function titleCase(s: string): string {
@@ -264,6 +281,8 @@ function candidateCard(row: EmployerCandidateRow) {
 /* ---------------------------------------------------------------------- */
 
 export function EmployerHomeKit({
+  firstName,
+  welcomeTitle,
   companyName = 'Your company',
   openRoles = 0,
   openRolesSpark,
@@ -277,7 +296,6 @@ export function EmployerHomeKit({
   openRolesList = [],
   candidatesTotal,
   givebackFigure,
-  givebackHref = '/employer/jobs/new',
   postRoleHref = '/employer/jobs/new',
   jobsHref = '/employer/jobs',
   pipelineHref = '/employer/applications',
@@ -290,13 +308,19 @@ export function EmployerHomeKit({
     { key: 'hires', icon: Award, label: 'Hires', value: hires, spark: hiresSpark },
   ];
 
+  // One sentence from the counts the page already holds; an empty account gets the existing empty-state line.
+  const headerSentence =
+    openRoles === 0 && inPipeline === 0
+      ? `${companyName}. Post a role to start building your pipeline.`
+      : `${companyName}: ${plural(openRoles, 'open role')} and ${plural(inPipeline, 'candidate')} in your pipeline.`;
+
   return (
     <DesignSurface surface="dense" className="wa-p-6">
       <div className="wa-space-y-6">
-        {/* 1. Header: title + one contextual sentence + right-aligned primary action. */}
+        {/* 1. Header: greeting (or title) + one contextual sentence + right-aligned primary action. */}
         <PageOpener
-          title="Hiring"
-          meta={`${companyName}. Open roles, pipeline, and where every candidate stands right now.`}
+          title={firstName ? (welcomeTitle ?? staffWelcomeTitle(firstName)) : 'Hiring'}
+          meta={headerSentence}
           action={
             /* `tour-post-job`: step 2 of the employer guided tour (lib/tours/registry.ts). */
             <span data-tour="tour-post-job" style={{ display: 'inline-flex' }}>
@@ -312,7 +336,7 @@ export function EmployerHomeKit({
           }
         />
 
-        {/* 2. KPI row — icon chip + optional delta chip + sparkline. */}
+        {/* 2. KPI strip: muted inline icon, optional delta chip and 1.5px accent sparkline. */}
         <StaffKpiGroup cols={4}>
           {kpiTiles.map((t) => (
             <StatSparkTile key={t.key} icon={<t.icon size={16} />} label={t.label} value={t.value} spark={t.spark} />
@@ -371,18 +395,16 @@ export function EmployerHomeKit({
                 )}
               </StaffCard>
 
-              <FeatureTile
-                icon={<HeartHandshake size={22} aria-hidden />}
-                title="Community impact"
-                body={
-                  hires > 0 && givebackFigure
-                    ? `WorkforceAP reinvests 10% of every first-year salary from your hires into scholarships and training for the next cohort, an estimated ${givebackFigure} from your hires so far.`
-                    : 'WorkforceAP reinvests 10% of every first-year salary from your hires into scholarships and training for the next cohort.'
-                }
-                badge="10% GIVEBACK"
-                tone="gold"
-                href={givebackHref}
-              />
+              <StaffCard id="employer-community-impact" title="Community impact">
+                <StaffLead>WorkforceAP reinvests 10% of every first-year salary from your hires.</StaffLead>
+                <StaffDisclosure label="Where it goes">
+                  <p>
+                    {hires > 0 && givebackFigure
+                      ? `It funds scholarships and training for the next cohort, an estimated ${givebackFigure} from your hires so far.`
+                      : 'It funds scholarships and training for the next cohort.'}
+                  </p>
+                </StaffDisclosure>
+              </StaffCard>
             </>
           }
         />

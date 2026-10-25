@@ -26,9 +26,11 @@ html .workspace-shell-root[data-workspace-role] {
  * portal's warm dark canvas stopped at the shell edge. WorkspaceShell marks
  * the document with `data-portal-role` for as long as a shell is mounted
  * (inline at parse time and again on mount), so only portal documents take
- * the portal canvas; marketing bodies are untouched. Solid --wa-bg, not the
- * wave: the radial washes fade into --wa-bg, so the canvas continues the
- * shell without a second gradient origin. The compound selectors out-rank
+ * the portal canvas; marketing bodies are untouched. Solid --wa-bg: the
+ * canvas is flat now (--wa-bg-wave is --wa-bg), so shell, html and body are
+ * one colour with no seam. A member document (data-portal-role='member')
+ * resolves --wa-bg to the warm paper and a staff document to the cool canvas
+ * (css/portal-tokens.css). The compound selectors out-rank
  * `html.dark body` (0,1,2) regardless of stylesheet order. */
 html[data-portal-role],
 html[data-portal-role].dark,
@@ -2453,6 +2455,42 @@ a.wa-kit-tab {
   text-decoration: underline;
 }
 
+/*
+ * Dark mode: the accent is for fills, not text. A lighter crimson reads as
+ * pink, so text links in cards ("View all", "See all", "Open missions", the
+ * staff card-header links) read --wa-text in dark and carry the accent as a
+ * 1px underline instead (2px on hover). Light mode is unchanged. The rule is
+ * deliberately narrow: the kit's own text-link classes, plus anchors that only
+ * paint their label with an accent token inline. A link that carries its own
+ * non-accent colour inline (the gold Open missions link) keeps it. Buttons
+ * (.wa-kit-cta, *button*), tags and anything with its own background are
+ * excluded, so crimson fills keep their white label. The inline-style variant
+ * needs !important to out-rank the style attribute. React serialises inline
+ * styles without a space after the colon (`color:var(--wa-accent-text)`) and
+ * the CSSOM writes one back (`color: var(...)`), so both spellings are listed.
+ */
+:is(html.dark, html[data-theme='dark']) :is(
+    a.wa-kit-card-link:not([style*='color']),
+    a[class*='cardLink']:not([style*='color']),
+    .wa-kit-card a:is([style^='color:var(--wa-accent'], [style^='color: var(--wa-accent'], [style*=';color:var(--wa-accent'], [style*='; color: var(--wa-accent'])
+  ):not(.wa-kit-cta):not([class*='button']):not(.wa-kit-tag):not([style*='background']) {
+  color: var(--wa-text);
+  text-decoration-line: underline;
+  text-decoration-color: var(--wa-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+:is(html.dark, html[data-theme='dark']) .wa-kit-card a:is([style^='color:var(--wa-accent'], [style^='color: var(--wa-accent'], [style*=';color:var(--wa-accent'], [style*='; color: var(--wa-accent']):not(.wa-kit-cta):not([class*='button']):not(.wa-kit-tag):not([style*='background']) {
+  color: var(--wa-text) !important;
+}
+:is(html.dark, html[data-theme='dark']) :is(
+    a.wa-kit-card-link:not([style*='color']),
+    a[class*='cardLink']:not([style*='color']),
+    .wa-kit-card a:is([style^='color:var(--wa-accent'], [style^='color: var(--wa-accent'], [style*=';color:var(--wa-accent'], [style*='; color: var(--wa-accent'])
+  ):not(.wa-kit-cta):not([class*='button']):not(.wa-kit-tag):not([style*='background']):hover {
+  text-decoration-thickness: 2px;
+}
+
 /* Chips: 24px pills. Date chips are the due-date variant used in task rows. */
 .wa-kit-chip,
 .wa-kit-date-chip {
@@ -2618,6 +2656,67 @@ a.wa-kit-tab {
   text-decoration: line-through;
   text-decoration-color: var(--wa-control-border);
 }
+
+/*
+ * Motion 1 of 2: checking a task. Only when the member has not asked for
+ * reduced motion; there the native line-through above shows instantly.
+ *  - The strike draws in left to right over --wa-dur-base. It is a background
+ *    strip on the title, so the title is inline here: the strip then follows
+ *    each wrapped line to the end of its text (a bar on a block title would
+ *    run past a short last line, and one absolutely positioned bar could only
+ *    cross one line). The body's line-height is pinned to the title's so the
+ *    first line box is as tall as the block title was, and the body's other
+ *    children go back to the page line-height (--line-height-normal, 1.6, the
+ *    value they inherited), so the row is exactly as tall as it is with motion
+ *    off. It is a transition: it plays when a row flips to done and not when an
+ *    already-done row is rendered again.
+ *  - The check pops once, scale 0.8 to 1, from a keyframe animation. The
+ *    animation name only changes when the row becomes done, so a re-render of
+ *    a done row does not replay it. Nothing loops.
+ * The native line-through is switched off here so the two strikes never stack.
+ */
+@keyframes wa-kit-check-pop {
+  from {
+    transform: scale(0.8);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wa-kit-task-row__body {
+    line-height: 1.35;
+  }
+  /* Zero specificity: it only fills the gap the pinned body line-height would
+     otherwise leave; any class that sets its own line-height still wins. */
+  :where(.wa-kit-task-row__body > :not(.wa-kit-task-row__title)) {
+    line-height: var(--line-height-normal, 1.6);
+  }
+  .wa-kit-task-row .wa-kit-task-row__title {
+    display: inline;
+    background-image: linear-gradient(
+      to bottom,
+      transparent calc(50% - 0.75px),
+      var(--wa-control-border) calc(50% - 0.75px),
+      var(--wa-control-border) calc(50% + 0.75px),
+      transparent calc(50% + 0.75px)
+    );
+    background-repeat: no-repeat;
+    background-position: 0 0;
+    background-size: 0% 100%;
+    transition: background-size var(--wa-dur-base) var(--wa-ease), color var(--wa-dur-base) var(--wa-ease);
+  }
+  .wa-kit-task-row[data-state='done'] .wa-kit-task-row__title,
+  .wa-kit-task-row--done .wa-kit-task-row__title {
+    text-decoration: none;
+    background-size: 100% 100%;
+  }
+  .wa-kit-task-row[data-state='done'] .wa-kit-task-row__check,
+  .wa-kit-task-row--done .wa-kit-task-row__check {
+    animation: wa-kit-check-pop var(--wa-dur-base) var(--wa-ease);
+  }
+}
+
 @media (max-width: 520px) {
   .wa-kit-task-row {
     grid-template-columns: 24px minmax(0, 1fr);
@@ -2693,6 +2792,48 @@ a.wa-kit-tab {
 }
 .wa-kit-segment--done .wa-kit-segment__state {
   color: var(--wa-text);
+}
+
+/*
+ * Motion 2 of 2: the certification path fills in once on mount. Each bar's
+ * fill scales in from the left over --wa-dur-slow, staggered by position
+ * (--wa-stagger, 70ms, per segment, capped at the eighth). A CSS animation on the fill, so it
+ * plays when the list is mounted and does not restart when the page re-renders
+ * or a width changes. Only when reduced motion has not been requested. The
+ * backwards fill holds each bar empty through its delay.
+ */
+@keyframes wa-kit-segment-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wa-kit-segment__bar > i {
+    transform-origin: left center;
+    animation: wa-kit-segment-fill var(--wa-dur-slow) var(--wa-ease) backwards;
+    animation-delay: calc(var(--wa-segment-index, 0) * var(--wa-stagger, 70ms));
+  }
+  .wa-kit-segment:nth-child(2) {
+    --wa-segment-index: 1;
+  }
+  .wa-kit-segment:nth-child(3) {
+    --wa-segment-index: 2;
+  }
+  .wa-kit-segment:nth-child(4) {
+    --wa-segment-index: 3;
+  }
+  .wa-kit-segment:nth-child(5) {
+    --wa-segment-index: 4;
+  }
+  .wa-kit-segment:nth-child(6) {
+    --wa-segment-index: 5;
+  }
+  .wa-kit-segment:nth-child(7) {
+    --wa-segment-index: 6;
+  }
+  .wa-kit-segment:nth-child(n + 8) {
+    --wa-segment-index: 7;
+  }
 }
 @media (max-width: 899px) {
   .wa-kit-segments {

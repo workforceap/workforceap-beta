@@ -154,3 +154,103 @@ describe('MemberApprovalStatusCard reviewer line', () => {
     expect(container.textContent).not.toMatch(RETIRED_COPY);
   });
 });
+
+/**
+ * Round 3: the header strip shows the real state and hides the empty steps.
+ * "Application / Submitted Sep 10, under review" plus only the next step by
+ * name, not two "Not started" cells; a finished pathway is one cell; a closed
+ * one stops at the step that closed it.
+ */
+describe('MemberApprovalStatusCard header strip', () => {
+  const steps = (container: HTMLElement) =>
+    Array.from(container.querySelectorAll<HTMLElement>('[data-approval-strip] [data-strip-step]'));
+  const text = (el: HTMLElement) => el.textContent?.replace(/\s+/g, ' ').trim();
+
+  it('live application: the dated step, then only the next step by name', () => {
+    const live = buildMemberApprovalStatus({
+      applications: [{ status: 'PENDING', submittedAt: new Date('2026-09-10T15:00:00Z') }],
+      wioaReviewStatus: null,
+      courseraEnrollmentApproved: false,
+    });
+    const { container } = renderCard(<MemberApprovalStatusCard status={live} storageUserId="m1" />);
+    const cells = steps(container);
+    expect(cells.map((c) => c.getAttribute('data-strip-step'))).toEqual(['application', 'next']);
+    expect(text(cells[0]!)).toContain('Application');
+    expect(text(cells[0]!)).toContain('Submitted Sep 10, under review');
+    expect(text(cells[1]!)).toBe('2Next: intake review');
+    expect(cells[0]!.getAttribute('aria-current')).toBe('step');
+    expect(container.querySelector('[data-approval-strip]')!.textContent).not.toMatch(/Not started/);
+    expect(container.querySelector('[data-approval-chip]')?.textContent).toBe('Pending review');
+  });
+
+  it('application approved, intake pending: done step, dated current step, then training as next', () => {
+    const intake = buildMemberApprovalStatus({
+      applications: [{ status: 'APPROVED', submittedAt: new Date('2026-08-14T15:00:00Z') }],
+      wioaReviewStatus: 'pending',
+      wioaReviewedAt: new Date('2026-08-28T15:00:00Z'),
+      courseraEnrollmentApproved: false,
+    });
+    const { container } = renderCard(<MemberApprovalStatusCard status={intake} storageUserId="m1" />);
+    const cells = steps(container);
+    expect(cells.map((c) => c.getAttribute('data-strip-step'))).toEqual(['application', 'intake', 'next']);
+    expect(text(cells[0]!)).toContain('Submitted Aug 14, approved');
+    expect(text(cells[1]!)).toContain('Review pending since Aug 28');
+    expect(text(cells[2]!)).toContain('Next: training approval');
+  });
+
+  it('complete: one cell reading "Cleared to train" with the saved approval date, and no state chip', () => {
+    const done = buildMemberApprovalStatus({
+      applications: [{ status: 'APPROVED', submittedAt: new Date('2026-08-14T15:00:00Z') }],
+      wioaReviewStatus: 'verified',
+      wioaReviewedAt: new Date('2026-08-28T15:00:00Z'),
+      courseraEnrollmentApproved: true,
+      courseraEnrollmentApprovedAt: new Date('2026-09-02T15:00:00Z'),
+    });
+    const { container } = renderCard(<MemberApprovalStatusCard status={done} storageUserId="m1" placement="demoted" />);
+    const cells = steps(container);
+    expect(cells).toHaveLength(1);
+    expect(text(cells[0]!)).toBe('Cleared to trainApproved Sep 2');
+    expect(container.querySelector('[data-approval-chip]')).toBeNull();
+  });
+
+  it('complete without a saved approval date says "Approved" and invents no date', () => {
+    const done = buildMemberApprovalStatus({
+      applications: [{ status: 'APPROVED', submittedAt: submitted }],
+      wioaReviewStatus: 'verified',
+      courseraEnrollmentApproved: true,
+    });
+    const { container } = renderCard(<MemberApprovalStatusCard status={done} storageUserId="m1" placement="demoted" />);
+    expect(text(steps(container)[0]!)).toBe('Cleared to trainApproved');
+  });
+
+  it('closed pathway: stops at the step that closed it, with the "Pathway closed" chip and no next step', () => {
+    const closed = buildMemberApprovalStatus({
+      applications: [{ status: 'DENIED', submittedAt: new Date('2026-08-14T15:00:00Z') }],
+      wioaReviewStatus: null,
+      courseraEnrollmentApproved: false,
+    });
+    const { container } = renderCard(<MemberApprovalStatusCard status={closed} storageUserId="m1" placement="demoted" />);
+    expect(steps(container).map((c) => c.getAttribute('data-strip-step'))).toEqual(['application']);
+    expect(text(steps(container)[0]!)).toContain('Closed');
+    expect(container.querySelector('[data-approval-chip]')?.textContent).toBe('Pathway closed');
+  });
+
+  it('needs your input: the crimson chip and the dated line say so', () => {
+    const needs = buildMemberApprovalStatus({
+      applications: [{ status: 'NEEDS_INFO', submittedAt: new Date('2026-09-10T15:00:00Z') }],
+      wioaReviewStatus: null,
+      courseraEnrollmentApproved: false,
+    });
+    const { container } = renderCard(<MemberApprovalStatusCard status={needs} storageUserId="m1" />);
+    expect(text(steps(container)[0]!)).toContain('Submitted Sep 10, needs your input');
+    expect(container.querySelector('[data-approval-chip]')?.textContent).toBe('Needs your input');
+  });
+
+  it.each(['es', 'fr', 'pt'])('%s: the strip lines resolve to translated copy (no raw keys)', (locale) => {
+    const { container } = renderCard(<MemberApprovalStatusCard status={pendingApplication} storageUserId="m1" />, locale);
+    const strip = container.querySelector('[data-approval-strip]')!.textContent ?? '';
+    expect(strip).not.toMatch(/strip\.|memberApproval\./);
+    expect(steps(container)).toHaveLength(2);
+    expect(strip).toMatch(/\d/); // the saved date
+  });
+});

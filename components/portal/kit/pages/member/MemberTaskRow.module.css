@@ -1,0 +1,130 @@
+/* Member home task rows: only what the shared .wa-kit-task-row recipe does not
+   cover. Tokens only; works in light and dark. */
+
+/* A row with controls under the text: the dot lines up with the first line. */
+.tall {
+  align-items: start;
+  padding-block: 14px;
+}
+.tall > :global(.wa-kit-task-row__check) {
+  margin-top: 1px;
+}
+.noTrailing {
+  grid-template-columns: 24px minmax(0, 1fr);
+}
+
+.title {
+  margin: 0;
+}
+.block {
+  display: block;
+}
+
+/* Right-aligned text action on a link row. */
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--wa-type-meta);
+  font-weight: 600;
+  color: var(--wa-accent-text);
+  white-space: nowrap;
+}
+
+/* Link rows keep two lines of subline at most; the destination has the rest. */
+.linkRow .clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Phones: the row is the tap target, so the action collapses to its arrow on
+   the title line (the label stays in the accessible name) instead of adding a
+   line of its own under every row. */
+@media (max-width: 520px) {
+  a.linkRow {
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+  }
+  a.linkRow > .action {
+    grid-column: auto;
+    justify-self: end;
+  }
+  .actionLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* Inline controls (Yes / Not yet, the three check-in answers). */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* "What happens next". Beside the buttons when there are some, on its own line once open. */
+.more {
+  margin-top: 4px;
+}
+.actions > .more {
+  margin-top: 0;
+}
+.actions > .more[open] {
+  flex: 1 1 100%;
+}
+.moreSummary {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding-right: 4px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--wa-radius-sm, 8px);
+  font-size: var(--wa-type-meta);
+  font-weight: 600;
+  color: var(--wa-muted-strong);
+}
+.moreSummary::-webkit-details-marker {
+  display: none;
+}
+.chevron {
+  flex: none;
+  transition: transform 150ms ease;
+}
+.more[open] .chevron {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+}
+.moreBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: var(--wa-type-meta);
+  line-height: 1.5;
+  color: var(--wa-muted);
+}
+.moreBody p {
+  margin: 0;
+}
+
+/* Phones: the answers go two to a line instead of three lines of pills. */
+@media (max-width: 520px) {
+  .actions > :global(.wa-kit-cta) > svg {
+    display: none;
+  }
+}

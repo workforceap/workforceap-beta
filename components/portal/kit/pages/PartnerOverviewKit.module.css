@@ -1,7 +1,5 @@
-.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; }
 .metric, .trendMetric { min-width: 0; }
-.metric :global(.wa-kit-card) { box-shadow: none; }
-.caption { color: var(--wa-muted); font-size: var(--wa-type-meta); margin: 0.5rem 0 0; }
+.caption { color: var(--wa-muted); font-size: var(--wa-type-meta); margin: 0; padding: 0 var(--wa-pad) calc(var(--wa-pad-sm) / 2); }
 .funnel { box-shadow: none; }
 .stages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--wa-pad); }
 .stage { min-width: 0; }
@@ -15,7 +13,6 @@
 .attentionCopy > span { color: var(--wa-muted); font-size: var(--wa-type-meta); }
 
 @media (max-width: 47.99rem) {
-  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stages { grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
 }
 

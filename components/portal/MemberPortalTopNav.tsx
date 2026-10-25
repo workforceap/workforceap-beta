@@ -4,13 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import { getBestActiveHref, type ActiveNavLink } from '@/lib/nav/activeRoute';
 import { MEMBER_PORTAL_NAV_ITEMS, navItemsForActiveRoute, type NavBadgeKey } from '@/lib/nav/portalNav';
 import { splitLocalePrefix } from '@/lib/i18n/config';
 import { localizeHref } from '@/lib/i18n/localizeHref';
-import { claimEarlyTap } from '@/lib/portal/earlyShellTap';
 
 /**
  * The rail's matching rule (href, aliases, `exact`) for each member route,
@@ -92,12 +91,11 @@ export default function MemberPortalTopNav({
     centerRailItem(list, item);
   }, [pathname]);
 
-  // The button is server-rendered and looks live well before hydration. Replay a
-  // tap that landed before this mounted (lib/portal/earlyShellTap.ts); it opens
-  // the list rather than toggling it, so a tap React also handled stays open.
-  useEffect(() => {
-    if (claimEarlyTap('more')) setMoreOpen(true);
-  }, []);
+  // No early-tap replay here. The strip is display:none on phones while the
+  // member bottom tab bar is mounted (css/portal-main-extracted.css) and above
+  // 768px (css/portal.css), so no tap can land on this button before
+  // hydration, and the shared `more` early-tap kind now belongs to the bar's
+  // More button, claimed by WorkspaceShell alone (lib/portal/earlyShellTap.ts).
 
   /**
    * Escape closes the open "More pages" list and puts focus back on its button
@@ -227,7 +225,6 @@ export default function MemberPortalTopNav({
               ref={moreBtnRef}
               type="button"
               className="member-portal-top-nav__link member-portal-top-nav__more"
-              data-early-tap="more"
               aria-expanded={moreOpen}
               aria-controls={moreId}
               onClick={() => setMoreOpen((open) => !open)}

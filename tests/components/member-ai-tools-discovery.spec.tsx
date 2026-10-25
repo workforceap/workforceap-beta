@@ -15,17 +15,20 @@ vi.mock('next/navigation', () => ({
 afterEach(cleanup);
 
 describe('member AI Career Tools discovery', () => {
+  // Round 3 of the portal redesign made Home a "This week" list: the AI tools
+  // card is gone, but discovery stays. The shortcuts row always links to the
+  // tools hub, and a stage-specific recommendation becomes a This-week row.
   it('keeps an actionable introduction on Home even without a recommended tool', () => {
     render(
       <NextIntlClientProvider locale="en" messages={pickPortalClientMessages(en)}>
         <MemberHomeKit recommendedTool={null} />
       </NextIntlClientProvider>,
     );
-    const tools = screen.getByRole('region', { name: 'AI Career Tools' });
-    expect(within(tools).getByRole('link', { name: 'Explore AI Career Tools' }))
+    const shortcuts = screen.getByRole('navigation', { name: 'Shortcuts' });
+    expect(within(shortcuts).getByRole('link', { name: 'AI Career Tools' }))
       .toHaveAttribute('href', '/dashboard/ai-tools');
-    expect(tools.compareDocumentPosition(screen.getByText('Certification path')) & Node.DOCUMENT_POSITION_FOLLOWING)
-      .toBeTruthy();
+    // No recommendation: no tool row in the week list, only the shortcut.
+    expect(screen.queryByRole('link', { name: /Open interview prep/ })).toBeNull();
   });
 
   it('retains the stage-specific action alongside the full tools destination', () => {
@@ -43,10 +46,11 @@ describe('member AI Career Tools discovery', () => {
         />
       </NextIntlClientProvider>,
     );
-    const tools = within(screen.getByRole('region', { name: 'AI Career Tools' }));
-    expect(tools.getByRole('link', { name: 'Open interview prep' }))
+    // The recommendation is a This-week row (one big link carrying the CTA label).
+    expect(screen.getByRole('link', { name: /Open interview prep/ }))
       .toHaveAttribute('href', '/dashboard/ai-tools/interview-prep');
-    expect(tools.getByRole('link', { name: 'Explore all AI Career Tools' }))
+    const shortcuts = screen.getByRole('navigation', { name: 'Shortcuts' });
+    expect(within(shortcuts).getByRole('link', { name: 'AI Career Tools' }))
       .toHaveAttribute('href', '/dev/member/toolkit');
   });
 

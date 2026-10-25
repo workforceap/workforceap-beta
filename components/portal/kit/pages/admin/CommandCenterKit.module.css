@@ -61,6 +61,8 @@
   font: inherit;
 }
 
+/* Same strip as the counselor / employer / partner KPIs (StaffKit .kpis):
+   one hairline card, hairline dividers, flat tiles. */
 .metrics {
   gap: 0;
   margin-bottom: var(--wa-pad);
@@ -68,6 +70,8 @@
   border: 1px solid var(--wa-border);
   border-radius: var(--wa-radius);
   background: var(--wa-surface);
+  box-shadow: none;
+  overflow: hidden;
 }
 
 .metrics > * {
@@ -291,7 +295,7 @@
   }
 
   .metrics > :nth-child(n + 3) {
-    margin-top: var(--wa-pad-sm);
+    border-top: 1px solid var(--wa-border);
   }
 }
 

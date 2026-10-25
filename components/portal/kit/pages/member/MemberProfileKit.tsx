@@ -440,7 +440,7 @@ export function MemberProfileKit({
             <div className="wa-kit-card">
               <h3 className="wa-kit-card-title" style={{ marginBottom: 8 }}>Password and security</h3>
               <p className="wa-kit-lede" style={{ marginBottom: 16 }}>
-                Reset by email — current password is not required.
+                Reset by email. Your current password is not required.
               </p>
               <a
                 href={`/forgot-password?email=${encodeURIComponent(email)}`}

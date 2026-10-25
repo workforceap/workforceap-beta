@@ -3,11 +3,11 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 import MemberPortalTopNav from '@/components/portal/MemberPortalTopNav';
-import { EARLY_TAP_GLOBAL, EARLY_TAP_SCRIPT } from '@/lib/portal/earlyShellTap';
+import { claimEarlyTap, EARLY_TAP_GLOBAL, EARLY_TAP_SCRIPT } from '@/lib/portal/earlyShellTap';
 
 /**
  * Round 2: the phone "More pages" disclosure closes on Escape and puts focus
- * back on its button, and a tap that lands before hydration is replayed.
+ * back on its button. Round 3: the early-tap kind moved to the bottom bar.
  */
 
 vi.mock('next/navigation', () => ({
@@ -55,7 +55,11 @@ describe('MemberPortalTopNav More pages disclosure', () => {
     expect(document.activeElement).toBe(home);
   });
 
-  it('opens for a tap that landed before the nav mounted', () => {
+  // Round 3: the `more` early-tap kind belongs to the member bottom bar's More
+  // button and is claimed by WorkspaceShell alone. This strip is hidden on
+  // phones while that bar is mounted, so it neither marks its button for
+  // capture nor consumes a recorded tap.
+  it('leaves a recorded "more" tap for the shell and does not mark its button for capture', () => {
     new Function(EARLY_TAP_SCRIPT)();
     const staticButton = document.createElement('button');
     staticButton.setAttribute('data-early-tap', 'more');
@@ -63,11 +67,8 @@ describe('MemberPortalTopNav More pages disclosure', () => {
     staticButton.click();
 
     show();
-    expect(moreButton()).toHaveAttribute('aria-expanded', 'true');
-  });
-
-  it('marks the button for early-tap capture', () => {
-    show();
-    expect(moreButton()).toHaveAttribute('data-early-tap', 'more');
+    expect(moreButton()).toHaveAttribute('aria-expanded', 'false');
+    expect(moreButton()).not.toHaveAttribute('data-early-tap');
+    expect(claimEarlyTap('more')).toBe(true);
   });
 });

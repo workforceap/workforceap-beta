@@ -6,7 +6,7 @@ import { DesignSurface, PageOpener, KitEmptyState } from '@/components/portal/ki
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
 import CourseraLaunchErrorNotice from '@/components/portal/CourseraLaunchErrorNotice';
 import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
-import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
+import { MemberContextNote } from './MemberDisclosure';
 import { MemberTrainingWorkspace, type MemberTrainingWorkspaceProps } from './MemberTrainingWorkspace';
 import { MemberPathSegments, type PathSegment } from './MemberPathSegments';
 import styles from './memberPages.module.css';
@@ -211,7 +211,7 @@ function MemberProgramOverview({
           }
         />
         <MemberTrainingNav current="program" programSlug={programSlug} />
-        <p className={workspaceStyles.context}>{tw('learningContext')}</p>
+        <MemberContextNote line={tw('learningContextShort')} moreLabel={tw('learningContextMoreLabel')} more={tw('learningContextMore')} />
 
         <div className="wa-kit-home-grid">
           <div className="wa-kit-home-grid__main wa-kit-stack">

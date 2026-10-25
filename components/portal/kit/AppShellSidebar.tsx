@@ -84,7 +84,7 @@ export function AppShellSidebar({ brand, groups, activeId, onNavigate, footer, t
                       textAlign: 'left',
                       fontWeight: 600,
                       marginBottom: 2,
-                      background: on ? 'var(--wa-accent)' : 'transparent',
+                      background: on ? 'var(--wa-accent-fill)' : 'transparent',
                       color: on ? 'var(--wa-on-accent)' : 'var(--wa-sidebar-muted)',
                       transition: 'background-color 0.2s, color 0.2s',
                     }}

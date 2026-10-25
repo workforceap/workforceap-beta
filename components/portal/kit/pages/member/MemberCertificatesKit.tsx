@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { CheckCircle2, Download, Award } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DesignSurface, KpiStrip, KitEmptyState, ProgressBar, PageOpener } from '@/components/portal/kit';
+import { MemberDisclosure } from './MemberDisclosure';
 import styles from './memberPages.module.css';
 import { ShareButton } from '@/components/ui/ShareButton';
 import { buildCertificateShare, getBrowserShareOrigin } from '@/lib/og/shareAchievementLinks';
@@ -220,10 +221,12 @@ export function MemberCertificatesKit({
               <h2 id={`${MEMBER_CERTIFICATES_ADD_FORM_ID}-title`} className="wa-kit-card-title">
                 Add a certificate you earned elsewhere
               </h2>
-              <p className="wa-kit-lede" style={{ marginTop: 4, marginBottom: 16 }}>
-                Earned a certificate outside WorkforceAP, like CPR or OSHA 10? Add it here. Our staff check every
-                certificate you add. Until they do, it shows as pending and does not count as earned.
+              <p className="wa-kit-lede" style={{ marginTop: 4, marginBottom: 0 }}>
+                Earned a certificate outside WorkforceAP, like CPR or OSHA 10? Add it here.
               </p>
+              <MemberDisclosure summary="What happens next">
+                Our staff check every certificate you add. Until they do, it shows as pending and does not count as earned.
+              </MemberDisclosure>
               {addCertificateForm}
             </section>
           ) : null}

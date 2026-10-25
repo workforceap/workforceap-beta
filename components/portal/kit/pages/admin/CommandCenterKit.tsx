@@ -28,6 +28,7 @@ import {
   type KitTone,
   type SparkStat,
 } from '@/components/portal/kit';
+import { StaffDisclosure } from '../StaffKit';
 import styles from './CommandCenterKit.module.css';
 
 /**
@@ -148,8 +149,9 @@ export interface CommandCenterKitProps {
   /** Program Health breakdown rows. */
   programHealth?: ProgramHealthDatum[];
   /**
-   * One muted line under the "Enrollment share by program" heading saying what the figure
-   * counts and what the bar measures. #2425 (S21) stopped the rows printing
+   * The full definition under the "Enrollment share by program" heading: what the figure
+   * counts and what the bar measures. The page shows one short line and keeps this text
+   * in a "What is counted" disclosure (the text stays in the DOM, collapsed). #2425 (S21) stopped the rows printing
    * "10 · 100%", which read as a completion or health score, but left the
    * remaining count unlabelled; this is the definition that goes with it.
    * Omit to print nothing.
@@ -473,7 +475,11 @@ export function CommandCenterKit({
           <section aria-labelledby="admin-program-health-title" className={styles.section}>
             <header className={styles.sectionHeading}><h2 id="admin-program-health-title">Enrollment share by program</h2></header>
             {programHealthCaption ? (
-              <p className={styles.meta} data-program-health-caption="1" style={{ marginBottom: 10 }}>{programHealthCaption}</p>
+              // One line says what a bar is; the full definition (who is counted, what is not claimed) stays one tap away.
+              <div data-program-health-caption="1" style={{ marginBottom: 10 }}>
+                <p className={styles.meta}>Each bar is a program&rsquo;s share of enrolled students.</p>
+                <StaffDisclosure label="What is counted"><p>{programHealthCaption}</p></StaffDisclosure>
+              </div>
             ) : null}
             {programHealth.length > 0 ? <RankBars data={programHealth} /> : <p className={styles.meta}>No enrollment data available.</p>}
           </section>

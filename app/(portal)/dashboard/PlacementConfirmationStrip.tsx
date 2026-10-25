@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Briefcase, CheckCircle2, CircleCheckBig, Flag } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cx, toneClass } from '@/components/portal/kit';
+import { MemberTaskRow, TaskRowActions, WhatNext, splitLead, type TaskRowState } from '@/components/portal/kit/pages/member/MemberTaskRow';
 import { confirmPlacement, type ConfirmPlacementResult } from './placementAction';
 
 type PlacementOutcome = ConfirmPlacementResult['placementOutcome'];
@@ -15,6 +17,10 @@ type PlacementOutcome = ConfirmPlacementResult['placementOutcome'];
  * nothing new; a failed record write keeps the confirmation itself (the claim
  * event still reaches staff) but logs no placement. The tone says the same
  * thing: `ok` when a placement is on record, `warn` when it waits on staff.
+ *
+ * These English lines serve the `legacy` and `kit` card variants. The `row`
+ * variant (the member home "This week" list) reads the same four outcomes from
+ * `dashboard.home.placement.ack.*`, translated.
  */
 const ACKNOWLEDGEMENT: Record<PlacementOutcome, { heading: string; body: string; icon: LucideIcon; tone: 'ok' | 'warn' }> = {
   created: {
@@ -57,33 +63,35 @@ const KICKER = {
   margin: 0,
 } as const;
 
+type PlacementOffer = { id: string; role?: string; company: string };
+
 type PlacementConfirmationStripProps = {
   offers: any[];
   /**
-   * Where the strip sits. Both variants draw the same kit cards (WAP-194:
+   * Where the strip sits. `legacy` and `kit` draw the same kit cards (WAP-194:
    * `--wa-*` tokens, lucide icons, the success tone edge); only the outer
    * spacing differs. `legacy` (the default, `?ui=legacy` home) keeps its
    * own 1.25rem gutter and bottom margin. `kit` drops both: the kit home's
    * column already sets the inline edge and the gap between cards
    * (`wa-space-y-6`), so the offer card lines up with the kit cards around it
    * and stacked offers keep 1rem between them without a trailing margin.
+   *
+   * `row` is the member home "This week" list: each offer is one `<li>` task
+   * row (the question, one subline, Yes / Not yet inline, and the longer
+   * explanation under "What happens next"). It must sit inside an `<ol>` and
+   * renders no section of its own.
    */
-  variant?: 'legacy' | 'kit';
+  variant?: 'legacy' | 'kit' | 'row';
+  /** Row variant only: the dot state of an unanswered offer row. */
+  rowState?: Exclude<TaskRowState, 'done'>;
 };
 
-export default function PlacementConfirmationStrip({ offers, variant = 'legacy' }: PlacementConfirmationStripProps) {
+/** Confirm / dismiss state shared by every variant. */
+function usePlacementOffers() {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [acknowledged, setAcknowledged] = useState<Record<string, PlacementOutcome>>({});
   const [dismissed, setDismissed] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  if (!offers || offers.length === 0) return null;
-
-  // Dismissed offers leave for the session; confirmed ones stay as a short
-  // acknowledgement so the member sees what actually happened.
-  const activeOffers = offers.filter(o => !dismissed[o.id]);
-
-  if (activeOffers.length === 0) return null;
 
   const handleConfirm = async (offerId: string) => {
     setLoading(prev => ({ ...prev, [offerId]: true }));
@@ -98,12 +106,122 @@ export default function PlacementConfirmationStrip({ offers, variant = 'legacy' 
     setLoading(prev => ({ ...prev, [offerId]: false }));
   };
 
-  // Legacy spaces stacked cards with a bottom margin; the kit section's grid gap does it instead.
-  const cardMarginBottom = variant === 'kit' ? undefined : '1rem';
-
   const handleDismiss = (offerId: string) => {
     setDismissed(prev => ({ ...prev, [offerId]: true }));
   };
+
+  return { loading, acknowledged, dismissed, errors, handleConfirm, handleDismiss };
+}
+
+export default function PlacementConfirmationStrip({ offers, variant = 'legacy', rowState = 'todo' }: PlacementConfirmationStripProps) {
+  if (variant === 'row') return <PlacementOfferRows offers={offers} rowState={rowState} />;
+  return <PlacementOfferCards offers={offers} variant={variant} />;
+}
+
+/** The member home task rows: one `<li>` per offer, translated. */
+function PlacementOfferRows({ offers, rowState }: { offers: PlacementOffer[]; rowState: Exclude<TaskRowState, 'done'> }) {
+  const t = useTranslations('dashboard');
+  const { loading, acknowledged, dismissed, errors, handleConfirm, handleDismiss } = usePlacementOffers();
+
+  if (!offers || offers.length === 0) return null;
+  // Dismissed offers leave for the session; confirmed ones stay as a done row
+  // so the member sees what actually happened.
+  const activeOffers = offers.filter(o => !dismissed[o.id]);
+
+  return (
+    <>
+      {activeOffers.map(offer => {
+        const outcome = acknowledged[offer.id];
+        if (outcome) {
+          // The done row keeps one line: the first sentence of the acknowledgement.
+          // What follows (who was alerted, what to do if the details changed) sits
+          // under "What happens next"; nothing is dropped.
+          const { lead, rest } = splitLead(t(`home.placement.ack.${outcome}.body`));
+          return (
+            <MemberTaskRow
+              key={offer.id}
+              state="done"
+              live
+              testId="member-offer-row"
+              title={t(`home.placement.ack.${outcome}.title`, { company: offer.company })}
+              sub={lead}
+            >
+              {rest ? (
+                <WhatNext label={t('home.whatNext')}>
+                  <p>{rest}</p>
+                </WhatNext>
+              ) : null}
+            </MemberTaskRow>
+          );
+        }
+        return (
+          <MemberTaskRow
+            key={offer.id}
+            state={rowState}
+            testId="member-offer-row"
+            title={t('home.placement.title', { company: offer.company })}
+            sub={t('home.placement.sub')}
+          >
+            {errors[offer.id] ? (
+              <p
+                role="alert"
+                style={{
+                  margin: '8px 0 0',
+                  fontSize: 'var(--wa-type-meta)',
+                  fontWeight: 700,
+                  color: 'var(--wa-danger-text)',
+                  background: 'var(--wa-danger-soft)',
+                  borderRadius: 'var(--wa-radius-sm)',
+                  padding: '8px 12px',
+                }}
+              >
+                {t('home.placement.error')}
+              </p>
+            ) : null}
+            <TaskRowActions>
+              <button
+                type="button"
+                onClick={() => handleConfirm(offer.id)}
+                disabled={loading[offer.id]}
+                className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus"
+                aria-label={t('home.placement.yesLabel')}
+              >
+                {loading[offer.id] ? t('home.placement.sending') : t('home.placement.yes')}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDismiss(offer.id)}
+                disabled={loading[offer.id]}
+                className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus"
+                aria-label={t('home.placement.noLabel')}
+              >
+                {t('home.placement.no')}
+              </button>
+              <WhatNext label={t('home.whatNext')}>
+                <p>{t('home.placement.next')}</p>
+              </WhatNext>
+            </TaskRowActions>
+          </MemberTaskRow>
+        );
+      })}
+    </>
+  );
+}
+
+/** The standalone cards (`legacy` and `kit`); English copy, unchanged. */
+function PlacementOfferCards({ offers, variant }: { offers: any[]; variant: 'legacy' | 'kit' }) {
+  const { loading, acknowledged, dismissed, errors, handleConfirm, handleDismiss } = usePlacementOffers();
+
+  if (!offers || offers.length === 0) return null;
+
+  // Dismissed offers leave for the session; confirmed ones stay as a short
+  // acknowledgement so the member sees what actually happened.
+  const activeOffers = offers.filter(o => !dismissed[o.id]);
+
+  if (activeOffers.length === 0) return null;
+
+  // Legacy spaces stacked cards with a bottom margin; the kit section's grid gap does it instead.
+  const cardMarginBottom = variant === 'kit' ? undefined : '1rem';
 
   return (
     <section
@@ -127,7 +245,7 @@ export default function PlacementConfirmationStrip({ offers, variant = 'legacy' 
               </span>
               <div style={{ minWidth: 0 }}>
                 <p style={{ ...KICKER, color: ack.tone === 'warn' ? 'var(--wa-gold-dark)' : KICKER.color, marginBottom: 4 }}>
-                  {ack.heading} — {offer.company}
+                  {ack.heading}: {offer.company}
                 </p>
                 <p className="wa-kit-lede" style={{ margin: 0, color: 'var(--wa-text)' }}>{ack.body}</p>
               </div>
@@ -152,7 +270,7 @@ export default function PlacementConfirmationStrip({ offers, variant = 'legacy' 
               </span>
             </div>
             <p className="wa-kit-lede" style={{ margin: 0 }}>
-              Let WorkforceAP know you accepted the offer. We log it as a placement you reported and alert your counselor to confirm the start date and pay — your support and access do not change.
+              Let WorkforceAP know you accepted the offer. We log it as a placement you reported and alert your counselor to confirm the start date and pay. Your support and access do not change.
             </p>
             {errors[offer.id] ? (
               <p
@@ -177,7 +295,7 @@ export default function PlacementConfirmationStrip({ offers, variant = 'legacy' 
                 className="wa-kit-cta wa-kit-focus"
                 style={{ flex: '1 1 12rem' }}
               >
-                {loading[offer.id] ? 'Sending update...' : 'Yes — notify my team'}
+                {loading[offer.id] ? 'Sending update...' : 'Yes, notify my team'}
               </button>
               <button type="button"
                 onClick={() => handleDismiss(offer.id)}

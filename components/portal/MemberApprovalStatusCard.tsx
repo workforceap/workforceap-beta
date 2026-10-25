@@ -7,7 +7,8 @@ import { Check, ChevronDown } from 'lucide-react';
 import { StatusTag } from '@/components/portal/kit/StatusTag';
 import styles from './MemberApprovalStatusCard.module.css';
 import { formatDate } from '@/lib/i18n/date';
-import { isAppLocale, DEFAULT_LOCALE } from '@/lib/i18n/config';
+import { PORTAL_TIMEZONE } from '@/lib/formatDate';
+import { isAppLocale, DEFAULT_LOCALE, type AppLocale } from '@/lib/i18n/config';
 import {
   approvalDismissStorageKey,
   approvalStatusSignature,
@@ -24,6 +25,23 @@ import { applicationStatusLabel, intakeStatusLabel } from '@/lib/status/applicat
 
 const STAGE_ORDER: ApprovalStageKey[] = ['application', 'intake', 'training'];
 
+/** BCP-47 tag per app locale, pinned so the server and the browser format the same way. */
+const INTL_TAG: Record<AppLocale, string> = { en: 'en-US', es: 'es-US', fr: 'fr-FR', pt: 'pt-BR' };
+
+/**
+ * "Sep 10": month and day only, in the portal's fixed timezone and the app's
+ * locale. Fixed zone + fixed locale tag means the server render and the browser
+ * agree (no hydration mismatch), and it names the same calendar day as the
+ * dated lines inside the disclosure, which use the same zone.
+ */
+function shortDate(iso: string, locale: AppLocale): string {
+  try {
+    return new Intl.DateTimeFormat(INTL_TAG[locale], { timeZone: PORTAL_TIMEZONE, month: 'short', day: 'numeric' }).format(new Date(iso));
+  } catch {
+    return '';
+  }
+}
+
 /** `memberApproval.reviewer.*` line per step the member is waiting on. */
 const REVIEWER_KEY = {
   approval: 'reviewer.assignedApproval',
@@ -37,9 +55,16 @@ const REVIEWER_KEY = {
  * recorded, who owns the next move and what happens next. Stages without a
  * stored start date say so instead of guessing one.
  *
- * Presentation (C1 redesign): a slim three-step strip (dot or check, label,
- * one short state line per step, plus a state chip) sits in the page header
- * (`MemberHomeKit` `approvalSlot`). Every saved fact the old tall card showed
+ * Presentation (C1 redesign, round 3): a slim strip in the page header
+ * (`MemberHomeKit` `approvalSlot`) shows the real state in as few cells as it
+ * takes. Each cell is a dot or check, the step name and one saved fact with its
+ * saved date ("Submitted Sep 10, under review"); steps nobody has reached are
+ * not drawn as empty "Not started" cells. A live pathway shows the steps done,
+ * the one in progress and only the next step by name ("Next: intake review");
+ * a finished pathway is one cell ("Cleared to train", "Approved Sep 2"); a
+ * closed one stops at the step that closed it, with the "Pathway closed" chip.
+ * Dates are month and day in the portal's fixed timezone (hydration-safe, and
+ * the same calendar day as the dated lines in the disclosure). Every saved fact the old tall card showed
  * (state, date, who owns the step, what happens next, the reviewer line and
  * the Coursera note) is still on the page, inside the "Your approval status"
  * disclosure under the strip. `placement` comes from
@@ -235,11 +260,11 @@ export default function MemberApprovalStatusCard({
 
   const details = (
     <>
+      {reviewer}
       <p className={styles.muted}>
         {status.currentStage === 'complete' ? t('introComplete') : t('intro')}
       </p>
       {stageList}
-      {reviewer}
       <p className={styles.muted}>{t('providerUnknown')}</p>
       <Link href="/dashboard/messages" className={`wa-kit-focus ${styles.contact}`}>{t('contact')}</Link>
     </>
@@ -260,56 +285,108 @@ export default function MemberApprovalStatusCard({
     );
   }
 
-  // ── Strip: three steps and one state chip ──
-  const stripDetail = (view: MemberApprovalStage) => {
-    const word =
-      view.state === 'complete'
-        ? t('strip.done')
-        : view.state === 'blocked'
-          ? t('strip.closed')
-          : view.state === 'current'
-            ? t('strip.inProgress')
-            : t('strip.waiting');
-    return word;
+  // ── Strip: the real state, in as few cells as it takes ──
+  // Each cell carries a saved fact with its saved date. Steps nobody has
+  // reached yet are not drawn as empty "Not started" cells: a live pathway
+  // shows the steps already done, the one in progress, and just the next one
+  // by name. A finished pathway is one cell ("Cleared to train, approved
+  // Sep 2"); a closed one stops at the step that closed it.
+  const appLocale: AppLocale = isAppLocale(locale) ? locale : DEFAULT_LOCALE;
+  const stripDate = (iso: string) => shortDate(iso, appLocale);
+
+  const stripDetail = (stage: ApprovalStageKey, view: MemberApprovalStage): string => {
+    if (view.state === 'blocked') return t('strip.closed');
+    if (stage === 'application') {
+      const since = view.startedAt ? stripDate(view.startedAt) : '';
+      if (view.state === 'complete') return since ? t('strip.submittedApproved', { date: since }) : t('strip.approved');
+      if (status.application === 'pending') return since ? t('strip.submittedUnderReview', { date: since }) : t('strip.underReview');
+      if (status.application === 'needs_info') return since ? t('strip.submittedNeedsInput', { date: since }) : t('strip.needsInfo');
+      return statusText('application');
+    }
+    if (stage === 'intake') {
+      if (view.state === 'complete') return view.completedAt ? t('reviewed', { date: stripDate(view.completedAt) }) : t('strip.done');
+      const since = view.startedAt ? stripDate(view.startedAt) : '';
+      if (since && status.intake === 'pending') return t('strip.reviewPendingSince', { date: since });
+      if (since && status.intake === 'in_review') return t('strip.inReviewSince', { date: since });
+      if (since && status.intake === 'needs_info') return t('strip.needsInputSince', { date: since });
+      return statusText('intake');
+    }
+    if (view.state === 'complete') return view.completedAt ? t('approvedAt', { date: stripDate(view.completedAt) }) : t('strip.approved');
+    return statusText('training');
   };
 
   const anyBlocked = STAGE_ORDER.some((stage) => status.stages[stage].state === 'blocked');
   const needsInput = status.application === 'needs_info' || status.intake === 'needs_info';
-  const chip =
-    status.currentStage === 'complete'
-      ? { tone: 'green', label: t('strip.cleared') }
-      : anyBlocked
-        ? { tone: 'neutral', label: t('strip.closedChip') }
-        : needsInput
-          ? { tone: 'crimson', label: t('strip.needsInfo') }
-          : { tone: 'blue', label: t('strip.pending') };
+  const allDone = status.currentStage === 'complete';
+  const chip = allDone
+    ? null
+    : anyBlocked
+      ? { tone: 'neutral', label: t('strip.closedChip') }
+      : needsInput
+        ? { tone: 'crimson', label: t('strip.needsInfo') }
+        : { tone: 'blue', label: t('strip.pending') };
+
+  // Steps to draw: done steps up to the one in progress (or the one that
+  // closed), then at most one "Next" cell. Nothing is drawn after a closed step.
+  const lastShown = allDone
+    ? STAGE_ORDER.length - 1
+    : Math.max(0, STAGE_ORDER.findIndex((stage) => ['current', 'blocked'].includes(status.stages[stage].state)));
+  const shownStages = STAGE_ORDER.slice(0, lastShown + 1);
+  const nextStage: ApprovalStageKey | null = allDone || anyBlocked ? null : (STAGE_ORDER[lastShown + 1] ?? null);
+
+  const completeDone = (
+    <li
+      className="wa-kit-status-step wa-kit-status-step--done"
+      data-strip-step="training"
+    >
+      <span className="wa-kit-status-step__dot" aria-hidden="true"><Check /></span>
+      <span className="wa-kit-status-step__text">
+        <b>{t('strip.cleared')}</b>
+        <small>{stripDetail('training', status.stages.training)}</small>
+      </span>
+    </li>
+  );
 
   const strip = (
     <div className="wa-kit-status-strip" data-approval-strip="">
       <ol className="wa-kit-status-strip__steps" aria-label={t('strip.label')}>
-        {STAGE_ORDER.map((stage, index) => {
-          const view = status.stages[stage];
-          const tone = view.state === 'complete' ? 'done' : view.state === 'current' ? 'current' : 'todo';
-          return (
-            <li
-              key={stage}
-              className={`wa-kit-status-step wa-kit-status-step--${tone}`}
-              data-strip-step={stage}
-            >
-              <span className="wa-kit-status-step__dot" aria-hidden="true">
-                {view.state === 'complete' ? <Check /> : index + 1}
-              </span>
-              <span className="wa-kit-status-step__text">
-                <b>{t(stage)}</b>
-                <small>{stripDetail(view)}</small>
-              </span>
-            </li>
-          );
-        })}
+        {allDone
+          ? completeDone
+          : shownStages.map((stage) => {
+              const view = status.stages[stage];
+              const index = STAGE_ORDER.indexOf(stage);
+              const tone = view.state === 'complete' ? 'done' : view.state === 'current' ? 'current' : 'todo';
+              return (
+                <li
+                  key={stage}
+                  className={`wa-kit-status-step wa-kit-status-step--${tone}`}
+                  data-strip-step={stage}
+                  aria-current={view.state === 'current' ? 'step' : undefined}
+                >
+                  <span className="wa-kit-status-step__dot" aria-hidden="true">
+                    {view.state === 'complete' ? <Check /> : index + 1}
+                  </span>
+                  <span className="wa-kit-status-step__text">
+                    <b>{t(stage)}</b>
+                    <small>{stripDetail(stage, view)}</small>
+                  </span>
+                </li>
+              );
+            })}
+        {nextStage ? (
+          <li className="wa-kit-status-step wa-kit-status-step--todo" data-strip-step="next">
+            <span className="wa-kit-status-step__dot" aria-hidden="true">{STAGE_ORDER.indexOf(nextStage) + 1}</span>
+            <span className="wa-kit-status-step__text">
+              <b>{t('strip.next', { step: t(`strip.nextStep.${nextStage as 'intake' | 'training'}`) })}</b>
+            </span>
+          </li>
+        ) : null}
       </ol>
-      <span className={`wa-kit-chip wa-kit-chip--${chip.tone}`} data-approval-chip="">
-        {chip.label}
-      </span>
+      {chip ? (
+        <span className={`wa-kit-chip wa-kit-chip--${chip.tone}`} data-approval-chip="">
+          {chip.label}
+        </span>
+      ) : null}
     </div>
   );
 

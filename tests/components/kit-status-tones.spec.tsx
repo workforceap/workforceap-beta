@@ -115,12 +115,13 @@ describe('employer mobile applications status pill', () => {
     student: { id: `s-${id}`, fullName: `Student ${id}`, email: `${id}@example.test` },
   });
 
-  it('the active filter chip is a solid --wa-accent control with the adaptive foreground, AA in both themes', () => {
+  it('the active filter chip is a solid --wa-accent-fill control with the white control foreground, AA in both themes', () => {
     render(<MobileApplicationsClient initialRows={[]} />);
     const chip = screen.getByRole('link', { name: 'All' });
     expect(chip).toHaveAttribute('aria-current', 'page');
     // Was --color-accent + #ffffff: 3.28:1 wherever --color-accent follows the lightened dark accent.
-    expect(chip.style.background).toBe('var(--wa-accent)');
+    // Solid fills paint --wa-accent-fill (crimson in both modes); --wa-accent is the text accent.
+    expect(chip.style.background).toBe('var(--wa-accent-fill)');
     expect(chip.style.color).toBe('var(--wa-on-accent-control)');
     const tokens = loadRootTokens(readCss('css/wa-brand-tokens.css'));
     for (const scheme of ['light', 'dark'] as const) {

@@ -22,10 +22,10 @@
   --color-on-success: #0d2418;
 
   /* Categorical tints — remap Astryx pink/red/yellow to WAP brand */
-  --color-background-pink: var(--wa-accent-soft, light-dark(#fdf2f4, rgba(224, 101, 138, 0.18)));
-  --color-text-pink: var(--wa-accent-text, light-dark(#8c0f37, #f39ab5));
-  --color-background-red: var(--wa-accent-soft, light-dark(#fdf2f4, rgba(224, 101, 138, 0.18)));
-  --color-text-red: var(--wa-accent-text, light-dark(#8c0f37, #f39ab5));
+  --color-background-pink: var(--wa-accent-soft, light-dark(#fdf2f4, rgba(221, 159, 176, 0.16)));
+  --color-text-pink: var(--wa-accent-text, light-dark(#8c0f37, #e6b3bf));
+  --color-background-red: var(--wa-accent-soft, light-dark(#fdf2f4, rgba(221, 159, 176, 0.16)));
+  --color-text-red: var(--wa-accent-text, light-dark(#8c0f37, #e6b3bf));
   --color-background-yellow: var(--wa-gold-soft, light-dark(#fef3c7, rgba(212, 173, 90, 0.2)));
   --color-text-yellow: var(--wa-gold-dark, light-dark(#7d5f26, #e0b062));
   /* Opaque soft tint like the other categories: the old 14% translucent green
@@ -36,7 +36,7 @@
   --color-text-blue: var(--wa-info-dark, light-dark(#1f5a87, #74b3e3));
 
   /* Muted accent for selection/hover chrome inside Astryx tables & trees */
-  --color-accent-muted: color-mix(in srgb, var(--wa-accent, light-dark(#ad2c4d, #e0658a)) 14%, transparent);
+  --color-accent-muted: color-mix(in srgb, var(--wa-accent, light-dark(#ad2c4d, #dd9fb0)) 14%, transparent);
 }
 
 /* Button rendered as a link (KitLinkButton, Button href): the unlayered global
@@ -50,23 +50,20 @@ a.astryx-button[data-variant='primary'] {
 /* Primary Button fill. --color-accent is the org accent where OrgBrandingStyle
    pins one (same hue in both themes, so the white --color-on-accent label holds
    6.47:1), but it follows the portal bridge to the lightened dark --wa-accent
-   (#e0658a) where no org accent is set, and white on that is 3.28:1. Paint the
-   org accent, else the mode-constant brand crimson (--wa-hero-crimson, equal to
-   --wa-accent in light), so the white label clears AA in both themes either way.
+   (dusty rose #dd9fb0 in dark) where no org accent is set, and white on that is
+   2.17:1. Paint the org accent, else the mode-constant brand crimson
+   (--wa-hero-crimson, equal to --wa-accent in light), so the white label clears
+   AA in both themes either way.
    Do not swap the label to --wa-on-accent-control instead: dark ink on the
    pinned org accent is 2.78:1 (tests/components/ui-followups-glow-tokens.spec). */
 .astryx-button[data-variant='primary'] {
   background-color: var(--org-accent, var(--wa-hero-crimson, #ad2c4d));
 }
 
-/* Member warm surfaces: Stitch uses #fcf9f8 cream, not cool #f7f8fa gray.
-   Dark value matches the portal-wide dark palette (css/portal-tokens.css)
-   rather than the old cool-dark #0f1115, so member dark mode isn't a
-   different hue family from every other persona. */
-[data-surface='warm'],
-html[data-portal-role='member'] {
-  --wa-bg: light-dark(#fcf9f8, #130d0f);
-}
+/* The member warm canvas (--wa-bg / --wa-surface-2 / --wa-border on
+   [data-surface='warm'] and html[data-portal-role='member']) moved to
+   css/portal-tokens.css with the rest of the surface tokens. Only portal
+   routes carry either selector, and every one of them loads that file. */
 
 /* Gradient hero cards: Astryx Card is opaque white — let kit gradient show through */
 [data-surface='warm'] .wa-kit-card--gradient-crimson .astryx-card,

@@ -408,6 +408,54 @@ describe('workspace navigation', () => {
   });
 });
 
+describe('member phone tabs (round 3, Addendum A4)', () => {
+  const bar = () => screen.getByRole('navigation', { name: 'Main tabs' });
+  const more = () => screen.getByRole('button', { name: 'More' });
+
+  it('renders four links and one More button, for members only', () => {
+    location.wide = false;
+    location.pathname = '/dashboard/program';
+    const m = show();
+    expect(bar()).toHaveAttribute('id', 'mobile-bottom-nav');
+    const links = within(bar()).getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/dashboard', '/dashboard/program', '/dashboard/jobs', '/dashboard/messages']);
+    expect(links.filter((a) => a.getAttribute('aria-current') === 'page').map((a) => a.textContent)).toEqual(['Program']);
+    expect(within(bar()).getAllByRole('button')).toHaveLength(1);
+    expect(more()).toHaveAttribute('type', 'button');
+    expect(more()).toHaveAttribute('aria-controls', 'workspace-sidebar');
+    m.unmount();
+    show('employer');
+    expect(screen.queryByRole('navigation', { name: 'Main tabs' })).not.toBeInTheDocument();
+  });
+
+  it('More flips aria-expanded with the drawer and focus returns to More after Escape', async () => {
+    location.wide = false;
+    const user = userEvent.setup();
+    const { container } = show();
+    const rail = container.querySelector('.workspace-sidebar');
+    expect(more()).toHaveAttribute('aria-expanded', 'false');
+    await user.click(more());
+    expect(screen.getByRole('dialog', { name: 'Member portal navigation' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'More', hidden: true })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'true');
+    expect(rail?.contains(document.activeElement)).toBe(true);
+    await user.keyboard('{Escape}');
+    expect(rail).toHaveAttribute('inert');
+    expect(more()).toHaveAttribute('aria-expanded', 'false');
+    expect(document.activeElement).toBe(more());
+  });
+
+  it('focus returns to the hamburger after Escape when the hamburger opened the drawer', async () => {
+    location.wide = false;
+    const user = userEvent.setup();
+    show();
+    const hamburger = screen.getByRole('button', { name: 'Open menu' });
+    await user.click(hamburger);
+    await user.keyboard('{Escape}');
+    expect(document.activeElement).toBe(hamburger);
+  });
+});
+
 describe('active-route specificity', () => {
   it('ranks the matched alias, not the length of its unrelated canonical href', () => {
     expect(getBestActiveHref('/dashboard/ai-tools/application-tracker/123', [
