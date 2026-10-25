@@ -740,7 +740,44 @@
           }
         }
       }
-    }
+    },
+    "handoff": {
+      "homeLede": "Votre prochaine étape, avec les progrès que nous pouvons confirmer.",
+      "title": "Votre progression à ce jour",
+      "evidenceIntro": "Les éléments confirmés, avec les informations manquantes clairement indiquées.",
+      "resume": "CV",
+      "consultation": "Consultation",
+      "training": "Accès à la formation",
+      "resumeReceived": "Reçu dans le portail",
+      "resumeUnknown": "Aucune copie enregistrée dans le portail",
+      "consultationBooked": "Rendez-vous confirmé",
+      "consultationUnknown": "Le statut du rendez-vous n’est pas connecté",
+      "trainingConfirmed": "Accès confirmé",
+      "trainingUnknown": "Activation non confirmée",
+      "pendingConfirmation": "En attente de confirmation de l’équipe",
+      "confirmedOn": "Confirmé le {date} (UTC)",
+      "source": {
+        "portal": "Enregistrement du portail",
+        "team": "Confirmation de l’équipe",
+        "calendar": "Entrée du calendrier",
+        "provider": "Enregistrement de l’organisme de formation"
+      },
+      "reconcileSummary": "Vous avez déjà effectué une étape ?",
+      "pendingSummary": "Une étape est en attente de confirmation",
+      "outsidePortal": "Vous avez déjà envoyé votre CV par e-mail ou pris rendez-vous depuis votre e-mail de bienvenue ? Ces étapes peuvent ne pas apparaître ici. Vérifiez auprès de votre équipe avant de les refaire.",
+      "confirmationGuidance": "Dans votre message, indiquez l’étape et la date à laquelle vous l’avez effectuée. Pour une consultation, précisez la date et l’heure figurant dans la confirmation de réservation.",
+      "confirmationBoundary": "Ouvrir les messages n’envoie aucune demande et ne modifie pas votre progression. Votre équipe pourra vérifier l’enregistrement après l’envoi de votre message.",
+      "confirm": "Confirmer auprès de mon équipe",
+      "prepareTitle": "Préparer votre consultation",
+      "prepareBody": "Relisez votre CV et notez l’expérience, les objectifs et les questions que vous souhaitez aborder avec votre conseiller.",
+      "resumeTitle": "Travailler sur votre CV",
+      "resumeBody": "Utilisez l’espace CV pour relire un document existant ou en préparer un pour votre consultation.",
+      "reviewResume": "Relire mon CV",
+      "openResume": "Ouvrir l’espace CV"
+    },
+    "dismissSuggestion": "Ignorer la suggestion",
+    "suggestionDismissed": "Suggestion ignorée. Votre progression enregistrée n’a pas changé.",
+    "dismissSuggestionError": "Impossible d’ignorer cette suggestion. Réessayez."
   },
   "apply": {
     "step1": "Informations personnelles",
@@ -4431,7 +4468,44 @@
       "rewriteSource": "L’amélioration part de votre CV original. Le texte généré est un résultat distinct ; l’original, le CV révisé enregistré et les résultats précédents restent séparés.",
       "rewriteHistory": "Améliorations de CV enregistrées",
       "filesUnavailable": "Impossible de charger les fichiers de votre CV. Réessayez pour actualiser leur état.",
-      "retryFiles": "Recharger les fichiers du CV"
+      "retryFiles": "Recharger les fichiers du CV",
+      "design": {
+        "filesHint": "Fichiers et versions",
+        "scoreHint": "Repérer les lacunes",
+        "rewriteHint": "Améliorer votre brouillon",
+        "coachHint": "En parler ensemble",
+        "filesTitle": "Vos fichiers de CV",
+        "filesIntro": "Importez un document original, créez un CV à partir de votre profil et consultez chaque version.",
+        "scoreTitle": "Relire votre CV",
+        "rewriteTitle": "Adapter votre CV à un poste",
+        "nextIntro": "Améliorez votre brouillon ou discutez de la prochaine étape.",
+        "coachTitle": "Votre coach CV IA",
+        "coachIntro": "Faites le point sur votre expérience et sur la manière de la présenter.",
+        "coachAvailability": "Le coach vocal fonctionne pendant une session connectée.",
+        "draftNotice": "Les brouillons sont conservés tant que cette page reste ouverte. Copiez vos modifications avant de quitter ou de recharger la page ; elles ne seront pas restaurées.",
+        "draft": {
+          "loading": "Recherche d’un brouillon dans cet onglet…",
+          "ready": "Vos modifications seront enregistrées dans cet onglet",
+          "saved": "Saisie du brouillon enregistrée dans cet onglet",
+          "restored": "Saisie du brouillon restaurée depuis cet onglet",
+          "unavailable": "Les dernières modifications ne sont pas enregistrées. Copiez votre texte avant de quitter.",
+          "cleared": "La copie enregistrée a été effacée. Vos modifications actuelles sont conservées.",
+          "limits": "Uniquement dans cet onglet, pendant 24 heures maximum. La fermeture peut empêcher la récupération ; la déconnexion efface la copie.",
+          "clear": "Effacer la copie enregistrée",
+          "returnTitle": "Reprendre votre brouillon de CV",
+          "returnDescription": "Saisie enregistrée à {time} dans cet onglet.",
+          "continue": "Continuer le brouillon"
+        },
+        "backToTools": "Outils IA",
+        "customizeRewrite": "Personnaliser la réécriture",
+        "atsOn": "ATS activé",
+        "atsOff": "ATS désactivé",
+        "tones": {
+          "professional": "Professionnel",
+          "conversational": "Conversationnel",
+          "executive": "Direction"
+        }
+      }
     },
     "interviews": {
       "title": "Entretiens",

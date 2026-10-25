@@ -740,7 +740,44 @@
           }
         }
       }
-    }
+    },
+    "handoff": {
+      "homeLede": "Seu próximo passo, com o progresso que podemos confirmar.",
+      "title": "Seu progresso até agora",
+      "evidenceIntro": "Registros confirmados, com as informações faltantes claramente indicadas.",
+      "resume": "Currículo",
+      "consultation": "Consulta",
+      "training": "Acesso ao treinamento",
+      "resumeReceived": "Recebido no portal",
+      "resumeUnknown": "Nenhuma cópia registrada no portal",
+      "consultationBooked": "Agendamento confirmado",
+      "consultationUnknown": "O status do agendamento não está conectado",
+      "trainingConfirmed": "Acesso confirmado",
+      "trainingUnknown": "Ativação não confirmada",
+      "pendingConfirmation": "Aguardando confirmação da equipe",
+      "confirmedOn": "Confirmado em {date} (UTC)",
+      "source": {
+        "portal": "Registro do portal",
+        "team": "Confirmação da equipe",
+        "calendar": "Registro do calendário",
+        "provider": "Registro do provedor de treinamento"
+      },
+      "reconcileSummary": "Você já concluiu uma etapa?",
+      "pendingSummary": "Uma etapa está aguardando confirmação",
+      "outsidePortal": "Você já enviou seu currículo por e-mail ou agendou pela mensagem de boas-vindas? Essas etapas podem não aparecer aqui. Confirme com sua equipe antes de repeti-las.",
+      "confirmationGuidance": "Na mensagem, informe a etapa e quando você a concluiu. Para uma consulta, inclua a data e o horário da confirmação do agendamento.",
+      "confirmationBoundary": "Abrir as Mensagens não envia uma solicitação nem altera seu progresso. Sua equipe poderá verificar o registro depois que você enviar a mensagem.",
+      "confirm": "Confirmar com minha equipe",
+      "prepareTitle": "Prepare-se para sua consulta",
+      "prepareBody": "Revise seu currículo e anote a experiência, os objetivos e as perguntas que deseja conversar com seu orientador.",
+      "resumeTitle": "Trabalhe no seu currículo",
+      "resumeBody": "Use o espaço de Currículo para revisar um documento que você já tem ou preparar um para sua consulta.",
+      "reviewResume": "Revisar meu currículo",
+      "openResume": "Abrir espaço de Currículo"
+    },
+    "dismissSuggestion": "Dispensar sugestão",
+    "suggestionDismissed": "Sugestão dispensada. Seu progresso registrado não foi alterado.",
+    "dismissSuggestionError": "Não foi possível dispensar esta sugestão. Tente novamente."
   },
   "apply": {
     "step1": "Informações pessoais",
@@ -4431,7 +4468,44 @@
       "rewriteSource": "A melhoria começa pelo seu currículo original. O texto gerado é um resultado separado; seu original, a revisão salva e os resultados anteriores permanecem distintos.",
       "rewriteHistory": "Melhorias de currículo salvas",
       "filesUnavailable": "Não foi possível carregar os arquivos do seu currículo. Tente novamente para atualizar o status.",
-      "retryFiles": "Recarregar arquivos do currículo"
+      "retryFiles": "Recarregar arquivos do currículo",
+      "design": {
+        "filesHint": "Arquivos e versões",
+        "scoreHint": "Encontre as lacunas",
+        "rewriteHint": "Aprimore seu rascunho",
+        "coachHint": "Converse sobre isso",
+        "filesTitle": "Seus arquivos de currículo",
+        "filesIntro": "Envie um documento original, crie um currículo a partir do seu perfil e revise cada versão.",
+        "scoreTitle": "Revise seu currículo",
+        "rewriteTitle": "Adapte o currículo para uma vaga",
+        "nextIntro": "Aprimore seu rascunho ou converse sobre seu próximo passo.",
+        "coachTitle": "Seu orientador de currículo com IA",
+        "coachIntro": "Converse sobre sua experiência e como apresentá-la.",
+        "coachAvailability": "O orientador por voz funciona durante uma sessão conectada.",
+        "draftNotice": "Os rascunhos ficam disponíveis enquanto esta página estiver aberta. Copie suas edições antes de sair ou recarregar; elas não serão restauradas.",
+        "draft": {
+          "loading": "Verificando se há um rascunho nesta aba…",
+          "ready": "Suas edições serão salvas nesta aba",
+          "saved": "Dados do rascunho salvos nesta aba",
+          "restored": "Dados do rascunho restaurados desta aba",
+          "unavailable": "As edições mais recentes não foram salvas. Copie seu texto antes de sair.",
+          "cleared": "A cópia salva foi removida. Suas edições atuais continuam aqui.",
+          "limits": "Somente nesta aba, por até 24 horas. Fechar a aba pode impedir a recuperação; sair da conta apaga a cópia.",
+          "clear": "Apagar cópia salva",
+          "returnTitle": "Continue seu rascunho de currículo",
+          "returnDescription": "Dados salvos às {time} nesta aba.",
+          "continue": "Continuar rascunho"
+        },
+        "backToTools": "Ferramentas de IA",
+        "customizeRewrite": "Personalizar reescrita",
+        "atsOn": "ATS ativado",
+        "atsOff": "ATS desativado",
+        "tones": {
+          "professional": "Profissional",
+          "conversational": "Conversacional",
+          "executive": "Executivo"
+        }
+      }
     },
     "interviews": {
       "title": "Entrevistas",
