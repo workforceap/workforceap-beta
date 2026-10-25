@@ -206,6 +206,7 @@ describe('MemberHomeKit one-screen "This week" home', () => {
       />,
     );
     expect(screen.getByRole('heading', { level: 2, name: 'This week' })).toBeTruthy();
+    expect(document.querySelector('.wa-page-opener__meta, .wa-page-opener-lede')).toBeNull();
     const rows = Array.from(weekList().querySelectorAll(':scope > li.wa-kit-task-row, :scope > li > a.wa-kit-task-row')) as HTMLElement[];
     const titles = rows.map((row) => row.querySelector('.wa-kit-task-row__title')?.textContent);
     expect(titles).toEqual([
@@ -213,12 +214,11 @@ describe('MemberHomeKit one-screen "This week" home', () => {
       'Did you accept the role at Acme Health?',
       'Your new job at Acme Health',
       'Take your WIOA Preassessment',
-      'Add your resume',
     ]);
     expect(screen.getByText('7 steps')).toBeTruthy();
     // Exactly one row carries the crimson "current" ring: the first.
     const states = rows.map((row) => (row.matches('[data-state]') ? row : row.querySelector('[data-state]'))?.getAttribute('data-state'));
-    expect(states).toEqual(['current', 'todo', 'todo', 'todo', 'todo']);
+    expect(states).toEqual(['current', 'todo', 'todo', 'todo']);
     expect(within(weekList()).getByText('More this week')).toBeTruthy();
   });
 
@@ -228,14 +228,17 @@ describe('MemberHomeKit one-screen "This week" home', () => {
     const links = [todayLink, ...Array.from(weekList().querySelectorAll<HTMLAnchorElement>(':scope > li > a.wa-kit-task-row'))].filter(
       (link): link is HTMLAnchorElement => link instanceof HTMLAnchorElement,
     );
-    // Today's CTA first, then the preassessment is NOT repeated (today already is it).
-    expect(links.map((a) => a.getAttribute('href'))).toEqual([
-      '/dashboard/assessment',
-      '/dashboard/ai-tools/resume-studio?view=rewrite',
-    ]);
-    expect(links[1]?.textContent).toContain('Add your resume');
-    expect(links[1]?.textContent).toContain('Try resume rewriter');
+    // The required action stays visible. Optional next-best actions are behind
+    // the native disclosure until requested.
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/dashboard/assessment']);
     fireEvent.click(within(weekList()).getByText('More this week'));
+    const optionalLinks = Array.from(weekList().querySelectorAll<HTMLAnchorElement>('details[open] a.wa-kit-task-row--link'));
+    expect(optionalLinks.map((a) => a.getAttribute('href'))).toEqual([
+      '/dashboard/ai-tools/resume-studio?view=rewrite',
+      '/dashboard/readiness',
+    ]);
+    expect(optionalLinks[0]?.textContent).toContain('Add your resume');
+    expect(optionalLinks[0]?.textContent).toContain('Try resume rewriter');
     expect(within(weekList()).getByRole('link', { name: /Build your job readiness plan/ })).toHaveAttribute('href', '/dashboard/readiness');
   });
 
@@ -246,6 +249,7 @@ describe('MemberHomeKit one-screen "This week" home', () => {
     expect(row.textContent).toContain('Open interview prep');
     expect(weekList().lastElementChild?.contains(row)).toBe(true);
     expect(row.closest('details')?.open).toBe(false);
+    expect(weekList().querySelectorAll('details')).toHaveLength(1);
     // The quiet link row still reaches every tool.
     expect(within(screen.getByRole('navigation', { name: 'Shortcuts' })).getByRole('link', { name: 'AI Career Tools' })).toHaveAttribute(
       'href',
@@ -294,6 +298,18 @@ describe('MemberHomeKit one-screen "This week" home', () => {
     renderKit(<MemberHomeKit {...base} doThisNext={null} preassessmentCompleted />);
     expect(screen.queryByRole('list', { name: 'Steps for this week' })).toBeNull();
     expect(screen.getByText('No steps this week.')).toBeTruthy();
+  });
+
+  it('keeps the advisor visible and places study activity, badge, and goals in one collapsed disclosure', () => {
+    renderKit(<MemberHomeKit {...base} advisor={{ name: 'Dana Counselor', firstName: 'Dana', messagingHref: '/dashboard/messages' }} goals={[{ title: 'Finish AWS', percent: 70 }]} weeklyActivity={[{ day: 'Mon', minutes: 40 }, { day: 'Tue', minutes: 35 }]} />);
+    expect(screen.getByText('Dana Counselor')).toBeTruthy();
+    const disclosure = screen.getByText('Study and goals').closest('details');
+    expect(disclosure).not.toBeNull();
+    expect((disclosure as HTMLDetailsElement).open).toBe(false);
+    fireEvent.click(screen.getByText('Study and goals'));
+    expect(within(disclosure as HTMLElement).getByText('Study this week')).toBeTruthy();
+    expect(within(disclosure as HTMLElement).getByRole('heading', { name: 'Next badge' })).toBeTruthy();
+    expect(within(disclosure as HTMLElement).getByLabelText('Finish AWS progress')).toBeTruthy();
   });
 
   it('no longer renders the totals tiles, pipeline, points ledger, streak or Start-here tiles', () => {

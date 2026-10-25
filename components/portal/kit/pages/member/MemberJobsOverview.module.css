@@ -10,7 +10,7 @@
 .actions > a { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding-inline: .75rem; text-align: center; white-space: normal; line-height: 1.25; }
 .secondaryAction { font-weight: 700; font-size: var(--wa-type-body); color: var(--wa-accent-text); }
 .section { scroll-margin-top: calc(var(--workspace-top-offset, 68px) + 1rem); min-width: 0; }
-.section:focus-visible { outline: 2px solid var(--wa-accent); outline-offset: 4px; }
+.section:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--wa-focus-ring); }
 .recommendations { border-top: 1px solid var(--wa-border); }
 .recommendations summary { cursor: pointer; min-height: 48px; padding-block: var(--wa-pad-sm); color: var(--wa-text); }
 .recommendations summary h2 { display: inline; font-size: var(--wa-type-body); font-weight: 800; margin: 0; }

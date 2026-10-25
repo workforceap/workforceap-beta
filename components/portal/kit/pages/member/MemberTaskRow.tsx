@@ -1,4 +1,4 @@
-import type { ElementType, ReactNode } from 'react';
+import type { CSSProperties, ElementType, ReactNode } from 'react';
 import Link from 'next/link';
 import type { LinkProps } from 'next/link';
 import { ArrowRight, Check, ChevronDown } from 'lucide-react';
@@ -48,9 +48,9 @@ export function splitLead(text: string, max = 90): { lead: string; rest: string 
  * buttons' own names do not carry the question, so assistive tech reads the
  * answers as one group under it.
  */
-export function TaskRowActions({ children, labelledBy }: { children: ReactNode; labelledBy?: string }) {
+export function TaskRowActions({ children, labelledBy, style }: { children: ReactNode; labelledBy?: string; style?: CSSProperties }) {
   return (
-    <div className={styles.actions} role={labelledBy ? 'group' : undefined} aria-labelledby={labelledBy}>
+    <div className={styles.actions} role={labelledBy ? 'group' : undefined} aria-labelledby={labelledBy} style={style}>
       {children}
     </div>
   );

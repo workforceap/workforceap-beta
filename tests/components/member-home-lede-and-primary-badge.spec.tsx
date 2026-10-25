@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import messages from '@/messages/en.json';
@@ -52,9 +54,10 @@ describe('MemberDoThisNextCard body line (WAP-253 item 1)', () => {
     expect(style).not.toMatch(/text-overflow:\s*ellipsis/i);
     expect(body.style.overflow).not.toBe('hidden');
     expect(body.style.display).not.toBe('-webkit-box');
-    expect(body.style.margin).toBe('0px');
+    const cardStyles = readFileSync(path.resolve(process.cwd(), 'components/portal/MemberDoThisNextCard.module.css'), 'utf8');
+    expect(cardStyles).toMatch(/\.body\s*\{[\s\S]*?margin:\s*0;/);
+    expect(cardStyles).toMatch(/\.body\s*\{[\s\S]*?color:\s*var\(--wa-muted\);/);
     // The card is a white hairline card now (C1+C3 redesign), so the body reads on --wa-muted, not white on crimson.
-    expect(body.style.color).toContain('--wa-muted');
   });
 
   it('keeps the full action title available instead of clipping the task at two lines', () => {

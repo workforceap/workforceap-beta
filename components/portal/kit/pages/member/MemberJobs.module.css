@@ -17,7 +17,7 @@
 .prose, .referralMessage { white-space: pre-wrap; overflow-wrap: anywhere; }
 .list { margin: 0; padding-inline-start: var(--wa-pad); display: grid; gap: .5rem; }
 .application { min-width: 0; scroll-margin-top: calc(var(--workspace-top-offset, 68px) + 1rem); }
-.application:focus-visible { outline: 2px solid var(--wa-accent); outline-offset: 4px; border-radius: var(--wa-radius-sm); }
+.application:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--wa-focus-ring); border-radius: var(--wa-radius-sm); }
 .preparation { min-width: 0; margin-top: var(--wa-pad-sm); }
 .disclosure { border-top: 1px solid var(--wa-border); }
 .disclosure:last-child { border-bottom: 1px solid var(--wa-border); }

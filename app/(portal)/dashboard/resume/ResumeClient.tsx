@@ -524,7 +524,6 @@ export default function ResumeClient({
               {resumeData?.originalUrl ? (
                 <a
                   href={resumeData.originalUrl} download={previewData ? "sample-original-resume.txt" : undefined}
-                  aria-label="Download original resume"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="wa-kit-focus"
@@ -671,7 +670,6 @@ export default function ResumeClient({
               {resumeData?.enhancedUrl ? (
                 <a
                   href={resumeData.enhancedUrl} download={previewData ? "sample-revised-resume.txt" : undefined}
-                  aria-label="Download revised resume"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="wa-kit-focus"

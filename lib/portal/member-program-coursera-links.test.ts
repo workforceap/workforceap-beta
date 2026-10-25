@@ -43,9 +43,15 @@ test('live program CTAs launch the selected Coursera course and keep Learning Hu
     programKit,
     /<TrackedCourseraLaunchLink\s+href=\{moduleHref\}/,
   );
+  const modulesSection = programKit.match(
+    /<section className="wa-kit-card wa-kit-card--flush" aria-labelledby="program-modules-title">([\s\S]*?)<\/section>/,
+  )?.[1];
+  assert.ok(modulesSection, 'the Modules card keeps its own section and heading');
+  assert.match(modulesSection, /<h2 id="program-modules-title"[^>]*>Modules<\/h2>/);
   assert.match(
-    programKit,
-    />Modules<\/h3>[\s\S]{0,500}href=\{resumeHref\}[\s\S]{0,300}>\s*Learning Hub/,
+    modulesSection,
+    /<a href=\{resumeHref\}[^>]*>[\s\S]*?<ArrowRight/,
+    'the in-card Learning Hub navigation remains an internal resumeHref link, separate from Coursera launch links',
   );
 });
 

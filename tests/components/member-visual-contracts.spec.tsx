@@ -23,10 +23,11 @@ function stat(label: string) {
 describe('categorical totals retain their value without status-like colors', () => {
   it.each([0, 3])('job totals remain neutral at %i and real application status stays distinct', (value) => {
     render(<NextIntlClientProvider locale="en" messages={en}><MemberJobsKit saved={value} applied={value} interviewing={value} offers={value} applications={[{ id: 'fixture', role: 'Fixture role', company: 'Fixture company', location: 'Remote', applied: 'Sep19', stage: 'Interview scheduled', tone: 'warn' }]} /></NextIntlClientProvider>);
-    const tracker = screen.getByLabelText('Application tracker status');
+    const tracker = screen.getByLabelText('Application tracker');
     for (const label of ['Saved', 'Applied', 'Interviewing', 'Offers']) {
-      const count = within(tracker).getByText(label, { selector: 'dt' }).nextElementSibling as HTMLElement;
-      expect(count.tagName).toBe('DD');
+      const labelElement = within(tracker).getByText(label, { selector: '.wa-kit-stat-label' });
+      const count = labelElement.nextElementSibling as HTMLElement;
+      expect(count.className).toContain('wa-kit-stat-value');
       expect(count).toHaveTextContent(String(value));
       expect(count.style.color).toBe('');
       expect(count.closest('[class*="wa-kit-tone--"]')).toBeNull();

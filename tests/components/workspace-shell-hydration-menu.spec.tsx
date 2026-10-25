@@ -90,14 +90,12 @@ async function hydrate(earlyActivation = false) {
 }
 
 describe('mobile menu during shell hydration', () => {
-  it.each(['en', 'es', 'fr', 'pt'] as const)('renders an unavailable menu with localized loading feedback before %s hydration', (locale) => {
+  it.each(['en', 'es', 'fr', 'pt'] as const)('renders an actionable menu tap target before %s hydration', (locale) => {
     host.innerHTML = renderToString(workspace(false, locale));
     const menu = within(host).getByRole('button', { name: navMessages[locale].openMenu });
-    expect(menu).toBeDisabled();
-    expect(menu).toHaveAttribute('aria-busy', 'true');
-    expect(menu).toHaveAccessibleDescription(navMessages[locale].menuLoading);
-    expect(menu).toHaveAttribute('title', navMessages[locale].menuLoading);
-    expect(menu.querySelector('svg')).toHaveClass('lucide-hourglass');
+    expect(menu).toBeEnabled();
+    expect(menu).toHaveAttribute('data-early-tap', 'menu');
+    expect(menu).not.toHaveAttribute('aria-busy', 'true');
     menu.click();
     expect(menu).toHaveAttribute('aria-expanded', 'false');
   });
@@ -105,15 +103,14 @@ describe('mobile menu during shell hydration', () => {
   it('enables after mount, stays ready on the same path, and closes only after a real route change', async () => {
     const view = await hydrate(true);
     const menu = view.getByRole('button', { name: 'Open menu' });
-    expect(earlyMenuDisabled).toBe(true);
+    expect(earlyMenuDisabled).toBe(false);
     expect(menu).toBeEnabled();
-    expect(menu).toHaveAttribute('aria-busy', 'false');
+    expect(menu).not.toHaveAttribute('aria-busy');
     expect(menu).not.toHaveAttribute('aria-describedby');
     expect(menu).not.toHaveAttribute('title');
-    expect(menu).toHaveAttribute('aria-expanded', 'false');
-    expect(menu.querySelector('svg')).toHaveClass('lucide-menu');
-    await userEvent.setup().click(menu);
     expect(menu).toHaveAttribute('aria-expanded', 'true');
+    expect(menu.querySelector('svg')).toHaveClass('lucide-menu');
+    expect(menu).toHaveAttribute('data-early-tap', 'menu');
     expect(view.getByRole('dialog', { name: 'Member portal navigation' })).not.toHaveAttribute('inert');
     await waitFor(() => expect(view.getByRole('button', { name: 'Close menu' })).toHaveFocus());
 

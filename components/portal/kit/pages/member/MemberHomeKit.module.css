@@ -319,6 +319,25 @@
   list-style: none;
 }
 
+.studyGoalsDisclosure {
+  padding: 0;
+}
+.studyGoalsDisclosure > summary {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 8px 16px;
+  color: var(--wa-accent-text);
+  font-size: var(--wa-type-body);
+  font-weight: 650;
+  cursor: pointer;
+}
+.studyGoalsContent {
+  display: grid;
+  gap: 12px;
+  padding: 0 12px 12px;
+}
+
 .handoffDisclosure {
   margin-top: 8px;
 }

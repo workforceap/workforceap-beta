@@ -194,7 +194,7 @@ export default async function DevMemberHomePage({
   const status = fixture ? buildMemberApprovalStatus(fixture) : null;
   const placement = status ? memberApprovalCardPlacement(status) : null;
   const approvalCard = status ? (
-    <MemberApprovalStatusCard status={status} storageUserId="dev-member" placement={placement ?? 'primary'} messagesHref="/dev/member/messages" />
+    <MemberApprovalStatusCard status={status} storageUserId="dev-member" placement={placement ?? 'primary'} variant="compact" messagesHref="/dev/member/messages" />
   ) : null;
 
   return (
@@ -244,6 +244,7 @@ export default async function DevMemberHomePage({
       certs={2}
       points={1240}
       programTitle={activeProgramTitle ?? 'AWS Certified Cloud Practitioner Certificate'}
+      programHref="/dev/member/program"
       programStatus="In progress"
       nextBadgePercent={60}
       nextBadgeName="Cloud Foundations"
@@ -277,6 +278,8 @@ export default async function DevMemberHomePage({
         variant: 'urgent',
         weight: 100,
       }}
+      nextLesson={handoffFixture === 'received' || handoffFixture === 'unknown' || handoffFixture === 'pending' ? undefined : 'Shared Responsibility Model'}
+      nextLessonHref={handoffFixture === 'received' || handoffFixture === 'unknown' || handoffFixture === 'pending' ? undefined : '/dev/member/program'}
       upNext={upNext}
       recommendedTool={{
         slug: 'interview-prep',

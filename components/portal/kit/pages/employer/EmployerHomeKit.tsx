@@ -2,10 +2,8 @@
 
 import type { LucideIcon } from 'lucide-react';
 import { Briefcase, Users, CalendarClock, Award, SquarePen } from 'lucide-react';
-import NextLink from 'next/link';
 import { Card } from '@astryxdesign/core/Card';
-import { Button } from '@astryxdesign/core/Button';
-import { Link as AstryxLink } from '@astryxdesign/core/Link';
+import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 import {
   DataTable,
   DesignSurface,
@@ -327,14 +325,13 @@ export function EmployerHomeKit({
           action={
             /* `tour-post-job`: step 2 of the employer guided tour (lib/tours/registry.ts). */
             <span data-tour="tour-post-job" style={{ display: 'inline-flex' }}>
-              <AstryxLink href={postRoleHref} as={NextLink as never} isStandalone>
-                <Button
-                  label="Post a role"
-                  variant="primary"
-                  size="sm"
-                  icon={<SquarePen size={14} aria-hidden />}
-                />
-              </AstryxLink>
+              <KitLinkButton
+                href={postRoleHref}
+                label="Post a role"
+                variant="primary"
+                size="sm"
+                icon={<SquarePen size={14} aria-hidden />}
+              />
             </span>
           }
         />

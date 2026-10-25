@@ -222,7 +222,7 @@ describe('placement confirmation strip paints from --wa-* tokens (D13)', () => {
   // success tone edge), so the D13 contract is now "--wa-* only, no hex".
   it('banner copy, buttons and the error alert read --wa-* tokens on a kit card', async () => {
     const { default: Strip } = await import('@/app/(portal)/dashboard/PlacementConfirmationStrip');
-    const { container } = render(<Strip offers={[{ id: 'o1', company: 'Acme' }]} />);
+    const { container } = render(<NextIntlClientProvider locale="en" messages={messages}><Strip offers={[{ id: 'o1', company: 'Acme' }]} /></NextIntlClientProvider>);
     fireEvent.click(screen.getByRole('button', { name: /notify my team/ }));
     await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
     expect(unexpectedHex(container)).toEqual([]);
@@ -399,9 +399,11 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
   /** `prop: value` pairs of the first rule whose selector list is exactly `selector`, `!important` dropped. */
   function declsOf(css: string, selector: string): Record<string, string> {
     const src = css.replace(/\/\*[\s\S]*?\*\//g, '');
-    const start = src.indexOf(`${selector} {`);
-    if (start < 0) throw new Error(`rule not found: ${selector}`);
-    const body = src.slice(start + selector.length + 2, src.indexOf('}', start));
+    const normalizedSelector = selector.trim().replace(/\s+/g, ' ');
+    const rule = [...src.matchAll(/([^{}]+)\{/g)].find((match) => match[1].trim().replace(/\s+/g, ' ') === normalizedSelector);
+    if (!rule?.index) throw new Error(`rule not found: ${selector}`);
+    const openBrace = rule.index + rule[0].length - 1;
+    const body = src.slice(openBrace + 1, src.indexOf('}', openBrace));
     const out: Record<string, string> = {};
     for (const m of body.matchAll(/([\w-]+)\s*:\s*([^;]+);/g)) out[m[1]] = m[2].replace(/\s*!important/, '').trim();
     return out;
@@ -431,8 +433,10 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
       { href: '/partner/milestones', label: 'Milestones', group: 'primary' as const, badgeKey: 'jobs_draft' as const },
     ];
     const { container } = render(
-      <WorkspaceSidebarSections items={items} activeHref="/partner/milestones" badges={{ jobs_pending: 2, jobs_draft: 3 }}
-        translateLabel={(s) => s} childToggleLabel={() => 'toggle'} onNavigate={() => {}} storageKey={`m13-${scheme}`} forceExpanded />,
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <WorkspaceSidebarSections items={items} activeHref="/partner/milestones" badges={{ jobs_pending: 2, jobs_draft: 3 }}
+          translateLabel={(s) => s} childToggleLabel={() => 'toggle'} onNavigate={() => {}} storageKey={`m13-${scheme}`} forceExpanded />
+      </NextIntlClientProvider>,
     );
     const active = container.querySelector<HTMLAnchorElement>('a.workspace-sidebar-link.active')!;
     expect(active.textContent).toContain('Milestones');
@@ -476,7 +480,7 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
     }
   });
 
-  it.each(['light', 'dark'] as const)('%s: white stays on the --color-accent fills (Delete account, .btn-primary) with the default org accent', async (scheme) => {
+  it.each(['light', 'dark'] as const)('%s: white stays on the accent fills (Delete account, .btn-primary) with the default org accent', async (scheme) => {
     const { default: DeleteAccountButton } = await import('@/components/portal/DeleteAccountButton');
     render(<DeleteAccountButton />);
     const button = screen.getByRole('button', { name: /delete/i });
@@ -484,7 +488,7 @@ describe('accent fills and accent text clear WCAG AA in both themes (M1 / M4 / M
     expect(button.style.color).toBe('white');
     const white = '#ffffff'; // jsdom keeps the keyword; the helper resolves hex
     const btnPrimary = declsOf(mainCss, '.btn-primary,\na.btn-primary,\nbutton.btn-primary');
-    expect(btnPrimary.background).toBe('var(--color-accent)');
+    expect(btnPrimary.background).toBe('var(--org-accent, var(--wa-accent-fill, var(--color-accent)))');
     for (const [name, tokens] of [cascades[0], cascades[1]]) {
       expect(ratio(white, button.style.background, tokens, scheme), `${scheme} ${name} Delete account`).toBeGreaterThanOrEqual(4.5);
       expect(ratio(btnPrimary.color, btnPrimary.background, tokens, scheme), `${scheme} ${name} .btn-primary`).toBeGreaterThanOrEqual(4.5);

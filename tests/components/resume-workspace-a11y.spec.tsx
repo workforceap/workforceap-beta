@@ -111,7 +111,7 @@ describe('Resume file cards', () => {
 
 describe('Resume rewrite and score output controls', () => {
   it('tells the Copy and PDF buttons apart and makes the scrolling output focusable', () => {
-    render(<ResumeRewriterForm preview previewOutput={'Line one\nLine two'} />);
+    render(withIntl(<ResumeRewriterForm preview previewOutput={'Line one\nLine two'} />));
     expect(screen.getByRole('button', { name: 'Copy rewritten resume' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Download PDF of rewritten resume' })).toBeInTheDocument();
     const output = screen.getByRole('region', { name: 'Rewritten resume text' });
@@ -121,7 +121,7 @@ describe('Resume rewrite and score output controls', () => {
   });
 
   it('titles a strength score "Resume analysis", not a job match, with labelled focusable regions', () => {
-    render(<ResumeStrengthForm preview initialResume="My resume text" previewOutput="OVERALL SCORE: 72%" previewPayload={PAYLOAD} />);
+    render(withIntl(<ResumeStrengthForm preview initialResume="My resume text" previewOutput="OVERALL SCORE: 72%" previewPayload={PAYLOAD} />));
     expect(screen.getByRole('heading', { level: 3, name: 'Resume analysis' })).toBeInTheDocument();
     expect(screen.queryByText('Match analysis')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copy resume analysis' })).toBeInTheDocument();

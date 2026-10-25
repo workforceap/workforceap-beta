@@ -29,9 +29,12 @@ const SHELL_TSX = readFileSync(path.join(ROOT, 'components/portal/WorkspaceShell
 const DEV_DASHBOARD = readFileSync(path.join(ROOT, 'app/dev/dashboard/page.tsx'), 'utf8');
 
 function ruleBody(css: string, selectorList: string): string {
-  const at = css.indexOf(selectorList);
+  // Stylesheets may be checked out with CRLF. The selector strings below use
+  // LF so normalize the source before searching while preserving the rule text.
+  const normalizedCss = css.replace(/\r\n?/g, '\n');
+  const at = normalizedCss.indexOf(selectorList);
   assert.ok(at >= 0, `rule not found: ${selectorList.split('\n')[0]}`);
-  return css.slice(at, css.indexOf('}', at));
+  return normalizedCss.slice(at, normalizedCss.indexOf('}', at));
 }
 
 test('mounted portal documents paint <html> and <body> with the portal canvas at higher specificity than the marketing dark body rule', () => {

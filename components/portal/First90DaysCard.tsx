@@ -119,6 +119,7 @@ export default function First90DaysCard({
             “{t(`scripts.${stage}.${key}`)}”
           </blockquote>
         ))}
+        {previewOnly ? <p role="note">{tCommon('previewActionUnavailable')}</p> : null}
       </WhatNext>
     );
     return (
@@ -158,7 +159,10 @@ export default function First90DaysCard({
             <p id={questionId} style={{ margin: '8px 0 0', fontSize: 'var(--wa-type-body)', fontWeight: 700, color: 'var(--wa-text)' }}>
               {t('question')}
             </p>
-            <TaskRowActions labelledBy={questionId}>
+            <TaskRowActions
+              labelledBy={questionId}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 8 }}
+            >
               {RESPONSE_OPTIONS.map((opt) => {
                 const Icon = opt.icon;
                 return (
@@ -166,6 +170,7 @@ export default function First90DaysCard({
                     key={opt.value}
                     type="button"
                     className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus"
+                    style={{ width: '100%', minHeight: 44, minWidth: 0, justifyContent: 'center', paddingInline: 6 }}
                     disabled={isPending || previewOnly}
                     onClick={() => submit(opt.value)}
                     aria-label={t(`responses.${opt.value}`)}
@@ -175,7 +180,6 @@ export default function First90DaysCard({
                   </button>
                 );
               })}
-              {previewOnly ? <p role="note" style={{ margin: 0, fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>{tCommon('previewActionUnavailable')}</p> : null}
               {whatNext}
             </TaskRowActions>
             {error && (

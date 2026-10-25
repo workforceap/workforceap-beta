@@ -25,7 +25,7 @@ const expectFixtureTrainingLinks = () => {
   const navigation = within(screen.getByRole('navigation', { name: 'Training and progress' }));
   expect(navigation.getByRole('link', { name: 'My program' })).toHaveAttribute('href', fixtureHrefs.program);
   expect(navigation.getByRole('link', { name: /learning hub/i })).toHaveAttribute('href', fixtureHrefs.learning);
-  expect(navigation.getByRole('link', { name: 'Career readiness' })).toHaveAttribute('href', fixtureHrefs.readiness);
+  expect(navigation.getByRole('link', { name: 'My progress' })).toHaveAttribute('href', fixtureHrefs.readiness);
 };
 
 afterEach(cleanup);
@@ -80,6 +80,6 @@ describe('member program training navigation destinations', () => {
 
     expect(screen.getByRole('link', { name: /program/i })).toHaveAttribute('href', '/dashboard/program?program=program%20%26%20pathway');
     expect(screen.getByRole('link', { name: /learning/i })).toHaveAttribute('href', '/dashboard/learning?program=program%20%26%20pathway');
-    expect(screen.getByRole('link', { name: /readiness/i })).toHaveAttribute('href', '/dashboard/readiness');
+    expect(screen.getByRole('link', { name: 'My progress' })).toHaveAttribute('href', '/dashboard/readiness');
   });
 });

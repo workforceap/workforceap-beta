@@ -63,7 +63,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
     <>
       {/* Wraps instead of scrolling sideways: four chips need ~341px, wider
           than a phone rail, and a clipped "At Risk" gave no scroll cue. */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', padding: '0 1.5rem 1rem' }}>
+      <div role="group" aria-label="Filter referred members" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', padding: '0 1.5rem 1rem' }}>
         {chips.map((chip) => {
           const active = filter === chip.key;
           return (
@@ -76,7 +76,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
               className="wa-kit-focus"
               style={{
                 flexShrink: 0,
-                minHeight: '2.75rem',
+                minHeight: 44,
                 padding: '0.375rem 0.875rem',
                 borderRadius: '9999px',
                 fontSize: '0.8125rem',

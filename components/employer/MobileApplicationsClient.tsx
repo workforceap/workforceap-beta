@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { JOB_APPLICATION_STATUS_KEYS, jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 import EmployerApplicationChatClient from '@/components/portal/EmployerApplicationChatClient';
-import { StatusTag, type KitTone } from '@/components/portal/kit';
+import { KitEmptyState, StatusTag, type KitTone } from '@/components/portal/kit';
 import type { AppMsg, EmployerApplicationRow } from './EmployerApplicationsClient';
 import { employerApplicationsListHref, type EmployerApplicationsSort } from '@/lib/employer/employerApplicationsListQuery';
 import PortalRecordLink from '@/components/portal/PortalRecordLink';
@@ -176,10 +176,15 @@ export default function MobileApplicationsClient({
       {/* Applicant cards */}
       <div style={{ padding: '0 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {visible.length === 0 ? (
-          <div style={{ background: 'var(--color-white)', borderRadius: '0.75rem', padding: '1.5rem', textAlign: 'center' }}>
-            <span className="material-symbols-outlined text-3xl block mb-2" style={{ color: 'var(--outline-variant)' }} aria-hidden="true">inbox</span>
-            <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>No applications found.</p>
-          </div>
+          <KitEmptyState
+            framed
+            title={activeStatusFilter ? 'No applicants match this filter' : t('noApplicationsYet')}
+            kind={activeStatusFilter ? 'filtered' : 'first'}
+            primaryAction={activeStatusFilter ? {
+              label: 'Show all applicants',
+              href: employerApplicationsListHref({ sort: activeSort }),
+            } : undefined}
+          />
         ) : (
           visible.map((app) => {
             const isExpanded = expandedId === app.id;

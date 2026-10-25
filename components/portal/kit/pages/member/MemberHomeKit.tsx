@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { Play, Medal, GraduationCap, ArrowRight, Briefcase, Check, Star, Target, TrendingUp, Wand2 } from 'lucide-react';
 import Link from 'next/link';
@@ -29,7 +29,6 @@ import DashboardProgramSelector, { type DashboardProgramOption } from '@/compone
 import type { NextBestAction } from '@/lib/member/nextBestActions';
 import type { MemberToolRecommendation } from '@/lib/member/recommendMemberTool';
 import { MEMBER_PROGRAM_HREF, resolveMemberProgramHref } from '@/lib/member/memberProgramHref';
-import { PORTAL_TIMEZONE } from '@/lib/formatDate';
 import type { PipelineRow } from './MemberPipelineTable';
 import styles from './MemberHomeKit.module.css';
 
@@ -347,19 +346,6 @@ const DAY_LONG: Record<string, string> = {
   Sun: 'Sunday',
 };
 
-/** Today's date for the header sentence. Read after mount so server and client markup agree. */
-function useTodayLabel(): string | null {
-  const [label, setLabel] = useState<string | null>(null);
-  useEffect(() => {
-    try {
-      setLabel(new Intl.DateTimeFormat('en-US', { timeZone: PORTAL_TIMEZONE, weekday: 'long', month: 'long', day: 'numeric' }).format(new Date()));
-    } catch {
-      setLabel(null);
-    }
-  }, []);
-  return label;
-}
-
 /** The path of an href without its query or hash, for matching an action to a known page. */
 function hrefPath(href: string): string {
   return href.split(/[?#]/)[0] ?? href;
@@ -427,7 +413,6 @@ export function MemberHomeKit({
   const tTools = useTranslations('aiToolsDiscovery');
   const tDisclosure = useTranslations('common.disclosures');
   const pct = clampPct(coursePercent);
-  const today = useTodayLabel();
 
   const showProgramSwitch = Boolean(programSwitch && programSwitch.options.length > 1 && programSwitch.activeProgramSlug);
   const hasModuleRow = typeof certModulesDone === 'number' && typeof certModulesTotal === 'number' && certModulesTotal > 0;
@@ -438,10 +423,6 @@ export function MemberHomeKit({
   const studyMinutes = weeklyActivity.reduce((sum, d) => sum + d.minutes, 0);
   const hasStudyWeek = weeklyActivity.length > 1;
   const studyGoal = typeof weeklyStudyGoalMinutes === 'number' && weeklyStudyGoalMinutes > 0 ? weeklyStudyGoalMinutes : null;
-
-  const nextSentence = nextLesson
-    ? `Next: ${nextLesson}${nextLessonDue ? ` · ${nextLessonDue}` : ''}`
-    : 'Pick up your program, jobs, or AI Career Tools.';
 
   const hasNotices = showStaffViewBanner || noProgram || (youthNoticeAge !== null && youthNoticeAge < 18);
 
@@ -471,7 +452,6 @@ export function MemberHomeKit({
               // One greeting across the portal: "Welcome back, {first name}." (the staff homes and `counselor.welcomeBack` end with the period too).
               // Translated (`dashboard.home.welcomeBack`), so a Spanish member does not get an English h1 over a Spanish page.
               title={greeting && firstName ? `${greeting}, ${firstName}.` : firstName ? t('home.welcomeBack', { firstName }) : t('home.title')}
-              meta={today ? `${today}. ${nextSentence}` : nextSentence}
               aside={approvalSlot}
             />
             {hasNotices ? (
@@ -535,22 +515,12 @@ export function MemberHomeKit({
                     />
                   ) : null}
 
-                  {remainingUpNext.slice(0, 1).map((action) => (
-                    <MemberTaskLinkRow
-                      key={action.id}
-                      href={resolveMemberProgramHref(action.href)}
-                      state={rowStateFor(`up-${action.id}`)}
-                      title={action.title}
-                      sub={action.body}
-                      cta={action.cta}
-                    />
-                  ))}
-                  {remainingUpNext.length > 1 || recommendedTool ? (
+                  {remainingUpNext.length > 0 || recommendedTool ? (
                     <li className={styles.moreStepsDisclosure}>
                       <details>
                         <summary className="wa-kit-focus">{tDisclosure('moreThisWeek')}</summary>
                         <ol aria-label={t('home.stepsLabel')}>
-                          {remainingUpNext.slice(1).map((action) => (
+                          {remainingUpNext.map((action) => (
                             <MemberTaskLinkRow
                               key={action.id}
                               href={resolveMemberProgramHref(action.href)}
@@ -740,6 +710,9 @@ export function MemberHomeKit({
           <aside className="wa-kit-home-grid__rail" aria-label="Your people and progress">
             <MemberAdvisorCard advisor={advisor} />
 
+            <details className={cx('wa-kit-card', styles.studyGoalsDisclosure)}>
+              <summary className="wa-kit-focus">{tDisclosure('studyAndGoals')}</summary>
+              <div className={styles.studyGoalsContent}>
             <section className={cx('wa-kit-card', styles.railCard)} aria-labelledby="member-study-heading">
               <div className="wa-kit-card__head">
                 <h2 id="member-study-heading" className="wa-kit-card-title">Study this week</h2>
@@ -833,6 +806,8 @@ export function MemberHomeKit({
                 </a>
               )}
             </section>
+              </div>
+            </details>
           </aside>
         </div>
       </div>

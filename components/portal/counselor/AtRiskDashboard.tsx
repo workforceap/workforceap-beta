@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState, useCallback, type ReactNode } from 'react';
 import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { formatDate } from '@/lib/i18n/date';
+import { DEFAULT_LOCALE, isAppLocale } from '@/lib/i18n/config';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 import { describeMemberRequestException, readMemberRequestFailure } from '@/lib/portal/memberRequestFailure';
@@ -144,20 +146,6 @@ const STATUS_TOOLTIP: Record<AtRiskMember['status'], string> = {
 // date or format, React reports a hydration text mismatch (#418) and falls back
 // to client-rendering the root, which strips the `class="dark"` that
 // ThemeInitScript put on <html>. Same convention as LabReviewQueue.
-const ACTIVITY_DATE_FORMAT = new Intl.DateTimeFormat('en-US', {
-  month: 'numeric',
-  day: 'numeric',
-  year: 'numeric',
-  timeZone: 'UTC',
-});
-
-function formatDate(d: string | null): string {
-  if (!d) return '—';
-  const date = new Date(d);
-  // Intl's format() throws on an invalid date, where toLocaleDateString did not.
-  return Number.isNaN(date.getTime()) ? '—' : ACTIVITY_DATE_FORMAT.format(date);
-}
-
 function scoreLevel(score: number): AtRiskMember['riskLevel'] {
   if (score >= 70) return 'CRITICAL';
   if (score >= 50) return 'HIGH';
@@ -229,6 +217,7 @@ export function AtRiskDashboardView({
   onUpdateStatus,
   onBulkAcknowledge}: AtRiskDashboardViewProps) {
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const pathname = usePathname();
   const params = useSearchParams();
   const tEmpty = useTranslations('empty');
@@ -579,6 +568,7 @@ export function AtRiskDashboardView({
             />
             {programOptions.length > 0 && (
               <select
+                aria-label="Program"
                 value={programFilter}
                 onChange={(e) => setProgramFilter(e.target.value)}
                 className="wa-kit-focus"
@@ -800,6 +790,7 @@ export function AtRiskDashboardView({
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {filteredMembers.map((row) => (
               <RiskRow
+                locale={locale}
                 returnTo={returnTo}
                 key={row.alertId}
                 row={row}
@@ -1077,6 +1068,7 @@ function FactorChips({ factors }: { factors: AtRiskFactor[] }) {
 }
 
 function RiskRow({
+  locale,
   returnTo,
   row,
   selected,
@@ -1085,6 +1077,7 @@ function RiskRow({
   onAcknowledge,
   onResolve,
   acting}: {
+  locale: string;
   returnTo: string;
   row: AtRiskMember;
   selected: boolean;
@@ -1167,7 +1160,7 @@ function RiskRow({
             {row.phone ? ` · ${row.phone}` : ''}
           </div>
           <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 4 }}>
-            {row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : 'Not enrolled'} · {row.lastActivityAt ? `last activity ${formatDate(row.lastActivityAt)}` : 'No activity recorded'}
+            {row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : 'Not enrolled'} · {row.lastActivityAt ? `last activity ${formatDate(row.lastActivityAt, isAppLocale(locale) ? locale : DEFAULT_LOCALE)}` : 'No activity recorded'}
           </div>
           <FactorChips factors={row.factors} />
         </div>

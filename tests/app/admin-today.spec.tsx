@@ -19,6 +19,10 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/admin',
   useSearchParams: () => new URLSearchParams(),
 }));
+vi.mock('next-intl/server', () => ({
+  getTranslations: async (namespace: string) => (key: string) =>
+    namespace === 'common.disclosures' && key === 'whatIsCounted' ? 'What is counted' : key,
+}));
 vi.mock('next/link', () => ({
   default: ({ children, href, ...rest }: { children: React.ReactNode; href: string }) => <a href={href} {...rest}>{children}</a>,
 }));

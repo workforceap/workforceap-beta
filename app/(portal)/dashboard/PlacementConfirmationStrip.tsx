@@ -203,8 +203,8 @@ function PlacementOfferRows({ offers, rowState, previewOnly }: { offers: Placeme
               </button>
               <WhatNext label={t('home.whatNext')}>
                 <p>{t('home.placement.next')}</p>
+                {previewOnly ? <p role="note">{tCommon('previewActionUnavailable')}</p> : null}
               </WhatNext>
-              {previewOnly ? <p role="note" style={{ margin: 0, fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>{tCommon('previewActionUnavailable')}</p> : null}
             </TaskRowActions>
           </MemberTaskRow>
         );

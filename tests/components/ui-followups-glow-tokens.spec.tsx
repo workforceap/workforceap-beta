@@ -1,5 +1,5 @@
 import React from 'react';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   readCss, loadRootTokens, loadBlockTokens, colorOf, contrast, luminance, over, parseColor, resolve, splitTopLevel, type Scheme,
@@ -783,6 +783,27 @@ describe('First90DaysCard is a kit card on --wa-* tokens only', () => {
     const section = container.querySelector('section') as HTMLElement;
     expect(section.style.padding).toBe('1rem 1.25rem 0px');
     expect((section.firstElementChild as HTMLElement).className).toContain('wa-kit-card');
+  });
+
+  it('row check-in answers stay in three equal phone columns and keep preview guidance collapsed', () => {
+    const { container } = render(
+      <NextIntlClientProvider locale="en" messages={en}>
+        <ol>
+          <First90DaysCard stage="day_30" daysSincePlacement={20} employerName="Acme" currentStageResponse={null} completedStages={[]} variant="row" previewOnly />
+        </ol>
+      </NextIntlClientProvider>,
+    );
+    const group = container.querySelector('[role="group"][aria-labelledby]') as HTMLElement;
+    const question = document.getElementById(group.getAttribute('aria-labelledby')!);
+    expect(question).toBeInTheDocument();
+    const answers = within(group).getAllByRole('button');
+    expect(answers).toHaveLength(3);
+    for (const answer of answers) expect(answer).toHaveStyle({ width: '100%', minHeight: '44px' });
+    expect(group).toHaveStyle({ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' });
+    expect(answers[0]).toBeDisabled();
+    const disclosure = group.querySelector('details')!;
+    expect(disclosure).not.toHaveAttribute('open');
+    expect(disclosure.querySelector('[role="note"]')).toHaveTextContent(en.common.disclosures.previewActionUnavailable);
   });
 });
 

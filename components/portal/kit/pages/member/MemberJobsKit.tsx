@@ -131,6 +131,7 @@ export function MemberJobsKit({
   retryHref = '/dashboard/jobs',
 }: MemberJobsKitProps) {
   const t = useTranslations('empty');
+  const tDashboard = useTranslations('dashboard');
   const openRolesCount = Math.max(openRolesTotal ?? 0, openRoles.length);
   const columns: Column<ApplicationRow>[] = [
     { key: 'role', header: 'Role', render: (r) => <span style={{ fontWeight: 700 }}>{r.role}</span> },
@@ -179,6 +180,7 @@ export function MemberJobsKit({
           }
         />
         <KpiStrip
+          aria-label={tDashboard('jobApplicationsMetaTitle')}
           items={(
             [
               ['Saved', saved],

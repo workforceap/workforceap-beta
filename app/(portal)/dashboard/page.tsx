@@ -126,6 +126,7 @@ async function renderMemberDashboard(
       storageUserId={user.id}
       placement={approvalPlacement}
       counselorContext={counselorContext}
+      variant="compact"
     />
   );
   // Staff looking at a member home see the same notice My Program shows
