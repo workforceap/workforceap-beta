@@ -1,0 +1,400 @@
+/* Staff / admin / counselor / employer / partner command views: the C1 + C3
+   language (title + one sentence + right action, hairline cards, task rows)
+   on the dense surface. Tokens only. */
+
+/* Hairline card, same treatment as the member cards. */
+.card {
+  min-width: 0;
+  padding: var(--wa-pad-sm) var(--wa-pad);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius);
+  background: var(--wa-surface);
+  color: var(--wa-text);
+}
+
+.cardFlush {
+  padding-inline: 0;
+  padding-bottom: 0;
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--wa-pad-sm) / 4) var(--wa-pad-sm);
+  margin-bottom: var(--wa-pad-sm);
+}
+
+.cardFlush .cardHead {
+  padding-inline: var(--wa-pad);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+.meta {
+  margin: 0;
+  color: var(--wa-muted);
+  font-size: var(--wa-type-meta);
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.cardLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  margin-block: -0.75rem;
+  color: var(--wa-accent-text);
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cardLink:hover {
+  text-decoration: underline;
+}
+
+/* Main column + right rail (>= 70rem). */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--wa-pad);
+  align-items: start;
+}
+
+.main,
+.rail {
+  display: grid;
+  gap: var(--wa-pad);
+  min-width: 0;
+}
+
+@media (min-width: 70rem) {
+  .split {
+    grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
+  }
+}
+
+/* KPI strip: one hairline card with hairline dividers between flat tiles.
+   A tile (StatSparkTile is an Astryx card, StatTile a .wa-kit-card) carries no
+   border, shadow, fill or gradient of its own; the strip draws them once. The
+   icon sits inline and muted (no tinted tile) and the trend line is 1.5px in
+   the accent. The delta chip keeps its own tone. */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  padding-block: calc(var(--wa-pad-sm) / 2);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius);
+  background: var(--wa-surface);
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.kpis > * {
+  min-width: 0;
+}
+
+.kpis :global(.astryx-card),
+.kpis :global(.wa-kit-card) {
+  padding: calc(var(--wa-pad-sm) / 2) var(--wa-pad);
+  background: transparent;
+  background-image: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Dividers. Doubled class so they win over a tile that is itself the grid child. */
+.kpis.kpis > * {
+  border-inline-start: 1px solid var(--wa-border);
+}
+
+.kpis.kpis > :nth-child(odd) {
+  border-inline-start: 0;
+}
+
+.kpis.kpis > :nth-child(n + 3) {
+  border-top: 1px solid var(--wa-border);
+}
+
+.kpis :global(.wa-kit-tone-icon) {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: transparent;
+  color: var(--wa-muted);
+}
+
+.kpis svg polyline {
+  stroke: var(--wa-accent);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+.kpis :global(.wa-kit-stat-label) {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.kpis :global(.wa-kit-stat-value) {
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 64rem) {
+  .kpis {
+    grid-template-columns: repeat(var(--staff-kpi-cols, 4), minmax(0, 1fr));
+  }
+
+  .kpis.kpis > :nth-child(odd) {
+    border-inline-start: 1px solid var(--wa-border);
+  }
+
+  .kpis.kpis > :first-child {
+    border-inline-start: 0;
+  }
+
+  .kpis.kpis > :nth-child(n + 3) {
+    border-top: 0;
+  }
+}
+
+/* C3 task row: status dot, title + subline, right-aligned chip / action. */
+.tasks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.task {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--wa-pad-sm);
+  padding: var(--wa-pad-sm) var(--wa-pad);
+  border-top: 1px solid var(--wa-border);
+}
+
+.dot {
+  display: inline-block;
+  width: 0.625rem;
+  height: 0.625rem;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid var(--wa-muted);
+}
+
+.dotRed {
+  border-color: var(--wa-accent);
+  background: var(--wa-accent-fill);
+}
+
+.dotYellow {
+  border-color: var(--wa-gold);
+  background: var(--wa-gold);
+}
+
+.dotBlue {
+  border-color: var(--wa-info);
+  background: var(--wa-info);
+}
+
+.dotDone {
+  border-color: var(--wa-success);
+  background: var(--wa-success);
+}
+
+.taskCopy {
+  display: grid;
+  gap: calc(var(--wa-pad-sm) / 4);
+  min-width: 0;
+}
+
+.taskTitle {
+  margin: 0;
+  color: var(--wa-text);
+  font-size: var(--wa-type-body);
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.taskSub {
+  margin: 0;
+  color: var(--wa-muted);
+  font-size: var(--wa-type-meta);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.taskEnd {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--wa-pad-sm) / 2);
+  flex-shrink: 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding-inline: calc(var(--wa-pad-sm) * 0.75);
+  border-radius: 999px;
+  background: var(--wa-surface-2);
+  color: var(--wa-muted-strong);
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.chipRed {
+  background: var(--wa-accent-soft);
+  color: var(--wa-accent-text);
+}
+
+.chipYellow {
+  background: var(--wa-gold-soft);
+  color: var(--wa-gold-dark);
+}
+
+/* Action pill: neutral outline; the most pressing row gets the dark pill. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--wa-pad-sm) / 4);
+  min-height: 2.75rem;
+  padding-inline: var(--wa-pad-sm);
+  border: 1px solid var(--wa-border);
+  border-radius: 999px;
+  background: var(--wa-surface);
+  color: var(--wa-accent-text);
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.pill:hover {
+  background: var(--wa-surface-2);
+}
+
+.pillDark {
+  border-color: var(--wa-text);
+  background: var(--wa-text);
+  color: var(--wa-surface);
+}
+
+.pillDark:hover {
+  background: var(--wa-text);
+  opacity: 0.88;
+}
+
+.pillPrimary {
+  border-color: var(--wa-accent);
+  background: var(--wa-accent-fill);
+  color: var(--wa-on-accent-control);
+}
+
+.pillPrimary:hover {
+  background: var(--wa-accent-fill-hover);
+}
+
+.empty {
+  margin: 0;
+  padding: var(--wa-pad-sm) var(--wa-pad);
+  color: var(--wa-muted);
+  font-size: var(--wa-type-meta);
+  line-height: 1.5;
+}
+
+/* "Why" and "what happens next" live in a disclosure, not in the main line. */
+.disclosure {
+  min-width: 0;
+}
+
+.disclosureSummary {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--wa-pad-sm) / 2);
+  min-height: 2.75rem;
+  cursor: pointer;
+  list-style: none;
+  color: var(--wa-text);
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+}
+
+.disclosureSummary::-webkit-details-marker {
+  display: none;
+}
+
+.disclosureSummary::after {
+  content: '';
+  width: 0.4em;
+  height: 0.4em;
+  border: solid var(--wa-muted);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translateY(-0.1em);
+}
+
+.disclosure[open] > .disclosureSummary::after {
+  transform: rotate(-135deg) translateY(-0.1em);
+}
+
+.disclosureBody {
+  padding-bottom: calc(var(--wa-pad-sm) / 2);
+  color: var(--wa-muted);
+  font-size: var(--wa-type-meta);
+  line-height: 1.5;
+}
+
+.disclosureBody > p {
+  margin: 0;
+}
+
+/* The primary line of a card whose body is one sentence. */
+.lead {
+  margin: 0;
+  color: var(--wa-text);
+  font-size: var(--wa-type-body);
+  line-height: 1.5;
+}
+
+@media (max-width: 35rem) {
+  .card {
+    padding-inline: var(--wa-pad-sm);
+  }
+
+  .cardFlush .cardHead,
+  .task,
+  .empty {
+    padding-inline: var(--wa-pad-sm);
+  }
+
+  .task {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: calc(var(--wa-pad-sm) / 2) var(--wa-pad-sm);
+  }
+
+  .task > .dot {
+    margin-top: 0.4rem;
+  }
+
+  .taskEnd {
+    grid-column: 2;
+    justify-self: start;
+    flex-wrap: wrap;
+  }
+}

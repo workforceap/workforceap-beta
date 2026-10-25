@@ -31,6 +31,8 @@ export interface Column<T> {
   stickyLeft?: boolean;
   minWidth?: number | string;
   ariaSort?: 'ascending' | 'descending' | 'none';
+  /** Render this column's body cells as `<th scope="row">` (the row's name); see KitTableShellColumn. */
+  rowHeader?: boolean;
 }
 
 interface DataTableProps<T> extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
@@ -45,6 +47,8 @@ interface DataTableProps<T> extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
   mobile?: 'cards' | 'scroll';
   cardRender?: (row: T) => ReactNode;
   minWidth?: number;
+  /** Accessible name for the table, rendered as a visually hidden `<caption>`. */
+  caption?: string;
   onRowClick?: (row: T) => void;
   /** Empty state (kind, description, actions, icon). Wins over the legacy `emptyTitle` pair. */
   empty?: DataTableEmpty;
@@ -92,6 +96,7 @@ export function DataTable<T>({
   mobile = 'scroll',
   cardRender,
   minWidth = 600,
+  caption,
   onRowClick,
   empty,
   emptyTitle = 'No rows yet',
@@ -126,6 +131,7 @@ export function DataTable<T>({
     stickyLeft: c.stickyLeft,
     minWidth: c.minWidth,
     ariaSort: c.ariaSort,
+    rowHeader: c.rowHeader,
   }));
   const shellRows = rows.map((row) => ({
     key: rowKey(row),
@@ -158,6 +164,7 @@ export function DataTable<T>({
       columns={shellColumns}
       rows={shellRows}
       minWidth={minWidth}
+      caption={caption}
       empty={emptyProps}
       onRowKeyClick={onRowKeyClick}
       density={density}
@@ -186,7 +193,17 @@ export function DataTable<T>({
   return (
     <div ref={ref} className={className} style={style} {...rest}>
       <div className="wa-hidden lg:wa-block">{tableEl}</div>
-      <div className="lg:wa-hidden wa-space-y-2" aria-busy={loading || undefined}>
+      <div
+        className="lg:wa-hidden wa-space-y-2"
+        aria-busy={loading || undefined}
+        // Page-change target for KitTablePager: scroll margin clears the sticky workspace
+        // header; tabIndex -1 lets it take programmatic focus without becoming a tab stop.
+        data-kit-list=""
+        data-kit-list-focus=""
+        tabIndex={-1}
+        style={{ scrollMarginTop: 'calc(var(--workspace-top-offset, 0px) + 8px)', outline: 'none' }}
+        {...(caption ? { role: 'group', 'aria-label': caption } : undefined)}
+      >
         {errorNotice ? (
           <div className="wa-kit-table-notice" role="alert">
             {errorNotice}

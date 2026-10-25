@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 import { CheckCircle2, Download, Award } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DesignSurface, KpiStrip, KitEmptyState, ProgressBar, PageOpener } from '@/components/portal/kit';
+import { MemberDisclosure } from './MemberDisclosure';
+import styles from './memberPages.module.css';
 import { ShareButton } from '@/components/ui/ShareButton';
 import { buildCertificateShare, getBrowserShareOrigin } from '@/lib/og/shareAchievementLinks';
 import { MEMBER_PROGRAM_HREF } from '@/lib/member/memberProgramHref';
@@ -98,6 +100,7 @@ export function MemberCertificatesKit({
   const continueIsPrimary = Boolean(continueHref) && inProgress.length > 0;
   const hasAddForm = Boolean(addCertificateForm);
   const te = useTranslations('empty');
+  const td = useTranslations('common.disclosures');
   const addAction = { href: `#${MEMBER_CERTIFICATES_ADD_FORM_ID}`, label: te('certificates.action') };
   // Mid-course: resume first. Otherwise the self-report form when it is on the
   // page, else the counselor. The second slot is the next-best real step.
@@ -123,10 +126,9 @@ export function MemberCertificatesKit({
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-5">
         <PageOpener
-          kicker="Credentials"
           title="Certificates and achievements"
-          lede="Verified credentials, plus what's in progress."
-          icon={<Award size={13} aria-hidden="true" />}
+          meta={earnedCount + inProgressCount > 0 ? `${earnedCount} earned, ${inProgressCount} in progress.` : "Verified credentials, plus what's in progress."}
+          aside={verifiedCount > 0 ? <span className="wa-kit-chip wa-kit-chip--green">{verifiedCount} verified</span> : undefined}
         />
         <KpiStrip items={kpiItems} />
 
@@ -153,26 +155,27 @@ export function MemberCertificatesKit({
                 />
               </div>
             ) : (
-              <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }}>
-                {earned.map((cert, i) => (
-                  <div
-                    key={cert.id}
-                    className="wa-flex wa-items-start wa-gap-4"
-                    style={{ padding: '16px 20px', borderTop: i === 0 ? 'none' : '1px solid var(--wa-border)' }}
-                  >
-                    <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="wa-kit-card wa-kit-card--flush">
+                {earned.map((cert) => (
+                  <div key={cert.id} className={styles.certRow}>
+                    <span className={styles.certIcon} aria-hidden="true">
+                      <Award size={18} />
+                    </span>
+                    <div className={styles.certBody}>
                       <div className="wa-flex wa-flex-wrap wa-items-center wa-gap-2">
-                        <h3 style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}>{cert.title}</h3>
+                        <h3 className="wa-kit-card-title">{cert.title}</h3>
                         {cert.verified ? (
-                          <CheckCircle2 size={15} color="var(--wa-success)" aria-label="Verified" style={{ flexShrink: 0 }} />
+                          <span className="wa-kit-chip wa-kit-chip--green" aria-label="Verified">
+                            <CheckCircle2 aria-hidden="true" /> Verified
+                          </span>
                         ) : null}
                       </div>
-                      <p className="wa-kit-meta" style={{ marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>{cert.meta}</p>
-                      <div className="wa-flex wa-flex-wrap wa-gap-2" style={{ marginTop: 12 }}>
+                      <p className="wa-kit-card-sub" style={{ marginTop: 2, fontVariantNumeric: 'tabular-nums' }}>{cert.meta}</p>
+                      <div className={styles.certActions}>
                         <a
                           href="/api/member/certifications/export"
                           download="my-certificates.csv"
-                          className="wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
+                          className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none"
                           title="Download your certificate records (CSV)"
                         >
                           <Download size={14} aria-hidden="true" /> Download
@@ -187,18 +190,15 @@ export function MemberCertificatesKit({
           </div>
 
           {inProgress.length > 0 ? (
-            <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div className="wa-kit-card wa-kit-card--flush">
               <h2 className="sr-only">Certificates in progress</h2>
-              {inProgress.map((cert, i) => {
+              {inProgress.map((cert) => {
                 const pct = Math.max(0, Math.min(100, Math.round(cert.percent)));
                 return (
-                  <div
-                    key={cert.id}
-                    style={{ padding: '16px 20px', borderTop: i === 0 ? 'none' : '1px solid var(--wa-border)' }}
-                  >
+                  <div key={cert.id} className={styles.progressRow}>
                     <div className="wa-flex wa-flex-wrap wa-items-center wa-justify-between wa-gap-2">
-                      <h3 style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}>{cert.title}</h3>
-                      <span style={{ fontSize: 'var(--wa-type-meta)', fontWeight: 700, color: 'var(--wa-accent)', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
+                      <h3 className="wa-kit-card-title">{cert.title}</h3>
+                      <span className="wa-kit-chip wa-kit-chip--blue" style={{ flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
                         {pct}%
                       </span>
                     </div>
@@ -219,16 +219,15 @@ export function MemberCertificatesKit({
               className="wa-kit-card"
               style={{ scrollMarginTop: 'var(--wa-pad)' }}
             >
-              <h2
-                id={`${MEMBER_CERTIFICATES_ADD_FORM_ID}-title`}
-                style={{ fontWeight: 800, fontSize: 'var(--wa-type-body)', letterSpacing: '-0.02em' }}
-              >
+              <h2 id={`${MEMBER_CERTIFICATES_ADD_FORM_ID}-title`} className="wa-kit-card-title">
                 Add a certificate you earned elsewhere
               </h2>
-              <p className="wa-kit-lede" style={{ marginTop: 4, marginBottom: 16 }}>
-                Earned a certificate outside WorkforceAP, like CPR or OSHA 10? Add it here. Our staff check every
-                certificate you add. Until they do, it shows as pending and does not count as earned.
+              <p className="wa-kit-lede" style={{ marginTop: 4, marginBottom: 0 }}>
+                Earned a certificate outside WorkforceAP, like CPR or OSHA 10? Add it here.
               </p>
+              <MemberDisclosure summary={td('whatHappensNext')}>
+                Our staff check every certificate you add. Until they do, it shows as pending and does not count as earned.
+              </MemberDisclosure>
               {addCertificateForm}
             </section>
           ) : null}

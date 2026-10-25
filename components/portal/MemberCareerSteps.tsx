@@ -15,7 +15,7 @@ export function MemberCareerSteps({ current, resultId }: {
     { id: 'training', label: t('training'), href: trainingBridgeHref(resultId) },
   ];
   return (
-    <nav className={styles.navigation} aria-label={t('nav')}>
+    <nav className={`${styles.navigation} ${styles.careerNavigation}`} aria-label={t('nav')}>
       {items.map(item => (
         <Link key={item.id} href={item.href} className="wa-kit-focus" aria-current={current === item.id ? 'step' : undefined}>
           {item.label}
@@ -26,18 +26,22 @@ export function MemberCareerSteps({ current, resultId }: {
 }
 
 /** Assigned learning, optional resources, and readiness keep their own definitions. */
-export function MemberTrainingNav({ current, programSlug }: {
+export type MemberTrainingNavHrefs = Partial<Record<'program' | 'learning' | 'readiness', string>>;
+
+export function MemberTrainingNav({ current, programSlug, hrefs }: {
   current: 'program' | 'learning' | 'readiness';
   programSlug?: string | null;
+  /** Optional route overrides for credential-free fixture owners. */
+  hrefs?: MemberTrainingNavHrefs;
 }) {
   const t = useTranslations('memberWorkspace.training');
   const items = [
-    { id: 'program', label: t('program'), href: `/dashboard/program${programSlug ? `?program=${encodeURIComponent(programSlug)}` : ''}` },
-    { id: 'learning', label: t('learning'), href: `/dashboard/learning${programSlug ? `?program=${encodeURIComponent(programSlug)}` : ''}` },
-    { id: 'readiness', label: t('readiness'), href: '/dashboard/readiness' },
+    { id: 'program', label: t('program'), href: hrefs?.program ?? `/dashboard/program${programSlug ? `?program=${encodeURIComponent(programSlug)}` : ''}` },
+    { id: 'learning', label: t('learning'), href: hrefs?.learning ?? `/dashboard/learning${programSlug ? `?program=${encodeURIComponent(programSlug)}` : ''}` },
+    { id: 'readiness', label: t('readiness'), href: hrefs?.readiness ?? '/dashboard/readiness' },
   ];
   return (
-    <nav className={styles.navigation} aria-label={t('nav')}>
+    <nav className={`${styles.navigation} ${styles.trainingNavigation}`} aria-label={t('nav')}>
       {items.map(item => (
         <Link key={item.id} href={item.href} className="wa-kit-focus" aria-current={current === item.id ? 'page' : undefined}>
           {item.label}

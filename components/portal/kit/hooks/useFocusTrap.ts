@@ -18,6 +18,10 @@ import { useEffect, useRef, type RefObject } from 'react';
  *    layer.
  *  - **Focus restore:** focus returns to the element focused when the trap
  *    activated (typically the trigger), matching native `<dialog>` behavior.
+ *    When nothing usable was focused at activation (Safari does not focus a
+ *    button on click, so `activeElement` is `<body>`), it returns to
+ *    `returnFocusRef`, or to the control that declares `aria-controls` for the
+ *    container's id, instead of dropping to `<body>`.
  *
  * Prefer native `<dialog>.showModal()` when building a kit Dialog — this hook
  * is for the drawer/popover cases where that isn't available.
@@ -103,6 +107,34 @@ export interface FocusTrapOptions {
   onEscape?: () => void;
   /** Skip moving focus into the container on activate (default false). */
   skipInitialFocus?: boolean;
+  /**
+   * Where focus goes on deactivate when the element focused at activation is
+   * missing, `<body>`, inside the container, or gone. Defaults to the control
+   * with `aria-controls` naming the container's id.
+   */
+  returnFocusRef?: RefObject<HTMLElement | null>;
+}
+
+/** An element worth returning focus to: outside `root`, not the document, still mounted. */
+function isUsableOpener(el: HTMLElement | null, root: HTMLElement): el is HTMLElement {
+  return (
+    !!el &&
+    el !== document.body &&
+    el !== document.documentElement &&
+    !root.contains(el) &&
+    el.isConnected
+  );
+}
+
+function controllerOf(root: HTMLElement): HTMLElement | null {
+  if (!root.id) return null;
+  const id = typeof CSS !== 'undefined' && typeof CSS.escape === 'function' ? CSS.escape(root.id) : root.id;
+  return document.querySelector<HTMLElement>(`[aria-controls~="${id}"]`);
+}
+
+/** A container that opted into programmatic focus (`tabIndex={-1}`) can hold focus itself. */
+function canHoldFocus(root: HTMLElement): boolean {
+  return root.hasAttribute('tabindex');
 }
 
 /**
@@ -119,26 +151,42 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(
   const onEscapeRef = useRef(opts.onEscape);
   onEscapeRef.current = opts.onEscape;
   const skipInitialFocus = opts.skipInitialFocus ?? false;
+  const returnFocusRef = opts.returnFocusRef;
 
   useEffect(() => {
     if (!active) return;
     const root = ref.current;
     if (!root) return;
 
-    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const activeAtOpen = document.activeElement as HTMLElement | null;
+    const previouslyFocused = isUsableOpener(activeAtOpen, root) ? activeAtOpen : null;
     const entry: TrapEntry = { root, onEscape: () => onEscapeRef.current?.() };
     pushTrap(entry);
 
     const initialFocusTimer = skipInitialFocus
       ? null
-      : window.setTimeout(() => getFocusable(root)[0]?.focus(), 0);
+      : window.setTimeout(() => {
+          // A panel with nothing focusable inside (an empty notifications list)
+          // takes focus itself when it opted in with tabIndex, so keyboard and
+          // screen-reader users land in the dialog instead of staying behind it.
+          const first = getFocusable(root)[0];
+          if (first) first.focus();
+          else if (canHoldFocus(root)) root.focus({ preventScroll: true });
+        }, 0);
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return;
       // Only the top-most trap manages the tab ring.
       if (escapeStack[escapeStack.length - 1] !== entry) return;
       const list = getFocusable(root);
-      if (list.length === 0) return;
+      if (list.length === 0) {
+        // Nothing to tab to: keep focus on the container rather than leaking out.
+        if (canHoldFocus(root)) {
+          e.preventDefault();
+          root.focus({ preventScroll: true });
+        }
+        return;
+      }
       const first = list[0];
       const last = list[list.length - 1];
       const activeEl = document.activeElement as HTMLElement | null;
@@ -164,9 +212,14 @@ export function useFocusTrap<T extends HTMLElement = HTMLElement>(
       if (initialFocusTimer !== null) window.clearTimeout(initialFocusTimer);
       document.removeEventListener('keydown', onKeyDown);
       popTrap(entry);
-      previouslyFocused?.focus?.();
+      // Not guarded on the current activeElement: on the backdrop-tap path it
+      // is the tabIndex=-1 overlay, and in Safari it is <body>.
+      // The trigger is mounted outside this container, so reading it live here is the point.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const target = previouslyFocused ?? returnFocusRef?.current ?? controllerOf(root);
+      target?.focus?.({ preventScroll: true });
     };
-  }, [active, skipInitialFocus]);
+  }, [active, skipInitialFocus, returnFocusRef]);
 
   return ref;
 }

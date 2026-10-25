@@ -52,6 +52,11 @@ beforeEach(() => {
   location.search = '';
   location.wide = true;
   localStorage.clear();
+  // The desktop rail starts compact when nothing is saved; these specs
+  // exercise the expanded rail, so pin the saved preference to expanded.
+  for (const role of ['member', 'employer', 'admin', 'counselor', 'partner']) {
+    localStorage.setItem(`wa_nav_collapsed_${role}`, '0');
+  }
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     matches: location.wide, addEventListener: vi.fn(), removeEventListener: vi.fn(),
   })));
@@ -71,6 +76,14 @@ function show(role: 'member' | 'employer' = 'member') {
 }
 
 describe('workspace navigation', () => {
+  it('exposes a focusable desktop member nav landmark for skip navigation', () => {
+    const { container } = show();
+    const desktopNav = container.querySelector('nav#workspace-sidebar-nav');
+
+    expect(desktopNav).toHaveAttribute('tabindex', '-1');
+    expect(container.querySelectorAll('#workspace-sidebar-nav')).toHaveLength(1);
+  });
+
   it('limits the dynamic-height warm canvas to the mounted workspace, including dark mode', () => {
     const css = readFileSync(join(process.cwd(), 'css/portal-kit.css'), 'utf8');
     const rule = css.match(/(html \.workspace-shell-root\[data-workspace-role\])\s*\{([^}]+)\}/)!;
@@ -400,6 +413,54 @@ describe('workspace navigation', () => {
     await user.click(screen.getByRole('button', { name: 'Open menu' }));
     await user.keyboard('{Escape}');
     expect(rail).toHaveAttribute('inert');
+  });
+});
+
+describe('member phone tabs (round 3, Addendum A4)', () => {
+  const bar = () => screen.getByRole('navigation', { name: 'Main tabs' });
+  const more = () => screen.getByRole('button', { name: 'More' });
+
+  it('renders four links and one More button, for members only', () => {
+    location.wide = false;
+    location.pathname = '/dashboard/program';
+    const m = show();
+    expect(bar()).toHaveAttribute('id', 'mobile-bottom-nav');
+    const links = within(bar()).getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/dashboard', '/dashboard/program', '/dashboard/jobs', '/dashboard/messages']);
+    expect(links.filter((a) => a.getAttribute('aria-current') === 'page').map((a) => a.textContent)).toEqual(['Program']);
+    expect(within(bar()).getAllByRole('button')).toHaveLength(1);
+    expect(more()).toHaveAttribute('type', 'button');
+    expect(more()).toHaveAttribute('aria-controls', 'workspace-sidebar');
+    m.unmount();
+    show('employer');
+    expect(screen.queryByRole('navigation', { name: 'Main tabs' })).not.toBeInTheDocument();
+  });
+
+  it('More flips aria-expanded with the drawer and focus returns to More after Escape', async () => {
+    location.wide = false;
+    const user = userEvent.setup();
+    const { container } = show();
+    const rail = container.querySelector('.workspace-sidebar');
+    expect(more()).toHaveAttribute('aria-expanded', 'false');
+    await user.click(more());
+    expect(screen.getByRole('dialog', { name: 'Member portal navigation' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'More', hidden: true })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'true');
+    expect(rail?.contains(document.activeElement)).toBe(true);
+    await user.keyboard('{Escape}');
+    expect(rail).toHaveAttribute('inert');
+    expect(more()).toHaveAttribute('aria-expanded', 'false');
+    expect(document.activeElement).toBe(more());
+  });
+
+  it('focus returns to the hamburger after Escape when the hamburger opened the drawer', async () => {
+    location.wide = false;
+    const user = userEvent.setup();
+    show();
+    const hamburger = screen.getByRole('button', { name: 'Open menu' });
+    await user.click(hamburger);
+    await user.keyboard('{Escape}');
+    expect(document.activeElement).toBe(hamburger);
   });
 });
 

@@ -1,0 +1,11 @@
+.listing { display: grid; gap: var(--wa-pad-sm); }
+.searchBar { display: flex; gap: .75rem; align-items: flex-end; }
+.search { flex: 1; min-width: 0; }
+.resultsHeading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .75rem; }
+.matches { border-block: 1px solid var(--wa-border); }
+.matches summary { min-height: 48px; padding-block: var(--wa-pad-sm); cursor: pointer; color: var(--wa-text); font-size: var(--wa-type-body); font-weight: 700; }
+.matches summary span { color: var(--wa-muted); font-weight: 400; font-size: var(--wa-type-meta); margin-inline-start: .5rem; }
+@media (max-width: 479px) {
+  .searchBar { flex-wrap: wrap; }
+  .search { flex-basis: 100%; }
+}

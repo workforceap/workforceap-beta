@@ -73,7 +73,9 @@ export default function PWAInstallPrompt() {
     <div
       style={{
         position: 'fixed',
-        bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+        // On member phones the shell sets --member-tabs-clearance to the bottom
+        // tab bar height so the prompt floats above it; elsewhere it is 0.
+        bottom: 'calc(1rem + var(--member-tabs-clearance, 0px) + env(safe-area-inset-bottom, 0px))',
         left: '1rem',
         right: '1rem',
         zIndex: 9999,

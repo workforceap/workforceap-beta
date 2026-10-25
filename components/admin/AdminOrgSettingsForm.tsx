@@ -246,7 +246,7 @@ export default function AdminOrgSettingsForm({
           fontSize: 13,
           fontWeight: 700,
           color: 'var(--wa-on-accent)',
-          background: 'var(--wa-accent)',
+          background: 'var(--wa-accent-fill)',
           cursor: loading || logoUploading ? 'default' : 'pointer',
           opacity: loading || logoUploading ? 0.75 : 1,
         }}

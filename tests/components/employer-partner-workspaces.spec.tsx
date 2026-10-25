@@ -160,4 +160,10 @@ it('phone applicants use the server filter, replace rows on pagination, and reta
   rerender(localized(<MobileApplicationsClient initialRows={[application('app-2', 'Grace Applicant')]} activeStatusFilter="reviewing" activeSort="applied_asc" />));
   expect(screen.queryByRole('button', { name: /Ada Applicant/ })).toBeNull();
   expect(screen.getByRole('button', { name: 'Expand details for Grace Applicant' })).toBeVisible();
+  rerender(localized(<MobileApplicationsClient initialRows={[]} activeStatusFilter="reviewing" activeSort="applied_asc" />));
+  expect(screen.getByRole('heading', { name: 'No applicants match this filter' })).toBeVisible();
+  expect(screen.getByRole('link', { name: 'Show all applicants' })).toHaveAttribute('href', '/employer/candidates?view=applicants&sort=applied_asc');
+  rerender(localized(<MobileApplicationsClient initialRows={[]} activeStatusFilter={null} activeSort="applied_asc" />));
+  expect(screen.getByRole('heading', { name: messages.employer.noApplicationsYet })).toBeVisible();
+  expect(screen.queryByRole('link', { name: 'Show all applicants' })).toBeNull();
 });

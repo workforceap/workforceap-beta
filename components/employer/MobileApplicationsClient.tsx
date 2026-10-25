@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { JOB_APPLICATION_STATUS_KEYS, jobApplicationStatusLabel } from '@/lib/status/jobApplicationStatusVocabulary';
 import EmployerApplicationChatClient from '@/components/portal/EmployerApplicationChatClient';
-import { StatusTag, type KitTone } from '@/components/portal/kit';
+import { KitEmptyState, StatusTag, type KitTone } from '@/components/portal/kit';
 import type { AppMsg, EmployerApplicationRow } from './EmployerApplicationsClient';
 import { employerApplicationsListHref, type EmployerApplicationsSort } from '@/lib/employer/employerApplicationsListQuery';
 import PortalRecordLink from '@/components/portal/PortalRecordLink';
@@ -156,7 +156,11 @@ export default function MobileApplicationsClient({
               className="wa-kit-focus wa-text-sm wa-font-semibold"
               style={Object.assign(
                 { flexShrink: 0, padding: '0.375rem 1rem', borderRadius: '9999px' },
-                active ? { background: 'var(--color-accent)', color: '#ffffff' } : { background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' }
+                // Solid accent control: --wa-accent paired with its adaptive foreground
+                // (KIT_GUIDE §1), like the desktop "All" pill in EmployerJobsBoard. The
+                // old --color-accent + #ffffff was 3.28:1 wherever --color-accent
+                // follows the lightened dark accent (no org accent pinned).
+                active ? { background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)' } : { background: 'var(--surface-container)', color: 'var(--color-on-surface-variant)' }
               )}
             >
               {f.label}
@@ -172,10 +176,15 @@ export default function MobileApplicationsClient({
       {/* Applicant cards */}
       <div style={{ padding: '0 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {visible.length === 0 ? (
-          <div style={{ background: 'var(--color-white)', borderRadius: '0.75rem', padding: '1.5rem', textAlign: 'center' }}>
-            <span className="material-symbols-outlined text-3xl block mb-2" style={{ color: 'var(--outline-variant)' }} aria-hidden="true">inbox</span>
-            <p className="text-sm" style={{ color: 'var(--color-on-surface-variant)' }}>No applications found.</p>
-          </div>
+          <KitEmptyState
+            framed
+            title={activeStatusFilter ? 'No applicants match this filter' : t('noApplicationsYet')}
+            kind={activeStatusFilter ? 'filtered' : 'first'}
+            primaryAction={activeStatusFilter ? {
+              label: 'Show all applicants',
+              href: employerApplicationsListHref({ sort: activeSort }),
+            } : undefined}
+          />
         ) : (
           visible.map((app) => {
             const isExpanded = expandedId === app.id;

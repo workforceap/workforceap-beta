@@ -51,6 +51,11 @@ const inventory = {
 };
 const row = (notes: string, status = 'not-started') => ({ status, light: false, dark: false, phone: false, notes });
 const review = (revisionId = revision) => <PortalReviewClient inventory={inventory} revision={revisionId} />;
+function showReview() {
+  const view = render(review());
+  fireEvent.change(within(view.container).getByRole('combobox', { name: 'Checklist' }), { target: { value: 'focused' } });
+  return view;
+}
 const notes = (container: HTMLElement, title: string) => within(container).getByRole('textbox', { name: `Notes: ${title}` });
 const result = (container: HTMLElement, title: string) => within(container).getByRole('combobox', { name: `Result: ${title}` });
 const setNotes = (container: HTMLElement, title: string, value: string) => fireEvent.change(notes(container, title), { target: { value } });
@@ -93,8 +98,8 @@ async function exportCsv(container: HTMLElement) {
 
 describe('browser-local portal review results', () => {
   it('preserves separate screen edits from two stale tabs and restores both on reload', () => {
-    const first = render(review());
-    const second = render(review());
+    const first = showReview();
+    const second = showReview();
     setNotes(first.container, 'Resume files', 'Original file download verified');
     fireEvent.change(result(first.container, 'Resume files'), { target: { value: 'pass' } });
     // No storage notification has reached this second tab yet.
@@ -102,7 +107,7 @@ describe('browser-local portal review results', () => {
     fireEvent.change(result(second.container, 'Awaiting reply'), { target: { value: 'issue' } });
     first.unmount();
     second.unmount();
-    const restored = render(review());
+    const restored = showReview();
     expect(notes(restored.container, 'Resume files')).toHaveValue('Original file download verified');
     expect(result(restored.container, 'Resume files')).toHaveValue('pass');
     expect(notes(restored.container, 'Awaiting reply')).toHaveValue('Reply action needs investigation');
@@ -111,7 +116,7 @@ describe('browser-local portal review results', () => {
   });
 
   it('reconciles saved records and removals, ignoring other revisions and session storage', () => {
-    const view = render(review());
+    const view = showReview();
     localStorage.setItem(caseKey(resumeRoute), JSON.stringify(row('Checked in another tab', 'pass')));
     notifyStorage(caseKey(resumeRoute));
     expect(notes(view.container, 'Resume files')).toHaveValue('Checked in another tab');
@@ -130,7 +135,7 @@ describe('browser-local portal review results', () => {
   });
 
   it('keeps newer fields on the same case when its storage event has not arrived yet', () => {
-    const view = render(review());
+    const view = showReview();
     localStorage.setItem(caseKey(resumeRoute), JSON.stringify({ ...row('Remote note', 'pass'), dark: true }));
     setNotes(view.container, 'Resume files', 'Local follow-up');
     expect(result(view.container, 'Resume files')).toHaveValue('pass');
@@ -147,7 +152,7 @@ describe('browser-local portal review results', () => {
       [`focus:${repliesRoute}`]: row('Legacy reply note', 'blocked'),
     }));
     localStorage.setItem(caseKey(resumeRoute), JSON.stringify(row('Newer case note', 'issue')));
-    const view = render(review());
+    const view = showReview();
     expect(notes(view.container, 'Resume files')).toHaveValue('Newer case note');
     expect(result(view.container, 'Resume files')).toHaveValue('issue');
     expect(notes(view.container, 'Awaiting reply')).toHaveValue('Legacy reply note');
@@ -159,7 +164,7 @@ describe('browser-local portal review results', () => {
   });
 
   it('keeps failed saves editable and exportable, and retries them on the next edit', async () => {
-    const view = render(review());
+    const view = showReview();
     vi.spyOn(Storage.prototype, 'setItem').mockImplementationOnce(() => { throw new DOMException('Full', 'QuotaExceededError'); });
     setNotes(view.container, 'Resume files', 'Unsaved but recoverable');
     expect(within(view.container).getByText('Browser saving is unavailable. Export the CSV before closing.')).toBeInTheDocument();
@@ -169,7 +174,7 @@ describe('browser-local portal review results', () => {
     setNotes(view.container, 'Awaiting reply', 'Next review');
     expect(within(view.container).getByText('Review changes save in this browser.')).toBeInTheDocument();
     view.unmount();
-    const restored = render(review());
+    const restored = showReview();
     expect(notes(restored.container, 'Resume files')).toHaveValue('Unsaved but recoverable');
     expect(notes(restored.container, 'Awaiting reply')).toHaveValue('Next review');
   });
@@ -177,7 +182,7 @@ describe('browser-local portal review results', () => {
   it('ignores malformed stored rows without blanking valid results', () => {
     localStorage.setItem(caseKey(resumeRoute), '{broken');
     localStorage.setItem(caseKey(repliesRoute), JSON.stringify({ status: 'invented', light: 'yes', dark: true, notes: 'x'.repeat(3010) }));
-    const view = render(review());
+    const view = showReview();
     expect(notes(view.container, 'Resume files')).toHaveValue('');
     expect(notes(view.container, 'Awaiting reply')).toHaveValue('x'.repeat(3000));
     expect(result(view.container, 'Awaiting reply')).toHaveValue('not-started');
@@ -197,12 +202,12 @@ describe('review CSV downloads', () => {
     // Saved notes can retain CRLF/control characters that a textarea normalizes
     // while typing; exercise the exported bytes from that persisted boundary.
     localStorage.setItem(caseKey(resumeRoute), JSON.stringify(row(note)));
-    const view = render(review());
+    const view = showReview();
     expect(await exportCsv(view.container)).toContain(expectedCell);
   });
 
   it('quotes multiline text and exports all cases even when the list is filtered', async () => {
-    const view = render(review());
+    const view = showReview();
     setNotes(view.container, 'Resume files', 'First line, "quoted"\nSecond line');
     fireEvent.change(within(view.container).getByRole('combobox', { name: 'Portal' }), { target: { value: 'member' } });
     expect(within(view.container).queryByRole('textbox', { name: 'Notes: Awaiting reply' })).toBeNull();
@@ -211,5 +216,52 @@ describe('review CSV downloads', () => {
     expect(csv).toContain('"focused","counselor","/counselor/today?view=replies"');
     expect(csv).toContain('"routes","member","/dashboard/resume"');
     expect(csv).toContain('"Revision","Type","Role","Route","Check","Light","Dark","Phone","Result","Notes"');
+  });
+});
+
+describe('fixture screen catalog', () => {
+  it('starts with sample screens and preserves the separate signed-in checklist', () => {
+    const view = render(review());
+    const ui = within(view.container);
+    expect(ui.getByRole('combobox', { name: 'Checklist' })).toHaveValue('fixtures');
+    expect(ui.getByRole('heading', { name: 'Home and next step' })).toBeInTheDocument();
+    expect(ui.queryByRole('heading', { name: 'Resume files' })).toBeNull();
+    expect(ui.getAllByRole('article')).toHaveLength(10);
+    expect(ui.getByText('Sample data. Live actions need an approved test account.')).toBeInTheDocument();
+    fireEvent.change(ui.getByRole('combobox', { name: 'Checklist' }), { target: { value: 'focused' } });
+    expect(ui.getByRole('heading', { name: 'Resume files' })).toBeInTheDocument();
+    expect(ui.getByText(/Rendering a sample screen does not pass these checks/)).toBeInTheDocument();
+  });
+
+  it('finds a scenario by name and exposes its exact link and action limits', () => {
+    const view = render(review());
+    const ui = within(view.container);
+    fireEvent.change(ui.getByRole('textbox', { name: 'Find a screen or scenario' }), { target: { value: 'Restricted exports' } });
+    expect(ui.getAllByRole('article')).toHaveLength(1);
+    expect(ui.getByRole('heading', { name: 'Partner impact' })).toBeInTheDocument();
+    const details = view.container.querySelector('article details')!;
+    fireEvent.click(details.querySelector('summary')!);
+    details.setAttribute('open', ''); // jsdom does not implement summary's native toggle.
+    expect(ui.getByRole('link', { name: 'Restricted exports in a new tab' })).toHaveAttribute('href', '/dev/staff/partner-impact?view=exports&tier=restricted');
+    expect(ui.getByText(/Fixture exports return to an explanation, not a file/)).toBeInTheDocument();
+    expect(ui.getByRole('combobox', { name: 'Result: Partner impact' })).toHaveValue('not-started');
+  });
+
+  it('filters by role, identifies the local-only page and stores manual fixture notes separately', async () => {
+    const view = render(review());
+    const ui = within(view.container);
+    fireEvent.change(ui.getByRole('combobox', { name: 'Portal' }), { target: { value: 'admin' } });
+    fireEvent.change(ui.getByRole('textbox', { name: 'Find a screen or scenario' }), { target: { value: 'People directory' } });
+    expect(ui.getByText('Local development only')).toBeInTheDocument();
+    view.container.querySelector('article details')!.setAttribute('open', '');
+    setNotes(view.container, 'People directory', 'Staff scenario: reviewed locally');
+    fireEvent.change(result(view.container, 'People directory'), { target: { value: 'blocked' } });
+    const key = `wap-portal-review:${revision}:case:${encodeURIComponent('fixture:/dev/staff/people')}`;
+    expect(JSON.parse(localStorage.getItem(key)!)).toMatchObject({ status: 'blocked', notes: 'Staff scenario: reviewed locally' });
+    expect(localStorage.getItem(caseKey(resumeRoute))).toBeNull();
+    const csv = await exportCsv(view.container);
+    expect(csv).toContain('"fixtures","admin","/dev/staff/people"');
+    expect(csv).toContain('Staff scenario: reviewed locally');
+    expect(csv).toContain('/dev/staff/people?view=staff');
   });
 });

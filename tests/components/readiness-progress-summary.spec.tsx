@@ -60,6 +60,11 @@ describe('ReadinessProgressSummary (coach note)', () => {
     expect(screen.queryByRole('link', { name: /Apply to jobs/ })).toBeNull();
   });
 
+  it('accepts a fixture-owned Learning Hub destination without changing the action label', () => {
+    renderCard({ learningHref: '/dev/member/program?state=workspace' });
+    expect(screen.getByRole('link', { name: /Open Learning Hub/ })).toHaveAttribute('href', '/dev/member/program?state=workspace');
+  });
+
   it.each([
     ['94', { addApplications: { earned: 15, max: 15, done: true } }],
     ['89', {}],

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { purgePendingResumeDrafts } from '@/lib/resume/pendingResumeDraft';
 import { resetCurrentUserCache } from '@/lib/auth/currentUserClient';
+import { STUDIO_DRAFT_SESSION_ENDED_EVENT } from '@/lib/resume/studioDraft';
 
 type SignOutButtonProps = {
   className?: string;
@@ -22,6 +23,8 @@ export function SignOutButton({ className, children, onSignOutStart }: SignOutBu
     // Forget the shared current-user snapshot so nothing renders a stale role (WAP-27).
     resetCurrentUserCache();
     if (response.ok) {
+      // Invalidate pending extraction callbacks before removing private copies.
+      window.dispatchEvent(new Event(STUDIO_DRAFT_SESSION_ENDED_EVENT));
       try {
         purgePendingResumeDrafts(sessionStorage);
       } catch {

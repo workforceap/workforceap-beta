@@ -20,6 +20,8 @@
  * the `session` tab. Page chrome is PageOpener + SegmentedControl on the shared
  * `--wa-bg-wave` wash (same as other member kits). Live-session panels stay dark
  * on purpose (`--wa-sidebar-*` / session tokens — not a second app header).
+ * Workspace tabs precede task shortcuts; preparation guidance stays available
+ * in a native disclosure so the phone view reaches the actual choices quickly.
  * Text-bearing Resume Studio gradients use fixed deep hero colors so their
  * foregrounds stay readable independently of the selected app theme.
  *
@@ -79,6 +81,7 @@ import { StatusTag } from '../StatusTag';
 import { VoiceOrb } from '../VoiceOrb';
 import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
+import styles from './VoiceStudio.module.css';
 
 type StudioTab = 'coaches' | 'session' | 'studio' | 'toolkit';
 export type VoiceStudioAgentKey = 'readiness' | 'resume' | 'mock' | 'counselor' | 'business';
@@ -182,7 +185,10 @@ const TOOL_HREF = {
   'gap-analyzer': '/dashboard/ai-tools/gap-analyzer',
   'salary-negotiation': '/dashboard/ai-tools/salary-negotiation',
   'benefits-cliff': '/dashboard/ai-tools/benefits-cliff',
+  'human-messages': '/dashboard/messages',
 } as const;
+type ToolHrefKey = keyof typeof TOOL_HREF;
+type ToolHrefMap = Record<ToolHrefKey, string>;
 
 const TABS: Array<{ id: StudioTab; label: string }> = [
   { id: 'coaches', label: 'Coaches' },
@@ -219,6 +225,8 @@ export interface VoiceStudioKitProps {
   sessionPayload?: Record<string, unknown>;
   /** Which voice coach to retain when deep-linking to any tab. */
   initialAgent?: VoiceStudioAgentKey;
+  /** Optional route overrides for credential-free fixture destinations. */
+  destinationHrefs?: Partial<Record<ToolHrefKey, string>>;
 }
 
 export function VoiceStudioKit({
@@ -227,9 +235,11 @@ export function VoiceStudioKit({
   sessionEndpoint = '/api/interview/session',
   sessionPayload = { role: 'a general professional role', interviewType: 'behavioral' },
   initialAgent,
+  destinationHrefs,
 }: VoiceStudioKitProps) {
   const t = useTranslations('aiToolsDiscovery');
   const ti = useTranslations('memberWorkspace.interviews');
+  const toolHrefs: ToolHrefMap = { ...TOOL_HREF, ...destinationHrefs };
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -352,27 +362,8 @@ export function VoiceStudioKit({
         className="wa-space-y-6"
       >
         <PageOpener
-          kicker="Tools & careers"
           title="AI Career Tools"
-          lede={t('hubIntro')}
-          icon={<AudioLines size={13} aria-hidden="true" />}
         />
-        {tab === 'coaches' ? (
-          <VStack as="section" gap={3} aria-labelledby="ai-tools-start-heading">
-            <h2 id="ai-tools-start-heading" className="wa-text-lg wa-font-bold">{t('startTitle')}</h2>
-            <p className="wa-kit-lede wa-m-0">
-              {t('startIntro')}
-            </p>
-            <HStack gap={3} wrap="wrap">
-              <KitLinkButton href={TOOL_HREF['resume-studio']} label={t('resume')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
-              <KitLinkButton href={TOOL_HREF.interviews} label={ti('title')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
-              <KitLinkButton href={TOOL_HREF['cover-letter']} label={t('coverLetter')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
-            </HStack>
-            <p className="wa-kit-meta wa-m-0">
-              {t('preparation')}
-            </p>
-          </VStack>
-        ) : null}
         <div className="wa-page-tabs">
           <SegmentedControl
             value={tab}
@@ -386,16 +377,31 @@ export function VoiceStudioKit({
             ))}
           </SegmentedControl>
         </div>
+        {tab === 'coaches' ? (
+          <VStack as="section" gap={3} aria-labelledby="ai-tools-start-heading">
+            <h2 id="ai-tools-start-heading" className="wa-text-lg wa-font-bold">{t('startTitle')}</h2>
+            <HStack gap={3} wrap="wrap">
+              <KitLinkButton href={toolHrefs['resume-studio']} label={t('resume')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+              <KitLinkButton href={toolHrefs.interviews} label={ti('title')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+              <KitLinkButton href={toolHrefs['cover-letter']} label={t('coverLetter')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+            </HStack>
+            <details className={styles.preparation}>
+              <summary className="wa-kit-focus">{t('preparationTitle')}</summary>
+              <p>{t('startIntro')}</p>
+              <p>{t('preparation')}</p>
+            </details>
+          </VStack>
+        ) : null}
         <div
           role="region"
           id={`vs-panel-${tab}`}
           aria-label={TABS.find((section) => section.id === tab)?.label}
           style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
         >
-          {tab === 'coaches' && <CoachesPanel onPick={pickAgent} />}
+          {tab === 'coaches' && <CoachesPanel onPick={pickAgent} toolHrefs={toolHrefs} />}
           {tab === 'session' && <SessionPanel key={selectedAgentKey ?? `fallback:${sessionEndpoint}`} agent={agent} />}
-          {tab === 'studio' && <StudioPanel data={resumeStudio} onResumeCoachNavigate={onResumeCoachNavigate} />}
-          {tab === 'toolkit' && <ToolkitPanel />}
+          {tab === 'studio' && <StudioPanel data={resumeStudio} onResumeCoachNavigate={onResumeCoachNavigate} toolHrefs={toolHrefs} />}
+          {tab === 'toolkit' && <ToolkitPanel toolHrefs={toolHrefs} />}
         </div>
       </div>
     </DesignSurface>
@@ -490,7 +496,7 @@ const COACH_CARDS: CoachCard[] = [
   },
 ];
 
-function CoachesPanel({ onPick }: { onPick: (agent: SessionAgentConfig) => void }) {
+function CoachesPanel({ onPick, toolHrefs }: { onPick: (agent: SessionAgentConfig) => void; toolHrefs: ToolHrefMap }) {
   const t = useTranslations('memberWorkspace.ai');
   return (
     <section style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -515,13 +521,13 @@ function CoachesPanel({ onPick }: { onPick: (agent: SessionAgentConfig) => void 
 
       <div className="wa-grid wa-grid-cols-1 md:wa-grid-cols-2 lg:wa-grid-cols-3 wa-gap-5">
         {COACH_CARDS.map((c) => (
-          <CoachCardView key={c.key} card={c} onPick={onPick} />
+          <CoachCardView key={c.key} card={c.href ? { ...c, href: resolveToolHref(c.href, toolHrefs) } : c} onPick={onPick} />
         ))}
       </div>
       <div className={workspaceStyles.navigation}>
-        <Link href={TOOL_HREF['resume-coach']} className="wa-kit-focus">{t('openResumeCoach')}</Link>
-        <Link href={TOOL_HREF.counselor} className="wa-kit-focus">{t('lilley')}</Link>
-        <Link href="/dashboard/messages" className="wa-kit-focus">{t('humanLink')}</Link>
+        <Link href={toolHrefs['resume-coach']} className="wa-kit-focus">{t('openResumeCoach')}</Link>
+        <Link href={toolHrefs.counselor} className="wa-kit-focus">{t('lilley')}</Link>
+        <Link href={toolHrefs['human-messages']} className="wa-kit-focus">{t('humanLink')}</Link>
       </div>
     </section>
   );
@@ -576,7 +582,7 @@ function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: Sess
       break;
     case 'dark':
       cardStyle = { background: 'var(--wa-sidebar-bg)', color: 'var(--wa-sidebar-text)', border: '1px solid var(--wa-sidebar-border)', boxShadow: DARK_CARD_SHADOW };
-      iconChip = { background: 'var(--wa-accent)' };
+      iconChip = { background: 'var(--wa-accent-fill)' };
       bodyColor = 'rgba(255,255,255,0.9)';
       break;
     case 'gold-light':
@@ -1346,7 +1352,7 @@ function scoreBand(score: number): { color: string; label: string } {
   return { color: 'var(--wa-accent)', label: 'Needs work — start with the fixes below' };
 }
 
-function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; onResumeCoachNavigate: () => void }) {
+function StudioPanel({ data, onResumeCoachNavigate, toolHrefs }: { data: ResumeStudioData; onResumeCoachNavigate: () => void; toolHrefs: ToolHrefMap }) {
   const t = useTranslations('memberWorkspace.ai');
   const hasResume = data.hasResume;
   const score =
@@ -1406,7 +1412,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
           </p>
         </div>
         <KitLinkButton
-          href={hasResume ? TOOL_HREF['resume-studio'] + '?view=score' : TOOL_HREF['resume-studio']}
+          href={hasResume ? toolHrefs['resume-studio'] + '?view=score' : toolHrefs['resume-studio']}
           label={hasResume ? 'Open full analysis' : 'Add résumé'}
           variant="primary"
           size="sm"
@@ -1414,7 +1420,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
         />
       </div>
 
-      <p className={workspaceStyles.context}>{t('resumeCoachContext')} <Link href={TOOL_HREF['resume-coach']} className="wa-page-action wa-kit-focus">{t('openResumeCoach')}</Link></p>
+      <p className={workspaceStyles.context}>{t('resumeCoachContext')} <Link href={toolHrefs['resume-coach']} className="wa-page-action wa-kit-focus">{t('openResumeCoach')}</Link></p>
       {hasResume && score !== null ? (
         <>
           {/* score + fixes */}
@@ -1464,7 +1470,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
               {issues.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {issues.map((issue, i) => (
-                    <IssueRow key={i} issue={issue} />
+                    <IssueRow key={i} issue={issue} toolHrefs={toolHrefs} />
                   ))}
                 </div>
               ) : (
@@ -1494,8 +1500,8 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
                 Scores this resume against job-market keywords and O*NET skills, then rewrites weak bullets.
               </p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
-                <KitLinkButton href={TOOL_HREF['resume-studio'] + '?view=score'} label="Run full analysis" variant="primary" size="sm" icon={<Sparkles size={14} aria-hidden="true" />} />
-                <KitLinkButton href={TOOL_HREF['resume-rewriter']} label="Rewrite a bullet" variant="secondary" size="sm" />
+                <KitLinkButton href={toolHrefs['resume-studio'] + '?view=score'} label="Run full analysis" variant="primary" size="sm" icon={<Sparkles size={14} aria-hidden="true" />} />
+                <KitLinkButton href={toolHrefs['resume-rewriter']} label="Rewrite a bullet" variant="secondary" size="sm" />
               </div>
               </div>
             </Card>
@@ -1544,7 +1550,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
             title="No resume on file"
             description="Add a resume to see a structure score, top fixes, and keyword analysis."
             action={
-              <Link href={TOOL_HREF['resume-studio']} className="wa-kit-cta wa-kit-focus hover:wa-opacity-90">
+              <Link href={toolHrefs['resume-studio']} className="wa-kit-cta wa-kit-focus hover:wa-opacity-90">
                 <Upload size={14} aria-hidden="true" />
                 Add resume
               </Link>
@@ -1556,7 +1562,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
   );
 }
 
-function IssueRow({ issue }: { issue: ResumeStudioIssue }) {
+function IssueRow({ issue, toolHrefs }: { issue: ResumeStudioIssue; toolHrefs: ToolHrefMap }) {
   const { title, detail } = issue;
   return (
     <Card>
@@ -1580,7 +1586,7 @@ function IssueRow({ issue }: { issue: ResumeStudioIssue }) {
           <div style={{ fontWeight: 700, fontSize: 'var(--wa-type-meta)' }}>{title}</div>
           <div style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>{detail}</div>
         </div>
-        <KitLinkButton href={TOOL_HREF['resume-rewriter']} label="Fix with AI" variant="primary" size="sm" />
+        <KitLinkButton href={toolHrefs['resume-rewriter']} label="Fix with AI" variant="primary" size="sm" />
       </div>
     </Card>
   );
@@ -1658,7 +1664,7 @@ function ToolkitToolTag({ tag }: { tag: ToolTag }) {
   }
 }
 
-function ToolkitPanel() {
+function ToolkitPanel({ toolHrefs }: { toolHrefs: ToolHrefMap }) {
   // Computed (not hardcoded) so the count can never drift from what's
   // actually rendered below as tools are added or removed from a step.
   const toolCount = TOOLKIT_STEPS.reduce((n, step) => n + step.tools.length, 0);
@@ -1707,7 +1713,7 @@ function ToolkitPanel() {
             <ul className="wa-kit-toolkit-list">
               {step.tools.map((tool) => (
                 <li key={tool.title}>
-                  <ToolCardView tool={tool} />
+                  <ToolCardView tool={tool} toolHrefs={toolHrefs} />
                 </li>
               ))}
             </ul>
@@ -1718,14 +1724,20 @@ function ToolkitPanel() {
   );
 }
 
-function ToolCardView({ tool }: { tool: ToolCard }) {
+function resolveToolHref(href: string, toolHrefs: ToolHrefMap): string {
+  const key = (Object.keys(TOOL_HREF) as ToolHrefKey[]).find((candidate) => TOOL_HREF[candidate] === href);
+  return key ? toolHrefs[key] : href;
+}
+
+function ToolCardView({ tool, toolHrefs }: { tool: ToolCard; toolHrefs: ToolHrefMap }) {
   const t = useTranslations('memberWorkspace');
   const { Icon, title: originalTitle, body: originalBody, tag, href } = tool;
   const title = href === TOOL_HREF.interviews ? t('interviews.title') : href === TOOL_HREF['resume-studio'] ? t('resume.metaTitle') : originalTitle;
   const body = href === TOOL_HREF.interviews ? t('ai.interviewDirectory') : href === TOOL_HREF['resume-studio'] ? t('ai.resumeDirectory') : href === TOOL_HREF['training-bridge'] ? t('ai.trainingDirectory') : originalBody;
+  const destinationHref = resolveToolHref(href, toolHrefs);
 
   return (
-    <Link href={href} className="wa-kit-toolkit-row wa-kit-focus">
+    <Link href={destinationHref} className="wa-kit-toolkit-row wa-kit-focus">
       <span className="wa-kit-toolkit-row__icon" aria-hidden="true">
         <Icon size={18} />
       </span>

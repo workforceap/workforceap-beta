@@ -207,4 +207,20 @@ describe('admin surfaces: the same pending posting', () => {
     expect(screen.queryByText(OLD_WORDS)).toBeNull();
     expect(document.body.textContent).not.toMatch(/Awaiting approval/);
   });
+
+  it('lets long job titles wrap in mobile cards instead of truncating them beside status', () => {
+    render(
+      <JobsBoardKit
+        jobs={[
+          { id: 'agentforce', role: 'Agentforce Solutions Engineer', employer: 'Accenture', location: 'Remote', wage: '$74–92k', applicants: 3, status: 'Draft' },
+        ]}
+        openRoles={1}
+        employers={1}
+      />,
+    );
+
+    const titles = screen.getAllByText('Agentforce Solutions Engineer');
+    expect(titles.some((title) => (title as HTMLElement).style.whiteSpace === 'normal')).toBe(true);
+    expect(titles.some((title) => (title as HTMLElement).style.overflowWrap === 'anywhere')).toBe(true);
+  });
 });

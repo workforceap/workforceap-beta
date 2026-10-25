@@ -3,7 +3,7 @@ process.env.TZ = 'UTC';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn(), placements: vi.fn() }));
+const mocks = vi.hoisted(() => ({ user: vi.fn(), context: vi.fn(), partner: vi.fn(), count: vi.fn(), referrals: vi.fn(), events: vi.fn(), placements: vi.fn(), name: vi.fn() }));
 vi.mock('next/navigation', () => ({ redirect: (url: string) => { throw new Error(`REDIRECT:${url}`); } }));
 vi.mock('next/headers', () => ({ headers: async () => new Headers() }));
 vi.mock('next/link', () => ({
@@ -17,6 +17,7 @@ vi.mock('@/lib/auth/portalGuards', () => ({ unlinkedPartnerHref: async () => '/d
 vi.mock('@/lib/audit/readOnlyPortalAudit', () => ({ isReadOnlyPortalAuditHeader: () => true }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: {
   partner: { findUnique: mocks.partner },
+  user: { findUnique: mocks.name },
   partnerReferral: { count: mocks.count, findMany: mocks.referrals },
   // findMany: the Payout due tile's verified-unpaid placements (WAP-213).
   placementRecord: { count: mocks.count, findMany: mocks.placements },
@@ -61,6 +62,7 @@ beforeEach(() => {
   mocks.partner.mockResolvedValue({ name: 'Synthetic Community', slug: 'community-slug', referralCode: 'community-code', status: 'active' });
   mocks.count.mockResolvedValue(1);
   mocks.placements.mockResolvedValue([]);
+  mocks.name.mockResolvedValue({ fullName: 'Casey Morgan' });
   mocks.referrals.mockResolvedValue([
     { id: 'ref-1', referredAt: INSTANT, member: { id: 'member-1', fullName: 'Fixture Member', enrolledAt: null } },
   ]);
@@ -85,5 +87,23 @@ describe('PartnerDashboardPage kit dates', () => {
     expect(html).not.toContain('9/19/2026');
     expect(html).not.toContain('Sep 19');
     expect(html).toContain('Fixture M. · Sep 18, 2026');
+  });
+
+  it('reads the greeting name inside the same batch as the overview counts, scoped to the signed-in user', async () => {
+    let release!: (row: { fullName: string }) => void;
+    mocks.name.mockReturnValueOnce(new Promise((resolve) => { release = resolve; }));
+    const pending = PartnerDashboardPage({ searchParams: Promise.resolve({}) });
+    // The name read is still open while the first count has already started: they overlap.
+    await vi.waitFor(() => expect(mocks.count).toHaveBeenCalled());
+    expect(mocks.name).toHaveBeenCalledTimes(1);
+    expect(mocks.name).toHaveBeenCalledWith({ where: { id: 'partner-user' }, select: { fullName: true } });
+    release({ fullName: 'Casey Morgan' });
+    expect(renderToStaticMarkup(await pending)).toContain('Welcome back, Casey.');
+  });
+
+  it('keeps the organisation name as the title when the name read fails', async () => {
+    mocks.name.mockRejectedValueOnce(new Error('db down'));
+    const html = renderToStaticMarkup(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain('<h1>Synthetic Community</h1>');
   });
 });

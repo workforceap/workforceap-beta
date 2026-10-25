@@ -138,6 +138,7 @@ type FooterClearance = {
   lastInnerFullyAboveFooter: boolean;
   saveOverlapsFooterAtCenter: boolean;
   nextStepsOverlapsFooterAtCenter: boolean;
+  footerClearsBottomNav: boolean;
 };
 
 async function readFooterClearance(page: Page): Promise<FooterClearance> {
@@ -182,6 +183,13 @@ async function readFooterClearance(page: Page): Promise<FooterClearance> {
       null;
     const lastInnerFullyAboveFooter = aboveFooter(lastContent);
     const nextStepsFullyAboveFooter = aboveFooter(nextStepsHeading);
+    const bottomNav = document.querySelector<HTMLElement>('.member-portal-top-nav__list');
+    const bottomNavRect = bottomNav?.getBoundingClientRect();
+    const footerClearsBottomNav =
+      !bottomNavRect ||
+      getComputedStyle(bottomNav!).position !== 'fixed' ||
+      getComputedStyle(bottomNav!).display === 'none' ||
+      footer.getBoundingClientRect().bottom <= bottomNavRect.top + 1;
 
     if (save instanceof HTMLElement) {
       save.scrollIntoView({ block: 'end', inline: 'nearest' });
@@ -208,6 +216,7 @@ async function readFooterClearance(page: Page): Promise<FooterClearance> {
       lastInnerFullyAboveFooter,
       saveOverlapsFooterAtCenter,
       nextStepsOverlapsFooterAtCenter,
+      footerClearsBottomNav,
     };
   });
 }
@@ -241,8 +250,27 @@ test.describe('site footer does not cover member content', () => {
       const clearance = await readFooterClearance(page);
       expect(clearance.footerPosition).toBe('static');
       expect(clearance.lastInnerFullyAboveFooter).toBe(true);
+      expect(clearance.footerClearsBottomNav).toBe(true);
     });
   }
+
+  test('cover letter legal links remain above the fixed phone tabs at 375x600', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 600 });
+    await page.goto('/dev/member/cover-letter');
+    const footer = page.locator('.dashboard-site-footer');
+    await expect(footer.getByRole('link', { name: 'Privacy' })).toBeVisible();
+    await page.evaluate(() => {
+      document.querySelector('main')?.scrollTo(0, document.querySelector('main')?.scrollHeight ?? 0);
+      window.scrollTo(0, document.documentElement.scrollHeight);
+    });
+
+    const geometry = await page.evaluate(() => {
+      const footerRect = document.querySelector('.dashboard-site-footer')?.getBoundingClientRect();
+      const tabsRect = document.querySelector('.member-portal-top-nav__list')?.getBoundingClientRect();
+      return { footerBottom: footerRect?.bottom ?? Infinity, tabsTop: tabsRect?.top ?? -Infinity };
+    });
+    expect(geometry.footerBottom).toBeLessThanOrEqual(geometry.tabsTop + 1);
+  });
 });
 
 /**

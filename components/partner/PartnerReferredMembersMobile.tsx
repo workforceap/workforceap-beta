@@ -61,7 +61,9 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
 
   return (
     <>
-      <div style={{ display: 'flex', gap: '0.5rem', padding: '0 1.5rem 1rem', overflowX: 'auto' }}>
+      {/* Wraps instead of scrolling sideways: four chips need ~341px, wider
+          than a phone rail, and a clipped "At Risk" gave no scroll cue. */}
+      <div role="group" aria-label="Filter referred members" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', padding: '0 1.5rem 1rem' }}>
         {chips.map((chip) => {
           const active = filter === chip.key;
           return (
@@ -74,12 +76,13 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
               className="wa-kit-focus"
               style={{
                 flexShrink: 0,
+                minHeight: 44,
                 padding: '0.375rem 0.875rem',
                 borderRadius: '9999px',
                 fontSize: '0.8125rem',
                 fontWeight: 700,
-                background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
-                color: active ? 'var(--wa-on-accent)' : 'var(--wa-muted)',
+                background: active ? 'var(--wa-accent-fill)' : 'var(--wa-surface)',
+                color: active ? 'var(--wa-on-accent-control)' : 'var(--wa-muted)',
                 border: `1px solid ${active ? 'var(--wa-accent)' : 'var(--wa-border)'}`,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
@@ -87,7 +90,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
             >
               {chip.label}
               {chip.count > 0 ? (
-                <span className="wa-tabular-nums" style={{ marginLeft: '0.375rem', fontSize: '0.8125rem', opacity: 0.85 }}>{chip.count}</span>
+                <span className="wa-tabular-nums" style={{ marginLeft: '0.375rem', fontSize: '0.8125rem' }}>{chip.count}</span>
               ) : null}
             </button>
           );

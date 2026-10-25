@@ -47,7 +47,10 @@ describe('standalone voice-studio fixture messages', () => {
 
     expect(intlError).not.toHaveBeenCalled();
     expect(consoleError).not.toHaveBeenCalled();
-    expect(screen.getByText(catalog.aiToolsDiscovery.hubIntro)).toBeVisible();
+    const preparation = screen.getByText(catalog.aiToolsDiscovery.preparationTitle);
+    expect(preparation).toBeVisible();
+    preparation.click();
+    expect(screen.getByText(catalog.aiToolsDiscovery.startIntro)).toBeVisible();
     const startingPoints = within(screen.getByRole('region', { name: catalog.aiToolsDiscovery.startTitle }));
     expect(startingPoints.getByRole('link', { name: catalog.aiToolsDiscovery.resume }))
       .toHaveAttribute('href', '/dashboard/resume');

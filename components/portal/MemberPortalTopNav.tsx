@@ -50,6 +50,7 @@ export default function MemberPortalTopNav({
   const [moreOpen, setMoreOpen] = useState(false);
   const moreId = useId();
   const navRef = useRef<HTMLElement>(null);
+  const moreBtnRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const activeItemRef = useRef<HTMLLIElement>(null);
 
@@ -89,6 +90,25 @@ export default function MemberPortalTopNav({
     if (!item) return;
     centerRailItem(list, item);
   }, [pathname]);
+
+  // No early-tap replay here. The strip is display:none on phones while the
+  // member bottom tab bar is mounted (css/portal-main-extracted.css) and above
+  // 768px (css/portal.css), so no tap can land on this button before
+  // hydration, and the shared `more` early-tap kind now belongs to the bar's
+  // More button, claimed by WorkspaceShell alone (lib/portal/earlyShellTap.ts).
+
+  /**
+   * Escape closes the open "More pages" list and puts focus back on its button
+   * (the same disclosure contract as DashboardProgramSelector). Outside taps
+   * deliberately do not close it: the list is in flow and pushes the page down,
+   * so dismissing it on a stray tap would shift the page under the finger.
+   */
+  const onNavKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key !== 'Escape' || event.nativeEvent.isComposing || !moreOpen) return;
+    event.preventDefault();
+    setMoreOpen(false);
+    moreBtnRef.current?.focus();
+  };
 
   const remap = (href: string) => hrefMap?.[href] ?? href;
 
@@ -184,7 +204,7 @@ export default function MemberPortalTopNav({
   };
 
   return (
-    <nav ref={navRef} className="member-portal-top-nav" aria-label={t('memberPortal')}>
+    <nav id="member-portal-top-nav" ref={navRef} tabIndex={-1} className="member-portal-top-nav" aria-label={t('memberPortal')} onKeyDown={onNavKeyDown}>
       <ul ref={listRef} className="member-portal-top-nav__list">
         {primary.map((tab) => (
             <li
@@ -202,6 +222,7 @@ export default function MemberPortalTopNav({
           {currentSecondary && renderLink(currentSecondary)}
           {extraPages.length > 0 && (
             <button
+              ref={moreBtnRef}
               type="button"
               className="member-portal-top-nav__link member-portal-top-nav__more"
               aria-expanded={moreOpen}

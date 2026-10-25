@@ -4,11 +4,20 @@ This change belongs on `feature/portal-consolidation-20261021`. It is a draft re
 
 ## Start the hand test
 
-Open `/dev/portal-review` on the Vercel deployment for this branch. The page is unavailable in production. It shows the deployment revision, **36 focused workflow checks** and **269 page routes**, including compatibility redirects and sign-in/application entry pages. These are source coverage counts, not claims that every route passed a live test.
+Open `/dev/portal-review` on the local build or the matching Vercel deployment. The page is unavailable in production. It starts with **53 member/staff sample screens** and their named scenarios, backed by [the fixture catalog](../../../lib/dev/portalReviewFixtures.ts). Separate signed-in checklists retain **36 focused workflow checks** and **269 page routes**, including compatibility redirects and sign-in/application entry pages. These are source coverage counts, not claims that every route passed a live test. Local changes are not available on an older deployed revision.
 
 The review index is implemented on this branch and ready for preview hand testing. Confirm that its displayed revision matches the intended Vercel preview before recording results; deployment readiness and final validation evidence belong in the release handoff below.
 
-Choose the focused workflow checklist first, then the complete route list. Filter by portal, route text or result. Open each screen with the appropriate test account. Mark light mode, dark mode and phone coverage separately; record Pass, Issue or Blocked with reproduction notes. The index saves review notes in this browser for the displayed revision. **Export review CSV** downloads the full review for sharing.
+Start with sample screens or a member walkthrough. Filter by portal, screen/scenario text or result; expand a screen to see its scenarios, local interactions, limits and manual notes. The source coverage test requires every member/staff fixture route to appear exactly once. Some sample controls still enter real provider/authenticated handlers, and `/dev/staff/people` is local-development-only; inspect each entry's limits first.
+
+For signed-in acceptance, choose the focused workflows or complete route list and use approved test accounts. Mark light mode, dark mode and phone coverage separately; record Pass, Issue or Blocked with reproduction notes. Opening a screen never marks it passed. The index saves review notes in this browser for the displayed revision. **Export review CSV** downloads the full review for sharing. Keep personal data and credentials out of notes and exports.
+
+Local development compiles routes on first visit, so cold navigation can be much
+slower than repeat navigation. Fixture loading feedback makes that wait visible;
+it is not a production performance benchmark. The sample shell avoids live chrome
+polling and tour writes. Jobs filters, saved controls and application confirmations
+operate on local sample state and reset on reload; they do not send an application,
+notify a counselor or establish persisted account history.
 
 Record routes such as `/admin/members/[id]` link to their starting list; choose a real record from that list. Invitation, consent and survey routes require valid issued links. The index does not invent record IDs, bypass account access or perform business actions.
 

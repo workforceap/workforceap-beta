@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { pickAdminClientMessages, pickPortalClientMessages } from '@/lib/i18n/pickRootClientMessages';
 import DevPartnerFrame from './DevPartnerFrame';
+import DevReviewBar from '../DevReviewBar';
 // Full portal stylesheet chain so staff-side kits (incl. the counselor roster,
 // which needs counselor.css) render exactly as production does.
 import '@/css/portal.css';
@@ -18,5 +19,5 @@ export default async function DevStaffLayout({ children }: { children: ReactNode
   const messages = await getMessages();
   // The fixtures render the same client tables and actions as both portal
   // groups; the marketing root intentionally omits these namespaces.
-  return <NextIntlClientProvider messages={{ ...pickAdminClientMessages(messages), ...pickPortalClientMessages(messages) }}><DevPartnerFrame>{children}</DevPartnerFrame></NextIntlClientProvider>;
+  return <NextIntlClientProvider messages={{ ...pickAdminClientMessages(messages), ...pickPortalClientMessages(messages) }}><DevReviewBar /><DevPartnerFrame>{children}</DevPartnerFrame></NextIntlClientProvider>;
 }

@@ -107,25 +107,37 @@ export default async function DevMemberResumeStudioPage({
   searchParams: Promise<{ state?: string; view?: string }>;
 }) {
   if (process.env.VERCEL_ENV === 'production') notFound();
-  const { state, view } = await searchParams;
+  const { state } = await searchParams;
   const filled = state === 'filled';
-  const isRewrite = view === 'rewrite';
-  const seeded = filled || isRewrite;
 
   return (
     <Suspense fallback={null}>
-      <p className="wa-kit-meta" style={{ padding: 16 }}>Synthetic QA fixture using the real Resume workspace. Original and revised sample files stay separate. Uploads, generation, account reads and voice are disabled here.</p>
       <ResumeStudioKit
         preview
         hasResume
-        filesSlot={<ResumeClient completeness={75} witData={{ name: 'Jordan Reyes', email: 'jordan@example.test', phone: '', recentEmployer: '', targetJob: 'Cloud Support Associate', skills: 'Support, troubleshooting' }} hasOriginal hasEnhanced layout="side-by-side" previewData={{ originalText: SEED_RESUME, enhancedText: REWRITE }} />}
+        filesSlot={
+          <ResumeClient
+            completeness={75}
+            witData={{ name: 'Jordan Reyes', email: 'jordan@example.test', phone: '', recentEmployer: '', targetJob: 'Cloud Support Associate', skills: 'Support, troubleshooting' }}
+            hasOriginal
+            hasEnhanced
+            layout="side-by-side"
+            previewData={{ originalText: SEED_RESUME, enhancedText: REWRITE }}
+            toolHrefs={{
+              rewrite: '/dev/member/resume-studio?view=rewrite',
+              jobMatch: '/dev/member/job-match',
+              score: '/dev/member/resume-studio?view=score',
+            }}
+          />
+        }
         backHref="/dev/member/toolkit"
         basePath="/dev/member/resume-studio"
-        initialResume={seeded ? SEED_RESUME : ''}
+        initialResume={filled ? SEED_RESUME : ''}
+        initialRewriteResume={SEED_RESUME}
         initialJobTarget="Cloud Support Associate"
-        previewScoreOutput={filled && !isRewrite ? SCORE_OUTPUT : undefined}
-        previewScorePayload={filled && !isRewrite ? SCORE_PAYLOAD : undefined}
-        previewRewriteOutput={filled && isRewrite ? REWRITE : undefined}
+        previewScoreOutput={filled ? SCORE_OUTPUT : undefined}
+        previewScorePayload={filled ? SCORE_PAYLOAD : undefined}
+        previewRewriteOutput={filled ? REWRITE : undefined}
       />
     </Suspense>
   );

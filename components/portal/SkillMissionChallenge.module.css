@@ -1,0 +1,509 @@
+/*
+ * Skill mission overlay (intro, quiz, scenario, result, celebration).
+ * Rendered in a portal on <body>, so it carries its own data-surface="warm"
+ * for the warm tokens and paints its own scrim (the [data-surface] canvas
+ * rule is beaten by the doubled selectors below). Tokens only; success and
+ * danger TEXT use the -dark / -text tokens, never the fill colours.
+ */
+
+.overlay,
+.overlay[data-surface] {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 1100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 16px;
+  background: light-dark(
+    color-mix(in srgb, var(--wa-text) 55%, transparent),
+    color-mix(in srgb, black 70%, transparent)
+  );
+}
+
+.dialog {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 600px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 32px;
+  background: var(--wa-surface);
+  color: var(--wa-text);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius, 12px);
+  box-shadow: var(--wa-shadow-lg);
+}
+
+.dialogCenter {
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .overlay,
+  .overlay[data-surface] {
+    padding: 8px;
+  }
+  .dialog {
+    max-height: calc(100dvh - 16px);
+    padding: 24px 16px 16px;
+  }
+}
+
+.close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--wa-border);
+  border-radius: 999px;
+  color: var(--wa-muted-strong);
+  cursor: pointer;
+}
+.close:hover {
+  background: var(--wa-surface-2);
+  color: var(--wa-text);
+}
+
+.notice {
+  position: absolute;
+  bottom: 16px;
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--wa-surface);
+  color: var(--wa-text);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius-sm, 8px);
+}
+
+/* ── Type ──────────────────────────────────────────────────────────────── */
+
+.kicker {
+  margin: 0 0 8px;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--wa-accent-text);
+}
+
+.title {
+  margin: 0 0 6px;
+  padding-right: 52px;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--wa-text);
+}
+
+.question {
+  margin: 0 0 16px;
+  padding-right: 52px;
+  font-size: var(--wa-type-body);
+  line-height: 1.4;
+  font-weight: 700;
+  color: var(--wa-text);
+}
+
+.lede {
+  margin: 0 0 16px;
+  font-size: var(--wa-type-body);
+  line-height: 1.55;
+  color: var(--wa-muted-strong);
+}
+
+.label {
+  margin: 0 0 8px;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  color: var(--wa-muted-strong);
+}
+
+.block {
+  margin-bottom: 16px;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.box {
+  box-sizing: border-box;
+  padding: 12px 16px;
+  background: var(--wa-surface-2);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius-sm, 8px);
+  font-size: var(--wa-type-body);
+  line-height: 1.6;
+  color: var(--wa-text);
+}
+
+.boxItalic {
+  font-style: italic;
+}
+
+.boxPre {
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.boxMuted {
+  color: var(--wa-muted-strong);
+}
+
+.boxMuted strong {
+  color: var(--wa-text);
+}
+
+.quote {
+  margin: 0 0 16px;
+  padding: 12px 16px 12px 20px;
+  border-left: 3px solid var(--wa-accent);
+  border-radius: 0 var(--wa-radius-sm, 8px) var(--wa-radius-sm, 8px) 0;
+  background: var(--wa-accent-soft);
+  font-size: var(--wa-type-body);
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--wa-text);
+}
+
+.spotlight {
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--wa-accent) 28%, transparent);
+  border-radius: var(--wa-radius-sm, 8px);
+  background: var(--wa-accent-soft);
+  text-align: left;
+}
+
+.spotlight p {
+  margin: 0;
+  font-size: var(--wa-type-body);
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--wa-text);
+}
+
+.spotlight .label {
+  margin-bottom: 4px;
+  font-style: normal;
+  color: var(--wa-accent-text);
+}
+
+.celebrateIcon {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--wa-success-dark);
+}
+
+/* ── Quiz ──────────────────────────────────────────────────────────────── */
+
+.quizTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-right: 52px;
+}
+
+.counter {
+  margin: 0;
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  color: var(--wa-muted-strong);
+  white-space: nowrap;
+}
+
+.track {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--wa-track);
+}
+
+.trackFill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--wa-accent-fill);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .trackFill {
+    transition: width var(--wa-dur-slow) var(--wa-ease);
+  }
+}
+
+.options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 16px;
+  background: var(--wa-surface-2);
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius-sm, 8px);
+  color: var(--wa-text);
+  font: inherit;
+  font-size: var(--wa-type-body);
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+.option:hover:not(:disabled) {
+  border-color: var(--wa-accent);
+}
+.option:disabled {
+  cursor: default;
+}
+.option[data-state='selected'] {
+  background: var(--wa-accent-soft);
+  border-color: var(--wa-accent);
+}
+.option[data-state='correct'] {
+  background: var(--wa-success-soft);
+  border-color: var(--wa-success);
+  color: var(--wa-success-dark);
+}
+.option[data-state='wrong'] {
+  background: var(--wa-danger-soft);
+  border-color: var(--wa-danger);
+  color: var(--wa-danger-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .option {
+    transition: background var(--wa-dur-fast), border-color var(--wa-dur-fast);
+  }
+}
+
+.optionKey {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--wa-border);
+  color: var(--wa-muted-strong);
+  font-size: var(--wa-type-meta);
+  font-weight: 800;
+}
+.option[data-state='correct'] .optionKey {
+  background: var(--wa-success-soft);
+  color: var(--wa-success-dark);
+}
+.option[data-state='wrong'] .optionKey {
+  background: var(--wa-danger-soft);
+  color: var(--wa-danger-text);
+}
+
+.feedback {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius-sm, 8px);
+  background: var(--wa-surface-2);
+  font-size: var(--wa-type-body);
+  line-height: 1.55;
+  color: var(--wa-text);
+}
+.feedback[data-tone='correct'] {
+  background: var(--wa-success-soft);
+}
+.feedback[data-tone='review'] {
+  background: var(--wa-gold-soft);
+}
+.feedback > svg {
+  flex: none;
+  margin-top: 3px;
+}
+.feedback[data-tone='correct'] > svg {
+  color: var(--wa-success-dark);
+}
+.feedback[data-tone='review'] > svg {
+  color: var(--wa-gold-dark);
+}
+.feedback p {
+  margin: 0;
+}
+
+.status {
+  margin: 0 0 16px;
+  font-size: var(--wa-type-body);
+  color: var(--wa-muted-strong);
+}
+
+/* ── Scenario ──────────────────────────────────────────────────────────── */
+
+.recap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.textarea {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--wa-surface-2);
+  border: 1.5px solid var(--wa-border);
+  border-radius: var(--wa-radius-sm, 8px);
+  color: var(--wa-text);
+  font: inherit;
+  font-size: var(--wa-type-body);
+  line-height: 1.6;
+  resize: vertical;
+}
+/* The ring itself is the kit recipe (.wa-kit-focus on the element); this only tints the border. */
+.textarea:focus-visible {
+  border-color: var(--wa-accent);
+}
+.textarea:disabled {
+  opacity: 0.7;
+}
+
+.count {
+  margin: 4px 0 12px;
+  font-size: var(--wa-type-meta);
+  color: var(--wa-muted-strong);
+}
+.count[data-ready='true'] {
+  font-weight: 700;
+  color: var(--wa-success-dark);
+}
+
+.tip {
+  margin-bottom: 20px;
+  padding: 8px 12px;
+  border-radius: var(--wa-radius-sm, 8px);
+  background: var(--wa-surface-2);
+  font-size: var(--wa-type-body);
+  line-height: 1.5;
+  color: var(--wa-muted-strong);
+}
+.tip strong {
+  color: var(--wa-text);
+}
+
+.error {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, var(--wa-danger) 30%, transparent);
+  border-radius: var(--wa-radius-sm, 8px);
+  background: var(--wa-danger-soft);
+  font-size: var(--wa-type-body);
+  line-height: 1.5;
+  color: var(--wa-danger-text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.actionsCenter {
+  justify-content: center;
+}
+
+.textButton {
+  min-height: 44px;
+  padding: 8px;
+  background: none;
+  border: none;
+  color: var(--wa-muted-strong);
+  font: inherit;
+  font-size: var(--wa-type-body);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.textButton:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid color-mix(in srgb, var(--wa-on-accent-control) 30%, transparent);
+  border-top-color: var(--wa-on-accent-control);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+  }
+}
+
+/* ── Result ────────────────────────────────────────────────────────────── */
+
+.resultHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding-right: 52px;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 800;
+  color: var(--wa-text);
+}
+.resultHead svg {
+  flex: none;
+}
+.resultHead[data-verdict='passed'] svg {
+  color: var(--wa-success-dark);
+}
+.resultHead[data-verdict='review'] svg {
+  color: var(--wa-gold-dark);
+}
+
+.coaching {
+  margin: 0 0 16px;
+  padding: 16px;
+  border: 1px solid var(--wa-border);
+  border-radius: var(--wa-radius-sm, 8px);
+  background: var(--wa-surface-2);
+  font-size: var(--wa-type-body);
+  line-height: 1.65;
+  color: var(--wa-text);
+}
+.coaching[data-verdict='passed'] {
+  background: var(--wa-success-soft);
+}
+.coaching[data-verdict='review'] {
+  background: var(--wa-gold-soft);
+}

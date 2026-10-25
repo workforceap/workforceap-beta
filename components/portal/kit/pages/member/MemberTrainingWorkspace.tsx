@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { ArrowRight, BookOpen, CalendarDays, Check, ChevronRight, Clock3, FileCheck2, GraduationCap, MessageCircle, Save } from 'lucide-react';
+import { ArrowRight, BookOpen, CalendarDays, Check, ChevronRight, Clock3, FileCheck2, MessageCircle, Save } from 'lucide-react';
 import { Button } from '@astryxdesign/core/Button';
 import { ProgressBar } from '@astryxdesign/core/ProgressBar';
 import { TextArea } from '@astryxdesign/core/TextArea';
@@ -13,8 +13,8 @@ import { TextInput } from '@astryxdesign/core/TextInput';
 import { VStack } from '@astryxdesign/core/VStack';
 import { HStack } from '@astryxdesign/core/HStack';
 import { DesignSurface, PageOpener, KitEmptyState, useAnnounce } from '@/components/portal/kit';
-import { MemberTrainingNav } from '@/components/portal/MemberCareerSteps';
-import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
+import { MemberTrainingNav, type MemberTrainingNavHrefs } from '@/components/portal/MemberCareerSteps';
+import { MemberContextNote, MemberDisclosure } from './MemberDisclosure';
 import TrackedCourseraLaunchLink from '@/components/portal/TrackedCourseraLaunchLink';
 import SkillMissionChallenge from '@/components/portal/SkillMissionChallenge';
 import type { TrainingCoursePractice } from '@/lib/member/trainingCoursePractice';
@@ -94,6 +94,10 @@ export interface MemberTrainingWorkspaceProps {
   trainingEmail?: string | null;
   practiceMissions?: TrainingCoursePractice[];
   practiceUnavailable?: boolean;
+  /** Optional route overrides for credential-free fixture owners. */
+  trainingNavHrefs?: MemberTrainingNavHrefs;
+  /** Optional route overrides for the course follow-up actions. */
+  secondaryActionHrefs?: Partial<Record<'missions' | 'resume' | 'feedback', string>>;
 }
 
 type Draft = { notes: string; artifactUrl: string };
@@ -108,7 +112,7 @@ function addDays(date: string, days: number) {
 }
 
 /** The member's assigned curriculum, study schedule, and durable work in one place. */
-export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTitle, completedSlugs, destinations, initialCourseSlug, syllabusHours, syllabusBreakdown, modulesNote, trainingEmail, practiceMissions = [], practiceUnavailable = false }: MemberTrainingWorkspaceProps) {
+export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTitle, completedSlugs, destinations, initialCourseSlug, syllabusHours, syllabusBreakdown, modulesNote, trainingEmail, practiceMissions = [], practiceUnavailable = false, trainingNavHrefs, secondaryActionHrefs }: MemberTrainingWorkspaceProps) {
   const router = useRouter();
   const te = useTranslations('empty');
   const tw = useTranslations('memberWorkspace.training');
@@ -219,9 +223,9 @@ export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTi
   return (
     <DesignSurface surface="warm">
       <main className="wa-kit-training">
-        <PageOpener kicker="My program" title="Your training workspace" lede="Learn the skills. Build the work. Keep moving toward your next role." icon={<GraduationCap size={14} aria-hidden="true" />} />
-        <MemberTrainingNav current="program" programSlug={workspace.programSlug} />
-        <p className={workspaceStyles.context}>{tw('learningContext')}</p>
+        <PageOpener title="Your training workspace" meta={workspace.courses.length ? `${completedCount} of ${workspace.courses.length} courses complete. Keep moving toward your next role.` : 'Learn the skills. Build the work. Keep moving toward your next role.'} />
+        <MemberTrainingNav current="program" programSlug={workspace.programSlug} hrefs={trainingNavHrefs} />
+        <MemberContextNote line={tw('learningContextShort')} moreLabel={tw('learningContextMoreLabel')} more={tw('learningContextMore')} />
         <section className="wa-kit-training-overview" aria-label="Your assigned training">
           <VStack gap={3}>
             <p className="wa-kit-training-eyebrow">{totalHours} hours of assigned training</p>
@@ -258,7 +262,8 @@ export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTi
                 <label className="wa-kit-training-field">Start this schedule on<input type="date" min="0001-01-01" max="9999-12-31" required value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label>
                 <p className="wa-kit-training-estimate">{weeks ? <><strong>{weeks} weeks</strong><span>at {pace} hours per week{finishDate ? ` · through ${dateLabel(finishDate)}` : ''}</span></> : hoursRemaining === 0 ? 'All assigned courses are complete.' : 'Choose between 1 and 40 hours per week.'}</p>
                 <Button label={workspace.weeklyHours === null ? 'Save my study schedule' : 'Update study schedule'} type="submit" variant="primary" size="lg" isLoading={saving === 'plan'} isDisabled={!validPace || !isValidPlanDate(startDate) || Boolean(saving)} />
-                <p className="wa-kit-training-muted">Planning estimates include the full hours of unfinished courses. Your progress changes only when training completion is recorded.</p>
+                <p className="wa-kit-training-muted">These weeks are planning estimates.</p>
+                <MemberDisclosure summary={tw('disclosures.progressLabel')}>{tw('disclosures.progress')}</MemberDisclosure>
               </VStack>
             </form>
             <section aria-label="Course study weeks" className="wa-kit-training-weeklist">
@@ -297,9 +302,9 @@ export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTi
                   {completed.has(selected.slug) ? <p className="wa-kit-training-success"><Check size={16} aria-hidden="true" />Completion recorded</p> : null}
                 </VStack>
                 {selectedLabs.length ? <section aria-label="Applied support labs"><VStack gap={4}>
-                  <VStack gap={2}><h3>{IT_SUPPORT_LAB_SCOPE.title}</h3><p className="wa-kit-training-muted">Practice with supplied support tickets and device logs. Save your evidence, submit it for human feedback, and revise your work.</p></VStack>
+                  <VStack gap={2}><h3>{IT_SUPPORT_LAB_SCOPE.title}</h3><p className="wa-kit-training-muted">Practice with supplied support tickets and device logs.</p><MemberDisclosure summary={tw('disclosures.labsLabel')}>{tw('disclosures.labs')}</MemberDisclosure></VStack>
                   <ol className="wa-kit-training-labs">{selectedLabs.map((lab) => <li key={lab.id}><Link href={`/dashboard/learning/labs/${lab.id}`} className="wa-kit-focus"><VStack gap={1}><strong>{lab.title}</strong><span>{lab.summary}</span><span className="wa-kit-training-muted">About {lab.estimatedMinutes} minutes · Written evidence and counselor review</span></VStack><ArrowRight size={18} aria-hidden="true" /></Link></li>)}</ol>
-                  <p className="wa-kit-training-notice">These four starter labs have about 5 planned hours of activity. Instructional review and time validation are pending; the full 58-hour lab sequence is still being developed.</p>
+                  <p className="wa-kit-training-notice">These four starter labs have about 5 planned hours of activity.</p><MemberDisclosure summary={tw('disclosures.pendingLabel')}>{tw('disclosures.pending')}</MemberDisclosure>
                 </VStack></section> : selectedDestination?.launchHref ? <VStack gap={2}>
                   <TrackedCourseraLaunchLink href={selectedDestination.launchHref} courseSlug={selected.slug} className="wa-kit-cta wa-kit-focus">{completed.has(selected.slug) ? 'Review course in Coursera' : 'Open course in Coursera'} <ArrowRight size={16} aria-hidden="true" /></TrackedCourseraLaunchLink>
                   <p className="wa-kit-training-muted">Opens in a new tab.{trainingEmail ? ` Use your training email: ${trainingEmail}.` : ' Use the training account assigned by your counselor.'}</p>
@@ -310,15 +315,16 @@ export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTi
                     <h3>Practice this skill</h3>
                     <p><strong>{selectedPractice.missionName}</strong> · About {selectedPractice.estimatedMinutes} minutes</p>
                     <p className="wa-kit-training-muted">{selectedPractice.missionTagline}</p>
-                    {selectedPractice.status === 'locked' ? <p className="wa-kit-training-notice">This practice opens when this course&apos;s completion is recorded. You can keep working on your course notes below.</p> : <Button label={selectedPractice.status === 'passed' ? 'Practice this skill again' : selectedPractice.status === 'needs_retry' ? 'Try this skill practice again' : 'Start this skill practice'} variant="secondary" size="lg" onClick={() => setActiveMission(selectedPractice)} />}
+                    {selectedPractice.status === 'locked' ? <><p className="wa-kit-training-notice">This practice opens when this course&apos;s completion is recorded.</p><MemberDisclosure summary={tw('disclosures.lockedLabel')}>{tw('disclosures.locked')}</MemberDisclosure></> : <Button label={selectedPractice.status === 'passed' ? 'Practice this skill again' : selectedPractice.status === 'needs_retry' ? 'Try this skill practice again' : 'Start this skill practice'} variant="secondary" size="lg" onClick={() => setActiveMission(selectedPractice)} />}
                     {selectedPractice.latestResult ? <VStack gap={2}>
                       <p className="wa-kit-training-eyebrow">{selectedPractice.status === 'passed' ? 'Practice passed' : 'Practice feedback · try again'}</p>
                       <p>{selectedPractice.latestResult.coachingNote}</p>
                       {selectedPractice.status === 'passed' && selectedPractice.latestResult.resumeBullet ? <><h4>Your resume draft</h4><p>{selectedPractice.latestResult.resumeBullet}</p><p className="wa-kit-training-muted">Review this wording for accuracy before adding it to your resume.</p></> : null}
                     </VStack> : null}
-                    <p className="wa-kit-training-muted">A short quiz and written scenario with feedback. This practice does not award a credential or replace your course assessment.</p>
+                    <p className="wa-kit-training-muted">A short quiz and written scenario with feedback.</p>
+                    <p className="wa-kit-training-muted">This practice does not award a credential or replace your course assessment.</p>
                   </VStack>
-                </section> : practiceUnavailable ? <p className="wa-kit-training-notice">Course practice could not load. <Link href="/dashboard/missions">Try the Skill Missions page</Link>.</p> : null}
+                </section> : practiceUnavailable ? <p className="wa-kit-training-notice">Course practice could not load. <Link href={secondaryActionHrefs?.missions ?? '/dashboard/missions'}>Try the Skill Missions page</Link>.</p> : null}
 
                 <form onSubmit={(event) => { event.preventDefault(); void save('coursework'); }}>
                   <VStack gap={4}>
@@ -332,9 +338,9 @@ export function MemberTrainingWorkspace({ workspace: initialWorkspace, programTi
                 </form>
                 <footer className="wa-kit-training-tools">
                   <h3>Put this learning to work</h3>
-                  <Link href="/dashboard/missions"><FileCheck2 size={18} aria-hidden="true" /><span><strong>Practice with Skill Missions</strong><small>Apply your skills and get feedback.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
-                  <Link href="/dashboard/resume"><Save size={18} aria-hidden="true" /><span><strong>Build your resume</strong><small>Turn the work into a career story.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
-                  <Link href={`/dashboard/messages?${new URLSearchParams({ program: workspace.programSlug, course: selected.slug, curriculum: workspace.curriculumVersion }).toString()}`}><MessageCircle size={18} aria-hidden="true" /><span><strong>Ask for feedback on this course</strong><small>Review a message with this course and your saved project link.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
+                  <Link href={secondaryActionHrefs?.missions ?? '/dashboard/missions'}><FileCheck2 size={18} aria-hidden="true" /><span><strong>Practice with Skill Missions</strong><small>Apply your skills and get feedback.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
+                  <Link href={secondaryActionHrefs?.resume ?? '/dashboard/resume'}><Save size={18} aria-hidden="true" /><span><strong>Build your resume</strong><small>Turn the work into a career story.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
+                  <Link href={secondaryActionHrefs?.feedback ?? `/dashboard/messages?${new URLSearchParams({ program: workspace.programSlug, course: selected.slug, curriculum: workspace.curriculumVersion }).toString()}`}><MessageCircle size={18} aria-hidden="true" /><span><strong>Ask for feedback on this course</strong><small>Review a message with this course and your saved project link.</small></span><ArrowRight size={16} aria-hidden="true" /></Link>
                 </footer>
               </VStack> : (
                 // `empty.assignedCourses`: a workspace exists only for a pinned

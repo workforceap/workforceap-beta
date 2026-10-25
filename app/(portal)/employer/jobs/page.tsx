@@ -138,7 +138,6 @@ export default async function EmployerJobsPage({ searchParams }: SearchProps) {
       <EmployerPageOpener
         kicker={t('employerPortal')}
         title={t('jobPostings')}
-        subtitle={t('managePostingsAndCandidates')}
         action={<EmployerJobsActions labels={{ nav: t('jobsWorkspaceActions'), jobs: t('myJobs'), post: t('postAJobBtn'), import: t('importJobsBtn') }} />}
       />
 

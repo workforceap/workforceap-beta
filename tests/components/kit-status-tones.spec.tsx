@@ -1,5 +1,6 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { readCss, loadRootTokens, colorOf, contrast } from '@/lib/ui/cssTokenContrast.test-helpers';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
@@ -112,6 +113,20 @@ describe('employer mobile applications status pill', () => {
     id, jobId: 'j1', status, appliedAt: '2026-09-01T00:00:00Z', employerNotes: null,
     job: { id: 'j1', title: 'Warehouse Associate' },
     student: { id: `s-${id}`, fullName: `Student ${id}`, email: `${id}@example.test` },
+  });
+
+  it('the active filter chip is a solid --wa-accent-fill control with the white control foreground, AA in both themes', () => {
+    render(<MobileApplicationsClient initialRows={[]} />);
+    const chip = screen.getByRole('link', { name: 'All' });
+    expect(chip).toHaveAttribute('aria-current', 'page');
+    // Was --color-accent + #ffffff: 3.28:1 wherever --color-accent follows the lightened dark accent.
+    // Solid fills paint --wa-accent-fill (crimson in both modes); --wa-accent is the text accent.
+    expect(chip.style.background).toBe('var(--wa-accent-fill)');
+    expect(chip.style.color).toBe('var(--wa-on-accent-control)');
+    const tokens = loadRootTokens(readCss('css/wa-brand-tokens.css'));
+    for (const scheme of ['light', 'dark'] as const) {
+      expect(contrast(colorOf(chip.style.color, tokens, scheme), colorOf(chip.style.background, tokens, scheme)), scheme).toBeGreaterThanOrEqual(4.5);
+    }
   });
 
   it('is the kit StatusTag with the §4 tones: rejected → danger, hired → ok, pending → alert, interview → info', () => {

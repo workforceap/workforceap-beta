@@ -1,13 +1,15 @@
 import { useTranslations } from 'next-intl';
-import { Layers } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import ResumeStudioClient from '@/components/portal/ResumeStudioClient';
 import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBreakdown';
-import { ToolkitToolChrome } from './ToolkitToolChrome';
+import styles from '@/components/portal/ResumeStudio.module.css';
 import type { ReactElement, ReactNode } from 'react';
 
 /**
  * Member Portal — resume studio (score / rewrite / coach).
- * PageOpener chrome around ResumeStudioClient. History is omitted in preview.
+ * Title and return action frame ResumeStudioClient. History is omitted in preview.
  *
  * Target route: app/(portal)/dashboard/ai-tools/resume-studio
  * Proof: /dev/member/resume-studio
@@ -23,6 +25,7 @@ export function ResumeStudioKit({
   backHref,
   basePath,
   initialResume,
+  initialRewriteResume,
   initialJobTarget,
   previewScoreOutput,
   previewScorePayload,
@@ -36,6 +39,7 @@ export function ResumeStudioKit({
   backHref?: string;
   basePath?: string;
   initialResume?: string;
+  initialRewriteResume?: string;
   initialJobTarget?: string;
   previewScoreOutput?: string;
   previewScorePayload?: ResumeScorePayload | null;
@@ -43,26 +47,33 @@ export function ResumeStudioKit({
 }) {
   const t = useTranslations('memberWorkspace.resume');
   return (
-    <ToolkitToolChrome
-      title={t('metaTitle')}
-      lede={t('intro')}
-      icon={<Layers size={13} aria-hidden="true" />}
-      backHref={backHref}
-      maxWidth={960}
-    >
-      <ResumeStudioClient
-        hasResume={hasResume}
-        filesSlot={filesSlot}
-        scoreHistorySlot={scoreHistorySlot}
-        rewriteHistorySlot={rewriteHistorySlot}
-        preview={preview}
-        basePath={basePath}
-        initialResume={initialResume}
-        initialJobTarget={initialJobTarget}
-        previewScoreOutput={previewScoreOutput}
-        previewScorePayload={previewScorePayload}
-        previewRewriteOutput={previewRewriteOutput}
-      />
-    </ToolkitToolChrome>
+    <DesignSurface surface="warm">
+      <div className={styles.page}>
+        <PageOpener
+          className={styles.opener}
+          title={t('metaTitle')}
+          action={
+            <Link href={backHref ?? '/dashboard/ai-tools'} className="wa-page-action wa-kit-focus">
+              <ArrowLeft size={14} aria-hidden="true" />
+              {t('design.backToTools')}
+            </Link>
+          }
+        />
+        <ResumeStudioClient
+          hasResume={hasResume}
+          filesSlot={filesSlot}
+          scoreHistorySlot={scoreHistorySlot}
+          rewriteHistorySlot={rewriteHistorySlot}
+          preview={preview}
+          basePath={basePath}
+          initialResume={initialResume}
+          initialRewriteResume={initialRewriteResume}
+          initialJobTarget={initialJobTarget}
+          previewScoreOutput={previewScoreOutput}
+          previewScorePayload={previewScorePayload}
+          previewRewriteOutput={previewRewriteOutput}
+        />
+      </div>
+    </DesignSurface>
   );
 }

@@ -20,6 +20,7 @@ import {
 import { ariaSortForColumn, useKitTableSort } from '@/components/portal/kit/kitTableSort';
 import { KIT_TABLE_PAGE_SIZE, readKitTableUrlState, writeKitTableUrlState } from '@/components/portal/kit/kitTableUrlState';
 import { KitSortHeader } from '@/components/portal/kit/KitSortHeader';
+import { KitTablePager, type KitTablePagination } from '@/components/portal/kit/KitTableShell';
 import { withPortalReturnTo } from '@/lib/nav/returnContext';
 import {
   DEFAULT_STUDENT_SORT_DIRECTION,
@@ -72,6 +73,8 @@ import { EmbeddableFrame } from './EmbeddableFrame';
  * Last-active captions expose the learner-action source in their accessible
  * label and tooltip; import and database-update timestamps are not activity.
  * Unavailable program progress is a dash, not an observed zero percent.
+ * Phone card lists repeat the existing pager above the rows so staff can
+ * reach later pages without scrolling through the full 50-row page first.
  */
 export type StudentStatus = 'Job-Ready' | 'At Risk' | 'In Training' | 'Interviewing' | 'Placed';
 
@@ -311,6 +314,13 @@ export function StudentsRosterKit({
   // drops back to page 1; an out-of-range page clamps to the last one.
   const pageCount = Math.max(1, Math.ceil(visible.length / KIT_TABLE_PAGE_SIZE));
   const currentPage = Math.min(page, pageCount);
+  const pagination: KitTablePagination = {
+    page: currentPage,
+    pageSize: KIT_TABLE_PAGE_SIZE,
+    totalItems: visible.length,
+    onChange: setPage,
+    label: 'Roster pagination',
+  };
   // These filters operate on the loaded roster. Native history keeps their
   // context without fetching the same server roster again on every keystroke.
   useEffect(() => {
@@ -597,7 +607,7 @@ export function StudentsRosterKit({
     <EmbeddableFrame
       embedded={embedded}
       action={showViewNav ? viewNav : undefined}
-      opener={<PageOpener className="wa-mb-5" title={copy.title} kicker={copy.kicker} lede={copy.lede} action={viewNav} />}
+      opener={<PageOpener className="wa-mb-5" title={copy.title} meta={copy.lede} action={viewNav} />}
     >
       {notice ? (
         <p role="status" className="wa-kit-training-notice" data-testid="students-roster-notice">
@@ -648,17 +658,15 @@ export function StudentsRosterKit({
         </div>
       </div>
 
+      {visible.length > KIT_TABLE_PAGE_SIZE ? <div className="lg:wa-hidden wa-mb-3" data-testid="students-roster-top-pagination">
+        <KitTablePager pagination={{ ...pagination, label: 'Roster pagination, top' }} />
+      </div> : null}
+
       <DataTable<StudentRow>
         columns={isTraining ? trainingColumns : rosterColumns}
         rows={pageRows}
         rowKey={(row) => row.id}
-        pagination={{
-          page: currentPage,
-          pageSize: KIT_TABLE_PAGE_SIZE,
-          totalItems: visible.length,
-          onChange: setPage,
-          label: 'Roster pagination',
-        }}
+        pagination={pagination}
         onRowClick={openStudent}
         minWidth={isTraining ? 1080 : 1040}
         mobile="cards"

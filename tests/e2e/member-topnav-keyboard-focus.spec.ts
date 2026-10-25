@@ -27,10 +27,51 @@ for (const theme of ['light', 'dark'] as const) {
       await page.evaluate(() => document.fonts.ready);
       const rail = page.getByRole('navigation', { name: 'Member portal' });
       const links = rail.locator('.member-portal-top-nav__list').getByRole('link');
+      const dailyList = rail.locator('.member-portal-top-nav__list');
       const count = await links.count();
       expect(count).toBe(5);
+      const dailyBar = await dailyList.evaluate((list) => ({
+        position: getComputedStyle(list).position,
+        bottom: list.getBoundingClientRect().bottom,
+        height: list.getBoundingClientRect().height,
+        innerPaddingBottom: getComputedStyle(document.querySelector('.workspace-shell-main-inner')!).paddingBottom,
+        htmlScrollPaddingBottom: getComputedStyle(document.documentElement).scrollPaddingBottom,
+        bodyScrollPaddingBottom: getComputedStyle(document.body).scrollPaddingBottom,
+        targetScrollMarginBottom: getComputedStyle(document.querySelector('.workspace-shell-main [id]')!).scrollMarginBottom,
+        parentBackdropFilter: getComputedStyle(list.parentElement!).backdropFilter,
+      }));
+      if (width < 768) {
+        expect(dailyBar.position).toBe('fixed');
+        expect(Math.abs(dailyBar.bottom - 900)).toBeLessThanOrEqual(1);
+        expect(dailyBar.height).toBeGreaterThanOrEqual(48);
+        expect(parseFloat(dailyBar.innerPaddingBottom)).toBeGreaterThanOrEqual(72);
+        expect(parseFloat(dailyBar.htmlScrollPaddingBottom)).toBeGreaterThanOrEqual(72);
+        expect(parseFloat(dailyBar.bodyScrollPaddingBottom)).toBeGreaterThanOrEqual(72);
+        expect(parseFloat(dailyBar.targetScrollMarginBottom)).toBeGreaterThanOrEqual(72);
+        expect(dailyBar.parentBackdropFilter).toBe('none');
+        const tabs = await dailyList.locator('.member-portal-top-nav__item').evaluateAll((items) => items.map((item) => {
+          const link = item.querySelector<HTMLElement>('.member-portal-top-nav__link')!;
+          const icon = link.querySelector<HTMLElement>('.member-portal-top-nav__icon')!;
+          const fullLabel = link.querySelector<HTMLElement>('.member-portal-top-nav__label')!;
+          const shortLabel = link.querySelector<HTMLElement>('.member-portal-top-nav__short-label');
+          const label = getComputedStyle(fullLabel).display === 'none' ? shortLabel! : fullLabel;
+          return {
+            width: item.getBoundingClientRect().width,
+            direction: getComputedStyle(link).flexDirection,
+            iconVisible: icon.getBoundingClientRect().width > 0,
+            labelVisible: label.getBoundingClientRect().height > 0,
+          };
+        }));
+        expect(tabs.map((tab) => tab.direction)).toEqual(Array(5).fill('column'));
+        expect(tabs.map((tab) => tab.iconVisible)).toEqual(Array(5).fill(true));
+        expect(tabs.map((tab) => tab.labelVisible)).toEqual(Array(5).fill(true));
+        expect(Math.max(...tabs.map((tab) => tab.width)) - Math.min(...tabs.map((tab) => tab.width))).toBeLessThanOrEqual(1);
+      } else {
+        // Tablet keeps the existing horizontal strip; only phone widths pin it.
+        expect(dailyBar.position).not.toBe('fixed');
+      }
       // Reach the rail by real Tab rather than assuming a document tab count;
-      // /dev has an extra skip link that the production dashboard excludes.
+      // Both fixtures and production have a responsive navigation skip link.
       for (let i = 0; i < 25; i++) {
         await page.keyboard.press('Tab');
         if (await links.first().evaluate((link) => document.activeElement === link)) break;
@@ -64,6 +105,12 @@ for (const theme of ['light', 'dark'] as const) {
       for (let i = 0; i < count; i++) {
         if (i) await page.keyboard.press('Tab');
         await expect(links.nth(i)).toBeFocused();
+        if (width < 768) {
+          const bounds = await links.nth(i).boundingBox();
+          expect(bounds).not.toBeNull();
+          expect(bounds!.height).toBeGreaterThanOrEqual(48);
+          expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(900);
+        }
         await assertVisible();
       }
       for (let i = count - 2; i >= 0; i--) {
@@ -78,6 +125,21 @@ for (const theme of ['light', 'dark'] as const) {
         await page.waitForTimeout(250);
         expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
         await expect(page.locator('html')).toHaveClass(/wap-portal-chrome-compact/);
+        const compactBar = await dailyList.evaluate((list) => ({
+          position: getComputedStyle(list).position,
+          bottom: list.getBoundingClientRect().bottom,
+        }));
+        expect(compactBar.position).toBe('fixed');
+        expect(Math.abs(compactBar.bottom - 900)).toBeLessThanOrEqual(1);
+        await expect(dailyList.locator('.member-portal-top-nav__icon').first()).toBeVisible();
+        const compactLabels = await dailyList.locator('.member-portal-top-nav__item').evaluateAll((items) => items.map((item) => {
+          const link = item.querySelector<HTMLElement>('.member-portal-top-nav__link')!;
+          const full = link.querySelector<HTMLElement>('.member-portal-top-nav__label')!;
+          const short = link.querySelector<HTMLElement>('.member-portal-top-nav__short-label');
+          const label = getComputedStyle(full).display === 'none' ? short! : full;
+          return label.getBoundingClientRect().height;
+        }));
+        expect(compactLabels.every((height) => height > 0)).toBe(true);
         for (let i = 1; i < count; i++) {
           await page.keyboard.press('Tab');
           await expect(links.nth(i)).toBeFocused();

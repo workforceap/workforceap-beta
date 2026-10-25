@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { usePathname } from 'next/navigation';
 import type { NavBadgeKey } from '@/lib/nav/portalNav';
 import { getErrorMessageFromResponse } from '@/lib/fetchWithTimeout';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
 
 type NotificationItem = {
@@ -147,7 +147,10 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
   const closeDropdown = useCallback(() => setOpen(false), []);
   // Escape closes the dropdown and returns focus to the bell button (the
   // previously-focused element); Tab stays inside the panel while it's open.
-  const panelTrapRef = useFocusTrap(open, closeDropdown);
+  // The bell button is the return target even where it was never focused
+  // (Safari does not focus a button on click).
+  const bellBtnRef = useRef<HTMLButtonElement>(null);
+  const panelTrapRef = useFocusTrap<HTMLDivElement>(open, { onEscape: closeDropdown, returnFocusRef: bellBtnRef });
 
   const badges = externalBadges ?? selfBadges;
   const hasExternalBadges = externalBadges != null;
@@ -362,6 +365,7 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
       style={{ position: 'relative', flexShrink: 0 }}
     >
       <button
+        ref={bellBtnRef}
         type="button"
         className="portal-icon-btn"
         onClick={() => {
@@ -401,6 +405,9 @@ function RoleNotificationBell({ badges: externalBadges, readOnlyAudit = false, r
             ref={panelTrapRef as React.RefObject<HTMLDivElement>}
             role="dialog"
             aria-label="Notifications"
+            // Focus lands here when the panel has nothing focusable (the empty
+            // "All caught up" and loading states), so it still moves in on open.
+            tabIndex={-1}
             style={{
               position: 'fixed',
               top: 'calc(var(--wa-header-height, 3.25rem) + 0.5rem)',

@@ -26,6 +26,8 @@ interface ChatThreadProps {
    * `empty.*` strings (MemberMessagesKit does); the defaults are kit English.
    */
   empty?: { title: string; description?: string; action?: string };
+  /** Reserve room above the fixed member tabs on narrow inbox layouts. */
+  composerClassName?: string;
 }
 
 function authorLabel(author: ReactNode | undefined): string {
@@ -40,7 +42,7 @@ function authorLabel(author: ReactNode | undefined): string {
  * the same product as the rest of the member portal. Optional contextual drafts
  * are editable; asynchronous send failures preserve the current composer text.
  */
-export function ChatThread({ messages, placeholder = 'Type a message…', onSend, initialText = '', multiline = false, empty }: ChatThreadProps) {
+export function ChatThread({ messages, placeholder = 'Type a message…', onSend, initialText = '', multiline = false, empty, composerClassName }: ChatThreadProps) {
   const [text, setText] = useState(initialText);
   const [sending, setSending] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
@@ -120,7 +122,7 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
           e.preventDefault();
           void send();
         }}
-        className="wa-flex wa-items-center"
+        className={`wa-flex wa-items-center${composerClassName ? ` ${composerClassName}` : ''}`}
         style={{ marginTop: 12, flexShrink: 0, gap: 8 }}
       >
         <label className="wa-sr-only" htmlFor="wa-kit-chat-input">
@@ -175,7 +177,7 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
             flexShrink: 0,
             border: 'none',
             borderRadius: 999,
-            background: 'var(--wa-accent)',
+            background: 'var(--wa-accent-fill)',
             color: 'var(--wa-on-accent-control)',
             display: 'inline-flex',
             alignItems: 'center',

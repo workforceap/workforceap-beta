@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { Target } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
@@ -8,14 +8,18 @@ import { DesignSurface, KitEmptyState, PageOpener } from '@/components/portal/ki
 import SkillMissionPanel from '@/components/portal/SkillMissionPanel';
 import { getActiveProgramForDashboard } from '@/lib/member/getActiveProgramForDashboard';
 import { loadSkillMissionSummary } from '@/lib/member/skillMissions';
-import { skillMissionEmptyState, type SkillMissionEmptyState } from '@/lib/member/skillMissionEmptyState';
+import {
+  skillMissionEmptyState,
+  skillMissionHeaderSentence,
+  type SkillMissionEmptyState,
+} from '@/lib/member/skillMissionEmptyState';
 import { programSlugsEquivalent } from '@/lib/content/programSlug';
 
 export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('skillMissions');
   return buildPageMetadataAsync({
-    title: 'Skill Missions',
-    description:
-      'Prove what you learned. Complete a mission after each course to earn resume bullets and interview-ready STAR stories.',
+    title: t('metaTitle'),
+    description: t('metaDescription'),
     path: '/dashboard/missions',
   });
 }
@@ -67,26 +71,27 @@ export default async function SkillMissionsPage() {
         .map((row) => row.courseSlug) ?? []
     : [];
 
-  const summary = await loadSkillMissionSummary({
-    userId: user.id,
-    programSlug,
-    curriculumVersion,
-    completedCourseSlugs,
-  });
+  const [summary, t] = await Promise.all([
+    loadSkillMissionSummary({
+      userId: user.id,
+      programSlug,
+      curriculumVersion,
+      completedCourseSlugs,
+    }),
+    getTranslations('skillMissions'),
+  ]);
   return (
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker="Missions"
-          title="Skill missions"
-          lede="One pass per course. Resume bullet and STAR story."
-          icon={<Target size={13} aria-hidden="true" />}
+          title={t('title')}
+          meta={skillMissionHeaderSentence(summary, t)}
         />
 
         {summary ? (
           <SkillMissionPanel summary={summary} hideTitle />
         ) : (
-          <MissionsEmpty empty={skillMissionEmptyState({ programSlug, programTitle: activeProgram.programTitle })} />
+          <MissionsEmpty empty={skillMissionEmptyState({ programSlug, programTitle: activeProgram.programTitle }, t)} />
         )}
       </div>
     </DesignSurface>

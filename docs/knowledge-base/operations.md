@@ -22,6 +22,14 @@ This reference describes the checked-in operating paths reviewed on 2026-09-12. 
 
 ## Install and development
 
+For portal UI hand testing, start with the [preview screen navigator](../qa/portal-consolidation/README.md).
+It catalogs every member/staff fixture and named sample states separately from
+authenticated acceptance. The development server compiles cold routes on demand;
+measure repeat navigation separately. Synthetic shell/tour mode avoids account
+polling and progress writes, but individual fixtures can still have provider or
+authentication boundaries documented in the catalog. No fixture result establishes
+real role authorization, provider delivery or saved member progression.
+
 The root is a Next.js application; `marketing/` is a separate Astro package whose output is included in the Vercel build. Root [package.json](../../package.json#L5) selects `pnpm@10.34.3`; [CI uses Node 22](../../.github/workflows/ci-gate.yml#L71). The root has no `engines` declaration. Use the CI major and the selected package manager when reproducing a failure. Marketing uses its own [package-lock.json](../../marketing/package-lock.json), React 18 and Astro; the root uses [pnpm-lock.yaml](../../pnpm-lock.yaml), React 19 and Next. A root install does not install marketing dependencies.
 
 ```bash

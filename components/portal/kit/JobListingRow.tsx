@@ -3,6 +3,7 @@ import { Briefcase } from 'lucide-react';
 import NextLink from 'next/link';
 import { cx, type KitBaseProps, type KitDataAttrs } from './base';
 import { StatusTag } from './StatusTag';
+import styles from './JobListingRow.module.css';
 
 interface JobListingRowProps extends KitBaseProps<HTMLAnchorElement>, KitDataAttrs {
   href: string;
@@ -46,7 +47,7 @@ export function JobListingRow({
       )}
       style={{
         minHeight: 72,
-        padding: '14px 18px',
+        padding: '14px 24px',
         borderTop: first ? 'none' : '1px solid var(--wa-border)',
         textDecoration: 'none',
         color: 'var(--wa-text)',
@@ -59,9 +60,10 @@ export function JobListingRow({
         style={{
           width: 40,
           height: 40,
-          borderRadius: 12,
+          borderRadius: 'var(--wa-radius-sm)',
           background: 'var(--wa-surface-2)',
-          color: 'var(--wa-accent)',
+          border: '1px solid var(--wa-border)',
+          color: 'var(--wa-accent-text)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -83,12 +85,9 @@ export function JobListingRow({
           {title}
         </h3>
         <p
-          className="wa-kit-meta"
+          className={`wa-kit-meta ${styles.meta}`}
           style={{
             margin: '4px 0 0',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
           }}
         >
           {meta}
@@ -102,15 +101,7 @@ export function JobListingRow({
             </StatusTag>
           ) : null}
           {match ? (
-            <span
-              className="wa-kit-meta"
-              style={{
-                fontWeight: 700,
-                color: 'var(--wa-success)',
-                flexShrink: 0,
-                fontVariantNumeric: 'tabular-nums',
-              }}
-            >
+            <span className="wa-kit-chip wa-kit-chip--green" style={{ flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
               {match}
             </span>
           ) : null}

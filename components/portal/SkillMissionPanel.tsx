@@ -1,9 +1,14 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { PORTAL_TIMEZONE } from '@/lib/formatDate';
+import { useEffect, useId, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Lock, CheckCircle2, RotateCcw, Flame } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
+import { Lock, CheckCircle2, RotateCcw, Flame, Target } from 'lucide-react';
+import { ProgressBar, cx } from '@/components/portal/kit';
 import SkillMissionChallenge from './SkillMissionChallenge';
+import styles from './SkillMissionPanel.module.css';
 
 // ── Local type copies (server-only lib not importable here) ──────────────────
 
@@ -50,247 +55,179 @@ export type SkillMissionSummary = {
   passedCount: number;
   readyCount: number;
   retryCount: number;
+  /** Missions passed in a row from the first mission in the program. */
   streak: number;
   careerReadinessPct: number;
   demonstratedSkills: string[];
   missions: SkillMissionSummaryItem[];
 };
 
-type MissionEvalResponse =
-  | {
-      ok: true;
-      verdict: 'passed' | 'needs_retry';
-      coachingNote: string;
-      starStory: string;
-      resumeBullet: string;
-      skillsUnlocked: string[];
-      aiToolResultId: string | null;
-    }
-  | { ok: false; error: string };
+const kitCtaClass = 'wa-kit-cta wa-kit-focus';
 
-const kitCtaClass =
-  'wa-kit-cta wa-kit-focus hover:wa-opacity-90 active:wa-scale-[0.98] motion-reduce:active:wa-scale-100 wa-transition-[opacity,transform] wa-duration-150 motion-reduce:wa-transition-none';
+type MissionTranslate = ReturnType<typeof useTranslations>;
 
-function formatPassedDate(date: Date | null): string {
-  if (!date) return '';
-  const d = new Date(date);
-  return `Passed ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+/** Fixed time zone and the active locale: the same text on the server and in the browser. */
+function formatPassedDate(date: Date | null, locale: string, t: MissionTranslate): string {
+  if (!date) return t('panel.statusPassed');
+  const formatted = new Date(date).toLocaleDateString(locale, {
+    timeZone: PORTAL_TIMEZONE,
+    month: 'short',
+    day: 'numeric',
+  });
+  return t('panel.statusPassedOn', { date: formatted });
 }
 
-function Chip({
-  children,
-  tone = 'muted',
-}: {
-  children: ReactNode;
-  tone?: 'muted' | 'accent' | 'success' | 'gold';
-}) {
-  const palette = {
-    muted: { bg: 'var(--wa-surface-2)', fg: 'var(--wa-muted)', border: '1px solid var(--wa-border)' },
-    accent: { bg: 'var(--wa-accent-soft)', fg: 'var(--wa-accent)', border: '1px solid color-mix(in srgb, var(--wa-accent) 22%, transparent)' },
-    success: { bg: 'var(--wa-success-soft)', fg: 'var(--wa-success)', border: '1px solid color-mix(in srgb, var(--wa-success) 28%, transparent)' },
-    gold: { bg: 'var(--wa-gold-soft)', fg: 'var(--wa-gold)', border: '1px solid color-mix(in srgb, var(--wa-gold) 28%, transparent)' },
-  }[tone];
+type ChipTone = 'neutral' | 'green' | 'crimson' | 'gold';
+
+function Chip({ children, tone = 'neutral', className }: { children: React.ReactNode; tone?: ChipTone; className?: string }) {
+  return <span className={cx('wa-kit-chip', `wa-kit-chip--${tone}`, className)}>{children}</span>;
+}
+
+type CardProps = {
+  mission: SkillMissionSummaryItem;
+  /** Heading element for the mission title. */
+  Title: 'h3' | 'h4';
+  titleId: string;
+  setTitleRef: (el: HTMLElement | null) => void;
+};
+
+function MissionTitle({ mission, Title, titleId, setTitleRef }: CardProps) {
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-        padding: '4px 10px',
-        borderRadius: 999,
-        background: palette.bg,
-        border: palette.border,
-        fontSize: 'var(--wa-type-meta)',
-        fontWeight: 700,
-        color: palette.fg,
-      }}
-    >
-      {children}
-    </span>
+    <Title id={titleId} ref={setTitleRef} tabIndex={-1} className={cx('wa-kit-focus', styles.title)}>
+      {mission.missionName}
+    </Title>
   );
 }
 
-function LockedCard({ mission }: { mission: SkillMissionSummaryItem }) {
+function LockedCard(props: CardProps) {
+  const { mission } = props;
+  const t = useTranslations('skillMissions');
   return (
-    <article className="wa-kit-card" style={{ display: 'flex', alignItems: 'flex-start', gap: 12, opacity: 0.72 }}>
-      <Lock size={20} aria-hidden="true" style={{ flexShrink: 0, color: 'var(--wa-muted)', marginTop: 2 }} />
-      <div>
-        <h4 style={{ margin: '0 0 4px', fontSize: 'var(--wa-type-body)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--wa-text)' }}>
-          {mission.missionName}
-        </h4>
-        <p style={{ margin: 0, fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', lineHeight: 1.45 }}>
-          Finish <strong style={{ color: 'var(--wa-text)' }}>{mission.courseTitle}</strong> to unlock
-        </p>
+    <article className={cx('wa-kit-card', styles.mission)} data-status="locked" aria-labelledby={props.titleId}>
+      <div className={styles.missionHead}>
+        <span className={styles.icon} aria-hidden="true">
+          <Lock size={16} />
+        </span>
+        <div className={styles.missionMain}>
+          <MissionTitle {...props} />
+          <p className={styles.sub}>
+            {t.rich('panel.lockedHint', {
+              course: mission.courseTitle,
+              b: (chunks) => <strong>{chunks}</strong>,
+            })}
+          </p>
+        </div>
+        <Chip className={styles.statusChip}>{t('panel.statusLocked')}</Chip>
       </div>
     </article>
   );
 }
 
-function ReadyCard({
-  mission,
-  onStart,
-}: {
-  mission: SkillMissionSummaryItem;
-  onStart: () => void;
-}) {
+function ReadyCard({ onStart, ...props }: CardProps & { onStart: () => void }) {
+  const { mission } = props;
+  const t = useTranslations('skillMissions');
   return (
     <article
-      className="wa-kit-card"
-      style={{
-        border: '2px solid var(--wa-accent)',
-        background: 'color-mix(in srgb, var(--wa-accent-soft) 70%, var(--wa-surface))',
-      }}
+      className={cx('wa-kit-card', 'wa-kit-card--accent-edge', styles.mission)}
+      data-status="ready"
+      aria-labelledby={props.titleId}
     >
-      <div className="wa-flex wa-items-start wa-justify-between wa-flex-wrap" style={{ gap: 12, marginBottom: 8 }}>
-        <div>
-          <span
-            style={{
-              display: 'inline-block',
-              fontSize: 'var(--wa-type-meta)',
-              fontWeight: 700,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: 'var(--wa-accent)',
-              marginBottom: 4,
-            }}
-          >
-            Mission ready
-          </span>
-          <h4 style={{ margin: 0, fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--wa-text)' }}>
-            {mission.missionName}
-          </h4>
-          <p style={{ margin: '4px 0 0', fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', lineHeight: 1.45 }}>
-            {mission.missionTagline}
-          </p>
+      <div className={styles.missionHead}>
+        <span className={styles.icon} data-tone="accent" aria-hidden="true">
+          <Target size={16} />
+        </span>
+        <div className={styles.missionMain}>
+          <MissionTitle {...props} />
+          <p className={styles.sub}>{mission.missionTagline}</p>
         </div>
-        <Chip>~{mission.estimatedMinutes} min</Chip>
+        <Chip className={styles.statusChip}>{t('panel.minutes', { minutes: mission.estimatedMinutes })}</Chip>
       </div>
 
       {mission.skillLabels.length > 0 ? (
-        <div className="wa-flex wa-flex-wrap" style={{ gap: 6, marginBottom: 12 }}>
+        <div className={styles.chipRow}>
           {mission.skillLabels.slice(0, 4).map((s) => (
             <Chip key={s}>{s}</Chip>
           ))}
         </div>
       ) : null}
 
-      <button type="button" className={kitCtaClass} onClick={onStart}>
-        Start mission
-      </button>
+      <div className={styles.actions}>
+        <button type="button" className={kitCtaClass} onClick={onStart} aria-describedby={props.titleId}>
+          {t('panel.start')}
+        </button>
+      </div>
     </article>
   );
 }
 
 function PassedCard({
-  mission,
   resumeStudioHref,
-}: {
-  mission: SkillMissionSummaryItem;
-  resumeStudioHref: string;
-}) {
+  ...props
+}: CardProps & { resumeStudioHref: string }) {
+  const { mission } = props;
+  const t = useTranslations('skillMissions');
+  const locale = useLocale();
   const result = mission.latestResult;
   return (
-    <article
-      className="wa-kit-card"
-      style={{
-        border: '1px solid color-mix(in srgb, var(--wa-success) 28%, var(--wa-border))',
-        background: 'color-mix(in srgb, var(--wa-success-soft) 80%, var(--wa-surface))',
-      }}
-    >
-      <div className="wa-flex wa-items-start" style={{ gap: 10, marginBottom: 8 }}>
-        <CheckCircle2 size={18} aria-hidden="true" style={{ flexShrink: 0, color: 'var(--wa-success)', marginTop: 2 }} />
-        <div>
-          <h4 style={{ margin: 0, fontSize: 'var(--wa-type-body)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--wa-text)' }}>
-            {mission.missionName}
-          </h4>
-          <p style={{ margin: '2px 0 0', fontSize: 'var(--wa-type-meta)', fontWeight: 600, color: 'var(--wa-success)' }}>
-            {formatPassedDate(mission.completedAt)}
-          </p>
+    <article className={cx('wa-kit-card', styles.mission)} data-status="passed" aria-labelledby={props.titleId}>
+      <div className={styles.missionHead}>
+        <span className={styles.icon} data-tone="success" aria-hidden="true">
+          <CheckCircle2 size={16} />
+        </span>
+        <div className={styles.missionMain}>
+          <MissionTitle {...props} />
         </div>
+        <Chip tone="green" className={styles.statusChip}>
+          {formatPassedDate(mission.completedAt, locale, t)}
+        </Chip>
       </div>
 
       {result && result.skillsUnlocked.length > 0 ? (
-        <div className="wa-flex wa-flex-wrap" style={{ gap: 6, marginBottom: 8 }}>
+        <div className={styles.chipRow}>
           {result.skillsUnlocked.map((s) => (
-            <Chip key={s} tone="success">
+            <Chip key={s} tone="green">
               {s}
             </Chip>
           ))}
         </div>
       ) : null}
 
-      {result?.resumeBullet ? (
-        <p style={{ margin: '0 0 8px', fontSize: 'var(--wa-type-meta)', fontStyle: 'italic', color: 'var(--wa-muted)', lineHeight: 1.5 }}>
-          &ldquo;{result.resumeBullet}&rdquo;
-        </p>
-      ) : null}
+      {result?.resumeBullet ? <p className={styles.quote}>&ldquo;{result.resumeBullet}&rdquo;</p> : null}
 
       {mission.aiToolResultId ? (
-        <a
-          href={resumeStudioHref}
-          className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus"
-        >
-          Open resume studio
-        </a>
+        <div className={styles.actions}>
+          <Link href={resumeStudioHref} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">
+            {t('panel.openResumeStudio')}
+          </Link>
+        </div>
       ) : null}
     </article>
   );
 }
 
-function RetryCard({
-  mission,
-  onRetry,
-}: {
-  mission: SkillMissionSummaryItem;
-  onRetry: () => void;
-}) {
-  const result = mission.latestResult;
-  const preview = result?.coachingNote
-    ? result.coachingNote.slice(0, 100) + (result.coachingNote.length > 100 ? '…' : '')
-    : null;
-
+function RetryCard({ onRetry, ...props }: CardProps & { onRetry: () => void }) {
+  const { mission } = props;
+  const t = useTranslations('skillMissions');
+  const note = mission.latestResult?.coachingNote.trim() || null;
   return (
-    <article
-      className="wa-kit-card"
-      style={{
-        border: '2px solid color-mix(in srgb, var(--wa-gold) 45%, var(--wa-border))',
-        background: 'color-mix(in srgb, var(--wa-gold-soft) 80%, var(--wa-surface))',
-      }}
-    >
-      <div className="wa-flex wa-items-start wa-justify-between wa-flex-wrap" style={{ gap: 12, marginBottom: 8 }}>
-        <div>
-          <span
-            style={{
-              display: 'inline-block',
-              fontSize: 'var(--wa-type-meta)',
-              fontWeight: 700,
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-              color: 'var(--wa-gold)',
-              marginBottom: 4,
-            }}
-          >
-            Review needed
-          </span>
-          <h4 style={{ margin: 0, fontSize: 'var(--wa-type-body)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--wa-text)' }}>
-            {mission.missionName}
-          </h4>
+    <article className={cx('wa-kit-card', styles.mission)} data-status="needs_retry" aria-labelledby={props.titleId}>
+      <div className={styles.missionHead}>
+        <span className={styles.icon} aria-hidden="true">
+          <RotateCcw size={16} />
+        </span>
+        <div className={styles.missionMain}>
+          <MissionTitle {...props} />
         </div>
-        <RotateCcw size={18} aria-hidden="true" style={{ flexShrink: 0, color: 'var(--wa-gold)' }} />
+        <Chip className={styles.statusChip}>{t('panel.statusReview')}</Chip>
       </div>
 
-      {preview ? (
-        <p style={{ margin: '0 0 12px', fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', lineHeight: 1.5 }}>{preview}</p>
-      ) : null}
+      {note ? <p className={styles.coaching}>{note}</p> : null}
 
-      <button
-        type="button"
-        className={kitCtaClass}
-        onClick={onRetry}
-        style={{ background: 'var(--wa-gold)' }}
-      >
-        Retry mission
-      </button>
+      <div className={styles.actions}>
+        <button type="button" className={kitCtaClass} onClick={onRetry} aria-describedby={props.titleId}>
+          {t('panel.retry')}
+        </button>
+      </div>
     </article>
   );
 }
@@ -304,120 +241,138 @@ export default function SkillMissionPanel({
   summary: SkillMissionSummary | null;
   /** When the route already has a PageOpener, skip the inner “Skill Missions” heading. */
   hideTitle?: boolean;
-  /** Proofs: Start/Retry stay on the list (no challenge POST). */
+  /** Proofs: Start/Retry open the overlay in preview mode (canned results, no POST). */
   preview?: boolean;
   resumeStudioHref?: string;
 }) {
   const router = useRouter();
+  const t = useTranslations('skillMissions');
+  const baseId = useId();
   const [activeMission, setActiveMission] = useState<SkillMissionSummaryItem | null>(null);
+  const titleRefs = useRef(new Map<string, HTMLElement>());
+  // After a mission closes its card can change state (ready -> passed), which
+  // removes the button that opened it. Keep the mission key and the summary at
+  // close time so focus can move to the new card once the refresh lands.
+  const pendingFocus = useRef<{ key: string; summary: SkillMissionSummary | null } | null>(null);
+
+  useEffect(() => {
+    const pending = pendingFocus.current;
+    if (!pending || activeMission || summary === pending.summary) return;
+    pendingFocus.current = null;
+    const focused = document.activeElement;
+    const focusLost = !focused || focused === document.body || !focused.isConnected;
+    if (focusLost) titleRefs.current.get(pending.key)?.focus({ preventScroll: true });
+  }, [summary, activeMission]);
 
   if (!summary || summary.totalMissions === 0) return null;
 
-  function handleComplete(_result: MissionEvalResponse & { ok: true }) {
+  const SectionHeading = hideTitle ? 'h2' : 'h3';
+  const MissionHeading = hideTitle ? 'h3' : 'h4';
+
+  const closeChallenge = () => {
+    if (activeMission) pendingFocus.current = { key: activeMission.key, summary };
     setActiveMission(null);
     router.refresh();
-  }
-
-  const openMission = (mission: SkillMissionSummaryItem) => {
-    if (preview) return;
-    setActiveMission(mission);
   };
+
+  const progressId = `${baseId}-progress`;
+  const listId = `${baseId}-list`;
 
   return (
     <>
-      <section>
+      <section className={styles.panel} aria-label={hideTitle ? undefined : t('title')}>
         {hideTitle ? null : (
-          <div style={{ marginBottom: 16 }}>
-            <p
-              style={{
-                fontSize: 'var(--wa-type-meta)',
-                fontWeight: 700,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                color: 'var(--wa-accent)',
-                margin: '0 0 4px',
-              }}
-            >
-              Missions
-            </p>
-            <h3 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--wa-text)' }}>
-              Skill missions
-            </h3>
-            <p style={{ margin: 0, fontSize: 'var(--wa-type-body)', color: 'var(--wa-muted)', lineHeight: 1.5 }}>
-              One pass per course. Resume bullet and STAR story.
-            </p>
+          <div>
+            <h2 className={styles.heading}>{t('title')}</h2>
+            <p className={styles.lede}>{t('lede')}</p>
           </div>
         )}
 
-        <div className="wa-flex wa-items-center wa-flex-wrap" style={{ gap: 10, marginBottom: 16 }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'baseline',
-              gap: 6,
-              padding: '8px 14px',
-              borderRadius: 'var(--wa-radius-sm)',
-              background: 'var(--wa-accent-soft)',
-              border: '1px solid color-mix(in srgb, var(--wa-accent) 22%, transparent)',
-            }}
-          >
-            <span style={{ fontSize: 26, fontWeight: 800, color: 'var(--wa-accent)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
-              {summary.careerReadinessPct}%
-            </span>
-            <span style={{ fontSize: 'var(--wa-type-meta)', fontWeight: 600, color: 'var(--wa-muted)' }}>passed</span>
-          </div>
-          <Chip tone="success">{summary.passedCount} passed</Chip>
-          {summary.readyCount > 0 ? <Chip tone="accent">{summary.readyCount} ready</Chip> : null}
-          {summary.retryCount > 0 ? <Chip tone="gold">{summary.retryCount} to retry</Chip> : null}
-          {summary.streak > 0 ? (
-            <Chip tone="gold">
-              <Flame size={13} aria-hidden="true" /> {summary.streak} streak
-            </Chip>
-          ) : null}
-        </div>
-
-        {summary.demonstratedSkills.length > 0 ? (
-          <div style={{ marginBottom: 16 }}>
-            <p style={{ margin: '0 0 8px', fontSize: 'var(--wa-type-meta)', fontWeight: 700, color: 'var(--wa-muted)' }}>
-              Demonstrated skills
-            </p>
-            <div className="wa-flex wa-flex-wrap" style={{ gap: 6 }}>
-              {summary.demonstratedSkills.slice(0, 10).map((skill) => (
-                <Chip key={skill} tone="success">
-                  {skill}
-                </Chip>
-              ))}
+        <section className={cx('wa-kit-card', styles.progress)} aria-labelledby={progressId}>
+          <div className="wa-kit-card__head">
+            <div>
+              <SectionHeading id={progressId} className="wa-kit-card-title">
+                {t('panel.progressTitle')}
+              </SectionHeading>
+              <p className="wa-kit-card-sub">
+                {t('panel.progressSummary', { passed: summary.passedCount, total: summary.totalMissions })}
+              </p>
             </div>
+            <span className="wa-kit-card-count">
+              {t.rich('panel.progressPercent', {
+                pct: summary.careerReadinessPct,
+                b: (chunks) => <b>{chunks}</b>,
+              })}
+            </span>
           </div>
-        ) : null}
+          <ProgressBar pct={summary.careerReadinessPct} aria-label={t('panel.progressLabel')} />
+          <div className={styles.chipRow}>
+            <Chip tone="green">{t('panel.chipPassed', { count: summary.passedCount })}</Chip>
+            {summary.readyCount > 0 ? (
+              <Chip tone="crimson">{t('panel.chipReady', { count: summary.readyCount })}</Chip>
+            ) : null}
+            {summary.retryCount > 0 ? <Chip>{t('panel.chipRetry', { count: summary.retryCount })}</Chip> : null}
+            {summary.streak > 1 ? (
+              <Chip tone="gold">
+                <Flame aria-hidden="true" /> {t('panel.chipStreak', { count: summary.streak })}
+              </Chip>
+            ) : null}
+          </div>
 
-        <div style={{ display: 'grid', gap: 12 }}>
-          {summary.missions.map((mission) => {
-            if (mission.status === 'locked') {
-              return <LockedCard key={mission.key} mission={mission} />;
-            }
-            if (mission.status === 'ready') {
-              return <ReadyCard key={mission.key} mission={mission} onStart={() => openMission(mission)} />;
-            }
-            if (mission.status === 'passed') {
-              return <PassedCard key={mission.key} mission={mission} resumeStudioHref={resumeStudioHref} />;
-            }
-            if (mission.status === 'needs_retry') {
-              return <RetryCard key={mission.key} mission={mission} onRetry={() => openMission(mission)} />;
-            }
-            return null;
-          })}
-        </div>
+          {summary.demonstratedSkills.length > 0 ? (
+            <div className={styles.skillsBlock}>
+              <p className={styles.skillsLabel}>{t('panel.skillsShown')}</p>
+              <div className={styles.chipRow}>
+                {summary.demonstratedSkills.slice(0, 10).map((skill) => (
+                  <Chip key={skill} tone="green">
+                    {skill}
+                  </Chip>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </section>
+
+        <section className={styles.listSection} aria-labelledby={listId}>
+          <SectionHeading id={listId} className="wa-kit-card-title">
+            {t('panel.listHeading')}
+          </SectionHeading>
+          <ul className={styles.list}>
+            {summary.missions.map((mission, index) => {
+              const titleId = `${baseId}-m${index}`;
+              const cardProps: CardProps = {
+                mission,
+                Title: MissionHeading,
+                titleId,
+                setTitleRef: (el) => {
+                  if (el) titleRefs.current.set(mission.key, el);
+                  else titleRefs.current.delete(mission.key);
+                },
+              };
+              return (
+                <li key={mission.key}>
+                  {mission.status === 'locked' ? (
+                    <LockedCard {...cardProps} />
+                  ) : mission.status === 'ready' ? (
+                    <ReadyCard {...cardProps} onStart={() => setActiveMission(mission)} />
+                  ) : mission.status === 'passed' ? (
+                    <PassedCard {...cardProps} resumeStudioHref={resumeStudioHref} />
+                  ) : (
+                    <RetryCard {...cardProps} onRetry={() => setActiveMission(mission)} />
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       </section>
 
       {activeMission ? (
         <SkillMissionChallenge
           mission={activeMission}
-          onClose={() => {
-            setActiveMission(null);
-            router.refresh();
-          }}
-          onComplete={handleComplete}
+          preview={preview}
+          onClose={closeChallenge}
+          onComplete={closeChallenge}
         />
       ) : null}
     </>

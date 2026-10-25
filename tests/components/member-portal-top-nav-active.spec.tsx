@@ -38,10 +38,19 @@ function currentLabels(strip: ReturnType<typeof renderAt>): string[] {
   return strip
     .getAllByRole('link')
     .filter((link) => link.getAttribute('aria-current') === 'page')
-    .map((link) => link.textContent ?? '');
+    .map((link) => link.querySelector('.member-portal-top-nav__label')?.textContent?.trim() ?? link.textContent?.trim() ?? '');
 }
 
 describe('MemberPortalTopNav current tab (WAP-263)', () => {
+  it('exposes a focusable phone navigation landmark for skip navigation', () => {
+    const strip = renderAt('/dashboard');
+    const landmark = screen.getByRole('navigation', { name: 'Member portal' });
+
+    expect(landmark).toHaveAttribute('id', 'member-portal-top-nav');
+    expect(landmark).toHaveAttribute('tabindex', '-1');
+    expect(strip.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/dashboard');
+  });
+
   it.each(['es', 'fr', 'pt'])('on /%s/dashboard/messages, Messages is the current tab', (locale) => {
     const strip = renderAt(`/${locale}/dashboard/messages`, locale);
     expect(strip.getByRole('link', { name: 'Messages' })).toHaveAttribute('aria-current', 'page');
@@ -105,6 +114,7 @@ describe('MemberPortalTopNav current tab (WAP-263)', () => {
   it('matches the five daily desktop destinations and keeps preassessment directly visible', () => {
     const strip = renderAt('/dashboard');
     expect(strip.getByRole('link', { name: 'AI Career Tools' })).toHaveAttribute('href', '/dashboard/ai-tools');
+    expect(strip.getByRole('link', { name: 'Job board' })).toHaveTextContent('Job board');
     expect(strip.getAllByRole('link').slice(0, 5).map((link) => link.getAttribute('href'))).toEqual([
       '/dashboard',
       '/dashboard/program',

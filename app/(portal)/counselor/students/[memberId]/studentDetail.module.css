@@ -76,7 +76,7 @@
   width: 56px;
   height: 56px;
   border-radius: var(--wa-radius-sm);
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
   font-size: 1.25rem;
   font-weight: 900;
@@ -189,7 +189,7 @@
 .progressFill {
   height: 100%;
   border-radius: 9999px;
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
 }
 
 .courses {

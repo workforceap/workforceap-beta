@@ -40,7 +40,6 @@ export default async function PartnerReferredMembersPage() {
       <DesignSurface surface="dense" className="wa-flex wa-flex-col wa-gap-6 wa-pb-24 md:wa-pb-8">
         <PageHeader
           title={t('referredMembers')}
-          subtitle={t('searchAndFilter')}
           action={
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
               <PartnerInviteMemberButton />

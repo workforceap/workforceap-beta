@@ -4,7 +4,7 @@ import CounselorCommandCenter from '@/components/portal/counselor/CounselorComma
 import { AtRiskDashboardView, type AtRiskMember } from '@/components/portal/counselor/AtRiskDashboard';
 import AdminCommandCenterClient from '@/components/admin/AdminCommandCenterClient';
 
-vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));
+vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key, useLocale: () => 'en' }));
 vi.mock('next/navigation', () => ({ usePathname: () => '/dev/test', useSearchParams: () => new URLSearchParams(), useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock('@/components/portal/counselor/AtRiskDetailModal', () => ({ default: () => null }));
 vi.mock('@/components/admin/ConfirmDialog', () => ({ default: () => null }));

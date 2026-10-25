@@ -260,8 +260,7 @@ export function AdminDashboardKit({
     <DesignSurface surface="dense" className="wa-p-6">
       <PageOpener className="wa-mb-5"
         title="Executive Dashboard"
-        kicker="Admin"
-        lede="Real-time metrics across all 7 CEO funnels and placement KPIs"
+        meta="Live metrics across the CEO funnels and placement KPIs."
         action={ExportAction}
       />
 

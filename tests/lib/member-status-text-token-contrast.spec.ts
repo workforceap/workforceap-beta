@@ -110,11 +110,13 @@ function constantToken(token: string): string {
 }
 
 describe('solid-accent controls and hero actions clear AA in dark mode (WAP-145 / WAP-154)', () => {
-  it('--wa-on-accent-control on --wa-accent (icon-only send / camera buttons)', () => {
-    const fg = lightDark('--wa-on-accent-control');
-    const bg = lightDark('--wa-accent');
+  it('--wa-on-accent-control on --wa-accent-fill (icon-only send / camera buttons)', () => {
+    // Solid accent controls paint --wa-accent-fill (crimson in both modes) under a
+    // mode-constant white label; --wa-accent stays the text-safe hue.
+    const fg = constantToken('--wa-on-accent-control');
+    const bg = lightDark('--wa-accent-fill');
     for (const mode of ['light', 'dark'] as const) {
-      expect(ratio(fg[mode], bg[mode], bg[mode]), `on-accent-control ${mode}`).toBeGreaterThanOrEqual(4.5);
+      expect(ratio(fg, bg[mode], bg[mode]), `on-accent-control ${mode}`).toBeGreaterThanOrEqual(4.5);
     }
   });
 

@@ -7,6 +7,7 @@ import { getUser } from '@/lib/auth/server';
 import { getEmployerForUser, isSuperAdmin } from '@/lib/auth/roles';
 import { unlinkedEmployerHref } from '@/lib/auth/portalGuards';
 import { prisma } from '@/lib/db/prisma';
+import { signedInFirstName } from '@/lib/portal/signedInFirstName';
 import { formatPortalDate } from '@/lib/formatDate';
 import EmployerPageOpener from '@/components/employer/EmployerPageOpener';
 import PortalEmptyState from '@/components/portal/PortalEmptyState';
@@ -70,6 +71,7 @@ export default async function EmployerDashboardPage({
   // v2 kit is the DEFAULT employer overview; legacy via ?ui=legacy.
   if (params?.ui !== 'legacy') {
     const kitT = await getTranslations('employer');
+    const commonT = await getTranslations('common.disclosures');
     const [
       kitOpenRoles,
       kitTotalCandidates,
@@ -78,6 +80,7 @@ export default async function EmployerDashboardPage({
       kitRecent,
       kitOpenRolesList,
       kitHiringIntents,
+      employerFirstName,
     ] = await Promise.all([
       prisma.job.count({ where: { employerId: ctx.employerId, status: 'live' } }),
       prisma.jobPostingApplication.count({
@@ -122,6 +125,10 @@ export default async function EmployerDashboardPage({
           return null;
         }
       })(),
+      // Person-facing greeting ("Welcome back, {first name}."): the employer
+      // context carries the company, not the person. Runs inside this batch so it
+      // adds no serial round trip, and only on the path that renders it.
+      signedInFirstName(user.id),
     ]);
 
     // Cheap, indexed fit-score lookup for the handful of candidates shown in
@@ -176,6 +183,7 @@ export default async function EmployerDashboardPage({
         </EmployerVoiceCollapse>
 
         <EmployerHomeKit
+          firstName={employerFirstName}
           companyName={ctx.employer.companyName}
           openRoles={kitOpenRoles}
           inPipeline={kitTotalCandidates}
@@ -183,6 +191,7 @@ export default async function EmployerDashboardPage({
           hires={kitHired}
           candidates={kitCandidates}
           candidatesTotal={kitTotalCandidates}
+          whereItGoesLabel={commonT('whereItGoes')}
           openRolesList={kitOpenRolesRows}
         />
 

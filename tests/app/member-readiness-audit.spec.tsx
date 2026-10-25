@@ -33,6 +33,12 @@ vi.mock('@/lib/readiness/memberReadinessSections', () => ({
   getMemberReadinessSections: vi.fn(),
 }));
 
+// The numbers loader reads Prisma; these specs are about the recap, not the numbers.
+vi.mock('@/lib/member/loadProgressMetrics', () => ({
+  loadProgressMetrics: vi.fn(async () => ({})),
+  UNKNOWN_PROGRESS_METRICS: {},
+}));
+
 vi.mock('@/components/portal/kit/pages/member/MemberProgressKit', () => ({
   MemberProgressKit: ({ summary }: { summary: React.ReactNode }) => <div>{summary}</div>,
 }));

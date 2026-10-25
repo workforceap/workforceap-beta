@@ -249,7 +249,7 @@
 }
 
 .primaryButton {
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   border: 1px solid var(--wa-accent);
   color: var(--wa-on-accent-control);
 }
@@ -262,7 +262,7 @@
 
 @media (hover: hover) {
   .primaryButton:not(:disabled):hover {
-    background: var(--wa-accent-dark);
+    background: var(--wa-accent-fill-hover);
     border-color: var(--wa-accent-dark);
   }
 

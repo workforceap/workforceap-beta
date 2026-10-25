@@ -131,7 +131,7 @@ export function JobsBoardKit({
   );
   const subtitle = `${openRoles.toLocaleString()} open ${
     openRoles === 1 ? 'role' : 'roles'
-  } across ${employers.toLocaleString()} ${employers === 1 ? 'employer' : 'employers'}`;
+  } across ${employers.toLocaleString()} ${employers === 1 ? 'employer' : 'employers'}.`;
 
   const columns: Column<JobRow>[] = [
     {
@@ -195,8 +195,7 @@ export function JobsBoardKit({
     <DesignSurface surface="dense" className="wa-p-6">
       <PageOpener className="wa-mb-5"
         title="Jobs"
-        kicker="Employers"
-        lede={subtitle}
+        meta={subtitle}
         action={
           <KitLinkButton
             href="/admin/jobs?ui=legacy"
@@ -229,9 +228,8 @@ export function JobsBoardKit({
                 <div
                   style={{
                     fontWeight: 700,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
+                    overflowWrap: 'anywhere',
+                    whiteSpace: 'normal',
                   }}
                 >
                   {row.role}

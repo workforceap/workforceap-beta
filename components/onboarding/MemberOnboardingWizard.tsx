@@ -28,6 +28,8 @@ export type MemberOnboardingWizardProps = {
   counselor?: { firstName: string; messagingHref: string } | null;
   /** Median recent review time; only supplied when at least five recent decisions exist. */
   waitEstimate?: { medianDays: number; sampleSize: number } | null;
+  /** Keeps development fixture edits local. */
+  previewOnly?: boolean;
   onComplete?: () => void;
 };
 
@@ -43,10 +45,12 @@ export default function MemberOnboardingWizard({
   initialStep = 0,
   counselor = null,
   waitEstimate = null,
+  previewOnly = false,
   onComplete: onCompleteProp,
 }: MemberOnboardingWizardProps) {
   const router = useRouter();
   const t = useTranslations('memberApproval');
+  const tCommon = useTranslations('common.disclosures');
   const onComplete = onCompleteProp ?? (() => router.refresh());
   const nameParts = initialFullName.trim().split(/\s+/);
   const [firstName, setFirstName] = useState(nameParts[0] ?? '');
@@ -83,6 +87,7 @@ export default function MemberOnboardingWizard({
   };
 
   const saveProfileStep = async () => {
+    if (previewOnly) return;
     try {
       await fetch('/api/member/dashboard-profile', {
         method: 'PATCH',
@@ -105,6 +110,7 @@ export default function MemberOnboardingWizard({
   };
 
   const saveProgramStep = async () => {
+    if (previewOnly) return;
     if (!programInterest.trim()) return;
     try {
       await fetch('/api/member/application-onboarding', {
@@ -118,6 +124,7 @@ export default function MemberOnboardingWizard({
   };
 
   const saveQuestionsStep = async () => {
+    if (previewOnly) return;
     try {
       await fetch('/api/member/dashboard-profile', {
         method: 'PATCH',
@@ -148,6 +155,7 @@ export default function MemberOnboardingWizard({
       subtitle: "You're one step closer to a new career.",
       content: (
         <div className="wa-space-y-3">
+          {previewOnly ? <p role="note" className="wa-text-sm wa-text-slate-600">{tCommon('previewActionUnavailable')}</p> : null}
           <div className="wa-flex wa-justify-center wa-py-2">
             <Sparkles className="wa-h-12 wa-w-12 wa-text-brand-gold" aria-hidden />
           </div>
@@ -368,6 +376,7 @@ export default function MemberOnboardingWizard({
       steps={steps}
       onComplete={onComplete}
       initialStep={initialStep}
+      previewOnly={previewOnly}
       stepHooks={{
         beforeNext: async (index) => {
           if (index === 1) {

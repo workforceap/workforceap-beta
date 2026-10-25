@@ -7,6 +7,7 @@ import { TextInput } from '@astryxdesign/core/TextInput';
 import { TextArea } from '@astryxdesign/core/TextArea';
 import { CheckboxInput } from '@astryxdesign/core/CheckboxInput';
 import { DataTable, DesignSurface, PageOpener, StatusTag, type Column } from '@/components/portal/kit';
+import { PORTAL_REVIEW_FIXTURES, PORTAL_REVIEW_WALKS, type PortalReviewFixture } from '@/lib/dev/portalReviewFixtures';
 import styles from './review.module.css';
 
 type Route = { role: string; route: string; source: string; dynamic: boolean; openFrom: string | null };
@@ -42,7 +43,7 @@ function readResult(value: unknown): Result | undefined {
 
 export default function PortalReviewClient({ inventory, revision }: { inventory: Inventory; revision: string }) {
   const storageKey = `wap-portal-review:${revision}`;
-  const [mode, setMode] = useState('focused');
+  const [mode, setMode] = useState('fixtures');
   const [role, setRole] = useState('all');
   const [search, setSearch] = useState('');
   const [resultFilter, setResultFilter] = useState('all');
@@ -51,10 +52,13 @@ export default function PortalReviewClient({ inventory, revision }: { inventory:
   const pendingWrites = useRef<Record<string, Result>>({});
   const [loaded, setLoaded] = useState(false);
   const [storageError, setStorageError] = useState(false);
-  const [limit, setLimit] = useState(30);
+  const [limit, setLimit] = useState(10);
   const cases = useMemo(() => [
-    ...inventory.focusCases.map((item) => ({ ...item, id: `focus:${item.route}`, type: 'focused', openFrom: item.route, dynamic: false })),
+    ...PORTAL_REVIEW_FIXTURES.map((item) => ({ ...item, id: `fixture:${item.route}`, type: 'fixtures', openFrom: item.route, dynamic: false, fixture: item as PortalReviewFixture | undefined,
+      checks: `${item.canTry} Limits: ${item.blocked} Scenarios: ${item.scenarios.map((scenario) => `${scenario.title} (${scenario.href})`).join('; ') || 'Default screen'}` })),
+    ...inventory.focusCases.map((item) => ({ ...item, id: `focus:${item.route}`, type: 'focused', openFrom: item.route, dynamic: false, fixture: undefined as PortalReviewFixture | undefined })),
     ...inventory.routes.map((item) => ({ ...item, id: `route:${item.route}`, type: 'routes', title: item.route,
+      fixture: undefined as PortalReviewFixture | undefined,
       checks: item.dynamic
         ? 'Open a real record from the linked list, or use a valid issued invitation/token. Check access, actions and return navigation.'
         : 'Check page load, primary action, empty/error state and return navigation. A compatibility URL should reach its intended destination.',
@@ -156,6 +160,7 @@ export default function PortalReviewClient({ inventory, revision }: { inventory:
   const visible = filtered.slice(0, limit);
   const reviewed = cases.filter((item) => (results[item.id]?.status ?? 'not-started') !== 'not-started').length;
   const issues = cases.filter((item) => results[item.id]?.status === 'issue').length;
+  const scenarioCount = PORTAL_REVIEW_FIXTURES.reduce((total, item) => total + item.scenarios.length, 0);
 
   function exportResults() {
     const rows = [['Revision', 'Type', 'Role', 'Route', 'Check', 'Light', 'Dark', 'Phone', 'Result', 'Notes']];
@@ -175,7 +180,7 @@ export default function PortalReviewClient({ inventory, revision }: { inventory:
     <p className={styles.role}>{roleLabel(item.role)}</p><h2 className={styles.title}>{item.title}</h2>
     {item.title !== item.route && <code className={styles.path}>{item.route}</code>}
     <p className={styles.check}>{item.checks}</p>
-    {item.openFrom ? <Link href={item.openFrom} target="_blank" rel="noreferrer" prefetch={false} className="wa-kit-cta wa-kit-cta--ghost">{item.dynamic ? 'Open starting list' : 'Open screen'}<span className="wa-sr-only"> in a new tab: {item.title}</span></Link> : <p className={styles.context}>Requires a valid issued link.</p>}
+    {item.openFrom ? <Link href={item.openFrom} target="_blank" rel="noreferrer" prefetch={false} className="wa-kit-cta wa-kit-cta--ghost">{item.dynamic ? 'Open starting list' : 'Open screen'}{' '}<span className="wa-sr-only">in a new tab: {item.title}</span></Link> : <p className={styles.context}>Requires a valid issued link.</p>}
   </>;
   const coverageCell = (item: ReviewCase) => <fieldset className={styles.coverage}><legend className="wa-sr-only">{item.title} coverage</legend>
     {(['light', 'dark', 'phone'] as const).map((key) => <CheckboxInput key={key} label={`${key.charAt(0).toUpperCase() + key.slice(1)} checked`} value={(results[item.id] ?? EMPTY)[key]} isDisabled={!loaded} onChange={(value) => update(item.id, { [key]: value })} />)}
@@ -193,29 +198,93 @@ export default function PortalReviewClient({ inventory, revision }: { inventory:
     { key: 'result', header: 'Result and notes', render: resultCell, minWidth: '18rem' },
   ];
 
+  const fixtureCard = (item: ReviewCase) => {
+    const proof = item.fixture!;
+    const result = results[item.id] ?? EMPTY;
+    return <article className={styles.fixture} key={item.id}>
+      <div className={styles.fixtureHeading}>
+        <div className={styles.fixtureIdentity}>
+          <h3 className={styles.fixtureTitle}>{item.title}</h3>
+          <div className={styles.fixtureMeta}>
+            {proof.availability === 'local-development' && <span>Local development only</span>}
+            <span>{proof.scenarios.length ? `${proof.scenarios.length} scenarios` : 'Default state'}</span>
+            <StatusTag tone={result.status === 'issue' ? 'alert' : result.status === 'pass' ? 'ok' : 'muted'}>{STATUS_OPTIONS.find((option) => option.value === result.status)!.label}</StatusTag>
+          </div>
+        </div>
+        <Link href={item.route} target="_blank" rel="noreferrer" prefetch={false} className={`wa-kit-cta wa-kit-cta--ghost ${styles.openLink}`}>
+          Open screen{' '}<span className="wa-sr-only">in a new tab: {item.title}</span>
+        </Link>
+      </div>
+      <details className={styles.details}>
+        <summary>Scenarios & review<span aria-hidden="true">+</span></summary>
+        <div className={styles.detailBody}>
+          <p className={styles.description}>{proof.description}</p>
+          <code className={styles.path}>{item.route}</code>
+          <div className={styles.capabilities}>
+            <p><strong>Try here</strong>{proof.canTry}</p>
+            <p><strong>Needs separate acceptance</strong>{proof.blocked}</p>
+          </div>
+          {proof.scenarios.length > 0 && <nav className={styles.scenarios} aria-label={`${item.title} scenarios`}>
+            {proof.scenarios.map((scenario) => <Link key={scenario.href} href={scenario.href} target="_blank" rel="noreferrer" prefetch={false} className="wa-kit-focus">
+              {scenario.title}{' '}<span className="wa-sr-only">in a new tab</span>
+            </Link>)}
+          </nav>}
+          <div className={styles.manualReview}>
+            <p className={styles.context}>Record the scenario tested. Opening a screen does not mark it passed.</p>
+            {coverageCell(item)}{resultCell(item)}
+          </div>
+        </div>
+      </details>
+    </article>;
+  };
+
   return (
     <DesignSurface surface="dense">
-      <main className={styles.page}>
-        <PageOpener kicker="WorkforceAP · Preview review" title="Every screen, one review list" lede={`${inventory.routes.length} page routes and ${inventory.focusCases.length} focused checks for the consolidation pass.`}
-          action={<button type="button" className="wa-kit-cta" onClick={exportResults} disabled={!loaded}>Export review CSV</button>} />
-        <p className={styles.context}>Revision <code>{revision.slice(0, 12)}</code>. Open screens with your normal test accounts. Dynamic records use the linked list or a valid issued link. Results and notes stay in this browser for this revision; export them to share.</p>
-        <div className={styles.summary} role="status" aria-live="polite">
-          <StatusTag tone="info">{reviewed} reviewed</StatusTag>
-          <StatusTag tone={issues ? 'alert' : 'muted'}>{issues} issues</StatusTag>
-          <span>{loaded ? storageError ? 'Browser saving is unavailable. Export the CSV before closing.' : 'Review changes save in this browser.' : 'Loading your review…'}</span>
+      <section className={styles.page} aria-labelledby="portal-review-title">
+        <div id="portal-review-title"><PageOpener kicker="WorkforceAP" title="Screen review" lede={`${PORTAL_REVIEW_FIXTURES.length} sample screens · ${scenarioCount} scenarios`} /></div>
+        <p className={styles.boundary}>Sample data. Live actions need an approved test account.</p>
+        <div className={styles.reviewToolbar}>
+          <details className={`${styles.details} ${styles.reviewOptions}`}>
+            <summary>Review options{resultFilter !== 'all' ? ` · ${STATUS_OPTIONS.find((option) => option.value === resultFilter)?.label}` : ''}<span aria-hidden="true">+</span></summary>
+            <div className={styles.optionsBody}>
+              <p className={styles.context}>Revision <code>{revision.slice(0, 12)}</code>. Read each screen’s limits before saves, sends or provider actions. Notes stay in this browser for this revision. Check light, dark and phone layouts separately; use Blocked for unavailable workflows.</p>
+              <div className={styles.summary} role="status" aria-live="polite">
+                <StatusTag tone="info">{reviewed} reviewed</StatusTag>
+                <StatusTag tone={issues ? 'alert' : 'muted'}>{issues} issues</StatusTag>
+                <span>{loaded ? storageError ? 'Browser saving is unavailable. Export the CSV before closing.' : 'Review changes save in this browser.' : 'Loading your review…'}</span>
+              </div>
+              <Selector label="Result" value={resultFilter} options={[{ value: 'all', label: 'All results' }, ...STATUS_OPTIONS]} onChange={(value) => { setResultFilter(value); setLimit(10); }} />
+            </div>
+          </details>
+          <button type="button" className={`wa-kit-cta wa-kit-cta--ghost ${styles.exportButton}`} aria-label="Export review CSV" onClick={exportResults} disabled={!loaded}>Export CSV</button>
         </div>
+        {storageError && <p role="alert" className={styles.boundary}>Review notes could not be saved. Export the CSV before closing.</p>}
         <div className={styles.filters}>
-          <Selector label="Checklist" value={mode} options={[{ value: 'focused', label: 'Start here · changed workflows' }, { value: 'routes', label: 'All page routes' }]} onChange={(value) => { setMode(value); setLimit(30); }} />
-          <Selector label="Portal" value={role} options={[{ value: 'all', label: 'All portals' }, ...ROLES.map((value) => ({ value, label: roleLabel(value) }))]} onChange={(value) => { setRole(value); setLimit(30); }} />
-          <TextInput label="Find a screen" value={search} onChange={(value) => { setSearch(value); setLimit(30); }} hasClear />
-          <Selector label="Result" value={resultFilter} options={[{ value: 'all', label: 'All results' }, ...STATUS_OPTIONS]} onChange={(value) => { setResultFilter(value); setLimit(30); }} />
+          <Selector label="Checklist" value={mode} options={[{ value: 'fixtures', label: 'Sample screens' }, { value: 'focused', label: 'Signed-in flows' }, { value: 'routes', label: 'All routes' }]} onChange={(value) => { setMode(value); setRole('all'); setLimit(10); }} />
+          <Selector label="Portal" value={role} options={[{ value: 'all', label: 'All portals' }, ...ROLES.filter((value) => mode !== 'fixtures' || !['shared', 'entry'].includes(value)).map((value) => ({ value, label: roleLabel(value) }))]} onChange={(value) => { setRole(value); setLimit(10); }} />
+          <div className={styles.searchFilter}><TextInput label="Find a screen or scenario" value={search} onChange={(value) => { setSearch(value); setLimit(10); }} hasClear /></div>
         </div>
-        <p className={styles.context}>{filtered.length} matching checks. For each screen, review light mode, dark mode, and phone width. Record a blocker separately from a visual or functional issue.</p>
+        {mode === 'fixtures' && !search && role === 'all' && <details className={`${styles.details} ${styles.walkthroughs}`}>
+          <summary>Member walkthroughs<span aria-hidden="true">+</span></summary>
+          <div className={styles.walkGrid}>{PORTAL_REVIEW_WALKS.map((walk) => <section key={walk.title}>
+            <h2 className={styles.title}>{walk.title}</h2><p className={styles.description}>{walk.description}</p>
+            <ol>{walk.steps.map((step) => <li key={step.href}><Link href={step.href} target="_blank" rel="noreferrer" prefetch={false} className="wa-kit-focus">{step.title}{' '}<span className="wa-sr-only">in a new tab</span></Link></li>)}</ol>
+          </section>)}</div>
+        </details>}
+        <p className={styles.matchCount}>{filtered.length} matching {mode === 'fixtures' ? 'screens' : 'checks'} · Showing {visible.length}</p>
+        {mode === 'fixtures' ? <div className={styles.catalog}>
+          {ROLES.filter((group) => visible.some((item) => item.role === group)).map((group) => <section key={group} aria-labelledby={`fixture-role-${group}`}>
+            <h2 className={styles.groupTitle} id={`fixture-role-${group}`}>{roleLabel(group)}</h2>
+            {visible.filter((item) => item.role === group).map(fixtureCard)}
+          </section>)}
+          {!visible.length && <p className={styles.empty}>No screens match. Choose another portal or clear your search.</p>}
+        </div> : <>
+        <p className={styles.acceptanceNote}>These {mode === 'focused' ? inventory.focusCases.length + ' workflows' : inventory.routes.length + ' routes'} retain normal access checks. Use approved preview accounts and records. Dynamic routes open their starting list; issued links must be supplied. Rendering a sample screen does not pass these checks.</p>
         <DataTable className={styles.table} columns={columns} rows={visible} rowKey={(item) => item.id} aria-label="Portal screen acceptance checklist" mobile="cards" minWidth={850}
           cardRender={(item) => <section className={styles.mobileRow}>{screenCell(item)}{coverageCell(item)}{resultCell(item)}</section>}
-          empty={{ kind: 'filtered', title: 'No screens match these filters', description: 'Choose another portal or clear your search.' }} />
-        {visible.length < filtered.length && <button type="button" className="wa-kit-cta wa-kit-cta--ghost" onClick={() => setLimit((value) => value + 30)}>Show 30 more checks</button>}
-      </main>
+          empty={{ kind: 'filtered', title: 'No screens match these filters', description: 'Choose another portal or clear your search.' }} /></>}
+        {visible.length < filtered.length && <button type="button" className={`wa-kit-cta wa-kit-cta--ghost ${styles.showMore}`} onClick={() => setLimit((value) => value + 10)}>Show 10 more {mode === 'fixtures' ? 'screens' : 'checks'}</button>}
+      </section>
     </DesignSurface>
   );
 }

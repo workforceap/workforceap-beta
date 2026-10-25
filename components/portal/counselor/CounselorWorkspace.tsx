@@ -30,9 +30,8 @@ export default function CounselorWorkspace({
   return (
     <DesignSurface surface="dense" className="wa-p-4 md:wa-p-6">
       <PageOpener
-        kicker={t('kicker')}
         title={t('title')}
-        lede={t('lede')}
+        meta={t('lede')}
         action={<Link href="/counselor/students" className="wa-page-action" data-tour="tour-today-roster">{t('allMembers')}</Link>}
       />
       <LinkTabs label={t('viewsLabel')} activeKey={view} className="wa-my-5">

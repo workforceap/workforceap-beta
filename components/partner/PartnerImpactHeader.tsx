@@ -11,7 +11,10 @@ import {
   type PartnerImpactView,
 } from '@/lib/partner/impactWorkspace';
 
-/** Link-based Impact views; presentation is shared while each existing source keeps its scope. */
+/**
+ * Link-based Impact views; tabs replace generic orientation copy. The named
+ * section keeps its scope-specific explanation and each source keeps its data scope.
+ */
 export default function PartnerImpactHeader({
   activeView,
   copy,
@@ -32,7 +35,7 @@ export default function PartnerImpactHeader({
 }) {
   return (
     <>
-      <PageHeader title={copy.title} subtitle={copy.description} action={action} />
+      <PageHeader title={copy.title} action={action} />
       <LinkTabs label={copy.navLabel} activeKey={activeView} data-testid="partner-impact-views">
         {PARTNER_IMPACT_VIEWS.map((view) => (
           <Link

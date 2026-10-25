@@ -2,6 +2,7 @@ import {
   hasSubstantiveResumeText,
   sanitizeResumePlainText,
 } from '@/lib/resume/extractionQuality';
+import { STUDIO_DRAFT_KEY_PREFIX } from '@/lib/resume/studioDraft';
 
 export interface PendingResumeDraft {
   text: string;
@@ -23,7 +24,8 @@ export function purgePendingResumeDrafts(storage: DraftStorage): void {
   for (let index = storage.length - 1; index >= 0; index -= 1) {
     const key = storage.key(index);
     if (key === LEGACY_PENDING_RESUME_DRAFT_KEY
-      || key?.startsWith(PENDING_RESUME_DRAFT_KEY_PREFIX)) {
+      || key?.startsWith(PENDING_RESUME_DRAFT_KEY_PREFIX)
+      || key?.startsWith(STUDIO_DRAFT_KEY_PREFIX)) {
       storage.removeItem(key);
     }
   }

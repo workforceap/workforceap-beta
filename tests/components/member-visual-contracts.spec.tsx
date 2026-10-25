@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 import { MemberJobsKit } from '@/components/portal/kit/pages/member/MemberJobsKit';
@@ -23,10 +23,14 @@ function stat(label: string) {
 describe('categorical totals retain their value without status-like colors', () => {
   it.each([0, 3])('job totals remain neutral at %i and real application status stays distinct', (value) => {
     render(<NextIntlClientProvider locale="en" messages={en}><MemberJobsKit saved={value} applied={value} interviewing={value} offers={value} applications={[{ id: 'fixture', role: 'Fixture role', company: 'Fixture company', location: 'Remote', applied: 'Sep19', stage: 'Interview scheduled', tone: 'warn' }]} /></NextIntlClientProvider>);
+    const tracker = screen.getByLabelText('Application tracker');
     for (const label of ['Saved', 'Applied', 'Interviewing', 'Offers']) {
-      expect(stat(label)).toHaveTextContent(String(value));
-      expect(stat(label).style.color).toBe('');
-      expect(stat(label).closest('.wa-kit-card')!.className).not.toMatch(/wa-kit-tone--/);
+      const labelElement = within(tracker).getByText(label, { selector: '.wa-kit-stat-label' });
+      const count = labelElement.nextElementSibling as HTMLElement;
+      expect(count.className).toContain('wa-kit-stat-value');
+      expect(count).toHaveTextContent(String(value));
+      expect(count.style.color).toBe('');
+      expect(count.closest('[class*="wa-kit-tone--"]')).toBeNull();
     }
     expect(screen.getAllByText('Interview scheduled').length).toBeGreaterThan(0);
   });
@@ -56,15 +60,14 @@ describe('categorical totals retain their value without status-like colors', () 
 });
 
 describe('program and coach presentation preserves actions', () => {
-  it.each([false, true])('uses the independent hero action pair without changing course navigation (Coursera=%s)', (coursera) => {
+  it.each([false, true])('keeps the resume action and missions link without changing course navigation (Coursera=%s)', (coursera) => {
     const href = coursera ? '/api/member/coursera/launch?course=fixture' : '/dashboard/learning';
     render(<NextIntlClientProvider locale="en" messages={en}><MemberProgramKit courseraLaunchHref={coursera ? href : undefined} resumeHref={href} missionsHref="/dashboard/missions" /></NextIntlClientProvider>);
     const action = screen.getByRole('link', { name: coursera ? 'Resume in Coursera' : 'Open Learning Hub' });
     expect(action).toHaveAttribute('href', href);
-    expect(action.style.background).toBe('var(--wa-hero-action-bg)');
-    expect(action.style.color).toBe('var(--wa-hero-action-text)');
+    // C1 path card: the resume action is a plain kit CTA on a calm card, not a hero-gradient action.
+    expect(action).toHaveClass('wa-kit-cta');
     expect(action.style.whiteSpace).toBe('normal');
-    expect(action).toHaveClass('wa-kit-focus--on-dark');
     if (coursera) expect(action).toHaveAttribute('rel', 'noopener noreferrer');
     expect(screen.getByRole('link', { name: 'Open missions' }).style.color).toBe('var(--wa-gold-dark)');
   });

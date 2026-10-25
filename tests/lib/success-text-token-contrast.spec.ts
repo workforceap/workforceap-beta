@@ -107,21 +107,24 @@ describe('DeltaChip reads the text-on-tint pairs, not the base hue', () => {
     expect(m, `${selector} colour must be light-dark()`).not.toBeNull();
     return { light: m![1].trim(), dark: m![2].trim() };
   }
-  /** `color-mix(in srgb, var(--wa-success) N%, transparent)` composited over the surface. */
-  function successTint(pct: number, mode: 'light' | 'dark'): number[] {
-    const hue = parseColor(lightDark('--wa-success')[mode]);
-    return over([...hue.slice(0, 3), pct / 100], parseColor(surface[mode]));
-  }
 
   // The chip composes the status-pill colour classes; the pill pairs are what is measured.
   const up = ruleColour('.wa-kit-tag--ok');
   const down = ruleColour('.wa-kit-tag--danger');
 
-  it('up: clears 4.5:1 on the 12% / 18% success tints in light and dark', () => {
-    expect(kitCss).toMatch(/\.wa-kit-tag--ok \{[^}]*color-mix\(in srgb, var\(--wa-success\) 12%, transparent\)/);
-    expect(kitCss).toMatch(/\.wa-kit-tag--ok \{[^}]*color-mix\(in srgb, var\(--wa-success\) 18%, transparent\)/);
-    expect(contrast(parseColor(up.light), successTint(12, 'light'))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(parseColor(up.dark), successTint(18, 'dark'))).toBeGreaterThanOrEqual(4.5);
+  it('up: clears 4.5:1 on --wa-success-soft in light and dark, whatever the light backdrop', () => {
+    // The old 12% alpha tint passed on white but fell to 4.1:1 over --wa-surface-2
+    // (resume studio "AVAILABLE"). The light soft tint is opaque, so no grey
+    // backdrop can pull it down; dark keeps the same 18% overlay.
+    expect(kitCss).toMatch(/\.wa-kit-tag--ok \{[^}]*background: var\(--wa-success-soft\);/);
+    const soft = lightDark('--wa-success-soft');
+    expect(soft.light).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(contrast(parseColor(up.light), parseColor(soft.light))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(parseColor(up.dark), over(parseColor(soft.dark), parseColor(surface.dark)))).toBeGreaterThanOrEqual(4.5);
+    // Why it changed: the translucent 12% tint over the grey raised fill.
+    const hue = parseColor(lightDark('--wa-success').light);
+    const oldTintOnSurface2 = over([...hue, 0.12], parseColor(lightDark('--wa-surface-2').light));
+    expect(contrast(parseColor(up.light), oldTintOnSurface2)).toBeLessThan(4.5);
   });
 
   it('down: clears 4.5:1 on --wa-danger-soft in light and dark', () => {

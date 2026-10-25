@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import {
@@ -7,28 +5,34 @@ import {
   TriangleAlert,
   MailWarning,
   CheckCircle2,
-  Clock,
-  Sparkles,
   ArrowRight,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Card } from '@astryxdesign/core/Card';
 import {
   DesignSurface,
   KitEmptyState,
-  SectionHeader,
   PageOpener,
-  QueueRow,
   StatSparkTile,
   AreaChartMini,
   RankBars,
-  type QueueTone,
   type ChartDatum,
   type RankDatum,
   type KitTone,
   type SparkStat,
 } from '@/components/portal/kit';
+import {
+  StaffCard,
+  StaffEmpty,
+  StaffKpiGroup,
+  StaffSplit,
+  StaffTaskList,
+  StaffTaskRow,
+  staffLinkClass,
+  staffPillClass,
+  staffWelcomeTitle,
+  type StaffTone,
+} from '../StaffKit';
 
 /**
  * Counselor Portal — HOME view ("Command Center" redesign).
@@ -36,9 +40,11 @@ import {
  * Sibling to MemberHomeKit — same warm/dense kit language (--wa-* tokens,
  * wa-kit-* classes, lucide icons), ported for the counselor's caseload
  * instead of a member's learning journey. Layout order, top to bottom:
- *   1. Page opener (eyebrow + "Caseload" heading + goal caption).
- *   2. A 4-up KPI row (assigned / needs attention / awaiting reply / on
- *      track), each an optional inline sparkline + delta chip.
+ *   1. Page opener: "Welcome back, {first name}." (or "Caseload" when the
+ *      page has no first name) + one sentence from the queue counts.
+ *   2. A 4-up KPI strip (assigned / needs attention / awaiting reply / on
+ *      track): flat hairline tiles, muted inline icon, optional 1.5px accent
+ *      sparkline + delta chip.
  *   3. "Needs attention" — the priority queue as severity-coded QueueRows.
  *      This is the hero of the view; everything else is secondary.
  *   4. A side column: "Interview practice · last 7 days" (interview-prep tool runs) +
@@ -84,16 +90,10 @@ export interface CounselorSessionRow {
   href?: string;
 }
 
-const BUCKET_TONE: Record<CounselorQueueBucket, QueueTone> = {
+const BUCKET_TONE: Record<CounselorQueueBucket, StaffTone> = {
   critical: 'red',
   warning: 'yellow',
   ontrack: 'blue',
-};
-
-const BUCKET_ICON: Record<CounselorQueueBucket, LucideIcon> = {
-  critical: TriangleAlert,
-  warning: Clock,
-  ontrack: CheckCircle2,
 };
 
 const BUCKET_FLAG: Record<CounselorQueueBucket, string | undefined> = {
@@ -121,10 +121,10 @@ export interface CounselorHomeLoadFailedCopy {
 
 const DEFAULT_LOAD_FAILED_COPY: CounselorHomeLoadFailedCopy = {
   countsTitle: "Some caseload counts couldn't load",
-  countsBody: 'A tile showing — is unknown, not zero. Try again; if this keeps happening, tell an admin.',
+  countsBody: 'A tile with a dash is unknown, not zero. Try again, or tell an admin if it keeps happening.',
   tileCaption: "Couldn't load",
   queueTitle: "Couldn't load who needs you",
-  queueBody: 'The list did not answer, so this is not an empty queue. Try again; if this keeps happening, tell an admin.',
+  queueBody: 'The list did not answer, so this is not an empty queue. Try again, or tell an admin if it keeps happening.',
   queueSecondary: 'Open Today',
   sessions: "Couldn't load recent interview practice.",
   breakdown: "Couldn't load the caseload breakdown.",
@@ -134,7 +134,11 @@ const DEFAULT_LOAD_FAILED_COPY: CounselorHomeLoadFailedCopy = {
 export interface CounselorHomeKitProps {
   /** The shared Today workspace owns the page heading and gutter. */
   embedded?: boolean;
+  /** Person-facing greeting: "Welcome back, {firstName}." Omit it and the heading falls back to `greeting`. */
   firstName?: string;
+  /** Already-translated "Welcome back, {firstName}." for pages that localize; English fallback when omitted. */
+  welcomeTitle?: string;
+  /** Heading when there is no first name. */
   greeting?: string;
 
   /**
@@ -216,34 +220,24 @@ function formatRelativeShort(when: Date | string | null | undefined): string | u
 /* Presentational sub-components                                          */
 /* ---------------------------------------------------------------------- */
 
-function SideCardHead({ title }: { title: string }) {
-  return (
-    <span className="wa-kit-stat-label" style={{ display: 'block', marginBottom: 14 }}>
-      {title}
-    </span>
-  );
-}
-
 function EmptyQueueState({ rosterHref }: { rosterHref: string }) {
   return (
-    <Card>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <CheckCircle2 size={18} aria-hidden style={{ color: 'var(--wa-success)', flexShrink: 0 }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>Nice work — no one&rsquo;s waiting on you right now.</p>
-          <Link href={rosterHref} style={{ fontSize: 13, fontWeight: 600, color: 'var(--wa-accent)', textDecoration: 'none' }}>
-            Browse your full roster
-          </Link>
-        </div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 var(--wa-pad) var(--wa-pad-sm)' }}>
+      <CheckCircle2 size={18} aria-hidden style={{ color: 'var(--wa-success)', flexShrink: 0 }} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+        <p style={{ margin: 0, fontSize: 'var(--wa-type-body)', fontWeight: 600 }}>Nice work. No one&rsquo;s waiting on you right now.</p>
+        <Link href={rosterHref} className={staffLinkClass}>
+          Browse your full roster
+        </Link>
       </div>
-    </Card>
+    </div>
   );
 }
 
 /** Visible, announced copy for a section whose load failed (WAP-206). */
 function LoadFailedNote({ children }: { children: ReactNode }) {
   return (
-    <p role="status" style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
+    <p role="status" style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', margin: 0 }}>
       {children}
     </p>
   );
@@ -256,36 +250,20 @@ function SessionListRow({ row, fallbackHref }: { row: CounselorSessionRow; fallb
     <Link
       href={href}
       className="wa-kit-focus hover:wa-opacity-90 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-      style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit', padding: '6px 0' }}
+      style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit', padding: '8px 0', minHeight: 44 }}
     >
-      <span
-        aria-hidden
-        style={{
-          width: 30,
-          height: 30,
-          borderRadius: 9,
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'var(--wa-info-soft)',
-          color: 'var(--wa-info)',
-        }}
-      >
-        <Sparkles size={14} />
-      </span>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--wa-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <div style={{ fontWeight: 700, fontSize: 'var(--wa-type-body)', color: 'var(--wa-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {row.memberName}
         </div>
         {row.role ? (
-          <div style={{ fontSize: 13, color: 'var(--wa-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {row.role}
           </div>
         ) : null}
       </div>
       {relative ? (
-        <span style={{ fontSize: 13, color: 'var(--wa-muted)', fontWeight: 600, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
+        <span style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', fontWeight: 600, flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
           {relative}
         </span>
       ) : null}
@@ -300,6 +278,7 @@ function SessionListRow({ row, fallbackHref }: { row: CounselorSessionRow; fallb
 export function CounselorHomeKit({
   embedded = false,
   firstName,
+  welcomeTitle,
   greeting = 'Caseload',
   assignedCount = 0,
   atRiskCount = 0,
@@ -392,19 +371,25 @@ export function CounselorHomeKit({
       ? `Nothing flagged${onTrack > 0 ? ` · ${onTrack} member${onTrack === 1 ? '' : 's'} on track` : ''}`
       : `${total} member${total === 1 ? '' : 's'} in queue${slaBreaches > 0 ? ` · ${slaBreaches} past 48h SLA` : ''}`;
 
+  const headerSentence = queueUnavailable
+    ? undefined
+    : nothingFlagged
+      ? 'No one is flagged for you today.'
+      : `${total} member${total === 1 ? '' : 's'} need${total === 1 ? 's' : ''} you today${slaBreaches > 0 ? `, ${slaBreaches} past the 48h reply window` : ''}.`;
+
   return (
     <DesignSurface surface="dense">
-      <div style={{ padding: embedded ? 0 : 'clamp(1rem, 4vw, 1.5rem)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div style={{ padding: embedded ? 0 : 'clamp(1rem, 4vw, 1.5rem)', display: 'flex', flexDirection: 'column', gap: 'var(--wa-pad)' }}>
 
-        {/* 1. Page opener */}
-        {!embedded ? <PageOpener className="wa-mb-5"
-          kicker={greeting}
-          title={firstName ? `Hey, ${firstName}.` : 'Caseload'}
-          lede="Know who needs me today."
+        {/* 1. Header: title + one contextual sentence + right-aligned action. */}
+        {!embedded ? <PageOpener
+          title={firstName ? (welcomeTitle ?? staffWelcomeTitle(firstName)) : greeting}
+          meta={headerSentence}
+          action={<Link href={rosterHref} className={staffPillClass.base}>View roster</Link>}
         /> : null}
 
         {/* 2. KPI row */}
-        <div className="wa-grid wa-grid-cols-2 lg:wa-grid-cols-4 wa-gap-3">
+        <StaffKpiGroup cols={4}>
           {kpis.map((k) => (
             <StatSparkTile
               key={k.key}
@@ -416,7 +401,7 @@ export function CounselorHomeKit({
               caption={k.value === null ? copy.tileCaption : k.caption}
             />
           ))}
-        </div>
+        </StaffKpiGroup>
         {countsUnavailable ? (
           // One alert per page: KitEmptyState makes unavailable + danger a
           // role="alert". When the queue failed too, its state below is that
@@ -434,78 +419,79 @@ export function CounselorHomeKit({
           />
         ) : null}
 
-        {/* 3 + 4. Hero queue (left) + side column (right). */}
-        <div className="wa-grid wa-grid-cols-1 lg:wa-grid-cols-12 wa-gap-4">
-          <div className="lg:wa-col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }}>
-            <SectionHeader title={queueTitle} goal={goalCaption} />
-            {queueUnavailable ? (
-              <KitEmptyState
-                framed
-                kind="unavailable"
-                tone="danger"
-                data-testid="counselor-overview-queue-load-failed"
-                icon={<TriangleAlert size={13} aria-hidden="true" />}
-                title={copy.queueTitle}
-                description={copy.queueBody}
-                primaryAction={{ label: copy.action, href: retryHref }}
-                secondaryAction={{ label: copy.queueSecondary, href: todayHref }}
-              />
-            ) : rows.length === 0 ? (
-              <EmptyQueueState rosterHref={rosterHref} />
-            ) : (
-              rows.map((row) => {
-                const Icon = BUCKET_ICON[row.bucket];
-                return (
-                  <QueueRow
-                    key={row.memberId}
-                    tone={BUCKET_TONE[row.bucket]}
-                    icon={<Icon size={16} aria-hidden />}
-                    title={row.memberName}
-                    meta={queueRowMeta(row)}
-                    flag={BUCKET_FLAG[row.bucket]}
-                    action={
-                      <PortalRecordLink href={row.href ?? `${memberHrefBase}/${row.memberId}`} className="wa-kit-cta wa-kit-cta--ghost">View</PortalRecordLink>
-                    }
+        {/* 3 + 4. Hero queue (main) + people / activity rail. */}
+        <StaffSplit
+          main={
+            <>
+              <StaffCard id="counselor-queue-title" title={queueTitle} meta={goalCaption} flush={!queueUnavailable}>
+                {queueUnavailable ? (
+                  <KitEmptyState
+                    framed
+                    kind="unavailable"
+                    tone="danger"
+                    data-testid="counselor-overview-queue-load-failed"
+                    icon={<TriangleAlert size={13} aria-hidden="true" />}
+                    title={copy.queueTitle}
+                    description={copy.queueBody}
+                    primaryAction={{ label: copy.action, href: retryHref }}
+                    secondaryAction={{ label: copy.queueSecondary, href: todayHref }}
                   />
-                );
-              })
-            )}
-            {!queueUnavailable && bulkFollowUp ? bulkFollowUp : null}
-          </div>
+                ) : rows.length === 0 ? (
+                  <EmptyQueueState rosterHref={rosterHref} />
+                ) : (
+                  <StaffTaskList label={queueTitle}>
+                    {rows.map((row, index) => (
+                      <StaffTaskRow
+                        key={row.memberId}
+                        tone={BUCKET_TONE[row.bucket]}
+                        title={row.memberName}
+                        subline={queueRowMeta(row)}
+                        flag={BUCKET_FLAG[row.bucket]}
+                        flagTone={row.bucket === 'critical' ? 'red' : row.bucket === 'warning' ? 'yellow' : 'neutral'}
+                        action={
+                          <PortalRecordLink
+                            href={row.href ?? `${memberHrefBase}/${row.memberId}`}
+                            className={`wa-kit-focus ${index === 0 && row.bucket === 'critical' ? staffPillClass.dark : staffPillClass.base}`}
+                          >
+                            View
+                          </PortalRecordLink>
+                        }
+                      />
+                    ))}
+                  </StaffTaskList>
+                )}
+              </StaffCard>
+              {!queueUnavailable && bulkFollowUp ? bulkFollowUp : null}
+            </>
+          }
+          rail={
+            <>
+              {/* Interview practice, last 7 days: AI tool runs, not scheduled in-office sessions. */}
+              <StaffCard
+                id="counselor-practice-title"
+                title="Interview practice · last 7 days"
+                action={
+                  <Link href={sessionsHref} className={`wa-kit-focus ${staffLinkClass}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    Sessions <ArrowRight size={12} aria-hidden />
+                  </Link>
+                }
+              >
+                {sessions === null ? (
+                  <LoadFailedNote>{copy.sessions}</LoadFailedNote>
+                ) : sessions.length === 0 ? (
+                  <StaffEmpty>No member ran interview practice in the last 7 days.</StaffEmpty>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {sessions.map((row, i) => (
+                      <SessionListRow key={row.memberId ?? `${row.memberName}-${i}`} row={row} fallbackHref={sessionsHref} />
+                    ))}
+                  </div>
+                )}
+              </StaffCard>
 
-          <aside className="lg:wa-col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 0 }}>
-            {/* Interview practice, last 7 days: AI tool runs, not scheduled in-office sessions. */}
-            <Card>
-              <div className="wa-flex wa-items-center wa-justify-between" style={{ marginBottom: 4 }}>
-                <SideCardHead title="Interview practice · last 7 days" />
-                <Link
-                  href={sessionsHref}
-                  className="wa-kit-focus hover:wa-opacity-80 wa-transition-opacity wa-duration-150 motion-reduce:wa-transition-none"
-                  style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, marginBottom: 14 }}
-                >
-                  Sessions <ArrowRight size={11} aria-hidden />
-                </Link>
-              </div>
-              {sessions === null ? (
-                <LoadFailedNote>{copy.sessions}</LoadFailedNote>
-              ) : sessions.length === 0 ? (
-                <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
-                  No member ran interview practice in the last 7 days.
-                </p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {sessions.map((row, i) => (
-                    <SessionListRow key={row.memberId ?? `${row.memberName}-${i}`} row={row} fallbackHref={sessionsHref} />
-                  ))}
-                </div>
-              )}
-            </Card>
-
-            {/* Activity: real daily series when available, otherwise the caseload-by-bucket breakdown. */}
-            <Card>
+              {/* Activity: real daily series when available, otherwise the caseload-by-bucket breakdown. */}
               {hasActivitySeries ? (
-                <>
-                  <SideCardHead title="Caseload activity" />
+                <StaffCard id="counselor-activity-title" title="Caseload activity">
                   <AreaChartMini
                     data={activity}
                     id="counselor-cc-activity"
@@ -514,34 +500,30 @@ export function CounselorHomeKit({
                     ariaLabel={activityDeltaLabel}
                   />
                   {activityDeltaLabel ? (
-                    <p style={{ marginTop: 10, fontSize: 13, fontWeight: 700, color: 'var(--wa-success)', fontVariantNumeric: 'tabular-nums' }}>
+                    <p style={{ marginTop: 10, fontSize: 'var(--wa-type-meta)', fontWeight: 700, color: 'var(--wa-success-dark)', fontVariantNumeric: 'tabular-nums' }}>
                       {activityDeltaLabel}
                     </p>
                   ) : null}
-                </>
+                </StaffCard>
               ) : bucketsUnavailable ? (
-                <>
-                  <SideCardHead title="Caseload by bucket" />
+                <StaffCard id="counselor-buckets-title" title="Caseload by bucket">
                   <LoadFailedNote>{copy.breakdown}</LoadFailedNote>
-                </>
+                </StaffCard>
               ) : bucketRankData ? (
-                <>
-                  <SideCardHead title="Caseload by bucket" />
+                <StaffCard id="counselor-buckets-title" title="Caseload by bucket">
                   <RankBars data={bucketRankData} />
-                </>
+                </StaffCard>
               ) : (
-                <>
-                  <SideCardHead title="Caseload activity" />
-                  <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
+                <StaffCard id="counselor-activity-title" title="Caseload activity">
+                  <p style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)', margin: 0 }}>
                     Once members are assigned, their activity trend will appear here.
                   </p>
-                </>
+                </StaffCard>
               )}
-            </Card>
-          </aside>
-        </div>
+            </>
+          }
+        />
       </div>
     </DesignSurface>
   );
 }
-

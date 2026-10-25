@@ -4,6 +4,13 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
+import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
+import { formatPortalDate } from '@/lib/formatDate';
+import {
+  MEMBER_REQUEST_FAILURE,
+  describeMemberRequestException,
+  readMemberRequestFailure,
+} from '@/lib/portal/memberRequestFailure';
 import { Dialog } from '@astryxdesign/core/Dialog';
 import { Layout, LayoutContent, LayoutFooter, LayoutHeader, HStack } from '@astryxdesign/core/Layout';
 import { Button } from '@astryxdesign/core/Button';
@@ -69,10 +76,65 @@ interface CounselorNote {
 
 const TITLE_ID = 'at-risk-detail-title';
 
+/** Long enough for a slow read, short enough that a hung request still fails visibly. */
+const DETAIL_REQUEST_TIMEOUT_MS = 15000;
+
+/**
+ * The notes route answers with the Prisma row: `author` is `{ fullName, email }`
+ * (the counselor panel reads it the same way), and GET returns a bare array.
+ * Reduce either shape to the display name this dialog prints.
+ */
+function toCounselorNote(raw: unknown): CounselorNote | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const row = raw as { id?: unknown; content?: unknown; createdAt?: unknown; author?: unknown };
+  if (typeof row.id !== 'string' || typeof row.content !== 'string') return null;
+  let author: string | null = null;
+  if (typeof row.author === 'string') author = row.author;
+  else if (row.author && typeof row.author === 'object') {
+    const { fullName, email } = row.author as { fullName?: unknown; email?: unknown };
+    author = (typeof fullName === 'string' && fullName) || (typeof email === 'string' ? email : null);
+  }
+  return { id: row.id, content: row.content, author, createdAt: String(row.createdAt ?? '') };
+}
+
 interface Props {
   member: AtRiskMember | null;
   onClose: () => void;
   onStatusChange: (alertId: string, status: 'acknowledged' | 'resolved' | 'escalated') => void;
+}
+
+/**
+ * Honest failure state for a section that could not be read. The alert stays
+ * mounted while a retry is in flight (button disabled, label "Retrying…") so
+ * keyboard focus is not dropped from inside the dialog.
+ */
+function LoadFailure({
+  what,
+  reason,
+  retrying,
+  onRetry,
+  testId,
+}: {
+  what: string;
+  reason: string;
+  retrying: boolean;
+  onRetry: () => void;
+  testId: string;
+}) {
+  return (
+    <div
+      role="alert"
+      data-testid={testId}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem 0.75rem' }}
+    >
+      <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, color: 'var(--wa-accent-text)' }}>
+        Couldn’t load {what}. {reason}
+      </p>
+      <button type="button" className="btn btn-outline btn-sm" onClick={onRetry} disabled={retrying}>
+        {retrying ? 'Retrying…' : 'Try again'}
+      </button>
+    </div>
+  );
 }
 
 export default function AtRiskDetailModal({ member, onClose, onStatusChange }: Props) {
@@ -85,45 +147,102 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
   const [savingNote, setSavingNote] = useState(false);
   const [acting, setActing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // A failed read is not an empty record: keep the failure apart from the data
+  // so "No recent activity recorded." / "No notes yet." only ever mean a
+  // successful, empty answer.
+  const [timelineError, setTimelineError] = useState<string | null>(null);
+  const [notesError, setNotesError] = useState<string | null>(null);
+  // Per-load counters plus the open dialog's AbortSignal: a response that
+  // arrives after a retry, a member switch or a close never paints.
+  const timelineRequest = useRef(0);
+  const notesRequest = useRef(0);
+  const loadSignal = useRef<AbortSignal | undefined>(undefined);
 
-  const fetchTimeline = useCallback(async (userId: string) => {
+  const fetchTimeline = useCallback(async (userId: string, signal = loadSignal.current) => {
+    const request = ++timelineRequest.current;
+    const current = () => request === timelineRequest.current && !signal?.aborted;
     setLoadingTimeline(true);
     try {
-      const res = await fetch(`/api/counselor/members/${userId}/activity-timeline?limit=20`);
-      if (!res.ok) throw new Error('Failed to load timeline');
+      const res = await fetchWithTimeout(
+        `/api/counselor/members/${userId}/activity-timeline?limit=20`,
+        { signal },
+        DETAIL_REQUEST_TIMEOUT_MS,
+      );
+      if (!current()) return;
+      if (!res.ok) {
+        setTimelineError(await readMemberRequestFailure(res));
+        return;
+      }
       const data = await res.json();
-      setTimeline(data.events ?? []);
+      if (!current()) return;
+      if (Array.isArray(data?.events)) {
+        setTimeline(data.events);
+        setTimelineError(null);
+      } else {
+        setTimelineError(MEMBER_REQUEST_FAILURE.generic);
+      }
     } catch (err) {
-      setTimeline([]);
+      // Cancelled by a re-render, a close or a newer load: not a failure.
+      if (!current()) return;
+      setTimelineError(describeMemberRequestException(err));
     } finally {
-      setLoadingTimeline(false);
+      if (current()) setLoadingTimeline(false);
     }
   }, []);
 
-  const fetchNotes = useCallback(async (userId: string) => {
+  const fetchNotes = useCallback(async (userId: string, signal = loadSignal.current) => {
+    const request = ++notesRequest.current;
+    const current = () => request === notesRequest.current && !signal?.aborted;
     setLoadingNotes(true);
     try {
-      const res = await fetch(`/api/counselor/members/${userId}/notes`);
-      if (!res.ok) throw new Error('Failed to load notes');
+      const res = await fetchWithTimeout(
+        `/api/counselor/members/${userId}/notes`,
+        { signal },
+        DETAIL_REQUEST_TIMEOUT_MS,
+      );
+      if (!current()) return;
+      if (!res.ok) {
+        setNotesError(await readMemberRequestFailure(res));
+        return;
+      }
       const data = await res.json();
-      setNotes(data.notes ?? []);
+      if (!current()) return;
+      const rows: unknown = Array.isArray(data) ? data : data?.notes;
+      if (Array.isArray(rows)) {
+        setNotes(rows.map(toCounselorNote).filter((n): n is CounselorNote => n !== null));
+        setNotesError(null);
+      } else {
+        setNotesError(MEMBER_REQUEST_FAILURE.generic);
+      }
     } catch (err) {
-      setNotes([]);
+      if (!current()) return;
+      setNotesError(describeMemberRequestException(err));
     } finally {
-      setLoadingNotes(false);
+      if (current()) setLoadingNotes(false);
     }
   }, []);
 
   useEffect(() => {
-    if (member) {
-      setError(null);
-      fetchTimeline(member.userId);
-      fetchNotes(member.userId);
-    } else {
+    if (!member) {
       setTimeline([]);
       setNotes([]);
       setNoteText('');
+      setTimelineError(null);
+      setNotesError(null);
+      return;
     }
+    const controller = new AbortController();
+    loadSignal.current = controller.signal;
+    setError(null);
+    setTimelineError(null);
+    setNotesError(null);
+    void fetchTimeline(member.userId, controller.signal);
+    void fetchNotes(member.userId, controller.signal);
+    return () => {
+      controller.abort();
+      timelineRequest.current += 1;
+      notesRequest.current += 1;
+    };
   }, [member, fetchTimeline, fetchNotes]);
 
   async function addNote() {
@@ -137,7 +256,10 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
         body: JSON.stringify({ content: noteText.trim() })});
       if (!res.ok) throw new Error('Failed to save note');
       const data = await res.json();
-      setNotes((prev) => [data.note, ...prev]);
+      // The route returns the created note itself (older shape: `{ note }`).
+      const created = toCounselorNote(data?.note ?? data);
+      if (created) setNotes((prev) => [created, ...prev.filter((n) => n.id !== created.id)]);
+      else void fetchNotes(member.userId);
       setNoteText('');
     } catch (err) {
       setError(requestFailureMessage(err, { connection: tCommon('connectionError'), fallback: 'Failed to save note' }, 'at-risk-note'));
@@ -270,7 +392,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
               Status: {shown.status}
             </span>
             <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', marginLeft: 'auto' }}>
-              Alerted {new Date(shown.alertCreatedAt).toLocaleDateString()}
+              Alerted {formatPortalDate(shown.alertCreatedAt)}
             </span>
           </div>
 
@@ -357,11 +479,19 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
               <Activity size={14} style={{ verticalAlign: 'middle', marginRight: '0.35rem' }} />
               Recent activity
             </h3>
-            {loadingTimeline ? (
+            {loadingTimeline && !timelineError ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-on-surface-variant)', fontSize: '0.85rem' }}>
                 <PortalInlineSpinner size={14} />
                 Loading timeline…
               </div>
+            ) : timelineError ? (
+              <LoadFailure
+                what="recent activity"
+                reason={timelineError}
+                retrying={loadingTimeline}
+                onRetry={() => void fetchTimeline(shown.userId)}
+                testId="at-risk-timeline-error"
+              />
             ) : timeline.length === 0 ? (
               <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
                 No recent activity recorded.
@@ -390,7 +520,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                     </div>
                     <span style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)', whiteSpace: 'nowrap', flexShrink: 0 }}>
                       <Clock size={12} style={{ verticalAlign: 'middle', marginRight: '0.25rem' }} />
-                      {new Date(ev.createdAt).toLocaleDateString()}
+                      {formatPortalDate(ev.createdAt)}
                     </span>
                   </div>
                 ))}
@@ -447,11 +577,19 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                 {error}
               </p>
             )}
-            {loadingNotes ? (
+            {loadingNotes && !notesError ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-on-surface-variant)', fontSize: '0.85rem' }}>
                 <PortalInlineSpinner size={14} />
                 Loading notes…
               </div>
+            ) : notesError ? (
+              <LoadFailure
+                what="notes"
+                reason={notesError}
+                retrying={loadingNotes}
+                onRetry={() => void fetchNotes(shown.userId)}
+                testId="at-risk-notes-error"
+              />
             ) : notes.length === 0 ? (
               <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--color-on-surface-variant)' }}>
                 No notes yet.
@@ -468,7 +606,7 @@ export default function AtRiskDetailModal({ member, onClose, onStatusChange }: P
                   >
                     <p style={{ margin: '0 0 0.35rem', fontSize: '0.85rem', lineHeight: 1.45 }}>{note.content}</p>
                     <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>
-                      {note.author ?? 'Counselor'} · {new Date(note.createdAt).toLocaleDateString()}
+                      {note.author ?? 'Counselor'} · {formatPortalDate(note.createdAt)}
                     </p>
                   </div>
                 ))}

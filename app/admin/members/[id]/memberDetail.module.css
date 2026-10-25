@@ -111,7 +111,7 @@
   width: 56px;
   height: 56px;
   border-radius: var(--wa-radius-sm);
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
   font-size: 1.25rem;
   font-weight: 900;
@@ -338,7 +338,7 @@
 
 .fill {
   height: 100%;
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
 }
 
 .fillDone {

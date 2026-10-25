@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PartnerMemberRow } from '@/components/partner/PartnerReferredMembersMobile';
 
@@ -118,6 +118,25 @@ describe('/partner referred members at phone width', () => {
     expect(within(cards.getByRole('link', { name: /Jordan Williams/ })).getByText('Enrolled')).toBeVisible();
     expect(within(cards.getByRole('link', { name: /Angela Davis/ })).getByText('Referred')).toBeVisible();
     expect(within(cards.getByRole('link', { name: /Sam Rivera/ })).getByText('Placement reported, pending verification')).toBeVisible();
+  });
+
+  it('keeps all mobile filters in a wrapping group and preserves selection and referral context', async () => {
+    render(await PartnerDashboardPage({ searchParams: Promise.resolve({}) }));
+    const cards = screen.getByTestId('referred-members-cards');
+    const filters = within(cards).getByRole('group', { name: 'Filter referred members' });
+    expect(filters).toHaveStyle({ flexWrap: 'wrap' });
+    expect(filters.style.overflowX).not.toBe('auto');
+    expect(within(filters).getAllByRole('button')).toHaveLength(4);
+    for (const filter of within(filters).getAllByRole('button')) expect(filter).toHaveStyle({ minHeight: '44px' });
+    const placed = within(filters).getByRole('button', { name: 'Placed 1' });
+    fireEvent.click(placed);
+    expect(placed).toHaveAttribute('aria-pressed', 'true');
+    expect(within(cards).getAllByRole('link')).toHaveLength(1);
+    expect(within(cards).getByRole('link', { name: /Keisha Washington/ })).toBeVisible();
+    expect(new URLSearchParams(window.location.search).get('referralView')).toBe('placed');
+    fireEvent.click(within(filters).getByRole('button', { name: 'All 4' }));
+    expect(within(cards).getAllByRole('link')).toHaveLength(4);
+    expect(new URLSearchParams(window.location.search).has('referralView')).toBe(false);
   });
 
   it('counts only verified placements in the default overview', async () => {

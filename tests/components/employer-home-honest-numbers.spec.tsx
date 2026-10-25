@@ -24,6 +24,10 @@ describe('EmployerHomeKit numbers (WAP-210)', () => {
     ).toBeInTheDocument();
     expect(screen.queryByText(/\$\d/)).toBeNull();
     expect(screen.queryByText(/from your hires so far/)).toBeNull();
+    const postRole = screen.getByRole('link', { name: 'Post a role' });
+    expect(postRole).toHaveAttribute('href', '/employer/jobs/new');
+    expect(postRole.querySelector('button')).toBeNull();
+    expect(postRole.closest('[data-tour="tour-post-job"]')).not.toBeNull();
   });
 
   it('names a giveback figure only when one is passed', () => {

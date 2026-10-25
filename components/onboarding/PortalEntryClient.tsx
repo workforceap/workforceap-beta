@@ -38,6 +38,7 @@ type PortalEntryClientProps =
       showOnboardingWizard: boolean;
       showTour: boolean;
       readOnlyAudit?: boolean;
+      previewOnly?: boolean;
       isSuperAdmin: boolean;
       tourSteps: TourStep[];
       wizardProps: MemberWizardProps;
@@ -118,7 +119,7 @@ export default function PortalEntryClient(props: PortalEntryClientProps) {
         <span hidden data-portal-audit-suppressed={`${portal}-onboarding-persistence-and-tour`} />
       ) : null}
       {portal === 'member' && wizardOpen ? (
-        <MemberOnboardingWizard {...props.wizardProps} onComplete={onWizardDone} />
+        <MemberOnboardingWizard {...props.wizardProps} previewOnly={props.portal === 'member' ? props.previewOnly : false} onComplete={onWizardDone} />
       ) : null}
       {portal === 'employer' && wizardOpen ? (
         <EmployerOnboardingWizard {...props.wizardProps} onComplete={onWizardDone} />

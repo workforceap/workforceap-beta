@@ -48,7 +48,7 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
     out.push({
       id: 'submit_application',
       title: 'Submit a program application',
-      body: "Takes about 10 minutes — we'll match you to a funded program and connect you with a counselor.",
+      body: "Takes about 10 minutes. We'll match you to a funded program and connect you with a counselor.",
       href: '/apply',
       cta: 'Start application',
       variant: 'urgent',
@@ -177,10 +177,10 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
   if (!!ctx.enrolledProgram && !ctx.hasResume) {
     out.push({
       id: 'upload_resume',
-      title: 'Add your resume',
-      body: 'Upload a resume so employers and AI tools can tailor help to your background.',
-      href: '/dashboard/ai-tools/resume-studio?view=rewrite',
-      cta: 'Try resume rewriter',
+      title: 'Review your résumé for your consultation',
+      body: 'No portal copy is recorded. If you emailed your résumé, confirm receipt with your team before uploading again.',
+      href: '/dashboard/resume',
+      cta: 'Open Résumé workspace',
       variant: 'default',
       weight: 80,
     });
@@ -219,7 +219,7 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
     out.push({
       id: 'placement_job_loss_reactivate',
       title: "Let's get you back on track",
-      body: 'Job changes happen. Browse new openings that match your training and certifications — your counselor can help you get moving again.',
+      body: 'Job changes happen. Browse new openings that match your training and certifications. Your counselor can help you get moving again.',
       href: '/dashboard/jobs',
       cta: 'Browse jobs',
       variant: 'urgent',
@@ -229,7 +229,7 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
     out.push({
       id: 'placement_job_loss_counselor',
       title: 'Talk to your counselor about next steps',
-      body: 'Let your counselor know what happened — they can help with a job search plan and may have support options available.',
+      body: 'Let your counselor know what happened. They can help with a job search plan and may have support options available.',
       href: '/dashboard/messages',
       cta: 'Message counselor',
       variant: 'urgent',
@@ -281,7 +281,7 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
     out.push({
       id: 'complete_profile',
       title: 'Strengthen your profile',
-      body: `Profile ${ctx.profileCompletenessPct}% complete — employers and AI tools use this data.${missingNote}`,
+      body: `Profile ${ctx.profileCompletenessPct}% complete. Employers and AI tools use this data.${missingNote}`,
       href: '/dashboard/profile',
       cta: 'Complete profile',
       variant: 'default',
@@ -306,7 +306,7 @@ export function buildNextBestActions(ctx: NextBestActionsContext): NextBestActio
   out.push({
     id: 'default_counselor',
     title: 'Talk to your counselor',
-    body: 'Not sure what to do next? Send a quick message — your counselor can suggest the best step from here.',
+    body: 'Not sure what to do next? Send a quick message. Your counselor can suggest the best step from here.',
     href: '/dashboard/messages',
     cta: 'Message counselor',
     variant: 'default',

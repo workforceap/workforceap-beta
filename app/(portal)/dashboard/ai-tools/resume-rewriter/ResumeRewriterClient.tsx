@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
 import { FileText, Upload } from 'lucide-react';
 import ResumeRewriterForm from '@/components/portal/tools/ResumeRewriterForm';
+import { useResumeStudioDraft } from '@/components/portal/ResumeDraftContinuity';
 
 type ResumeResponse = {
   hasOriginal?: boolean;
@@ -38,12 +39,20 @@ function ResumeRewriterWithPrefill({ initialData }: { initialData?: { resume: st
   const [hasOriginalOnFile, setHasOriginalOnFile] = useState(!!initialData?.resume);
   const [showLoadedBanner, setShowLoadedBanner] = useState(!!initialData?.resume);
   const [showUploadBanner, setShowUploadBanner] = useState(false);
-  const loadedTextRef = useRef<string | null>(initialData?.resume ?? null);
-  const didFetchRef = useRef(false);
+  const edited = useRef(false);
+  const draft = useResumeStudioDraft();
+  const latestDraft = useRef(draft);
+  latestDraft.current = draft;
+  const ready = draft?.ready ?? true;
+  const hasRecoveredDraft = Boolean(draft?.restored?.rewrite);
 
   useEffect(() => {
-    if (didFetchRef.current) return;
-    didFetchRef.current = true;
+    if (!ready) return;
+    if (hasRecoveredDraft) {
+      setShowLoadedBanner(false);
+      setHasHydrated(true);
+      return;
+    }
     // If server already provided resume, skip client-side fetch
     if (initialData?.resume) {
       setHasHydrated(true);
@@ -63,10 +72,16 @@ function ResumeRewriterWithPrefill({ initialData }: { initialData?: { resume: st
         setHasOriginalOnFile(hasOriginal);
 
         if (plainText) {
-          loadedTextRef.current = plainText;
-          setResumeText((prev) => prev.trim() || plainText);
+          if (!edited.current) {
+            setResumeText((prev) => prev.trim() || plainText);
+            // Target/options can be edited before the source request completes.
+            // Keep the accepted source with those latest values so recovery does
+            // not mistake a not-yet-prefilled field for an intentional blank.
+            const saved = latestDraft.current?.saved?.rewrite;
+            if (saved) latestDraft.current?.save('rewrite', { ...saved, resume: plainText });
+          }
           setHasStoredResume(true);
-          setShowLoadedBanner(true);
+          setShowLoadedBanner(!edited.current);
           setShowUploadBanner(false);
         } else {
           setHasStoredResume(false);
@@ -87,14 +102,14 @@ function ResumeRewriterWithPrefill({ initialData }: { initialData?: { resume: st
     return () => {
       cancelled = true;
     };
-    // Intentional mount-only fetch; didFetchRef guards against double-invoke.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ready, hasRecoveredDraft, initialData?.resume]);
 
   return (
     <ResumeRewriterForm
       resumeControlled={resumeText}
+      initialJobTarget={initialData?.jobTarget ?? ''}
       onResumeChange={(val) => {
+        edited.current = true;
         setResumeText(val);
         if (showLoadedBanner) setShowLoadedBanner(false);
       }}
@@ -123,8 +138,14 @@ function ResumeRewriterWithPrefill({ initialData }: { initialData?: { resume: st
                 <button
                   type="button"
                   onClick={() => {
+                    edited.current = true;
                     setResumeText('');
                     setShowLoadedBanner(false);
+                    draft?.save('rewrite', {
+                      jobTarget: initialData?.jobTarget ?? '', targetSalary: '', targetLocation: '',
+                      language: 'en', tone: 'professional', atsOptimize: true,
+                      ...draft.saved?.rewrite, resume: '',
+                    });
                   }}
                   style={{
                     border: 'none',

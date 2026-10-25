@@ -589,7 +589,7 @@ export default async function DashboardCertificationsPage({
                   alignItems: 'center',
                   gap: '0.375rem',
                   padding: '0.4rem 0.875rem',
-                  background: 'var(--wa-accent)',
+                  background: 'var(--wa-accent-fill)',
                   borderRadius: '999px',
                   fontSize: '0.8125rem',
                   fontWeight: 700,

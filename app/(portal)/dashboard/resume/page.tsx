@@ -17,6 +17,8 @@ import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import ResumeStudioClient from '@/components/portal/ResumeStudioClient';
 import ToolHistoryPanel from '@/components/portal/ToolHistoryPanel';
 import styles from '@/components/portal/MemberWorkspace.module.css';
+import resumeStyles from '@/components/portal/ResumeStudio.module.css';
+import { getResumeDraftOwnerToken } from '@/lib/resume/resumeProfileRevision';
 
 const ResumeClient = dynamic(() => import('./ResumeClient'), {
   loading: () => (
@@ -96,12 +98,11 @@ export default async function DashboardResumePage() {
     <DesignSurface surface="warm">
       <div className={styles.workspace}>
         <PageOpener
-          kicker="AI Career Tools"
+          className={resumeStyles.opener}
           title={t('resume')}
-          lede={tw('intro')}
           action={
             <Link href="/dashboard/ai-tools" className="wa-page-action wa-kit-focus">
-              AI Career Tools
+              {tw('design.backToTools')}
             </Link>
           }
         />
@@ -110,6 +111,7 @@ export default async function DashboardResumePage() {
         )}
         <Suspense fallback={null}>
           <ResumeStudioClient
+            draftOwnerToken={getResumeDraftOwnerToken(user.id)}
             basePath="/dashboard/resume"
             hasResume={!!(profile?.resumeOriginalPath || profile?.resumeEnhancedPath)}
             filesSlot={

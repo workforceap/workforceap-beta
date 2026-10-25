@@ -85,9 +85,8 @@ export function ReportingHubKit({
     <DesignSurface surface="dense" className="wa-p-6">
       <PageOpener
         className="wa-mb-5"
-        kicker="Admin"
         title="Reporting"
-        lede="Review the evidence, understand each measure and prepare the right report."
+        meta="Review the evidence, understand each measure and prepare the right report."
         action={action}
       />
 

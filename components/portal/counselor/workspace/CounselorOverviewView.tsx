@@ -4,6 +4,7 @@ import { getUser } from '@/lib/auth/server';
 import { deniedPortalHomeHref } from '@/lib/auth/portalGuards';
 import { isAdmin, isCounselor } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
+import { signedInFirstName } from '@/lib/portal/signedInFirstName';
 import { COUNSELOR_ROSTER_CAP } from '@/lib/db/queryCaps';
 import Link from 'next/link';
 import { counselorAffiliationLabel } from '@/lib/counselor/counselorLabels';
@@ -82,10 +83,17 @@ export default async function CounselorOverviewView({
   if (requestedUi !== 'legacy') {
     const kitLoadErrors: string[] = [];
     const kitIsAdmin = await isAdmin(user.id);
-    const kitCounselor = await prisma.counselor.findFirst({
-      where: { userId: user.id, active: true },
-      select: { id: true },
-    });
+    const tCounselor = await getTranslations('counselor');
+    // Person-facing greeting ("Welcome back, {first name}."): read alongside the
+    // counselor row, so it adds no serial round trip. It degrades to the
+    // workspace title when the name is unavailable.
+    const [kitFirstName, kitCounselor] = await Promise.all([
+      signedInFirstName(user.id),
+      prisma.counselor.findFirst({
+        where: { userId: user.id, active: true },
+        select: { id: true },
+      }),
+    ]);
 
     const assignedCount = kitCounselor
       ? await prisma.counselorAssignment.count({
@@ -158,6 +166,8 @@ export default async function CounselorOverviewView({
         ))}
         <CounselorHomeKit
         embedded={embedded}
+        firstName={kitFirstName}
+        welcomeTitle={kitFirstName ? tCounselor('welcomeBack', { firstName: kitFirstName }) : undefined}
         assignedCount={assignedCount}
         atRiskCount={kitAttentionLoaded ? kitAttention.totals.byReason.risk_alert : null}
         needsReplyCount={kitCenter ? kitCenter.totals.needsReplyCount : null}

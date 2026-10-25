@@ -6,6 +6,7 @@ import messages from '@/messages/en.json';
 import { ProgressBar, ProgressRing, StageTrack, SegmentedProgress, RankBars, type RankDatum } from '@/components/portal/kit';
 import { statusToKitTone } from '@/components/portal/kit/pages/admin-subviews/SystemHealthKit';
 import { MemberHomeKit } from '@/components/portal/kit/pages/member/MemberHomeKit';
+import { MemberProgressKit } from '@/components/portal/kit/pages/member/MemberProgressKit';
 
 // Same literal detectors as portal-hex-token-sweep.spec.tsx: a hex or a bare
 // rgb() (jsdom's normalisation of an inline hex) that reached the DOM bypassed
@@ -213,36 +214,34 @@ describe('AdminDashboardKit funnel bars paint from tones', () => {
   });
 });
 
-describe('MemberHomeKit stat tiles are the kit StatSparkTile', () => {
-  it('renders the four home tiles through the shared tile (kit stat label, tone hook, --wa-kit-tone line) with no literal', () => {
+describe('MemberProgressKit stat tiles are the kit StatTile', () => {
+  // Round 3 of the portal redesign moved the four member stat tiles off Home
+  // onto the Progress numbers strip (KpiStrip -> StatTile: no icon chip, no
+  // sparkline on the member side). The rule is the same: the shared tile
+  // labels through `.wa-kit-stat-label`, declares its state through the tone
+  // hook, and paints nothing from a literal hue.
+  it('renders the four Progress tiles through the shared tile (kit stat label, tone hook) with no literal', () => {
     const { container } = render(
       <NextIntlClientProvider locale="en" messages={messages}>
-        <MemberHomeKit
-          firstName="Alex" coursePercent={100} activeJobs={1} certs={0} points={100}
-          programTitle="IT Support Professional Certificate (IBM)" programStatus="In progress"
-          currentStreak={0} longestStreak={0} goals={[]} pipeline={[]}
-          pointsLedger={[{ label: 'Applied to a job', amount: 25 }, { label: 'Studied', amount: 5, tone: 'ok' }]}
-          certModulesDone={0} certModulesTotal={9}
-          programHref="/dashboard/program" resumeHref="/dashboard/program" coursesHref="/dashboard/program"
-          toolkitHref="/dashboard/toolkit" jobsHref="/dashboard/jobs" doThisNext={null} ungatedDigitalBasicsHref={null}
-          pointsSpark={{ series: [10, 40, 25, 75] }}
-        />
+        <MemberProgressKit coursePercent={100} activeJobs={1} certs={0} points={100} pointsThisWeek={25} />
       </NextIntlClientProvider>,
     );
-    // The shared tile labels through `.wa-kit-stat-label`; the retired local tile styled its label inline.
-    for (const label of ['Course', 'Active jobs', 'Certs']) {
-      expect(screen.getByText(label, { exact: true }).className, label).toContain('wa-kit-stat-label');
+    const tiles = Array.from(container.querySelectorAll<HTMLElement>('.wa-kit-stat-tile'));
+    const tileFor = (label: string) => {
+      const tile = tiles.find((el) => el.querySelector('.wa-kit-stat-label')?.textContent === label);
+      expect(tile, `stat tile "${label}"`).toBeTruthy();
+      return tile!;
+    };
+    expect(tiles).toHaveLength(4);
+    for (const label of ['Course', 'Active applications', 'Certificates', 'Points']) tileFor(label);
+    // A finished course is `ok`: the tile declares the hook; the number stays neutral.
+    const courseTile = tileFor('Course');
+    expect(courseTile.classList.contains('wa-kit-tone--ok')).toBe(true);
+    expect(courseTile.querySelector<HTMLElement>('.wa-kit-stat-value')?.getAttribute('style')).toBeNull();
+    // The other three totals are not states and declare no hook.
+    for (const label of ['Active applications', 'Certificates', 'Points']) {
+      expect(tileFor(label).className).not.toMatch(/wa-kit-tone--/);
     }
-    // A finished course is `ok`: the tile declares the hook and its icon chip is the kit's tone icon.
-    const courseTile = screen.getByText('Course', { exact: true }).closest('.wa-kit-tone--ok');
-    expect(courseTile).not.toBeNull();
-    expect(courseTile!.querySelector('.wa-kit-tone-icon')).not.toBeNull();
-    // The points sparkline is the kit Sparkline (accent, untoned tile), not a hand-rolled polyline.
-    const line = container.querySelector('svg[viewBox="0 0 100 28"] polyline');
-    expect(line).not.toBeNull();
-    expect(line!.getAttribute('stroke')).toBe('var(--wa-accent)');
-    // Series-less tiles keep the opt-in "No trend yet" slot.
-    expect(screen.getAllByText(messages.dashboard.noTrendYet).length).toBeGreaterThanOrEqual(3);
     expect(unexpectedHex(container)).toEqual([]);
   });
 });

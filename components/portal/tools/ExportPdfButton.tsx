@@ -30,12 +30,15 @@ export default function ExportPdfButton({
   title,
   toolName,
   label = 'Download PDF',
+  srSuffix,
   kit = false,
 }: {
   text: string;
   title?: string;
   toolName?: string;
   label?: string;
+  /** Screen-reader-only words after the label (e.g. "of rewritten resume") that tell repeated buttons apart. */
+  srSuffix?: string;
   /** 44px --wa-* pill + lucide — kit results chrome. */
   kit?: boolean;
 }) {
@@ -86,6 +89,7 @@ export default function ExportPdfButton({
           <span className="material-symbols-outlined" style={{ fontSize: '1rem' }} aria-hidden="true">picture_as_pdf</span>
         )}
         <span aria-live="polite">{loading ? 'Saving…' : label}</span>
+        {srSuffix && !loading ? <>{' '}<span className="wa-sr-only">{srSuffix}</span></> : null}
       </button>
       {error ? (
         <span

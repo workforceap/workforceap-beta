@@ -4,8 +4,7 @@ import dynamic from 'next/dynamic';
 import { redirect } from 'next/navigation';
 import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
-import { DesignSurface, PageOpener } from '@/components/portal/kit';
-import PortalBreadcrumb from '@/components/portal/PortalBreadcrumb';
+import { SkillMapperKit } from '@/components/portal/kit/pages/member/SkillMapperKit';
 import ToolHistoryPanel from '@/components/portal/ToolHistoryPanel';
 import { loadSkillMapperContext } from '@/lib/member/loadSkillMapperContext';
 import { ONET_OCCUPATION_CODE, type SavedSkillMapperRun } from '@/lib/member/skillMapperRun';
@@ -63,31 +62,14 @@ export default async function SkillMapperPage({ searchParams }: {
     : undefined;
 
   return (
-    <DesignSurface surface="warm">
-      <div className="skill-mapper-page-shell" style={{ maxWidth: 900, margin: '0 auto', padding: '1.25rem 1rem 3rem' }}>
-        <div className="wa-space-y-5" style={{ marginBottom: 20 }}>
-          <PortalBreadcrumb
-            items={[
-              { label: 'AI Career Tools', href: '/dashboard/ai-tools' },
-              { label: 'Skill Mapper' },
-            ]}
-          />
-          <PageOpener
-            kicker="AI Career Tools"
-            title="Skill Mapper"
-            lede="Search any occupation to see its top skills and competency radar chart."
-          />
-        </div>
-        <div className="wa-kit-card skill-mapper-card">
-          <SkillMapperClient key={initialRun?.id ?? initialTarget?.code ?? requestedId ?? 'search'} initialRun={initialRun} initialTarget={initialTarget} selectionError={selectionError} />
-        </div>
-        <ToolHistoryPanel
-          userId={user.id}
-          toolType="skill_assessment"
-          inputSummaryStartsWith="Skill mapper lookup"
-          title="Recent Skill Mapper Lookups"
-        />
-      </div>
-    </DesignSurface>
+    <SkillMapperKit>
+      <SkillMapperClient key={initialRun?.id ?? initialTarget?.code ?? requestedId ?? 'search'} initialRun={initialRun} initialTarget={initialTarget} selectionError={selectionError} />
+      <ToolHistoryPanel
+        userId={user.id}
+        toolType="skill_assessment"
+        inputSummaryStartsWith="Skill mapper lookup"
+        title="Recent Skill Mapper Lookups"
+      />
+    </SkillMapperKit>
   );
 }

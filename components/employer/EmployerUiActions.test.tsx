@@ -107,6 +107,49 @@ describe('employer UI action contracts', () => {
     expect(actions.getByRole('link', { name: 'Import jobs' })).toHaveAttribute('href', '/employer/jobs/import');
   });
 
+  it('reveals bulk actions after selection and preserves visible focus after clear or confirmed removal', async () => {
+    const draft: EmployerJobBoardItem = {
+      id: 'draft-1', title: 'Draft support role', location: 'Austin', salaryMin: null, salaryMax: null,
+      locationType: 'onsite', jobType: 'fulltime', descriptionPreview: 'Support customers.',
+      descriptionLength: 200, requirementsCount: 3, suggestedProgramsCount: 1,
+      status: 'draft', statusLabel: 'Draft', applicationsCount: 0, updatedAt: '2026-08-29T12:00:00Z',
+      readinessLevel: 'solid', readinessIssues: [],
+    };
+    render(withIntl(<EmployerJobsBoard jobs={[draft]} filter="all" page={1} pageSize={20}
+      totalInFilter={1} totalInDb={4} deletableInFilter={[draft]} closableInFilter={[]}
+      titleByIdInFilter={{ [draft.id]: draft.title }} />));
+    const disclosure = screen.getByText('Bulk actions').closest('details')!;
+    expect(disclosure).not.toHaveAttribute('open');
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select Draft support role' }));
+    expect(disclosure).toHaveAttribute('open');
+    fireEvent.click(screen.getByRole('button', { name: 'Remove (1)' }));
+    const dialog = screen.getByRole('dialog', { name: 'Remove 1 posting?' });
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('This cannot be undone.');
+    expect(within(dialog).getByText('Draft support role')).toBeVisible();
+    expect(fetch).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+    const summary = disclosure.querySelector('summary')!;
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(disclosure).toHaveAttribute('open');
+    expect(summary).toHaveFocus();
+
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: true, json: async () => ({ deleted: 1 }) } as Response);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select Draft support role' }));
+    const remove = screen.getByRole('button', { name: 'Remove (1)' });
+    remove.focus();
+    fireEvent.click(remove);
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Yes, remove' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(fetch).toHaveBeenCalledWith('/api/employer/jobs/bulk-delete', expect.objectContaining({
+      method: 'POST', body: JSON.stringify({ ids: [draft.id], action: 'delete' }),
+    }));
+    expect(disclosure).toHaveAttribute('open');
+    expect(summary).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Remove (0)' })).toBeDisabled();
+  });
+
   it('keeps a server rejection visible and re-enables quick-post submission', async () => {
     vi.mocked(fetch).mockResolvedValueOnce({
       ok: false,
