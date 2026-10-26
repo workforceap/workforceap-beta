@@ -4091,6 +4091,24 @@
     }
   },
   "empty": {
+    "resumeLoad": {
+      "unavailable": {
+        "title": "Nous n’avons pas pu vérifier votre CV pour le moment.",
+        "description": "Réessayez pour vérifier votre CV enregistré. Le texte que vous saisissez ici sera conservé."
+      },
+      "audit": {
+        "title": "Vérification du CV suspendue pour cet examen",
+        "description": "Les fichiers du CV n’ont pas été consultés pendant cet examen en lecture seule."
+      },
+      "loading": {
+        "title": "Vérification de votre CV",
+        "description": "L’état de votre CV enregistré apparaîtra ici."
+      },
+      "retry": "Réessayer",
+      "retrying": "Vérification du CV…",
+      "hubDescription": "Évaluez, réécrivez ou échangez sur votre CV.",
+      "openStudio": "Ouvrir Resume Studio"
+    },
     "activeApplications": {
       "title": "Aucune candidature active",
       "body": "Les emplois que vous enregistrez ou auxquels vous postulez apparaissent ici jusqu’à ce que vous les marquiez comme acceptés ou clôturés. Parcourez les offres pour ajouter la première.",

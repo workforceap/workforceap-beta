@@ -706,6 +706,17 @@ than being clamped. Row overrides stay inside `.wa-kit-toolkit` because Career
 brief shares the base row/list classes. The narrow jump strip stacks each number
 above its label so Resume, Interview and Profile remain readable and clickable.
 
+Resume Studio distinguishes a readable saved résumé, confirmed absence, a failed
+check, and a deliberately suppressed audit read. `getMemberResumeLoadResult`
+retains the owned-path filter and original/enhanced selection of the existing
+plain-text reader. The AI Career Tools hub uses `ResumeLoadNotice`; an unavailable
+check offers a route refresh while the selected view stays in place. The shared
+Studio client accepts the same explicit state without remounting its draft provider
+or visited editors. The canonical `/dashboard/resume` retains its existing file
+loader/retry, and the old Studio URL remains a context-preserving redirect. Only
+confirmed absence shows upload instructions. Audit suppression never offers a
+storage retry, and a pending hub tab does not claim there is no résumé.
+
 `SkillMissionChallenge` owns its focus trap and close guard. Callers must not
 wrap it in a second Escape handler. Escape, backdrop, and close buttons share
 the same discard confirmation for unfinished work; pending evaluation stays

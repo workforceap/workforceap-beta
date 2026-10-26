@@ -13,6 +13,8 @@ import { useListFocus } from '@/components/portal/kit/hooks/useListFocus';
 import { ResumeDraftProvider, ResumeDraftStatus } from './ResumeDraftContinuity';
 import { PREVIEW_RESUME_DRAFT_OWNER } from '@/lib/resume/studioDraft';
 import styles from './ResumeStudio.module.css';
+import { ResumeLoadNotice } from './ResumeLoadNotice';
+import type { MemberResumeLoadStatus } from '@/lib/member/getMemberResumePlainText';
 
 const ResumeCoachWorkspace = dynamic(() => import('@/components/portal/ResumeCoachWorkspace'), {
   ssr: false,
@@ -42,6 +44,7 @@ export function normalizeStudioView(value: string | undefined, hasFiles = false)
 
 type Props = {
   hasResume: boolean;
+  loadStatus?: MemberResumeLoadStatus;
   /** The existing file manager, mounted once and retained while changing views. */
   filesSlot?: ReactElement<{ active?: boolean; onResumeAvailabilityChange?: (available: boolean) => void }>;
   scoreHistorySlot?: ReactNode;
@@ -65,6 +68,7 @@ export default function ResumeStudioClient(props: Props) {
 
 function ResumeStudioContent({
   hasResume,
+  loadStatus,
   filesSlot,
   scoreHistorySlot,
   rewriteHistorySlot,
@@ -80,13 +84,13 @@ function ResumeStudioContent({
   const tw = useTranslations('memberWorkspace.resume');
   const searchParams = useSearchParams();
   const hasFiles = !!filesSlot;
-  const [resumeAvailable, setResumeAvailable] = useState(hasResume);
+  const [resumeStatus, setResumeStatus] = useState<MemberResumeLoadStatus>(loadStatus ?? (hasResume ? 'available' : 'absent'));
   const onFilesAvailabilityChange = filesSlot?.props.onResumeAvailabilityChange;
   const updateResumeAvailability = useCallback((available: boolean) => {
-    setResumeAvailable(available);
+    setResumeStatus(available ? 'available' : 'absent');
     onFilesAvailabilityChange?.(available);
   }, [onFilesAvailabilityChange]);
-  useEffect(() => { setResumeAvailable(hasResume); }, [hasResume]);
+  useEffect(() => { setResumeStatus(loadStatus ?? (hasResume ? 'available' : 'absent')); }, [hasResume, loadStatus]);
   const view = normalizeStudioView(searchParams?.get('view') ?? undefined, hasFiles);
   const [visited, setVisited] = useState<ResumeStudioView[]>([view]);
   const id = useId();
@@ -143,6 +147,7 @@ function ResumeStudioContent({
       </div>
 
       {view === 'score' || view === 'rewrite' ? <ResumeDraftStatus /> : null}
+      <ResumeLoadNotice status={resumeStatus} />
 
       {filesSlot ? (
         <section id={`${id}-panel-files`} role="tabpanel" aria-labelledby={`${id}-tab-files`} hidden={view !== 'files'} className={styles.filesPanel}>
@@ -158,7 +163,7 @@ function ResumeStudioContent({
       {view === 'score' || visited.includes('score') ? (
         <div className={`wa-kit-card ${styles.toolPanel}`}>
           <p className={styles.sourceNote}>{tw('scoreSource')}</p>
-          {!resumeAvailable ? (
+          {resumeStatus === 'absent' ? (
             <p className={styles.fileStatus}>{t('emptyTitle')}</p>
           ) : null}
 

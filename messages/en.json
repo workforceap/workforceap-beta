@@ -4148,6 +4148,24 @@
     }
   },
   "empty": {
+    "resumeLoad": {
+      "unavailable": {
+        "title": "We couldn’t check your résumé right now.",
+        "description": "Try again to check your saved résumé. Text you enter here stays in place."
+      },
+      "audit": {
+        "title": "Résumé check paused for this review",
+        "description": "Résumé files were not checked in this read-only review."
+      },
+      "loading": {
+        "title": "Checking your résumé",
+        "description": "Your saved résumé status will appear here."
+      },
+      "retry": "Try again",
+      "retrying": "Checking résumé…",
+      "hubDescription": "Score, rewrite, or talk through your résumé.",
+      "openStudio": "Open Resume Studio"
+    },
     "activeApplications": {
       "title": "No active applications",
       "body": "Jobs you save or apply to appear here until you mark them accepted or closed. Browse openings to add your first one.",

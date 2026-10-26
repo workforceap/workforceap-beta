@@ -29,6 +29,8 @@
  * prefers-reduced-motion: reduce. Focus rings use wa-kit-focus where on light
  * backgrounds; dark panels use a self-contained dark focus ring class.
  *
+ * Failed resume reads show a retry notice without resetting the selected tab.
+ * Suppressed audit reads never claim the member has no resume.
  * Spec: docs/PORTING_GUIDE.md
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -82,6 +84,8 @@ import { VoiceOrb } from '../VoiceOrb';
 import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
 import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
 import styles from './VoiceStudio.module.css';
+import { ResumeLoadNotice } from '@/components/portal/ResumeLoadNotice';
+import type { MemberResumeLoadStatus } from '@/lib/member/getMemberResumePlainText';
 
 type StudioTab = 'coaches' | 'session' | 'studio' | 'toolkit';
 export type VoiceStudioAgentKey = 'readiness' | 'resume' | 'mock' | 'counselor' | 'business';
@@ -202,6 +206,8 @@ export type ResumeStudioIssue = { title: string; detail: string };
 export type ResumeStudioData = {
   /** Whether the member has a resume on file. */
   hasResume: boolean;
+  /** Live loaders distinguish unreadable data, absence and suppressed audit reads. */
+  loadStatus?: MemberResumeLoadStatus | 'not-loaded';
   /** Deterministic structural score 0–100 (instant; not the full AI composite). */
   structuralScore?: number;
   /** Real issues derived from the weakest structural dimensions. */
@@ -1354,7 +1360,10 @@ function scoreBand(score: number): { color: string; label: string } {
 
 function StudioPanel({ data, onResumeCoachNavigate, toolHrefs }: { data: ResumeStudioData; onResumeCoachNavigate: () => void; toolHrefs: ToolHrefMap }) {
   const t = useTranslations('memberWorkspace.ai');
-  const hasResume = data.hasResume;
+  const tr = useTranslations('empty.resumeLoad');
+  const loadStatus = data.loadStatus ?? (data.hasResume ? 'available' : 'absent');
+  const hasResume = loadStatus === 'available';
+  const confirmedAbsent = loadStatus === 'absent';
   const score =
     typeof data.structuralScore === 'number'
       ? Math.max(0, Math.min(100, Math.round(data.structuralScore)))
@@ -1408,19 +1417,20 @@ function StudioPanel({ data, onResumeCoachNavigate, toolHrefs }: { data: ResumeS
           <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-on-hero)', marginTop: 4 }}>
             {hasResume
               ? 'Your instant structural read and top fixes — then full AI scoring, rewrites, and voice coaching.'
-              : 'Add your resume to get an instant structural read, full AI scoring, and rewrites.'}
+              : confirmedAbsent ? 'Add your resume to get an instant structural read, full AI scoring, and rewrites.' : tr('hubDescription')}
           </p>
         </div>
         <KitLinkButton
           href={hasResume ? toolHrefs['resume-studio'] + '?view=score' : toolHrefs['resume-studio']}
-          label={hasResume ? 'Open full analysis' : 'Add résumé'}
+          label={hasResume ? 'Open full analysis' : confirmedAbsent ? 'Add résumé' : tr('openStudio')}
           variant="primary"
           size="sm"
-          icon={<Upload size={14} aria-hidden="true" />}
+          icon={confirmedAbsent ? <Upload size={14} aria-hidden="true" /> : <ArrowRight size={14} aria-hidden="true" />}
         />
       </div>
 
       <p className={workspaceStyles.context}>{t('resumeCoachContext')} <Link href={toolHrefs['resume-coach']} className="wa-page-action wa-kit-focus">{t('openResumeCoach')}</Link></p>
+      <ResumeLoadNotice status={loadStatus} headingAs="h3" />
       {hasResume && score !== null ? (
         <>
           {/* score + fixes */}
@@ -1543,8 +1553,8 @@ function StudioPanel({ data, onResumeCoachNavigate, toolHrefs }: { data: ResumeS
             </Link>
           </div>
         </>
-      ) : (
-        /* no resume on file — honest empty state */
+      ) : confirmedAbsent ? (
+        /* no resume on file — confirmed by the owned metadata read */
         <div className="wa-kit-card">
           <KitEmptyState
             title="No resume on file"
@@ -1557,7 +1567,7 @@ function StudioPanel({ data, onResumeCoachNavigate, toolHrefs }: { data: ResumeS
             }
           />
         </div>
-      )}
+      ) : null}
     </section>
   );
 }
