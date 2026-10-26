@@ -63,4 +63,19 @@ describe('application filing report', () => {
       expect(file.content.toString()).toContain('Long value '.repeat(2000).trim());
     } finally { warning.mockRestore(); }
   });
+  it('strips filename injection from the application id and escapes it in recovered HTML', async () => {
+    const report = applicationReportFixture();
+    report.source = 'recovered_record';
+    report.sections[0].fields[0].value = '李';
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const file = await applicationReportFile(report, 'app-A"; filename="pwned.exe"><script>');
+      expect(file.filename).toBe('application-app-Afilenamepwnedexescript.html');
+      expect(file.filename).not.toContain('"');
+      expect(file.filename).not.toContain('/');
+      expect(file.content.toString()).toContain('may differ from the original submission');
+      expect(file.content.toString()).toContain('Application ID: app-A&quot;; filename=&quot;pwned.exe&quot;&gt;&lt;script&gt;');
+      expect(file.content.toString()).not.toContain('<script>');
+    } finally { warning.mockRestore(); }
+  });
 });

@@ -64,4 +64,67 @@ describe('staff application report access', () => {
     const response = await POST(request, context());
     expect(response.status).toBe(500); expect(await response.text()).not.toContain('do not expose'); expect(h.update).not.toHaveBeenCalled();
   });
+  it('does not load data when the session disappears after the role check', async () => {
+    h.actor.mockResolvedValue(null);
+    expect((await POST(request, context())).status).toBe(401);
+    expect(h.member).not.toHaveBeenCalled(); expect(h.application).not.toHaveBeenCalled();
+  });
+  it('does not load an application for a missing or deleted member', async () => {
+    h.member.mockResolvedValue(null);
+    expect((await POST(request, context())).status).toBe(404);
+    expect(h.application).not.toHaveBeenCalled();
+  });
+  it('reads only same-org screening when recovering an older record', async () => {
+    h.application.mockResolvedValue({ applicationReportSnapshot: null, submittedAt: null, programInterest: 'Training', notes: null, user: { fullName: 'Ada', email: 'ada@example.test', profile: null, applyEligibilityScreenings: [] } });
+    h.update.mockResolvedValue({ count: 0 });
+    await POST(request, context());
+    expect(h.application.mock.calls[0][0].select.user.select.applyEligibilityScreenings.where).toEqual({ organizationId: 'org-A' });
+  });
+  it('recovers a school collection without adult screening or staff notes', async () => {
+    const adultScreening = { q1: 'yes', layoffCompany: 'Must not appear', organizationId: 'org-A' };
+    h.application.mockResolvedValueOnce({
+      applicationReportSnapshot: null, submittedAt: null, programInterest: 'Training',
+      notes: 'Collection: high-school student (no employment or income screening)\nCounty: Travis\nStaff secret: never include',
+      user: { fullName: 'Student', email: 'student@example.test', profile: { gradeLevel: '11', barrierTypes: ['high_school_student'] }, applyEligibilityScreenings: [adultScreening] },
+    }).mockResolvedValueOnce({ applicationReportSnapshot: applicationReportFixture() });
+    h.update.mockResolvedValue({ count: 0 });
+    expect((await POST(request, context())).status).toBe(200);
+    const saved = JSON.stringify(h.update.mock.calls[0][0].data.applicationReportSnapshot);
+    expect(saved).toContain('Travis'); expect(saved).toContain('School & guardian');
+    expect(saved).not.toContain('Must not appear'); expect(saved).not.toContain('never include');
+    expect(saved).not.toContain('Unemployed / underemployed');
+  });
+  it('treats a leftover grade level as school collection even without the notes banner', async () => {
+    h.application.mockResolvedValueOnce({
+      applicationReportSnapshot: null, submittedAt: null, programInterest: 'Training', notes: 'County: Travis',
+      user: { fullName: 'Student', email: 'student@example.test', profile: { gradeLevel: '12' }, applyEligibilityScreenings: [{ layoffCompany: 'Must not appear' }] },
+    }).mockResolvedValueOnce({ applicationReportSnapshot: applicationReportFixture() });
+    h.update.mockResolvedValue({ count: 0 });
+    await POST(request, context());
+    expect(JSON.stringify(h.update.mock.calls[0][0].data)).not.toContain('Must not appear');
+  });
+  it('recovers adult screening for a non-school record', async () => {
+    h.application.mockResolvedValueOnce({
+      applicationReportSnapshot: null, submittedAt: null, programInterest: 'Training', notes: 'County: Travis',
+      user: { fullName: 'Ada', email: 'ada@example.test', profile: null, applyEligibilityScreenings: [{ q1: 'yes', layoffCompany: 'Example Plant' }] },
+    }).mockResolvedValueOnce({ applicationReportSnapshot: applicationReportFixture() });
+    h.update.mockResolvedValue({ count: 0 });
+    await POST(request, context());
+    expect(JSON.stringify(h.update.mock.calls[0][0].data)).toContain('Example Plant');
+  });
+  it('fails closed when a concurrent recovery leaves no durable snapshot', async () => {
+    h.application.mockResolvedValue({ applicationReportSnapshot: null, submittedAt: null, programInterest: 'Training', notes: null, user: { fullName: 'Ada', email: 'ada@example.test', profile: null, applyEligibilityScreenings: [] } });
+    h.update.mockResolvedValue({ count: 0 });
+    const response = await POST(request, context());
+    expect(response.status).toBe(500);
+    expect(await response.text()).not.toContain('ada@example.test');
+    expect(h.render).not.toHaveBeenCalled();
+  });
+  it('marks the download as private, nosniff, and sandboxed', async () => {
+    const response = await GET(request, context());
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Cache-Control')).toBe('private, no-store');
+    expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff');
+    expect(response.headers.get('Content-Security-Policy')).toBe("sandbox; default-src 'none'; style-src 'unsafe-inline'");
+  });
 });

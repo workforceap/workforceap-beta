@@ -6,12 +6,16 @@ const state = vi.hoisted(() => ({
     serveArea: string | null;
     expectedMonthly: string | null;
   },
+  lastWhere: null as null | Record<string, unknown>,
 }));
 
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
     partnerSignupRequest: {
-      findFirst: async () => state.signup,
+      findFirst: async ({ where }: { where: Record<string, unknown> }) => {
+        state.lastWhere = where;
+        return state.signup;
+      },
     },
   },
 }));
@@ -24,6 +28,7 @@ import {
 describe('partner intake metadata', () => {
   beforeEach(() => {
     state.signup = null;
+    state.lastWhere = null;
   });
 
   it('falls back to partner.organizationType when no signup row matches', async () => {
@@ -55,6 +60,35 @@ describe('partner intake metadata', () => {
       orgType: 'Nonprofit',
       serveArea: 'Travis County',
       expectedMonthly: '10–20',
+      fromSignupRequest: true,
+    });
+  });
+
+  it('normalizes contact email before lookup and does not fall back to organization name', async () => {
+    await loadPartnerIntakeMetadata({
+      name: 'Workforce Solutions Capital Area',
+      contactEmail: '  Partner@Example.ORG  ',
+      organizationType: null,
+    });
+    expect(state.lastWhere).toEqual({ contactEmail: 'partner@example.org' });
+  });
+
+  it('matches a signup row by organization name when contact email is missing', async () => {
+    state.signup = {
+      orgType: 'Workforce board',
+      serveArea: 'Capital Area',
+      expectedMonthly: '5–10',
+    };
+    const intake = await loadPartnerIntakeMetadata({
+      name: 'Workforce Solutions Capital Area',
+      contactEmail: '   ',
+      organizationType: 'Stale type',
+    });
+    expect(state.lastWhere).toEqual({ organizationName: 'Workforce Solutions Capital Area' });
+    expect(intake).toEqual({
+      orgType: 'Workforce board',
+      serveArea: 'Capital Area',
+      expectedMonthly: '5–10',
       fromSignupRequest: true,
     });
   });
