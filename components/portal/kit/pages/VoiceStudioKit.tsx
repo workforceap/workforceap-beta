@@ -1425,7 +1425,7 @@ function StudioPanel({ data, onResumeCoachNavigate, toolHrefs }: { data: ResumeS
           label={hasResume ? 'Open full analysis' : confirmedAbsent ? 'Add résumé' : tr('openStudio')}
           variant="primary"
           size="sm"
-          icon={<Upload size={14} aria-hidden="true" />}
+          icon={confirmedAbsent ? <Upload size={14} aria-hidden="true" /> : <ArrowRight size={14} aria-hidden="true" />}
         />
       </div>
 
