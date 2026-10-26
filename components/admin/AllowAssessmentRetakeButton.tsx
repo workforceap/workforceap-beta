@@ -28,15 +28,27 @@ export default function AllowAssessmentRetakeButton({ memberId, memberName, atte
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ memberId }),
       });
-      const data = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
+      const payload: unknown = await res.json().catch(() => null);
+      const data = payload && typeof payload === 'object' && !Array.isArray(payload)
+        ? payload as Record<string, unknown>
+        : {};
       if (!res.ok) {
         setConfirmOpen(false);
-        setMessage({ kind: 'error', text: data.error ?? 'Could not allow a retake.' });
+        setMessage({ kind: 'error', text: typeof data.error === 'string' ? data.error : 'Could not allow a retake.' });
+        return;
+      }
+      if (data.ok !== true) {
+        setConfirmOpen(false);
+        setMessage({ kind: 'error', text: 'Retake authorization could not be confirmed. Refresh this member’s record and check the authorization status before trying again.' });
+        // A successful HTTP response is not evidence that permission was saved.
+        // Reload the server-owned state; never show a member prompt as granted
+        // from an empty, malformed or negative acknowledgement.
+        router.refresh();
         return;
       }
       setRequested(true);
       setConfirmOpen(false);
-      setMessage({ kind: 'ok', text: data.message ?? 'Retake allowed.' });
+      setMessage({ kind: 'ok', text: typeof data.message === 'string' ? data.message : 'Final retake authorized.' });
       router.refresh();
     } catch {
       setConfirmOpen(false);
@@ -49,7 +61,7 @@ export default function AllowAssessmentRetakeButton({ memberId, memberName, atte
   return (
     <div style={{ marginTop: 'var(--wa-pad-sm)' }}>
       <ConfirmDialog open={confirmOpen} title={`Request final retake for ${memberName}?`}
-        body="Students have 2 preassessment chances total. Their previous result stays saved, and a retake prompt will appear in their portal."
+        body="Students have 2 preassessment chances total. Confirming authorizes the final attempt in the member portal. Their previous result stays saved. Ask the student to refresh their Preassessment page after authorization."
         confirmLabel="Request final retake" busy={busy}
         onConfirm={() => void allow()} onCancel={() => setConfirmOpen(false)} />
       <button type="button" className="btn btn-outline" onClick={() => setConfirmOpen(true)} disabled={busy || isPending || attemptCount !== 1} data-testid="allow-assessment-retake">
@@ -57,9 +69,9 @@ export default function AllowAssessmentRetakeButton({ memberId, memberName, atte
       </button>
       <p style={{ margin: '0.4rem 0 0', fontSize: 'var(--wa-type-meta)' }}>
         {Math.min(attemptCount, 2)} of 2 available attempts used.
-        {' '}{attemptCount >= 2 ? 'Both chances used. No further retakes available.' : isPending ? 'The student has a prompt for their final attempt.' : attemptCount === 0 ? 'The student must complete their first attempt.' : 'One staff-authorized retake available.'}
+        {' '}{attemptCount >= 2 ? 'Both chances used. No further retakes available.' : isPending ? 'Final retake authorized. Ask the student to refresh their Preassessment page to see the prompt for attempt 2 of 2.' : attemptCount === 0 ? 'The student must complete their first attempt.' : 'Final retake is not yet authorized. Choose Request final retake and confirm to make attempt 2 available in the member portal.'}
       </p>
-      {message ? (
+      {message && (message.kind === 'ok' || !pending) ? (
         <p role={message.kind === 'error' ? 'alert' : 'status'} style={{ margin: '0.4rem 0 0', fontSize: '0.9rem' }}>
           {message.text}
         </p>
