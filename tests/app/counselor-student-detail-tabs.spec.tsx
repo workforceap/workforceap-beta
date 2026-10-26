@@ -91,6 +91,8 @@ import {
   STUDENT_DETAIL_TABS_ID_BASE,
   parseStudentDetailTab,
 } from '@/app/(portal)/counselor/students/[memberId]/studentDetailTabs';
+import { isAdmin } from '@/lib/auth/roles';
+import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 import { TabPanel, Tabs } from '@/components/portal/kit';
 
 const INSTANT = new Date('2026-09-19T02:30:00Z');
@@ -129,6 +131,8 @@ function tab(doc: Document, id: string): HTMLElement {
 describe('CounselorStudentDetailPage record tabs (server render)', () => {
   beforeEach(() => {
     vi.stubEnv('ENROLLMENT_AGREEMENTS_ENABLED', 'true');
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    vi.mocked(assertStaffCanAccessMemberRecord).mockResolvedValue(true);
     for (const key of Object.keys(db.overrides)) delete db.overrides[key];
     db.overrides['counselor.findFirst'] = async () => ({ id: 'counselor-1' });
     db.overrides['counselorAssignment.findFirst'] = async () => ({ id: 'assign-1' });
@@ -159,6 +163,23 @@ describe('CounselorStudentDetailPage record tabs (server render)', () => {
     });
   });
   afterEach(() => { vi.unstubAllEnvs(); });
+
+  it('lets a dual-role admin open a member outside their own caseload', async () => {
+    vi.mocked(isAdmin).mockResolvedValue(true);
+    db.overrides['counselorAssignment.findFirst'] = async () => null;
+    const doc = await renderPage();
+    expect(doc.body.textContent).toContain('Fixture Member');
+    expect(doc.querySelector(`#${BASE}-tab-profile`)).not.toBeNull();
+  });
+
+  it.each([false, true])('refuses a record rejected by the shared access check (admin: %s)', async (admin) => {
+    vi.mocked(isAdmin).mockResolvedValue(admin);
+    vi.mocked(assertStaffCanAccessMemberRecord).mockResolvedValue(false);
+    const memberRead = vi.fn();
+    db.overrides['user.findFirst'] = memberRead;
+    await expect(renderPage()).rejects.toThrow('NOT_FOUND');
+    expect(memberRead).not.toHaveBeenCalled();
+  });
 
   it('keeps the real retake control available for a legacy reset without current answers', async () => {
     const fixture = await db.overrides['user.findFirst']({}) as Record<string, unknown>;
