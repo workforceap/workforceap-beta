@@ -84,10 +84,13 @@ export function newAttemptSeed(): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-/** Same shape the form persists and submits; anything else is ignored. */
+/** Same shape the form persists and submits. Submit refuses anything else. */
 export function isValidAttemptSeed(value: unknown): value is string {
   return typeof value === 'string' && /^[a-z0-9-]{1,64}$/u.test(value);
 }
+
+export const MISSING_ATTEMPT_SEED_MESSAGE =
+  'This attempt is missing its question layout. Refresh the page and try again.';
 
 /**
  * On-screen letters for a stored answer sheet. Used to refuse a click-through
