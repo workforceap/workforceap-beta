@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   REPORTING_HUB_PATH,
+  REPORTING_PERIOD_LABELS,
   REPORTING_REDIRECTS,
   REPORTING_RELATED_LINKS,
   REPORTING_TABS,
@@ -10,7 +11,9 @@ import {
   parseReportingPeriod,
   parseReportingTab,
   reportingRedirectHref,
+  reportingRelatedHref,
   reportingTabHref,
+  reportingViewContext,
   wantsLegacyView,
 } from './reportingHub';
 
@@ -81,4 +84,33 @@ test('related links point at routes that stay outside the hub', () => {
     assert.ok(link.href.startsWith('/admin/'), `${link.href} is an admin route`);
     assert.ok(!hubOwned.has(link.href), `${link.href} is not a route the hub replaced`);
   }
+});
+
+test('reporting copy never relabels rolling metrics as if they used the outcomes period', () => {
+  for (const tab of REPORTING_TABS) {
+    const ctx = reportingViewContext(tab.id, 'ytd');
+    assert.ok(ctx.periodLabel.length > 0, `${tab.id} has a period label`);
+    assert.ok(ctx.scopeLabel.length > 0, `${tab.id} has a scope label`);
+    assert.ok(ctx.definition.length > 0, `${tab.id} has a definition`);
+  }
+
+  const outcomes = reportingViewContext('outcomes', 'ytd');
+  assert.equal(outcomes.periodLabel, `Outcomes: ${REPORTING_PERIOD_LABELS.ytd}`);
+  assert.equal(outcomes.scopeLabel, 'This organization');
+  assert.match(outcomes.definition, /selected outcomes period/);
+  assert.match(outcomes.definition, /rolling windows/);
+
+  const training = reportingViewContext('training', 'ytd', true);
+  assert.equal(training.periodLabel, 'Latest saved training progress');
+  assert.match(training.definition, /does not filter this roster/);
+
+  const overview = reportingViewContext('overview', 'q-current', true);
+  assert.match(overview.scopeLabel, /all organizations/i);
+  assert.match(overview.definition, /without changing these measures/);
+});
+
+test('only the board print link carries a non-default outcomes period', () => {
+  assert.equal(reportingRelatedHref('/admin/board/print', 'ytd'), '/admin/board/print?period=ytd');
+  assert.equal(reportingRelatedHref('/admin/board/print', 'all-time'), '/admin/board/print');
+  assert.equal(reportingRelatedHref('/admin/weekly-recap', 'ytd'), '/admin/weekly-recap');
 });

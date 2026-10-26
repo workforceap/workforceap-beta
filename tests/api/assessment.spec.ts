@@ -289,6 +289,58 @@ describe('POST /api/member/assessment/submit', () => {
     expect(awardPoints).not.toHaveBeenCalled();
   });
 
+  it('refuses a first-attempt submit that still carries a leftover retake token', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as never);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as never);
+    const response = await submitAssessment(makeRequest({
+      ...validBody,
+      retakeRequestedAt: '2026-01-01T00:00:00.000Z',
+    }));
+    expect(response.status).toBe(409);
+    expect((await response.json()).code).toBe('STALE_ASSESSMENT_ATTEMPT');
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+    expect(awardPoints).not.toHaveBeenCalled();
+  });
+
+  it('treats a non-string retake token as missing on an authorized final attempt', async () => {
+    const authorizedAt = new Date('2026-10-15T12:00:00Z');
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as never);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      ...mockUser,
+      assessmentCompleted: true,
+      assessmentAttemptCount: 1,
+      assessmentRetakeRequestedAt: authorizedAt,
+    } as never);
+    const response = await submitAssessment(makeRequest({ ...validBody, retakeRequestedAt: 1_726_000_000_000 }));
+    expect(response.status).toBe(409);
+    expect((await response.json()).code).toBe('STALE_ASSESSMENT_ATTEMPT');
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('refuses malformed JSON before scoring', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as never);
+    const response = await submitAssessment(new Request('http://localhost:3000/api/member/assessment/submit', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{not-json',
+    }) as never);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: 'Invalid JSON' });
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('refuses a scored sheet when the member row is missing', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as never);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
+    const response = await submitAssessment(makeRequest(validBody));
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: 'User not found' });
+    expect(prisma.user.updateMany).not.toHaveBeenCalled();
+    expect(resendSend).not.toHaveBeenCalled();
+  });
+
   it('accepts the authorized final attempt and atomically consumes it', async () => {
     const authorizedAt = new Date('2026-10-15T12:00:00Z');
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as never);

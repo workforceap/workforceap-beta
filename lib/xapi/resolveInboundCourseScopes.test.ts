@@ -97,6 +97,20 @@ describe('inbound provider course scopes', () => {
     }]);
   });
 
+  it('keeps the enrolled-program fallback when detached resolution is required', async () => {
+    const scopes = await resolveInboundCourseScopes({
+      requireResolvedDetachedCourse: true,
+      assignments: [{ programSlug: 'primary-program', curriculumVersion: LEGACY_CURRICULUM_VERSION }],
+      fallbackProgramSlug: 'primary-program',
+      fallbackCurriculumVersion: LEGACY_CURRICULUM_VERSION,
+    }, async () => { throw new Error('Providerless enrolled fallback must not query mappings'); });
+    assert.deepEqual(scopes, [{
+      programSlug: 'primary-program',
+      curriculumVersion: LEGACY_CURRICULUM_VERSION,
+      assignmentMatched: true,
+    }]);
+  });
+
   it('does not invent a detached scope without a provider id or assignment', async () => {
     const scopes = await resolveInboundCourseScopes({
       requireResolvedDetachedCourse: true,

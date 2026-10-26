@@ -127,6 +127,46 @@ describe('persisted xAPI replay tenant boundary', () => {
     const statusQuery = (mocks.eventQueryRaw.mock.calls[0]?.[0] as TemplateStringsArray).join('');
     expect(statusQuery).toContain("completion_status IN ('unmatched', 'error', 'unresolved_course')");
   });
+
+  it('does no identity replay work without an email or actor', async () => {
+    const result = await replayUnresolvedXapiStatementsForIdentity({
+      organizationId: 'org-a',
+      expectedUserId: 'user-a',
+    });
+
+    expect(result).toEqual({
+      scanned: 0,
+      replayed: 0,
+      skippedUnparsed: 0,
+      skippedUnresolvedOrganization: 0,
+      completionsEmitted: 0,
+      orgsRepaired: 0,
+      breakdown: { completedOk: 0, errored: 0, ignored: 0, unresolvedCourse: 0, unmatched: 0 },
+    });
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.handle).not.toHaveBeenCalled();
+    expect(mocks.executeRaw).not.toHaveBeenCalled();
+  });
+
+  it('still drains pending rows when sentinel reconciliation throws', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mocks.executeRaw.mockRejectedValue(new Error('reconciliation unavailable'));
+
+    const result = await replayPendingXapiStatements(10);
+
+    expect(result.orgsRepaired).toBe(0);
+    expect(result.replayed).toBe(1);
+    expect(mocks.handle).toHaveBeenCalledExactlyOnceWith(parsed, {
+      organizationId: 'org-a',
+      expectedUserId: null,
+      requireOrganizationId: true,
+    });
+    expect(errorSpy).toHaveBeenCalledWith(
+      '[replayPendingXapi] sentinel org reconciliation failed',
+      expect.any(Error),
+    );
+    errorSpy.mockRestore();
+  });
 });
 
 describe('pending xAPI per-statement failure isolation', () => {

@@ -82,6 +82,11 @@ test('an honest answer sheet stays under the display-letter threshold', () => {
 test('attempt seeds are short lowercase tokens', () => {
   assert.equal(isValidAttemptSeed(newAttemptSeed()), true);
   assert.equal(isValidAttemptSeed('preview'), true);
+  assert.equal(isValidAttemptSeed('honest-1'), true);
   assert.equal(isValidAttemptSeed('not a seed'), false);
   assert.equal(isValidAttemptSeed(''), false);
+  assert.equal(isValidAttemptSeed('UPPER'), false);
+  assert.equal(isValidAttemptSeed('x'.repeat(65)), false);
+  assert.equal(isValidAttemptSeed(null), false);
+  assert.equal(isValidAttemptSeed(12), false);
 });
