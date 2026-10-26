@@ -10232,14 +10232,16 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
 .workspace-shell-root[data-workspace-role] .workspace-sidebar-nav {
     padding: 0.25rem 0.25rem 0.5rem;
     margin-inline: -0.25rem;
+    /* Tab scrolls a row flush to the scrollport; leave room for the ring there too. */
+    scroll-padding-block: 0.375rem;
 }
 @media (min-width: 769px) {
     .workspace-shell-root[data-workspace-role] .workspace-sidebar-nav {
         background:
             linear-gradient(var(--wa-sidebar-bg) 30%, transparent) center top / 100% 1.5rem no-repeat local,
             linear-gradient(transparent, var(--wa-sidebar-bg) 70%) center bottom / 100% 1.5rem no-repeat local,
-            linear-gradient(color-mix(in srgb, var(--wa-sidebar-text) 16%, transparent), transparent) center top / 100% 0.75rem no-repeat scroll,
-            linear-gradient(transparent, color-mix(in srgb, var(--wa-sidebar-text) 16%, transparent)) center bottom / 100% 0.75rem no-repeat scroll;
+            radial-gradient(farthest-side at 50% 0, color-mix(in srgb, var(--wa-sidebar-text) 14%, transparent), transparent) center top / calc(100% - 1rem) 0.75rem no-repeat scroll,
+            radial-gradient(farthest-side at 50% 100%, color-mix(in srgb, var(--wa-sidebar-text) 14%, transparent), transparent) center bottom / calc(100% - 1rem) 0.75rem no-repeat scroll;
         background-color: var(--wa-sidebar-bg);
     }
     .workspace-shell-root:not([data-workspace-role='member'])[data-workspace-role] .workspace-sidebar:not(.workspace-sidebar--collapsed) .workspace-sidebar-link {
@@ -10285,5 +10287,16 @@ html[data-portal-role='admin'] .workspace-sidebar-brand-sub {
     .workspace-shell-root[data-workspace-role] .workspace-sidebar-appearance .astryx-segmented-control-item {
         min-height: 2.75rem;
         padding: 0;
+    }
+    /* A member who saved the expanded rail: the server still renders the compact rail (it cannot
+       read the saved choice), so size it from the parse-time <html data-rail-pref-member> until React
+       swaps in the expanded rail. Toggling updates the attribute, so this never fights a choice. */
+    html[data-rail-pref-member='0'] .workspace-shell-root[data-workspace-role='member'] .workspace-sidebar--collapsed {
+        width: 14.5rem;
+    }
+}
+@media (min-width: 769px) and (max-width: 1023px) {
+    html[data-rail-pref-member='0'] .workspace-shell-root[data-workspace-role='member'] .workspace-sidebar--collapsed {
+        width: 13rem;
     }
 }

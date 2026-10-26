@@ -1139,6 +1139,43 @@ describe('first paint: the server HTML already has the right rail width (no jump
     expect(html).toContain('workspace-sidebar-brand-name');
   });
 
+  it('ships the desktop toolbar and footer in the server HTML, so no row moves at hydration', () => {
+    for (const html of [renderToString(memberShell()), renderToString(adminShell())]) {
+      // The expand/collapse button (not the phone close button desktop CSS hides) is there from the start.
+      expect(html).toContain('workspace-sidebar-collapse-btn');
+      expect(html).not.toContain('workspace-sidebar-close-btn');
+      // Phone-only footer rows wait for mount.
+      expect(html).not.toContain('workspace-sidebar-meta');
+      expect(html).not.toContain('workspace-sidebar-home-link');
+    }
+  });
+
+  it('mirrors the saved rail choice onto <html> at parse time, scoped to the role', () => {
+    const html = renderToString(memberShell());
+    expect(html).toContain('wa_nav_collapsed_member');
+    expect(html).toContain('data-rail-pref-member');
+    expect(renderToString(adminShell())).toContain('data-rail-pref-admin');
+  });
+
+  it('updates the <html> rail attribute when the rail is toggled', async () => {
+    document.documentElement.removeAttribute('data-rail-pref-admin');
+    location.pathname = '/admin';
+    const user = userEvent.setup();
+    render(adminShell());
+    await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
+    expect(document.documentElement.getAttribute('data-rail-pref-admin')).toBe('1');
+    await user.click(screen.getByRole('button', { name: 'Expand sidebar' }));
+    expect(document.documentElement.getAttribute('data-rail-pref-admin')).toBe('0');
+  });
+
+  it('names the theme switch once: the visual caption is hidden from assistive tech', () => {
+    // ThemeSelector is mocked in this file; its tooltips are covered in theme-selector-titles.spec.tsx.
+    location.pathname = '/admin';
+    const { container } = render(adminShell());
+    expect(container.querySelector('.workspace-sidebar-appearance__label')?.getAttribute('aria-hidden')).toBe('true');
+    expect(screen.getByRole('radiogroup', { name: 'Appearance' })).toBeTruthy();
+  });
+
   it('still opens the full member drawer on a phone after mount (collapsed markup is desktop-only)', async () => {
     location.wide = false;
     localStorage.removeItem('wa_nav_collapsed_member');

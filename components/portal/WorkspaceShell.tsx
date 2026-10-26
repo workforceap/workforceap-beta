@@ -511,6 +511,7 @@ export default function WorkspaceShell({
       } catch {
         /* ignore */
       }
+      document.documentElement.setAttribute(`data-rail-pref-${portalRole}`, next ? '1' : '0');
       return next;
     });
   };
@@ -592,7 +593,10 @@ export default function WorkspaceShell({
           value is a fixed PortalRole union member, never user input. */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `document.documentElement.setAttribute('data-portal-role',${JSON.stringify(portalRole)});`,
+          __html: `document.documentElement.setAttribute('data-portal-role',${JSON.stringify(portalRole)});`
+            + `try{var p=localStorage.getItem(${JSON.stringify(`wa_nav_collapsed_${portalRole}`)});`
+            + `if(p==='0'||p==='1')document.documentElement.setAttribute(${JSON.stringify(`data-rail-pref-${portalRole}`)},p);`
+            + `else document.documentElement.removeAttribute(${JSON.stringify(`data-rail-pref-${portalRole}`)})}catch(e){}`,
         }}
       />
       {readOnlyAudit ? (
@@ -788,9 +792,9 @@ export default function WorkspaceShell({
                   ) : null}
                 </div>
               ) : (
-                <div className="workspace-sidebar-label">{!wide && hasTabs && activeTab ? translateLabel(NAV_TAB_META[activeTab].label) : translateLabel(workspaceLabel)}</div>
+                <div className="workspace-sidebar-label">{mounted && !wide && hasTabs && activeTab ? translateLabel(NAV_TAB_META[activeTab].label) : translateLabel(workspaceLabel)}</div>
               )}
-              {wide ? (
+              {wide || !mounted ? (
                 <button
                   type="button"
                   className="workspace-sidebar-collapse-btn"
@@ -926,7 +930,7 @@ export default function WorkspaceShell({
               </ul>
             </nav>
             {!isCollapsedDesktop ? <div className="workspace-sidebar-footer">
-              {!wide ? (
+              {mounted && !wide ? (
                 <div className="workspace-sidebar-meta">
                   {identity ? (
                     <ShellIdentity identity={identity} variant="sidebar" title={tNav('profile')} onNavigate={closeDrawer} />
@@ -944,7 +948,7 @@ export default function WorkspaceShell({
                   <SuperAdminViewSwitcher initialIsSuperAdmin={isSuperAdmin} />
                 </div>
               ) : null}
-              {!wide ? (
+              {mounted && !wide ? (
                 <Link href="/" prefetch={false} className="workspace-sidebar-home-link" onClick={closeDrawer}>
                   {translateLabel(PRODUCT_COPY.publicSiteLabel)}
                 </Link>
@@ -953,7 +957,7 @@ export default function WorkspaceShell({
                 <LanguageToggle />
               </div>
               <div className={`workspace-sidebar-appearance${isCollapsedDesktop ? ' sr-only' : ''}`}>
-                <span className="workspace-sidebar-appearance__label">Appearance</span>
+                <span className="workspace-sidebar-appearance__label" aria-hidden="true">Appearance</span>
                 <ThemeSelector />
               </div>
               {previewMode ? (
