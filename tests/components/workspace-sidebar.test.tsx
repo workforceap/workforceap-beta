@@ -1,4 +1,5 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import userEvent from '@testing-library/user-event';
@@ -1102,5 +1103,51 @@ describe('rail defaults and the collapsed admin rail (post-launch review)', () =
     const students = ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === '/admin/students')!;
     const counselors = ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === '/admin/counselors')!;
     expect(students.Icon).not.toBe(counselors.Icon);
+  });
+});
+
+describe('first paint: the server HTML already has the right rail width (no jump at hydration)', () => {
+  const memberShell = () => (
+    <NextIntlClientProvider locale="en" messages={messages}>
+      <WorkspaceShell portalRole="member" navItems={MEMBER_PORTAL_NAV_ITEMS}
+        workspaceLabel="Member portal" contextLabel="Account" readOnlyAudit>
+        <h1>Home</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>
+  );
+  const adminShell = () => (
+    <NextIntlClientProvider locale="en" messages={pickAdminClientMessages(messages)}>
+      <WorkspaceShell portalRole="admin" navItems={ADMIN_PORTAL_NAV_ITEMS}
+        workspaceLabel="Admin workspace" contextLabel="Administrator" readOnlyAudit>
+        <h1>Admin content</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>
+  );
+  const railClass = (html: string) => html.match(/<aside[^>]*id="workspace-sidebar"[^>]*class="([^"]*)"/)?.[1] ?? '';
+
+  it('renders the member rail compact before any script runs, so it never snaps from wide to 72px', () => {
+    const html = renderToString(memberShell());
+    expect(railClass(html)).toContain('workspace-sidebar--collapsed');
+    // The compact rail ships without the footer; labels stay in the DOM for assistive tech.
+    expect(html).not.toContain('workspace-sidebar-footer');
+    expect(html).toContain('workspace-sidebar-link-label sr-only');
+  });
+
+  it('renders the staff rail expanded before any script runs', () => {
+    const html = renderToString(adminShell());
+    expect(railClass(html)).not.toContain('workspace-sidebar--collapsed');
+    expect(html).toContain('workspace-sidebar-brand-name');
+  });
+
+  it('still opens the full member drawer on a phone after mount (collapsed markup is desktop-only)', async () => {
+    location.wide = false;
+    localStorage.removeItem('wa_nav_collapsed_member');
+    location.pathname = '/dashboard';
+    const user = userEvent.setup();
+    const { container } = show();
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(container.querySelector('.workspace-sidebar')).not.toHaveClass('workspace-sidebar--collapsed');
+    expect(container.querySelector('.workspace-sidebar-footer')).not.toBeNull();
+    expect(container.querySelector('.workspace-sidebar-link-label.sr-only')).toBeNull();
   });
 });

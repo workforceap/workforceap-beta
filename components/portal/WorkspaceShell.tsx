@@ -242,7 +242,10 @@ export default function WorkspaceShell({
     setDrawerPathname(pathname);
     setDrawerOpen(false);
   }
-  const [collapsed, setCollapsed] = useState(false);
+  // Members start on the compact rail (staff rails start expanded); a saved choice is
+  // restored after mount. Seeding it here lets the member rail paint compact from the
+  // first frame instead of rendering wide and snapping to 72px after hydration.
+  const [collapsed, setCollapsed] = useState(portalRole === 'member');
   const [wide, setWide] = useState(false);
   const wideRef = useRef(wide);
   wideRef.current = wide;
@@ -254,7 +257,10 @@ export default function WorkspaceShell({
   const [mounted, setMounted] = useState(false);
   const [badges, setBadges] = useState<Partial<Record<NavBadgeKey, number>>>({});
   const [badgeFetchError, setBadgeFetchError] = useState(false);
-  const isCollapsedDesktop = collapsed && wide;
+  // Before mount the width is unknown; trust the collapsed state so the server HTML and
+  // the first client render match the desktop rail. Collapsed CSS applies from 769px up
+  // only, and the phone drawer stays hidden until hydration, so phones are unaffected.
+  const isCollapsedDesktop = collapsed && (wide || !mounted);
   const isMobileDrawer = drawerOpen && !wide;
   const isSuperAdmin = useIsSuperAdmin(knownSuperAdmin ?? superAdmin);
   // Admin rail sections open while a guided tour runs so every anchor is visible
