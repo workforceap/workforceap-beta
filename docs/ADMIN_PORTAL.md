@@ -174,7 +174,8 @@ on `html.dark, [data-theme='dark']`. Use `var(--wa-*)` — **never hardcode hex*
   stay in the DOM under `[hidden]` (tour anchors and hrefs are always present). State persists in
   `localStorage` (`wa_nav_sections_admin`); the current page's section/parent opens on arrival; every
   section opens while a guided tour runs (`useTour().isOpen`). ArrowRight/ArrowLeft open/close.
-  The collapsed icon rail falls back to the flat list (every row, icons only).
+  The collapsed icon rail lists the top-level rows only (icons); on a nested page its parent row is
+  highlighted and its tooltip names the page. Staff rails start expanded; only the member rail starts collapsed.
 - **Staff dark treatment** (`css/portal-main-extracted.css`, block headed `STAFF DARK RAIL`, ~line 9346):
   scoped to `html[data-portal-role]:not([data-portal-role='member'])`. Flat groups (no card chrome),
   **active row = solid crimson** `var(--wa-accent)` + white, hover `#242424`, group labels `#6b6b6b`

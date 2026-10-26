@@ -38,6 +38,11 @@ async function readShellMetrics(page: Page): Promise<ShellMetrics> {
 }
 
 test.describe('desktop WorkspaceShell layout', () => {
+  // The member rail starts compact when nothing is saved. This spec checks the expanded
+  // rail (account group, footer), so it saves that choice first, as a member would.
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => window.localStorage.setItem('wa_nav_collapsed_member', '0'));
+  });
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 1280, height: 520 },

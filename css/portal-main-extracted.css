@@ -9818,8 +9818,15 @@ html[data-portal-role="member"] .portal-voice-session__idle-overlay {
   outline-offset: 2px;
   box-shadow: var(--wa-focus-ring-on-dark);
 }
-/* Collapsed desktop rail: center the brand mark, hide search. */
+/* Collapsed desktop rail: the brand mark and the expand control stack, each
+   centred on its own row, so the 72px rail never clips the mark. */
+:is(html[data-portal-role='admin'], .workspace-shell-root[data-workspace-role='admin']) .workspace-sidebar--collapsed .workspace-sidebar-toolbar {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
 :is(html[data-portal-role='admin'], .workspace-shell-root[data-workspace-role='admin']) .workspace-sidebar--collapsed .workspace-sidebar-brand {
+  flex: 0 0 auto;
   justify-content: center;
 }
 

@@ -448,14 +448,16 @@ export default function WorkspaceShell({
 
   useEffect(() => {
     try {
-      // No saved preference: the desktop rail starts compact (the icon rail of
-      // the C1+C3 shell). A member who expands it keeps it expanded.
+      // No saved preference: the member rail starts compact (the icon rail of
+      // the C1+C3 shell). Staff rails (admin, counselor, employer, partner) carry
+      // dense sectioned navigation that needs its labels, so they start expanded.
+      // Either way a saved choice wins.
       const stored = localStorage.getItem(collapseKey);
-      setCollapsed(stored === null ? true : stored === '1');
+      setCollapsed(stored === null ? portalRole === 'member' : stored === '1');
     } catch {
       /* ignore */
     }
-  }, [collapseKey]);
+  }, [collapseKey, portalRole]);
 
   useEffect(() => {
     if (readOnlyAudit || previewMode) {
@@ -814,7 +816,7 @@ export default function WorkspaceShell({
               <ul className="workspace-sidebar-list workspace-sidebar-list--root">
                 {portalRole === 'admin' && !isCollapsedDesktop ? (
                   /* Grouped admin rail: collapsible sections + nested rows. The
-                     collapsed icon rail below lists every row flat instead. */
+                     collapsed icon rail below lists the top-level rows only. */
                   <WorkspaceSidebarSections
                     items={wide ? desktopNavItems : mobileDrawerNavItems}
                     activeHref={activeHref}
@@ -828,7 +830,15 @@ export default function WorkspaceShell({
                     forceExpanded={tourOpen}
                   />
                 ) : GROUP_ORDER.map((group) => {
-                  const list = wide ? desktopNavItems : mobileDrawerNavItems;
+                  const fullList = wide ? desktopNavItems : mobileDrawerNavItems;
+                  // The collapsed admin icon rail shows top-level destinations only; nested
+                  // rows open from the expanded rail. On a nested page its parent row carries
+                  // the highlight and names the page, so no second icon is inserted.
+                  const collapsedAdmin = portalRole === 'admin' && isCollapsedDesktop;
+                  const list = collapsedAdmin ? fullList.filter((item) => !item.parentHref) : fullList;
+                  const activeChild = collapsedAdmin
+                    ? fullList.find((item) => item.href === activeHref && item.parentHref)
+                    : undefined;
                   // Repeated shortcuts must not paint two current-page entries.
                   const inGroup = list.filter((item, index) =>
                     item.group === group && list.findIndex((candidate) => candidate.href === item.href) === index,
@@ -839,6 +849,7 @@ export default function WorkspaceShell({
                     <ul className="workspace-sidebar-list">
                         {inGroup.map((item) => {
                           const isActive = activeHref === item.href;
+                          const isActiveParent = !isActive && activeChild?.parentHref === item.href;
                           const Icon = item.Icon;
                           const b = badgeTotalForItem(badges, item);
                           return (
@@ -846,11 +857,17 @@ export default function WorkspaceShell({
                               <Link
                                 href={item.href}
                                 prefetch={false}
-                                className={`workspace-sidebar-link${isActive ? ' active' : ''}${item.nestedUnder ? ' workspace-sidebar-link--nested' : ''}`}
-                                aria-current={isActive ? 'page' : undefined}
+                                className={`workspace-sidebar-link${isActive || isActiveParent ? ' active' : ''}${item.nestedUnder ? ' workspace-sidebar-link--nested' : ''}`}
+                                aria-current={isActive ? 'page' : isActiveParent ? 'true' : undefined}
                                 data-nested-under={item.nestedUnder}
                                 onClick={closeDrawer}
-                                title={isCollapsedDesktop ? translateLabel(item.label) : undefined}
+                                title={
+                                  isCollapsedDesktop
+                                    ? isActiveParent && activeChild
+                                      ? `${translateLabel(item.label)}: ${translateLabel(activeChild.label)}`
+                                      : translateLabel(item.label)
+                                    : undefined
+                                }
                                 {...(item.tourTarget ? { 'data-tour': item.tourTarget } : {})}
                               >
                                 {Icon ? (
