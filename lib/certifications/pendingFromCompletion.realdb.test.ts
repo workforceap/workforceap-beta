@@ -288,3 +288,43 @@ test('backfill: only members get a certificate, and a shared catalog name comes 
   assert.equal(again.created, 0);
   assert.equal(again.missing, 0, 're-run is a no-op');
 });
+
+test('legacy course provenance preserves the certificate across a reviewed label correction and repeated syncs', async () => {
+  const programSlug = 'cybersecurity-professional-certificate-google';
+  const courseSlug = `${programSlug}-course-1`;
+  const courseraCourseId = 'N0l8fiV4Ee6DuxLo8f8SVQ';
+  const input = {
+    userId: seeded.userId, programSlug, courseSlug, courseraCourseId,
+    source: 'coursera-webhook' as const,
+  };
+  const beforeCount = await prisma.userCertification.count({ where: { userId: seeded.userId } });
+  const original = await prisma.userCertification.create({ data: {
+    userId: seeded.userId,
+    certName: 'Cybersecurity Professional Certificate Google',
+    status: 'pending', earnedAt: new Date('2026-08-18T18:22:57.758Z'),
+  } });
+  await prisma.auditLog.create({ data: {
+    action: PENDING_CERTIFICATION_FROM_COMPLETION_ACTION,
+    targetType: 'user_certification', targetId: original.id,
+    metadata: { userId: seeded.userId, programSlug, courseSlug, courseraCourseId },
+  } });
+
+  const retained = await prisma.$transaction((tx) => ensurePendingCertificationForCompletion(input, { db: tx }));
+  assert.equal(retained.created, false);
+  assert.equal(retained.id, original.id);
+  assert.deepEqual(await prisma.userCertification.findUniqueOrThrow({ where: { id: original.id } }), original);
+
+  // Simulate the separately reviewed correction. The helper itself never
+  // changes an existing member/staff decision or certificate display label.
+  const corrected = await prisma.userCertification.update({
+    where: { id: original.id }, data: { certName: resolveCertificationNameForCourse(input) },
+  });
+  const repeated = await Promise.all([
+    ensurePendingCertificationForCompletion(input),
+    ensurePendingCertificationForCompletion({ ...input, courseraCourseId: null }),
+    ensurePendingCertificationForCompletion({ ...input, courseraCourseId: `Course~${courseraCourseId}` }),
+  ]);
+  assert.ok(repeated.every((result) => !result.created && result.id === original.id && result.certName === corrected.certName));
+  assert.deepEqual(await prisma.userCertification.findUniqueOrThrow({ where: { id: original.id } }), corrected);
+  assert.equal(await prisma.userCertification.count({ where: { userId: seeded.userId } }), beforeCount + 1);
+});

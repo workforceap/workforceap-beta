@@ -14,6 +14,7 @@ import {
 } from '@/lib/content/programCurriculumManifest';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { resolveCurriculumMappingsForCourse } from '@/lib/coursera/curriculumMapping';
+import { catalogCourseDisplayName } from '@/lib/coursera/courseDisplayName';
 
 // Re-export so existing call sites (`@/lib/member/programCourseMatch`)
 // continue to find these names. The actual implementation lives in
@@ -196,7 +197,7 @@ export async function resolveProgramCourseWithCatalogFallback(
   // inline "Map this" admin action take effect for xAPI/B4B traffic without
   // a redeploy. Same source-of-truth as the SQL JOIN in
   // promoteCsvProgressToCanonical — keep these two paths consistent.
-  const courseraCourseId = args.courseraCourseId?.trim() || null;
+  const courseraCourseId = normalizeCourseraCourseId(args.courseraCourseId) || null;
   const courseraCourseSlug = args.courseSlug?.trim() || null;
   let dbHit: CanonicalMappingHit | null = null;
   if (curriculumVersion !== APPROVED_CURRICULUM_VERSION && options?.canonicalMappings) {
@@ -216,26 +217,13 @@ export async function resolveProgramCourseWithCatalogFallback(
     });
   }
   if (dbHit) {
-    // Confirm the mapped (programSlug, courseSlug) corresponds to a real
-    // catalog row so consumers that look up `program.courses` continue to
-    // work. The mapping table is admin-edited and could in principle point
-    // at a slug that no longer exists.
-    const mappedProgram = getProgramBySlug(dbHit.programSlug);
-    const mappedCourse = mappedProgram?.courses.find((c) => c.slug === dbHit!.courseSlug);
-    if (mappedCourse) {
-      return { slug: mappedCourse.slug, name: mappedCourse.name };
-    }
-    // Fall through to discovered metadata for a display name when the WAP
-    // program doesn't carry the row yet (rare; new mapping racing a deploy).
-    const discoveredMeta = DISCOVERED_COURSERA_PROGRAMS[dbHit.programSlug]?.courses.find(
-      (c) => c.slug === dbHit!.courseSlug,
-    );
-    if (discoveredMeta) {
-      return { slug: discoveredMeta.slug, name: discoveredMeta.name };
-    }
-    // Last resort — return the slug verbatim so we still bind progress to
-    // the canonical curriculum even if we don't have a display name yet.
-    return { slug: dbHit.courseSlug, name: dbHit.courseSlug };
+    // Keep the mapped slug: progress, live-event and points deduplication
+    // depend on it. Resolve a missing title by exact provider ID instead of
+    // presenting a legacy synthetic slug as the course or qualification.
+    return {
+      slug: dbHit.courseSlug,
+      name: catalogCourseDisplayName({ ...dbHit, courseraCourseId }) ?? dbHit.courseSlug,
+    };
   }
 
   // Step 2 + 3: existing portal/discovered/slug behavior.

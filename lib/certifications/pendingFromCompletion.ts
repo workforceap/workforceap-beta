@@ -2,8 +2,9 @@ import type { CertStatus, Prisma, PrismaClient } from '@prisma/client';
 
 import { auditLog } from '@/lib/audit';
 import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCatalog';
-import { PROGRAMS, getDiscoveredProgram, getProgramBySlug, getProgramDisplayTitle } from '@/lib/content/programs';
+import { PROGRAMS, getProgramBySlug, getProgramDisplayTitle } from '@/lib/content/programs';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
+import { catalogCourseDisplayName } from '@/lib/coursera/courseDisplayName';
 import { prisma } from '@/lib/db/prisma';
 
 /**
@@ -31,10 +32,10 @@ import { prisma } from '@/lib/db/prisma';
  *    `system_certification_pending_from_completion`, with the program,
  *    course, Coursera course id and the write path that reported it.
  *
- * The certificate name is resolved from the canonical catalog first
- * (`lib/content/programs.ts`, then the discovered Coursera catalog) so every
- * write path (webhook, xAPI, B4B cron, per-user sync, CSV import, backfill)
- * lands on the same `certName` for the same course. Course names repeat
+ * The certificate name comes from catalog slugs or an exact provider ID
+ * inside the attributed program. When a legacy label changes, its original
+ * member/program/course audit binds the existing row across write paths;
+ * label correction itself remains a separate reviewed repair. Course names repeat
  * across programs ("Lab, Project, and Test Preparation" is in seven canonical
  * programs; "Data Analysis with Python" in two discovered ones), and the
  * unique key is (user, name): a member in two programs would otherwise finish
@@ -126,22 +127,14 @@ function programsCarryingCourseName(name: string): ReadonlySet<string> {
   return programsByCourseName.get(name) ?? new Set<string>();
 }
 
-function catalogCourseName(canonicalProgramSlug: string, courseSlug: string): string | null {
-  const fromCatalog = getProgramBySlug(canonicalProgramSlug)?.courses.find((course) => course.slug === courseSlug)?.name;
-  if (fromCatalog?.trim()) return fromCatalog.trim();
-  const fromDiscovered = getDiscoveredProgram(canonicalProgramSlug)?.courses.find((course) => course.slug === courseSlug)?.name;
-  return fromDiscovered?.trim() || null;
-}
-
 /**
  * A course neither catalog knows (a DB-only canonical mapping, say) still
- * gets a readable name rather than its raw slug: words from the slug,
- * capitalised, with a trailing catalog-style "course-NN" ordinal dropped.
+ * gets a readable name. Keep a synthetic course ordinal so a single course
+ * cannot masquerade as the whole program's certificate.
  */
 export function humaniseCourseSlug(slug: string): string {
   const words = slug
     .trim()
-    .replace(/-course-\d+$/i, '')
     .split(/[-_]+/)
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
@@ -149,11 +142,9 @@ export function humaniseCourseSlug(slug: string): string {
 }
 
 /**
- * Stable certificate name for a completed course: canonical catalog name,
- * then the discovered Coursera catalog, then the slug humanised. It is a
- * pure function of (program, course) on purpose: a provider display name is
- * deliberately not an input, so the live hooks and the backfill cannot spell
- * the same course two ways. When either catalog carries that name in more
+ * Stable catalog-backed certificate name: known slug, then exact provider
+ * ID in the same program, then the complete slug humanised. Free-form
+ * provider display text is never an input. When either catalog carries that name in more
  * than one program the program's display title is appended
  * (`"Lab, Project, and Test Preparation — IT Support Professional Certificate (IBM)"`)
  * so a member in two programs gets one certificate per course, not one per
@@ -162,15 +153,67 @@ export function humaniseCourseSlug(slug: string): string {
 export function resolveCertificationNameForCourse(input: {
   programSlug: string;
   courseSlug: string;
+  courseraCourseId?: string | null;
 }): string {
   const canonicalProgramSlug = canonicalizeProgramSlug(input.programSlug);
   const baseName =
-    catalogCourseName(canonicalProgramSlug, input.courseSlug)
+    catalogCourseDisplayName({ ...input, programSlug: canonicalProgramSlug })
     ?? humaniseCourseSlug(input.courseSlug);
   if (programsCarryingCourseName(baseName).size > 1) {
     return `${baseName} — ${programTitleForSlug(canonicalProgramSlug)}`;
   }
   return baseName;
+}
+
+/** Previous fallback, used only to detect a label transition, never to issue a row. */
+function previousCertificationName(input: EnsurePendingCertificationInput): string {
+  const programSlug = canonicalizeProgramSlug(input.programSlug);
+  const baseName = catalogCourseDisplayName({ programSlug, courseSlug: input.courseSlug })
+    ?? humaniseCourseSlug(input.courseSlug.replace(/-course-\d+$/i, ''));
+  return programsCarryingCourseName(baseName).size > 1
+    ? `${baseName} — ${programTitleForSlug(programSlug)}`
+    : baseName;
+}
+
+async function certificateBeforeLabelCorrection(
+  input: EnsurePendingCertificationInput,
+  db: PendingCertificationDb,
+  previousName: string,
+): Promise<EnsurePendingCertificationResult | null> {
+  const provenance = await db.auditLog.findMany({
+    where: {
+      action: PENDING_CERTIFICATION_FROM_COMPLETION_ACTION,
+      targetType: 'user_certification',
+      targetId: { not: null },
+      AND: [
+        { metadata: { path: ['userId'], equals: input.userId } },
+        { metadata: { path: ['programSlug'], equals: canonicalizeProgramSlug(input.programSlug) } },
+        { metadata: { path: ['courseSlug'], equals: input.courseSlug } },
+      ],
+    },
+    distinct: ['targetId'],
+    take: 2,
+    select: { targetId: true },
+  });
+  if (provenance.length > 1) throw new Error('Ambiguous certificate provenance for course label correction');
+  const targetId = provenance[0]?.targetId;
+  if (targetId) {
+    const existing = await db.userCertification.findUnique({
+      where: { id: targetId, userId: input.userId },
+      select: { id: true, certName: true, status: true },
+    });
+    if (existing) return { created: false, ...existing };
+  }
+
+  // Historical audit writes were best-effort. An old label alone cannot
+  // prove which course a row represents; require reviewed repair instead of
+  // guessing or creating a second row alongside it.
+  const unattributed = await db.userCertification.findUnique({
+    where: { userId_certName: { userId: input.userId, certName: previousName } },
+    select: { id: true },
+  });
+  if (unattributed) throw new Error('Legacy certificate label requires exact course provenance before correction');
+  return null;
 }
 
 export async function ensurePendingCertificationForCompletion(
@@ -179,6 +222,11 @@ export async function ensurePendingCertificationForCompletion(
 ): Promise<EnsurePendingCertificationResult> {
   const db = deps.db ?? prisma;
   const certName = resolveCertificationNameForCourse(input);
+  const previousName = previousCertificationName(input);
+  if (certName !== previousName) {
+    const existing = await certificateBeforeLabelCorrection(input, db, previousName);
+    if (existing) return existing;
+  }
   const now = new Date();
   const earnedAt =
     input.completedAt && Number.isFinite(input.completedAt.getTime()) ? input.completedAt : now;

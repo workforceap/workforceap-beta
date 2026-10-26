@@ -163,7 +163,7 @@ describe('resolveCertificationNameForCourse', () => {
     // The resolver takes no display name: the live hooks and the backfill cannot spell one course two ways.
     expect(resolveCertificationNameForCourse({ programSlug: PROGRAM, courseSlug: 'cloud-security-basics', courseName: 'Provider Title' } as never))
       .toBe('Cloud Security Basics');
-    expect(humaniseCourseSlug('some-program-slug-course-17')).toBe('Some Program Slug');
+    expect(humaniseCourseSlug('some-program-slug-course-17')).toBe('Some Program Slug Course 17');
     expect(humaniseCourseSlug('---')).toBe('---');
   });
 });
