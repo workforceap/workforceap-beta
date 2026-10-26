@@ -1,14 +1,28 @@
 /**
  * WAP-24: the tenant-scoping audit's `--max-unscoped` ratchet.
  *
- * Exercises the pure verdict and the argument parser only; the scan itself
+ * Exercises pure verdicts, path exclusions and argument parsing; the scan itself
  * is the script's job and reading application source here would make this a
  * source-text test (scripts/verify-no-source-text-tests.mjs).
  */
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { evaluateRatchet, parseMaxUnscoped } = require('./audit-tenant-scoping.cjs');
+const { evaluateRatchet, parseMaxUnscoped, shouldSkipPath } = require('./audit-tenant-scoping.cjs');
+
+test('reviewed cross-tenant helper exclusions are identical on Windows and POSIX', () => {
+  for (const file of ['lib/tenant/withTenantScope.ts', 'lib/tenant/organization.ts', 'lib/admin/boardOutcomes.ts']) {
+    assert.equal(shouldSkipPath(`/workspace/${file}`), true, file);
+    assert.equal(shouldSkipPath(`C:\\workspace\\${file.replaceAll('/', '\\')}`), true, file);
+  }
+});
+
+test('ordinary tenant routes and similarly named helpers remain in scope on both platforms', () => {
+  for (const file of ['app/api/admin/members/route.ts', 'lib/tenant/organizationAccess.ts', 'lib/admin/boardOutcomesExport.ts']) {
+    assert.equal(shouldSkipPath(`/workspace/${file}`), false, file);
+    assert.equal(shouldSkipPath(`C:\\workspace\\${file.replaceAll('/', '\\')}`), false, file);
+  }
+});
 
 test('more unscoped call sites than the pin fails the gate', () => {
   assert.deepEqual(evaluateRatchet(679, 678), { ok: false, verdict: 'over', delta: 1 });

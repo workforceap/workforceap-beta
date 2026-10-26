@@ -57,7 +57,7 @@ jobs:
 
           if current="$(gh api "$ref_api" --jq '.object.sha' 2>"$err")"; then
             if [ "$current" = "$sha" ]; then
-              echo "$MIRROR_BRANCH already points at $sha; nothing to do"
+              echo "$MIRROR_BRANCH already points at $sha; no ref update or build retry was requested"
               exit 0
             fi
             echo "$MIRROR_BRANCH was at $current; moving it"
@@ -72,4 +72,4 @@ jobs:
             cat "$err" >&2
             exit 1
           fi
-          echo "Vercel builds $MIRROR_BRANCH in its Preview environment; the Authenticated Portal Smoke gate waits for that deployment to report this SHA."
+          echo "Updated the mirror only. Authenticated Portal Smoke independently verifies that Vercel registered and built this exact SHA in the Preview environment."
