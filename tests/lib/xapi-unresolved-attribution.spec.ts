@@ -186,6 +186,31 @@ describe('completion attribution before side effects', () => {
     expect(mocks.record).toHaveBeenCalledWith(expect.objectContaining({ completionStatus: 'unresolved_course' }));
   });
 
+  it('uses the enrolled program for a providerless completion instead of inventing a mapping', async () => {
+    mocks.user.mockResolvedValue({
+      ...detachedMember,
+      enrolledProgram: 'assigned-program',
+      courseEnrollments: [{ programSlug: 'assigned-program', curriculumVersion: 'legacy-v1', isPrimary: true }],
+    });
+
+    const result = await handleInboundParsedStatement({ ...statement, courseraCourseId: undefined }, options);
+
+    expect(result.outcome).toBe('completed');
+    expect(mocks.resolveMappings).not.toHaveBeenCalled();
+    expect(mocks.complete).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      userId: 'member-1',
+      resolvedProgramSlug: 'assigned-program',
+      courseraCourseId: null,
+    }));
+    expect(mocks.upsert).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      userId: 'member-1',
+      enrolledProgramSlug: 'assigned-program',
+      curriculumVersion: 'legacy-v1',
+    }));
+    expect(mocks.markProcessed).toHaveBeenCalledExactlyOnceWith(statement.statementId, options.statementHash);
+    expect(mocks.record).toHaveBeenCalledWith(expect.objectContaining({ completionStatus: 'completed' }));
+  });
+
   it('propagates a diagnostic write failure without acknowledging the statement', async () => {
     mocks.record.mockRejectedValueOnce(new Error('event store unavailable'));
 

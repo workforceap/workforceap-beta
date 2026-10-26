@@ -302,6 +302,70 @@ describe('handleInboundParsedStatement program resolution', () => {
     );
   });
 
+  it('records a single-scope completion failure, leaves the statement pending, and rethrows', async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      organizationId: 'org-1',
+      deletedAt: null,
+      enrolledProgram: 'primary-program',
+      courseEnrollments: [{ programSlug: 'primary-program', curriculumVersion: 'legacy-v1', isPrimary: true }],
+    } as never);
+    vi.mocked(resolveInboundCourseScopes).mockResolvedValue([{
+      programSlug: 'primary-program',
+      curriculumVersion: 'legacy-v1',
+      assignmentMatched: true,
+    }]);
+    vi.mocked(completeMemberCourse).mockRejectedValueOnce(new Error('completion store unavailable'));
+
+    await expect(handleInboundParsedStatement({
+      email: 'member@example.com',
+      courseraCourseId: 'provider-course',
+      activityType: 'course',
+      statementId: 'statement-one',
+      verbId: 'http://adlnet.gov/expapi/verbs/completed',
+      rawStatement: {},
+    }, { organizationId: 'org-1', statementHash: 'hash-one' })).rejects.toThrow('completion store unavailable');
+
+    expect(recordXapiEvent).toHaveBeenCalledWith(expect.objectContaining({
+      statementId: 'statement-one',
+      matchedUserId: 'member-1',
+      organizationId: 'org-1',
+      completionStatus: 'error',
+      error: 'completion store unavailable',
+    }));
+    expect(markXapiStatementProcessed).not.toHaveBeenCalled();
+  });
+
+  it('keeps a completed course pending when the same-scope progress upsert fails', async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      organizationId: 'org-1',
+      deletedAt: null,
+      enrolledProgram: 'primary-program',
+      courseEnrollments: [{ programSlug: 'primary-program', curriculumVersion: 'legacy-v1', isPrimary: true }],
+    } as never);
+    vi.mocked(resolveInboundCourseScopes).mockResolvedValue([{
+      programSlug: 'primary-program',
+      curriculumVersion: 'legacy-v1',
+      assignmentMatched: true,
+    }]);
+    vi.mocked(upsertCourseProgressFromXapiStatement).mockRejectedValueOnce(new Error('progress upsert unavailable'));
+
+    await expect(handleInboundParsedStatement({
+      email: 'member@example.com',
+      courseraCourseId: 'provider-course',
+      activityType: 'course',
+      statementId: 'statement-upsert',
+      verbId: 'http://adlnet.gov/expapi/verbs/completed',
+      rawStatement: {},
+    }, { organizationId: 'org-1', statementHash: 'hash-upsert' })).rejects.toThrow('progress upsert unavailable');
+
+    expect(completeMemberCourse).toHaveBeenCalledOnce();
+    expect(recordXapiEvent).toHaveBeenCalledWith(expect.objectContaining({
+      completionStatus: 'error',
+      error: 'progress upsert unavailable',
+    }));
+    expect(markXapiStatementProcessed).not.toHaveBeenCalled();
+  });
+
   it('threads detached linked progress through exact-id persistence without rewards', async () => {
     vi.mocked(isXapiCompletionVerb).mockReturnValue(false);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({

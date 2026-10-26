@@ -27,7 +27,16 @@ describe('POST /api/counselor/assessment-retake', () => {
     const res = await POST(req({ memberId: 'member-1', reason: 'clicked through' }));
     expect(res.status).toBe(200);
     expect(allowAssessmentRetake).toHaveBeenCalledWith({ memberId: 'member-1', staffUserId: 'staff-1', staffRole: 'counselor', reason: 'clicked through' });
-    expect((await res.json()).message).toContain('prompt in their portal');
+    expect(await res.json()).toEqual({
+      ok: true,
+      message: expect.stringContaining('prompt in their portal'),
+    });
+  });
+  it('still acknowledges an already-pending authorization with ok: true', async () => {
+    vi.mocked(allowAssessmentRetake).mockResolvedValue({ ok: true, previousScorePct: 27, alreadyPending: true });
+    const res = await POST(req({ memberId: 'member-1' }));
+    expect(res.status).toBe(200);
+    expect((await res.json()).ok).toBe(true);
   });
   it('returns the two-attempt limit clearly', async () => {
     vi.mocked(allowAssessmentRetake).mockResolvedValue({ ok: false, reason: 'limit_reached' });

@@ -209,6 +209,24 @@ describe('neighboring assessment and private resume endpoints share the assignme
     expect(fx.retake).not.toHaveBeenCalled();
   });
 
+  it('lets a same-org admin authorize a retake without a counselor assignment', async () => {
+    fx.actor = 'admin-a';
+    const response = await assessmentRetake(new Request('https://example.test/api/counselor/assessment-retake', {
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ memberId: 'member-a' }),
+    }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      ok: true,
+      message: expect.stringContaining('prompt in their portal'),
+    });
+    expect(fx.retake).toHaveBeenCalledExactlyOnceWith({
+      memberId: 'member-a',
+      staffUserId: 'admin-a',
+      staffRole: 'admin',
+      reason: null,
+    });
+  });
+
   it.each(['unassigned-a', 'partner-a', 'employer-a'])('denies %s private resume before lookup or signing', async (actor) => {
     fx.actor = actor;
     const response = await counselorResume(new Request('https://example.test/api/counselor/members/member-a/resume') as never,
