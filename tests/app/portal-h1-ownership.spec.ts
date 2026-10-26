@@ -75,7 +75,7 @@ const LEGACY_SR_ONLY_H1 = new Set([
 ]);
 
 const portalPages = [...walk(join(root, 'app/(portal)')), ...walk(join(root, 'app/admin'))]
-  .map((file) => relative(root, file))
+  .map((file) => relative(root, file).replace(/\\/g, '/'))
   .sort();
 
 describe('portal route h1 ownership', () => {
@@ -159,7 +159,7 @@ describe('route-level kits own their h1 through PageOpener', () => {
 
 describe('employer portal EmployerPageOpener contract (WAP-134)', () => {
   const employerPages = walk(join(root, 'app/(portal)/employer'))
-    .map((file) => relative(root, file))
+    .map((file) => relative(root, file).replace(/\\/g, '/'))
     .sort();
 
   it.each(employerPages)('%s composes EmployerPageOpener once with no breadcrumb row or raw h1', (rel) => {
