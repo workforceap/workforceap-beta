@@ -27,6 +27,9 @@ Use this table to enter a business workflow, then follow [static references](gen
 | Shared UI, accessibility, locale and theme | [portal kit](../../components/portal/kit), [shared UI](../../components/ui), [styles](../../css), [translations](../../messages) | [navigation](../../lib/nav), [i18n](../../lib/i18n), [accessibility](../../lib/a11y) | [kit guide](../KIT_GUIDE.md), [design coexistence in AGENTS](../../AGENTS.md), [test catalog](generated/tests.json) |
 
 The Astro [program comparison page](../../marketing/src/pages/program-comparison.astro)
+derives its roster from all public catalog programs, including Digital Literacy,
+entry-level cybersecurity and trades. Duration, funding and preparation stay sourced
+from the catalog; missing or unverified details retain their confirmation labels. It
 keeps its wide table in a focusable horizontal-scroll region, with sticky comparison
 columns and stacked phone cards. WAP-300 pins the scroll region's containing boundary
 so tablet widths do not pan the document sideways, and matches the fixed Compare

@@ -121,9 +121,9 @@ const factors = [
 
     <!-- glass stat card -->
     <div class="hero-glass">
-      <div class="hg-tag">Career tracks compared</div>
+      <div class="hg-tag">Programs compared</div>
       <div class="hg-meter">
-        <span>Tracks in this comparison</span>
+        <span>Programs in this comparison</span>
         <strong>{trackCount}</strong>
       </div>
       <div class="hg-rows">
@@ -194,7 +194,7 @@ const factors = [
 <section class="band" id="compare-table"><div class="wrap">
   <div class="sec-head sec-head--left">
     <span class="eyebrow">Side-by-side</span>
-    <h2>Compare all {trackCount} career tracks</h2>
+    <h2>Compare all {trackCount} programs</h2>
     <p>Check 2 to 4 programs, then scan the matrix. Published study commitment, Coursera language support, preparation, training providers, and roles to research — grouped by field.</p>
   </div>
 
@@ -273,7 +273,7 @@ const factors = [
                 </td>
                 <td data-label="Languages">{t.languages}</td>
                 <td data-label="Preparation">{t.preparation}</td>
-                <td data-label="Roles to research">{t.roles.join(' · ')}</td>
+                <td data-label="Roles to research">{t.roles.join(' · ') || '—'}</td>
                 <td data-label="Training providers">{t.provider}</td>
                 <td data-label="Apply" class="cmp-act">
                   <a class="btn btn--ghost btn--sm" href={`/apply?program=${t.slug}`}>Apply</a>
@@ -393,7 +393,7 @@ const factors = [
       var n = uniqueSlugs().length;
       var more = Math.max(0, MIN_PICK - n);
       var text;
-      if (n >= MIN_PICK) text = n + ' selected — matrix is on above.';
+      if (n >= MIN_PICK) text = n + ' selected — comparison shown above.';
       else if (n === 0) text = '0 selected — add ' + MIN_PICK + ' more.';
       else text = n + ' selected — add ' + more + ' more.';
       if (countEl) countEl.textContent = text;
@@ -662,6 +662,7 @@ const factors = [
     text-transform:uppercase;padding:8px 16px;border-top:1px solid color-mix(in srgb, var(--crimson) 18%, var(--border));border-bottom:1px solid color-mix(in srgb, var(--crimson) 18%, var(--border));position:sticky;left:0;z-index:1}
   .cmp-matrix tbody th[scope="row"]{background:var(--surface-2);font-weight:700;white-space:nowrap;position:sticky;left:0;z-index:1}
   .cmp-matrix thead th:first-child{position:sticky;left:0;z-index:2}
+  .cmp-matrix thead th:not(:first-child){white-space:normal;min-width:12rem;overflow-wrap:anywhere}
   .demand{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;
     background:var(--surface-2);border:1px solid var(--border);color:var(--muted)}
   .demand--vh{background:color-mix(in srgb, var(--green) 12%, transparent);border-color:transparent;color:var(--green)}
