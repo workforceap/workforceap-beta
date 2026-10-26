@@ -20,6 +20,8 @@ import styles from './memberPages.module.css';
  * Real wiring: when `memberUserId` is supplied, the composer POSTs to the
  * existing legacy member↔counselor endpoint (`/api/member/messages`), the
  * same mechanism `MemberCounselorChatClient` uses. No new backend.
+ * Saved server/realtime timestamps remain intact. Optimistic rows are marked
+ * pending, and a realtime echo is reconciled with its POST response by saved ID.
  */
 
 interface Conversation {
@@ -95,6 +97,16 @@ const DEFAULT_CONVERSATIONS: Conversation[] = [];
 
 const DEFAULT_MESSAGES: ChatMessage[] = [];
 
+function chronological(messages: ChatMessage[]): ChatMessage[] {
+  const time = (message: ChatMessage) => {
+    const value = message.createdAt && !message.pending ? Date.parse(message.createdAt) : NaN;
+    return Number.isFinite(value) ? value : Infinity;
+  };
+  // A delayed realtime insert belongs at its persisted time. Undated kit
+  // fixtures and optimistic sends retain their input order after saved rows.
+  return [...messages].sort((left, right) => time(left) === time(right) ? 0 : time(left) - time(right));
+}
+
 export function MemberMessagesKit({
   conversations = DEFAULT_CONVERSATIONS,
   activeName = 'Counselor',
@@ -115,7 +127,7 @@ export function MemberMessagesKit({
   const initialConversation = conversations.find((conversation) => conversation.active) ?? conversations[0];
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(initialConversation?.id ?? null);
   const selectedConversation = canSelectPreviewConversation ? conversations.find((conversation) => conversation.id === selectedConversationId) : undefined;
-  const [messages, setMessages] = useState<ChatMessage[]>(canSelectPreviewConversation ? initialConversation?.messages ?? messagesProp : messagesProp);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => chronological(canSelectPreviewConversation ? initialConversation?.messages ?? messagesProp : messagesProp));
   const [error, setError] = useState<string | null>(null);
   // Mobile single-pane navigation: on phones the list and thread cannot sit
   // side-by-side, so we show one pane at a time with a back button. Desktop
@@ -183,7 +195,7 @@ export function MemberMessagesKit({
       setError(null);
       // Optimistic append so the thread feels responsive; reconcile on response.
       const tempId = `temp-${Date.now()}`;
-      setMessages((prev) => [...prev, { id: tempId, from: 'self', text }]);
+      setMessages((prev) => [...prev, { id: tempId, from: 'self', text, pending: true }]);
       try {
         const r = await fetch('/api/member/messages', {
           method: 'POST',
@@ -193,7 +205,7 @@ export function MemberMessagesKit({
         });
         const data = (await r.json().catch(() => ({}))) as {
           error?: string;
-          message?: { id: string; body: string };
+          message?: { id: string; body: string; createdAt?: string };
         };
         if (!r.ok || !data.message) {
           setMessages((prev) => prev.filter((m) => m.id !== tempId));
@@ -201,9 +213,16 @@ export function MemberMessagesKit({
           return false;
         }
         const saved = data.message;
-        setMessages((prev) =>
-          prev.map((m) => (m.id === tempId ? { id: saved.id, from: 'self', text: saved.body } : m)),
-        );
+        setMessages((prev) => {
+          const received = prev.find((message) => message.id === saved.id);
+          // Realtime may beat the HTTP response. Keep one persisted row and
+          // retain its real timestamp if an older response omits that field.
+          const persisted: ChatMessage = {
+            id: saved.id, from: 'self', text: saved.body,
+            createdAt: saved.createdAt ?? received?.createdAt,
+          };
+          return chronological([...prev.filter((message) => message.id !== tempId && message.id !== saved.id), persisted]);
+        });
         try {
           window.dispatchEvent(new CustomEvent('wa-nav-badges-refresh'));
         } catch {
@@ -257,15 +276,16 @@ export function MemberMessagesKit({
             const id = String(row.id ?? '');
             const authorId = String(row.author_id ?? '');
             const body = String(row.body ?? '');
+            const createdAt = typeof row.created_at === 'string' ? row.created_at : undefined;
             if (!id) return;
             const mine = authorId === memberUserId;
             setMessages((prev) => {
               // Dedupe against optimistic/sent (and already-received) messages by id.
               if (prev.some((m) => m.id === id)) return prev;
               const incoming: ChatMessage = mine
-                ? { id, from: 'self', text: body }
-                : { id, from: 'other', text: body, author: otherInitialsRef.current };
-              return [...prev, incoming];
+                ? { id, from: 'self', text: body, createdAt }
+                : { id, from: 'other', text: body, author: otherInitialsRef.current, createdAt };
+              return chronological([...prev, incoming]);
             });
             // Counselor reply arrived while the thread is open: mark it read
             // (which also refreshes the nav unread badge).
@@ -317,7 +337,7 @@ export function MemberMessagesKit({
                   onClick={() => {
                     if (canSelectPreviewConversation) {
                       setSelectedConversationId(c.id);
-                      setMessages(c.messages ?? messagesProp);
+                      setMessages(chronological(c.messages ?? messagesProp));
                     }
                     setMobileView('thread');
                   }}
@@ -347,7 +367,7 @@ export function MemberMessagesKit({
               classes (not inline) so the mobile hide/show can win over flex. */}
           <div
             className={`${mobileView === 'thread' ? 'wa-flex' : 'wa-hidden'} md:wa-flex`}
-            style={{ flexDirection: 'column', minWidth: 0 }}
+            style={{ flexDirection: 'column', minHeight: 0, minWidth: 0 }}
           >
             <div className={styles.threadHead}>
               {/* Mobile-only back button: return to the conversation list. */}
@@ -387,6 +407,7 @@ export function MemberMessagesKit({
                 multiline={Boolean(feedbackDraft)}
                 composerClassName={styles.messageComposer}
                 empty={{ title: t('thread.title'), description: t('thread.body'), action: t('thread.action') }}
+                labels={{ newMessage: tm('showLatestMessage'), pending: tm('sending'), send: tm('sendMessageLabel'), sending: tm('sendingMessage'), history: tm('messageHistory') }}
               />
             </div>
           </div>

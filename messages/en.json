@@ -1435,7 +1435,12 @@
     "networkError": "Network error",
     "composerPlaceholder": "Message {name}…",
     "feedbackDraftNotice": "Review your course details and any saved project link before sending. Your private notes are not shared.",
-    "feedbackUnavailable": "We could not load that assigned course. You can still write your message below."
+    "feedbackUnavailable": "We could not load that assigned course. You can still write your message below.",
+    "showLatestMessage": "New message — show latest",
+    "sending": "Sending…",
+    "sendingMessage": "Sending message",
+    "messageHistory": "Message history",
+    "sendMessageLabel": "Send message"
   },
   "profile": {
     "edit": "Edit profile",

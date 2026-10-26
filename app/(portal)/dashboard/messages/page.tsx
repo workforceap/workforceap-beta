@@ -153,6 +153,7 @@ export default async function MemberMessagesPage({
         id: m.id,
         from: mine ? 'self' : 'other',
         text: m.body ?? '',
+        createdAt: m.createdAt.toISOString(),
         ...(mine ? {} : { author: counselorInitials }),
       };
     });

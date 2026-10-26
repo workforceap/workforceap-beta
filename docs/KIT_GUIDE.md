@@ -664,6 +664,21 @@ on mount. Async `onSend` handlers return `false` on failure so the draft stays
 available for retry; successful sends clear only the submitted revision and
 preserve text edited while the request was pending.
 
+`ChatMessage.createdAt` is the persisted server timestamp, rendered with the
+existing Central-time date/time helpers. Optimistic rows use `pending` and have
+no invented sent time. The member inbox retains timestamps from SSR, POST and
+realtime and reconciles a realtime echo by saved ID. `ChatThread` scrolls only
+its own log while the reader is near the bottom or explicitly sends; while
+reading history, new content exposes a translated “show latest” action. Its
+log is keyboard focusable and never scrolls an ancestor. The member workspace
+has a bounded viewport height so the history, not the whole page, can scroll.
+Multiline feedback drafts remain resizable within a viewport cap, leaving
+history and the Send action usable on a short phone. The standalone
+`node scripts/test-member-message-continuity-browser.mjs [output-directory]`
+check bundles the real components/CSS and mocks every transport; it verifies
+reading position, both themes, mobile back/return and pending-draft recovery.
+Surface translations are passed in `labels`; generic kit previews keep defaults.
+
 **Member request failures (audit 7c):** browser requests from member tools
 (AI generation such as `ElevatorPitchClient`, `uploadMemberResumeFile`) go
 through `fetchWithTimeout` with `MEMBER_REQUEST_TIMEOUT_MS` and describe any
