@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Monitor, Moon, Sun } from 'lucide-react';
 import { SegmentedControl, SegmentedControlItem } from '@astryxdesign/core/SegmentedControl';
 import { useTheme, type Theme } from '@/lib/hooks/useTheme';
@@ -29,6 +29,15 @@ const ACTIVATION_WINDOW_MS = 500;
 export default function ThemeSelector() {
   const { theme, setTheme } = useTheme();
   const lastActivationAt = useRef(0);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // The rail shows these radios icon-only on desktop; a native tooltip names each one for
+  // pointer users (screen readers already get the label text). The Astryx item has no title prop.
+  useEffect(() => {
+    for (const { value, label } of OPTIONS) {
+      rootRef.current?.querySelector<HTMLElement>(`[role="radio"][data-value="${value}"]`)?.setAttribute('title', label);
+    }
+  }, []);
 
   const markActivation = useCallback(() => {
     lastActivationAt.current = Date.now();
@@ -45,7 +54,7 @@ export default function ThemeSelector() {
   );
 
   return (
-    <div onPointerDownCapture={markActivation} onKeyDownCapture={markActivation} style={{ display: 'contents' }}>
+    <div ref={rootRef} onPointerDownCapture={markActivation} onKeyDownCapture={markActivation} style={{ display: 'contents' }}>
       <SegmentedControl value={theme} onChange={handleChange} label="Appearance" size="md">
         {OPTIONS.map(({ value, label, icon: Icon }) => (
           <SegmentedControlItem key={value} value={value} label={label} icon={<Icon size={16} strokeWidth={2} aria-hidden />} />

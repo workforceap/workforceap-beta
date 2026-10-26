@@ -1,4 +1,5 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import userEvent from '@testing-library/user-event';
@@ -1102,5 +1103,88 @@ describe('rail defaults and the collapsed admin rail (post-launch review)', () =
     const students = ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === '/admin/students')!;
     const counselors = ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === '/admin/counselors')!;
     expect(students.Icon).not.toBe(counselors.Icon);
+  });
+});
+
+describe('first paint: the server HTML already has the right rail width (no jump at hydration)', () => {
+  const memberShell = () => (
+    <NextIntlClientProvider locale="en" messages={messages}>
+      <WorkspaceShell portalRole="member" navItems={MEMBER_PORTAL_NAV_ITEMS}
+        workspaceLabel="Member portal" contextLabel="Account" readOnlyAudit>
+        <h1>Home</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>
+  );
+  const adminShell = () => (
+    <NextIntlClientProvider locale="en" messages={pickAdminClientMessages(messages)}>
+      <WorkspaceShell portalRole="admin" navItems={ADMIN_PORTAL_NAV_ITEMS}
+        workspaceLabel="Admin workspace" contextLabel="Administrator" readOnlyAudit>
+        <h1>Admin content</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>
+  );
+  const railClass = (html: string) => html.match(/<aside[^>]*id="workspace-sidebar"[^>]*class="([^"]*)"/)?.[1] ?? '';
+
+  it('renders the member rail compact before any script runs, so it never snaps from wide to 72px', () => {
+    const html = renderToString(memberShell());
+    expect(railClass(html)).toContain('workspace-sidebar--collapsed');
+    // The compact rail ships without the footer; labels stay in the DOM for assistive tech.
+    expect(html).not.toContain('workspace-sidebar-footer');
+    expect(html).toContain('workspace-sidebar-link-label sr-only');
+  });
+
+  it('renders the staff rail expanded before any script runs', () => {
+    const html = renderToString(adminShell());
+    expect(railClass(html)).not.toContain('workspace-sidebar--collapsed');
+    expect(html).toContain('workspace-sidebar-brand-name');
+  });
+
+  it('ships the desktop toolbar and footer in the server HTML, so no row moves at hydration', () => {
+    for (const html of [renderToString(memberShell()), renderToString(adminShell())]) {
+      // The expand/collapse button (not the phone close button desktop CSS hides) is there from the start.
+      expect(html).toContain('workspace-sidebar-collapse-btn');
+      expect(html).not.toContain('workspace-sidebar-close-btn');
+      // Phone-only footer rows wait for mount.
+      expect(html).not.toContain('workspace-sidebar-meta');
+      expect(html).not.toContain('workspace-sidebar-home-link');
+    }
+  });
+
+  it('mirrors the saved rail choice onto <html> at parse time, scoped to the role', () => {
+    const html = renderToString(memberShell());
+    expect(html).toContain('wa_nav_collapsed_member');
+    expect(html).toContain('data-rail-pref-member');
+    expect(renderToString(adminShell())).toContain('data-rail-pref-admin');
+  });
+
+  it('updates the <html> rail attribute when the rail is toggled', async () => {
+    document.documentElement.removeAttribute('data-rail-pref-admin');
+    location.pathname = '/admin';
+    const user = userEvent.setup();
+    render(adminShell());
+    await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
+    expect(document.documentElement.getAttribute('data-rail-pref-admin')).toBe('1');
+    await user.click(screen.getByRole('button', { name: 'Expand sidebar' }));
+    expect(document.documentElement.getAttribute('data-rail-pref-admin')).toBe('0');
+  });
+
+  it('names the theme switch once: the visual caption is hidden from assistive tech', () => {
+    // ThemeSelector is mocked in this file; its tooltips are covered in theme-selector-titles.spec.tsx.
+    location.pathname = '/admin';
+    const { container } = render(adminShell());
+    expect(container.querySelector('.workspace-sidebar-appearance__label')?.getAttribute('aria-hidden')).toBe('true');
+    expect(screen.getByRole('radiogroup', { name: 'Appearance' })).toBeTruthy();
+  });
+
+  it('still opens the full member drawer on a phone after mount (collapsed markup is desktop-only)', async () => {
+    location.wide = false;
+    localStorage.removeItem('wa_nav_collapsed_member');
+    location.pathname = '/dashboard';
+    const user = userEvent.setup();
+    const { container } = show();
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(container.querySelector('.workspace-sidebar')).not.toHaveClass('workspace-sidebar--collapsed');
+    expect(container.querySelector('.workspace-sidebar-footer')).not.toBeNull();
+    expect(container.querySelector('.workspace-sidebar-link-label.sr-only')).toBeNull();
   });
 });
