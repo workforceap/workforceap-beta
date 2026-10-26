@@ -14,6 +14,7 @@ import {
   CheckCircle,
   ClipboardCheck,
   ClipboardList,
+  Contact,
   Compass,
   Download,
   FileText,
@@ -31,7 +32,6 @@ import {
   ListChecks,
   MessageSquare,
   Mic,
-  PlusCircle,
   Settings,
   Shield,
   Sparkles,
@@ -39,8 +39,8 @@ import {
   Target,
   Timer,
   TrendingUp,
-  Upload,
   User,
+  UserCog,
   Users,
   UsersRound,
 } from 'lucide-react';
@@ -114,7 +114,8 @@ export type PortalNavItem = {
   /**
    * Admin rail only: nests this row under the top-level row with that href
    * (same `group`). The rail shows it when its parent is opened or when it or
-   * a sibling is the current page; the collapsed icon rail lists it flat.
+   * a sibling is the current page. The collapsed icon rail leaves it out and
+   * highlights its parent while it is the current page.
    */
   parentHref?: string;
   /**
@@ -250,7 +251,10 @@ export const MEMBER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     aliases: ['/dashboard/ai-tools/application-tracker', '/applications'],
     badgeKey: 'applications_new',
   },
-  { href: '/dashboard/resume', label: 'Resume', group: 'workflows', tab: 'jobs', Icon: FileText },
+  {
+    href: '/dashboard/resume', label: 'Resume', group: 'workflows', tab: 'jobs', Icon: FileText,
+    aliases: ['/dashboard/ai-tools/resume-studio', '/dashboard/ai-tools/resume-analysis', '/dashboard/ai-tools/resume-rewriter', '/dashboard/ai-tools/resume-coach'],
+  },
   // ── Tools tab (AI Career Tools sits in primary; advisor/hub stay grouped) ──
   { href: '/dashboard/counselor', label: 'AI Advisor', group: 'workflows', tab: 'me', Icon: Mic },
   {
@@ -331,20 +335,17 @@ export const EMPLOYER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     tourTarget: 'tour-jobs',
     badgeKeys: ['jobs_draft', 'jobs_pending'],
   },
-  { href: '/employer/jobs/new', label: 'Post job', group: 'workflows', Icon: PlusCircle },
-  { href: '/employer/jobs/import', label: 'Imports', group: 'workflows', Icon: Upload },
   {
-    href: '/employer/applications',
-    label: 'Applicants',
+    href: '/employer/candidates',
+    label: 'Candidates',
     group: 'workflows',
     Icon: Users,
     tourTarget: 'tour-applicants',
+    aliases: ['/employer/applications', '/employer/matches', '/employer/pipeline'],
     // No badge (WAP-211): today's and 48h-stale pending applications already
     // count on Work queue, so a badge here lit two rows for one application.
     // The notification bell still lists "N new applicants" (all pending).
   },
-  { href: '/employer/matches', label: 'Match history', group: 'workflows', Icon: Sparkles, tourTarget: 'tour-matches' },
-  { href: '/employer/pipeline', label: 'Candidate pipeline', group: 'workflows', Icon: GitBranch, tourTarget: 'tour-pipeline' },
   {
     href: '/employer/messages',
     label: 'Messages',
@@ -377,16 +378,16 @@ export const PARTNER_PORTAL_NAV_ITEMS: PortalNavItem[] = [
     badgeKey: 'partner_needs_attention',
   },
   {
-    href: '/partner/milestones',
-    label: 'Milestones',
-    group: 'workflows',
-    Icon: Flag,
+    href: '/partner/impact',
+    label: 'Impact',
+    group: 'insights',
+    Icon: BarChart3,
+    aliases: ['/partner/outcomes', '/partner/milestones', '/partner/exports'],
+    tourTarget: 'tour-exports',
     badgeKey: 'milestones_new',
   },
   { href: '/partner/guide', label: 'Referral guide', group: 'workflows', Icon: ClipboardList },
-  { href: '/partner/outcomes', label: 'Outcomes snapshot', group: 'insights', Icon: BarChart3, tourTarget: 'tour-outcomes' },
   { href: '/partner/resources', label: 'Partner resources', group: 'manage', Icon: Layers },
-  { href: '/partner/exports', label: 'Exports', group: 'manage', Icon: Download, tourTarget: 'tour-exports' },
   {
     href: '/partner/messages',
     label: 'Messages',
@@ -453,7 +454,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   // Single entry → the full-kit roster (StudentsRosterKit). The legacy hub
   // (/admin/members) remains reachable via /admin/students?ui=legacy; the
   // flavored student lists and Invites nest under Students.
-  { href: '/admin/students', label: 'Students', group: 'dailyWork', Icon: Users, tourTarget: 'tour-students' },
+  { href: '/admin/students', label: 'Students', group: 'dailyWork', Icon: Users, tourTarget: 'tour-students', aliases: ['/admin/members'] },
   { href: '/admin/billing/preview', label: 'J5 / J6 preview', group: 'dailyWork', Icon: FileText, parentHref: '/admin/students' },
   { href: '/admin/subgroups', label: 'Subgroups', group: 'dailyWork', Icon: UsersRound, parentHref: '/admin/students' },
   { href: '/admin/chapters', label: 'Chapters', group: 'dailyWork', Icon: UsersRound, parentHref: '/admin/students' },
@@ -493,7 +494,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { href: '/admin/partners', label: 'Partners', group: 'partnersEmployers', Icon: Handshake },
   { href: '/admin/placements', label: 'Placements', group: 'partnersEmployers', Icon: Briefcase },
   { href: '/admin/placement-surveys', label: 'Placement surveys', group: 'partnersEmployers', Icon: ClipboardCheck, parentHref: '/admin/placements' },
-  { href: '/admin/counselors', label: 'Counselors', group: 'partnersEmployers', Icon: Users },
+  { href: '/admin/counselors', label: 'Counselors', group: 'partnersEmployers', Icon: Contact },
   { href: '/admin/mentors', label: 'Mentors', group: 'partnersEmployers', Icon: GraduationCap },
 
   // ── Reporting — one hub row; the pages it absorbs are its children ──
@@ -536,7 +537,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { href: '/admin/settings', label: 'Settings', group: 'system', Icon: Settings, requiresSuperAdminContext: true, tourTarget: 'tour-settings' },
   { href: '/admin/feature-flags', label: 'Feature flags', group: 'system', Icon: Flag, requiresSuperAdminContext: true, parentHref: '/admin/settings' },
   { href: '/admin/data-retention', label: 'Data retention', group: 'system', Icon: Shield, requiresSuperAdminContext: true, parentHref: '/admin/settings' },
-  { href: '/admin/users', label: 'Users', group: 'system', Icon: User, requiresSuperAdminContext: true },
+  { href: '/admin/users', label: 'Users', group: 'system', Icon: UserCog, requiresSuperAdminContext: true },
   { href: '/admin/audit-logs', label: 'Audit logs', group: 'system', Icon: Shield, requiresSuperAdminContext: true },
   { href: '/admin/csp-report', label: 'CSP reports', group: 'system', Icon: Shield, requiresSuperAdminContext: true, parentHref: '/admin/audit-logs' },
   { href: '/admin/exports', label: 'Exports', group: 'system', Icon: Download, requiresSuperAdminContext: true },
@@ -552,20 +553,19 @@ export const COUNSELOR_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   // Today is the landing page: one attention list from lib/attention. `/counselor` redirects here.
   // Badge (WAP-205): caseload threads with a member message unanswered 48h+,
   // which Today lists as its top attention reason (sla_breach_48h).
-  { href: '/counselor/today', label: 'Today', group: 'primary', Icon: CalendarCheck, aliases: ['/counselor'], badgeKey: 'counselor_sla_breach_48h' },
-  { href: '/counselor/overview', label: 'Overview', group: 'primary', Icon: Home },
-  { href: '/counselor/inbox', label: 'Inbox zero', group: 'workflows', Icon: ListChecks },
+  {
+    href: '/counselor/today', label: 'Today', group: 'primary', Icon: CalendarCheck,
+    aliases: ['/counselor', '/counselor/overview', '/counselor/inbox', '/counselor/queue', '/counselor/triage', '/counselor/at-risk', '/counselor/inactive-members'],
+    badgeKey: 'counselor_sla_breach_48h',
+  },
   { href: '/counselor/sessions', label: 'In-office sessions', group: 'workflows', Icon: Sparkles },
   { href: '/counselor/students', label: 'My members', group: 'workflows', Icon: Users, tourTarget: 'tour-nav-members' },
   { href: '/counselor/lab-reviews', label: 'Lab reviews', group: 'workflows', Icon: ClipboardCheck },
   // Badge (WAP-205): caseload threads with unread member messages, the same
   // count the counselor inbox uses (countUnreadMemberMessagesByThread).
   { href: '/counselor/messages', label: 'Messages', group: 'workflows', Icon: MessageSquare, tourTarget: 'tour-nav-messages', badgeKey: 'counselor_messages_unread' },
-  // Every reachable counselor route has a rail row; none is link-only (audit 2026-09-20).
-  { href: '/counselor/queue', label: 'Work queue', group: 'workflows', Icon: ListChecks },
-  { href: '/counselor/triage', label: 'Triage queue', group: 'workflows', Icon: AlertTriangle },
-  { href: '/counselor/at-risk', label: 'At-risk members', group: 'workflows', Icon: AlertTriangle, tourTarget: 'tour-nav-at-risk' },
-  { href: '/counselor/inactive-members', label: 'Inactive members', group: 'workflows', Icon: Users },
+  // Attention, replies, decisions, follow-up and overview are named Today views.
+  // Their existing URLs remain valid; each view keeps its own actions and filters.
   { href: '/counselor/placements', label: 'Placements', group: 'outcomes', Icon: Briefcase },
   { href: '/counselor/notifications', label: 'Notifications', group: 'manage', Icon: Bell, badgeKey: 'counselor_notifications_unread' },
   { href: '/counselor/profile', label: 'My profile', group: 'manage', Icon: User },

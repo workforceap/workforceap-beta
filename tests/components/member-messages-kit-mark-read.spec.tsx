@@ -63,7 +63,8 @@ describe('MemberMessagesKit read marker', () => {
   });
 
   it('marks the thread read on mount and refreshes the nav badge', async () => {
-    mount({ memberUserId: 'member-1', threadId: 'thread-1' });
+    const { container } = mount({ memberUserId: 'member-1', threadId: 'thread-1' });
+    expect(container.querySelector('form')?.className).toContain('messageComposer');
     await waitFor(() => expect(patchCalls()).toHaveLength(1));
     expect(patchCalls()[0]).toEqual(['/api/member/messages', { method: 'PATCH', credentials: 'include' }]);
     await waitFor(() => expect(refreshes).toBe(1));

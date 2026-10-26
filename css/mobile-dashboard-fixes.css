@@ -144,3 +144,15 @@
     padding-right: max(0px, env(safe-area-inset-right));
   }
 }
+
+/* ── Member phone tabs: fixed bottom bar (components/portal/MemberBottomTabs) ──
+   Page-level fixed footers (the mobile apply bar on a job) sit above the tab
+   bar instead of covering it. --member-bottom-tabs-h is declared in
+   css/portal-main-extracted.css. CSS-module class names are hashed, hence the
+   attribute selector on the original class name. */
+@media (max-width: 768px) {
+  html[data-portal-role="member"] [class*="_mobile-sticky-cta__"] {
+    bottom: calc(var(--member-bottom-tabs-h, 56px) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 12px;
+  }
+}

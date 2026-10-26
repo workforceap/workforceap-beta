@@ -20,6 +20,10 @@
  * the `session` tab. Page chrome is PageOpener + SegmentedControl on the shared
  * `--wa-bg-wave` wash (same as other member kits). Live-session panels stay dark
  * on purpose (`--wa-sidebar-*` / session tokens — not a second app header).
+ * Workspace tabs precede task shortcuts; preparation guidance stays available
+ * in a native disclosure so the phone view reaches the actual choices quickly.
+ * Text-bearing Resume Studio gradients use fixed deep hero colors so their
+ * foregrounds stay readable independently of the selected app theme.
  *
  * Animations (orb pulse, expanding rings, equalizer) are gated behind
  * prefers-reduced-motion: reduce. Focus rings use wa-kit-focus where on light
@@ -76,6 +80,8 @@ import { KitEmptyState } from '../KitEmptyState';
 import { StatusTag } from '../StatusTag';
 import { VoiceOrb } from '../VoiceOrb';
 import { KitLinkButton } from '@/components/portal/kit/KitLinkButton';
+import workspaceStyles from '@/components/portal/MemberWorkspace.module.css';
+import styles from './VoiceStudio.module.css';
 
 type StudioTab = 'coaches' | 'session' | 'studio' | 'toolkit';
 export type VoiceStudioAgentKey = 'readiness' | 'resume' | 'mock' | 'counselor' | 'business';
@@ -140,7 +146,7 @@ const SESSION_AGENTS: Record<VoiceStudioAgentKey, SessionAgentConfig> = {
     ...AGENT_ACCENT.crimson,
   },
   counselor: {
-    label: 'Lilley Career Coach',
+    label: 'Lilley · AI career coach',
     endpoint: '/api/counselor/session',
     dataUseNotice: LILLEY_DATA_USE_NOTICE,
     ...AGENT_ACCENT.blue,
@@ -160,14 +166,15 @@ const SESSION_AGENTS: Record<VoiceStudioAgentKey, SessionAgentConfig> = {
  */
 const TOOL_HREF = {
   'readiness-coach': '/dashboard/ai-tools/readiness-coach',
-  'resume-coach': '/dashboard/ai-tools/resume-coach',
+  'resume-coach': '/dashboard/resume?view=coach',
   counselor: '/dashboard/counselor',
   'career-business-coach': '/dashboard/ai-tools/career-business-coach',
   'elevator-pitch': '/dashboard/ai-tools/elevator-pitch',
-  'resume-studio': '/dashboard/ai-tools/resume-studio',
-  'resume-rewriter': '/dashboard/ai-tools/resume-rewriter',
+  'resume-studio': '/dashboard/resume',
+  'resume-rewriter': '/dashboard/resume?view=rewrite',
   'cover-letter': '/dashboard/ai-tools/cover-letter',
   'skill-checkpoints': '/dashboard/ai-tools/skill-checkpoints',
+  interviews: '/dashboard/ai-tools/interviews',
   'interview-practice': '/dashboard/ai-tools/interview-practice',
   'interview-coach': '/dashboard/ai-tools/interview-coach',
   'job-match-scorer': '/dashboard/ai-tools/job-match-scorer',
@@ -178,7 +185,10 @@ const TOOL_HREF = {
   'gap-analyzer': '/dashboard/ai-tools/gap-analyzer',
   'salary-negotiation': '/dashboard/ai-tools/salary-negotiation',
   'benefits-cliff': '/dashboard/ai-tools/benefits-cliff',
+  'human-messages': '/dashboard/messages',
 } as const;
+type ToolHrefKey = keyof typeof TOOL_HREF;
+type ToolHrefMap = Record<ToolHrefKey, string>;
 
 const TABS: Array<{ id: StudioTab; label: string }> = [
   { id: 'coaches', label: 'Coaches' },
@@ -215,6 +225,8 @@ export interface VoiceStudioKitProps {
   sessionPayload?: Record<string, unknown>;
   /** Which voice coach to retain when deep-linking to any tab. */
   initialAgent?: VoiceStudioAgentKey;
+  /** Optional route overrides for credential-free fixture destinations. */
+  destinationHrefs?: Partial<Record<ToolHrefKey, string>>;
 }
 
 export function VoiceStudioKit({
@@ -223,8 +235,11 @@ export function VoiceStudioKit({
   sessionEndpoint = '/api/interview/session',
   sessionPayload = { role: 'a general professional role', interviewType: 'behavioral' },
   initialAgent,
+  destinationHrefs,
 }: VoiceStudioKitProps) {
   const t = useTranslations('aiToolsDiscovery');
+  const ti = useTranslations('memberWorkspace.interviews');
+  const toolHrefs: ToolHrefMap = { ...TOOL_HREF, ...destinationHrefs };
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -347,27 +362,8 @@ export function VoiceStudioKit({
         className="wa-space-y-6"
       >
         <PageOpener
-          kicker="Tools & careers"
           title="AI Career Tools"
-          lede={t('hubIntro')}
-          icon={<AudioLines size={13} aria-hidden="true" />}
         />
-        {tab === 'coaches' ? (
-          <VStack as="section" gap={3} aria-labelledby="ai-tools-start-heading">
-            <h2 id="ai-tools-start-heading" className="wa-text-lg wa-font-bold">{t('startTitle')}</h2>
-            <p className="wa-kit-lede wa-m-0">
-              {t('startIntro')}
-            </p>
-            <HStack gap={3} wrap="wrap">
-              <KitLinkButton href={TOOL_HREF['resume-studio']} label={t('resume')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
-              <KitLinkButton href={TOOL_HREF['interview-practice']} label={t('interview')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
-              <KitLinkButton href={TOOL_HREF['cover-letter']} label={t('coverLetter')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
-            </HStack>
-            <p className="wa-kit-meta wa-m-0">
-              {t('preparation')}
-            </p>
-          </VStack>
-        ) : null}
         <div className="wa-page-tabs">
           <SegmentedControl
             value={tab}
@@ -381,16 +377,31 @@ export function VoiceStudioKit({
             ))}
           </SegmentedControl>
         </div>
+        {tab === 'coaches' ? (
+          <VStack as="section" gap={3} aria-labelledby="ai-tools-start-heading">
+            <h2 id="ai-tools-start-heading" className="wa-text-lg wa-font-bold">{t('startTitle')}</h2>
+            <HStack gap={3} wrap="wrap">
+              <KitLinkButton href={toolHrefs['resume-studio']} label={t('resume')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+              <KitLinkButton href={toolHrefs.interviews} label={ti('title')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+              <KitLinkButton href={toolHrefs['cover-letter']} label={t('coverLetter')} size="md" className="wa-min-h-11 wa-max-w-full wa-whitespace-normal wa-h-auto" />
+            </HStack>
+            <details className={styles.preparation}>
+              <summary className="wa-kit-focus">{t('preparationTitle')}</summary>
+              <p>{t('startIntro')}</p>
+              <p>{t('preparation')}</p>
+            </details>
+          </VStack>
+        ) : null}
         <div
           role="region"
           id={`vs-panel-${tab}`}
           aria-label={TABS.find((section) => section.id === tab)?.label}
           style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
         >
-          {tab === 'coaches' && <CoachesPanel onPick={pickAgent} />}
+          {tab === 'coaches' && <CoachesPanel onPick={pickAgent} toolHrefs={toolHrefs} />}
           {tab === 'session' && <SessionPanel key={selectedAgentKey ?? `fallback:${sessionEndpoint}`} agent={agent} />}
-          {tab === 'studio' && <StudioPanel data={resumeStudio} onResumeCoachNavigate={onResumeCoachNavigate} />}
-          {tab === 'toolkit' && <ToolkitPanel />}
+          {tab === 'studio' && <StudioPanel data={resumeStudio} onResumeCoachNavigate={onResumeCoachNavigate} toolHrefs={toolHrefs} />}
+          {tab === 'toolkit' && <ToolkitPanel toolHrefs={toolHrefs} />}
         </div>
       </div>
     </DesignSurface>
@@ -455,8 +466,8 @@ const COACH_CARDS: CoachCard[] = [
     variant: 'counselor',
     Icon: Headphones,
     badge: 'LILLEY',
-    title: 'Lilley Career Coach',
-    body: 'Knows your WorkforceAP plan, training status, and Coursera progress. Ends with a saved three-step action plan.',
+    title: 'Lilley · AI career coach',
+    body: 'Talk with an AI coach about your WorkforceAP plan, training, and next step. Use the full Lilley workspace for saved sessions and action plans.',
     ctaIcon: Mic,
     cta: 'Start session',
     agent: SESSION_AGENTS.counselor,
@@ -485,7 +496,8 @@ const COACH_CARDS: CoachCard[] = [
   },
 ];
 
-function CoachesPanel({ onPick }: { onPick: (agent: SessionAgentConfig) => void }) {
+function CoachesPanel({ onPick, toolHrefs }: { onPick: (agent: SessionAgentConfig) => void; toolHrefs: ToolHrefMap }) {
+  const t = useTranslations('memberWorkspace.ai');
   return (
     <section style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div className="wa-flex wa-items-center wa-justify-between wa-flex-wrap" style={{ gap: 12 }}>
@@ -509,8 +521,13 @@ function CoachesPanel({ onPick }: { onPick: (agent: SessionAgentConfig) => void 
 
       <div className="wa-grid wa-grid-cols-1 md:wa-grid-cols-2 lg:wa-grid-cols-3 wa-gap-5">
         {COACH_CARDS.map((c) => (
-          <CoachCardView key={c.key} card={c} onPick={onPick} />
+          <CoachCardView key={c.key} card={c.href ? { ...c, href: resolveToolHref(c.href, toolHrefs) } : c} onPick={onPick} />
         ))}
+      </div>
+      <div className={workspaceStyles.navigation}>
+        <Link href={toolHrefs['resume-coach']} className="wa-kit-focus">{t('openResumeCoach')}</Link>
+        <Link href={toolHrefs.counselor} className="wa-kit-focus">{t('lilley')}</Link>
+        <Link href={toolHrefs['human-messages']} className="wa-kit-focus">{t('humanLink')}</Link>
       </div>
     </section>
   );
@@ -528,7 +545,10 @@ const GOLD_CARD_SHADOW = '0 10px 15px -3px color-mix(in srgb, var(--wa-gold) 15%
 const DARK_CARD_SHADOW = '0 10px 15px -3px color-mix(in srgb, var(--wa-sidebar-bg) 20%, transparent)';
 
 function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: SessionAgentConfig) => void }) {
-  const { variant, Icon, badge, title, body, ctaIcon: Cta, cta } = card;
+  const t = useTranslations('memberWorkspace.ai');
+  const { variant, Icon, badge, title: originalTitle, body: originalBody, ctaIcon: Cta, cta } = card;
+  const title = card.key === 'counselor' ? t('lilley') : originalTitle;
+  const body = card.key === 'counselor' ? t('lilleyDescription') : originalBody;
 
   // Per-variant styling roles, pulled from the mockup.
   const isLightBody = variant === 'counselor' || variant === 'gold-light';
@@ -562,7 +582,7 @@ function CoachCardView({ card, onPick }: { card: CoachCard; onPick: (agent: Sess
       break;
     case 'dark':
       cardStyle = { background: 'var(--wa-sidebar-bg)', color: 'var(--wa-sidebar-text)', border: '1px solid var(--wa-sidebar-border)', boxShadow: DARK_CARD_SHADOW };
-      iconChip = { background: 'var(--wa-accent)' };
+      iconChip = { background: 'var(--wa-accent-fill)' };
       bodyColor = 'rgba(255,255,255,0.9)';
       break;
     case 'gold-light':
@@ -686,7 +706,9 @@ function formatClock(totalSeconds: number): string {
  * live session, not canned content.
  */
 function SessionPanel({ agent }: { agent: SessionAgentConfig }) {
-  const { label, endpoint, payload, accent, accentDark, solid, askRole, dataUseNotice } = agent;
+  const t = useTranslations('memberWorkspace.ai');
+  const { label: originalLabel, endpoint, payload, accent, accentDark, solid, askRole, dataUseNotice } = agent;
+  const label = agent === SESSION_AGENTS.counselor ? t('lilley') : originalLabel;
   const [phase, setPhase] = useState<SessionPhase>('idle');
   const [error, setError] = useState('');
   const [agentSpeaking, setAgentSpeaking] = useState(false);
@@ -1330,7 +1352,8 @@ function scoreBand(score: number): { color: string; label: string } {
   return { color: 'var(--wa-accent)', label: 'Needs work — start with the fixes below' };
 }
 
-function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; onResumeCoachNavigate: () => void }) {
+function StudioPanel({ data, onResumeCoachNavigate, toolHrefs }: { data: ResumeStudioData; onResumeCoachNavigate: () => void; toolHrefs: ToolHrefMap }) {
+  const t = useTranslations('memberWorkspace.ai');
   const hasResume = data.hasResume;
   const score =
     typeof data.structuralScore === 'number'
@@ -1350,10 +1373,10 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
       <div
         className="wa-flex-col md:wa-flex-row"
         style={{
-          background: 'linear-gradient(to bottom right, var(--wa-accent), var(--wa-accent-dark))',
+          background: 'linear-gradient(to bottom right, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))',
           borderRadius: 24,
           padding: 'clamp(20px, 5vw, 28px)',
-          color: 'var(--wa-on-accent)',
+          color: 'var(--wa-on-hero)',
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
@@ -1369,7 +1392,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
               fontWeight: 700,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.7)',
+              color: 'var(--wa-on-hero)',
               display: 'flex',
               alignItems: 'center',
               gap: 8,
@@ -1382,14 +1405,14 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
           <h2 className="h-font" style={{ fontSize: 'clamp(22px, 6vw, 30px)', marginTop: 4, fontWeight: 800, letterSpacing: '-0.03em' }}>
             Resume Studio
           </h2>
-          <p style={{ fontSize: 'var(--wa-type-body)', color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>
+          <p style={{ fontSize: 'var(--wa-type-body)', color: 'var(--wa-on-hero)', marginTop: 4 }}>
             {hasResume
               ? 'Your instant structural read and top fixes — then full AI scoring, rewrites, and voice coaching.'
               : 'Add your resume to get an instant structural read, full AI scoring, and rewrites.'}
           </p>
         </div>
         <KitLinkButton
-          href={hasResume ? TOOL_HREF['resume-studio'] + '?view=score' : TOOL_HREF['resume-studio']}
+          href={hasResume ? toolHrefs['resume-studio'] + '?view=score' : toolHrefs['resume-studio']}
           label={hasResume ? 'Open full analysis' : 'Add résumé'}
           variant="primary"
           size="sm"
@@ -1397,6 +1420,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
         />
       </div>
 
+      <p className={workspaceStyles.context}>{t('resumeCoachContext')} <Link href={toolHrefs['resume-coach']} className="wa-page-action wa-kit-focus">{t('openResumeCoach')}</Link></p>
       {hasResume && score !== null ? (
         <>
           {/* score + fixes */}
@@ -1446,7 +1470,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
               {issues.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {issues.map((issue, i) => (
-                    <IssueRow key={i} issue={issue} />
+                    <IssueRow key={i} issue={issue} toolHrefs={toolHrefs} />
                   ))}
                 </div>
               ) : (
@@ -1476,8 +1500,8 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
                 Scores this resume against job-market keywords and O*NET skills, then rewrites weak bullets.
               </p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 'auto' }}>
-                <KitLinkButton href={TOOL_HREF['resume-studio'] + '?view=score'} label="Run full analysis" variant="primary" size="sm" icon={<Sparkles size={14} aria-hidden="true" />} />
-                <KitLinkButton href={TOOL_HREF['resume-rewriter']} label="Rewrite a bullet" variant="secondary" size="sm" />
+                <KitLinkButton href={toolHrefs['resume-studio'] + '?view=score'} label="Run full analysis" variant="primary" size="sm" icon={<Sparkles size={14} aria-hidden="true" />} />
+                <KitLinkButton href={toolHrefs['resume-rewriter']} label="Rewrite a bullet" variant="secondary" size="sm" />
               </div>
               </div>
             </Card>
@@ -1490,8 +1514,8 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
               className="wa-kit-focus vs-hero-card"
               style={{
                 textAlign: 'left',
-                background: 'linear-gradient(to bottom right, var(--wa-accent), var(--wa-accent-dark))',
-                color: 'var(--wa-on-accent)',
+                background: 'linear-gradient(to bottom right, var(--wa-hero-crimson), var(--wa-hero-crimson-dark))',
+                color: 'var(--wa-on-hero)',
                 borderRadius: 24,
                 padding: 'clamp(20px, 5vw, 28px)',
                 display: 'flex',
@@ -1508,7 +1532,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
                   <Sparkles size={20} aria-hidden="true" />
                 </div>
                 <h3 style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em', marginTop: 16 }}>Resume coach</h3>
-                <p style={{ fontSize: 'var(--wa-type-meta)', color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>
+                <p style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-on-hero)', marginTop: 4 }}>
                   Voice session with this resume loaded.
                 </p>
               </div>
@@ -1526,7 +1550,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
             title="No resume on file"
             description="Add a resume to see a structure score, top fixes, and keyword analysis."
             action={
-              <Link href={TOOL_HREF['resume-studio']} className="wa-kit-cta wa-kit-focus hover:wa-opacity-90">
+              <Link href={toolHrefs['resume-studio']} className="wa-kit-cta wa-kit-focus hover:wa-opacity-90">
                 <Upload size={14} aria-hidden="true" />
                 Add resume
               </Link>
@@ -1538,7 +1562,7 @@ function StudioPanel({ data, onResumeCoachNavigate }: { data: ResumeStudioData; 
   );
 }
 
-function IssueRow({ issue }: { issue: ResumeStudioIssue }) {
+function IssueRow({ issue, toolHrefs }: { issue: ResumeStudioIssue; toolHrefs: ToolHrefMap }) {
   const { title, detail } = issue;
   return (
     <Card>
@@ -1562,7 +1586,7 @@ function IssueRow({ issue }: { issue: ResumeStudioIssue }) {
           <div style={{ fontWeight: 700, fontSize: 'var(--wa-type-meta)' }}>{title}</div>
           <div style={{ fontSize: 'var(--wa-type-meta)', color: 'var(--wa-muted)' }}>{detail}</div>
         </div>
-        <KitLinkButton href={TOOL_HREF['resume-rewriter']} label="Fix with AI" variant="primary" size="sm" />
+        <KitLinkButton href={toolHrefs['resume-rewriter']} label="Fix with AI" variant="primary" size="sm" />
       </div>
     </Card>
   );
@@ -1597,7 +1621,7 @@ const TOOLKIT_STEPS: ToolStep[] = [
     label: 'Resume',
     title: 'Get applications ready',
     tools: [
-      { Icon: FileText, title: 'Resume Studio', body: 'Score, rewrite & talk through your resume.', tag: 'BETA', href: TOOL_HREF['resume-studio'] },
+      { Icon: FileText, title: 'Resume', body: 'Files, scoring, improvements, and your AI resume coach.', tag: 'BETA', href: TOOL_HREF['resume-studio'] },
       { Icon: MailOpen, title: 'Cover Letter', body: 'Tailored to any saved job in seconds.', href: TOOL_HREF['cover-letter'] },
       { Icon: CheckCircle2, title: 'Skill Checkpoints', body: "Verify what you've actually mastered.", href: TOOL_HREF['skill-checkpoints'] },
     ],
@@ -1607,11 +1631,10 @@ const TOOLKIT_STEPS: ToolStep[] = [
     label: 'Interview',
     title: 'Prep and target the role',
     tools: [
-      { Icon: AudioLines, title: 'Interview Practice', body: 'Live mock interviews with voice coaching.', tag: 'VOICE', href: TOOL_HREF['interview-practice'] },
-      { Icon: Headset, title: 'Interview Coach', body: 'Question-by-question guidance.', href: TOOL_HREF['interview-coach'] },
+      { Icon: AudioLines, title: 'Interviews', body: 'Prepare answers, practice with AI, record a mock, or assemble your prep bundle.', href: TOOL_HREF.interviews },
       { Icon: Search, title: 'Job Match Scorer', body: 'See how you match a specific job.', href: TOOL_HREF['job-match-scorer'] },
       { Icon: Network, title: 'Skill Mapper', body: 'Find skills employers want.', href: TOOL_HREF['skill-mapper'] },
-      { Icon: Route, title: 'Training Bridge', body: 'Map missing skills to free training.', tag: 'BETA', href: TOOL_HREF['training-bridge'] },
+      { Icon: Route, title: 'Training Bridge', body: 'Connect a saved target occupation to training options.', tag: 'BETA', href: TOOL_HREF['training-bridge'] },
     ],
   },
   {
@@ -1641,7 +1664,7 @@ function ToolkitToolTag({ tag }: { tag: ToolTag }) {
   }
 }
 
-function ToolkitPanel() {
+function ToolkitPanel({ toolHrefs }: { toolHrefs: ToolHrefMap }) {
   // Computed (not hardcoded) so the count can never drift from what's
   // actually rendered below as tools are added or removed from a step.
   const toolCount = TOOLKIT_STEPS.reduce((n, step) => n + step.tools.length, 0);
@@ -1690,7 +1713,7 @@ function ToolkitPanel() {
             <ul className="wa-kit-toolkit-list">
               {step.tools.map((tool) => (
                 <li key={tool.title}>
-                  <ToolCardView tool={tool} />
+                  <ToolCardView tool={tool} toolHrefs={toolHrefs} />
                 </li>
               ))}
             </ul>
@@ -1701,11 +1724,20 @@ function ToolkitPanel() {
   );
 }
 
-function ToolCardView({ tool }: { tool: ToolCard }) {
-  const { Icon, title, body, tag, href } = tool;
+function resolveToolHref(href: string, toolHrefs: ToolHrefMap): string {
+  const key = (Object.keys(TOOL_HREF) as ToolHrefKey[]).find((candidate) => TOOL_HREF[candidate] === href);
+  return key ? toolHrefs[key] : href;
+}
+
+function ToolCardView({ tool, toolHrefs }: { tool: ToolCard; toolHrefs: ToolHrefMap }) {
+  const t = useTranslations('memberWorkspace');
+  const { Icon, title: originalTitle, body: originalBody, tag, href } = tool;
+  const title = href === TOOL_HREF.interviews ? t('interviews.title') : href === TOOL_HREF['resume-studio'] ? t('resume.metaTitle') : originalTitle;
+  const body = href === TOOL_HREF.interviews ? t('ai.interviewDirectory') : href === TOOL_HREF['resume-studio'] ? t('ai.resumeDirectory') : href === TOOL_HREF['training-bridge'] ? t('ai.trainingDirectory') : originalBody;
+  const destinationHref = resolveToolHref(href, toolHrefs);
 
   return (
-    <Link href={href} className="wa-kit-toolkit-row wa-kit-focus">
+    <Link href={destinationHref} className="wa-kit-toolkit-row wa-kit-focus">
       <span className="wa-kit-toolkit-row__icon" aria-hidden="true">
         <Icon size={18} />
       </span>

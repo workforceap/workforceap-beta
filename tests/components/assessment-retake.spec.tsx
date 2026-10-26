@@ -88,6 +88,37 @@ describe('staff final assessment retake control', () => {
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancel' }));
     expect(fetchMock).not.toHaveBeenCalled();
   });
+  it.each([
+    ['missing acknowledgement', () => Response.json({ message: 'Done' })],
+    ['negative acknowledgement', () => Response.json({ ok: false })],
+    ['unreadable acknowledgement', () => new Response('<html>Temporary response</html>', { status: 200 })],
+    ['null acknowledgement', () => Response.json(null)],
+  ])('does not claim authorization after a successful HTTP response with %s', async (_label, response) => {
+    fetchMock.mockResolvedValue(response());
+    const { container, rerender } = render(<AllowAssessmentRetakeButton {...props} attemptCount={1} />);
+    fireEvent.click(screen.getByTestId('allow-assessment-retake'));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Request final retake' }));
+    expect(await within(container).findByRole('alert')).toHaveTextContent('Retake authorization could not be confirmed');
+    expect(screen.getByTestId('allow-assessment-retake')).toHaveTextContent('Request final retake');
+    expect(screen.getByTestId('allow-assessment-retake')).toBeEnabled();
+    expect(within(container).getByText(/Final retake is not yet authorized/)).toBeInTheDocument();
+    expect(nav.refresh).toHaveBeenCalledOnce();
+    expect(fetchMock).toHaveBeenCalledOnce();
+
+    // Only refreshed, server-owned permission can resolve an uncertain response.
+    rerender(<AllowAssessmentRetakeButton {...props} attemptCount={1} pending />);
+    expect(screen.getByTestId('allow-assessment-retake')).toBeDisabled();
+    expect(within(container).getByText(/Final retake authorized/)).toBeInTheDocument();
+    expect(within(container).queryByRole('alert')).toBeNull();
+  });
+  it('uses a safe confirmation when the acknowledged response has a non-text message', async () => {
+    fetchMock.mockResolvedValue(Response.json({ ok: true, message: { unexpected: true } }));
+    const { container } = render(<AllowAssessmentRetakeButton {...props} attemptCount={1} />);
+    fireEvent.click(screen.getByTestId('allow-assessment-retake'));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Request final retake' }));
+    expect(await within(container).findByRole('status')).toHaveTextContent('Final retake authorized.');
+    expect(screen.getByTestId('allow-assessment-retake')).toBeDisabled();
+  });
   it('shows a refused save and allows retry', async () => {
     fetchMock.mockResolvedValue(Response.json({ error: 'Both attempts used.' }, { status: 409 }));
     const { container } = render(<AllowAssessmentRetakeButton {...props} />);

@@ -1,11 +1,15 @@
 process.env.TZ = 'UTC';
 
-import { renderToStaticMarkup } from 'react-dom/server';
+import { renderToStaticMarkup as renderStatic } from 'react-dom/server';
+import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import messages from '@/messages/en.json';
 
 vi.mock('next/navigation', () => ({
   redirect: vi.fn((url: string) => { throw new Error(`REDIRECT:${url}`); }),
   notFound: vi.fn(() => { throw new Error('NOT_FOUND'); }),
+  usePathname: () => '/employer/candidates/student-1',
+  useSearchParams: () => new URLSearchParams(),
 }));
 vi.mock('next/link', () => ({
   default: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a>,
@@ -36,6 +40,10 @@ import { getEmployerForUser } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 
 const INSTANT = new Date('2026-09-19T02:30:00Z'); // 9:30 PM CDT, Sep 18
+
+function renderToStaticMarkup(node: React.ReactNode) {
+  return renderStatic(<NextIntlClientProvider locale="en" messages={messages} timeZone="America/Chicago">{node}</NextIntlClientProvider>);
+}
 
 describe('EmployerCandidateProfilePage timestamps', () => {
   beforeEach(() => {
@@ -71,5 +79,16 @@ describe('EmployerCandidateProfilePage timestamps', () => {
     expect(html).toContain('Applied Sep 18, 2026, 9:30 PM CDT');
     expect(html).not.toContain('2:30 AM');
     expect(html).not.toContain('Sep 19');
+  });
+
+  it('opens the actual application record when the candidate has applied without an AI match', async () => {
+    vi.mocked(prisma.aIJobMatch.findMany).mockResolvedValue([] as never);
+    vi.mocked(prisma.aIJobMatch.count).mockResolvedValue(0 as never);
+    const html = renderToStaticMarkup(
+      await EmployerCandidateProfilePage({ params: Promise.resolve({ studentId: 'student-1' }), searchParams: Promise.resolve({}) }),
+    );
+    const document = new DOMParser().parseFromString(html, 'text/html');
+    const applicationLink = Array.from(document.querySelectorAll('a')).find((link) => link.textContent === 'Open latest application');
+    expect(applicationLink?.getAttribute('href')).toBe('/employer/applications/app-1');
   });
 });

@@ -66,7 +66,7 @@
 | `NEXT_PUBLIC_SITE_URL` | 🔴 👁️ | Canonical public URL for links, redirects, emails | `https://www.workforceap.org` | `middleware.ts`, email, auth, Coursera |
 | `NEXT_PUBLIC_BASE_URL` | 🟢 👁️ | Alternate base URL fallback | `https://www.workforceap.org` | Smoke-test cron |
 | `VERCEL_URL` | — | Vercel auto-provided deploy URL | `wap-abc123.vercel.app` | Site URL fallback |
-| `VERCEL_ENV` | — | Vercel environment name | `production` | Sentry env fallback |
+| `VERCEL_ENV` | — | Vercel environment name | `production` | Sentry env fallback; the `/dev/*` sample screens return 404 when it is `production`, so a production deployment outside Vercel must set it |
 | `NEXT_PUBLIC_VERCEL_ENV` | 🟢 👁️ | Exposed Vercel env for client checks | `production` | Sentry client config |
 
 ---

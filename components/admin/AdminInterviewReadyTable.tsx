@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { useRouter } from 'next/navigation';
 
 import DataTable from '@/components/portal/ui/DataTable';
@@ -78,7 +78,7 @@ export default function AdminInterviewReadyTable({ rows }: { rows: InterviewRead
               header: 'Member',
               cell: (r) => (
                 <>
-                  <Link href={`/admin/members/${r.id}`}>{r.fullName}</Link>
+                  <PortalRecordLink href={`/admin/members/${r.id}`}>{r.fullName}</PortalRecordLink>
                   <div style={{ fontSize: '0.8125rem', color: 'var(--color-on-surface-variant)' }}>{r.email}</div>
                 </>
               ),

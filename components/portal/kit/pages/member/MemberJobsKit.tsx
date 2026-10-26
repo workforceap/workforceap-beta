@@ -1,9 +1,9 @@
-import { Compass } from 'lucide-react';
 import NextLink from 'next/link';
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { DesignSurface, KpiStrip, DataTable, StatusTag, PageOpener, JobListingRow, KitEmptyState, type Column, type KitTone } from '@/components/portal/kit';
 import { JOBS_BOARD_EMPTY } from '@/lib/member/jobPipelineDisplay';
+import styles from './memberPages.module.css';
 
 /**
  * Member Portal — JOB PIPELINE view.
@@ -67,6 +67,8 @@ export interface MemberJobsKitProps {
   /** Where "Browse openings" / "Browse jobs" go. Defaults to the in-page open-roles list. */
   browseHref?: string;
   profileHref?: string;
+  /** Destination for the help route in the no-openings empty state. */
+  messagesHref?: string;
   /** Match-row destination. Proofs pass a hash so they stay on /dev/member. */
   jobHref?: (jobId: string) => string;
   applications?: ApplicationRow[];
@@ -116,6 +118,7 @@ export function MemberJobsKit({
   syncedLabel,
   browseHref = JOBS_OPEN_ROLES_ANCHOR,
   profileHref = '/dashboard/profile',
+  messagesHref = JOBS_BOARD_EMPTY.secondaryHref,
   jobHref = (id: string) => `/dashboard/jobs/${id}`,
   applications = [],
   recommended = [],
@@ -128,6 +131,8 @@ export function MemberJobsKit({
   retryHref = '/dashboard/jobs',
 }: MemberJobsKitProps) {
   const t = useTranslations('empty');
+  const tDashboard = useTranslations('dashboard');
+  const tm = useTranslations('memberJobs');
   const openRolesCount = Math.max(openRolesTotal ?? 0, openRoles.length);
   const columns: Column<ApplicationRow>[] = [
     { key: 'role', header: 'Role', render: (r) => <span style={{ fontWeight: 700 }}>{r.role}</span> },
@@ -137,8 +142,9 @@ export function MemberJobsKit({
     { key: 'stage', header: 'Stage', align: 'right', render: (r) => <StatusTag tone={r.tone}>{r.stage}</StatusTag> },
   ];
   const applicationCard = (row: ApplicationRow) => (
-    <div className="wa-kit-card wa-kit-card--sm">
-      {/* Phones: stack the stage tag under the role. Side by side, the nowrap
+    <div className={styles.applicationRow}>
+      {/* Phones: a hairline row, not a card inside the Applications card.
+          Stack the stage tag under the role. Side by side, the nowrap
           tag took ~104px of the 226px row and squeezed the role column to
           110px, wrapping every title onto 2-3 lines and breaking the applied
           date across lines ("Jun" / "12"). Row layout returns at >=768px. */}
@@ -155,16 +161,27 @@ export function MemberJobsKit({
     </div>
   );
 
+  // One contextual sentence from the pipeline counts the route already loaded.
+  const pipelineTotal = saved + applied + interviewing + offers;
+  const openerMeta = pipelineLoadFailed || pipelineTotal === 0
+    ? 'Applications, matches, next interviews.'
+    : `${applied} applied, ${interviewing} interviewing, ${saved} saved.`;
+
   return (
     <DesignSurface surface="warm">
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: 'var(--wa-pad-sm)' }} className="wa-space-y-6">
         <PageOpener
-          kicker="Job search"
-          title="Job board"
-          lede="Applications, matches, next interviews."
-          icon={<Compass size={13} aria-hidden="true" />}
+          title={tDashboard('jobBoard')}
+          meta={openerMeta}
+          aside={
+            <div className="wa-flex wa-items-center wa-gap-2 wa-flex-wrap">
+              <JobsCta href={browseHref} variant="secondary">{t('applications.action')}</JobsCta>
+              <NextLink href="#applications" className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus">{tm('viewApplications')}</NextLink>
+            </div>
+          }
         />
         <KpiStrip
+          aria-label={tDashboard('jobApplicationsMetaTitle')}
           items={(
             [
               ['Saved', saved],
@@ -179,51 +196,11 @@ export function MemberJobsKit({
           )}
         />
 
-        <div className="wa-kit-card">
-          <div className="wa-flex wa-flex-col md:wa-flex-row md:wa-items-center wa-justify-between wa-gap-3" style={{ marginBottom: 16 }}>
-            <div>
-              <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em' }}>Applications</h2>
-              {syncedLabel && !pipelineLoadFailed ? <p className="wa-kit-meta">{syncedLabel}</p> : null}
-            </div>
-            {applications.length > 0 ? <JobsCta href={browseHref}>Browse openings</JobsCta> : null}
-          </div>
-          {/* The empty state is the card's own branch: the table below only mounts with rows, so it carries no `empty` prop. */}
-          {pipelineLoadFailed ? (
-            <KitEmptyState
-              kind="unavailable"
-              title={t('applicationsUnavailable.title')}
-              description={t('applicationsUnavailable.body')}
-              primaryAction={{ label: t('applicationsUnavailable.action'), href: retryHref }}
-              data-testid="member-jobs-applications-load-failed"
-            />
-          ) : applications.length === 0 ? (
-            <KitEmptyState
-              kind="first"
-              title={t('applications.title')}
-              description={t('applications.body')}
-              primaryAction={{ label: t('applications.action'), href: browseHref }}
-            />
-          ) : (
-            <DataTable<ApplicationRow>
-              columns={columns}
-              rows={applications}
-              rowKey={(r) => r.id}
-              mobile="cards"
-              cardRender={applicationCard}
-              minWidth={560}
-            />
-          )}
-        </div>
-
         <section id="open-roles" aria-labelledby="open-roles-heading" style={{ scrollMarginTop: 96 }}>
-          <div className="wa-flex wa-items-end wa-justify-between wa-gap-3 wa-flex-wrap" style={{ marginBottom: 16 }}>
-            <h2 id="open-roles-heading" style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', margin: 0 }}>
-              Open roles
-            </h2>
+          <div className={`wa-kit-card__head ${styles.sectionHead}`}>
+            <h2 id="open-roles-heading" className="wa-kit-card-title">Open roles</h2>
             {openRolesCount > 0 && !openRolesLoadFailed ? (
-              <p className="wa-kit-meta" style={{ margin: 0, fontVariantNumeric: 'tabular-nums' }}>
-                {openRolesCount} live opening{openRolesCount === 1 ? '' : 's'}
-              </p>
+              <p className="wa-kit-card-count">{openRolesCount} live opening{openRolesCount === 1 ? '' : 's'}</p>
             ) : null}
           </div>
           {openRolesLoadFailed ? (
@@ -242,12 +219,12 @@ export function MemberJobsKit({
                 kind={JOBS_BOARD_EMPTY.kind}
                 title={t('openings.title')}
                 description={t('openings.body')}
-                primaryAction={{ label: t('openings.action'), href: JOBS_BOARD_EMPTY.primaryHref }}
-                secondaryAction={{ label: t('openings.secondary'), href: JOBS_BOARD_EMPTY.secondaryHref }}
+                primaryAction={{ label: t('openings.action'), href: profileHref }}
+                secondaryAction={{ label: t('openings.secondary'), href: messagesHref }}
               />
             </div>
           ) : (
-            <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }} data-testid="open-roles-list">
+            <div className="wa-kit-card wa-kit-card--flush" data-testid="open-roles-list">
               {openRoles.map((job, i) => (
                 <JobListingRow
                   key={job.id}
@@ -290,8 +267,45 @@ export function MemberJobsKit({
           ) : null}
         </section>
 
-        <div>
-          <h2 style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.02em', marginBottom: 16 }}>Recommended</h2>
+        <section id="applications" className="wa-kit-card" aria-labelledby="applications-heading">
+          <div className="wa-kit-card__head">
+            <div>
+              <h2 id="applications-heading" className="wa-kit-card-title">Applications</h2>
+              {syncedLabel && !pipelineLoadFailed ? <p className="wa-kit-card-sub">{syncedLabel}</p> : null}
+            </div>
+          </div>
+          {/* The empty state is the card's own branch: the table below only mounts with rows, so it carries no `empty` prop. */}
+          {pipelineLoadFailed ? (
+            <KitEmptyState
+              kind="unavailable"
+              title={t('applicationsUnavailable.title')}
+              description={t('applicationsUnavailable.body')}
+              primaryAction={{ label: t('applicationsUnavailable.action'), href: retryHref }}
+              data-testid="member-jobs-applications-load-failed"
+            />
+          ) : applications.length === 0 ? (
+            <KitEmptyState
+              kind="first"
+              title={t('applications.title')}
+              description={t('applications.body')}
+              primaryAction={{ label: t('applications.action'), href: browseHref }}
+            />
+          ) : (
+            <DataTable<ApplicationRow>
+              columns={columns}
+              rows={applications}
+              rowKey={(r) => r.id}
+              mobile="cards"
+              cardRender={applicationCard}
+              minWidth={560}
+            />
+          )}
+        </section>
+
+        <section aria-labelledby="recommended-heading">
+          <div className={`wa-kit-card__head ${styles.sectionHead}`}>
+            <h2 id="recommended-heading" className="wa-kit-card-title">Recommended</h2>
+          </div>
           {recommendationsLoadFailed ? (
             <div className="wa-kit-card">
               <KitEmptyState
@@ -314,7 +328,7 @@ export function MemberJobsKit({
               />
             </div>
           ) : (
-            <div className="wa-kit-card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div className="wa-kit-card wa-kit-card--flush">
               {recommended.map((job, i) => (
                 <JobListingRow
                   key={job.id}
@@ -332,7 +346,7 @@ export function MemberJobsKit({
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
     </DesignSurface>
   );

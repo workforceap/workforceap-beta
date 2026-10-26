@@ -122,9 +122,10 @@ import {
           totalSkills = skills.length;
         }
   
+        let resultId: string | null = null;
         try {
           await ensureUserInDb(user);
-          await saveAIToolResult(
+          resultId = await saveAIToolResult(
             user.id,
             'skill_assessment',
             `Skill mapper lookup (${code})`,
@@ -157,6 +158,7 @@ import {
           totalSkills,
           matchedPrograms,
           demo: usingDemo,
+          resultId,
           ...(process.env.NODE_ENV === 'development' ? {
             unmatchedAxes: radarData.filter(a => !a.hasData).map(a => a.axis),
             usedFallbackDesign: fallbackDesignScore !== undefined && radarData.find(a => a.axis === 'Design')?.value === fallbackDesignScore,

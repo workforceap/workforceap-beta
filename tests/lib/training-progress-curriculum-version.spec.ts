@@ -24,7 +24,8 @@ describe('training progress curriculum-version propagation', () => {
     'lib/partner/attentionQueue.ts',
     'lib/analytics/quarterlyOutcomes.ts',
     'lib/analytics/partnerQuarterlyOutcomes.ts',
-    'app/admin/members/job-ready/page.tsx',
+    // Legacy routes and the consolidated workspaces share these query-owning views.
+    'components/admin/workspace/MemberJobReadyView.tsx',
     'app/admin/partners/[id]/page.tsx',
     'app/admin/subgroups/[id]/page.tsx',
     'app/api/admin/subgroups/[id]/members/route.ts',
@@ -32,7 +33,7 @@ describe('training progress curriculum-version propagation', () => {
     'app/api/subgroup/members/route.ts',
     'app/api/subgroup/dashboard/route.ts',
     'app/api/cron/partner-outcome-digest/route.ts',
-    'app/(portal)/counselor/overview/page.tsx',
+    'components/portal/counselor/workspace/CounselorOverviewView.tsx',
     'app/(portal)/counselor/students/page.tsx',
     'app/(portal)/dashboard/career-brief/page.tsx',
     'app/api/admin/export/members/_membersExportQuery.ts',
@@ -55,7 +56,7 @@ describe('training progress curriculum-version propagation', () => {
   });
 
   it.each([
-    'app/admin/members/page.tsx',
+    'components/admin/workspace/MemberManagementView.tsx',
     'app/(portal)/counselor/students/[memberId]/page.tsx',
     'app/api/admin/export/members/route.ts',
   ])('%s renders the assigned version instead of a static denominator', (path) => {

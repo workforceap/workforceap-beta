@@ -11,10 +11,11 @@ import JsonLd from '@/components/JsonLd';
 import ConditionalMarketingNav from '@/components/ConditionalMarketingNav';
 import OrgBrandingStyle from '@/components/platform/OrgBrandingStyle';
 import ThemeInitScript from '@/components/theme/ThemeInitScript';
+import EarlyShellTapScript from '@/components/portal/EarlyShellTapScript';
 import UtmCapture from '@/components/marketing/UtmCapture';
 import { Suspense } from 'react';
 import { getRequestOrgBranding } from '@/lib/platform/defaultOrgTheme';
-import { WAP_RESERVE_MOBILE_BOTTOM_NAV_HEADER } from '@/lib/nav/mobileBottomNavLayout';
+import { isMemberWorkspacePath, WAP_RESERVE_MOBILE_BOTTOM_NAV_HEADER } from '@/lib/nav/mobileBottomNavLayout';
 import { WAP_PAID_APPLY_HEADER } from '@/lib/apply/paidApplyUtm';
 import { CSP_NONCE_HEADER } from '@/lib/security/csp';
 import {
@@ -193,7 +194,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const htmlLang = rawLang && isAppLocale(rawLang) ? rawLang : DEFAULT_LOCALE;
   const htmlDir = isRtlLocale(htmlLang) ? 'rtl' : 'ltr';
   const messages = pickRootClientMessages(await getMessages());
+  // Skip links render before any provider, so read the strings from the root slice
+  // (`nav` is a root chrome namespace) and fall back to English if it is absent.
+  const navCopy = (messages as { nav?: Record<string, unknown> }).nav;
+  const skipCopy = (key: 'skipToMain' | 'skipToNavigation', fallback: string) =>
+    typeof navCopy?.[key] === 'string' ? (navCopy[key] as string) : fallback;
   const reserveMobileBottomNav = h.get(WAP_RESERVE_MOBILE_BOTTOM_NAV_HEADER) === '1';
+  const memberWorkspacePath = isMemberWorkspacePath(h.get('x-pathname') ?? '');
   const hidePaidApplyMarketingNav = Boolean(h.get(WAP_PAID_APPLY_HEADER));
   const htmlClassName = reserveMobileBottomNav ? 'wap-reserve-mobile-bottom-nav' : undefined;
   // Per-request CSP nonce minted in middleware (WAP-36 phase 1). Stamped on
@@ -211,14 +218,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <head>
         <ThemeInitScript nonce={cspNonce} />
+        {/* Records phone-menu taps that land before hydration so the portal shell
+            can replay them once it mounts (lib/portal/earlyShellTap.ts). */}
+        <EarlyShellTapScript nonce={cspNonce} />
         {/* Inline nonce-bearing scripts carry suppressHydrationWarning: browsers
             blank the `nonce` attribute under a header-delivered CSP, which React
-            dev otherwise reports as a hydration mismatch (see ThemeInitScript). */}
+            dev otherwise reports as a hydration mismatch (see ThemeInitScript).
+            Keep the recovery marker across document loads. Without durable
+            session storage, do not auto-reload: there is no reliable loop guard. */}
         <script
           nonce={cspNonce}
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var KEY='wap:chunk-reload-once';try{sessionStorage.removeItem(KEY);}catch(_s){}var shouldRecover=function(input){var text='';if(typeof input==='string')text=input;else if(input&&typeof input==='object'){text=[input.name,input.message,input.reason,input.request].filter(Boolean).join(' ');}text=String(text||'').toLowerCase();return text.includes('chunkloaderror')||text.includes('loading chunk')||text.includes('failed to fetch dynamically imported module');};var reloadOnce=function(){try{if(sessionStorage.getItem(KEY)==='1')return;sessionStorage.setItem(KEY,'1');}catch(_e){}window.location.reload();};window.addEventListener('error',function(event){var err=event&&event.error?event.error:null;var message=(event&&event.message)|| (err&&err.message) || err; if(shouldRecover(message)) reloadOnce();},{capture:true});window.addEventListener('unhandledrejection',function(event){var reason=event&&'reason' in event?event.reason:null; if(shouldRecover(reason)){if(event&&event.preventDefault)event.preventDefault();reloadOnce();}},{capture:true});}catch(_e){}})();`,
+            __html: `(function(){try{var KEY='wap:chunk-reload-once';var attempted=false;var shouldRecover=function(input){var text='';if(typeof input==='string')text=input;else if(input&&typeof input==='object'){text=[input.name,input.message,input.reason,input.request].filter(Boolean).join(' ');}text=String(text||'').toLowerCase();return text.includes('chunkloaderror')||text.includes('loading chunk')||text.includes('failed to fetch dynamically imported module');};var reloadOnce=function(){if(attempted)return false;attempted=true;try{if(sessionStorage.getItem(KEY)==='1')return false;sessionStorage.setItem(KEY,'1');}catch(_e){return false;}window.location.reload();return true;};window.addEventListener('error',function(event){if(shouldRecover(event&&event.error)||shouldRecover(event&&event.message))reloadOnce();},{capture:true});window.addEventListener('unhandledrejection',function(event){var reason=event&&'reason' in event?event.reason:null; if(shouldRecover(reason)&&reloadOnce()){if(event&&event.preventDefault)event.preventDefault();}},{capture:true});}catch(_e){}})();`,
           }}
         />
         <meta name="mobile-web-app-capable" content="yes" />
@@ -261,20 +273,25 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
         <OrgBrandingStyle branding={orgBranding} />
         <a href="#main-content" className="skip-link">
-          Skip to main content
+          {skipCopy('skipToMain', 'Skip to main content')}
         </a>
-        {/* Second skip link for keyboard users on portal pages with a fixed
-            mobile bottom nav (audit #146). The nav is far from the
-            top tab order; this lets a tab-only user reach it directly.
-            Only render when middleware has signalled that this page
-            actually has the mobile bottom nav — otherwise the link
-            anchored to `#mobile-bottom-nav` lands nowhere on admin / auth
-            / many member portal pages and confuses keyboard users. */}
-        {reserveMobileBottomNav && (
+        {/* Skip link for portal users who want to jump directly to navigation.
+            Members get the responsive shell nav target; routes with the
+            generic fixed nav keep its existing target. */}
+        {memberWorkspacePath ? (
+          <>
+            <a href="#mobile-bottom-nav" className="skip-link skip-link--member-mobile-nav">
+              {skipCopy('skipToNavigation', 'Skip to navigation')}
+            </a>
+            <a href="#workspace-sidebar-nav" className="skip-link skip-link--member-desktop-nav">
+              {skipCopy('skipToNavigation', 'Skip to navigation')}
+            </a>
+          </>
+        ) : reserveMobileBottomNav ? (
           <a href="#mobile-bottom-nav" className="skip-link">
-            Skip to navigation
+            {skipCopy('skipToNavigation', 'Skip to navigation')}
           </a>
-        )}
+        ) : null}
         {GTM_ID && !readOnlyAudit && (
           <>
             <noscript>

@@ -6,6 +6,8 @@ import { useTranslations } from 'next-intl';
 import AiResultRenderer from './AiResultRenderer';
 import { formatPortalDate } from '@/lib/formatDate';
 import { getAIToolFollowThrough } from '@/lib/member/aiToolFollowThrough';
+import { skillMapperHref, trainingBridgeHref } from '@/lib/member/memberWorkspace';
+import { parseSavedSkillMapperRun, SKILL_MAPPER_LOOKUP_PREFIX } from '@/lib/member/skillMapperRun';
 
 type Row = { id: string; toolType: string; inputSummary: string; output: string; createdAt: string };
 
@@ -14,8 +16,8 @@ type Row = { id: string; toolType: string; inputSummary: string; output: string;
 // page with `?regenerateFrom=<id>` so the form can repopulate from the
 // prior run and POST with `parentToolResultId` set.
 const TOOL_TYPE_TO_TOOL_PAGE: Record<string, string> = {
-  resume_rewriter: '/dashboard/ai-tools/resume-studio?view=rewrite',
-  resume_analysis: '/dashboard/ai-tools/resume-studio?view=rewrite',
+  resume_rewriter: '/dashboard/resume?view=rewrite',
+  resume_analysis: '/dashboard/resume?view=rewrite',
   cover_letter: '/dashboard/ai-tools/cover-letter',
   interview_practice: '/dashboard/ai-tools/interview-practice',
   linkedin_about: '/dashboard/ai-tools/linkedin-about',
@@ -30,17 +32,20 @@ const TOOL_TYPE_TO_TOOL_PAGE: Record<string, string> = {
 function getRegenerateHref(toolType: string, priorResultId: string): string | null {
   const page = TOOL_TYPE_TO_TOOL_PAGE[toolType];
   if (!page) return null;
-  return `${page}?regenerateFrom=${encodeURIComponent(priorResultId)}`;
+  return `${page}${page.includes('?') ? '&' : '?'}regenerateFrom=${encodeURIComponent(priorResultId)}`;
 }
 
 export default function ToolHistoryPanelClient({ rows }: { rows: Row[] }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const t = useTranslations('dashboard');
+  const tw = useTranslations('memberWorkspace.exploration');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
       {rows.map((row) => {
         const isExpanded = expandedId === row.id;
+        const skillRun = row.toolType === 'skill_assessment' && row.inputSummary.startsWith(SKILL_MAPPER_LOOKUP_PREFIX)
+          ? parseSavedSkillMapperRun(row) : null;
         return (
           <div key={row.id} style={{ border: '1px solid var(--outline-variant)', borderRadius: '0.75rem', background: 'var(--surface-container-low)', overflow: 'hidden' }}>
             <button
@@ -72,6 +77,12 @@ export default function ToolHistoryPanelClient({ rows }: { rows: Row[] }) {
                     compact
                   />
                 </div>
+                {skillRun ? (
+                  <div className="wa-flex wa-flex-wrap wa-gap-2" style={{ marginTop: 'var(--wa-pad-sm)' }}>
+                    <Link href={skillMapperHref({ resultId: skillRun.id })} className="wa-kit-cta wa-kit-cta--ghost">{tw('openComparison')}</Link>
+                    <Link href={trainingBridgeHref(skillRun.id)} className="wa-kit-cta wa-kit-cta--ghost">{tw('trainingForLookup')}</Link>
+                  </div>
+                ) : null}
                 {(() => {
                   const next = getAIToolFollowThrough({
                     toolType: row.toolType,

@@ -6,6 +6,8 @@ import {
   AI_SOFTWARE_CONTACT_HOURS,
   AUTHORIZED_SIGNER,
   CLASS_LENGTH_CALENDAR_MONTHS,
+  DOCUMENT_TITLES,
+  J5_KIND,
   PAYMENT_FOLLOW_UP_MAX_DAYS,
   PAYMENT_FOLLOW_UP_MIN_DAYS,
   STANDARD_CONTACT_HOURS,
@@ -485,7 +487,7 @@ export default function TwoStageBillingWorkbench({
       <div className={styles.stages}>
         <StageCard
           stage="j5"
-          heading="Quote / Voucher Request"
+          heading={DOCUMENT_TITLES[J5_KIND]}
           description="Request the board voucher for the approved student and class. This is a quote, not a payment request."
           note="A board voucher is not required to prepare J5."
           attachments="Signed WAP quote / voucher request"

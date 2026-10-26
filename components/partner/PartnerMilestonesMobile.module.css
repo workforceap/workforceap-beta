@@ -1,0 +1,17 @@
+.pendingContent {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.record {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pendingContent .status {
+  justify-self: start;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

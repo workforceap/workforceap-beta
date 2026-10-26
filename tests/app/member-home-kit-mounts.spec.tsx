@@ -123,6 +123,12 @@ const entryProps = () => vi.mocked(PortalEntryClient).mock.calls.at(-1)?.[0] as 
 const kitProps = () => vi.mocked(MemberHomeKit).mock.calls.at(-1)?.[0] as unknown as Record<string, unknown>;
 
 describe('kit /dashboard mounts the four WAP-194 pieces', () => {
+  it('passes confirmed handoff evidence through without deriving booking or access from enrollment', async () => {
+    const handoff = { resume: 'portal_received', consultation: 'unknown', training: 'unknown' };
+    vi.mocked(loadMemberDashboardHome).mockResolvedValue(homeView({ handoff }));
+    await renderDashboard();
+    expect(kitProps().handoff).toEqual(handoff);
+  });
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getUser).mockResolvedValue({ id: 'member-1', email: 'maya@example.org' } as never);

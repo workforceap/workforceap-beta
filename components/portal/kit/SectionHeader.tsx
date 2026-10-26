@@ -14,34 +14,26 @@ interface SectionHeaderProps extends KitBaseProps<HTMLDivElement>, KitDataAttrs 
 /**
  * Page/section header with optional goal caption + action. The goal line is the
  * validation hook from the concept mockups ("does this view serve the goal?").
+ * Calm weight (18px/700, `.wa-kit-section-header*` in portal-kit.css) so it reads
+ * as a section title, not a second page title.
  */
 export function SectionHeader({ title, goal, kicker, action, className, style, ref, ...rest }: SectionHeaderProps) {
   return (
     <div
       ref={ref}
-      className={cx('wa-flex wa-flex-col md:wa-flex-row md:wa-items-end wa-justify-between wa-gap-3 wa-mb-5', className)}
+      className={cx(
+        'wa-kit-section-header wa-flex wa-flex-col md:wa-flex-row md:wa-items-end wa-justify-between wa-gap-3 wa-mb-5',
+        className,
+      )}
       style={style}
       {...rest}
     >
-      <div>
-        {kicker ? (
-          <div
-            className="wa-text-xs wa-font-bold wa-uppercase"
-            style={{ letterSpacing: '0.12em', color: 'var(--wa-accent)' }}
-          >
-            {kicker}
-          </div>
-        ) : null}
-        <h2 className="wa-text-2xl wa-font-extrabold" style={{ letterSpacing: '-0.03em' }}>
-          {title}
-        </h2>
-        {goal ? (
-          <p className="wa-text-sm wa-mt-1" style={{ color: 'var(--wa-muted)' }}>
-            {goal}
-          </p>
-        ) : null}
+      <div className="wa-kit-section-header__copy">
+        {kicker ? <div className="wa-kit-section-header__kicker">{kicker}</div> : null}
+        <h2 className="wa-kit-section-header__title">{title}</h2>
+        {goal ? <p className="wa-kit-section-header__goal">{goal}</p> : null}
       </div>
-      {action ? <div>{action}</div> : null}
+      {action ? <div className="wa-kit-section-header__action">{action}</div> : null}
     </div>
   );
 }

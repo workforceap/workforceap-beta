@@ -3,11 +3,13 @@
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import WorkspaceShell from '@/components/portal/WorkspaceShell';
+import memberStyles from '@/components/portal/MemberWorkspace.module.css';
 import DashboardFooter from '@/components/portal/DashboardFooter';
 import TourProviderWrapper from '@/components/onboarding/TourProviderWrapper';
 import type { MemberShellIdentity } from '@/lib/member/memberIdentity';
 import { MEMBER_PORTAL_NAV_ITEMS } from '@/lib/nav/portalNav';
 import { PRODUCT_COPY } from '@/lib/nav/workspaceCopy';
+import DevReviewBar from '../DevReviewBar';
 
 /**
  * Credential-free `/dev/member/*` chrome — same WorkspaceShell as live
@@ -27,6 +29,7 @@ const DEV_HREF: Record<string, string> = {
   '/dashboard/jobs': '/dev/member/jobs',
   '/dashboard/readiness': '/dev/member/progress',
   '/dashboard/ai-tools': '/dev/member/toolkit',
+  '/dashboard/resume': '/dev/member/resume-studio',
   '/dashboard/messages': '/dev/member/messages',
   '/dashboard/assessment': '/dev/member/assessment',
   '/dashboard/profile': '/dev/member/profile',
@@ -35,7 +38,10 @@ const DEV_HREF: Record<string, string> = {
 const DEV_ALIASES: Record<string, string[]> = {
   '/dev/member/jobs': ['/dev/member/jobs-empty'],
   '/dev/member/certificates': ['/dev/member/certificates-empty'],
+  '/dev/member/resume-studio': ['/dev/member/resume-rewriter', '/dev/member/resume-strength'],
   '/dev/member/toolkit': [
+    '/dev/member/interviews',
+    '/dev/member/skill-mapper',
     '/dev/member/interview-prep',
     '/dev/member/interview-practice',
     '/dev/member/linkedin-headline',
@@ -43,9 +49,6 @@ const DEV_ALIASES: Record<string, string[]> = {
     '/dev/member/job-match',
     '/dev/member/interview-coach',
     '/dev/member/cover-letter',
-    '/dev/member/resume-rewriter',
-    '/dev/member/resume-strength',
-    '/dev/member/resume-studio',
     '/dev/member/salary-negotiation',
     '/dev/member/elevator-pitch',
     '/dev/member/gap-analyzer',
@@ -84,23 +87,32 @@ export default function DevMemberShell({ children }: { children: ReactNode }) {
   // WAP-230: the same tour provider as live /dashboard (PortalLayoutClient), so
   // `?onboarding=tour` and `?tour=member.home` run the guided tour here. The
   // identity block and the help menu are its account and help anchors.
-  // Signed out (the usual lab case) the tour's progress POSTs get a 401,
-  // which the tour ignores.
+  // Fixture tour interactions stay local: no account progress or analytics writes.
   return (
-    <TourProviderWrapper>
+    <TourProviderWrapper previewMode>
       <WorkspaceShell
         portalRole="member"
+        memberShellClassName={memberStyles.memberShell}
         navItems={navItems}
         identity={DEV_MEMBER_IDENTITY}
         helpTourKey="member.home"
         workspaceLabel={PRODUCT_COPY.memberWorkspace}
         contextLabel="Design preview"
         minimalMobileHeader
+        previewMode
+        knownIsAdmin={false}
         superAdmin={pathname.startsWith('/dev/member/missions')}
         marketingSiteHref="/en"
         marketingSiteLabel="WorkforceAP.org"
         navHrefMap={DEV_HREF}
         footer={<DashboardFooter />}
+        topBanner={<DevReviewBar notice={
+          pathname.endsWith('/home')
+            ? 'Progress, sources and confirmation dates are synthetic. Email, calendar and training connections are not active.'
+            : pathname.includes('/resume-studio')
+              ? 'Uploads, generation, account access and voice are disabled.'
+              : undefined
+        } />}
       >
         {children}
       </WorkspaceShell>

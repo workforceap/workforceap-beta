@@ -33,6 +33,7 @@ type Action = { name: string; href: string };
 function expectSingleLinks(actions: Action[]) {
   for (const { name, href } of actions) {
     const links = screen.getAllByRole('link', { name });
+    expect(links).toHaveLength(1);
     for (const link of links) expect(link).toHaveAttribute('href', href);
     expect(screen.queryAllByRole('button', { name })).toHaveLength(0);
     for (const link of links) expect(link.querySelector('button, [role="button"]')).toBeNull();
@@ -101,17 +102,17 @@ describe('kit navigation actions are one link each (WAP-252)', () => {
       /></NextIntlClientProvider>,
     );
     expectSingleLinks([
-      { name: 'Open full analysis', href: '/dashboard/ai-tools/resume-studio?view=score' },
-      { name: 'Run full analysis', href: '/dashboard/ai-tools/resume-studio?view=score' },
-      { name: 'Rewrite a bullet', href: '/dashboard/ai-tools/resume-rewriter' },
-      { name: 'Fix with AI', href: '/dashboard/ai-tools/resume-rewriter' },
+      { name: 'Open full analysis', href: '/dashboard/resume?view=score' },
+      { name: 'Run full analysis', href: '/dashboard/resume?view=score' },
+      { name: 'Rewrite a bullet', href: '/dashboard/resume?view=rewrite' },
+      { name: 'Fix with AI', href: '/dashboard/resume?view=rewrite' },
     ]);
   });
 
   it('VoiceStudioKit resume tab without a resume: "Add résumé" is one link', () => {
     vi.stubGlobal('fetch', vi.fn());
     renderNoNesting(<NextIntlClientProvider locale="en" messages={en}><VoiceStudioKit initialTab="studio" resumeStudio={{ hasResume: false }} /></NextIntlClientProvider>);
-    expectSingleLinks([{ name: 'Add résumé', href: '/dashboard/ai-tools/resume-studio' }]);
+    expectSingleLinks([{ name: 'Add résumé', href: '/dashboard/resume' }]);
   });
 });
 

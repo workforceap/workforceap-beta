@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { InterviewModeLinks } from '@/components/portal/InterviewModeLinks';
 import type { Conversation } from '@elevenlabs/client';
 import { AlertTriangle, Calendar, ChevronDown, ChevronUp, Mic } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -52,7 +53,7 @@ const kitBtnSolid: CSSProperties = {
   gap: 8,
   minHeight: 44,
   padding: '10px 16px',
-  background: 'var(--wa-accent)',
+  background: 'var(--wa-accent-fill)',
   color: 'var(--wa-on-accent-control)',
   border: '1px solid var(--wa-accent)',
   fontWeight: 600,
@@ -651,6 +652,7 @@ export default function InterviewCoach({
   if (phase === 'setup') {
     return (
       <div>
+        <InterviewModeLinks current="coach" role={role} />
         <FormField label="Role you are interviewing for" id="interviewcoach-target-role-field">
           <input
             id="interviewcoach-target-role-field"
@@ -719,7 +721,7 @@ export default function InterviewCoach({
       <div>
         <div
           style={{
-            background: 'var(--wa-accent)',
+            background: 'var(--wa-accent-fill)',
             borderRadius: 'var(--wa-radius)',
             padding: 20,
             color: 'var(--wa-on-accent-control)',
@@ -848,7 +850,7 @@ export default function InterviewCoach({
           style={{
             marginBottom: 16,
             padding: 16,
-            background: 'var(--wa-accent)',
+            background: 'var(--wa-accent-fill)',
             borderRadius: 'var(--wa-radius-sm)',
           }}
         >

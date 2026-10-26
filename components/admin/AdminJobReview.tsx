@@ -348,7 +348,7 @@ export default function AdminJobReview({ job }: { job: Job }) {
                 fontSize: 13,
                 fontWeight: 700,
                 color: 'var(--wa-on-accent)',
-                background: 'var(--wa-accent)',
+                background: 'var(--wa-accent-fill)',
                 cursor: approving ? 'default' : 'pointer',
                 opacity: approving ? 0.75 : 1,
                 flexShrink: 0,
@@ -528,7 +528,7 @@ export default function AdminJobReview({ job }: { job: Job }) {
                       fontSize: 13,
                       fontWeight: 700,
                       color: 'var(--wa-on-accent)',
-                      background: 'var(--wa-accent)',
+                      background: 'var(--wa-accent-fill)',
                       cursor: suggesting ? 'default' : 'pointer',
                       opacity: suggesting ? 0.75 : 1,
                     }}

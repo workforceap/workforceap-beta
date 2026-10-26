@@ -22,6 +22,14 @@ This reference describes the checked-in operating paths reviewed on 2026-09-12. 
 
 ## Install and development
 
+For portal UI hand testing, start with the [preview screen navigator](../qa/portal-consolidation/README.md).
+It catalogs every member/staff fixture and named sample states separately from
+authenticated acceptance. The development server compiles cold routes on demand;
+measure repeat navigation separately. Synthetic shell/tour mode avoids account
+polling and progress writes, but individual fixtures can still have provider or
+authentication boundaries documented in the catalog. No fixture result establishes
+real role authorization, provider delivery or saved member progression.
+
 The root is a Next.js application; `marketing/` is a separate Astro package whose output is included in the Vercel build. Root [package.json](../../package.json#L5) selects `pnpm@10.34.3`; [CI uses Node 22](../../.github/workflows/ci-gate.yml#L71). The root has no `engines` declaration. Use the CI major and the selected package manager when reproducing a failure. Marketing uses its own [package-lock.json](../../marketing/package-lock.json), React 18 and Astro; the root uses [pnpm-lock.yaml](../../pnpm-lock.yaml), React 19 and Next. A root install does not install marketing dependencies.
 
 ```bash
@@ -61,7 +69,7 @@ Additional workflows have separate meanings:
 
 - [Locked Product Stakes](../../.github/workflows/locked-product-stakes.yml#L38) checks specific protected product files for approval or the conservative i18n bypass.
 - [Coursera Catalog Placeholders](../../.github/workflows/coursera-catalog-placeholders.yml) enforces its source-script baseline; it is not a live catalog check.
-- [Authenticated Portal Smoke](../../.github/workflows/authenticated-portal-smoke.yml#L24) runs nightly on trusted `master` against an isolated Preview and also supports manual dispatch, including a non-staff production canary. It checks the deployed version and database scope before signing in. Its `hub_smoke` lane checks visible primary page headings on member, counselor, and employer hub and deep-link routes; a hidden shell label does not satisfy a page check. Target and role credentials are workflow secrets; inspect its mode before invocation.
+- [Authenticated Portal Smoke](../../.github/workflows/authenticated-portal-smoke.yml#L24) runs nightly on trusted `master` against an isolated Preview and also supports manual dispatch, including a non-staff production canary. It checks the deployed version and database scope before signing in. Its `hub_smoke` lane checks visible primary page headings on member, counselor, and employer hub and deep-link routes; a hidden shell label does not satisfy a page check. Target and role credentials are workflow secrets; inspect its mode before invocation. Its read-only deployment gate shares one 25-minute window between registration and build completion, because GitHub records may appear only when Vercel is ready. It separates missing records from build timeout and rejects inactive deployments; GitHub SHA refs do not attest the branch, so the destination health gate remains mandatory. See [missing nightly Preview deployments](../STAGING_ENV.md#missing-nightly-preview-deployments).
 - [Public E2E](../../.github/workflows/nightly-e2e.yml) runs credential-free read-only production specs nightly. Scheduled failures create one issue per suite; see [Nightly heavy suites](../SLO-AND-STATUS.md#nightly-heavy-suites-wap-204).
 - The application smoke test checks the active Eligibility / Programs / Account breadcrumb, matching the intentional shared-duration change in #2781. Read actual job failures before changing page layout: [the October PDF reconciliation](../audits/pdf-release-audit-2026-10-15.md) distinguishes three stale breadcrumb assertions from the report's unrelated program-comparison claim.
 - [FORCE RLS Shadow Rehearsal](../../.github/workflows/force-rls-shadow.yml#L21) is manual and report-only against a disposable PostgreSQL service. Its existence does not prove production RLS correctness.

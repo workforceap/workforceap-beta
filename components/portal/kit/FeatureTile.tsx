@@ -43,7 +43,7 @@ export function FeatureTile({
       </div>
       <div>
         <Heading style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em', margin: 0 }}>{title}</Heading>
-        {body ? <p style={{ fontSize: 13, opacity: 0.85, marginTop: 4 }}>{body}</p> : null}
+        {body ? <p style={{ fontSize: 13, marginTop: 4 }}>{body}</p> : null}
       </div>
     </>
   );

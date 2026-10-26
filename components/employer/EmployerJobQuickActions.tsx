@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
@@ -72,7 +72,7 @@ export default function EmployerJobQuickActions({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <Link
+        <PortalRecordLink
           href={`/employer/jobs/${jobId}`}
           style={{
             flex: 1,
@@ -88,7 +88,7 @@ export default function EmployerJobQuickActions({
           className="active:wa-scale-95 wa-transition-transform"
         >
           Edit
-        </Link>
+        </PortalRecordLink>
         {showPause && (
           <button
             type="button"
@@ -119,7 +119,7 @@ export default function EmployerJobQuickActions({
           {error}
         </p>
       ) : null}
-      <Link
+      <PortalRecordLink
         href={`/employer/jobs/${encodeURIComponent(jobId)}/applicants`}
         style={{
           display: 'block',
@@ -132,7 +132,7 @@ export default function EmployerJobQuickActions({
         }}
       >
         Applications
-      </Link>
+      </PortalRecordLink>
     </div>
   );
 }

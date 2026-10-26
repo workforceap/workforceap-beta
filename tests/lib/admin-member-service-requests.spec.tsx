@@ -2,7 +2,12 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { matchesWhere } from '../helpers/prismaWhereMatches';
 
-const state = vi.hoisted(() => ({ benefits: [] as Array<Record<string, unknown>>, training: [] as Array<Record<string, unknown>>, reads: 0 }));
+const state = vi.hoisted(() => ({
+  benefits: [] as Array<Record<string, unknown>>,
+  training: [] as Array<Record<string, unknown>>,
+  reads: 0,
+  prismaReads: 0,
+}));
 vi.mock('@/lib/tenant/adminPageScope', () => ({
   withAdminPageScope: async (_scope: unknown, callback: (db: unknown) => unknown) => callback({
     benefitRequest: { findMany: async ({ where, take }: { where: object; take: number }) => {
@@ -13,8 +18,18 @@ vi.mock('@/lib/tenant/adminPageScope', () => ({
     } },
   }),
 }));
+vi.mock('@/lib/db/prisma', () => ({
+  prisma: {
+    benefitRequest: { findMany: async ({ where, take }: { where: object; take: number }) => {
+      state.prismaReads++; return state.benefits.filter((row) => matchesWhere(row, where)).slice(0, take);
+    } },
+    trainingAccessRequest: { findMany: async ({ where, take }: { where: object; take: number }) => {
+      state.prismaReads++; return state.training.filter((row) => matchesWhere(row, where)).slice(0, take);
+    } },
+  },
+}));
 
-import { loadMemberServiceRequests } from '@/lib/admin/memberServiceRequests';
+import { loadMemberServiceRequests, loadMemberServiceRequestsForStaff } from '@/lib/admin/memberServiceRequests';
 import MemberServiceRequests from '@/components/admin/MemberServiceRequests';
 
 const at = new Date('2026-10-01T12:00:00Z');
@@ -24,6 +39,7 @@ const benefit = { id: 'benefit-1', userId: 'member-1', user: { organizationId: '
 const training = { ...benefit, id: 'training-1', providerKey: 'linkedin_premium', status: 'APPROVED', requestedAt: at, notes: 'Recorded request note' };
 beforeEach(() => {
   state.reads = 0;
+  state.prismaReads = 0;
   state.benefits = [benefit, { ...benefit, id: 'other-member', userId: 'member-2' },
     { ...benefit, id: 'foreign', user: { organizationId: 'org-2', deletedAt: null } },
     { ...benefit, id: 'deleted', user: { organizationId: 'org-1', deletedAt: at } }];
@@ -55,5 +71,12 @@ describe('staff member access request records', () => {
     render(<MemberServiceRequests benefits={[]} training={[]} failed />);
     expect(screen.getByRole('status')).toHaveTextContent('could not be loaded');
     expect(screen.queryByText('No benefit or support request records.')).not.toBeInTheDocument();
+  });
+  it('uses the same member and tenant pins on the counselor student-detail path', async () => {
+    const data = await loadMemberServiceRequestsForStaff('member-1', 'org-1');
+    expect(data.benefits.map((row) => row.id)).toEqual(['benefit-1']);
+    expect(data.training.map((row) => row.id)).toEqual(['training-1']);
+    expect(state.reads).toBe(0);
+    expect(state.prismaReads).toBe(2);
   });
 });

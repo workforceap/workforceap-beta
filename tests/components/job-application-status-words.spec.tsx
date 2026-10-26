@@ -158,7 +158,7 @@ describe('employer surfaces: a new and a not-selected application', () => {
     expect(tagFor('Not selected')).toBeInTheDocument();
     // Filter chips: one per stage, in the vocabulary's words.
     for (const key of ['pending', 'reviewing', 'interview', 'offered', 'hired', 'rejected'] as const) {
-      expect(screen.getAllByRole('button', { name: jobApplicationStatusLabel(key, 'employer') }).length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByRole('link', { name: jobApplicationStatusLabel(key, 'employer') }).length).toBeGreaterThanOrEqual(1);
     }
     // The move-to action on a new application is the next stage's word.
     fireEvent.click(screen.getByRole('button', { name: 'Expand details for Ada Applicant' }));
@@ -231,7 +231,11 @@ describe('employer application detail page', () => {
       student: { id: 'member-1', fullName: 'Fixture Candidate', email: null, phone: null, enrolledProgram: null, profile: null },
       messages: [],
     });
-    const html = renderToStaticMarkup(await EmployerApplicationPage({ params: Promise.resolve({ id: 'app-1' }) }));
+    const html = renderToStaticMarkup(
+      <NextIntlClientProvider locale="en" messages={messages} timeZone="America/Chicago">
+        {await EmployerApplicationPage({ params: Promise.resolve({ id: 'app-1' }) })}
+      </NextIntlClientProvider>,
+    );
     const tag = html.match(/<span[^>]*class="[^"]*wa-kit-tag[^"]*"[^>]*>([^<]*)<\/span>/);
     expect(tag?.[1], 'kit status tag').toBe(word);
     expect(html).not.toMatch(/>(Pending|Rejected|Offered|Interview)</);

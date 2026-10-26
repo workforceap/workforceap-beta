@@ -64,16 +64,19 @@ const BLUE_CTA_SHADOW = `0 8px 24px color-mix(in srgb, ${BLUE_GLOW} 20%, transpa
 /**
  * PortalVoiceSession accent props for the employer voice card (scout M8). The
  * panel's orb / tints keep the info hue; the solid "Start voice session" fill
- * is the info tone pairing: --wa-info-dark under --wa-on-accent-control (white
- * in light, dark ink in dark, where the fill lightens to #74b3e3). The former
+ * is the mode-constant hero blue (--wa-hero-info, the light --wa-info-dark
+ * value) under --wa-on-hero, like the crimson and gold session fills. The
+ * adaptive pair it replaces (--wa-info-dark under --wa-on-accent-control)
+ * broke once the control label became constant white: the fill lightens to
+ * #74b3e3 in dark, where white measures 2.26:1. The former
  * `accent="var(--color-blue)"` with the panel's white label measured 2.36:1
  * in dark mode.
  */
 export const employerVoiceSessionAccent = {
   accent: 'var(--color-blue)',
   accentDark: 'var(--color-blue)',
-  ctaBackground: 'var(--wa-info-dark)',
-  ctaColor: 'var(--wa-on-accent-control)',
+  ctaBackground: 'var(--wa-hero-info)',
+  ctaColor: 'var(--wa-on-hero)',
 } as const;
 
 const icon = (Icon: typeof Target) => createElement(Icon, { size: 22, 'aria-hidden': true });

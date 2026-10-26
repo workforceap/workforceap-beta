@@ -28,6 +28,7 @@ import {
   type KitTone,
   type SparkStat,
 } from '@/components/portal/kit';
+import { StaffDisclosure } from '../StaffKit';
 import styles from './CommandCenterKit.module.css';
 
 /**
@@ -148,13 +149,16 @@ export interface CommandCenterKitProps {
   /** Program Health breakdown rows. */
   programHealth?: ProgramHealthDatum[];
   /**
-   * One muted line under the "Enrollment share by program" heading saying what the figure
-   * counts and what the bar measures. #2425 (S21) stopped the rows printing
+   * The full definition under the "Enrollment share by program" heading: what the figure
+   * counts and what the bar measures. The page shows one short line and keeps this text
+   * in a "What is counted" disclosure (the text stays in the DOM, collapsed). #2425 (S21) stopped the rows printing
    * "10 · 100%", which read as a completion or health score, but left the
    * remaining count unlabelled; this is the definition that goes with it.
    * Omit to print nothing.
    */
   programHealthCaption?: string;
+  /** Localized disclosure summary supplied by the route; direct kit consumers use English. */
+  whatIsCountedLabel?: string;
   /**
    * "Placements trend" area chart. Each datum is one month, e.g.
    * `{ label: 'Jun', value: 90 }`.
@@ -261,18 +265,42 @@ function clampPct(n: number): number {
 
 /* ---- Header and work queue ------------------------------------------------ */
 
+/**
+ * Queue sentence from counts the caller already supplied: how many queues have
+ * work waiting. A row with no `count` is treated as open (its real size is not
+ * known here), a row with count 0 as clear.
+ */
+function queueSummary(items: CommandCenterQueueItem[]): string | undefined {
+  if (items.length === 0) return undefined;
+  const open = items.filter((item) => item.count !== 0).length;
+  if (open === 0) return 'Every queue is clear.';
+  const noun = open === 1 ? 'queue has' : 'queues have';
+  return `${open} of ${items.length} ${noun} work waiting.`;
+}
+
 interface HeaderProps {
   title: string;
   dateLabel: string;
+  /** One contextual sentence built from queue counts the page already computed. */
+  summary?: string;
   onAddStudent?: () => void;
   addStudentHref?: string;
 }
 
-function CommandCenterHeader({ title, dateLabel, onAddStudent, addStudentHref }: HeaderProps) {
+/**
+ * Header = title, one contextual sentence (date plus the queue state), and the
+ * primary action right-aligned (stacked below on phone).
+ */
+function CommandCenterHeader({ title, dateLabel, summary, onAddStudent, addStudentHref }: HeaderProps) {
   return (
     <header className={styles.header}>
-      <h1 className="h-font">{title}</h1>
-      <span className={styles.date}>{dateLabel}</span>
+      <div className={styles.headerCopy}>
+        <h1 className="h-font">{title}</h1>
+        <p className={styles.date}>
+          <span>{dateLabel}</span>
+          {summary ? <span>{`. ${summary}`}</span> : null}
+        </p>
+      </div>
       {addStudentHref ? (
         <AstryxLink href={addStudentHref} as={NextLink as never} color="inherit" isStandalone className={styles.addStudent}>
           <Plus size={16} aria-hidden /> Add student
@@ -289,9 +317,15 @@ function WorkQueueRow({ item, onAction }: { item: CommandCenterQueueItem; onActi
   const titleIncludesCount = titleCount != null && Number(titleCount.replaceAll(',', '')) === item.count;
   return (
     <li className={styles.queueRow}>
+      <span className={styles.queueMark}>
+        {item.urgent && item.count !== 0 ? (
+          <StatusDot variant="accent" label="Needs attention" />
+        ) : (
+          <span className={item.count === 0 ? styles.markClear : styles.markOpen} aria-hidden />
+        )}
+      </span>
       <span className={styles.queueCopy}>
         <span className={styles.queueTitle}>
-          {item.urgent && item.count !== 0 ? <StatusDot variant="accent" label="Needs attention" /> : null}
           {item.count != null && !titleIncludesCount ? `${item.count} ` : null}
           {item.title}
         </span>
@@ -310,7 +344,7 @@ function WorkQueueRow({ item, onAction }: { item: CommandCenterQueueItem; onActi
         ) : null}
       </span>
       {item.href ? (
-        <AstryxLink href={item.href} as={NextLink as never} color="inherit" isStandalone className={styles.queueAction}>
+        <AstryxLink href={item.href} as={NextLink as never} color="inherit" isStandalone className={item.urgent && item.count !== 0 ? `${styles.queueAction} ${styles.queueActionUrgent}` : styles.queueAction}>
           {item.actionLabel}<ChevronRight size={16} aria-hidden />
         </AstryxLink>
       ) : (
@@ -376,6 +410,7 @@ export function CommandCenterKit({
   queueItems = DEFAULT_QUEUE,
   programHealth = DEFAULT_PROGRAM_HEALTH,
   programHealthCaption,
+  whatIsCountedLabel = 'What is counted',
   placementsByMonth = DEFAULT_PLACEMENTS_BY_MONTH,
   placementsSubtitle = '2026 YTD',
   onAddStudent,
@@ -415,7 +450,7 @@ export function CommandCenterKit({
 
   return (
     <DesignSurface surface="dense" className={styles.commandCenter}>
-      <CommandCenterHeader title={title} dateLabel={dateLabel} onAddStudent={onAddStudent} addStudentHref={addStudentHref} />
+      <CommandCenterHeader title={title} dateLabel={dateLabel} summary={queueSummary(queueItems)} onAddStudent={onAddStudent} addStudentHref={addStudentHref} />
       {lead ? <div className={styles.lead}>{lead}</div> : null}
       {queuesFirst ? workQueue : metricsStrip}
       {queuesFirst ? metricsStrip : null}
@@ -443,7 +478,11 @@ export function CommandCenterKit({
           <section aria-labelledby="admin-program-health-title" className={styles.section}>
             <header className={styles.sectionHeading}><h2 id="admin-program-health-title">Enrollment share by program</h2></header>
             {programHealthCaption ? (
-              <p className={styles.meta} data-program-health-caption="1" style={{ marginBottom: 10 }}>{programHealthCaption}</p>
+              // One line says what a bar is; the full definition (who is counted, what is not claimed) stays one tap away.
+              <div data-program-health-caption="1" style={{ marginBottom: 10 }}>
+                <p className={styles.meta}>Each bar is a program&rsquo;s share of enrolled students.</p>
+                <StaffDisclosure label={whatIsCountedLabel}><p>{programHealthCaption}</p></StaffDisclosure>
+              </div>
             ) : null}
             {programHealth.length > 0 ? <RankBars data={programHealth} /> : <p className={styles.meta}>No enrollment data available.</p>}
           </section>
@@ -493,7 +532,7 @@ export function CommandCenterKit({
             <h2 id="admin-members-title">Members</h2>
             <AstryxLink href={membersHref} as={NextLink as never} isStandalone>View all</AstryxLink>
           </header>
-          <DataTable<CommandCenterMemberRow> columns={memberColumns} rows={members} rowKey={(row) => row.id} minWidth={560} emptyTitle="No members yet" />
+          <DataTable<CommandCenterMemberRow> columns={memberColumns} rows={members} rowKey={(row) => row.id} minWidth={560} scrollCue caption="Members" emptyTitle="No members yet" />
         </section>
       ) : null}
     </DesignSurface>

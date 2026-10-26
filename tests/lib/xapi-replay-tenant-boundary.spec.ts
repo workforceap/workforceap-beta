@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   executeRaw: vi.fn(),
@@ -38,6 +38,7 @@ import {
   countUnresolvedXapiOrganizations,
   reconcileUnresolvedXapiOrganizations,
   replayPendingXapiStatements,
+  replayPendingXapiStatementsForEmail,
   replayUnresolvedXapiStatementsForIdentity,
 } from '@/lib/coursera/replayPendingXapi';
 
@@ -123,6 +124,192 @@ describe('persisted xAPI replay tenant boundary', () => {
     });
     const statementQuery = mocks.findMany.mock.calls[0]?.[0];
     expect(statementQuery.where.organizationId).toBe('org-a');
+    const statusQuery = (mocks.eventQueryRaw.mock.calls[0]?.[0] as TemplateStringsArray).join('');
+    expect(statusQuery).toContain("completion_status IN ('unmatched', 'error', 'unresolved_course')");
+  });
+});
+
+describe('pending xAPI per-statement failure isolation', () => {
+  const rows = [
+    { id: 'row-1', statementId: 'statement-1', organizationId: 'org-a' },
+    { id: 'row-2', statementId: 'statement-2', organizationId: 'org-a' },
+  ];
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    mocks.findFirst.mockResolvedValue(null);
+    mocks.transaction.mockImplementation(async (callback) => callback({
+      xapiStatement: { findMany: mocks.findMany, findFirst: mocks.findFirst },
+      $queryRaw: mocks.eventQueryRaw,
+    }));
+    mocks.findMany.mockResolvedValue(rows);
+    mocks.toRaw.mockImplementation((row) => ({ id: row.statementId }));
+    mocks.parse.mockImplementation((raw) => ({ ...parsed, statementId: raw.id }));
+    mocks.handle.mockResolvedValue({ completions: [{ ok: true }] });
+    mocks.eventQueryRaw.mockResolvedValue([{ status: 'completed' }]);
+    mocks.markProcessed.mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('counts a failed first event once and still completes the later event', async () => {
+    mocks.handle.mockRejectedValueOnce(new Error('provider failure for learner@example.com'));
+
+    const result = await replayPendingXapiStatements(10);
+
+    expect(mocks.handle.mock.calls.map(([statement]) => statement.statementId)).toEqual([
+      'statement-1', 'statement-2',
+    ]);
+    expect(result).toEqual({
+      scanned: 2,
+      replayed: 2,
+      skippedUnparsed: 0,
+      skippedUnresolvedOrganization: 0,
+      completionsEmitted: 1,
+      orgsRepaired: 0,
+      breakdown: { completedOk: 1, errored: 1, ignored: 0, unresolvedCourse: 0, unmatched: 0 },
+    });
+    expect(mocks.markProcessed).not.toHaveBeenCalled();
+    expect(mocks.eventQueryRaw).toHaveBeenCalledOnce();
+    expect(console.error).toHaveBeenCalledExactlyOnceWith(
+      '[replayPendingXapi] statement replay failed', { statementId: 'statement-1' },
+    );
+  });
+
+  it('leaves repeated failures pending with fresh accounting on every retry', async () => {
+    mocks.findMany.mockResolvedValue([rows[0]]);
+    mocks.handle.mockRejectedValue(new Error('Course not found'));
+
+    const first = await replayPendingXapiStatements(10);
+    const retried = await replayPendingXapiStatementsForEmail('learner@example.com');
+
+    expect(retried).toEqual(first);
+    expect(first.replayed).toBe(1);
+    expect(first.breakdown.errored).toBe(1);
+    expect(first.completionsEmitted).toBe(0);
+    expect(mocks.handle).toHaveBeenCalledTimes(2);
+    expect(mocks.markProcessed).not.toHaveBeenCalled();
+    expect(mocks.eventQueryRaw).not.toHaveBeenCalled();
+  });
+
+  it.each(['reconstruction', 'parsing'] as const)('continues after a %s exception', async (stage) => {
+    const failingMock = stage === 'reconstruction' ? mocks.toRaw : mocks.parse;
+    failingMock.mockImplementationOnce(() => { throw new Error('malformed row'); });
+
+    const result = await replayPendingXapiStatements(10);
+
+    expect(result.replayed).toBe(1);
+    expect(result.skippedUnparsed).toBe(0);
+    expect(result.breakdown).toEqual({
+      completedOk: 1, errored: 1, ignored: 0, unresolvedCourse: 0, unmatched: 0,
+    });
+    expect(mocks.markProcessed).not.toHaveBeenCalled();
+    expect(mocks.handle).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ statementId: 'statement-2' }),
+      expect.objectContaining({ organizationId: 'org-a', requireOrganizationId: true }),
+    );
+  });
+
+  it('counts an unparsed-row acknowledgement failure as an error, then continues', async () => {
+    mocks.parse.mockReturnValueOnce(null);
+    mocks.markProcessed.mockRejectedValueOnce(new Error('database unavailable'));
+
+    const result = await replayPendingXapiStatements(10);
+
+    expect(result.skippedUnparsed).toBe(0);
+    expect(result.replayed).toBe(1);
+    expect(result.breakdown.errored).toBe(1);
+    expect(result.breakdown.completedOk).toBe(1);
+    expect(mocks.markProcessed).toHaveBeenCalledOnce();
+  });
+
+  it('isolates outcome-read failures without marking or re-running a completed event', async () => {
+    mocks.eventQueryRaw.mockRejectedValueOnce(new Error('outcome read unavailable'));
+
+    const result = await replayPendingXapiStatements(10);
+
+    expect(result.replayed).toBe(2);
+    expect(result.completionsEmitted).toBe(2);
+    expect(result.breakdown.errored).toBe(1);
+    expect(result.breakdown.completedOk).toBe(1);
+    expect(mocks.handle).toHaveBeenCalledTimes(2);
+    expect(mocks.markProcessed).not.toHaveBeenCalled();
+  });
+
+  it('keeps returned errors and unresolved attribution separate without double counting', async () => {
+    mocks.handle.mockResolvedValue({ completions: [{ ok: false }] });
+    mocks.eventQueryRaw
+      .mockResolvedValueOnce([{ status: 'error' }])
+      .mockResolvedValueOnce([{ status: 'unresolved_course' }]);
+
+    const result = await replayPendingXapiStatements(10);
+
+    expect(result.completionsEmitted).toBe(2);
+    expect(result.breakdown).toEqual({
+      completedOk: 0, errored: 1, ignored: 0, unresolvedCourse: 1, unmatched: 0,
+    });
+    expect(console.error).not.toHaveBeenCalled();
+  });
+
+  it('bounds failure diagnostics and tolerates statements without an id', async () => {
+    mocks.findMany.mockResolvedValue([
+      { ...rows[0], statementId: 's'.repeat(400) },
+      { ...rows[1], statementId: null },
+    ]);
+    mocks.handle.mockRejectedValue(new Error('private provider payload'));
+
+    const result = await replayPendingXapiStatements(10);
+
+    expect(result.breakdown.errored).toBe(2);
+    expect(console.error).toHaveBeenNthCalledWith(
+      1, '[replayPendingXapi] statement replay failed', { statementId: 's'.repeat(128) },
+    );
+    expect(console.error).toHaveBeenNthCalledWith(
+      2, '[replayPendingXapi] statement replay failed', { statementId: null },
+    );
+  });
+
+  it('forwards a hash-only statement idempotency key for acknowledgement by the pipeline', async () => {
+    mocks.findMany.mockResolvedValue([{ ...rows[0], statementId: null, statementHash: 'hash-1' }]);
+
+    await replayPendingXapiStatements(10);
+
+    expect(mocks.handle).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ statementId: null }),
+      {
+        organizationId: 'org-a', expectedUserId: null, requireOrganizationId: true, statementHash: 'hash-1',
+      },
+    );
+    expect(mocks.markProcessed).not.toHaveBeenCalled();
+  });
+
+  it('acknowledges an unparsed hash-only statement using its persisted idempotency key', async () => {
+    mocks.findMany.mockResolvedValue([{ ...rows[0], statementId: null, statementHash: 'hash-1' }]);
+    mocks.parse.mockReturnValue(null);
+
+    const result = await replayPendingXapiStatements(10);
+
+    expect(mocks.markProcessed).toHaveBeenCalledExactlyOnceWith(null, 'hash-1');
+    expect(result.skippedUnparsed).toBe(1);
+    expect(result.breakdown.errored).toBe(0);
+    expect(mocks.handle).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['completed', 'completedOk'], ['ignored', 'ignored'],
+    ['unmatched', 'unmatched'], ['unresolved_course', 'unresolvedCourse'],
+  ] as const)('accounts for hash-only %s statements without an event-id lookup', async (outcome, counter) => {
+    mocks.findMany.mockResolvedValue([{ ...rows[0], statementId: null, statementHash: 'hash-only' }]);
+    mocks.handle.mockResolvedValue({ completions: [], outcome });
+
+    const result = await replayPendingXapiStatements(10);
+
+    expect(result.breakdown[counter]).toBe(1);
+    expect(Object.values(result.breakdown).reduce((sum, count) => sum + count, 0)).toBe(1);
+    expect(mocks.eventQueryRaw).not.toHaveBeenCalled();
   });
 });
 

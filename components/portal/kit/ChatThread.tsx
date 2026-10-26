@@ -32,6 +32,8 @@ interface ChatThreadProps {
   empty?: { title: string; description?: string; action?: string };
   /** Surface-owned translations; kit previews retain English defaults. */
   labels?: { newMessage: string; pending: string; send: string; sending: string; history: string };
+  /** Reserve room above the fixed member tabs on narrow inbox layouts. */
+  composerClassName?: string;
 }
 
 function authorLabel(author: ReactNode | undefined): string {
@@ -49,7 +51,7 @@ function authorLabel(author: ReactNode | undefined): string {
  * timestamp. Follow the inner log only while near its end or after an explicit
  * send. Incoming messages never move a reader away from older history.
  */
-export function ChatThread({ messages, placeholder = 'Type a message…', onSend, initialText = '', multiline = false, empty, labels }: ChatThreadProps) {
+export function ChatThread({ messages, placeholder = 'Type a message…', onSend, initialText = '', multiline = false, empty, labels, composerClassName }: ChatThreadProps) {
   const [text, setText] = useState(initialText);
   const [sending, setSending] = useState(false);
   const [hasNewMessages, setHasNewMessages] = useState(false);
@@ -193,7 +195,7 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
           e.preventDefault();
           void send();
         }}
-        className="wa-flex wa-items-center"
+        className={`wa-flex wa-items-center${composerClassName ? ` ${composerClassName}` : ''}`}
         style={{ marginTop: 12, flexShrink: 0, gap: 8 }}
       >
         <label className="wa-sr-only" htmlFor="wa-kit-chat-input">
@@ -248,7 +250,7 @@ export function ChatThread({ messages, placeholder = 'Type a message…', onSend
             flexShrink: 0,
             border: 'none',
             borderRadius: 999,
-            background: 'var(--wa-accent)',
+            background: 'var(--wa-accent-fill)',
             color: 'var(--wa-on-accent-control)',
             display: 'inline-flex',
             alignItems: 'center',

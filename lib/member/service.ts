@@ -9,6 +9,7 @@ import { withDbRetry } from '@/lib/db/withDbRetry';
 import { logger } from '@/lib/observability/logger';
 import { droppedPartnerRefLogContext } from '@/lib/partner/referralLog';
 import { activeReferralPartnerWhere } from '@/lib/partner/referralPartnerLookup';
+import { buildApplicationReport } from '@/lib/apply/applicationReport';
 
 /**
  * The member row uses the Supabase auth user id as its primary key, so the
@@ -83,9 +84,17 @@ export async function createMember(
     }
   }
 
-  await withDbRetry(async () => {
+  const submittedAt = new Date();
+  const applicationReport = buildApplicationReport({
+    capturedAt: submittedAt, submittedAt, name: data.fullName, email: data.email,
+    phone: data.phone, zip: data.zip, programInterest: data.programInterest,
+    employmentStatus: data.employmentStatus, veteranStatus: data.veteranStatus,
+    consentTerms: data.consentTerms, consentCommunications: data.consentCommunications,
+    referral: referralSource,
+  });
+  const createdApplicationId = await withDbRetry(async () => {
     try {
-      await prisma.$transaction(async (tx) => {
+      return await prisma.$transaction(async (tx) => {
         let memberRole = await tx.role.findUnique({ where: { name: 'member' } });
         if (!memberRole) {
           memberRole = await tx.role.create({ data: { name: 'member' } });
@@ -121,7 +130,8 @@ export async function createMember(
             userId,
             status: ApplicationStatus.PENDING,
             programInterest: data.programInterest,
-            submittedAt: new Date(),
+            submittedAt,
+            applicationReportSnapshot: applicationReport,
             referralSource,
             referralPartnerId,
           },
@@ -144,13 +154,7 @@ export async function createMember(
           });
         }
 
-        // Best-effort: notify admins of new application (do not block signup)
-        sendNewApplicationAdminEmail({
-          applicantName: data.fullName,
-          applicantEmail: data.email,
-          programInterest: data.programInterest,
-          applicationId: app.id,
-        }).catch((err) => console.error('New application admin email failed:', err));
+        return app.id;
       });
     } catch (err) {
       // The transaction is atomic, so a transient connectivity failure rolls it
@@ -162,6 +166,16 @@ export async function createMember(
       throw err;
     }
   });
+
+  // Send only after a confirmed commit. An ambiguous commit is recovered as
+  // success above without sending speculative or duplicate notifications.
+  if (createdApplicationId) {
+    await sendNewApplicationAdminEmail({
+      applicantName: data.fullName, applicantEmail: data.email, applicantPhone: data.phone,
+      programInterest: data.programInterest, applicationId: createdApplicationId,
+      memberId: userId, organizationId, applicationReport,
+    }).catch(() => console.error('New application admin email failed'));
+  }
 
   return { referralPartnerId, referralPartnerType, referralRef: refRaw ?? null };
 }

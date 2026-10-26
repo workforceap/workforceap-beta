@@ -105,6 +105,7 @@ export const LEGACY_GLYPHS: Record<string, LucideIcon> = {
   description: FileText,
   download: Download,
   error: CircleAlert,
+  event: CalendarDays,
   explore: Compass,
   flag: Flag,
   forum: MessagesSquare,

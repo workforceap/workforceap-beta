@@ -285,6 +285,24 @@ describe('member training workspace', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it('uses fixture-owned destinations for course follow-up actions', () => {
+    render(<NextIntlClientProvider locale="en" messages={en}><MemberTrainingWorkspace
+      workspace={fixture()}
+      programTitle={syllabus.title}
+      completedSlugs={[]}
+      destinations={[]}
+      secondaryActionHrefs={{
+        missions: '/dev/member/missions?state=enrolled',
+        resume: '/dev/member/resume-studio',
+        feedback: '/dev/member/messages',
+      }}
+    /></NextIntlClientProvider>);
+
+    expect(screen.getByRole('link', { name: /Practice with Skill Missions/ })).toHaveAttribute('href', '/dev/member/missions?state=enrolled');
+    expect(screen.getByRole('link', { name: /Build your resume/ })).toHaveAttribute('href', '/dev/member/resume-studio');
+    expect(screen.getByRole('link', { name: /Ask for feedback on this course/ })).toHaveAttribute('href', '/dev/member/messages');
+  });
+
   it('opens the selected course practice without sending an attempt or losing notes', async () => {
     const practice: TrainingCoursePractice = {
       assignedCourseSlug: courseSlug(0),

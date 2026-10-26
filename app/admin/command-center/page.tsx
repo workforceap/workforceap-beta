@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { Bell, TriangleAlert, UserPlus, Briefcase, Award } from 'lucide-react';
 import { buildPageMetadataAsync } from '@/app/seo';
@@ -244,6 +245,7 @@ export default async function AdminCommandCenterPage({
       hour: 'numeric',
       minute: '2-digit',
     }).format(new Date());
+    const commonT = await getTranslations('common.disclosures');
 
     return (
       <>
@@ -256,6 +258,7 @@ export default async function AdminCommandCenterPage({
           queueItems={queueItems}
           programHealth={programHealth}
           programHealthCaption={PROGRAM_HEALTH_CAPTION}
+          whatIsCountedLabel={commonT('whatIsCounted')}
           placementsByMonth={placementsByMonth}
           placementsSubtitle={`${new Date().getUTCFullYear()} YTD · ${headline.placementsYtd} total`}
           addStudentHref="/admin/members/new"

@@ -1,10 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { ChevronDown } from 'lucide-react';
 import { StatusTag, type KitTone } from '@/components/portal/kit';
 import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
+import { formatPortalDate } from '@/lib/formatDate';
+import styles from './PartnerMilestonesMobile.module.css';
 
 type Milestone = {
   id: string;
@@ -29,8 +31,8 @@ const KIND_LABEL: Record<string, string> = {
   event: 'Activity',
 };
 
-export default function PartnerMilestonesMobile() {
-  const [milestones, setMilestones] = useState<Milestone[] | null>(null);
+export default function PartnerMilestonesMobile({ initialMilestones }: { initialMilestones?: Milestone[] } = {}) {
+  const [milestones, setMilestones] = useState<Milestone[] | null>(initialMilestones ?? null);
   const [error, setError] = useState<string | null>(null);
   const [completedOpen, setCompletedOpen] = useState(false);
 
@@ -47,8 +49,9 @@ export default function PartnerMilestonesMobile() {
   }, []);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (initialMilestones !== undefined) setMilestones(initialMilestones);
+    else void load();
+  }, [load, initialMilestones]);
 
   if (error) return (
     <div style={{ padding: '0 1.5rem' }}>
@@ -84,7 +87,7 @@ export default function PartnerMilestonesMobile() {
           {pending.length > 0 && (
             <span
               className="wa-tabular-nums"
-              style={{ padding: '0.125rem 0.5rem', borderRadius: '9999px', background: 'var(--wa-accent)', color: 'var(--wa-on-accent-control)', fontSize: '0.8125rem', fontWeight: 700 }}
+              style={{ padding: '0.125rem 0.5rem', borderRadius: '9999px', background: 'var(--wa-accent-fill)', color: 'var(--wa-on-accent-control)', fontSize: '0.8125rem', fontWeight: 700 }}
             >
               {pending.length}
             </span>
@@ -101,17 +104,17 @@ export default function PartnerMilestonesMobile() {
                 className="wa-kit-card wa-kit-card--sm"
                 style={{ borderLeft: '3px solid var(--wa-accent-dark)' }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <Link href={`/partner/referred-members/${m.memberId}`} style={{ textDecoration: 'none' }}>
+                <div className={styles.pendingContent}>
+                  <StatusTag className={styles.status} tone={KIND_TONE[m.kind] ?? 'muted'}>{KIND_LABEL[m.kind] ?? m.kind}</StatusTag>
+                  <div className={styles.record}>
+                    <PortalRecordLink href={`/partner/referred-members/${m.memberId}`} style={{ textDecoration: 'none' }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)', margin: '0 0 0.125rem' }}>{m.memberName}</p>
-                    </Link>
+                    </PortalRecordLink>
                     <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--wa-accent)', margin: '0 0 0.125rem' }}>{m.label}</p>
                     <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>
-                      {new Date(m.at).toLocaleDateString()}
+                      {formatPortalDate(m.at)}
                     </p>
                   </div>
-                  <StatusTag tone={KIND_TONE[m.kind] ?? 'muted'}>{KIND_LABEL[m.kind] ?? m.kind}</StatusTag>
                 </div>
               </div>
             ))}
@@ -154,7 +157,7 @@ export default function PartnerMilestonesMobile() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem' }}>
                     <div style={{ minWidth: 0 }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)', margin: '0 0 0.125rem' }}>{m.memberName}</p>
-                      <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>{m.label} · {new Date(m.at).toLocaleDateString()}</p>
+                      <p style={{ fontSize: 13, color: 'var(--wa-muted)', margin: 0 }}>{m.label} · {formatPortalDate(m.at)}</p>
                     </div>
                     <StatusTag tone="ok">Done</StatusTag>
                   </div>

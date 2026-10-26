@@ -232,6 +232,38 @@ export type DashboardOnboarding = {
   };
 };
 
+/** A recorded receipt, never a page visit, member click, or profile edit timestamp. */
+export type MemberHandoffReceipt = {
+  source: 'portal' | 'team' | 'calendar' | 'provider';
+  /** ISO 8601 UTC timestamp from the confirmation record itself. Omit when unavailable. */
+  confirmedAt?: string;
+};
+
+/** Only confirmed evidence may complete a handoff step. Unknown is not incomplete. */
+export type MemberHandoffEvidence = {
+  resume: 'portal_received' | 'pending_confirmation' | 'unknown';
+  consultation: 'booked' | 'pending_confirmation' | 'unknown';
+  training: 'access_confirmed' | 'pending_confirmation' | 'unknown';
+  /** Optional supporting records. Ignored for unknown or pending steps. */
+  receipts?: Partial<Record<'resume' | 'consultation' | 'training', MemberHandoffReceipt>>;
+};
+
+/**
+ * This loader already reads portal résumé paths. It does not read email receipt,
+ * calendar booking, or provider access evidence. Enrollment/approval, intake
+ * interviews and member-editable course progress cannot fill those gaps.
+ */
+export function buildMemberHandoffEvidence(profile?: {
+  resumeOriginalPath?: string | null;
+  resumeEnhancedPath?: string | null;
+} | null): MemberHandoffEvidence {
+  return {
+    resume: profile?.resumeOriginalPath || profile?.resumeEnhancedPath ? 'portal_received' : 'unknown',
+    consultation: 'unknown',
+    training: 'unknown',
+  };
+}
+
 export type MemberDashboardHomeView = {
   approvalStatus: MemberApprovalStatus;
   /**
@@ -304,6 +336,8 @@ export type MemberDashboardHomeView = {
   toolkitHref: string;
   jobsHref: string;
   doThisNext: NextBestAction | null;
+  /** Evidence visible to Home; disconnected handoffs remain explicitly unknown. */
+  handoff: MemberHandoffEvidence;
   /**
    * The next few steps after `doThisNext`, so the home says more than one
    * true thing: the other persisted (staff- or cron-written) actions first,
@@ -894,6 +928,7 @@ function emptyHome(fallbackDisplayName: string | null | undefined): MemberDashbo
     doThisNext,
     upNext,
     // No user row: nothing is known about the member's stage, so name no tool.
+    handoff: buildMemberHandoffEvidence(),
     recommendedTool: null,
     preassessmentCompleted: false,
     ungatedDigitalBasicsHref: digitalLiteracyFirstModuleHref(),
@@ -1211,6 +1246,7 @@ function shapeHome(args: {
     doThisNext,
     upNext,
     recommendedTool,
+    handoff: buildMemberHandoffEvidence(args.row.profile),
     preassessmentRetakePending: args.row.assessmentAttemptCount === 1 && !!args.row.assessmentRetakeRequestedAt,
     preassessmentCompleted: Boolean(args.row.assessmentCompleted),
     ungatedDigitalBasicsHref: digitalLiteracyFirstModuleHref(),

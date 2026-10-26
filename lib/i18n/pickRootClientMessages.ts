@@ -19,6 +19,8 @@ export const PORTAL_CLIENT_NAMESPACES = [
   'profile',
   'jobs',
   'workspace',
+  'portalWorkspaces',
+  'memberWorkspace',
   'courseraProgress',
   'partner',
   'group',
@@ -47,6 +49,9 @@ export const PORTAL_CLIENT_NAMESPACES = [
   // components/portal/kit/pages/member/MemberMessagesKit — /dashboard/messages
   // inbox chrome, composer and send errors (WAP-262).
   'messages',
+  // components/portal/SkillMissionPanel + SkillMissionChallenge — /dashboard/missions,
+  // the Learning hub panel and the training workspace practice dialog.
+  'skillMissions',
 ] as const;
 
 /**
@@ -162,7 +167,7 @@ export function pickClientMessageSlice(
       // AdminPortalShell uses the shared WorkspaceShell label namespaces too.
       // `tours` ships the GuidedTour chrome + step copy so admin can mount the
       // same TourProviderWrapper as (portal) (lib/tours/registry.ts).
-      Object.assign(out, pickNamespaces(m, ['admin', 'courseraProgress', 'workspace', 'group', 'tours', 'enrollmentAgreement']));
+      Object.assign(out, pickNamespaces(m, ['admin', 'courseraProgress', 'workspace', 'portalWorkspaces', 'group', 'tours', 'enrollmentAgreement']));
       {
         const dashboard = pickAdminDashboardClientSlice(m);
         if (dashboard) out.dashboard = dashboard;

@@ -60,7 +60,9 @@ try {
   const config = loadTailwindConfig(path.join(root, 'tailwind.config.ts'));
   config.content = config.content.map((pattern) => path.join(root, pattern));
   const compiledCss = await postcss([tailwind(config)]).process(await readFile(mainCss, 'utf8'), { from: mainCss });
-  const css = [compiledCss.css];
+  // esbuild emits the current inbox's CSS module with the class names used by
+  // the bundled component. Include it so this proof exercises its real layout.
+  const css = [compiledCss.css, await readFile(path.join(temp, 'fixture.css'), 'utf8')];
   for (const name of ['wa-brand-tokens.css', 'portal-tokens.css', 'portal-kit.css']) {
     css.push((await readFile(path.join(root, 'css', name), 'utf8')).replace(/^@import[^;]+;/gm, ''));
   }
@@ -96,7 +98,10 @@ try {
       await page.waitForFunction(() => Boolean(window.messageFixture.insert));
       await expect.poll(() => log.evaluate((node) => node.scrollHeight - node.scrollTop - node.clientHeight)).toBeLessThanOrEqual(1);
       await page.evaluate(() => window.scrollTo(0, 40));
-      await log.evaluate((node) => { node.scrollTop = 120; });
+      await log.evaluate((node) => new Promise((resolve) => {
+        node.addEventListener('scroll', () => resolve(undefined), { once: true });
+        node.scrollTop = 120;
+      }));
       await expect.poll(() => log.evaluate((node) => node.scrollTop)).toBe(120);
       const before = await page.evaluate(() => ({ outer: window.scrollY, inner: document.querySelector('[role="log"]').scrollTop }));
       await page.evaluate(() => window.messageFixture.insert({ new: { id: 'new-reply', author_id: 'fixture-counselor', body: 'New counselor reply while you read earlier messages.\n' + 'LongUnbrokenMessage'.repeat(20), created_at: '2026-10-20T17:00:00.000Z' } }));
@@ -130,7 +135,10 @@ try {
       await expect(page.getByRole('alert')).toContainText('Fixture send failed');
       await expect(composer).toHaveValue('New draft while the first send is pending');
       if (width < 768) {
-        await log.evaluate((node) => { node.scrollTop = 120; });
+        await log.evaluate((node) => new Promise((resolve) => {
+          node.addEventListener('scroll', () => resolve(undefined), { once: true });
+          node.scrollTop = 120;
+        }));
         await expect.poll(() => log.evaluate((node) => node.scrollTop)).toBe(120);
         await page.getByRole('button', { name: 'Back to messages' }).click();
         await expect(log).not.toBeVisible();

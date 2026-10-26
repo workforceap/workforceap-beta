@@ -13,7 +13,7 @@ export type ReplayPendingXapiResult = {
   skippedUnparsed: number;
   /** Rows retained for retry because their persisted tenant is unresolved. */
   skippedUnresolvedOrganization: number;
-  /** Total per-completion-verb side effects emitted (may include failures). */
+  /** Completion results returned by the pipeline, not a count of emitted side effects. */
   completionsEmitted: number;
   /** Sentinel 'unresolved-%' organization_ids repaired before this replay. */
   orgsRepaired?: number;
@@ -22,11 +22,11 @@ export type ReplayPendingXapiResult = {
    *  — different bugs, different fixes. */
   breakdown: {
     completedOk: number;
-    /** Resolver matched, but downstream processing threw (e.g. course not found in catalog). */
+    /** Rows whose processing or outcome lookup failed, including returned error outcomes. */
     errored: number;
     /** Resolver matched, but the verb isn't a course completion (item-level, progressed, etc.). */
     ignored: number;
-    /** Resolver matched a course-progress statement whose course didn't resolve: no progress written. */
+    /** Resolver matched, but course attribution remains unresolved. */
     unresolvedCourse: number;
     /** Resolver couldn't bind the actor identity to a WAP user. */
     unmatched: number;
@@ -74,7 +74,7 @@ export async function replayPendingXapiStatementsForEmail(
 
 
 /**
- * Replay xAPI statements that previously landed as unmatched/error for an identity.
+ * Replay xAPI statements that previously landed as unmatched/error/unresolved_course for an identity.
  * These rows may already be marked processed, so this intentionally queries the
  * authoritative coursera_xapi_events table instead of only processed=false rows.
  */
@@ -101,7 +101,7 @@ export async function replayUnresolvedXapiStatementsForIdentity(args: {
     const matchingStatementIds = await tx.$queryRaw<Array<{ statementId: string }>>`
       SELECT statement_id AS "statementId"
       FROM coursera_xapi_events
-      WHERE completion_status IN ('unmatched', 'error')
+      WHERE completion_status IN ('unmatched', 'error', 'unresolved_course')
         AND statement_id IS NOT NULL
         AND (
           (${email}::text IS NOT NULL AND LOWER(actor_email) = ${email}::text)
@@ -235,46 +235,59 @@ async function _replayRows(
   const breakdown = { completedOk: 0, errored: 0, ignored: 0, unresolvedCourse: 0, unmatched: 0 };
 
   for (const row of rows) {
-    const organizationId = normalizePersistedXapiOrganizationId(row.organizationId);
-    if (!organizationId) {
-      skippedUnresolvedOrganization += 1;
-      continue;
-    }
+    try {
+      const organizationId = normalizePersistedXapiOrganizationId(row.organizationId);
+      if (!organizationId) {
+        skippedUnresolvedOrganization += 1;
+        continue;
+      }
 
-    const raw = xapiStatementRowToRawStatement(row);
-    const parsed = parseXapiStatement(raw);
-    if (!parsed) {
-      skippedUnparsed += 1;
-      await markXapiStatementProcessed(row.statementId);
-      continue;
-    }
+      const raw = xapiStatementRowToRawStatement(row);
+      const parsed = parseXapiStatement(raw);
+      if (!parsed) {
+        await markXapiStatementProcessed(row.statementId, row.statementHash);
+        skippedUnparsed += 1;
+        continue;
+      }
 
-    replayed += 1;
-    const result = await handleInboundParsedStatement(parsed, {
-      organizationId,
-      expectedUserId,
-      requireOrganizationId: true,
-    });
-    completionsEmitted += result.completions.length;
+      replayed += 1;
+      const result = await handleInboundParsedStatement(parsed, {
+        organizationId,
+        expectedUserId,
+        requireOrganizationId: true,
+        ...(row.statementHash ? { statementHash: row.statementHash } : {}),
+      });
+      completionsEmitted += result.completions.length;
 
-    // Aggregate per-row outcome from the pipeline's classification. Reading
-    // the just-written event row keeps this in lock-step with the
-    // authoritative `completion_status` recorded by `recordXapiEvent`.
-    if (parsed.statementId) {
-      const eventRow = await prisma.$transaction((tx) =>
-        tx.$queryRaw<Array<{ status: string }>>`
-          SELECT completion_status AS status
-          FROM coursera_xapi_events
-          WHERE statement_id = ${parsed.statementId}
-          LIMIT 1
-        `,
-      );
-      const status = eventRow[0]?.status ?? 'unknown';
+      // Aggregate per-row outcome from the pipeline's classification. Reading
+      // the just-written event row keeps this in lock-step with the
+      // authoritative `completion_status` recorded by `recordXapiEvent`.
+      let status: string = result.outcome ?? 'unknown';
+      if (parsed.statementId) {
+        const eventRow = await prisma.$transaction((tx) =>
+          tx.$queryRaw<Array<{ status: string }>>`
+            SELECT completion_status AS status
+            FROM coursera_xapi_events
+            WHERE statement_id = ${parsed.statementId}
+            LIMIT 1
+          `,
+        );
+        status = eventRow[0]?.status ?? status;
+      }
       if (status === 'completed') breakdown.completedOk += 1;
       else if (status === 'error') breakdown.errored += 1;
       else if (status === 'ignored') breakdown.ignored += 1;
       else if (status === 'unresolved_course') breakdown.unresolvedCourse += 1;
       else if (status === 'unmatched') breakdown.unmatched += 1;
+    } catch {
+      // A poison row must not starve later events. Only the pipeline may mark
+      // a parsed statement processed; failures before that point stay pending
+      // for a later retry through the same idempotent completion path. Do not
+      // log provider payloads, identities, or exception text here.
+      breakdown.errored += 1;
+      console.error('[replayPendingXapi] statement replay failed', {
+        statementId: row.statementId?.slice(0, 128) ?? null,
+      });
     }
   }
 

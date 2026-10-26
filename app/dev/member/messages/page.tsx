@@ -39,41 +39,52 @@ export default async function DevMemberMessagesPage({
     );
   }
   if (state === 'thread-empty') {
-    // `memberUserId` enables the composer (kit `first` state with its action) without a live thread — no realtime, no read marker.
-    return <MemberMessagesKit conversations={[]} activeName="Counselor" activeRole="Career counselor" activeInitials="CS" messages={[]} memberUserId="preview-member" />;
+    return <MemberMessagesKit conversations={[]} activeName="Counselor" activeRole="Career counselor" activeInitials="CS" messages={[]} previewOnly />;
   }
 
   return (
     <MemberMessagesKit
+      previewOnly
       conversations={[
         {
           id: 'counselor',
           name: 'Counselor',
           role: 'Career counselor',
           preview: 'Reply here about training, jobs, or your next session.',
+          initials: 'CS',
           unread: true,
           active: true,
+          messages: [
+            {
+              id: 'm1',
+              from: 'other',
+              author: 'CS',
+              text: 'This thread is with your counselor. Send a question about training, jobs, or your next session.',
+            },
+            { id: 'm2', from: 'self', text: 'Will do.' },
+            { id: 'm3', from: 'other', author: 'CS', text: 'I will reply on this thread.' },
+          ],
         },
         {
           id: 'team',
           name: 'WorkforceAP Team',
           role: 'Support',
           preview: 'Workspace email and Coursera access questions go here.',
+          initials: 'WA',
+          messages: [
+            {
+              id: 'm4',
+              from: 'other',
+              author: 'WA',
+              text: 'Use this thread for workspace email and Coursera access questions.',
+            },
+            { id: 'm5', from: 'self', text: 'Thanks, I will reach out here.' },
+          ],
         },
       ]}
       activeName="Counselor"
       activeRole="Career counselor"
       activeInitials="CS"
-      messages={[
-        {
-          id: 'm1',
-          from: 'other',
-          author: 'CS',
-          text: 'This thread is with your counselor. Send a question about training, jobs, or your next session.',
-        },
-        { id: 'm2', from: 'self', text: 'Will do.' },
-        { id: 'm3', from: 'other', author: 'CS', text: 'I will reply on this thread.' },
-      ]}
     />
   );
 }

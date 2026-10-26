@@ -67,6 +67,7 @@
   },
   "nav": {
     "dashboard": "Inicio",
+    "dashboardShort": "Inicio",
     "programs": "Programas",
     "apply": "Solicitar",
     "certifications": "Certificaciones",
@@ -77,6 +78,7 @@
     "careerPlan": "Mi Plan de Carrera",
     "fundingEligibility": "Elegibilidad de financiamiento",
     "jobBoard": "Bolsa de Trabajo",
+    "jobBoardShort": "Empleos",
     "jobApplications": "Solicitudes de Empleo",
     "resume": "Currículum",
     "myProgress": "Mi Progreso",
@@ -92,17 +94,20 @@
     "memberGuide": "Guía del Miembro",
     "myAccount": "Mi Cuenta",
     "myProgram": "Mi Programa",
+    "myProgramShort": "Programa",
     "myCertificates": "Mis Certificados",
     "pathToCertification": "Camino a la certificación",
     "myDocuments": "Mis documentos",
     "inviteFriend": "Invita a un amigo",
     "wioaQualification": "Calificación WIOA",
     "careerToolkit": "AI Career Tools",
+    "careerToolkitShort": "Herram.",
     "aiCounselor": "Lilley",
     "aiAdvisor": "Asesor de IA",
     "trainingPreassessment": "Pre-evaluación de Capacitación",
     "wioaPreassessment": "Preevaluación WIOA",
     "counselorChat": "Mensajes",
+    "counselorChatShort": "Mensajes",
     "aboutUs": "Acerca de Nosotros",
     "whatWeDo": "Qué Hacemos",
     "howItWorks": "Cómo Funciona",
@@ -119,6 +124,7 @@
     "contactUs": "Contáctanos",
     "memberPortal": "Portal de miembros",
     "openMenu": "Abrir menú",
+    "menuLoading": "Cargando la navegación…",
     "closeMenu": "Cerrar menú",
     "expandSidebar": "Expandir barra lateral",
     "showMoreUnder": "Mostrar {count} más bajo {label}",
@@ -140,7 +146,8 @@
         "jobs": "Empleos",
         "pipeline": "Proceso",
         "workQueue": "Pendientes",
-        "messages": "Mensajes"
+        "messages": "Mensajes",
+        "candidates": "Candidatos"
       },
       "counselor": {
         "today": "Hoy",
@@ -148,7 +155,8 @@
         "inbox": "Bandeja",
         "members": "Miembros",
         "messages": "Mensajes",
-        "resources": "Recursos"
+        "resources": "Recursos",
+        "sessions": "Sesiones"
       },
       "partner": {
         "overview": "Resumen",
@@ -156,7 +164,8 @@
         "attention": "Atención",
         "messages": "Mensajes",
         "milestones": "Hitos",
-        "outcomes": "Resultados"
+        "outcomes": "Resultados",
+        "impact": "Impacto"
       },
       "admin": {
         "today": "Hoy",
@@ -168,7 +177,19 @@
     "freeCareerQuiz": "Cuestionario de carrera gratis",
     "comparePrograms": "Comparar programas",
     "salaryGuide": "Guía salarial",
-    "membership": "Membresía"
+    "membership": "Membresía",
+    "candidates": "Candidatos",
+    "impact": "Impacto",
+    "morePages": "Más páginas",
+    "newMilestonesCount": "{count} hitos nuevos",
+    "memberTabsLabel": "Pestañas principales",
+    "tabHome": "Inicio",
+    "tabProgram": "Programa",
+    "tabJobs": "Empleos",
+    "tabMessages": "Mensajes",
+    "tabMore": "Más",
+    "skipToMain": "Saltar al contenido principal",
+    "skipToNavigation": "Saltar a la navegación"
   },
   "cta": {
     "applyNow": "Solicita ahora",
@@ -270,9 +291,52 @@
     "languageFr": "Francés",
     "languageEn": "Inglés",
     "machineTranslationNotice": "Esta traducción se generó automáticamente y puede contener errores.",
-    "machineTranslationNoticeAction": "Cambiar idioma"
+    "machineTranslationNoticeAction": "Cambiar idioma",
+    "disclosures": {
+      "whatHappensNext": "Qué pasa después",
+      "whereItGoes": "Dónde se publica",
+      "whatIsCounted": "Qué se cuenta",
+      "moreThisWeek": "Más esta semana",
+      "studyAndGoals": "Estudio y metas",
+      "previewActionUnavailable": "Solo vista previa. Esta acción no se guardará."
+    }
   },
   "dashboard": {
+    "progressDetails": "Detalles del progreso",
+    "handoff": {
+      "homeLede": "Tu próximo paso y el progreso que podemos confirmar.",
+      "title": "Tu progreso hasta ahora",
+      "evidenceIntro": "Registros confirmados y datos que aún faltan.",
+      "resume": "Currículum",
+      "consultation": "Consulta",
+      "training": "Acceso a capacitación",
+      "resumeReceived": "Recibido en el portal",
+      "resumeUnknown": "No hay copia registrada en el portal",
+      "consultationBooked": "Reserva confirmada",
+      "consultationUnknown": "El estado de la reserva no está conectado",
+      "trainingConfirmed": "Acceso confirmado",
+      "trainingUnknown": "Activación no confirmada",
+      "pendingConfirmation": "Esperando confirmación del equipo",
+      "confirmedOn": "Confirmado el {date} (UTC)",
+      "source": {
+        "portal": "Registro del portal",
+        "team": "Confirmación del equipo",
+        "calendar": "Registro del calendario",
+        "provider": "Registro del proveedor de capacitación"
+      },
+      "reconcileSummary": "¿Ya completaste un paso?",
+      "pendingSummary": "Un paso espera confirmación",
+      "outsidePortal": "¿Ya enviaste tu currículum o reservaste desde el correo de bienvenida? Esos pasos pueden no aparecer aquí. Consulta con tu equipo antes de repetirlos.",
+      "confirmationGuidance": "En tu mensaje, indica el paso y cuándo lo completaste. Para una consulta, incluye la fecha y hora de tu confirmación de reserva.",
+      "confirmationBoundary": "Abrir Mensajes no envía una solicitud ni cambia tu progreso. Tu equipo puede revisar el registro después de que envíes tu mensaje.",
+      "confirm": "Confirmar con mi equipo",
+      "prepareTitle": "Prepárate para tu consulta",
+      "prepareBody": "Revisa tu currículum y anota la experiencia, las metas y las preguntas que quieres conversar con tu asesor.",
+      "resumeTitle": "Trabaja en tu currículum",
+      "resumeBody": "Usa el espacio de currículum para revisar un documento que ya tienes o preparar uno para tu consulta.",
+      "reviewResume": "Revisar mi currículum",
+      "openResume": "Abrir espacio de currículum"
+    },
     "priorityAction": "Acción prioritaria",
     "priorityActionFor": "Para {program}.",
     "yourProgram": "Tu programa",
@@ -421,7 +485,10 @@
     "pwaInstallCta": "Instalar",
     "trainingPlanComplete": "Tu plan de entrenamiento está completo. Enfócate en resultados de empleo y preparación profesional.",
     "doThisNext": "Haz esto ahora",
-    "todayFocus": "Hoy",
+    "todayFocus": "Tu próximo paso",
+    "dismissSuggestion": "Descartar sugerencia",
+    "suggestionDismissed": "Sugerencia descartada. Tu progreso registrado no ha cambiado.",
+    "dismissSuggestionError": "No pudimos descartar esta sugerencia. Inténtalo de nuevo.",
     "alsoForYou": "También para ti",
     "alsoForYouHint": "Otros próximos pasos útiles",
     "stateGettingStarted": "Primeros pasos",
@@ -665,7 +732,101 @@
     "firstCertProgressBarLabel": "{percent}% de progreso de capacitación",
     "firstCertTrainingStage": "Progreso de cursos registrado",
     "stepsComplete": "{complete} de {total} pasos",
-    "trainingCoursesComplete": "{complete} de {total} cursos completados"
+    "trainingCoursesComplete": "{complete} de {total} cursos completados",
+    "home": {
+      "thisWeek": "Esta semana",
+      "welcomeBack": "Bienvenido de nuevo, {firstName}.",
+      "title": "Inicio",
+      "stepCount": "{count, plural, one {# paso} other {# pasos}}",
+      "stepsLabel": "Pasos de esta semana",
+      "noSteps": "No hay pasos esta semana.",
+      "whatNext": "Qué pasa después",
+      "preassessmentTitle": "Haz tu preevaluación WIOA",
+      "preassessmentSub": "35 preguntas para tu consejero",
+      "start": "Empezar",
+      "shortcutsLabel": "Atajos",
+      "shortcutProgress": "Progreso",
+      "shortcutPoints": "Puntos",
+      "shortcutJobs": "Empleos",
+      "shortcutMissions": "Misiones de habilidades",
+      "shortcutAiTools": "AI Career Tools",
+      "shortcutLearning": "Centro de aprendizaje",
+      "moduleNote": "Qué incluye el conteo de módulos",
+      "studyOfGoal": "{time} de tu meta de {goal}",
+      "placement": {
+        "title": "¿Aceptaste el puesto en {company}?",
+        "sub": "Avisa a WorkforceAP si aceptaste la oferta.",
+        "yes": "Sí",
+        "yesLabel": "Sí, avisar a mi equipo",
+        "no": "Todavía no",
+        "noLabel": "Todavía no, ocultar esta pregunta",
+        "sending": "Enviando...",
+        "error": "No pudimos enviarlo. Inténtalo de nuevo.",
+        "next": "Lo registramos como una colocación que tú informaste y avisamos a tu consejero para que confirme la fecha de inicio y el pago. Tu apoyo y tu acceso no cambian.",
+        "ack": {
+          "created": {
+            "title": "Colocación registrada: {company}",
+            "body": "Registrada como una colocación que tú informaste. Avisamos a tu consejero para que confirme la fecha de inicio y el pago."
+          },
+          "corroborated": {
+            "title": "Colocación registrada: {company}",
+            "body": "Registrada como una colocación que tú informaste. Avisamos a tu consejero para que confirme la fecha de inicio y el pago."
+          },
+          "unchanged": {
+            "title": "Ya está registrada: {company}",
+            "body": "No enviamos nada nuevo a tu consejero. Tu colocación ya estaba registrada por una confirmación anterior. Avísale si cambió algún dato."
+          },
+          "failed": {
+            "title": "Guardado para revisión: {company}",
+            "body": "Guardamos tu confirmación, pero no pudimos registrar la colocación automáticamente. Quedó marcada para que tu equipo la revise."
+          }
+        }
+      },
+      "noProgramTag": "Sin programa",
+      "noProgramNotice": "Tu progreso en Coursera está guardado. Un consejero aún debe inscribirte en un programa de WorkforceAP.",
+      "basicsEyebrow": "No se necesita solicitud",
+      "basicsTitle": "Empieza con lo básico digital",
+      "basicsBody": "Diez lecciones de computación a tu ritmo. Abre la lección 1 ahora.",
+      "basicsCta": "Empezar esta lección",
+      "certPathTitle": "Ruta de certificación",
+      "openPlan": "Abrir plan",
+      "courseCompletion": "Avance del curso",
+      "noProgramEnrolled": "Sin programa inscrito",
+      "nextLesson": "Siguiente:",
+      "noNextModule": "No hay un módulo siguiente registrado.",
+      "chooseProgramToStart": "Elige un programa para empezar.",
+      "moduleProgressLabel": "Avance de los módulos de la certificación",
+      "modulesValueText": "{done} de {total} módulos",
+      "moduleN": "Módulo {n}",
+      "resumeModule": "Retomar módulo",
+      "chooseProgram": "Elegir programa",
+      "railLabel": "Tu equipo y tu avance",
+      "studyTitle": "Estudio de esta semana",
+      "studyGoalLabel": "Avance de la meta de estudio",
+      "studyDaysLabel": "Días de estudio esta semana",
+      "studyDayMinutes": "{day}: {minutes, plural, one {# minuto} other {# minutos}}",
+      "studyUntracked": "Aún no se registran los minutos de estudio de este programa.",
+      "studyNone": "No hay minutos de estudio esta semana.",
+      "openProgram": "Abrir programa",
+      "nextBadge": "Próxima insignia",
+      "badgeToGo": "Faltan {remaining}",
+      "badgeProgressLabel": "Avance de la insignia {name}",
+      "goalsLabel": "Metas",
+      "goalProgress": "Avance de {title}",
+      "openGoals": "Abrir metas",
+      "setGoal": "Fijar una meta",
+      "days": {
+        "Mon": "Lunes",
+        "Tue": "Martes",
+        "Wed": "Miércoles",
+        "Thu": "Jueves",
+        "Fri": "Viernes",
+        "Sat": "Sábado",
+        "Sun": "Domingo"
+      },
+      "advisorRole": "Tu asesor de carrera",
+      "messageAdvisor": "Escribir a {name}"
+    }
   },
   "apply": {
     "step1": "Información personal",
@@ -1337,7 +1498,10 @@
     "type": "tipo",
     "program": "programa",
     "salary": "salario",
-    "sort": "orden"
+    "sort": "orden",
+    "matchCount": "{count, plural, one {# coincidencia} other {# coincidencias}}",
+    "matchesBasis": "Ordenadas según tu programa, tu preparación, tus certificaciones y tu actividad.",
+    "improveReadiness": "Mejorar tu preparación"
   },
   "counselor": {
     "session": "Sesión",
@@ -1713,7 +1877,13 @@
     "resourcesTitle": "Recursos",
     "resourcesGoal": "Enlaces rápidos para {partnerName} y tu equipo interno.",
     "settingsTitle": "Configuración",
-    "settingsGoal": "El perfil de tu organización y las preferencias de notificación."
+    "settingsGoal": "El perfil de tu organización y las preferencias de notificación.",
+    "impactWorkspaceTitle": "Impacto",
+    "impactWorkspaceDescription": "Consulta los resultados de las referencias y los hitos recientes, y prepara tus informes.",
+    "impactWorkspaceViews": "Vistas de impacto",
+    "impactWorkspaceOutcomes": "Resultados",
+    "impactWorkspaceMilestones": "Hitos",
+    "impactWorkspaceExports": "Exportaciones"
   },
   "group": {
     "memberTools": "Herramientas y carreras",
@@ -2789,7 +2959,14 @@
     "reviewCandidatesMobile": "Revisa y responde a candidatos",
     "reviewCandidatesDesktop": "Revisa y responde a candidatos para tus roles abiertos",
     "checkoutSuccess": "Tu suscripción se configuró correctamente. ¡Bienvenido!",
-    "checkoutCanceled": "El pago se canceló: tu plan no ha cambiado."
+    "checkoutCanceled": "El pago se canceló: tu plan no ha cambiado.",
+    "candidatesWorkspaceTitle": "Candidatos",
+    "candidatesWorkspaceDescription": "Revisa las solicitudes y las coincidencias sugeridas, y avanza a los candidatos por las etapas de contratación.",
+    "candidatesWorkspaceViews": "Vistas de candidatos",
+    "candidatesWorkspaceApplicants": "Solicitantes",
+    "candidatesWorkspaceMatches": "Coincidencias",
+    "candidatesWorkspacePipeline": "Proceso",
+    "jobsWorkspaceActions": "Acciones de empleos"
   },
   "auth": {
     "login": {
@@ -3146,7 +3323,7 @@
     },
     "thanks": {
       "going_well": "¡Qué bueno saberlo! Sigue así. Pronto volveremos a preguntarte.",
-      "have_questions": "Gracias por contarnos. Tu consejero puede ayudarte — envíale un mensaje cuando quieras.",
+      "have_questions": "Gracias por contarnos. Tu consejero puede ayudarte. Envíale un mensaje cuando quieras.",
       "having_trouble": "Gracias por contarnos. Avisamos a tu asesor y se pondrá en contacto contigo. También puedes escribirle ahora."
     },
     "messageCounselor": "Escribe a tu asesor",
@@ -3488,6 +3665,7 @@
     }
   },
   "memberApproval": {
+    "viewDetails": "Ver detalles",
     "dismiss": "Ocultar",
     "dismissLabel": "Ocultar el estado de tu aprobación",
     "restore": "Mostrar el estado de tu aprobación",
@@ -3549,6 +3727,30 @@
       "approved": "Capacitación aprobada",
       "pending": "Aún no aprobada",
       "unknown": "Estado no registrado"
+    },
+    "strip": {
+      "submittedUnderReview": "Enviada el {date}, en revisión",
+      "submittedNeedsInput": "Enviada el {date}, necesita tu información",
+      "submittedApproved": "Enviada el {date}, aprobada",
+      "underReview": "En revisión",
+      "approved": "Aprobada",
+      "reviewPendingSince": "Revisión pendiente desde el {date}",
+      "inReviewSince": "En revisión desde el {date}",
+      "needsInputSince": "Necesita tu información desde el {date}",
+      "next": "Siguiente: {step}",
+      "nextStep": {
+        "intake": "revisión de admisión",
+        "training": "aprobación de capacitación"
+      },
+      "done": "Listo",
+      "inProgress": "En curso",
+      "waiting": "Sin iniciar",
+      "closed": "Cerrado",
+      "cleared": "Aprobado para capacitarse",
+      "pending": "En revisión",
+      "closedChip": "Proceso cerrado",
+      "needsInfo": "Necesita tu información",
+      "label": "Pasos de aprobación"
     }
   },
   "wioa": {
@@ -3729,8 +3931,8 @@
           "body": "Puestos activos, candidatos en revisión y ofertas abiertas de un vistazo. Cola de trabajo, en el menú, enumera las acciones de hoy: candidatos por revisar, entrevistas por programar y publicaciones sin actividad."
         },
         "applicants": {
-          "title": "Revisa candidatos",
-          "body": "Todas las personas que se postularon, con programa, estado y puntuación de compatibilidad. Abre un candidato para ver su progreso de formación y su perfil, y luego avánzalo o descártalo."
+          "title": "Revisa los candidatos",
+          "body": "Candidatos reúne Solicitantes, Coincidencias y Proceso. Revisa solicitudes, explora las coincidencias sugeridas por IA y avanza a los candidatos por las etapas de contratación. Cada vista conserva sus filtros y acciones."
         },
         "pipeline": {
           "title": "Sigue tu proceso de contratación",
@@ -3785,8 +3987,8 @@
           "body": "Los socios de referidos reciben un pago por cada colocación verificada. Conecta una cuenta bancaria aquí una sola vez; los pagos se envían cuando se verifica una colocación."
         },
         "exports": {
-          "title": "Exportaciones",
-          "body": "Descarga tus miembros referidos, hitos y resultados en CSV para informes de subvenciones y actualizaciones para la junta. Resumen de resultados muestra las mismas cifras en pantalla."
+          "title": "Impacto e informes",
+          "body": "Impacto reúne Resultados, Hitos y Exportaciones. Consulta el progreso en pantalla y descarga informes CSV para subvenciones y reuniones de la junta."
         },
         "help": {
           "title": "Vuelve cuando quieras",
@@ -3828,7 +4030,7 @@
         },
         "atRisk": {
           "title": "Miembros en riesgo",
-          "body": "El modelo de riesgo ordena tu cartera por inactividad, formación estancada y mensajes sin responder. Empieza aquí en un día ocupado."
+          "body": "Usa la vista En riesgo de Hoy para revisar a los miembros clasificados por inactividad, formación estancada y mensajes sin responder. Cada miembro conserva su motivo y siguiente paso."
         },
         "messages": {
           "title": "Escribir a un miembro",
@@ -3965,7 +4167,7 @@
     },
     "openings": {
       "title": "No hay ofertas activas ahora",
-      "body": "Los empleadores asociados aún no han publicado roles activos. Actualiza tu perfil para estar listo cuando lo hagan, o escribe a tu consejero para pedir pistas.",
+      "body": "Los empleadores asociados aún no han publicado roles activos. Actualiza tu perfil para estar listo cuando lo hagan.",
       "action": "Actualizar perfil",
       "secondary": "Escribir a tu consejero"
     },
@@ -4500,10 +4702,397 @@
     "exploreAll": "Explorar todas las herramientas profesionales con IA",
     "hubIntro": "Recibe ayuda con tu currículum, las respuestas de entrevista y las solicitudes de empleo.",
     "startTitle": "Empieza con una tarea",
+    "preparationTitle": "Antes de empezar",
     "startIntro": "Abre una herramienta, añade la información que te pide y revisa las sugerencias. Puedes editar el resultado antes de usarlo en una solicitud.",
     "resume": "Mejorar mi currículum",
     "interview": "Practicar respuestas de entrevista",
     "coverLetter": "Escribir una carta de presentación",
-    "preparation": "Ten a mano un currículum o una oferta de empleo si la herramienta lo solicita. Para practicar por voz, elige un asesor y pulsa Start cuando estés listo para usar el micrófono. Elige All Tools abajo para ver más opciones."
+    "preparation": "Ten a mano un currículum o una oferta de empleo si la herramienta lo solicita. Para practicar por voz, elige un asesor y pulsa Start cuando estés listo para usar el micrófono. Elige All Tools para ver más opciones."
+  },
+  "portalWorkspaces": {
+    "backToResults": "Volver a los resultados",
+    "backToMembers": "Volver a los miembros",
+    "counselor": {
+      "kicker": "Orientador",
+      "title": "Hoy",
+      "lede": "El trabajo con tus miembros, organizado por la siguiente acción.",
+      "allMembers": "Todos los miembros",
+      "viewsLabel": "Vistas de trabajo del orientador",
+      "filtersLabel": "Vistas de atención",
+      "region": "Espacio de trabajo: {view}",
+      "views": {
+        "attention": {
+          "label": "Necesitan atención",
+          "description": "Consulta quién necesita ayuda y por qué, con cada miembro una sola vez."
+        },
+        "replies": {
+          "label": "Esperan respuesta",
+          "description": "Conversaciones de miembros que esperan una respuesta del equipo."
+        },
+        "decisions": {
+          "label": "Decisiones",
+          "description": "Solicitudes y revisiones de ingreso pendientes, de la más antigua a la más reciente."
+        },
+        "followup": {
+          "label": "Seguimiento",
+          "description": "Prepara seguimientos, registra contactos y gestiona el siguiente paso."
+        },
+        "overview": {
+          "label": "Resumen",
+          "description": "Tus miembros asignados, sesiones recientes y actividad en contexto."
+        }
+      },
+      "filters": {
+        "all": "Toda la atención",
+        "priorities": "Por prioridad",
+        "at-risk": "Casos en riesgo",
+        "inactive": "Miembros inactivos"
+      }
+    },
+    "students": {
+      "kicker": "Personas",
+      "title": "Estudiantes",
+      "lede": "Un lugar para encontrar estudiantes, gestionar sus expedientes y seguir su progreso.",
+      "duplicates": "Revisar duplicados",
+      "add": "Añadir estudiante",
+      "viewsLabel": "Vistas del espacio de estudiantes",
+      "readinessLabel": "Vistas de preparación",
+      "interview": "Listos para entrevistas",
+      "trainingThreshold": "Formación 70 % o más",
+      "region": "Estudiantes: {view}",
+      "views": {
+        "roster": {
+          "label": "Lista",
+          "description": "Encuentra un estudiante y revisa su programa, progreso y actividad reciente."
+        },
+        "manage": {
+          "label": "Gestionar",
+          "description": "Filtra cuentas, contacta a los estudiantes seleccionados, actualiza expedientes y exporta la lista filtrada."
+        },
+        "training": {
+          "label": "Formación",
+          "description": "Revisa el progreso del plan asignado, el ritmo y los registros del proveedor sin vincular."
+        },
+        "readiness": {
+          "label": "Preparación",
+          "description": "Revisa la elegibilidad para entrevistas y la formación completada como señales independientes."
+        }
+      }
+    }
+  },
+  "memberWorkspace": {
+    "resume": {
+      "metaTitle": "Currículum",
+      "metaDescription": "Gestiona tu currículum original y sus revisiones, consulta las puntuaciones, mejora tu borrador y trabaja con un asistente de IA.",
+      "intro": "Gestiona tus archivos y mejora tu currículum.",
+      "files": "Mi currículum",
+      "scoreSource": "Revisa el texto de tu archivo revisado o, si no existe, del original. Los archivos guardados no cambian.",
+      "rewriteSource": "Parte del original. El texto generado, las revisiones guardadas y el historial se mantienen separados.",
+      "rewriteHistory": "Mejoras del currículum guardadas",
+      "filesUnavailable": "No se pudieron cargar los archivos de tu currículum. Vuelve a intentarlo para actualizar su estado.",
+      "retryFiles": "Volver a cargar los archivos del currículum",
+      "design": {
+        "filesHint": "Archivos y versiones",
+        "scoreHint": "Detecta qué mejorar",
+        "rewriteHint": "Mejora tu borrador",
+        "coachHint": "Habla sobre tu CV",
+        "filesTitle": "Los archivos de tu currículum",
+        "filesIntro": "Sube tu original, crea un currículum a partir de tu perfil y revisa cada versión.",
+        "scoreTitle": "Revisa tu currículum",
+        "rewriteTitle": "Adapta tu currículum",
+        "nextIntro": "Mejora tu borrador o habla sobre tu próximo paso.",
+        "coachTitle": "Tu asesor de currículum con IA",
+        "coachIntro": "Habla sobre tu experiencia y trabaja en cómo presentarla.",
+        "coachAvailability": "El asesor de voz está disponible al iniciar sesión.",
+        "draftNotice": "Los borradores duran mientras esta página esté abierta. Copia tus cambios antes de salir o recargar; no se recuperan.",
+        "draft": {
+          "loading": "Buscando un borrador en esta pestaña…",
+          "ready": "Tus cambios se guardarán en esta pestaña",
+          "saved": "Datos del borrador guardados en esta pestaña",
+          "restored": "Datos del borrador recuperados de esta pestaña",
+          "unavailable": "Los últimos cambios no se guardaron. Copia el texto antes de salir.",
+          "cleared": "Copia guardada eliminada. Tus cambios actuales siguen aquí.",
+          "limits": "Solo en esta pestaña, hasta 24 horas. Cerrarla puede impedir la recuperación; cerrar sesión elimina la copia.",
+          "clear": "Eliminar copia guardada",
+          "returnTitle": "Continúa el borrador de tu currículum",
+          "returnDescription": "Datos guardados a las {time} en esta pestaña.",
+          "continue": "Continuar borrador"
+        },
+        "backToTools": "Herramientas de IA",
+        "customizeRewrite": "Personalizar redacción",
+        "atsOn": "ATS activo",
+        "atsOff": "ATS desactivado",
+        "tones": {
+          "professional": "Profesional",
+          "conversational": "Conversacional",
+          "executive": "Ejecutivo"
+        }
+      }
+    },
+    "interviews": {
+      "title": "Entrevistas",
+      "description": "Prepara respuestas, practica con IA, graba una entrevista de prueba o reúne tus materiales de preparación guardados.",
+      "intro": "Elige cómo quieres prepararte. Cada modalidad conserva sus preguntas, comentarios, resultados guardados y controles.",
+      "choose": "Elige una modalidad de entrevista",
+      "nav": "Modalidades de entrevista",
+      "all": "Todas las modalidades de entrevista",
+      "role": "Puesto objetivo",
+      "roleHelp": "Lleva este puesto a la modalidad que elijas. Puedes editarlo antes de empezar.",
+      "roleExample": "Por ejemplo, especialista en soporte informático",
+      "resumeContext": "Tu currículum guardado permanece en el espacio Currículum. Preparar respuestas te permite revisar y editar el contexto antes de generar contenido; las demás modalidades conservan sus propios controles de sesión y grabación.",
+      "openResume": "Abrir el espacio Currículum",
+      "open": "Abrir {mode}",
+      "humanNotice": "Estas son herramientas de preparación con IA. Para recibir orientación de tu consejero asignado, usa Mensajes. Elegir una modalidad no activa el micrófono, la cámara, una grabación ni el envío de correo.",
+      "humanMessages": "Mensajes con tu consejero humano",
+      "bundleRole": "Puesto objetivo: {role}. El paquete contiene los materiales guardados que seleccionaste; no los reescribe para este puesto.",
+      "answersTitle": "Preparar respuestas de entrevista",
+      "answersIntro": "Preguntas escritas para el puesto con guías de respuesta STAR. No se necesita micrófono.",
+      "coachTitle": "Practicar con un entrenador de entrevistas con IA",
+      "coachIntro": "Haz una entrevista de prueba por texto o micrófono y revisa los comentarios.",
+      "recordedTitle": "Entrevista de prueba grabada",
+      "bundleTitle": "Paquete de preparación para entrevistas",
+      "modes": {
+        "answers": {
+          "title": "Preparar respuestas",
+          "modality": "Preguntas escritas y guías de respuesta STAR",
+          "detail": "Genera preguntas específicas para un puesto, prepara respuestas escritas y vuelve a tus prácticas guardadas."
+        },
+        "coach": {
+          "title": "Practicar con IA",
+          "modality": "Texto o micrófono",
+          "detail": "Realiza una entrevista de prueba interactiva y revisa los comentarios. La práctica por texto sigue disponible cuando la voz no está disponible."
+        },
+        "recorded": {
+          "title": "Prueba grabada",
+          "modality": "Micrófono; cámara opcional y consentimiento de grabación",
+          "detail": "Responde en voz alta con preguntas en directo. Elige si quieres grabar y luego revisa tus grabaciones guardadas."
+        },
+        "bundle": {
+          "title": "Paquete de preparación",
+          "modality": "Materiales guardados; sin micrófono",
+          "detail": "Elige entre tu currículum, cartas y respuestas de práctica guardados para copiarlos o enviarlos por correo cuando quieras."
+        }
+      }
+    },
+    "exploration": {
+      "nav": "Exploración profesional",
+      "interests": "Intereses",
+      "skills": "Objetivo y comparación de habilidades",
+      "training": "Opciones de formación",
+      "selectionUnavailable": "Esa consulta guardada no está disponible en tu cuenta o no se puede leer. No se ha sustituido por otro resultado.",
+      "selectionLoadFailed": "No se pudo cargar la consulta seleccionada. Actualiza la página para intentarlo de nuevo; no se ha sustituido por otro resultado.",
+      "targetFromInterests": "Objetivo de la exploración profesional: {occupation}",
+      "loadTargetHelp": "Carga esta ocupación para ver sus habilidades de O*NET y compararlas con tu perfil. Tus resultados de intereses se mantienen separados.",
+      "loadTarget": "Cargar esta ocupación",
+      "selectedTarget": "Objetivo guardado seleccionado: {occupation}",
+      "sample": "Datos de ejemplo",
+      "trainingForLookup": "Opciones de formación para esta consulta",
+      "openComparison": "Abrir esta comparación de habilidades",
+      "saveUnavailable": "La ocupación se cargó, pero no se pudo guardar la consulta. Selecciona la ocupación de nuevo para intentar guardarla antes de llevarla a Training Bridge.",
+      "exploreSkills": "Explorar habilidades para {occupation}",
+      "interestSaved": "Tus resultados de intereses están guardados",
+      "interestNotSaved": "No se confirmó el guardado en tu cuenta",
+      "interestConnectionSaved": "Tus intereses contribuyen al perfil estimado de Skill Mapper.",
+      "interestConnectionUnsaved": "Descarga tus resultados antes de salir. Puedes seguir explorando ocupaciones en Skill Mapper.",
+      "interestNext": "Elige una profesión de arriba, carga sus habilidades y usa la consulta guardada para explorar la formación. Las puntuaciones de intereses describen preferencias; son independientes de las evaluaciones de habilidades y formación.",
+      "interestExportSaved": "Estos resultados de intereses se guardaron en tu perfil de habilidades. Usa Skill Mapper para compararlos con una ocupación de O*NET; los intereses no son una prueba de dominio.",
+      "interestExportUnsaved": "No se pudo confirmar que estos resultados de intereses se guardaran en tu cuenta. Descarga este informe antes de salir.",
+      "exploreProgram": "Explorar {program}",
+      "graphValues": "Ver valores del radar",
+      "estimatedComparison": "Perfil estimado del miembro comparado con los requisitos de la ocupación. Estos valores no son una prueba de dominio.",
+      "occupationValues": "Valores del radar de la ocupación de esta consulta",
+      "axis": "Competencia",
+      "memberEstimate": "Perfil estimado",
+      "target": "Ocupación objetivo"
+    },
+    "training": {
+      "nav": "Formación y progreso",
+      "program": "Mi programa",
+      "learning": "Centro de aprendizaje y recursos",
+      "readiness": "Mi progreso",
+      "learningContext": "Mi programa muestra tu formación asignada y el progreso de los cursos. El Centro de aprendizaje añade práctica y recursos. Preparación profesional mide tu preparación para trabajar por separado de la finalización de cursos.",
+      "learningContextShort": "Mi programa es tu formación asignada. La preparación se mide por separado.",
+      "learningContextMoreLabel": "Qué cubre cada página",
+      "learningContextMore": "Mi programa muestra tu formación asignada y el progreso de los cursos. El Centro de aprendizaje añade práctica y recursos. Preparación profesional mide tu preparación para trabajar por separado de la finalización de cursos.",
+      "bridgeIntro": "Conecta una ocupación objetivo guardada con opciones de formación y planifica el siguiente paso con tu consejero.",
+      "loadFailed": "No se pudieron cargar las consultas de ocupaciones guardadas. Actualiza la página para intentarlo de nuevo. Las opciones de formación de abajo son generales hasta que selecciones una consulta guardada.",
+      "selectionUnavailable": "Esa consulta guardada no está disponible en tu cuenta o no se puede leer. No se ha sustituido por otro resultado. Elige una de tus consultas guardadas abajo.",
+      "chooseLookup": "Elige una consulta guardada de Skill Mapper",
+      "selectLookup": "Selecciona una consulta",
+      "useLookup": "Usar la consulta seleccionada",
+      "selectedLookup": "Consulta seleccionada: {occupation}",
+      "occupationRequirements": "Requisitos de la ocupación guardados",
+      "lookupMeaning": "Esta consulta describe requisitos de la ocupación, no tu nivel de dominio. Tu gráfico de radar de miembro frente al objetivo sigue en Skill Mapper.",
+      "exploreTitle": "Selecciona una consulta objetivo o explora la formación",
+      "exploreBody": "Elige una consulta guardada de Skill Mapper arriba para mantener el contexto de su ocupación o explora los requisitos generales de las rutas de abajo.",
+      "unmapped": "No hay una correspondencia seleccionada en Training Bridge para {occupation}. La ocupación de abajo es otra opción de formación; tu objetivo guardado no ha cambiado.",
+      "unmatchedRequirements": "Requisitos sin coincidencia en la consulta seleccionada para {occupation}",
+      "allMatched": "Todos los requisitos de la lista coinciden con la consulta seleccionada",
+      "matchingNotice": "Son coincidencias de términos ocupacionales, no una evaluación completada ni una garantía de preparación laboral.",
+      "represented": "Requisitos representados en la consulta seleccionada",
+      "pathwayMatches": "Esta ruta cubre estos requisitos sin coincidencia en la consulta seleccionada: {skills}",
+      "assignedProgram": "Mi programa asignado",
+      "humanCounselor": "Hablar con mi consejero humano",
+      "application": "Ver la solicitud de este programa",
+      "unchangedAssignment": "Explorar una ruta no cambia tu programa asignado, financiación ni acceso al proveedor.",
+      "disclosures": {
+        "progressLabel": "Cómo se cuenta el progreso",
+        "progress": "Las estimaciones incluyen todas las horas de los cursos sin terminar. El progreso solo cambia cuando se registra la finalización de la formación.",
+        "labsLabel": "Cómo funcionan los laboratorios",
+        "labs": "Guarda tus pruebas, envíalas para recibir comentarios de una persona y revisa tu trabajo.",
+        "pendingLabel": "Qué sigue pendiente",
+        "pending": "La revisión didáctica y la validación del tiempo están pendientes; la secuencia completa de laboratorios de 58 horas sigue en desarrollo.",
+        "lockedLabel": "Qué puedes hacer ahora",
+        "locked": "Puedes seguir trabajando en tus notas del curso a continuación."
+      }
+    },
+    "ai": {
+      "lilley": "Lilley · asistente profesional con IA",
+      "lilleyDescription": "Habla con un asistente de IA sobre tu plan de WorkforceAP, tu formación y el siguiente paso. Usa el espacio completo de Lilley para las sesiones y los planes de acción guardados.",
+      "humanLink": "Enviar mensaje a mi consejero humano",
+      "humanDescription": "Lilley es un asistente de IA. Tu consejero humano asignado está disponible en Mensajes.",
+      "interviewDirectory": "Prepara respuestas, practica con IA, graba una prueba o reúne tu paquete de preparación.",
+      "trainingDirectory": "Conecta una ocupación objetivo guardada con opciones de formación.",
+      "resumeDirectory": "Archivos, puntuaciones, mejoras y tu asistente de currículum con IA.",
+      "openResumeCoach": "Abrir el asistente de currículum completo",
+      "resumeCoachContext": "Revisa juntos tu original, borrador, cambios aceptados y descargas."
+    }
+  },
+  "progress": {
+    "title": "Mi progreso",
+    "readinessChip": "Preparación {score} de 100",
+    "numbersLabel": "Tus cifras",
+    "course": "Curso",
+    "applications": "Solicitudes activas",
+    "certificates": "Certificados",
+    "points": "Puntos",
+    "pointsUnit": "puntos",
+    "pointsThisWeek": "{count} esta semana",
+    "pointsTitle": "Puntos",
+    "pointsLink": "Puntos y niveles",
+    "pointsStreakTitle": "Puntos y racha",
+    "pointsStreakBody": "Tus puntos, tu nivel y tu racha diaria están en la página de Puntos.",
+    "pointsStreakLink": "Abrir puntos",
+    "recentPoints": "Puntos recientes",
+    "streak": "días seguidos",
+    "streakBest": "Mejor: {count}"
+  },
+  "memberJobs": {
+    "detail": {
+      "screeningInfoLabel": "Por qué ves esto",
+      "screeningInfo": "Información para prepararte antes de postularte.",
+      "screeningFallback": "Consulta los detalles con tu orientador.",
+      "reviewApplication": "Revisar solicitud",
+      "yourApplication": "Tu solicitud",
+      "tailorResume": "Adapta tu currículum"
+    },
+    "viewApplications": "Ver solicitudes"
+  },
+  "skillMissions": {
+    "metaTitle": "Misiones de habilidades",
+    "metaDescription": "Demuestra lo que aprendiste. Completa una misión después de cada curso para obtener viñetas de currículum e historias STAR listas para entrevistas.",
+    "title": "Misiones de habilidades",
+    "lede": "Una aprobación por curso. Viñeta de currículum e historia STAR.",
+    "header": {
+      "allPassed": "{passed} de {total, plural, one {# misión aprobada} other {# misiones aprobadas}}. Cada aprobación incluye su viñeta de currículum y su historia STAR.",
+      "ready": "{passed} de {total, plural, one {# misión aprobada} other {# misiones aprobadas}}. {ready, plural, one {# lista para empezar} other {# listas para empezar}}.",
+      "retry": "{passed} de {total, plural, one {# misión aprobada} other {# misiones aprobadas}}. {retry} para revisar y reintentar.",
+      "next": "{passed} de {total, plural, one {# misión aprobada} other {# misiones aprobadas}}. La siguiente se desbloquea cuando termines un curso."
+    },
+    "empty": {
+      "noProgramTitle": "Sin programa inscrito",
+      "noProgramBody": "Inscríbete en un programa para ver las misiones.",
+      "noProgramCta": "Elegir programa",
+      "unavailableTitle": "Aún no hay misiones para {name}",
+      "unavailableNameFallback": "este programa",
+      "unavailableBody": "Todavía no hay misiones del catálogo para este programa.",
+      "unavailableCta": "Continuar entrenamiento"
+    },
+    "panel": {
+      "progressTitle": "Tu progreso",
+      "progressSummary": "{passed} de {total, plural, one {# misión aprobada} other {# misiones aprobadas}}",
+      "progressPercent": "<b>{pct}%</b> aprobado",
+      "progressLabel": "Misiones aprobadas",
+      "chipPassed": "{count, plural, one {# aprobada} other {# aprobadas}}",
+      "chipReady": "{count, plural, one {# lista} other {# listas}}",
+      "chipRetry": "{count} para reintentar",
+      "chipStreak": "{count} seguidas",
+      "skillsShown": "Habilidades que has demostrado",
+      "listHeading": "Tus misiones",
+      "lockedHint": "Termina <b>{course}</b> para desbloquear",
+      "statusLocked": "Bloqueada",
+      "statusReview": "Por revisar",
+      "statusPassed": "Aprobada",
+      "statusPassedOn": "Aprobada el {date}",
+      "minutes": "~{minutes} min",
+      "start": "Empezar misión",
+      "retry": "Reintentar misión",
+      "openResumeStudio": "Abrir el Estudio de Currículum"
+    },
+    "challenge": {
+      "close": "Cerrar misión",
+      "kicker": "Misión de habilidades",
+      "quizSummary": "3 preguntas del cuestionario + escenario",
+      "skillsToProve": "Habilidades que demostrarás",
+      "whatToProve": "Lo que demostrarás",
+      "accept": "Aceptar misión",
+      "questionCounter": "Pregunta {current}/{total}",
+      "correctAnswerSr": "(respuesta correcta)",
+      "wrongAnswerSr": "(tu respuesta, no es correcta)",
+      "checking": "Comprobando…",
+      "checkError": "No se pudo comprobar tu respuesta. Elige una opción para intentarlo de nuevo.",
+      "correct": "Correcto.",
+      "explainWhy": "Esta es la razón:",
+      "seeResult": "Ver cómo te fue →",
+      "next": "Siguiente →",
+      "recap": "{correct}/{total} preguntas del cuestionario correctas",
+      "scenarioTitle": "Ahora muéstralo en acción",
+      "scenarioLede": "Describe una situación real o realista en la que aplicarías estas habilidades.",
+      "responseLabel": "Tu respuesta al escenario",
+      "responsePlaceholder": "Cuéntame cómo manejarías esto... (apunta a más de 150 palabras)",
+      "wordCount": "{count, plural, one {# palabra} other {# palabras}}",
+      "enoughForStar": "suficiente para STAR",
+      "addResult": "agrega un resultado",
+      "minChars": "escribe al menos {min} caracteres para enviar",
+      "charCount": "{count} de {max} caracteres",
+      "tip": "Consejo:",
+      "coaching": "Preparando retroalimentación…",
+      "submit": "Enviar para recibir retroalimentación",
+      "back": "← Volver al cuestionario",
+      "fallbackError": "Algo salió mal. Intenta de nuevo.",
+      "practiceComplete": "Práctica completada",
+      "passedTitle": "Misión aprobada",
+      "tryAgain": "Intenta de nuevo",
+      "practiceNote": "Ya aprobaste esta misión. Tu aprobación y la viñeta de currículum guardada se mantienen igual.",
+      "skillsDemonstrated": "Habilidades que demostraste",
+      "resumeBullet": "Tu viñeta de currículum",
+      "starStory": "Tu historia STAR",
+      "done": "Listo",
+      "continue": "Continuar →",
+      "continueLabel": "Continuar",
+      "reviewTitle": "Qué repasar antes de reintentar",
+      "reviewBody": "Vuelve a leer los materiales del curso, centrándote en los conceptos clave del cuestionario. Al escribir tu respuesta al escenario, usa el método STAR: Situación, Tarea, Acción, Resultado. Apunta a más de 150 palabras con detalles concretos y específicos.",
+      "closeReview": "Cerrar y repasar",
+      "celebrateLede": "La historia STAR y la viñeta de currículum se quedan aquí. Abre el Estudio de Currículum cuando quieras usarlas en un borrador.",
+      "newBullet": "Tu nueva viñeta de currículum",
+      "skillsAdded": "Habilidades agregadas a tu perfil",
+      "openStudio": "Abrir el Estudio de Currículum →",
+      "doneCheck": "Listo ✓",
+      "copy": "Copiar",
+      "copied": "¡Copiado!",
+      "closeNotice": "Tu práctica todavía se está revisando. Espera el resultado antes de cerrar.",
+      "leaveConfirm": "¿Salir de esta práctica? Se perderán tus respuestas y tu texto sin guardar.",
+      "errors": {
+        "unauthorized": "Tu sesión terminó. Inicia sesión de nuevo para continuar.",
+        "rate_limited": "Se superó el límite de solicitudes. Intenta de nuevo en unos minutos.",
+        "mission_not_found": "No se encontró la misión",
+        "not_enrolled": "Debes estar inscrito en un programa para intentar las misiones de habilidades.",
+        "course_incomplete": "Debes completar este curso antes de intentar su misión de habilidades.",
+        "attempt_cap": "Alcanzaste el límite diario de intentos para esta misión. Descansa y vuelve mañana.",
+        "coach_unavailable": "Nuestro entrenador no está disponible ahora. Tu respuesta no fue evaluada. Intenta de nuevo en unos minutos.",
+        "save_failed": "No pudimos guardar tu resultado. Tu misión aún no está marcada como aprobada. Intenta de nuevo.",
+        "server_error": "Algo salió mal de nuestro lado. Tu respuesta no fue evaluada. Intenta de nuevo."
+      }
+    }
   }
 }

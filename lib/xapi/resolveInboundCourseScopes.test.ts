@@ -6,6 +6,9 @@ import {
   LEGACY_CURRICULUM_VERSION,
 } from '@/lib/content/programCurriculumManifest';
 import { resolveInboundCourseScopes } from './resolveInboundCourseScopes';
+import { selectCurriculumMappingTargets } from '@/lib/member/curriculumAssignment';
+import { emptyCurriculumMappingIndex, resolveProviderCourseMappings } from '@/lib/coursera/curriculumMapping';
+import { emptyCanonicalMappingIndex } from '@/lib/coursera/canonicalMapping';
 
 describe('inbound provider course scopes', () => {
   it('routes an exact provider id to a secondary assigned curriculum', async () => {
@@ -93,4 +96,115 @@ describe('inbound provider course scopes', () => {
       assignmentMatched: true,
     }]);
   });
+
+  it('does not invent a detached scope without a provider id or assignment', async () => {
+    const scopes = await resolveInboundCourseScopes({
+      requireResolvedDetachedCourse: true,
+      assignments: [],
+      fallbackProgramSlug: null,
+      fallbackCurriculumVersion: LEGACY_CURRICULUM_VERSION,
+    }, async () => { throw new Error('Providerless statements must not query mappings'); });
+    assert.deepEqual(scopes, []);
+  });
+
+  it('retains the detached no-reward path for one exact legacy target', async () => {
+    let calls = 0;
+    const scopes = await resolveInboundCourseScopes({
+      requireResolvedDetachedCourse: true,
+      courseraCourseId: '  exact-provider-id  ',
+      assignments: [],
+      fallbackProgramSlug: null,
+      fallbackCurriculumVersion: LEGACY_CURRICULUM_VERSION,
+    }, async (args) => {
+      calls += 1;
+      assert.equal(args.courseraCourseId, 'exact-provider-id');
+      assert.deepEqual(args.assignments, []);
+      return selectCurriculumMappingTargets({
+        assignments: args.assignments,
+        candidates: [{
+          courseraCourseId: 'exact-provider-id',
+          programSlug: 'legacy-program',
+          curriculumVersion: LEGACY_CURRICULUM_VERSION,
+          courseSlug: 'legacy-course',
+        }],
+      });
+    });
+    assert.equal(calls, 1);
+    assert.deepEqual(scopes, [{
+      programSlug: null,
+      curriculumVersion: LEGACY_CURRICULUM_VERSION,
+      assignmentMatched: false,
+    }]);
+  });
+
+  for (const candidates of [[], [
+    { programSlug: 'program-a', courseSlug: 'course-a' },
+    { programSlug: 'program-b', courseSlug: 'course-b' },
+  ]]) {
+    it(`leaves ${candidates.length === 0 ? 'unmapped' : 'ambiguous'} detached attribution unresolved`, async () => {
+      const scopes = await resolveInboundCourseScopes({
+        requireResolvedDetachedCourse: true,
+        courseraCourseId: 'shared-provider-id',
+        assignments: [],
+        fallbackProgramSlug: null,
+        fallbackCurriculumVersion: LEGACY_CURRICULUM_VERSION,
+      }, async ({ assignments }) => selectCurriculumMappingTargets({
+        assignments,
+        candidates: candidates.map((candidate) => ({
+          ...candidate,
+          courseraCourseId: 'shared-provider-id',
+          curriculumVersion: LEGACY_CURRICULUM_VERSION,
+        })),
+      }));
+      assert.deepEqual(scopes, []);
+    });
+  }
+
+  it('propagates a mapping read failure instead of classifying it as unresolved attribution', async () => {
+    await assert.rejects(resolveInboundCourseScopes({
+      requireResolvedDetachedCourse: true,
+      courseraCourseId: 'provider-id',
+      assignments: [],
+      fallbackProgramSlug: null,
+      fallbackCurriculumVersion: LEGACY_CURRICULUM_VERSION,
+    }, async () => { throw new Error('mapping store unavailable'); }), /mapping store unavailable/);
+  });
+
+  it('does not promote a detached learner through an approved-only mapping', async () => {
+    const curriculumIndex = emptyCurriculumMappingIndex();
+    curriculumIndex.byCourseraCourseId.set('approved-only-provider-id', [{
+      courseraCourseId: 'approved-only-provider-id',
+      programSlug: 'approved-program',
+      curriculumVersion: APPROVED_CURRICULUM_VERSION,
+      courseSlug: 'approved-course',
+    }]);
+    const scopes = await resolveInboundCourseScopes({
+      requireResolvedDetachedCourse: true,
+      courseraCourseId: 'approved-only-provider-id',
+      assignments: [],
+      fallbackProgramSlug: null,
+      fallbackCurriculumVersion: LEGACY_CURRICULUM_VERSION,
+    }, (args) => resolveProviderCourseMappings({
+      ...args,
+      curriculumIndex,
+      canonicalIndex: emptyCanonicalMappingIndex(),
+    }));
+    assert.deepEqual(scopes, []);
+  });
+
+  for (const courseraCourseId of [undefined, 'provider-course']) {
+    it(`preserves the default caller's detached ${courseraCourseId ? 'provider' : 'providerless'} fallback`, async () => {
+      const scopes = await resolveInboundCourseScopes({
+        courseraCourseId,
+        assignments: [],
+        fallbackProgramSlug: null,
+        fallbackCurriculumVersion: LEGACY_CURRICULUM_VERSION,
+      }, async () => { throw new Error('Default caller must defer detached mapping to completion'); });
+      assert.deepEqual(scopes, [{
+        programSlug: null,
+        curriculumVersion: LEGACY_CURRICULUM_VERSION,
+        assignmentMatched: false,
+      }]);
+    });
+  }
 });

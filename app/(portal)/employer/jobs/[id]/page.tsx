@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
+import PortalBackLink from '@/components/portal/PortalBackLink';
 import { redirect, notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import { buildPageMetadataAsync } from '@/app/seo';
@@ -124,15 +126,9 @@ export default async function EmployerJobDetailPage({ params }: Props) {
             title={t('jobDetails')}
             subtitle={t('jobDetailsSubtitle')}
             action={
-              <Link href="/employer/jobs" className="btn btn-outline btn-sm">
-                {t('backToJobs')}
-              </Link>
+              <PortalBackLink fallbackHref="/employer/jobs" fallbackLabel={t('backToJobs')} className="btn btn-outline btn-sm" />
             }
           />
-
-          <div className="employer-job-edit__back">
-            <Link href="/employer/jobs">← {t('myJobs')}</Link>
-          </div>
 
           <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'minmax(0, 1.25fr) minmax(320px, 0.75fr)', alignItems: 'start' }}>
             <div style={{ display: 'grid', gap: '1rem' }}>
@@ -197,9 +193,9 @@ export default async function EmployerJobDetailPage({ params }: Props) {
               <section className="portal-card portal-card--flat" style={{ padding: '1.25rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
                   <h2 style={{ fontSize: '0.8125rem', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Edit posting</h2>
-                  <Link href={`/employer/jobs/${id}/edit`} className="btn btn-outline btn-sm">
+                  <PortalRecordLink href={`/employer/jobs/${id}/edit`} className="btn btn-outline btn-sm">
                     Full edit
-                  </Link>
+                  </PortalRecordLink>
                 </div>
                 <JobForm
                   job={{

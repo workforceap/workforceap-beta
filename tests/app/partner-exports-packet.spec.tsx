@@ -64,7 +64,7 @@ describe('PartnerExportsPage outcome packet', () => {
   });
 
   it('shows each packet line as X of N, the unknowns and the packet download, scoped to the partner org', async () => {
-    const html = renderToStaticMarkup(await PartnerExportsPage());
+    const html = renderToStaticMarkup(await PartnerExportsPage({}));
     expect(html).toContain('Outcome packet');
     expect(html).toContain('Referred members');
     expect(html).toContain('3 of 3');
@@ -100,7 +100,7 @@ describe('PartnerExportsPage outcome packet', () => {
 
   it('shows the truncation banner when the load is capped', async () => {
     vi.mocked(countPartnerReferrals).mockResolvedValue(612);
-    const html = renderToStaticMarkup(await PartnerExportsPage());
+    const html = renderToStaticMarkup(await PartnerExportsPage({}));
     expect(html).toContain('partner-outcome-packet-truncated');
     expect(html).toContain('3 most recent of 612 referrals');
   });
@@ -108,21 +108,21 @@ describe('PartnerExportsPage outcome packet', () => {
   it('says "No referrals yet" honestly at zero', async () => {
     vi.mocked(loadPartnerReferralBundle).mockResolvedValue({ pipelineMembers: [] } as never);
     vi.mocked(countPartnerReferrals).mockResolvedValue(0);
-    const html = renderToStaticMarkup(await PartnerExportsPage());
+    const html = renderToStaticMarkup(await PartnerExportsPage({}));
     expect(html).toContain('No referrals yet');
     expect(html).not.toContain('0 of 0');
   });
 
   it('(g) redirects a non-partner and reads nothing', async () => {
     vi.mocked(getPartnerForUser).mockResolvedValue(null as never);
-    await expect(PartnerExportsPage()).rejects.toThrow('REDIRECT:/dashboard');
+    await expect(PartnerExportsPage({})).rejects.toThrow('REDIRECT:/dashboard');
     expect(loadPartnerReferralBundle).not.toHaveBeenCalled();
     expect(countPartnerReferrals).not.toHaveBeenCalled();
   });
 
   it('(g) redirects a signed-out visitor to login', async () => {
     vi.mocked(getUser).mockResolvedValue(null as never);
-    await expect(PartnerExportsPage()).rejects.toThrow('REDIRECT:/login?redirectTo=/partner/exports');
+    await expect(PartnerExportsPage({})).rejects.toThrow('REDIRECT:/login?redirectTo=/partner/exports');
     expect(loadPartnerReferralBundle).not.toHaveBeenCalled();
   });
 });

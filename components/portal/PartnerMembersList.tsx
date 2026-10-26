@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import Link from 'next/link';
+import { useMemo } from 'react';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
+import { usePartnerReferralListContext } from '@/components/partner/usePartnerReferralListContext';
 import { DataTable, StageTrack, type Column } from '@/components/portal/kit';
 import { PIPELINE_STAGES_ORDERED, type PipelineStage } from '@/lib/pipeline/stage';
 import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
@@ -32,13 +33,7 @@ function stageTrackIndex(stage: string): number {
 }
 
 export default function PartnerMembersList({ members }: { members: PartnerMember[] }) {
-  const [search, setSearch] = useState('');
-  const [stage, setStage] = useState('all');
-
-  const clearFilters = () => {
-    setSearch('');
-    setStage('all');
-  };
+  const { search, stage, setSearch, setStage, clearDesktop: clearFilters } = usePartnerReferralListContext();
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -60,13 +55,13 @@ export default function PartnerMembersList({ members }: { members: PartnerMember
       key: 'fullName',
       header: 'Member',
       render: (m) => (
-        <Link
+        <PortalRecordLink
           href={`/partner/referred-members/${m.id}`}
           style={{ display: 'flex', flexDirection: 'column', gap: 2, textDecoration: 'none' }}
         >
           <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--wa-text)' }}>{m.fullName}</span>
           <span style={{ fontSize: 13, color: 'var(--wa-muted)' }}>{m.story}</span>
-        </Link>
+        </PortalRecordLink>
       ),
     },
     {

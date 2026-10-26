@@ -1,4 +1,5 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import userEvent from '@testing-library/user-event';
@@ -52,6 +53,11 @@ beforeEach(() => {
   location.search = '';
   location.wide = true;
   localStorage.clear();
+  // The member rail starts compact when nothing is saved (staff rails start
+  // expanded); these specs exercise the expanded rail, so pin that choice.
+  for (const role of ['member', 'employer', 'admin', 'counselor', 'partner']) {
+    localStorage.setItem(`wa_nav_collapsed_${role}`, '0');
+  }
   vi.stubGlobal('matchMedia', vi.fn(() => ({
     matches: location.wide, addEventListener: vi.fn(), removeEventListener: vi.fn(),
   })));
@@ -71,6 +77,14 @@ function show(role: 'member' | 'employer' = 'member') {
 }
 
 describe('workspace navigation', () => {
+  it('exposes a focusable desktop member nav landmark for skip navigation', () => {
+    const { container } = show();
+    const desktopNav = container.querySelector('nav#workspace-sidebar-nav');
+
+    expect(desktopNav).toHaveAttribute('tabindex', '-1');
+    expect(container.querySelectorAll('#workspace-sidebar-nav')).toHaveLength(1);
+  });
+
   it('limits the dynamic-height warm canvas to the mounted workspace, including dark mode', () => {
     const css = readFileSync(join(process.cwd(), 'css/portal-kit.css'), 'utf8');
     const rule = css.match(/(html \.workspace-shell-root\[data-workspace-role\])\s*\{([^}]+)\}/)!;
@@ -403,6 +417,54 @@ describe('workspace navigation', () => {
   });
 });
 
+describe('member phone tabs (round 3, Addendum A4)', () => {
+  const bar = () => screen.getByRole('navigation', { name: 'Main tabs' });
+  const more = () => screen.getByRole('button', { name: 'More' });
+
+  it('renders four links and one More button, for members only', () => {
+    location.wide = false;
+    location.pathname = '/dashboard/program';
+    const m = show();
+    expect(bar()).toHaveAttribute('id', 'mobile-bottom-nav');
+    const links = within(bar()).getAllByRole('link');
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/dashboard', '/dashboard/program', '/dashboard/jobs', '/dashboard/messages']);
+    expect(links.filter((a) => a.getAttribute('aria-current') === 'page').map((a) => a.textContent)).toEqual(['Program']);
+    expect(within(bar()).getAllByRole('button')).toHaveLength(1);
+    expect(more()).toHaveAttribute('type', 'button');
+    expect(more()).toHaveAttribute('aria-controls', 'workspace-sidebar');
+    m.unmount();
+    show('employer');
+    expect(screen.queryByRole('navigation', { name: 'Main tabs' })).not.toBeInTheDocument();
+  });
+
+  it('More flips aria-expanded with the drawer and focus returns to More after Escape', async () => {
+    location.wide = false;
+    const user = userEvent.setup();
+    const { container } = show();
+    const rail = container.querySelector('.workspace-sidebar');
+    expect(more()).toHaveAttribute('aria-expanded', 'false');
+    await user.click(more());
+    expect(screen.getByRole('dialog', { name: 'Member portal navigation' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'More', hidden: true })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'true');
+    expect(rail?.contains(document.activeElement)).toBe(true);
+    await user.keyboard('{Escape}');
+    expect(rail).toHaveAttribute('inert');
+    expect(more()).toHaveAttribute('aria-expanded', 'false');
+    expect(document.activeElement).toBe(more());
+  });
+
+  it('focus returns to the hamburger after Escape when the hamburger opened the drawer', async () => {
+    location.wide = false;
+    const user = userEvent.setup();
+    show();
+    const hamburger = screen.getByRole('button', { name: 'Open menu' });
+    await user.click(hamburger);
+    await user.keyboard('{Escape}');
+    expect(document.activeElement).toBe(hamburger);
+  });
+});
+
 describe('active-route specificity', () => {
   it('ranks the matched alias, not the length of its unrelated canonical href', () => {
     expect(getBestActiveHref('/dashboard/ai-tools/application-tracker/123', [
@@ -544,24 +606,25 @@ describe('AI Career Tools contextual tool row', () => {
     [...container.querySelectorAll('.workspace-sidebar-nav a.workspace-sidebar-link--nested')];
 
   it('marks the tool as current on a tool route instead of highlighting the hub', () => {
-    location.pathname = '/dashboard/ai-tools/resume-studio';
+    location.pathname = '/dashboard/ai-tools/skill-mapper';
     const { container } = show();
     const current = container.querySelectorAll('.workspace-sidebar [aria-current="page"]');
     expect(current).toHaveLength(1);
-    expect(current[0]).toHaveAttribute('href', '/dashboard/ai-tools/resume-studio');
-    expect(current[0]).toHaveTextContent('Resume studio');
+    expect(current[0]).toHaveAttribute('href', '/dashboard/ai-tools/skill-mapper');
+    expect(current[0]).toHaveTextContent('Skill mapper');
     expect(container.querySelector('.workspace-sidebar')).toHaveAttribute(
       'data-contextual-tool',
-      '/dashboard/ai-tools/resume-studio',
+      '/dashboard/ai-tools/skill-mapper',
     );
   });
 
-  it('marks the tool as current on every AI Career Tools tool route', () => {
+  it('marks each independent AI Career Tools destination current on its own route', () => {
     const slugs = [
-      ['resume-studio', 'Resume studio'],
       ['cover-letter', 'Cover letter'],
+      ['interviews', 'Interview practice'],
       ['interview-practice', 'Interview practice'],
       ['interview-coach', 'Interview coach'],
+      ['interview-prep', 'Interview prep'],
       ['job-match-scorer', 'Job match scorer'],
       ['skill-mapper', 'Skill mapper'],
       ['training-bridge', 'Training bridge'],
@@ -574,8 +637,8 @@ describe('AI Career Tools contextual tool row', () => {
       ['elevator-pitch', 'Elevator pitch'],
       ['career-business-coach', 'Career & business coach'],
       ['readiness-coach', 'Readiness coach'],
-      ['resume-rewriter', 'Resume rewriter'],
       ['voice-interview', 'Voice interview'],
+      ['history', 'My AI results'],
     ] as const;
     for (const [slug, label] of slugs) {
       location.pathname = `/dashboard/ai-tools/${slug}`;
@@ -584,8 +647,29 @@ describe('AI Career Tools contextual tool row', () => {
       expect(current, slug).toHaveLength(1);
       expect(current[0], slug).toHaveAttribute('href', `/dashboard/ai-tools/${slug}`);
       expect(current[0], slug).toHaveTextContent(label);
+      expect(nestedRows(container), slug).toEqual([current[0]]);
       cleanup();
     }
+  });
+
+  it.each([
+    '/dashboard/resume',
+    '/dashboard/ai-tools/resume-studio',
+    '/dashboard/ai-tools/resume-analysis',
+    '/dashboard/ai-tools/resume-rewriter',
+    '/dashboard/ai-tools/resume-coach',
+  ])('keeps the single canonical Resume row current and visible on %s', (pathname) => {
+    location.pathname = pathname;
+    const { container } = show();
+    const current = container.querySelectorAll('.workspace-sidebar [aria-current="page"]');
+    expect(current).toHaveLength(1);
+    expect(current[0]).toHaveAttribute('href', '/dashboard/resume');
+    expect(current[0]).toHaveTextContent('Resume');
+    expect(container.querySelectorAll('.workspace-sidebar a[href="/dashboard/resume"]')).toHaveLength(1);
+    expect(current[0].closest('details')).toHaveAttribute('open');
+    expect(nestedRows(container)).toEqual([]);
+    expect(container.querySelector('.workspace-sidebar')).not.toHaveAttribute('data-contextual-tool');
+    expect(container.querySelector('.workspace-shell-current-page')).toHaveTextContent('Resume');
   });
 
   it('nests exactly one tool row directly under AI Career Tools and never more', () => {
@@ -656,36 +740,39 @@ describe('AI Career Tools contextual tool row', () => {
     ]);
   });
 
-  it('measures the visible rail row count on a tool page, the hub and /dashboard', () => {
-    const counts: Record<string, number> = {};
-    const totals: Record<string, number> = {};
-    for (const [name, pathname] of [
-      ['tool', '/dashboard/ai-tools/resume-studio'],
-      ['hub', '/dashboard/ai-tools'],
-      ['dashboard', '/dashboard'],
+  it('preserves every canonical destination and the exact primary rows across tool, hub and Resume routes', () => {
+    const primary = [
+      '/dashboard',
+      '/dashboard/program',
+      '/dashboard/jobs',
+      '/dashboard/ai-tools',
+      '/dashboard/messages',
+    ];
+    for (const [pathname, contextualHref] of [
+      ['/dashboard/ai-tools/skill-mapper', '/dashboard/ai-tools/skill-mapper'],
+      ['/dashboard/ai-tools', null],
+      ['/dashboard', null],
+      ['/dashboard/resume', null],
+      ['/dashboard/ai-tools/resume-studio', null],
     ] as const) {
       location.pathname = pathname;
       const { container } = show();
-      // Rows the member sees without opening a disclosure.
-      counts[name] = [
+      const primaryHrefs = [
         ...container.querySelectorAll(
           '.workspace-sidebar-list--root > .workspace-sidebar-group > .workspace-sidebar-list > li > a.workspace-sidebar-link',
         ),
-      ].length;
-      totals[name] = railRows(container).length;
+      ].map((link) => link.getAttribute('href'));
+      expect(primaryHrefs, pathname).toEqual(contextualHref
+        ? [...primary.slice(0, 4), contextualHref, primary[4]]
+        : primary);
+      const allHrefs = railRows(container).map((link) => link.getAttribute('href'));
+      const expectedHrefs = MEMBER_PORTAL_NAV_ITEMS.map((item) => item.href);
+      if (contextualHref) expectedHrefs.push(contextualHref);
+      expect(new Set(allHrefs), pathname).toEqual(new Set(expectedHrefs));
+      expect(allHrefs, pathname).toHaveLength(new Set(allHrefs).size);
+      expect(allHrefs.filter((href) => href === '/dashboard/resume'), pathname).toEqual(['/dashboard/resume']);
       cleanup();
     }
-    console.log(
-      '[rail rows] visible-without-disclosure:',
-      JSON.stringify(counts),
-      '| all rows incl. collapsed groups:',
-      JSON.stringify(totals),
-    );
-    // WAP-189: five always-visible rows (was seven under PR #2322).
-    expect(counts.hub).toBe(5);
-    expect(counts.dashboard).toBe(5);
-    // One extra row on a tool page — not 18.
-    expect(counts.tool).toBe(6);
   });
 
   it('names the current page in the mobile header band', () => {
@@ -901,15 +988,22 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     expect(JSON.parse(localStorage.getItem(ADMIN_SECTIONS_KEY)!)).toEqual({ 'section:reporting': true, 'item:/admin/reporting': true });
   });
 
-  it('the collapsed icon rail lists every destination flat and marks one current page', async () => {
+  it('the collapsed icon rail lists top-level destinations plus the current page, and marks one current page', async () => {
     const user = userEvent.setup();
     location.pathname = '/admin/coursera';
     const { container } = showAdmin();
     await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
     expect(container.querySelector('.workspace-sidebar-section-btn')).toBeNull();
     const hrefs = [...container.querySelectorAll('.workspace-sidebar-nav a')].map((a) => a.getAttribute('href'));
-    expect(new Set(hrefs)).toEqual(new Set(ADMIN_PORTAL_NAV_ITEMS.map((item) => item.href)));
-    expect(container.querySelectorAll('.workspace-sidebar [aria-current="page"]')).toHaveLength(1);
+    // Post-launch review: the flat list of every row (57 icons, several of them the same
+    // person glyph) read as noise. Nested rows open from the expanded rail; on a nested
+    // page (Coursera, under Training progress) the parent row carries the highlight.
+    expect(new Set(hrefs)).toEqual(new Set(navTopLevelItems(ADMIN_PORTAL_NAV_ITEMS).map((item) => item.href)));
+    const marked = container.querySelectorAll<HTMLAnchorElement>('.workspace-sidebar-nav a[aria-current]');
+    expect(marked).toHaveLength(1);
+    expect(marked[0].getAttribute('href')).toBe('/admin/training-progress');
+    expect(marked[0].getAttribute('aria-current')).toBe('true');
+    expect(marked[0]).toHaveClass('active');
   });
 
   it('the mobile drawer uses the same sections', async () => {
@@ -920,5 +1014,177 @@ describe('admin grouped rail (sidebar consolidation)', () => {
     expect(sectionButtons(container)).toHaveLength(6);
     expect(container.querySelector('.workspace-sidebar-section-label[data-section="dailyWork"]')).not.toBeNull();
     expect(visibleRows(container).length).toBeLessThanOrEqual(20);
+  });
+});
+
+describe('rail defaults and the collapsed admin rail (post-launch review)', () => {
+  const renderAdmin = () =>
+    render(
+      <NextIntlClientProvider locale="en" messages={pickAdminClientMessages(messages)}>
+        <WorkspaceShell portalRole="admin" navItems={ADMIN_PORTAL_NAV_ITEMS}
+          workspaceLabel="Admin workspace" contextLabel="Administrator" readOnlyAudit>
+          <h1>Admin content</h1>
+        </WorkspaceShell>
+      </NextIntlClientProvider>,
+    );
+  const railHrefs = (container: HTMLElement) =>
+    [...container.querySelectorAll<HTMLAnchorElement>('.workspace-sidebar-nav a.workspace-sidebar-link')]
+      .map((link) => link.getAttribute('href'));
+
+  beforeEach(() => { location.pathname = '/admin'; });
+
+  it('starts the admin rail expanded when nothing is saved, with the WorkforceAP brand and sections', () => {
+    localStorage.removeItem('wa_nav_collapsed_admin');
+    const { container } = renderAdmin();
+    const rail = container.querySelector('.workspace-sidebar')!;
+    expect(rail).not.toHaveClass('workspace-sidebar--collapsed');
+    expect(container.querySelector('.workspace-sidebar-brand')?.textContent).toContain('WorkforceAP');
+    expect(container.querySelector('.workspace-sidebar-section-label[data-section="dailyWork"]')).not.toBeNull();
+    expect(localStorage.getItem('wa_nav_collapsed_admin')).toBeNull();
+  });
+
+  it('still starts the member rail compact when nothing is saved', () => {
+    localStorage.removeItem('wa_nav_collapsed_member');
+    location.pathname = '/dashboard';
+    const { container } = show();
+    expect(container.querySelector('.workspace-sidebar')).toHaveClass('workspace-sidebar--collapsed');
+  });
+
+  it('keeps a saved choice for staff: a collapsed admin rail stays collapsed', () => {
+    localStorage.setItem('wa_nav_collapsed_admin', '1');
+    const { container } = renderAdmin();
+    expect(container.querySelector('.workspace-sidebar')).toHaveClass('workspace-sidebar--collapsed');
+  });
+
+  it('collapsed, the admin rail lists top-level destinations only and keeps the brand mark', () => {
+    localStorage.setItem('wa_nav_collapsed_admin', '1');
+    const { container } = renderAdmin();
+    const hrefs = railHrefs(container);
+    const topLevel = navTopLevelItems(ADMIN_PORTAL_NAV_ITEMS).map((item) => item.href);
+    expect(hrefs).toEqual(topLevel);
+    expect(hrefs.length).toBeLessThan(ADMIN_PORTAL_NAV_ITEMS.length);
+    for (const nested of ['/admin/subgroups', '/admin/chapters', '/admin/billing/preview']) {
+      expect(hrefs, nested).not.toContain(nested);
+    }
+    expect(container.querySelector('.workspace-sidebar-brand-mark')).not.toBeNull();
+  });
+
+  it('collapsed on a nested page, the parent row is highlighted and names the page, with no extra icon', () => {
+    localStorage.setItem('wa_nav_collapsed_admin', '1');
+    location.pathname = '/admin/subgroups';
+    const { container } = renderAdmin();
+    expect(railHrefs(container)).not.toContain('/admin/subgroups');
+    const parent = container.querySelector<HTMLAnchorElement>('.workspace-sidebar-nav a[aria-current]');
+    expect(parent?.getAttribute('href')).toBe('/admin/students');
+    expect(parent?.getAttribute('aria-current')).toBe('true');
+    expect(parent?.getAttribute('title')).toBe('Students: Subgroups');
+    expect(container.querySelectorAll('.workspace-sidebar-nav a.active')).toHaveLength(1);
+  });
+
+  it.each(['employer', 'counselor', 'partner'] as const)('starts the %s rail expanded when nothing is saved', (role) => {
+    localStorage.removeItem(`wa_nav_collapsed_${role}`);
+    const { container } = render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <WorkspaceShell portalRole={role} navItems={EMPLOYER_PORTAL_NAV_ITEMS}
+          workspaceLabel="Staff workspace" contextLabel="Account" readOnlyAudit>
+          <h1>Staff content</h1>
+        </WorkspaceShell>
+      </NextIntlClientProvider>,
+    );
+    expect(container.querySelector('.workspace-sidebar')).not.toHaveClass('workspace-sidebar--collapsed');
+  });
+
+  it('keeps person glyphs apart: Students, Counselors and Users each use a different icon', () => {
+    const icon = (href: string) => ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === href)!.Icon;
+    expect(new Set([icon('/admin/students'), icon('/admin/counselors'), icon('/admin/users')]).size).toBe(3);
+  });
+
+  it('gives Students and Counselors different icons in the admin rail', () => {
+    const students = ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === '/admin/students')!;
+    const counselors = ADMIN_PORTAL_NAV_ITEMS.find((item) => item.href === '/admin/counselors')!;
+    expect(students.Icon).not.toBe(counselors.Icon);
+  });
+});
+
+describe('first paint: the server HTML already has the right rail width (no jump at hydration)', () => {
+  const memberShell = () => (
+    <NextIntlClientProvider locale="en" messages={messages}>
+      <WorkspaceShell portalRole="member" navItems={MEMBER_PORTAL_NAV_ITEMS}
+        workspaceLabel="Member portal" contextLabel="Account" readOnlyAudit>
+        <h1>Home</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>
+  );
+  const adminShell = () => (
+    <NextIntlClientProvider locale="en" messages={pickAdminClientMessages(messages)}>
+      <WorkspaceShell portalRole="admin" navItems={ADMIN_PORTAL_NAV_ITEMS}
+        workspaceLabel="Admin workspace" contextLabel="Administrator" readOnlyAudit>
+        <h1>Admin content</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>
+  );
+  const railClass = (html: string) => html.match(/<aside[^>]*id="workspace-sidebar"[^>]*class="([^"]*)"/)?.[1] ?? '';
+
+  it('renders the member rail compact before any script runs, so it never snaps from wide to 72px', () => {
+    const html = renderToString(memberShell());
+    expect(railClass(html)).toContain('workspace-sidebar--collapsed');
+    // The compact rail ships without the footer; labels stay in the DOM for assistive tech.
+    expect(html).not.toContain('workspace-sidebar-footer');
+    expect(html).toContain('workspace-sidebar-link-label sr-only');
+  });
+
+  it('renders the staff rail expanded before any script runs', () => {
+    const html = renderToString(adminShell());
+    expect(railClass(html)).not.toContain('workspace-sidebar--collapsed');
+    expect(html).toContain('workspace-sidebar-brand-name');
+  });
+
+  it('ships the desktop toolbar and footer in the server HTML, so no row moves at hydration', () => {
+    for (const html of [renderToString(memberShell()), renderToString(adminShell())]) {
+      // The expand/collapse button (not the phone close button desktop CSS hides) is there from the start.
+      expect(html).toContain('workspace-sidebar-collapse-btn');
+      expect(html).not.toContain('workspace-sidebar-close-btn');
+      // Phone-only footer rows wait for mount.
+      expect(html).not.toContain('workspace-sidebar-meta');
+      expect(html).not.toContain('workspace-sidebar-home-link');
+    }
+  });
+
+  it('mirrors the saved rail choice onto <html> at parse time, scoped to the role', () => {
+    const html = renderToString(memberShell());
+    expect(html).toContain('wa_nav_collapsed_member');
+    expect(html).toContain('data-rail-pref-member');
+    expect(renderToString(adminShell())).toContain('data-rail-pref-admin');
+  });
+
+  it('updates the <html> rail attribute when the rail is toggled', async () => {
+    document.documentElement.removeAttribute('data-rail-pref-admin');
+    location.pathname = '/admin';
+    const user = userEvent.setup();
+    render(adminShell());
+    await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
+    expect(document.documentElement.getAttribute('data-rail-pref-admin')).toBe('1');
+    await user.click(screen.getByRole('button', { name: 'Expand sidebar' }));
+    expect(document.documentElement.getAttribute('data-rail-pref-admin')).toBe('0');
+  });
+
+  it('names the theme switch once: the visual caption is hidden from assistive tech', () => {
+    // ThemeSelector is mocked in this file; its tooltips are covered in theme-selector-titles.spec.tsx.
+    location.pathname = '/admin';
+    const { container } = render(adminShell());
+    expect(container.querySelector('.workspace-sidebar-appearance__label')?.getAttribute('aria-hidden')).toBe('true');
+    expect(screen.getByRole('radiogroup', { name: 'Appearance' })).toBeTruthy();
+  });
+
+  it('still opens the full member drawer on a phone after mount (collapsed markup is desktop-only)', async () => {
+    location.wide = false;
+    localStorage.removeItem('wa_nav_collapsed_member');
+    location.pathname = '/dashboard';
+    const user = userEvent.setup();
+    const { container } = show();
+    await user.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(container.querySelector('.workspace-sidebar')).not.toHaveClass('workspace-sidebar--collapsed');
+    expect(container.querySelector('.workspace-sidebar-footer')).not.toBeNull();
+    expect(container.querySelector('.workspace-sidebar-link-label.sr-only')).toBeNull();
   });
 });

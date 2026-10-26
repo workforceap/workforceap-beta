@@ -3,6 +3,7 @@
  */
 
 import { escapeHtml } from '@/lib/email/escapeHtml';
+import { applicationReportHtml, type ApplicationReport } from '@/lib/apply/applicationReport';
 
 export function newApplicationAlertHtml(params: {
   applicantName: string;
@@ -11,6 +12,7 @@ export function newApplicationAlertHtml(params: {
   programInterest: string;
   applicationId: string;
   applicationNotes?: string;
+  applicationReport?: ApplicationReport;
 }): string {
   const {
     applicantName,
@@ -20,6 +22,11 @@ export function newApplicationAlertHtml(params: {
     applicationId,
     applicationNotes,
   } = params;
+  if (params.applicationReport) {
+    return applicationReportHtml(params.applicationReport) +
+      (applicationNotes?.trim() ? `<p><strong>Staff routing notes:</strong> ${escapeHtml(applicationNotes).replace(/\n/g, '<br>')}</p>` : '') +
+      `<p><strong>Application ID:</strong> ${escapeHtml(applicationId)}</p>`;
+  }
   const phoneLine = applicantPhone?.trim()
     ? `<p><strong>Phone:</strong> ${escapeHtml(applicantPhone.trim())}</p>`
     : '';

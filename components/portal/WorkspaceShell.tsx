@@ -24,13 +24,15 @@ import {
 import { withContextualToolRow } from '@/lib/nav/memberToolRoutes';
 import WorkspaceSidebarSections, { navSectionsStorageKey } from './WorkspaceSidebarSections';
 import { useTour } from '@/components/onboarding/TourContext';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useFocusTrap } from '@/components/portal/kit/hooks/useFocusTrap';
+import { claimEarlyTap } from '@/lib/portal/earlyShellTap';
 import SuperAdminViewSwitcher, { useIsSuperAdmin } from '@/components/super-admin-view-switcher';
 import PortalHeaderActions from './PortalHeaderActions';
 import PortalRoleSwitcher from './PortalRoleSwitcher';
 import { SignOutButton } from './SignOutButton';
 import MobileBottomNav from '@/components/MobileBottomNav';
 import MemberPortalTopNav from './MemberPortalTopNav';
+import MemberBottomTabs from './MemberBottomTabs';
 import GlobalSearch from './GlobalSearch';
 import type { PortalSwitcherRole } from '@/lib/auth/portalRoleSwitcher';
 import type { TourKey } from '@/lib/tours/registry';
@@ -44,9 +46,10 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useWorkspaceMobileScrollChrome } from '@/hooks/useWorkspaceMobileScrollChrome';
 import { recordWorkspaceShellPathname } from '@/lib/observability/portalHydrationClientTrace';
 
-// Map non-member portal roles to MobileBottomNav variants. Member uses
-// MemberPortalTopNav (sticky-top horizontal-scroll) per /plan-design-review
-// Decision 3 (2026-04-25).
+// Map non-member portal roles to MobileBottomNav variants. Member gets its own
+// bottom tab bar (MemberBottomTabs: Home, Program, Jobs, Messages, More); the
+// older MemberPortalTopNav strip stays in the DOM but is hidden on phones while
+// the bar is present (css/portal-main-extracted.css, `data-member-tabs`).
 const ROLE_TO_NAV_VARIANT: Partial<Record<PortalRole, 'employer' | 'partner' | 'counselor' | 'admin'>> = {
   employer: 'employer',
   partner: 'partner',
@@ -117,8 +120,10 @@ export default function WorkspaceShell({
   marketingSiteHref,
   marketingSiteLabel,
   navHrefMap,
+  memberShellClassName,
   showResumeUploadHint,
   readOnlyAudit = false,
+  previewMode = false,
   portalRoles,
   attributionLabel,
   partnerAccentColor,
@@ -160,10 +165,14 @@ export default function WorkspaceShell({
   marketingSiteLabel?: string;
   /** Rewrite canonical member nav hrefs (e.g. /dev/member proofs). */
   navHrefMap?: Record<string, string>;
+  /** Member-only scoped styling hook for phone shell refinements. */
+  memberShellClassName?: string;
   /** Member: prompt to upload resume when none on file */
   showResumeUploadHint?: boolean;
   /** Authenticated audit capability: render the shell without polling providers or mutable notification state. */
   readOnlyAudit?: boolean;
+  /** Synthetic fixture only: suppress live chrome requests and session controls. */
+  previewMode?: boolean;
   /** Optional set of role-switch targets for authenticated multi-role users */
   portalRoles?: PortalSwitcherRole[];
   /**
@@ -223,11 +232,35 @@ export default function WorkspaceShell({
         : railNavItems;
   const mobileDrawerNavItems = railNavItems;
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  // Close the drawer when the route changes, and only then. A mount-time
+  // reset (the old `useEffect(() => setDrawerOpen(false), [pathname])`) also
+  // ran right after hydration and cancelled a tap that landed between the
+  // hydration commit and the passive effects. Adjusting state while rendering
+  // (React's derived-state pattern) closes it in the same render as the route.
+  const [drawerPathname, setDrawerPathname] = useState(pathname);
+  if (pathname !== drawerPathname) {
+    setDrawerPathname(pathname);
+    setDrawerOpen(false);
+  }
+  // Members start on the compact rail (staff rails start expanded); a saved choice is
+  // restored after mount. Seeding it here lets the member rail paint compact from the
+  // first frame instead of rendering wide and snapping to 72px after hydration.
+  const [collapsed, setCollapsed] = useState(portalRole === 'member');
   const [wide, setWide] = useState(false);
+  const wideRef = useRef(wide);
+  wideRef.current = wide;
+  const drawerOpenRef = useRef(drawerOpen);
+  drawerOpenRef.current = drawerOpen;
+  const focusDesktopNavAfterResizeRef = useRef(false);
+  // False in the server HTML and through hydration, so the server cannot bake a
+  // phone-only `inert` into the desktop rail (see the <aside> below).
+  const [mounted, setMounted] = useState(false);
   const [badges, setBadges] = useState<Partial<Record<NavBadgeKey, number>>>({});
   const [badgeFetchError, setBadgeFetchError] = useState(false);
-  const isCollapsedDesktop = collapsed && wide;
+  // Before mount the width is unknown; trust the collapsed state so the server HTML and
+  // the first client render match the desktop rail. Collapsed CSS applies from 769px up
+  // only, and the phone drawer stays hidden until hydration, so phones are unaffected.
+  const isCollapsedDesktop = collapsed && (wide || !mounted);
   const isMobileDrawer = drawerOpen && !wide;
   const isSuperAdmin = useIsSuperAdmin(knownSuperAdmin ?? superAdmin);
   // Admin rail sections open while a guided tour runs so every anchor is visible
@@ -291,6 +324,8 @@ export default function WorkspaceShell({
       'Help & Support': tNav('help'),
       'Member Guide': tNav('memberGuide'),
       'Profile & settings': tNav('profile'),
+      'Candidates': tNav('candidates'),
+      'Impact': tNav('impact'),
       'My account': tNav('myAccount'),
       'Sign out': tNav('signOut'),
     };
@@ -306,12 +341,38 @@ export default function WorkspaceShell({
   const currentPageLabel = currentPageItem ? translateLabel(currentPageItem.label) : null;
   const mainRef = useRef<HTMLDivElement>(null);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
-  const trapRef = useFocusTrap(isMobileDrawer, closeDrawer);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
+  // The member bar's More button (MemberBottomTabs); null for staff shells.
+  const moreBtnRef = useRef<HTMLButtonElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  // Whichever trigger opened the drawer (hamburger or More), set at open time.
+  // Focus returns there on close even where the opener was never focused
+  // (Safari does not focus a button on click, and a replayed early tap has no
+  // focus change at all).
+  const drawerOpenerRef = useRef<HTMLElement | null>(null);
+  const openDrawer = useCallback((trigger: HTMLElement | null) => {
+    drawerOpenerRef.current = trigger ?? menuBtnRef.current;
+    setDrawerOpen(true);
+  }, []);
+  const trapRef = useFocusTrap<HTMLElement>(isMobileDrawer, { onEscape: closeDrawer, returnFocusRef: drawerOpenerRef });
   useWorkspaceMobileScrollChrome();
 
+  // Shell is interactive: replay a menu or More tap that landed before
+  // hydration (both buttons are server-rendered and look enabled long before
+  // this runs; see lib/portal/earlyShellTap.ts) and publish the test marker.
+  // This shell is the one owner of both early-tap kinds, so both are claimed
+  // here whether or not the member bar is mounted. Declared after every other
+  // mount effect; replay opens, never toggles, so it is safe even when React
+  // also handled the same tap.
   useEffect(() => {
-    setDrawerOpen(false);
-  }, [pathname]);
+    setMounted(true);
+    const root = rootRef.current;
+    root?.setAttribute('data-shell-ready', 'true');
+    const menuTapped = claimEarlyTap('menu');
+    const moreTapped = claimEarlyTap('more');
+    if (menuTapped || moreTapped) openDrawer(moreTapped && !menuTapped ? moreBtnRef.current : menuBtnRef.current);
+    return () => root?.removeAttribute('data-shell-ready');
+  }, [openDrawer]);
 
   const collapseKey = `wa_nav_collapsed_${portalRole}`;
 
@@ -360,11 +421,28 @@ export default function WorkspaceShell({
     // Keep in sync with the `(min-width: 769px)` shell rules in
     // css/portal-main-extracted.css.
     const mq = window.matchMedia('(min-width: 769px)');
-    const fn = () => setWide(mq.matches);
-    fn();
-    mq.addEventListener('change', fn);
-    return () => mq.removeEventListener('change', fn);
-  }, []);
+    const update = () => {
+      const nextWide = mq.matches;
+      const enteringDesktop = nextWide && !wideRef.current;
+      wideRef.current = nextWide;
+      if (enteringDesktop && drawerOpenRef.current) {
+        focusDesktopNavAfterResizeRef.current = true;
+        closeDrawer();
+      }
+      setWide(nextWide);
+    };
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, [closeDrawer]);
+
+  useEffect(() => {
+    if (!wide || !focusDesktopNavAfterResizeRef.current) return;
+    focusDesktopNavAfterResizeRef.current = false;
+    const nav = document.querySelector<HTMLElement>('.workspace-sidebar-nav');
+    const target = nav?.tabIndex === -1 ? nav : nav?.querySelector<HTMLElement>('a[href]');
+    target?.focus();
+  }, [wide]);
 
   /** Enables `html[data-portal-role="…"]` rules in main.css (e.g. member mobile header chrome). */
   useEffect(() => {
@@ -376,14 +454,19 @@ export default function WorkspaceShell({
 
   useEffect(() => {
     try {
-      setCollapsed(localStorage.getItem(collapseKey) === '1');
+      // No saved preference: the member rail starts compact (the icon rail of
+      // the C1+C3 shell). Staff rails (admin, counselor, employer, partner) carry
+      // dense sectioned navigation that needs its labels, so they start expanded.
+      // Either way a saved choice wins.
+      const stored = localStorage.getItem(collapseKey);
+      setCollapsed(stored === null ? portalRole === 'member' : stored === '1');
     } catch {
       /* ignore */
     }
-  }, [collapseKey]);
+  }, [collapseKey, portalRole]);
 
   useEffect(() => {
-    if (readOnlyAudit) {
+    if (readOnlyAudit || previewMode) {
       setBadgeFetchError(false);
       return;
     }
@@ -418,7 +501,7 @@ export default function WorkspaceShell({
       window.clearTimeout(deferId);
       window.removeEventListener('wa-nav-badges-refresh', onRefresh);
     };
-  }, [portalRole, readOnlyAudit]);
+  }, [portalRole, readOnlyAudit, previewMode]);
 
   const toggleCollapse = () => {
     setCollapsed((c) => {
@@ -428,6 +511,7 @@ export default function WorkspaceShell({
       } catch {
         /* ignore */
       }
+      document.documentElement.setAttribute(`data-rail-pref-${portalRole}`, next ? '1' : '0');
       return next;
     });
   };
@@ -497,13 +581,22 @@ export default function WorkspaceShell({
   const minimalHeader = minimalMobileHeader || (portalRole !== 'member' && !wide);
 
   return (
-    <div className="workspace-shell-root" data-workspace-role={portalRole} style={rootStyle}>
+    <div
+      ref={rootRef}
+      className={`workspace-shell-root${portalRole === 'member' && memberShellClassName ? ` ${memberShellClassName}` : ''}`}
+      data-workspace-role={portalRole}
+      data-member-tabs={portalRole === 'member' ? 'true' : undefined}
+      style={rootStyle}
+    >
       {/* Mirror the data-portal-role effect at parse time so <html>/<body> take the
           portal canvas on first paint instead of after hydration (WAP-153). The
           value is a fixed PortalRole union member, never user input. */}
       <script
         dangerouslySetInnerHTML={{
-          __html: `document.documentElement.setAttribute('data-portal-role',${JSON.stringify(portalRole)});`,
+          __html: `document.documentElement.setAttribute('data-portal-role',${JSON.stringify(portalRole)});`
+            + `try{var p=localStorage.getItem(${JSON.stringify(`wa_nav_collapsed_${portalRole}`)});`
+            + `if(p==='0'||p==='1')document.documentElement.setAttribute(${JSON.stringify(`data-rail-pref-${portalRole}`)},p);`
+            + `else document.documentElement.removeAttribute(${JSON.stringify(`data-rail-pref-${portalRole}`)})}catch(e){}`,
         }}
       />
       {readOnlyAudit ? (
@@ -516,9 +609,11 @@ export default function WorkspaceShell({
       >
         <div className="workspace-shell-header__brand">
           <button
+            ref={menuBtnRef}
             type="button"
             className="workspace-menu-btn"
-            onClick={() => setDrawerOpen(true)}
+            data-early-tap="menu"
+            onClick={() => openDrawer(menuBtnRef.current)}
             aria-label={tNav('openMenu')}
             aria-expanded={drawerOpen}
             aria-controls="workspace-sidebar"
@@ -597,6 +692,7 @@ export default function WorkspaceShell({
             knownIsAdmin={knownIsAdmin}
             helpTourKey={helpTourKey}
             helpGuideHref={helpGuideHref}
+            previewMode={previewMode}
           />
           {attributionLabel ? (
             <span
@@ -665,8 +761,13 @@ export default function WorkspaceShell({
         <aside
           id="workspace-sidebar"
           ref={trapRef}
-          inert={!wide && !drawerOpen}
-          aria-hidden={!wide && !drawerOpen ? true : undefined}
+          // The closed phone drawer is inert and hidden from the a11y tree only
+          // once the client knows the viewport. The server HTML cannot know it,
+          // and an SSR `inert` made the visible desktop rail ignore clicks until
+          // hydration; before that, CSS alone hides the closed drawer on phones
+          // (`visibility: hidden` below 769px, css/portal-main-extracted.css).
+          inert={mounted && !wide && !drawerOpen}
+          aria-hidden={mounted && !wide && !drawerOpen ? true : undefined}
           role={isMobileDrawer ? 'dialog' : undefined}
           aria-modal={isMobileDrawer ? true : undefined}
           aria-label={isMobileDrawer ? `${translateLabel(workspaceLabel)} navigation` : undefined}
@@ -691,9 +792,9 @@ export default function WorkspaceShell({
                   ) : null}
                 </div>
               ) : (
-                <div className="workspace-sidebar-label">{!wide && hasTabs && activeTab ? translateLabel(NAV_TAB_META[activeTab].label) : translateLabel(workspaceLabel)}</div>
+                <div className="workspace-sidebar-label">{mounted && !wide && hasTabs && activeTab ? translateLabel(NAV_TAB_META[activeTab].label) : translateLabel(workspaceLabel)}</div>
               )}
-              {wide ? (
+              {wide || !mounted ? (
                 <button
                   type="button"
                   className="workspace-sidebar-collapse-btn"
@@ -721,11 +822,11 @@ export default function WorkspaceShell({
                 <GlobalSearch />
               </div>
             ) : null}
-            <nav aria-label={`${translateLabel(workspaceLabel)} navigation`} className="workspace-sidebar-nav">
+            <nav id="workspace-sidebar-nav" tabIndex={-1} aria-label={`${translateLabel(workspaceLabel)} navigation`} className="workspace-sidebar-nav">
               <ul className="workspace-sidebar-list workspace-sidebar-list--root">
                 {portalRole === 'admin' && !isCollapsedDesktop ? (
                   /* Grouped admin rail: collapsible sections + nested rows. The
-                     collapsed icon rail below lists every row flat instead. */
+                     collapsed icon rail below lists the top-level rows only. */
                   <WorkspaceSidebarSections
                     items={wide ? desktopNavItems : mobileDrawerNavItems}
                     activeHref={activeHref}
@@ -739,7 +840,15 @@ export default function WorkspaceShell({
                     forceExpanded={tourOpen}
                   />
                 ) : GROUP_ORDER.map((group) => {
-                  const list = wide ? desktopNavItems : mobileDrawerNavItems;
+                  const fullList = wide ? desktopNavItems : mobileDrawerNavItems;
+                  // The collapsed admin icon rail shows top-level destinations only; nested
+                  // rows open from the expanded rail. On a nested page its parent row carries
+                  // the highlight and names the page, so no second icon is inserted.
+                  const collapsedAdmin = portalRole === 'admin' && isCollapsedDesktop;
+                  const list = collapsedAdmin ? fullList.filter((item) => !item.parentHref) : fullList;
+                  const activeChild = collapsedAdmin
+                    ? fullList.find((item) => item.href === activeHref && item.parentHref)
+                    : undefined;
                   // Repeated shortcuts must not paint two current-page entries.
                   const inGroup = list.filter((item, index) =>
                     item.group === group && list.findIndex((candidate) => candidate.href === item.href) === index,
@@ -750,6 +859,7 @@ export default function WorkspaceShell({
                     <ul className="workspace-sidebar-list">
                         {inGroup.map((item) => {
                           const isActive = activeHref === item.href;
+                          const isActiveParent = !isActive && activeChild?.parentHref === item.href;
                           const Icon = item.Icon;
                           const b = badgeTotalForItem(badges, item);
                           return (
@@ -757,11 +867,17 @@ export default function WorkspaceShell({
                               <Link
                                 href={item.href}
                                 prefetch={false}
-                                className={`workspace-sidebar-link${isActive ? ' active' : ''}${item.nestedUnder ? ' workspace-sidebar-link--nested' : ''}`}
-                                aria-current={isActive ? 'page' : undefined}
+                                className={`workspace-sidebar-link${isActive || isActiveParent ? ' active' : ''}${item.nestedUnder ? ' workspace-sidebar-link--nested' : ''}`}
+                                aria-current={isActive ? 'page' : isActiveParent ? 'true' : undefined}
                                 data-nested-under={item.nestedUnder}
                                 onClick={closeDrawer}
-                                title={isCollapsedDesktop ? translateLabel(item.label) : undefined}
+                                title={
+                                  isCollapsedDesktop
+                                    ? isActiveParent && activeChild
+                                      ? `${translateLabel(item.label)}: ${translateLabel(activeChild.label)}`
+                                      : translateLabel(item.label)
+                                    : undefined
+                                }
                                 {...(item.tourTarget ? { 'data-tour': item.tourTarget } : {})}
                               >
                                 {Icon ? (
@@ -775,7 +891,7 @@ export default function WorkspaceShell({
                                   {translateLabel(item.label)}
                                 </span>
                                 {b > 0 ? (
-                                  <span className="workspace-nav-badge">{b > 99 ? '99+' : b}</span>
+                                  <span className="workspace-nav-badge" aria-label={item.badgeKey === 'milestones_new' ? tNav('newMilestonesCount', { count: b }) : undefined} title={item.badgeKey === 'milestones_new' ? tNav('newMilestonesCount', { count: b }) : undefined}>{b > 99 ? '99+' : b}</span>
                                 ) : null}
                               </Link>
                             </li>
@@ -814,7 +930,7 @@ export default function WorkspaceShell({
               </ul>
             </nav>
             {!isCollapsedDesktop ? <div className="workspace-sidebar-footer">
-              {!wide ? (
+              {mounted && !wide ? (
                 <div className="workspace-sidebar-meta">
                   {identity ? (
                     <ShellIdentity identity={identity} variant="sidebar" title={tNav('profile')} onNavigate={closeDrawer} />
@@ -832,7 +948,7 @@ export default function WorkspaceShell({
                   <SuperAdminViewSwitcher initialIsSuperAdmin={isSuperAdmin} />
                 </div>
               ) : null}
-              {!wide ? (
+              {mounted && !wide ? (
                 <Link href="/" prefetch={false} className="workspace-sidebar-home-link" onClick={closeDrawer}>
                   {translateLabel(PRODUCT_COPY.publicSiteLabel)}
                 </Link>
@@ -841,15 +957,21 @@ export default function WorkspaceShell({
                 <LanguageToggle />
               </div>
               <div className={`workspace-sidebar-appearance${isCollapsedDesktop ? ' sr-only' : ''}`}>
-                <span className="workspace-sidebar-appearance__label">Appearance</span>
+                <span className="workspace-sidebar-appearance__label" aria-hidden="true">Appearance</span>
                 <ThemeSelector />
               </div>
-              <SignOutButton
-                className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus wa-kit-focus--on-dark workspace-sidebar-signout"
-                onSignOutStart={closeDrawer}
-              >
-                {translateLabel('Sign out')}
-              </SignOutButton>
+              {previewMode ? (
+                <Link href="/dev/portal-review" prefetch={false} onClick={closeDrawer} className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus workspace-sidebar-signout">
+                  Review screens
+                </Link>
+              ) : (
+                <SignOutButton
+                  className="wa-kit-cta wa-kit-cta--ghost wa-kit-focus wa-kit-focus--on-dark workspace-sidebar-signout"
+                  onSignOutStart={closeDrawer}
+                >
+                  {translateLabel('Sign out')}
+                </SignOutButton>
+              )}
             </div> : null}
           </div>
         </aside>
@@ -866,7 +988,20 @@ export default function WorkspaceShell({
           </div>
         </div>
       </div>
-      {/* Mobile bottom nav for non-member roles. Members use MemberPortalTopNav.
+      {/* Member phone tabs. Outside `mainRef` on purpose: the drawer makes the main
+          column inert, and the bar carries its own `inert` while the drawer is open.
+          More opens the same drawer as the hamburger; its early-tap kind (`more`)
+          is claimed in the mount effect above, and focus returns to it on close. */}
+      {portalRole === 'member' ? (
+        <MemberBottomTabs
+          badgeCounts={badges}
+          hrefMap={navHrefMap}
+          menuOpen={drawerOpen}
+          moreRef={moreBtnRef}
+          onMore={openDrawer}
+        />
+      ) : null}
+      {/* Mobile bottom nav for non-member roles. Members use MemberBottomTabs.
           `superAdmin` is the prop the admin rail is filtered on (AdminPortalShell),
           so the admin tabs never offer a page the rail hides; `search` is the
           query the rail matched on, so a tab and its rail row agree. */}

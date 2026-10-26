@@ -1,4 +1,7 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
+import type { ReactElement, ReactNode } from 'react';
+import en from '@/messages/en.json';
+import { cleanup, fireEvent, render as renderPlain, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import ResumeClient from '@/app/(portal)/dashboard/resume/ResumeClient';
@@ -112,3 +115,7 @@ describe('ResumeClient upload failure state', () => {
     expect(screen.queryByText('Updated Resume')).not.toBeInTheDocument();
   });
 });
+
+function render(ui: ReactElement) {
+  return renderPlain(ui, { wrapper: ({ children }: { children: ReactNode }) => <NextIntlClientProvider locale="en" messages={en}>{children}</NextIntlClientProvider> });
+}

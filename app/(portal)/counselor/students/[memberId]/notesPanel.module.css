@@ -107,7 +107,7 @@
   min-width: 2.75rem;
   min-height: 2.75rem;
   padding: 0.5rem 1rem;
-  background: var(--wa-accent);
+  background: var(--wa-accent-fill);
   color: var(--wa-on-accent-control);
   border: none;
   border-radius: var(--wa-radius-sm);
@@ -158,7 +158,7 @@
 }
 
 .saveButton:hover:not(:disabled) {
-  background: var(--wa-accent-dark);
+  background: var(--wa-accent-fill-hover);
 }
 
 .cancelButton:hover:not(:disabled) {

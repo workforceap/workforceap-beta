@@ -1,4 +1,5 @@
 import { saveEligibilityScreening } from '@/lib/apply/saveEligibilityScreening';
+import { buildApplicationReport } from '@/lib/apply/applicationReport';
 import { emailIssue, usPhoneIssue } from '@/lib/apply/contactValidation';
 import { pickExactEmailMatch, normalizeEmail, EXACT_EMAIL_CANDIDATE_LIMIT } from '@/lib/db/exactEmailMatch';
 import { crossTenantOK } from '@/lib/tenant/withTenantScope';
@@ -380,7 +381,8 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     };
 
     // WAP-170/172: screening answers (triad, quick-fit flag, unemployment,
-    // layoff, benefits) are persisted once, in ApplyEligibilityScreening.
+    // layoff, benefits) remain in ApplyEligibilityScreening; the owner-requested
+    // filing snapshot below also preserves the original submitted answers.
     // `Application.notes` is returned verbatim by the member's self-serve
     // export and copied into the staff alert email, so it carries a pointer
     // only. Location and referral lines are unchanged (WAP-171 column scope).
@@ -544,6 +546,19 @@ export const POST = withApiGuc(async (request: NextRequest) => {
     }
 
     const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+    const submittedAt = new Date();
+    const applicationReport = buildApplicationReport({
+      capturedAt: submittedAt, submittedAt, name: fullName, email, phone,
+      address: profileAddress, city, state, zip, county, ageGroup,
+      programInterest: programInterestSummary, recommendedCareer: recommendedCareerTitle,
+      barriers: profileBarrierTypes, computerHelp: needsComputerSupportFollowUp,
+      smsOptIn, referral: referralPartnerName ?? referralSource,
+      // School applications never collect adult eligibility answers.
+      screening: isSchoolSignup ? null : eligibilityEmailFields,
+      school: isSchoolSignup, schoolName: schoolName?.trim() || (isSchoolSignup ? referralPartnerName : null),
+      grade: gradeLevel, guardianName: parentGuardianName,
+      guardianEmail: parentGuardianEmail, guardianPhone: parentGuardianPhone,
+    });
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: email.toLowerCase().trim(),
       password,
@@ -802,7 +817,8 @@ export const POST = withApiGuc(async (request: NextRequest) => {
             recommendedOnetCode: recommendedOnetCode ?? null,
             recommendedCareerTitle: recommendedCareerTitle ?? null,
             notes: applicationNotes || null,
-            submittedAt: new Date(),
+            submittedAt,
+            applicationReportSnapshot: applicationReport,
             referralSource,
             referralPartnerId,
           },
@@ -943,6 +959,9 @@ export const POST = withApiGuc(async (request: NextRequest) => {
               applicantPhone: phone,
               programInterest: programInterestSummary,
               applicationId: applicationIdForAlert,
+              memberId: user.id,
+              organizationId,
+              applicationReport,
               applicationNotes: adminAlertNotes || undefined,
             });
             if (!result.ok) {

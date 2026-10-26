@@ -110,7 +110,7 @@ describe('J5: allowed before any voucher exists', () => {
     const built = buildJ5Content({ logoSha256: LOGO_SHA, documentNumber: 'WAP-Q-2026-0001', issueDate: '2026-09-15', programSlug: IT_SUPPORT, readiness, ...people });
     assert.ok(built.ok);
     const c = built.content;
-    assert.equal(c.title, 'Quote / Voucher Request');
+    assert.equal(c.title, 'Quote/Bid Letter/Voucher Request');
     assert.equal(c.contentVersion, 2);
     assert.deepEqual(c.training, {
       programSlug: IT_SUPPORT,
@@ -493,6 +493,24 @@ describe('frozen content hash', () => {
     const j6 = buildJ6Content({ ...j6Input(), logoSha256: LOGO_SHA, documentNumber: 'WAP-I-2026-0010', issueDate: '2026-10-20', ...people, finance: { name: 'Synthetic Finance', email: 'finance@example.test' } });
     assert.ok(j6.ok);
     assert.deepEqual(j6.content.signature, people.signatureAsset);
+  });
+
+  it('binds the frozen class description into the version hash so a later syllabus edit cannot match a signed J5', () => {
+    const built = buildJ5Content({ logoSha256: LOGO_SHA, documentNumber: 'WAP-Q-2026-0011', issueDate: '2026-09-15', programSlug: IT_SUPPORT, readiness, ...people });
+    assert.ok(built.ok);
+    const description = getProgramSyllabus(IT_SUPPORT)!.description.replace(/\s+/gu, ' ').trim();
+    assert.equal(built.content.training.classDescription, description);
+    assert.match(description, /\S/);
+    const rewritten = {
+      ...built.content,
+      training: { ...built.content.training, classDescription: `${description} (edited)` },
+    };
+    assert.notEqual(contentSha256(rewritten), built.contentSha256);
+    const { classDescription: _classDescription, ...trainingWithoutDescription } = built.content.training;
+    assert.notEqual(
+      contentSha256({ ...built.content, training: trainingWithoutDescription }),
+      built.contentSha256,
+    );
   });
 
   it('is stable under key order and changes with any field', () => {

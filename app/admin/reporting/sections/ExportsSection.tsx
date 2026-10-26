@@ -1,4 +1,6 @@
 import { getTranslations } from 'next-intl/server';
+import type { BoardOutcomesPeriod } from '@/lib/admin/boardOutcomes';
+import { REPORTING_PERIOD_LABELS } from '@/lib/admin/reportingHub';
 import {
   ExportsKit,
   type ExportOption,
@@ -13,7 +15,7 @@ import {
  * Also rendered by the exports route spec, so the list stays the single
  * source of the outcomes snapshot files (admin audit 2026-09-20, Outcomes).
  */
-export async function ReportingExportsSection() {
+export async function ReportingExportsSection({ period = 'all-time' }: { period?: BoardOutcomesPeriod } = {}) {
   const t = await getTranslations('admin');
 
   const exports: ExportOption[] = [
@@ -57,8 +59,8 @@ export async function ReportingExportsSection() {
     {
       id: 'outcomes-csv',
       title: 'Outcomes CSV',
-      description: 'Board-ready · funnel waterfall (counts + conversion), all time',
-      href: '/api/admin/outcomes/snapshot?period=all-time&format=csv',
+      description: `Board-ready · funnel waterfall (counts + conversion), ${REPORTING_PERIOD_LABELS[period]}`,
+      href: `/api/admin/outcomes/snapshot?period=${period}&format=csv`,
       iconKey: 'csv',
       tone: 'success',
       download: true,
@@ -66,8 +68,8 @@ export async function ReportingExportsSection() {
     {
       id: 'board-packet-pdf',
       title: 'Board meeting PDF',
-      description: 'Printable snapshot with KPIs, cohorts and methodology notes, all time',
-      href: '/api/admin/outcomes/snapshot?period=all-time&format=pdf',
+      description: `Printable snapshot with KPIs, cohorts and methodology notes, ${REPORTING_PERIOD_LABELS[period]}`,
+      href: `/api/admin/outcomes/snapshot?period=${period}&format=pdf`,
       iconKey: 'download',
       tone: 'muted',
       download: true,

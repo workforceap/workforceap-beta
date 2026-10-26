@@ -55,6 +55,9 @@ const nextConfig: NextConfig = {
   // serverless route trace so a Vercel bundle cannot silently degrade to an
   // unavailable/stale knowledge response.
   outputFileTracingIncludes: {
+    '/api/apply/signup': ['./assets/application-report/DejaVuSans.ttf'],
+    '/api/member/signup': ['./assets/application-report/DejaVuSans.ttf'],
+    '/api/admin/members/*/applications/*/report': ['./assets/application-report/DejaVuSans.ttf'],
     '/api/enrollment-agreements/template': ['./assets/enrollment/workforceap-enrollment-2026.pdf'],
     '/api/enrollment-agreements/template/send': ['./assets/enrollment/workforceap-enrollment-2026.pdf'],
     '/api/enrollment-agreements': [
@@ -188,12 +191,15 @@ const nextConfig: NextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
         ],
       },
-      {
-        source: '/_next/static/:path*',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-        ],
-      },
+      // Development chunks reuse URLs; let Next prevent stale browser bundles.
+      ...(process.env.NODE_ENV === 'production'
+        ? [{
+            source: '/_next/static/:path*',
+            headers: [
+              { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+            ],
+          }]
+        : []),
       {
         source: '/images/:path*',
         headers: [

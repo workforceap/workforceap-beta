@@ -52,11 +52,10 @@ describe('MemberDoThisNextCard body line (WAP-253 item 1)', () => {
     expect(style).not.toMatch(/text-overflow:\s*ellipsis/i);
     expect(body.style.overflow).not.toBe('hidden');
     expect(body.style.display).not.toBe('-webkit-box');
-    expect(body.style.margin).toBe('0px');
-    expect(body.style.color).toContain('--wa-on-accent');
+    // The card is a white hairline card now (C1+C3 redesign); its margin and muted body colour live in the CSS module and are checked in the browser captures, not by reading source text (WAP-175).
   });
 
-  it('keeps the two-line clamp on the title', () => {
+  it('keeps the full action title available instead of clipping the task at two lines', () => {
     render(
       <NextIntlClientProvider locale="en" messages={messages}>
         <MemberDoThisNextCard action={action} />
@@ -64,8 +63,8 @@ describe('MemberDoThisNextCard body line (WAP-253 item 1)', () => {
     );
     const title = screen.getByRole('heading', { name: 'Resume your training' });
     const style = title.getAttribute('style') ?? '';
-    expect(style).toMatch(/line-clamp:\s*2/i);
-    expect(title.style.textOverflow).toBe('ellipsis');
+    expect(style).not.toMatch(/line-clamp/i);
+    expect(title.style.textOverflow).not.toBe('ellipsis');
   });
 });
 

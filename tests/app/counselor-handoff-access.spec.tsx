@@ -1,3 +1,4 @@
+import { withPortalIntl } from '@/tests/helpers/withPortalIntl';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -21,6 +22,7 @@ vi.mock('@/components/portal/PortalPageFrame', () => ({ default: ({ children }: 
 vi.mock('@/components/portal/PageHeader', () => ({ default: () => <h1>Work queue</h1> }));
 vi.mock('@/components/portal/kit', () => ({
   DesignSurface: ({ children }: { children: React.ReactNode }) => <section>{children}</section>,
+  PageOpener: ({ title }: { title: string }) => <h1>{title}</h1>,
   SectionHeader: () => null,
   Avatar: () => null,
   StatusTag: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
@@ -58,7 +60,7 @@ describe('Counselor contextual handoffs and detail access', () => {
       threadId: 'thread-2', lastMessageBody: 'Please help with next steps',
       lastMessageAt: new Date('2026-09-07T12:00:00Z'), hoursWaiting: 48,
     }]);
-    render(await CounselorWorkQueuePage());
+    render(withPortalIntl(await CounselorWorkQueuePage()));
     expect(screen.getByRole('link', { name: /Second Member/ })).toHaveAttribute('href', '/counselor/messages?memberId=member-2');
   });
   it.each(['unassigned counselor', 'other-organization admin'])('withholds detail and funding facts from an %s', async (actor) => {

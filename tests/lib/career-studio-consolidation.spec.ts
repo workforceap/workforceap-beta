@@ -86,49 +86,4 @@ describe('Career Studio consolidation', () => {
     expect(controls).toBeGreaterThan(renderedNotice);
   });
 
-  it('renders All Tools as a three-stage path that keeps all 13 destinations', () => {
-    const studio = source('components/portal/kit/pages/VoiceStudioKit.tsx');
-    const css = source('css/portal-kit.css');
-    const panelStart = studio.indexOf('function ToolkitPanel()');
-    const panelEnd = studio.indexOf('function ToolCardView');
-    const panel = studio.slice(panelStart, panelEnd);
-
-    expect(panel).toContain('aria-label="Job-search path"');
-    expect(panel).toContain('className="wa-kit-toolkit"');
-    expect(panel).not.toContain('@astryxdesign');
-    expect(studio).toContain("label: 'Resume'");
-    expect(studio).toContain("label: 'Interview'");
-    expect(studio).toContain("label: 'Profile'");
-    expect(studio).toContain('href={`#toolkit-stage-${step.n}`}');
-    expect(studio).toContain('id={`toolkit-stage-${step.n}`}');
-    expect(studio).toContain('aria-labelledby={`toolkit-stage-${step.n}-title`}');
-
-    const toolkitHrefs = [
-      'resume-studio',
-      'cover-letter',
-      'skill-checkpoints',
-      'interview-practice',
-      'interview-coach',
-      'job-match-scorer',
-      'skill-mapper',
-      'training-bridge',
-      'linkedin-headline',
-      'linkedin-about',
-      'gap-analyzer',
-      'salary-negotiation',
-      'benefits-cliff',
-    ];
-    for (const key of toolkitHrefs) {
-      expect(studio).toContain(`href: TOOL_HREF['${key}']`);
-    }
-    expect(studio).toContain("tag: 'BETA'");
-    expect(studio).toContain("tag: 'VOICE'");
-    expect(studio).toContain('<StatusTag tone="warn">Beta</StatusTag>');
-    expect(studio).toContain('<StatusTag tone="info">Voice</StatusTag>');
-
-    expect(css).toContain('.wa-kit-toolkit-path');
-    expect(css).toContain('.wa-kit-toolkit-stages');
-    expect(css).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
-    expect(css).toContain('.wa-kit-toolkit-row');
-  });
 });

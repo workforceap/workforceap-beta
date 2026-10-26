@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
 import { useTranslations } from 'next-intl';
 import {
   TriangleAlert,
@@ -517,9 +518,9 @@ function InboxZeroRowCard({
           flag={flag}
           action={
             <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-              <Link href={`/counselor/students/${row.memberId}`} className="btn btn-sm btn-secondary" style={{ textDecoration: 'none' }}>
+              <PortalRecordLink href={`/counselor/students/${row.memberId}`} className="btn btn-sm btn-secondary" style={{ textDecoration: 'none' }}>
                 {t('openMember')}
-              </Link>
+              </PortalRecordLink>
               <button type="button" className="btn btn-sm btn-muted" disabled={dismissing} onClick={onDismiss}>
                 {dismissing ? t('saving') : t('inboxZeroDismiss')}
               </button>

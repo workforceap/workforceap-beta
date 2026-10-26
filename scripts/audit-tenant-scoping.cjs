@@ -91,7 +91,10 @@ const SCOPE_MARKERS = [
 ];
 
 function shouldSkipPath(filePath) {
-  return SKIP_PATHS.some((p) => filePath.includes(p));
+  // Match the same reviewed exclusions on Windows and POSIX; keep the native
+  // path for filesystem access and leave the ratchet/allowlist unchanged.
+  const comparablePath = filePath.replaceAll('\\', '/');
+  return SKIP_PATHS.some((p) => comparablePath.includes(p));
 }
 
 function listSourceFiles(dir, out = []) {
@@ -327,4 +330,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { evaluateRatchet, parseMaxUnscoped };
+module.exports = { evaluateRatchet, parseMaxUnscoped, shouldSkipPath };

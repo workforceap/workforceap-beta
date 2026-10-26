@@ -1,19 +1,22 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 import messages from '@/messages/en.json';
 
 import EmployerJobPostForm from './EmployerJobPostForm';
 import EmployerJobQuickActions from './EmployerJobQuickActions';
+import EmployerJobsActions from './EmployerJobsActions';
+import EmployerJobsBoard, { type EmployerJobBoardItem } from './EmployerJobsBoard';
 import EmployerMatchHistoryClient, { type EmployerMatchHistoryRow } from './EmployerMatchHistoryClient';
 import EmployerWorkQueueClient from './EmployerWorkQueueClient';
 
 const refresh = vi.hoisted(() => vi.fn());
+const navigation = vi.hoisted(() => ({ pathname: '/employer/jobs', search: 'filter=live&page=2' }));
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ refresh }),
+  usePathname: () => navigation.pathname,
+  useSearchParams: () => new URLSearchParams(navigation.search),
 }));
 
 const matchRow: EmployerMatchHistoryRow = {
@@ -59,15 +62,18 @@ function fillRequiredQuickPostFields() {
 describe('employer UI action contracts', () => {
   beforeEach(() => {
     refresh.mockReset();
+    navigation.pathname = '/employer/jobs';
+    navigation.search = 'filter=live&page=2';
     vi.stubGlobal('fetch', vi.fn());
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('routes job applicant actions to the existing job-scoped applicants page', () => {
-    render(
+    const { rerender } = render(
       <NextIntlClientProvider locale="en" messages={messages} timeZone="America/New_York">
         <EmployerJobQuickActions jobId="job/with space" title="Support Specialist" status="draft" />
       </NextIntlClientProvider>,
@@ -78,14 +84,70 @@ describe('employer UI action contracts', () => {
       '/employer/jobs/job%2Fwith%20space/applicants',
     );
 
-    const jobsBoardSource = readFileSync(
-      join(process.cwd(), 'components', 'employer', 'EmployerJobsBoard.tsx'),
-      'utf8',
-    );
-    expect(jobsBoardSource).toContain(
-      'href={`/employer/jobs/${encodeURIComponent(j.id)}/applicants`}',
-    );
-    expect(jobsBoardSource).not.toContain('/employer/applications?jobId=');
+    const job: EmployerJobBoardItem = {
+      id: 'job-1', title: 'Support Specialist', location: 'Austin', salaryMin: null, salaryMax: null,
+      locationType: 'onsite', jobType: 'fulltime', descriptionPreview: 'Support customers.',
+      descriptionLength: 200, requirementsCount: 3, suggestedProgramsCount: 1,
+      status: 'live', statusLabel: 'Live', applicationsCount: 1, updatedAt: '2026-08-29T12:00:00Z',
+      readinessLevel: 'solid', readinessIssues: [],
+    };
+    rerender(withIntl(
+      <>
+        <EmployerJobsActions labels={{ nav: 'Job actions', jobs: 'Jobs', post: 'Post job', import: 'Import jobs' }} />
+        <EmployerJobsBoard jobs={[job]} filter="live" page={2} pageSize={20} totalInFilter={21} totalInDb={21}
+          deletableInFilter={[]} closableInFilter={[{ id: job.id, title: job.title, status: job.status }]} titleByIdInFilter={{ [job.id]: job.title }} />
+      </>,
+    ));
+    const applicants = new URL(screen.getByRole('link', { name: 'View applicants' }).getAttribute('href')!, 'https://workforceap.test');
+    expect(applicants.pathname).toBe('/employer/jobs/job-1/applicants');
+    expect(applicants.searchParams.get('returnTo')).toBe('/employer/jobs?filter=live&page=2');
+    expect(applicants.searchParams.has('jobId')).toBe(false);
+    const actions = within(screen.getByRole('navigation', { name: 'Job actions' }));
+    expect(actions.getByRole('link', { name: 'Post job' })).toHaveAttribute('href', '/employer/jobs/new');
+    expect(actions.getByRole('link', { name: 'Import jobs' })).toHaveAttribute('href', '/employer/jobs/import');
+  });
+
+  it('reveals bulk actions after selection and preserves visible focus after clear or confirmed removal', async () => {
+    const draft: EmployerJobBoardItem = {
+      id: 'draft-1', title: 'Draft support role', location: 'Austin', salaryMin: null, salaryMax: null,
+      locationType: 'onsite', jobType: 'fulltime', descriptionPreview: 'Support customers.',
+      descriptionLength: 200, requirementsCount: 3, suggestedProgramsCount: 1,
+      status: 'draft', statusLabel: 'Draft', applicationsCount: 0, updatedAt: '2026-08-29T12:00:00Z',
+      readinessLevel: 'solid', readinessIssues: [],
+    };
+    render(withIntl(<EmployerJobsBoard jobs={[draft]} filter="all" page={1} pageSize={20}
+      totalInFilter={1} totalInDb={4} deletableInFilter={[draft]} closableInFilter={[]}
+      titleByIdInFilter={{ [draft.id]: draft.title }} />));
+    const disclosure = screen.getByText('Bulk actions').closest('details')!;
+    expect(disclosure).not.toHaveAttribute('open');
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select Draft support role' }));
+    expect(disclosure).toHaveAttribute('open');
+    fireEvent.click(screen.getByRole('button', { name: 'Remove (1)' }));
+    const dialog = screen.getByRole('dialog', { name: 'Remove 1 posting?' });
+    expect(within(dialog).getByRole('alert')).toHaveTextContent('This cannot be undone.');
+    expect(within(dialog).getByText('Draft support role')).toBeVisible();
+    expect(fetch).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+    const summary = disclosure.querySelector('summary')!;
+    fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
+    expect(disclosure).toHaveAttribute('open');
+    expect(summary).toHaveFocus();
+
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: true, json: async () => ({ deleted: 1 }) } as Response);
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select Draft support role' }));
+    const remove = screen.getByRole('button', { name: 'Remove (1)' });
+    remove.focus();
+    fireEvent.click(remove);
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Yes, remove' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(fetch).toHaveBeenCalledWith('/api/employer/jobs/bulk-delete', expect.objectContaining({
+      method: 'POST', body: JSON.stringify({ ids: [draft.id], action: 'delete' }),
+    }));
+    expect(disclosure).toHaveAttribute('open');
+    expect(summary).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Remove (0)' })).toBeDisabled();
   });
 
   it('keeps a server rejection visible and re-enables quick-post submission', async () => {
@@ -116,12 +178,16 @@ describe('employer UI action contracts', () => {
   });
 
   it('opens match-history applications through their detail route', () => {
+    navigation.pathname = '/employer/candidates';
+    navigation.search = 'view=matches';
     render(withIntl(<EmployerMatchHistoryClient initialRows={[matchRow]} />));
 
     const applicationLinks = screen.getAllByRole('link', { name: /open( application)?/i });
     expect(applicationLinks).not.toHaveLength(0);
     for (const link of applicationLinks) {
-      expect(link).toHaveAttribute('href', '/employer/applications/application-1');
+      const href = new URL(link.getAttribute('href')!, 'https://workforceap.test');
+      expect(href.pathname).toBe('/employer/applications/application-1');
+      expect(href.searchParams.get('returnTo')).toBe('/employer/candidates?view=matches');
     }
   });
 

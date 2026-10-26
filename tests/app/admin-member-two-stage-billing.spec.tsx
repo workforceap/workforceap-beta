@@ -53,7 +53,7 @@ describe('two-stage member billing workbench', () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     render(<TwoStageBillingWorkbench {...contacts} />);
 
-    const j5 = screen.getByRole('button', { name: 'Create J5 Quote / Voucher Request' });
+    const j5 = screen.getByRole('button', { name: 'Create J5 Quote/Bid Letter/Voucher Request' });
     const j6 = screen.getByRole('button', { name: 'Create J6 Invoice / Voucher Cover Letter' });
     expect(j5).toBeDisabled();
     expect(j6).toBeDisabled();
@@ -83,7 +83,7 @@ describe('two-stage member billing workbench', () => {
       />,
     );
 
-    const j5 = screen.getByRole('button', { name: 'Create J5 Quote / Voucher Request' });
+    const j5 = screen.getByRole('button', { name: 'Create J5 Quote/Bid Letter/Voucher Request' });
     const j6 = screen.getByRole('button', { name: 'Create J6 Invoice / Voucher Cover Letter' });
     expect(j5).toBeEnabled();
     expect(j6).toBeEnabled();
@@ -130,7 +130,7 @@ describe('two-stage member billing workbench', () => {
         readinessByStage={byStage(j6Ready)}
       />,
     );
-    expect(screen.getByRole('button', { name: 'Create J5 Quote / Voucher Request' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Create J5 Quote/Bid Letter/Voucher Request' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Create J6 Invoice / Voucher Cover Letter' })).toBeDisabled();
     expect(screen.getAllByText('Preparation is not yet available. The secure billing workflow is being connected.')).toHaveLength(2);
   });

@@ -1,3 +1,4 @@
+import ResumeClient from '@/app/(portal)/dashboard/resume/ResumeClient';
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { ResumeStudioKit } from '@/components/portal/kit/pages/member/ResumeStudioKit';
@@ -5,8 +6,8 @@ import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBr
 
 /**
  * Credential-free proofs for resume studio (toolkit destination).
- *   /dev/member/resume-studio                 — score form
- *   /dev/member/resume-studio?state=filled    — score + analysis
+ *   /dev/member/resume-studio                 — separate original/revised fixture files
+ *   /dev/member/resume-studio?view=score&state=filled — score + analysis
  *   /dev/member/resume-studio?view=rewrite    — rewrite form
  *   /dev/member/resume-studio?view=rewrite&state=filled
  *   /dev/member/resume-studio?view=coach      — honest coach empty
@@ -106,23 +107,37 @@ export default async function DevMemberResumeStudioPage({
   searchParams: Promise<{ state?: string; view?: string }>;
 }) {
   if (process.env.VERCEL_ENV === 'production') notFound();
-  const { state, view } = await searchParams;
+  const { state } = await searchParams;
   const filled = state === 'filled';
-  const isRewrite = view === 'rewrite';
-  const seeded = filled || isRewrite;
 
   return (
     <Suspense fallback={null}>
       <ResumeStudioKit
         preview
-        hasResume={seeded}
+        hasResume
+        filesSlot={
+          <ResumeClient
+            completeness={75}
+            witData={{ name: 'Jordan Reyes', email: 'jordan@example.test', phone: '', recentEmployer: '', targetJob: 'Cloud Support Associate', skills: 'Support, troubleshooting' }}
+            hasOriginal
+            hasEnhanced
+            layout="side-by-side"
+            previewData={{ originalText: SEED_RESUME, enhancedText: REWRITE }}
+            toolHrefs={{
+              rewrite: '/dev/member/resume-studio?view=rewrite',
+              jobMatch: '/dev/member/job-match',
+              score: '/dev/member/resume-studio?view=score',
+            }}
+          />
+        }
         backHref="/dev/member/toolkit"
         basePath="/dev/member/resume-studio"
-        initialResume={seeded ? SEED_RESUME : ''}
+        initialResume={filled ? SEED_RESUME : ''}
+        initialRewriteResume={SEED_RESUME}
         initialJobTarget="Cloud Support Associate"
-        previewScoreOutput={filled && !isRewrite ? SCORE_OUTPUT : undefined}
-        previewScorePayload={filled && !isRewrite ? SCORE_PAYLOAD : undefined}
-        previewRewriteOutput={filled && isRewrite ? REWRITE : undefined}
+        previewScoreOutput={filled ? SCORE_OUTPUT : undefined}
+        previewScorePayload={filled ? SCORE_PAYLOAD : undefined}
+        previewRewriteOutput={filled ? REWRITE : undefined}
       />
     </Suspense>
   );

@@ -1,0 +1,18 @@
+.preparation {
+  color: var(--wa-muted);
+  font-size: var(--wa-type-meta);
+}
+
+.preparation summary {
+  min-height: 2.75rem;
+  align-content: center;
+  color: var(--wa-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.preparation p {
+  max-width: 65ch;
+  margin-block: 0 var(--wa-pad-sm);
+  line-height: 1.6;
+}

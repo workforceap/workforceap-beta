@@ -267,7 +267,7 @@ describe('two-stage billing actions', () => {
     await screen.findByRole('region', { name: 'Release gates' });
     expect(within(lifecycle('J5')).queryByRole('group', { name: 'Your signature' })).toBeNull();
     // Staff still see why signing waits.
-    expect(within(screen.getByRole('region', { name: 'Quote / Voucher Request' })).getByText('Upload your signature image before signing.')).toBeInTheDocument();
+    expect(within(screen.getByRole('region', { name: 'Quote/Bid Letter/Voucher Request' })).getByText('Upload your signature image before signing.')).toBeInTheDocument();
   });
 });
 

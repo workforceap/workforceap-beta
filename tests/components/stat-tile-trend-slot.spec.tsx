@@ -85,9 +85,23 @@ function placeholders(container: HTMLElement): HTMLElement[] {
   );
 }
 
-describe('member home stat tiles — trend slot', () => {
+describe('stat tile trend slot: a row of four opted-in tiles keeps one baseline', () => {
+  // Round 3 of the portal redesign moved the member stat tiles off Home (the
+  // Progress numbers strip is a flat KpiStrip with no trend slot), so the slot
+  // behaviour is pinned here on the shared tile itself, rendered as the 2x2
+  // row the counselor, employer and partner homes still draw.
+  const row = (sparks: Partial<Record<'course' | 'jobs' | 'certs' | 'points', { series?: number[]; delta?: string; direction?: 'up' | 'down' }>> = {}) =>
+    renderKit(
+      <div>
+        <StatSparkTile icon={<BookOpen size={16} />} label="Course" value="0%" spark={sparks.course} emptyTrendLabel={NO_TREND_LABEL} />
+        <StatSparkTile icon={<BookOpen size={16} />} label="Active jobs" value={1} spark={sparks.jobs} emptyTrendLabel={NO_TREND_LABEL} />
+        <StatSparkTile icon={<BookOpen size={16} />} label="Certs" value={0} spark={sparks.certs} emptyTrendLabel={NO_TREND_LABEL} />
+        <StatSparkTile icon={<BookOpen size={16} />} label="Points" value={100} spark={sparks.points} emptyTrendLabel={NO_TREND_LABEL} />
+      </div>,
+    );
+
   it('shows a deliberate trend slot on every tile when no series is supplied', () => {
-    const { container } = renderKit(<MemberHomeKit {...liveProps} />);
+    const { container } = row();
 
     // The bug: the slot rendered nothing at all, at every width.
     expect(sparklines(container)).toHaveLength(0);
@@ -95,12 +109,12 @@ describe('member home stat tiles — trend slot', () => {
   });
 
   it('reserves the sparkline height so a row of tiles keeps one baseline', () => {
-    const { container } = renderKit(<MemberHomeKit {...liveProps} />);
+    const { container } = row();
 
     // A 2x2 grid at 390px only reads as deliberate if the tiles match: the
     // placeholder must occupy the 28px the sparkline would have.
     const slots = placeholders(container);
-    // Prove the selector matched before asserting a property of every match —
+    // Prove the selector matched before asserting a property of every match;
     // the loop below passes vacuously on an empty list.
     expect(slots).toHaveLength(4);
     for (const el of slots) {
@@ -110,9 +124,7 @@ describe('member home stat tiles — trend slot', () => {
 
   it('still draws the real sparkline when a series exists', () => {
     const series = [70, 71, 72, 74, 74, 76, 78];
-    const { container } = renderKit(
-      <MemberHomeKit {...liveProps} courseSpark={{ series, delta: '4%', direction: 'up' }} />
-    );
+    const { container } = row({ course: { series, delta: '4%', direction: 'up' } });
 
     const drawn = sparklines(container);
     expect(drawn).toHaveLength(1);
@@ -122,9 +134,7 @@ describe('member home stat tiles — trend slot', () => {
   });
 
   it('does not contradict a delta chip that arrives without a series', () => {
-    const { container } = renderKit(
-      <MemberHomeKit {...liveProps} pointsSpark={{ delta: '85', direction: 'up' }} />
-    );
+    const { container } = row({ points: { delta: '85', direction: 'up' } });
 
     // The chip must actually be on the page, or "no placeholder next to it" is
     // proving nothing.

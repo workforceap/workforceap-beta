@@ -63,9 +63,10 @@ const bodySchema = z.object({
   
       // Persist to AIToolResult so /api/member/skill-profile can read it
       // and blend RIASEC scores into the member's radar skill profile.
+      let resultId: string | null = null;
       try {
         await ensureUserInDb(user);
-        await saveAIToolResult(
+        resultId = await saveAIToolResult(
           user.id,
           'skill_assessment',
           'Interest Profiler (30 questions)',
@@ -88,6 +89,7 @@ const bodySchema = z.object({
         careersTotal: careersResp.total ?? careerRows.length,
         riasec,
         programSlugs,
+        resultId,
       });
     } catch (e) {
       // Keep the O*NET error text (URL, credentials hint) in the server log.

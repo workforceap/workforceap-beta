@@ -27,9 +27,10 @@ vi.mock('@/lib/db/prisma', () => ({
       const { prisma } = await import('@/lib/db/prisma');
       return typeof arg === 'function' ? arg(prisma) : Promise.all(arg);
     }),
+    $executeRaw: vi.fn(async () => 0),
     user: { findUnique: vi.fn() },
     courseProgress: { findFirst: vi.fn() },
-    memberEvent: { count: vi.fn(), create: vi.fn() },
+    memberEvent: { count: vi.fn(), create: vi.fn(), findFirst: vi.fn() },
   },
 }));
 
@@ -40,6 +41,8 @@ vi.mock('@/lib/rate-limit', () => ({
 vi.mock('@/lib/ai/skillMissionEval', () => ({
   MissionEvalUnavailableError: class MissionEvalUnavailableError extends Error {},
   evaluateSkillMission: vi.fn(),
+  saveMissionArtifact: vi.fn(async () => 'ai-result-1'),
+  discardMissionArtifact: vi.fn(async () => undefined),
 }));
 
 import { POST as evaluateMission } from '@/app/api/skill-missions/[courseSlug]/evaluate/route';
@@ -90,6 +93,7 @@ describe('Skill Mission curriculum-version mutation gates', () => {
     vi.mocked(getUser).mockResolvedValue({ id: USER_ID, email: 'member@example.test' } as any);
     vi.mocked(prisma.user.findUnique).mockResolvedValue(assignment() as any);
     vi.mocked(prisma.memberEvent.count).mockResolvedValue(0);
+    vi.mocked(prisma.memberEvent.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.memberEvent.create).mockResolvedValue({} as any);
     vi.mocked(evaluateSkillMission).mockResolvedValue({
       verdict: 'passed',
@@ -97,9 +101,7 @@ describe('Skill Mission curriculum-version mutation gates', () => {
       starStory: 'A concise STAR story.',
       resumeBullet: 'Delivered a measurable result.',
       skillsUnlocked: ['Analysis'],
-      quizCorrectCount: 3,
-      aiToolResultId: 'ai-result-1',
-    } as any);
+    });
   });
 
   it('unlocks the IBM capstone only from completion in its assigned program and keeps the historic event identity', async () => {

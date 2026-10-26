@@ -44,18 +44,18 @@ describe('Admin J5 / J6 mock preview', () => {
     const j5 = screen.getByRole('button', { name: 'Preview J5' });
     const j6 = screen.getByRole('button', { name: 'Preview J6' });
     expect(j5).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByTitle('Unsigned mock J5 — Quote / Voucher Request')).toHaveAttribute('src', '/api/admin/billing/preview/j5');
+    expect(screen.getByTitle('Unsigned mock J5 — Quote/Bid Letter/Voucher Request')).toHaveAttribute('src', '/api/admin/billing/preview/j5');
     fireEvent.click(j6);
     expect(j6).toHaveAttribute('aria-pressed', 'true');
     expect(j5).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.queryByTitle('Unsigned mock J5 — Quote / Voucher Request')).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Unsigned mock J5 — Quote/Bid Letter/Voucher Request')).not.toBeInTheDocument();
     expect(screen.getByTitle('Unsigned mock J6 — Invoice / Voucher Cover Letter')).toHaveAttribute('src', '/api/admin/billing/preview/j6');
     const link = screen.getByRole('link', { name: 'Open unsigned J6 sample PDF in a new tab' });
     expect(link).toHaveAttribute('href', '/api/admin/billing/preview/j6');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
     fireEvent.click(j5);
-    expect(screen.getByTitle('Unsigned mock J5 — Quote / Voucher Request')).toBeInTheDocument();
+    expect(screen.getByTitle('Unsigned mock J5 — Quote/Bid Letter/Voucher Request')).toBeInTheDocument();
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
@@ -64,7 +64,7 @@ describe('Admin J5 / J6 mock preview', () => {
     render(<BillingMockPreview />);
     const disclosure = screen.getByText('Explore the J5 / J6 workflow (read-only)').closest('details')!;
     disclosure.open = true;
-    const j5 = screen.getByRole('button', { name: 'Create J5 Quote / Voucher Request' });
+    const j5 = screen.getByRole('button', { name: 'Create J5 Quote/Bid Letter/Voucher Request' });
     const j6 = screen.getByRole('button', { name: 'Create J6 Invoice / Voucher Cover Letter' });
     expect(j5).toBeDisabled();
     expect(j6).toBeDisabled();

@@ -1,7 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
+import { useMemo } from 'react';
+import { usePartnerReferralListContext, type PartnerReferralMobileView } from './usePartnerReferralListContext';
 import { Avatar, StageTrack } from '@/components/portal/kit';
 import PartnerEmptyState from '@/components/partner/PartnerEmptyState';
 import { PIPELINE_STAGES_ORDERED, type PipelineStage } from '@/lib/pipeline/stage';
@@ -21,7 +22,7 @@ export type PartnerMemberRow = {
   placementVerified?: boolean | null;
 };
 
-type Filter = 'all' | 'active' | 'placed' | 'atRisk';
+type Filter = PartnerReferralMobileView;
 
 const STAGE_ORDER = PIPELINE_STAGES_ORDERED;
 
@@ -31,7 +32,7 @@ function stageTrackIndex(stage: string): number {
 }
 
 export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMemberRow[] }) {
-  const [filter, setFilter] = useState<Filter>('all');
+  const { mobileView: filter, setMobileView: setFilter } = usePartnerReferralListContext();
 
   const counts = useMemo(
     () => ({
@@ -60,7 +61,9 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
 
   return (
     <>
-      <div style={{ display: 'flex', gap: '0.5rem', padding: '0 1.5rem 1rem', overflowX: 'auto' }}>
+      {/* Wraps instead of scrolling sideways: four chips need ~341px, wider
+          than a phone rail, and a clipped "At Risk" gave no scroll cue. */}
+      <div role="group" aria-label="Filter referred members" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', padding: '0 1.5rem 1rem' }}>
         {chips.map((chip) => {
           const active = filter === chip.key;
           return (
@@ -69,15 +72,17 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
               type="button"
               onClick={() => setFilter(chip.key)}
               aria-pressed={active}
+              aria-label={chip.count > 0 ? `${chip.label} ${chip.count}` : chip.label}
               className="wa-kit-focus"
               style={{
                 flexShrink: 0,
+                minHeight: 44,
                 padding: '0.375rem 0.875rem',
                 borderRadius: '9999px',
                 fontSize: '0.8125rem',
                 fontWeight: 700,
-                background: active ? 'var(--wa-accent)' : 'var(--wa-surface)',
-                color: active ? 'var(--wa-on-accent)' : 'var(--wa-muted)',
+                background: active ? 'var(--wa-accent-fill)' : 'var(--wa-surface)',
+                color: active ? 'var(--wa-on-accent-control)' : 'var(--wa-muted)',
                 border: `1px solid ${active ? 'var(--wa-accent)' : 'var(--wa-border)'}`,
                 cursor: 'pointer',
                 fontFamily: 'inherit',
@@ -85,7 +90,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
             >
               {chip.label}
               {chip.count > 0 ? (
-                <span className="wa-tabular-nums" style={{ marginLeft: '0.375rem', fontSize: '0.8125rem', opacity: 0.85 }}>{chip.count}</span>
+                <span className="wa-tabular-nums" style={{ marginLeft: '0.375rem', fontSize: '0.8125rem' }}>{chip.count}</span>
               ) : null}
             </button>
           );
@@ -108,7 +113,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
             const isPlaced = row.stage === 'placed';
 
             return (
-              <Link key={row.id} href={`/partner/referred-members/${row.id}`} style={{ textDecoration: 'none' }}>
+              <PortalRecordLink key={row.id} href={`/partner/referred-members/${row.id}`} style={{ textDecoration: 'none' }}>
                 <div
                   className="wa-kit-card wa-kit-card--sm wa-kit-card--hover wa-kit-focus"
                   style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}
@@ -142,7 +147,7 @@ export default function PartnerReferredMembersMobile({ rows }: { rows: PartnerMe
                     </div>
                   </div>
                 </div>
-              </Link>
+              </PortalRecordLink>
             );
           })
         )}

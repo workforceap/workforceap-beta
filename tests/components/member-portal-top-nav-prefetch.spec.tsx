@@ -21,6 +21,7 @@ vi.mock('next/navigation', () => ({
 
 // Record the prefetch prop each Link receives, since the rendered <a> drops it.
 vi.mock('next/link', () => ({
+  useLinkStatus: () => ({ pending: false }),
   default: ({ children, href, prefetch, ...rest }: {
     children: React.ReactNode;
     href: string;

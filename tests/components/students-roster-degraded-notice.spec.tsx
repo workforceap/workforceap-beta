@@ -1,3 +1,4 @@
+import { withPortalIntl } from '@/tests/helpers/withPortalIntl';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -104,7 +105,7 @@ afterEach(() => {
  */
 async function renderPage(params: Record<string, string> = {}) {
   const { default: Page } = await import('@/app/admin/students/page');
-  render(await Page({ searchParams: Promise.resolve(params) }));
+  render(withPortalIntl(await Page({ searchParams: Promise.resolve(params) })));
 }
 
 const DEGRADED_TEXT =

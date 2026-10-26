@@ -30,11 +30,14 @@ export async function resolveInboundCourseScopes(
     assignments: readonly CurriculumAssignment[];
     fallbackProgramSlug: string | null;
     fallbackCurriculumVersion: string | null | undefined;
+    /** Pending xAPI replay needs unresolved detached attribution before any effects. */
+    requireResolvedDetachedCourse?: boolean;
   },
   resolveMappings: ResolveMappings = resolveProviderCourseMappings,
 ): Promise<InboundCourseScope[]> {
   const providerId = normalizeCourseraCourseId(args.courseraCourseId);
   if (!providerId) {
+    if (args.requireResolvedDetachedCourse && !args.fallbackProgramSlug) return [];
     return [{
       programSlug: args.fallbackProgramSlug
         ? canonicalizeProgramSlug(args.fallbackProgramSlug)
@@ -45,9 +48,14 @@ export async function resolveInboundCourseScopes(
   }
 
   if (args.assignments.length === 0) {
-    // Preserve the detached exact-id path. The downstream canonical resolver
-    // promotes only one unique legacy target; approved-v2 and ambiguous ids
-    // remain raw-only.
+    // REST callers retain their downstream resolution/retry contract.
+    // Check attribution before completion orchestration. The same resolver
+    // used downstream admits only one unique legacy target for a detached
+    // learner; unknown, ambiguous and approved-only mappings stay raw-only.
+    if (args.requireResolvedDetachedCourse) {
+      const resolution = await resolveMappings({ courseraCourseId: providerId, assignments: [] });
+      if (resolution.targets.length !== 1) return [];
+    }
     return [{
       programSlug: null,
       curriculumVersion: 'legacy-v1',

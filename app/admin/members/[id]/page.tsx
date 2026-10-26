@@ -1,4 +1,5 @@
 import AssessmentResultHistory from '@/components/admin/AssessmentResultHistory';
+import ApplicationReportButton from '@/components/admin/ApplicationReportButton';
 import AllowAssessmentRetakeButton from '@/components/admin/AllowAssessmentRetakeButton';
 import MemberServiceRequests from '@/components/admin/MemberServiceRequests';
 import { loadMemberServiceRequests } from '@/lib/admin/memberServiceRequests';
@@ -20,6 +21,7 @@ import { programSlugsEquivalent } from '@/lib/content/programSlug';
 import { buildMemberProgramOptions } from '@/lib/admin/assignableProgramOptions';
 import { isMemberWioaVerified } from '@/lib/platform/trainingEnrollmentGate';
 import AdminMemberResumeSection from '@/components/admin/AdminMemberResumeSection';
+import PortalBackLink from '@/components/portal/PortalBackLink';
 // Use the client-safe questions file — the "Full Q&A" details list only
 // renders question text + recorded answer, no correctness check.
 import AssessmentAnswersReadonly from '@/components/admin/AssessmentAnswersReadonly';
@@ -795,7 +797,7 @@ export default async function AdminMemberDetailPage({
               Readiness
             </Link>
             <Link href={`/admin/members/${id}/billing`} className={`btn btn-outline ${styles.headerAction} ${styles.headerActionWide}`}>J5 / J6 billing</Link>
-            <Link href="/admin/members" className={`btn btn-outline ${styles.headerAction} ${styles.headerActionWide}`}>Back to Members</Link>
+            <PortalBackLink fallbackHref="/admin/members" fallbackLabel="Back to Members" className={`btn btn-outline ${styles.headerAction} ${styles.headerActionWide}`} />
           </div>
         }
       />
@@ -891,9 +893,16 @@ export default async function AdminMemberDetailPage({
                   <p className={styles.statLabel}>Assessment</p>
                   <p className={styles.statValue}>{member.assessmentScorePct != null ? `${member.assessmentScorePct}%` : '—'}</p>
                   <p className={styles.statNote}>{member.assessmentCompleted ? 'completed' : 'not completed'}</p>
+                  {member.assessmentAttemptCount === 1 ? (
+                    <p className={styles.statNote}>
+                      {member.assessmentRetakeRequestedAt ? 'Final retake authorized' : 'Final retake needs staff authorization'}
+                    </p>
+                  ) : member.assessmentAttemptCount >= 2 ? (
+                    <p className={styles.statNote}>Both preassessment attempts used</p>
+                  ) : null}
                   {member.assessmentCompleted || member.assessmentAttemptCount > 0 ? (
                     <a href="#admin-member-preassessment" className={styles.inlineLink}>
-                      Review answers & retake
+                      Review answers & retake permission
                     </a>
                   ) : null}
                 </div>
@@ -1414,6 +1423,7 @@ export default async function AdminMemberDetailPage({
                       : 'Not submitted'}
                   </p>
                   <p><strong>Recommended career:</strong> {latestApplication.recommendedCareerTitle ?? '—'}</p>
+                  <ApplicationReportButton memberId={member.id} applicationId={latestApplication.id} />
                   <p>
                     <strong>Ranked programs:</strong>{' '}
                     {Array.isArray(latestApplication.programRankedSlugs) && latestApplication.programRankedSlugs.length > 0

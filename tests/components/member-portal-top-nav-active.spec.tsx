@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 import MemberPortalTopNav from '@/components/portal/MemberPortalTopNav';
@@ -38,10 +38,19 @@ function currentLabels(strip: ReturnType<typeof renderAt>): string[] {
   return strip
     .getAllByRole('link')
     .filter((link) => link.getAttribute('aria-current') === 'page')
-    .map((link) => link.textContent ?? '');
+    .map((link) => link.querySelector('.member-portal-top-nav__label')?.textContent?.trim() ?? link.textContent?.trim() ?? '');
 }
 
 describe('MemberPortalTopNav current tab (WAP-263)', () => {
+  it('exposes a focusable phone navigation landmark for skip navigation', () => {
+    const strip = renderAt('/dashboard');
+    const landmark = screen.getByRole('navigation', { name: 'Member portal' });
+
+    expect(landmark).toHaveAttribute('id', 'member-portal-top-nav');
+    expect(landmark).toHaveAttribute('tabindex', '-1');
+    expect(strip.getByRole('link', { name: 'Home' })).toHaveAttribute('href', '/dashboard');
+  });
+
   it.each(['es', 'fr', 'pt'])('on /%s/dashboard/messages, Messages is the current tab', (locale) => {
     const strip = renderAt(`/${locale}/dashboard/messages`, locale);
     expect(strip.getByRole('link', { name: 'Messages' })).toHaveAttribute('aria-current', 'page');
@@ -53,9 +62,10 @@ describe('MemberPortalTopNav current tab (WAP-263)', () => {
     expect(currentLabels(strip)).toEqual(['Home']);
   });
 
-  it('on /es/dashboard/ai-tools/resume-studio, AI Career Tools is the current tab', () => {
+  it('on a legacy Resume studio URL, the unified Resume destination is current', () => {
     const strip = renderAt('/es/dashboard/ai-tools/resume-studio', 'es');
-    expect(currentLabels(strip)).toEqual(['AI Career Tools']);
+    expect(currentLabels(strip)).toEqual(['Resume']);
+    expect(strip.getByRole('link', { name: 'Resume' })).toHaveAttribute('href', '/es/dashboard/resume');
   });
 
   it.each(['en', 'es', 'fr', 'pt'])('preserves /%s on every phone tab, including the advisor handoff', (locale) => {
@@ -101,14 +111,26 @@ describe('MemberPortalTopNav current tab (WAP-263)', () => {
     expect(currentLabels(strip)).toEqual([]);
   });
 
-  it('puts AI Career Tools immediately after Home and My program in the phone strip', () => {
+  it('matches the five daily desktop destinations and keeps preassessment directly visible', () => {
     const strip = renderAt('/dashboard');
     expect(strip.getByRole('link', { name: 'AI Career Tools' })).toHaveAttribute('href', '/dashboard/ai-tools');
-    expect(strip.getAllByRole('link').slice(0, 3).map((link) => link.getAttribute('href'))).toEqual([
+    expect(strip.getByRole('link', { name: 'Job board' })).toHaveTextContent('Job board');
+    expect(strip.getAllByRole('link').slice(0, 5).map((link) => link.getAttribute('href'))).toEqual([
       '/dashboard',
       '/dashboard/program',
+      '/dashboard/jobs',
       '/dashboard/ai-tools',
+      '/dashboard/messages',
     ]);
+    expect(strip.getByRole('link', { name: 'WIOA Preassessment' })).toHaveAttribute('href', '/dashboard/assessment');
+    expect(strip.queryByRole('link', { name: 'Job applications' })).toBeNull();
+    fireEvent.click(strip.getByRole('button', { name: 'More pages' }));
+    expect(strip.getByRole('button', { name: 'More pages' })).toHaveAttribute('aria-expanded', 'true');
+    expect(strip.getAllByRole('link')).toHaveLength(13);
+    expect(strip.getByRole('link', { name: 'Job applications' })).toHaveAttribute('href', '/dashboard/job-applications');
+    fireEvent.click(strip.getByRole('button', { name: 'More pages' }));
+    expect(strip.getByRole('button', { name: 'More pages' })).toHaveAttribute('aria-expanded', 'false');
+    expect(strip.queryByRole('link', { name: 'Job applications' })).toBeNull();
   });
 
   it('with a dev hrefMap, matches the remapped hrefs and shows only mapped tabs', () => {

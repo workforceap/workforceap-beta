@@ -23,7 +23,7 @@ describe('curriculum-versioned portal reads', () => {
     'app/(portal)/dashboard/guide/page.tsx',
     'lib/content/learningPathways.ts',
     'app/(portal)/counselor/students/[memberId]/page.tsx',
-    'app/admin/members/page.tsx',
+    'components/admin/workspace/MemberManagementView.tsx',
     'app/api/admin/export/members/route.ts',
     'lib/admin/courseraOps.ts',
   ])('%s pins its course list to CourseEnrollment.curriculumVersion', (path) => {
@@ -120,7 +120,7 @@ describe('curriculum-versioned portal reads', () => {
 
   it('keeps staff views and exports on the learner assigned denominator', () => {
     const counselor = readRepo('app/(portal)/counselor/students/[memberId]/page.tsx');
-    const members = readRepo('app/admin/members/page.tsx');
+    const members = readRepo('components/admin/workspace/MemberManagementView.tsx');
     const exportQuery = readRepo('app/api/admin/export/members/_membersExportQuery.ts');
     const exportRoute = readRepo('app/api/admin/export/members/route.ts');
     const audit = readRepo('lib/admin/courseraOps.ts');

@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render as rtlRender, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
+import { renderToString } from 'react-dom/server';
 import en from '@/messages/en.json';
 import { pickClientMessageSlice } from '@/lib/i18n/pickRootClientMessages';
 import AtRiskDashboard from '@/components/portal/counselor/AtRiskDashboard';
@@ -8,7 +9,7 @@ import type { AtRiskMember } from '@/lib/member/atRiskRow';
 import { ATTENTION_REASON_META } from '@/lib/attention/reasons';
 import { MEMBER_REQUEST_FAILURE } from '@/lib/portal/memberRequestFailure';
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/dev/test', useSearchParams: () => new URLSearchParams(), useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
 vi.mock('@/components/portal/counselor/AtRiskDetailModal', () => ({ default: () => null }));
 vi.mock('@/components/portal/PortalInlineSpinner', () => ({ PortalInlineSpinner: () => <span aria-hidden="true" /> }));
 
@@ -54,6 +55,29 @@ function render(ui: React.ReactElement) {
 }
 
 describe('AtRiskDashboard first paint', () => {
+  it.each([
+    ['en', 'Oct 22, 2026'],
+    ['es', '22 oct 2026'],
+  ])('keeps %s activity dates identical across server and browser timezone defaults', (locale, expected) => {
+    const nativeFormat = Date.prototype.toLocaleDateString;
+    let hostTimeZone = 'UTC';
+    const formatter = vi.spyOn(Date.prototype, 'toLocaleDateString').mockImplementation(function (this: Date, locales, options) {
+      return nativeFormat.call(this, locales ?? 'en-US', { timeZone: hostTimeZone, ...options });
+    });
+    try {
+      const view = <NextIntlClientProvider locale={locale} messages={pickClientMessageSlice(en, 'portal')}>
+        <AtRiskDashboard initialMembers={[member('midnight', { lastActivityAt: '2026-10-23T00:30:00Z' })]} />
+      </NextIntlClientProvider>;
+      const serverMarkup = renderToString(view);
+      hostTimeZone = 'America/Los_Angeles';
+      const browserMarkup = renderToString(view);
+      expect(serverMarkup).toContain(`last activity ${expected}`);
+      expect(browserMarkup).toContain(`last activity ${expected}`);
+    } finally {
+      formatter.mockRestore();
+    }
+  });
+
   it('renders the server rows immediately without any client fetch', () => {
     const fetchMock = stubFetch(() => Response.json({ results: [] }));
     render(<AtRiskDashboard initialMembers={[member('a'), member('b', { score: 40, riskLevel: 'MEDIUM' })]} />);

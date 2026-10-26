@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { CSSProperties } from 'react';
-import { useLayoutEffect, useRef } from 'react';
+import { useId, useLayoutEffect, useRef, useState } from 'react';
 import LegacyGlyph from '@/components/icons/LegacyGlyph';
 import { getBestActiveHref, type ActiveNavLink } from '@/lib/nav/activeRoute';
 import { MEMBER_PORTAL_NAV_ITEMS, navItemsForActiveRoute, type NavBadgeKey } from '@/lib/nav/portalNav';
@@ -47,7 +47,10 @@ export default function MemberPortalTopNav({
   const rawPathname = usePathname() ?? '/dashboard';
   const { locale: explicitLocale, pathnameWithoutLocale: pathname } = splitLocalePrefix(rawPathname);
   const t = useTranslations('nav');
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreId = useId();
   const navRef = useRef<HTMLElement>(null);
+  const moreBtnRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const activeItemRef = useRef<HTMLLIElement>(null);
 
@@ -61,7 +64,7 @@ export default function MemberPortalTopNav({
       const list = listRef.current;
       const focused = el.querySelector<HTMLElement>('.member-portal-top-nav__link:focus-visible');
       const item = focused?.parentElement;
-      if (list && item) centerRailItem(list, item);
+      if (list && item && list.contains(item)) centerRailItem(list, item);
     };
     setVar();
     const ro = new ResizeObserver(setVar);
@@ -73,34 +76,57 @@ export default function MemberPortalTopNav({
   }, []);
 
   /**
-   * The strip now carries 12 destinations instead of 7, so on a phone the
-   * current one is usually off-screen. Centre it inside the strip on every
-   * navigation. Scrolling the list directly (rather than `scrollIntoView`)
-   * keeps the page itself from jumping.
+   * Centre a primary destination inside the strip. Secondary destinations
+   * stay visible in the utility row, so no page-level scroll is needed.
    */
   useLayoutEffect(() => {
     const list = listRef.current;
-    const item = activeItemRef.current;
-    if (!list || !item) return;
+    if (!list) return;
+    // A keyboard user can reach the server-rendered links before hydration.
+    // Preserve that destination instead of moving the strip back to the page
+    // that happened to be active when this effect first ran.
+    const focusedItem = list.querySelector<HTMLElement>('.member-portal-top-nav__link:focus')?.parentElement;
+    const item = focusedItem ?? activeItemRef.current;
+    if (!item) return;
     centerRailItem(list, item);
   }, [pathname]);
+
+  // No early-tap replay here. The strip is display:none on phones while the
+  // member bottom tab bar is mounted (css/portal-main-extracted.css) and above
+  // 768px (css/portal.css), so no tap can land on this button before
+  // hydration, and the shared `more` early-tap kind now belongs to the bar's
+  // More button, claimed by WorkspaceShell alone (lib/portal/earlyShellTap.ts).
+
+  /**
+   * Escape closes the open "More pages" list and puts focus back on its button
+   * (the same disclosure contract as DashboardProgramSelector). Outside taps
+   * deliberately do not close it: the list is in flow and pushes the page down,
+   * so dismissing it on a stray tap would shift the page under the finger.
+   */
+  const onNavKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key !== 'Escape' || event.nativeEvent.isComposing || !moreOpen) return;
+    event.preventDefault();
+    setMoreOpen(false);
+    moreBtnRef.current?.focus();
+  };
 
   const remap = (href: string) => hrefMap?.[href] ?? href;
 
   /**
-   * Mobile exposed only a handful of the member IA; the rest hid behind the
-   * hamburger. These 13 cover the daily destinations. Proofs pass hrefMap to
-   * stay on /dev/member; omit unmapped tabs.
+   * Five daily destinations match the desktop rail. The preassessment stays
+   * directly visible (an established support requirement). Every other
+   * existing shortcut remains in the expandable page list; the current one
+   * is also visible while that list is closed.
    */
   const tabs = [
-    { canonical: '/dashboard', label: t('dashboard'), icon: 'home' },
-    { canonical: '/dashboard/program', label: t('myProgram'), icon: 'school' },
-    { canonical: '/dashboard/ai-tools', label: t('careerToolkit'), icon: 'auto_awesome' },
+    { canonical: '/dashboard', label: t('dashboard'), icon: 'home', primary: true },
+    { canonical: '/dashboard/program', label: t('myProgram'), icon: 'school', primary: true },
+    { canonical: '/dashboard/jobs', label: t('jobBoard'), icon: 'work', primary: true },
+    { canonical: '/dashboard/ai-tools', label: t('careerToolkit'), icon: 'auto_awesome', primary: true },
+    { canonical: '/dashboard/messages', label: t('counselorChat'), icon: 'chat', badgeKey: 'counselor_messages_unread' as NavBadgeKey, primary: true },
     // Ops (10/8/26): members were not finding the preassessment; keep it a tap away.
     { canonical: '/dashboard/assessment', label: t('wioaPreassessment'), icon: 'assignment_turned_in' },
-    { canonical: '/dashboard/jobs', label: t('jobBoard'), icon: 'work' },
     { canonical: '/dashboard/readiness', label: t('myProgress'), icon: 'check_circle' },
-    { canonical: '/dashboard/messages', label: t('counselorChat'), icon: 'chat', badgeKey: 'counselor_messages_unread' as NavBadgeKey },
     { canonical: '/dashboard/missions', label: t('skillMissions'), icon: 'flag' },
     { canonical: '/dashboard/job-applications', label: t('jobApplications'), icon: 'assignment', badgeKey: 'applications_new' as NavBadgeKey },
     { canonical: '/dashboard/resume', label: t('resume'), icon: 'description' },
@@ -130,56 +156,88 @@ export default function MemberPortalTopNav({
     }),
   );
 
+  type Tab = (typeof tabs)[number];
+  const primary = tabs.filter((tab) => tab.primary);
+  const assessment = tabs.find((tab) => tab.canonical === '/dashboard/assessment');
+  const secondary = tabs.filter((tab) => !tab.primary && tab !== assessment);
+  const currentSecondary = secondary.find((tab) => tab.canonical === activeCanonical);
+  const extraPages = secondary.filter((tab) => tab !== currentSecondary);
+
+  const renderLink = (tab: Tab, inPrimary = false) => {
+    const mappedHref = remap(tab.canonical);
+    const href = explicitLocale ? localizeHref(mappedHref, explicitLocale) : mappedHref;
+    const active = tab.canonical === activeCanonical;
+    const badge = tab.badgeKey ? badgeCounts?.[tab.badgeKey] : undefined;
+    return (
+      <Link
+        href={href}
+        prefetch={false}
+        onClick={() => setMoreOpen(false)}
+        onFocus={(event) => {
+          const list = listRef.current;
+          const link = event.currentTarget;
+          const item = link.parentElement;
+          if (!inPrimary || !list || !item || !link.matches(':focus-visible')) return;
+          centerRailItem(list, item);
+          // Recheck after the native focus scroll settles. Only the link that
+          // still owns keyboard focus may move the rail, never the document.
+          requestAnimationFrame(() => {
+            if (listRef.current === list && document.activeElement === link && link.matches(':focus-visible')) {
+              centerRailItem(list, item);
+            }
+          });
+        }}
+        className={`member-portal-top-nav__link${active ? ' member-portal-top-nav__link--active' : ''}`}
+        aria-current={active ? 'page' : undefined}
+      >
+        <LegacyGlyph name={tab.icon} size={17} className="member-portal-top-nav__icon" />
+        <span className="member-portal-top-nav__label">{tab.label}</span>
+        {badge && badge > 0 ? (
+          <span className="member-portal-top-nav__badge" aria-label={
+            tab.badgeKey === 'applications_new'
+              ? t('pendingApplicationsCount', { count: badge })
+              : t('unreadCount', { count: badge })
+          }>{badge > 9 ? '9+' : badge}</span>
+        ) : null}
+      </Link>
+    );
+  };
+
   return (
-    <nav ref={navRef} className="member-portal-top-nav" aria-label={t('memberPortal')}>
+    <nav id="member-portal-top-nav" ref={navRef} tabIndex={-1} className="member-portal-top-nav" aria-label={t('memberPortal')} onKeyDown={onNavKeyDown}>
       <ul ref={listRef} className="member-portal-top-nav__list">
-        {tabs.map((tab) => {
-          const mappedHref = remap(tab.canonical);
-          const href = explicitLocale ? localizeHref(mappedHref, explicitLocale) : mappedHref;
-          const active = tab.canonical === activeCanonical;
-          const badge = tab.badgeKey ? badgeCounts?.[tab.badgeKey] : undefined;
-          return (
+        {primary.map((tab) => (
             <li
               key={tab.canonical}
-              ref={active ? activeItemRef : undefined}
+              ref={tab.canonical === activeCanonical ? activeItemRef : undefined}
               className="member-portal-top-nav__item"
             >
-              <Link
-                href={href}
-                // No full prefetch: this strip shows on every phone member page, and
-                // `prefetch` (true) would render the whole member home in the
-                // background from each of them. Tapping Home still navigates with
-                // app/(portal)/dashboard/loading.tsx, like the rail and header links.
-                prefetch={false}
-                onFocus={(event) => {
-                  const list = listRef.current;
-                  const item = event.currentTarget.parentElement;
-                  if (list && item && event.currentTarget.matches(':focus-visible')) {
-                    centerRailItem(list, item);
-                  }
-                }}
-                className={`member-portal-top-nav__link${active ? ' member-portal-top-nav__link--active' : ''}`}
-                aria-current={active ? 'page' : undefined}
-              >
-                <LegacyGlyph name={tab.icon} size={17} className="member-portal-top-nav__icon" />
-                <span className="member-portal-top-nav__label">{tab.label}</span>
-                {badge && badge > 0 ? (
-                  <span className="member-portal-top-nav__badge" aria-label={
-                    // The applications badge counts the member's own pending
-                    // applications, not unread items (WAP-263 item 3).
-                    tab.badgeKey === 'applications_new'
-                      ? t('pendingApplicationsCount', { count: badge })
-                      : t('unreadCount', { count: badge })
-                  }>
-                    {badge > 9 ? '9+' : badge}
-                  </span>
-                ) : null}
-              </Link>
+              {renderLink(tab, true)}
             </li>
-          );
-        })}
+        ))}
       </ul>
-      <span className="member-portal-top-nav__edge-fade" aria-hidden="true" />
+      {(assessment || currentSecondary || extraPages.length > 0) && (
+        <div className="member-portal-top-nav__utilities">
+          {assessment && renderLink(assessment)}
+          {currentSecondary && renderLink(currentSecondary)}
+          {extraPages.length > 0 && (
+            <button
+              ref={moreBtnRef}
+              type="button"
+              className="member-portal-top-nav__link member-portal-top-nav__more"
+              aria-expanded={moreOpen}
+              aria-controls={moreId}
+              onClick={() => setMoreOpen((open) => !open)}
+            >
+              <LegacyGlyph name="menu" size={17} className="member-portal-top-nav__icon" />
+              <span>{t('morePages')}</span>
+            </button>
+          )}
+        </div>
+      )}
+      <ul id={moreId} className="member-portal-top-nav__extra" hidden={!moreOpen}>
+        {extraPages.map((tab) => <li key={tab.canonical}>{renderLink(tab)}</li>)}
+      </ul>
     </nav>
   );
 }

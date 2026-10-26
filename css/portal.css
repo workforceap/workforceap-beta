@@ -18,34 +18,13 @@
   overflow-wrap: anywhere;
 }
 
-/* Final portal-scoped Astryx card polish. Astryx emits generated atomic classes,
-   so this lives after all portal imports and keys off the stable root class. */
-[data-surface] .astryx-card {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--wa-surface) 96%, white 4%), var(--wa-surface));
-  border-color: color-mix(in srgb, var(--wa-border) 82%, var(--wa-accent) 18%);
-  box-shadow:
-    0 1px 1px rgba(17, 24, 39, 0.03),
-    0 14px 34px rgba(17, 24, 39, 0.055),
-    inset 0 1px 0 rgba(255, 255, 255, 0.52);
-}
-
-[data-surface='dense'] .astryx-card {
-  box-shadow:
-    0 1px 1px rgba(17, 24, 39, 0.025),
-    0 10px 22px rgba(17, 24, 39, 0.045),
-    inset 0 1px 0 rgba(255, 255, 255, 0.42);
-}
-
-html.dark [data-surface] .astryx-card,
-[data-theme='dark'] [data-surface] .astryx-card {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--wa-surface) 92%, white 4%), var(--wa-surface));
-  border-color: color-mix(in srgb, var(--wa-border) 84%, var(--wa-accent) 16%);
-  box-shadow:
-    0 1px 1px rgba(0, 0, 0, 0.36),
-    0 18px 42px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+/* Astryx and kit cards share calm, solid surfaces in either theme. Keep the
+   scope zero-specificity so a semantic kit variant on an Astryx Card wins
+   even though this compatibility rule follows the portal imports. */
+:where([data-surface]) .astryx-card {
+  background: var(--wa-surface);
+  border-color: var(--wa-border);
+  box-shadow: var(--wa-shadow);
 }
 
 /* ── Employer Guide — 3-step flow grid ── */
@@ -461,7 +440,7 @@ html.dark [data-surface] .astryx-card,
 
 /* ── Portal Promo Card — accent background with CTA ── */
 .portal-promo-card {
-  background: var(--color-accent);
+  background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
   padding: 1.5rem;
   border-radius: 0.75rem;
   color: #fff;
@@ -683,7 +662,7 @@ html.dark [data-surface] .astryx-card,
     width: 3.5rem;
     height: 3.5rem;
     border-radius: 50%;
-    background: var(--color-accent);
+    background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
     color: white;
     display: flex;
     align-items: center;
@@ -1398,7 +1377,7 @@ html.dark [data-surface] .astryx-card,
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-accent);
+  background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
 }
 
 .portal-messages-bubble--mine {
@@ -1423,6 +1402,12 @@ html.dark [data-surface] .astryx-card,
   );
   border-top: 1px solid rgba(173, 44, 77, 0.08);
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+@media (max-width: 767px) {
+  .portal-messages-shell--thread .portal-messages-compose {
+    margin-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 .portal-messages-compose-input {
@@ -1869,7 +1854,7 @@ html.dark .employer-applications-table.admin-table thead th {
 }
 
 .portal-action-card__badge--accent {
-  background: var(--color-accent);
+  background: var(--org-accent, var(--wa-accent-fill, var(--color-accent)));
   color: #fff;
 }
 .portal-action-card__badge--gold {
@@ -2894,12 +2879,11 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
 }
 
 /* ============================================================
-   Member Portal Top Nav (mobile, sticky, horizontal-scroll)
-   Decision 3 from /plan-design-review (2026-04-25)
+   Member Portal Top Nav (mobile, daily links + page disclosure)
    ============================================================
    Replaces MobileBottomNav for the Member portal at <=768px.
-   Discoverability mitigations: right-edge gradient fade + scroll-snap so
-   the half-cut item signals scrollability without users having to discover.
+   Five daily destinations match the rail. The assessment and current
+   secondary page stay visible; the other shortcuts expand below them.
 */
 .member-portal-top-nav {
   display: none;
@@ -2915,7 +2899,6 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid transparent;
-    /* Pad the right edge so the gradient fade has room without clipping the last item. */
     padding: 0;
   }
   .member-portal-top-nav__list {
@@ -2926,10 +2909,11 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     gap: 0.18rem;
     overflow-x: auto;
     scroll-snap-type: x proximity;
+    /* Start snapping must retain the focus-ring gutter before hydration too;
+       layout padding alone lets the browser snap the first link flush left. */
+    scroll-padding-inline: 0.75rem;
     scrollbar-width: none; /* firefox */
     -ms-overflow-style: none; /* IE/edge legacy */
-    /* Last item gets extra trailing space so the fade doesn't cut the active state. */
-    padding-right: 2.75rem;
     transition: padding 0.18s ease, gap 0.18s ease;
   }
   .member-portal-top-nav__list::-webkit-scrollbar {
@@ -2943,6 +2927,14 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   .member-portal-top-nav__item {
     flex-shrink: 0;
     scroll-snap-align: start;
+  }
+  .member-portal-top-nav__list .member-portal-top-nav__link {
+    min-height: 48px;
+    border-radius: var(--wa-radius-sm);
+    padding-inline: 0.875rem;
+  }
+  .member-portal-top-nav__list .member-portal-top-nav__link--active {
+    box-shadow: inset 0 -2px 0 var(--wa-accent);
   }
   .member-portal-top-nav__link {
     display: inline-flex;
@@ -3000,25 +2992,57 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     padding: 0 0.35rem;
     margin-left: 0.15rem;
     border-radius: 999px;
-    background: var(--wa-accent);
+    background: var(--wa-accent-fill);
     color: var(--wa-on-accent-control);
     font-size: var(--wa-type-meta);
     font-weight: 700;
     line-height: 1;
   }
   .member-portal-top-nav__link--active .member-portal-top-nav__badge {
-    background: var(--wa-accent);
+    background: var(--wa-accent-fill);
     color: var(--wa-on-accent-control);
   }
-  /* Right-edge gradient signaling more content is scrollable. */
-  .member-portal-top-nav__edge-fade {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 2.5rem;
-    pointer-events: none;
-    background: linear-gradient(to right, transparent, var(--wa-shell-header-bg));
+  .member-portal-top-nav__utilities {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0 0.75rem 0.5rem;
+  }
+  .member-portal-top-nav__utilities .member-portal-top-nav__link {
+    white-space: normal;
+    padding-inline: 0.375rem;
+    line-height: 1.35;
+  }
+  /* These destinations already have explicit labels. Keep the utility row
+     compact enough to show preassessment, the current tool and More together. */
+  .member-portal-top-nav__utilities .member-portal-top-nav__icon {
+    display: none;
+  }
+  .member-portal-top-nav__more {
+    border: 0;
+    font: inherit;
+    font-size: var(--wa-type-meta);
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  .member-portal-top-nav__extra:not([hidden]) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0.35rem 0.75rem 0.75rem;
+    max-height: 45dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-top: 1px solid var(--wa-border);
+  }
+  .member-portal-top-nav__extra .member-portal-top-nav__link {
+    width: 100%;
+    white-space: normal;
+    line-height: 1.4;
   }
 
   /* Icon-only strip while scrolling — frees vertical space (dashboard / messages / counselor AI route) */
@@ -3027,12 +3051,12 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
     padding-bottom: 0.35rem;
     gap: 0.2rem;
   }
-  html.wap-portal-chrome-compact .member-portal-top-nav__link {
+  html.wap-portal-chrome-compact .member-portal-top-nav__list .member-portal-top-nav__link {
     gap: 0;
     padding: 0.5rem 0.62rem;
     min-height: 44px;
   }
-  html.wap-portal-chrome-compact .member-portal-top-nav__label {
+  html.wap-portal-chrome-compact .member-portal-top-nav__list .member-portal-top-nav__label {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -3050,8 +3074,183 @@ html:not(.dark) .portal-kpi-card [style*="var(--color-gold)"] {
   background: var(--wa-shell-header-bg);
   border-bottom-color: transparent;
 }
-.dark .member-portal-top-nav__edge-fade {
-  background: linear-gradient(to right, transparent, var(--wa-shell-header-bg));
+
+/* Members keep their five daily destinations in a persistent phone bar.
+   Utilities scroll away on phones; tablet navigation remains sticky. */
+@media (max-width: 767px) {
+  /* A filtered sticky ancestor becomes the containing block for fixed
+     descendants. Keep this parent solid so the daily list stays viewport-fixed. */
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav {
+    position: relative;
+    top: auto;
+    background: var(--wa-shell-header-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__list {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 60;
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    justify-content: stretch;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.35rem max(0.5rem, env(safe-area-inset-right, 0.5rem))
+      max(0.5rem, env(safe-area-inset-bottom, 0.5rem))
+      max(0.5rem, env(safe-area-inset-left, 0.5rem));
+    scroll-padding-inline: 0.5rem;
+    background: color-mix(in srgb, var(--wa-shell-header-bg) 94%, transparent);
+    border-top: 1px solid var(--wa-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__item {
+    display: flex;
+    flex: 1 1 0;
+    min-width: 48px;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__list .member-portal-top-nav__link {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    height: auto;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.125rem;
+    padding: 0.25rem 0.125rem;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: normal;
+    line-height: 1.2;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__list .member-portal-top-nav__icon {
+    display: inline-flex;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__list .member-portal-top-nav__short-label {
+    display: none;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__badge {
+    position: absolute;
+    top: 0;
+    left: calc(50% + 3px);
+    margin: 0;
+    transform: none;
+  }
+
+  html[data-portal-role='member'] {
+    --member-portal-bottom-nav-clearance: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+    scroll-padding-bottom: var(--member-portal-bottom-nav-clearance);
+  }
+
+  html[data-portal-role='member'] body {
+    scroll-padding-bottom: var(--member-portal-bottom-nav-clearance);
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .workspace-shell-main {
+    padding-bottom: 1.25rem;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .workspace-shell-main-inner {
+    /* Keep clearance after in-flow legal links. The inner grows with long forms;
+       clearance on the scroll container alone is consumed by its 100% min-height. */
+    padding-bottom: var(--member-portal-bottom-nav-clearance, 4.5rem);
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .workspace-shell-main [id] {
+    scroll-margin-bottom: var(--member-portal-bottom-nav-clearance, 4.5rem);
+  }
+}
+
+/* Acknowledge a route transition without selecting a page before it arrives.
+   Native Link status also clears feedback when navigation is interrupted. */
+.workspace-navigation-pending {
+  position: absolute;
+  inset-inline: 0.5rem;
+  bottom: 0.125rem;
+  height: 0.1875rem;
+  border-radius: var(--wa-radius-sm);
+  background: var(--wa-accent-text);
+  pointer-events: none;
+  animation: workspace-navigation-pulse 900ms ease-in-out infinite alternate;
+}
+.workspace-sidebar-link:has(.workspace-navigation-pending) { position: relative; }
+.member-portal-top-nav__link:has(.workspace-navigation-pending),
+.workspace-sidebar-link:has(.workspace-navigation-pending) {
+  background: var(--wa-accent-soft);
+}
+@keyframes workspace-navigation-pulse {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace-navigation-pending { animation: none; }
+}
+
+/* Compact chrome applies to the sticky utility row and the generic nav rules.
+   Keep the fixed daily tabs' targets, icon/caption stack and captions intact. */
+@media (max-width: 767px) {
+  html.wap-portal-chrome-compact .workspace-shell-root[data-workspace-role='member']
+    .member-portal-top-nav__list .member-portal-top-nav__link {
+    min-height: 48px;
+    gap: 0.125rem;
+    padding: 0.25rem 0.125rem;
+  }
+
+  html.wap-portal-chrome-compact .workspace-shell-root[data-workspace-role='member']
+    .member-portal-top-nav__list .member-portal-top-nav__icon {
+    display: inline-flex;
+  }
+}
+
+/* MemberWorkspace.module.css deliberately swaps to abbreviated captions at
+   <=480px. These member-shell selectors outrank both that module and compact
+   chrome, which otherwise hide the short captions in the fixed bar. */
+@media (max-width: 480px) {
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__list .member-portal-top-nav__label,
+  html.wap-portal-chrome-compact .workspace-shell-root[data-workspace-role='member']
+    .member-portal-top-nav__list .member-portal-top-nav__label {
+    display: none;
+  }
+
+  .workspace-shell-root[data-workspace-role='member'] .member-portal-top-nav__list .member-portal-top-nav__short-label,
+  html.wap-portal-chrome-compact .workspace-shell-root[data-workspace-role='member']
+    .member-portal-top-nav__list .member-portal-top-nav__short-label {
+    display: block;
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    border: 0;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 767px) {
+  html.wap-portal-chrome-compact .workspace-shell-root[data-workspace-role='member']
+    .member-portal-top-nav__list .member-portal-top-nav__label {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: nowrap;
+    border: 0;
+  }
 }
 
 /* After Tailwind utilities in main.css: portal/admin mobile stacking, tap targets, DataTable density.

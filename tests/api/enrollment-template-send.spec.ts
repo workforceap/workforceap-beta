@@ -10,7 +10,7 @@ type Row = Record<string, unknown> & { id: string; dedupeKey: string; status: st
 
 const mocks = vi.hoisted(() => ({
   rows: new Map<string, Row>(),
-  audit: vi.fn(), access: vi.fn(), send: vi.fn(), failAttemptCreateOnce: false,
+  audit: vi.fn(), access: vi.fn(), send: vi.fn(), getResend: vi.fn((): object | null => ({})), failAttemptCreateOnce: false,
   member: { id: '11111111-1111-4111-8111-111111111111', fullName: 'Test Student', email: 'student@example.org' },
 }));
 
@@ -67,7 +67,7 @@ vi.mock('@/lib/enrollmentAgreements/access', () => ({
   requireAgreementMemberAccess: mocks.access, agreementStudentWhere: (organizationId: string) => ({ organizationId }),
 }));
 vi.mock('@/lib/audit', () => ({ auditLog: mocks.audit }));
-vi.mock('@/lib/email', () => ({ getResend: () => ({}) }));
+vi.mock('@/lib/email', () => ({ getResend: mocks.getResend }));
 vi.mock('@/lib/email/send', () => ({
   sendBrandedEmailOrThrowOnSkip: mocks.send,
   isFixtureEmailRecipient: (address: string) => address.endsWith('@example.com'),
@@ -80,6 +80,7 @@ beforeEach(() => {
   mocks.rows.clear(); sequence = 0; vi.clearAllMocks();
   mocks.failAttemptCreateOnce = false;
   mocks.member.email = 'student@example.org';
+  mocks.getResend.mockReturnValue({});
   mocks.access.mockResolvedValue({ memberId: MEMBER, organizationId: ORG, canSendTemplate: true });
   mocks.audit.mockResolvedValue(undefined);
   mocks.send.mockResolvedValue({ data: { id: 'provider-1' }, error: null });
@@ -172,5 +173,33 @@ describe('approved enrollment template send', () => {
     expect(mocks.send).toHaveBeenCalledTimes(2);
     expect(mocks.send.mock.calls[0][1].idempotencyKey).toBe(`enrollment-template/${OP1}`);
     expect(mocks.send.mock.calls[1][1].idempotencyKey).toBe(`enrollment-template/${OP1}`);
+  });
+
+  it('refuses a second operation after a completed send unless the caller refreshes the view', async () => {
+    await sendApprovedTemplate(actor, MEMBER, OP1, 'student@example.org', null);
+    await expect(sendApprovedTemplate(actor, MEMBER, OP2, 'student@example.org', null)).rejects.toMatchObject({ code: 'SEND_VIEW_STALE' });
+    expect((await getTemplateSendView(actor, MEMBER)).latest).toMatchObject({ operationId: OP1, canRetry: false });
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses to replay an accepted key after the recipient or message changed', async () => {
+    await sendApprovedTemplate(actor, MEMBER, OP1, 'student@example.org', null);
+    mocks.member.email = 'new-student@example.org';
+    await expect(sendApprovedTemplate(actor, MEMBER, OP1, 'new-student@example.org', OP1)).rejects.toMatchObject({ code: 'SEND_CHANGED' });
+    expect(mocks.send).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks an unusable or unconfigured recipient before writing a send attempt', async () => {
+    mocks.member.email = 'not-an-email';
+    expect((await getTemplateSendView(actor, MEMBER)).available).toBe(false);
+    await expect(sendApprovedTemplate(actor, MEMBER, OP1, 'not-an-email', null)).rejects.toMatchObject({ code: 'RECIPIENT_UNAVAILABLE' });
+    mocks.member.email = 'student@example.org';
+    mocks.getResend.mockReturnValue(null);
+    expect((await getTemplateSendView(actor, MEMBER)).available).toBe(false);
+    await expect(sendApprovedTemplate(actor, MEMBER, OP1, 'student@example.org', null)).rejects.toMatchObject({ code: 'EMAIL_UNAVAILABLE' });
+    expect(mocks.rows.size).toBe(0);
+    expect(mocks.audit).not.toHaveBeenCalled();
+    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.access).toHaveBeenCalledWith(actor, MEMBER, 'send');
   });
 });

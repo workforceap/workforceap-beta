@@ -5,13 +5,14 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { prisma } from '@/lib/db/prisma';
 import { checkAIToolRateLimit } from '@/lib/rate-limit';
 import {
+  discardMissionArtifact,
   evaluateSkillMission,
   MissionEvalUnavailableError,
+  saveMissionArtifact,
 } from '@/lib/ai/skillMissionEval';
 import {
-  recordMissionResult,
-  recordMissionSubmission,
-  countRecentMissionSubmissions,
+  commitMissionVerdict,
+  reserveMissionAttempt,
 } from '@/lib/member/skillMissions';
 import {
   buildSkillMissionEventKey,
@@ -20,13 +21,17 @@ import {
   resolveSkillMissionForCurriculum,
 } from '@/lib/member/skillMissionCurriculum';
 import { programSlugReadCandidates } from '@/lib/content/programSlug';
-import type { MissionEvalResponse } from '@/lib/ai/skillMissionEval';
+import type { MissionEvalErrorCode, MissionEvalResponse, MissionResult } from '@/lib/ai/skillMissionEval';
 
 const MAX_ATTEMPTS_PER_DAY = 5;
 
+const MIN_RESPONSE_CHARS = 20;
+const MAX_RESPONSE_CHARS = 4000;
+
 /* No `correct` flag and no programSlug from the client: the quiz is graded
    server-side against the catalog, and the program is bound to the member's
-   enrollment. */
+   enrollment. The response is trimmed before its length is checked, so
+   whitespace cannot stand in for an answer and spend an AI call. */
 const bodySchema = z.object({
   missionKey: z.string().min(1).max(300),
   quizAnswers: z
@@ -37,11 +42,15 @@ const bodySchema = z.object({
       })
     )
     .length(3),
-  scenarioResponse: z.string().min(20).max(4000),
+  scenarioResponse: z
+    .string()
+    .trim()
+    .min(MIN_RESPONSE_CHARS, `Write at least ${MIN_RESPONSE_CHARS} characters so the coach has something to review.`)
+    .max(MAX_RESPONSE_CHARS, `Keep your response under ${MAX_RESPONSE_CHARS} characters.`),
 });
 
-function fail(error: string, status: number) {
-  return NextResponse.json({ ok: false, error } satisfies MissionEvalResponse, { status });
+function fail(error: string, status: number, code?: MissionEvalErrorCode) {
+  return NextResponse.json({ ok: false, error, ...(code ? { code } : {}) } satisfies MissionEvalResponse, { status });
 }
 
 export const POST = withApiGuc(
@@ -52,12 +61,12 @@ export const POST = withApiGuc(
     try {
       // 1. Auth
       const user = await getUser();
-      if (!user) return fail('Unauthorized', 401);
+      if (!user) return fail('Unauthorized', 401, 'unauthorized');
 
       // 2. Rate limit — this endpoint makes up to 2 LLM round-trips per call
       const { success: withinRateLimit } = await checkAIToolRateLimit(user.id);
       if (!withinRateLimit) {
-        return fail('Rate limit exceeded. Please try again in a few minutes.', 429);
+        return fail('Rate limit exceeded. Please try again in a few minutes.', 429, 'rate_limited');
       }
 
       // 3. Validate body
@@ -73,7 +82,7 @@ export const POST = withApiGuc(
       }
       const { missionKey, quizAnswers, scenarioResponse } = parsed.data;
       const requestedMission = parseSkillMissionEventKey(missionKey);
-      if (!requestedMission) return fail('Mission not found', 404);
+      if (!requestedMission) return fail('Mission not found', 404, 'mission_not_found');
 
       // Each question must be answered exactly once
       const answeredIndexes = new Set(quizAnswers.map((a) => a.questionIndex));
@@ -100,7 +109,7 @@ export const POST = withApiGuc(
         requestedProgramSlug: requestedMission.programSlug,
       });
       if (!assignment) {
-        return fail('You must be enrolled in a program to attempt skill missions.', 403);
+        return fail('You must be enrolled in a program to attempt skill missions.', 403, 'not_enrolled');
       }
       const { programSlug, curriculumVersion } = assignment;
 
@@ -119,7 +128,7 @@ export const POST = withApiGuc(
           })
         : null;
       if (!resolvedMission || expectedMissionKey !== missionKey) {
-        return fail('Mission not found', 404);
+        return fail('Mission not found', 404, 'mission_not_found');
       }
       const missionDef = resolvedMission.definition;
 
@@ -134,40 +143,39 @@ export const POST = withApiGuc(
         select: { id: true },
       }));
       if (!progress) {
-        return fail('You must complete this course before attempting its skill mission.', 403);
+        return fail('You must complete this course before attempting its skill mission.', 403, 'course_incomplete');
       }
 
-      // 7. Per-mission daily attempt cap (counts AI-failed attempts too)
-      const recentAttempts = await countRecentMissionSubmissions({
-        userId: user.id,
-        programSlug,
-        curriculumVersion,
-        courseSlug,
-        sinceHours: 24,
-      });
-      if (recentAttempts >= MAX_ATTEMPTS_PER_DAY) {
-        return fail(
-          'Daily attempt limit reached for this mission. Take a break and come back tomorrow.',
-          429
-        );
-      }
-      await recordMissionSubmission({
-        userId: user.id,
-        programSlug,
-        curriculumVersion,
-        courseSlug,
-        assignedCourseSlug: resolvedMission.assignedCourseSlug,
-      });
-
-      // 8. Grade the quiz server-side against the catalog
+      // 7. Grade the quiz server-side against the catalog
       const quizCorrectCount = quizAnswers.reduce((count, answer) => {
         const question = missionDef.quizQuestions[answer.questionIndex];
         return question && question.correctIndex === answer.selectedIndex ? count + 1 : count;
       }, 0);
 
+      // 8. Claim an attempt. Under a per-mission lock this enforces the daily
+      //    cap (AI-failed attempts count too) and writes the submission event.
+      //    It also says whether the mission is already passed: a passed member
+      //    can practise again and get feedback, but never a second pass.
+      const reservation = await reserveMissionAttempt({
+        userId: user.id,
+        programSlug,
+        curriculumVersion,
+        courseSlug,
+        assignedCourseSlug: resolvedMission.assignedCourseSlug,
+        maxAttempts: MAX_ATTEMPTS_PER_DAY,
+        sinceHours: 24,
+      });
+      if (reservation.kind === 'cap_reached') {
+        return fail(
+          'Daily attempt limit reached for this mission. Take a break and come back tomorrow.',
+          429,
+          'attempt_cap'
+        );
+      }
+
       // 9. Run AI evaluation (throws MissionEvalUnavailableError on AI failure
-      //    — nothing is persisted in that case)
-      let evalResult;
+      //    — nothing is persisted in that case and the mission stays unpassed)
+      let evalResult: MissionResult;
       try {
         evalResult = await evaluateSkillMission({
           courseSlug: resolvedMission.assignedCourseSlug,
@@ -185,34 +193,52 @@ export const POST = withApiGuc(
       } catch (evalErr) {
         if (evalErr instanceof MissionEvalUnavailableError) {
           return fail(
-            'Our coach is taking a quick break — your attempt was not graded. Please try again in a few minutes.',
-            503
+            'Our coach is unavailable right now. Your response was not graded. Please try again in a few minutes.',
+            503,
+            'coach_unavailable'
           );
         }
         throw evalErr;
       }
 
-      // 10. Record the verdict event
+      // 10. Store the verdict. A pass is only reported once it is stored: if
+      //     the write fails the member gets a retryable error and the mission
+      //     stays unpassed. A non-pass that fails to store still returns its
+      //     coaching, since it claims nothing the saved state contradicts.
+      const practiceOnly = reservation.alreadyPassed;
+      const aiToolResultId = evalResult.verdict === 'passed' && !practiceOnly
+        ? await saveMissionArtifact({
+            userId: user.id,
+            courseTitle: missionDef.courseTitle,
+            programSlug,
+            skillLabels: missionDef.skillLabels,
+            starStory: evalResult.starStory,
+            resumeBullet: evalResult.resumeBullet,
+          })
+        : null;
+      let committed: Awaited<ReturnType<typeof commitMissionVerdict>> | null = null;
       try {
-        await recordMissionResult({
+        committed = await commitMissionVerdict({
           userId: user.id,
           courseSlug,
           programSlug,
           curriculumVersion,
           assignedCourseSlug: resolvedMission.assignedCourseSlug,
-          result: {
-            verdict: evalResult.verdict,
-            coachingNote: evalResult.coachingNote,
-            starStory: evalResult.starStory,
-            resumeBullet: evalResult.resumeBullet,
-            skillsUnlocked: evalResult.skillsUnlocked,
-          },
-          aiToolResultId: evalResult.aiToolResultId,
+          result: evalResult,
+          aiToolResultId,
         });
       } catch (recordErr) {
-        // Non-fatal — log but don't fail the response
-        console.error('[skill-missions/evaluate] recordMissionResult failed:', recordErr instanceof Error ? recordErr.message : recordErr);
+        console.error('[skill-missions/evaluate] commitMissionVerdict failed:', recordErr instanceof Error ? recordErr.message : recordErr);
+        if (aiToolResultId) await discardMissionArtifact(user.id, aiToolResultId);
+        if (evalResult.verdict === 'passed' && !practiceOnly) {
+          return fail('We could not save your result. Your mission is not marked passed yet. Please try again.', 503, 'save_failed');
+        }
       }
+      // Already passed, or a parallel request stored the pass first: the stored
+      // pass stands. Return this attempt's feedback as practice and keep only
+      // the first Resume Studio copy.
+      const storedPass = committed?.kind === 'already_passed' ? committed : null;
+      if (storedPass && aiToolResultId) await discardMissionArtifact(user.id, aiToolResultId);
 
       // 11. Return the evaluation result
       const response: MissionEvalResponse = {
@@ -223,12 +249,13 @@ export const POST = withApiGuc(
         resumeBullet: evalResult.resumeBullet,
         skillsUnlocked: evalResult.skillsUnlocked,
         quizCorrectCount,
-        aiToolResultId: evalResult.aiToolResultId,
+        aiToolResultId: storedPass ? storedPass.aiToolResultId : aiToolResultId,
+        ...(storedPass || practiceOnly ? { alreadyPassed: true } : {}),
       };
       return NextResponse.json(response);
     } catch (err) {
       console.error('[skill-missions/evaluate] unhandled error:', err instanceof Error ? err.message : err);
-      return fail('Internal server error', 500);
+      return fail('Something went wrong on our side. Your response was not graded. Please try again.', 500, 'server_error');
     }
   }
 );

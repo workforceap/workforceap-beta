@@ -40,6 +40,11 @@ The member Eligibility tab offers the same action beside the saved assessment
 answers. The Overview link uses the Tabs component's native fragment navigation
 to open that review block; preserve the attempt count and pending state.
 
+The applicant Eligibility tab offers **Download application report**. Keep its busy,
+error and download-complete states accessible. The report is saved on the application;
+older records are explicitly recovered and labeled, never presented as an original
+submission snapshot.
+
 Billing phone fields normalize complete US numbers on blur and before new draft
 payloads, including unsigned previews. Keep extensions and international or
 incomplete input intact; saved and signed PDF snapshots retain their original text.
@@ -52,7 +57,224 @@ Digital Literacy uses the portal locale for lesson copy and provider links. Span
 catalog links must say that the student selects the topic; provider language-switch
 anchors use `referrerPolicy="no-referrer"` so the provider cannot redirect back here.
 
+### Portal workspace consolidation
+
+Workspace views preserve the existing loaders and actions: Resume (`files`, `score`,
+`rewrite`, `coach`), counselor Today (`attention`, `replies`, `decisions`, `followup`,
+`overview`), admin Students (`roster`, `manage`, `training`, `readiness`), employer
+Candidates (`applicants`, `matches`, `pipeline`) and partner Impact (`outcomes`,
+`milestones`, `exports`). Server views use native links and load only the selected
+view. `LinkTabs` keeps the selected or keyboard-focused link fully visible on
+narrow screens without scrolling the document. Existing entry URLs remain valid. Do not collapse distinct application,
+match, placement, milestone or readiness definitions when grouping their navigation.
+
+Record links use `PortalRecordLink` and `PortalBackLink` to retain an allowlisted,
+same-portal list URL, including filters, page, view and explicit locale. These helpers
+do not authorize access. A record-to-edit hop carries an existing safe origin. Client
+list refinements must update Next's search-parameter subscribers as well as visible
+state; native `history.replaceState(null, '', href)` lets Next copy its internal state.
+Passing the router's internal state back into that wrapper can bypass the update.
+
+Member phone navigation places its same five daily destinations in a persistent
+bottom bar at widths below 768px. Icons and localized short labels stay visible,
+including during scroll; no second copy of the daily links is mounted. The top utility
+row retains training preassessment, the current secondary page and a
+keyboard-accessible More pages disclosure, then scrolls away with the content.
+The bottom bar reserves safe-area content and focus clearance. Its ancestor must
+not establish a fixed containing block through a backdrop filter. Tablet widths
+keep the sticky horizontal top strip; only sticky navigation contributes to the
+top focus and anchor offset.
+Utility links omit redundant icons to keep all three labels together
+at phone width; wrapping remains available for longer translations and text zoom.
+Daily links and desktop rail rows have 48px targets. Navigation selection uses a
+leading or lower marker in addition to its accent fill, while primary actions remain pills.
+Daily links and workspace rail links expose Next's actual pending navigation with
+a short accent indicator and a localized status announcement. Reduced motion
+disables its pulse. Keep `prefetch={false}`: eager Home prefetch loads its heavy
+workspace bundle on unrelated pages. Selection changes only when the route arrives.
+AI Advisor and human Messages remain separate. Skill Mapper's radar
+charts retain numeric alternatives bound to the same data; an occupation's O*NET
+requirements must not be presented as demonstrated member proficiency.
+
+The WorkspaceShell menu trigger is disabled and marked busy until its client
+handler is ready, with an hourglass and localized loading description in all
+four catalogs. Enabling it does not move focus. The pathname effect closes an
+open drawer only for a real normalized-path change, not the initial passive
+effect; Escape, focus trapping and restoration retain the shared hook contract.
+Crossing into desktop closes an open drawer and moves focus to the visible desktop
+navigation. Returning to phone width leaves it closed. Resizing a closed drawer
+does not move focus.
+These guards do not establish physical-device acceptance or prove every earlier
+intermittent phone-menu failure has the same cause.
+
+PageOpener keeps its title directly on the canvas, with a responsive 28–38px title
+(32px ceiling on dense surfaces), a sentence-case kicker and a readable 62ch lede.
+Typography is shared in `portal-kit.css`, not per-page inline sizes. Shared view
+tabs distinguish the selected view with a tint, weight and underline and retain
+their native keyboard/focus behavior.
+
+Kickers and ledes are optional: omit them when navigation and the H1 already orient
+the user. Home and Jobs use that compact opener. Resume tabs show their names while
+retaining descriptions for assistive technology; the selected panel starts with its
+source status and labeled controls rather than repeating the tab title. Draft recovery
+status stays visible as a compact strip, separate from source-file status.
+
+Home (`MemberHomeKit`) is the "This week" screen. The header is the greeting with
+the approval status as a slim three-step strip at its right, stacked below on phone;
+the staff-view, no-program and youth notices follow only when they apply.
+`.wa-kit-home-grid` is one column on phone and the main column plus a 352px rail from
+1100px. The main column is one "This week" card of task rows (today's next action,
+then only the rows that apply: the job-offer confirmation, the First 90 Days check-in
+and the WIOA preassessment while it is not on file, with the remaining next-best
+actions and the stage-specific tool under a "More this week" disclosure), the
+resume-to-consultation handoff evidence summary, the certification path, and one row
+of links (Progress, Points, Jobs, Skill missions, AI Career Tools, Learning hub). The
+rail holds the advisor card and a "Study and goals" disclosure (study minutes, next
+badge and goals). A destination click navigates and records click telemetry; it never
+marks a row done, and a row shows as done only for a real completion (a confirmed offer
+or an answered First 90 Days check-in). Layout must not infer completion or change
+next-action ranking. The full approval chain stays in the strip's disclosure.
+The evidence summary distinguishes confirmed, awaiting-confirmation and unknown
+steps. Receipt sources and UTC dates render only when supplied for a confirmed
+step; profile modification dates are never receipt evidence. Email/calendar/provider
+state remains unknown in the live loader until an authoritative source is wired.
+A compact disclosure explains how to contact the team without marking a step done.
+Fixture owners supply assessment and program destinations explicitly so Home's
+preassessment and Open plan links stay in the sample-screen flow; the production
+defaults remain unchanged. A fixture destination does not authorize a live submission.
+
+Home no longer renders the four stat tiles, the application pipeline, the recent-points
+ledger, the streak or an AI Career Tools introduction. Points, the streak and the ledger
+are on `/dashboard/points` and, with course %, active applications, certificates and
+points this week, on Progress (`/dashboard/readiness`, below). The pipeline is on Jobs.
+`MemberAiToolsCard` and `MemberStartHereCard` are no longer mounted on Home (AI Career
+Tools is a shortcut plus the stage-specific tool row). Home adds no query for Skill
+missions: its "Skill missions" shortcut is a plain link to `/dashboard/missions`.
+
+Resume uses scoped workspace chrome and descriptive view tabs; phone tabs keep
+their 48px targets and their full descriptions through `aria-describedby`.
+Rewrite presents the required target role and resume editor before a native
+"Customize rewrite" disclosure. Language, tone, ATS, salary and location controls
+stay mounted inside it, with tone/language/ATS summarized while closed; optional
+settings are not discarded when the disclosure closes. File-source distinctions
+remain visible. Tab navigation retains the current pathname, locale, query and hash.
+The owned studio recovers Score and Rewrite input drafts in the same browser tab
+using member-scoped session storage, with a separate preview scope. Visible status
+distinguishes saved, restored, cleared and unavailable storage. Recovery lasts up to
+24 hours, ends on sign-out, and does not sync devices or replace uploaded originals.
+Home can offer the last saved view without displaying resume text. Generated results
+and voice-coach drafts keep their existing persistence rules.
+`ResumeClient` accepts optional rewrite, job-match and score destinations so the
+fixture stays within sample screens; live defaults remain unchanged. Each original
+or revised source file has one named download action with a 44px target. PDF error
+recovery remains separate from those source-file actions.
+
+`SkillMapperKit` supplies the same 70rem (1120px at the standard root size)
+workspace to the authenticated route and its synthetic fixture. It avoids an
+extra card around the entire workspace; each result owns its chart, numeric
+alternative, selected-occupation title and exact saved-lookup training link.
+Empty chart/profile branches retain the lookup link. Synthetic preview notices
+state the data and disabled-action limits; a real lookup fallback keeps its
+failure explanation and recovery guidance. Neither layout implies a skill
+proficiency measurement, provider access or authenticated acceptance.
+
+The preview-only [screen review checklist](qa/portal-consolidation/README.md) inventories
+the actual routes and consolidated query views. Its browser-saved review results are
+manual acceptance notes, not a production gate bypass.
+The fixture review bar keeps a compact, native "Sample data" disclosure next to
+"Review screens". Route-specific notices explain disabled actions and synthetic
+handoff evidence without pushing the actual task below repeated preview paragraphs.
+The Toolkit fixture supplies `VoiceStudioKit.destinationHrefs` for supported sample
+screens. Tool identities and translations use their original route keys, independently
+of overridden destinations. The fixture's Interviews shortcut opens interview practice
+because the full chooser still links to signed-in routes. Counselor/readiness, Skill
+Checkpoints and Training Bridge have no safe fixture override; their authenticated
+flows, plus live voice controls, remain separate acceptance gates. Live callers retain
+the default destinations.
+Program overview and the training workspace accept `trainingNavHrefs` from their
+owner so the sample training navigation stays within Program, its workspace, and
+Progress. The live defaults preserve the selected program query. The Messages
+fixture supplies per-conversation synthetic messages: selecting Support changes its
+header and content, and Back restores focus to that conversation. This opt-in preview
+must not replace live thread messages or enable sending, read markers or realtime.
+
+Member Jobs uses a compact two-by-two tracker summary and stacked 48px task links
+below 600px. Preserve all four tracker counts and their distinction from bookmarks
+of live openings. `JobListingRow` metadata wraps so company, location and compensation
+remain readable; do not silently ellipsize these facts on narrow screens.
+
+The review index starts with the source-covered member/staff fixture catalog and
+named scenarios. Signed-in acceptance remains a separate checklist. Fixture chrome
+links back to the index and suppresses live help, badge, notification and account
+requests; fixture tours suppress progress writes and analytics without changing the
+live defaults. A sample screen can still contain a provider-dependent action: its
+catalog entry records that boundary, rather than promising a fully working backend.
+Closed catalog rows show a screen title, scenario count, manual result and opening
+action. Descriptions, source paths, limits and notes are grouped in each row's
+disclosure; collapsing a row never changes its saved result or scenario coverage.
+
+Job detail presents the role and required application consent before optional
+screening, resume tailoring and referral preparation. Wide screens pair the overview
+and application; narrow screens retain the phone application dialog. Native
+disclosures keep preparation mounted, and the application jump focuses its region.
+Phone confirmation focuses a stable dialog control and Escape restores Apply;
+desktop confirmation remains inline. Preview listings filter and save synthetic
+rows locally, preserve the fixture query on Clear, and label submission and history
+as simulations. The authenticated handlers and consent requirements are unchanged.
+
+Jobs overview uses compact counts from the application tracker, with Browse openings
+and View applications as distinct tasks. These tracker counts are not saved-opening
+bookmarks, so a universal Saved tab would imply data equivalence that does not exist.
+Openings precede application history; populated recommendations are optional native
+disclosures. Browse opens canonical `?view=openings`; Applications returns to the
+overview anchor. Clear removes filter keys while preserving view, locale and other
+context, and old search responses cannot replace the reset inventory. Partial
+unfiltered inventory shows loaded/total counts; signed-in members can open existing
+`?view=all` pagination. Search stays outside the phone refinement dialog, whose
+first focus is Program. Searchable pages place certificates and external boards
+below the results. Filtered endpoint caps and public pagination remain separate work.
+
 ---
+
+### Compact workspaces and useful disclosures
+
+AI Career Tools places its view tabs immediately below the H1. Preparation guidance
+stays mounted in a localized native disclosure; session, microphone and provider
+requirements remain with the relevant action. Skill Mapper, Program and Readiness
+omit redundant opener copy. Locked modules and goal milestones keep full-opacity
+text; lock/status indicators communicate availability. Member training navigation
+uses three equal, wrapping columns on phones with complete labels and 44px targets.
+
+Member daily navigation uses five destinations in the phone bottom bar, with short
+localized labels and 48px targets. The full accessible name includes the visible label and any badge
+count; secondary destinations stay in More pages. This is scoped to the member shell,
+including its fixture shell. Resume follow-up actions stack on phones, with Rewrite
+first. Profile pairs short fields and keeps longer fields full width. Returning from
+a message thread restores focus to its conversation button in both the live and
+fixture inbox. Preserve labels, status explanations and recovery instructions that
+carry meaning when removing redundant copy.
+
+Counselor Today and Students use the active navigation for visible section orientation
+and retain a screen-reader section heading. Today keeps every empty group's title,
+count and message while using two-column phone metrics. At-risk keeps the counted-case
+rule visible and triage instructions in a native disclosure. Checkbox labels carry
+the touch area; checkbox glyphs keep their normal size. Risk text uses text-safe tones.
+The student roster repeats its existing pager above and below phone cards without
+changing page size, query state or totals. Reporting preserves period, organization
+scope and metric definitions while omitting generic introductions.
+
+Employer Jobs uses a compact count strip and a native Bulk actions disclosure. Row
+selection opens it; clearing selection or completing an action leaves it open and
+restores focus to the visible summary. Existing deletion confirmation, selected IDs,
+filter/page scope and applicant-count definitions remain unchanged. Hiring's Post a
+role uses one `KitLinkButton`, never a nested link/button. Candidate phone emptiness
+distinguishes an active filter from no applications; Show all applicants retains sort.
+
+Partner phone rosters inherit the page inset and retain stage and return-context
+semantics. The assistant uses a native 48px summary with an open-state chevron; its
+children remain mounted. Impact and candidate fixtures provide the same scoped page
+inset as their real shells. Referral, verification, payout and export definitions
+remain visible; fixture representation does not establish authenticated acceptance.
 
 ## 1. Token families — which one to use
 
@@ -66,20 +288,26 @@ There are **two** live CSS-variable families in this codebase. Only one is canon
 
 Key `--wa-*` tokens (see `css/portal-tokens.css` for the full set):
 
-- **Brand (constant across modes):** `--wa-accent` (brand magenta) / `--wa-accent-dark` /
+- **Brand hues:** `--wa-accent` (the text accent: crimson in light, dusty rose in dark; never
+  a fill behind white) / `--wa-accent-fill` (solid fills, crimson in both modes) / `--wa-accent-dark` /
   `--wa-accent-soft` / `--wa-on-accent`, `--wa-gold(-dark|-soft)`, `--wa-info(-soft)`,
   `--wa-success(-soft)`, `--wa-danger(-soft)`, `--wa-violet`.
-- **Text-bearing hero gradients:** `--wa-hero-crimson(-dark)` and
-  `--wa-hero-gold(-dark)` stay dark in both themes and pair with `--wa-on-hero`.
+- **Text-bearing hero gradients:** `--wa-hero-crimson(-dark)`,
+  `--wa-hero-gold(-dark)` and `--wa-hero-info` (the employer voice session fill)
+  stay dark in both themes and pair with `--wa-on-hero`.
   A white hero action uses `--wa-hero-action-bg` and `--wa-hero-action-text`;
   do not substitute the theme-adaptive solid-control foreground. Categorical
   KPI totals use neutral text; retain semantic color for an actual state
   (the counselors roster colours "At-Risk Owned" only while it is above zero).
 - **Neutrals (flip in dark mode):** `--wa-bg`, `--wa-surface`, `--wa-surface-2` (raised
   fill: icon tiles, chips), `--wa-text`, `--wa-muted`, `--wa-border`, `--wa-track`, plus the
-  sidebar set (`--wa-sidebar-*`, dark chrome in both modes). `--wa-bg-wave` is the shared
-  member canvas (accent/gold wash on `--wa-bg`); `--wa-shell-header-bg` is the translucent
-  sticky nav so the wash continues through the header. Member header and mobile
+  sidebar set (`--wa-sidebar-*`, dark chrome in both modes). `--wa-bg-wave` is the one
+  painting hook for the portal canvas and it is flat: it equals `--wa-bg`, with no radial
+  wash. On the member surface `--wa-bg`, `--wa-surface-2` and `--wa-border` take the warm
+  paper values (§2); muted text keeps 4.5:1 on both ladders (`lib/ui/portalCanvas.test.ts`).
+  `--wa-shell-header-bg`
+  is a 96% canvas fill that keeps sticky navigation readable as content scrolls
+  beneath it, with a slight continuation of the canvas tone. Member header and mobile
   nav borders stay transparent; `PageOpener` is never recut as a title bar.
   Appearance lives once in the rail/drawer, with its selected segment melting
   into the rail rather than sitting on a second slab. Header text actions sit
@@ -184,12 +412,19 @@ Tailwind is configured with the **`wa-` prefix** (`tailwind.config.ts`) — util
 
 The kit has one design language with **two densities**, switched by a `data-surface` attribute
 that the token layer reads (`css/portal-tokens.css`). Brand colors are identical in both;
-only radius / padding / pop / shadow change.
+radius / padding / shadow and the LIGHT canvas ladder change. Dark values are shared.
 
-| Mode | Who | Feel | Values |
-|---|---|---|---|
-| `warm` | Member-facing routes | Bold + calm: soft corners, generous space, gradient "pop" tiles on | radius 26/16, pad 28/18, `--wa-pop: 1` |
-| `dense` | Admin / staff / data / rosters / queues | Compact, sharp, pop off | radius 12/8, pad 16/12, `--wa-pop: 0` |
+| Mode | Who | Feel | Light canvas (`--wa-bg` / `--wa-surface-2` / `--wa-border`) | Values |
+|---|---|---|---|---|
+| `warm` | Member-facing routes | Calm: white hairline cards on warm paper, 12px corners, generous space | `#faf8f6` / `#f3efeb` / `#e9e4df` | radius 12/8, pad 24/16, `--wa-pop: 0` |
+| `dense` | Admin / staff / data / rosters / queues | Compact and operational, on the cool canvas | `#f7f8fa` / `#f4f4f5` / `#e8e8e8` | radius 12/8, pad 16/12, `--wa-pop: 0` |
+
+Members feel looked after, staff feel operational, and which side you are on reads from across
+the room. The warm ladder is declared once, in `css/portal-tokens.css`, on both
+`[data-surface='warm']` and `html[data-portal-role='member']` (the shell sets that attribute),
+so the header, rail, `<html>`, `<body>` and the page are one canvas. `--wa-surface` stays white on
+both. The canvas is flat (`--wa-bg-wave` is `--wa-bg`). Any new neutral on the warm ladder must
+clear the pairs in `lib/ui/portalCanvas.test.ts`.
 
 Wrap the **route-group layout**, not individual components:
 
@@ -228,10 +463,21 @@ barrel) returns `'warm' | 'dense'` for the rare component that must branch in JS
   with `html[data-portal-role]` (inline at parse time and on mount) and `css/portal-kit.css` paints
   `<html>`/`<body>` with solid `--wa-bg` for that document, out-ranking the marketing site's
   `html.dark body` cool grey. The strip below a short page, rubber-band overscroll and the body seen
-  through the translucent header therefore continue the shell's warm canvas (WAP-153). Do not paint
-  the wave on body — the radial washes fade into `--wa-bg`, so the solid token is the seam-free
-  continuation. The member cream `--wa-bg` override in the bridge applies to
-  `html[data-portal-role='member']` as well as `[data-surface='warm']`.
+  through the translucent header therefore continue the shell's canvas (WAP-153). Do not paint
+  a second canvas on body: `--wa-bg-wave` is `--wa-bg` (flat, no wash), so the solid token is the
+  seam-free continuation. The member warm paper (`--wa-bg`, `--wa-surface-2`, `--wa-border`) is
+  declared in `css/portal-tokens.css` for `html[data-portal-role='member']` as well as
+  `[data-surface='warm']`; the Astryx bridge no longer carries a copy.
+- **In dark mode the accent is for fills, not text.** A lighter crimson is pink, and pink text
+  reads as a beauty brand, so the dark text accents are a dusty rose: `--wa-accent` `#dd9fb0` and
+  `--wa-accent-text` `#e6b3bf` (8.3:1 and 9.9:1 on `--wa-surface`, 4.5:1 or better on the whole
+  dark ladder and on `--wa-accent-soft`). Solid fills paint `--wa-accent-fill` (crimson, white
+  label `--wa-on-accent-control`). Never paint white on `--wa-accent`: it is 2.2:1 in dark.
+  Text links in cards (`.wa-kit-card-link`, the staff `cardLink`, and anchors that only paint
+  their label with an accent token inline) read `--wa-text` in dark with a 1px accent underline
+  (`css/portal-kit.css`, "Dark mode: the accent is for fills"); buttons, tags and anything with
+  its own background are excluded. The accent otherwise appears on fills, the active item and
+  focus rings. Light mode is unchanged. `lib/ui/brandTokens.test.ts` holds the pairs.
 - Admin and staff surfaces read semantic state through `--wa-*` only: `--wa-info-dark` /
   `--wa-success-dark` / `--wa-gold-dark` for text, the base hue for icons, fills and `color-mix`
   tints. The legacy `--color-blue` / `--color-green` / `--color-gold` are pinned or only
@@ -241,6 +487,15 @@ barrel) returns `'warm' | 'dense'` for the rare component that must branch in JS
 - Elevation in dark mode comes from shadows plus a 1px **inset bezel highlight** baked into
   `--wa-shadow`/`--wa-shadow-lg` (transparent in light) — not from lighter surface tones. Do not
   add new surface-tone variables; `--wa-surface` and `--wa-surface-2` are the whole ladder.
+- Standard kit and Astryx cards use solid `--wa-surface`, `--wa-border` and
+  `--wa-shadow` in both themes. Reserve gradients for the existing crimson/gold
+  hero variants, using their deep hero pairs and `--wa-on-hero`; dense variants
+  retain their semantic tint. Keep generic card selectors below variant
+  specificity so dark mode cannot erase a hero gradient or a tinted card.
+  Hero elevation uses `--wa-shadow-lg`; dense tinted cards use `--wa-shadow`.
+  The Resume Studio banner/coach link and the floating readiness-coach action
+  use these same fixed hero pairs. Their normal-size labels remain fully
+  opaque; reducing white text opacity can erase the intended contrast margin.
 
 ---
 
@@ -279,6 +534,10 @@ Mapping when converting components: `success↔ok`, `warning↔warn`, `danger(st
 `--wa-kit-tone-soft`. Use them (with `StatusTag`) instead of `colorVar('gold')`-style inline colours
 when the tone is a *state* (a triage bucket, a risk tier); numbers stay neutral `--wa-text`.
 `toneClass(tone)` (`components/portal/kit/tokens.ts`) returns the hook class for `cx()`.
+Each hook also sets `--wa-kit-tone-text`, the text twin of the fill (the same pairs as
+`textColorVar()` / `TEXT_COLOR_VARS`): the gold and success fills are under 4.5:1 as small
+text, so toned text (`.wa-kit-tone-text`, `.wa-kit-stat-tile__delta`) reads the twin, never
+`--wa-kit-tone`; the edge, icon and bar fills keep the fill hue.
 
 **Stat tiles speak KitTone, not `KitColor`.** `StatTile`, `KpiItem` (`KpiStrip`) and `StatSparkTile`
 take `tone?: KitTone` (plus `deltaTone` for the caption line) and paint only through the hooks: the
@@ -383,12 +642,12 @@ reports any barrel re-export nothing imports — keep that at zero. Direct-impor
 | `SectionHeader` | titled section starts |
 | `PageOpener` | member page start (kicker + h1 + lede, optional quiet `.wa-page-action`) — not `PageHeader` breadcrumbs or an outlined title-bar chip |
 | `ProgressRing`, `ProgressBar` | completion / capacity |
-| `Avatar` | people |
+| `Avatar` | people; initials read `--wa-accent-text` on `--wa-accent-soft` (the fill hue is under AA in dark) |
 | `DataTable` (+ `Column`) | tabular data — never raw `<table>` + manual borders; supports `render`/`cardRender` for custom cells / mobile cards. Empty rows render `KitEmptyState` from the `empty` prop (`DataTableEmpty`: `kind`, `title` — default "No rows yet" — `description`, actions, icon); the legacy `emptyTitle` / `emptyDescription` pair still works. Row density follows DesignSurface (warm → balanced, dense → compact). Opt-in table standard props (§6a): `stickyHeader`, `selectable` + `bulkBar` + `onSelectionChange`, `pagination`, `renderSubRow`, `scrollCue`, `loading`, `errorNotice`, `density`, per-column `stickyLeft`. |
 | `KitTableToolbar` (+ `KitTableViewChip`; import from `kit/KitTableToolbar`) | table toolbar: labelled search, saved-view chips with counts, a collapsed "Filters · n on" drawer, right-side actions. URL state through `kitTableUrlState.ts` (`readKitTableUrlState`, `writeKitTableUrlState`, `kitTableHref`, `KIT_TABLE_PAGE_SIZE`; import from `kit/kitTableUrlState`). |
 | `KitRowMenu` (+ `KitRowMenuItem`; import from `kit/KitRowMenu`) | one icon trigger per table row, a native `role="menu"` list; disabled items stay visible with a `reason` tooltip (`danger` tone for destructive items). |
 | `FeatureTile` | member-facing gradient/pop tiles. `headingAs` (default `h3`) follows the surrounding outline — pass `h2` when tiles directly follow the page h1 |
-| `QueueRow`, `WorkQueueItem` | staff work queues |
+| `QueueRow`, `WorkQueueItem` | staff work queues; every tone tints from a `--wa-*-soft` token, the flag `Token` sits on `--wa-surface` (not a second tint) and a ghost row action reads `--wa-accent-text` |
 | `KanbanBoard` (+ `KanbanColumnHeader` from `kit/Kanban`) | pipeline boards |
 | `BarChartMini`, `RankBars`, `AreaChartMini`, `TrendPlaceholder` | inline mini charts (`Sparkline` from `kit/Charts`) |
 | `FormField`, `Toggle` | form controls |
@@ -474,7 +733,7 @@ any future kit Dialog/Menu/Combobox must be built on them):
 
 | Hook | Use for |
 |---|---|
-| `useFocusTrap` | overlays (dialogs, drawers, menus). Shared **Escape stack**: nested layers each consume one Escape, top-most first. Visibility-aware tab ring, IME-safe, restores focus to the trigger on close. Prefer native `<dialog>.showModal()` when possible. |
+| `useFocusTrap` | overlays (dialogs, drawers, menus). Shared **Escape stack**: nested layers each consume one Escape, top-most first. Visibility-aware tab ring, IME-safe, restores focus to the trigger on close (pass `returnFocusRef`, or give the container an `id` its trigger names in `aria-controls`, for Safari, which leaves `<body>` focused after a button tap). A container with `tabIndex={-1}` and nothing focusable inside takes focus itself. Prefer native `<dialog>.showModal()` when possible. |
 | `useListFocus` (`kit/hooks/useListFocus`, not in the barrel) | roving tabindex for tablists/menus/result lists — Arrow keys (RTL-aware), Home/End, one tab stop, self-repairing as items mount/unmount. Mark items with `data-kit-list-item`. |
 | `useAnnounce` (barrel) / `announce` (`kit/hooks/useAnnounce`) | screen-reader announcements ("12 results", "Saved"). Singleton persistent live regions — never mount your own `aria-live` div per component (freshly-mounted regions don't announce). |
 
@@ -506,7 +765,7 @@ by every consumer, a 60s freshness window, and `resetCurrentUserCache()` on
 sign-out. Do not call `fetch('/api/auth/me')` from a component; pass a
 server-known `superAdmin` into `useIsSuperAdmin(known)` to skip the read.
 
-`MemberProgressKit` (`/dashboard/readiness`, proof `/dev/member/progress`) shows the weighted readiness score, four area percents, milestones, and a kit-token progress summary. Numbers come from `getScoreBreakdown` via `buildReadinessProgressView` — never invented weekly counters. The summary starts as a factual recap of those same points and may be replaced by an AI rewrite that is rejected if it cites unknown percents. Score-load failure is an explicit empty/error, not a 0% ring. Do not mix Astryx primitives inside this kit page.
+`MemberProgressKit` (`/dashboard/readiness`, proof `/dev/member/progress`) shows the weighted readiness score, four area percents, milestones, and a kit-token progress summary. Numbers come from `getScoreBreakdown` via `buildReadinessProgressView` — never invented weekly counters. Above them sits the numbers strip the Home dropped (course %, active applications, certificates, points with points this week) and a Points card (recent ledger, streak), fed by `loadProgressMetrics(userId)` (`lib/member/loadProgressMetrics.ts`): three bounded reads of the signed-in member's own row, run beside the readiness load and skipped on `?ui=legacy`. A read that fails or has nothing to measure is `null`, and the kit leaves that tile or block out (unknown is not zero, WAP-206); a real zero stays `0`. With no points data the kit shows its "Points and streak" link card to `/dashboard/points`. The summary starts as a factual recap of those same points and may be replaced by an AI rewrite that is rejected if it cites unknown percents. Score-load failure is an explicit empty/error, not a 0% ring. Do not mix Astryx primitives inside this kit page.
 
 `UsersKit` is the staff/admin directory at `/admin/users`. Its loader searches
 and counts before pagination; `useDirectoryNavigation` keeps URL search, role,
@@ -587,6 +846,33 @@ Reference adopters: `UsersKit` (`/admin/users`) and `components/admin/CourseraCa
 
 ---
 
+## 6b. Calm card language (C1 + C3, 2026-10-24)
+
+Member and staff screens share one card recipe: white `--wa-surface` on the `--wa-bg` canvas, a 1px
+`--wa-border` hairline, 12px radius, no heavy shadow, no gradient feature tile by default (the
+`--gradient-*` variants and `FeatureTile` stay opt-in). Warm and dense differ only in density now.
+Gold means achievement, green success, blue supporting data, crimson the one primary action or current
+state (at most one crimson pill per card). Reusable classes (all in `css/portal-kit.css`, `--wa-*` only):
+
+- Card parts: `.wa-kit-card--flush` (rows/tables), `--accent-edge` (3px crimson "Up next" edge),
+  `.wa-kit-card__head` (+ `--ruled`), `.wa-kit-card-title` (17px/700), `.wa-kit-card-sub`,
+  `.wa-kit-card-count`, `.wa-kit-card-link`.
+- Chips: `.wa-kit-chip--neutral|blue|green|gold|crimson|dark`; `.wa-kit-date-chip` with `--soon` (the
+  due-soonest dark pill), `--done`, `--overdue`.
+- Task rows: `ul.wa-kit-task-list > li.wa-kit-task-row[data-state=todo|current|done]` with
+  `__check`, `__body` (`__title`, `__sub`) and a trailing date chip; `.wa-kit-task-row--link` for anchors.
+- `ol.wa-kit-segments` (`--wa-segments: N`) > `li.wa-kit-segment--done|--current|--todo`: segmented
+  progress with `__bar`, `__state`, `__name` labels.
+- `.wa-kit-status-strip` > `.wa-kit-status-step--done|--current|--todo` (`__dot`, `__text`): the slim approval strip.
+- `.wa-kit-people-card` (`__head`, `__avatar`, `__name`, `__role`, `__time`, `__quote`, `__foot`) and
+  `.wa-kit-date-tile` (`__mon`, `__day`); `.wa-kit-stat-pair` for streak + points.
+- Layout: `.wa-kit-home-grid` (`__head`, `__main`, `__rail`) is one column on phone and main + 352px rail
+  from 1100px; `.wa-kit-stack` is a 16px vertical stack.
+- `PageOpener` greeting mode: omit `kicker`, pass `meta` (one contextual sentence) and optionally `aside`
+  (right-side status, stacked below on phone). Existing `kicker` + `lede` call sites are unchanged.
+  `SectionHeader` titles are 18-20px/700 (`.wa-kit-section-header*`). `QueueRow` / `WorkQueueItem` are
+  surface rows with a toned edge and soft icon tile (`.wa-kit-queue-row--*`, `.wa-kit-work-item`).
+
 ## 7. Icons, styling, and motion
 
 - **lucide-react only.** No other icon set, no inline SVG paths, no emoji-as-icon in kit surfaces.
@@ -620,6 +906,25 @@ Reference adopters: `UsersKit` (`/admin/users`) and `components/admin/CourseraCa
   back to its edge). Direction should match the action (drawer from the edge it lives on).
   The tokens zero themselves under `prefers-reduced-motion`; JS-driven animation must still gate
   on `matchMedia('(prefers-reduced-motion: reduce)')` (see `VoiceOrb`).
+- **Rule of thumb: motion helps when it confirms something the member just did or shows what
+  just loaded; it never loops, never replays when a component re-renders, and always has a
+  reduced-motion twin.** The kit has exactly two orchestrated transitions, both CSS-only, both
+  inside `@media (prefers-reduced-motion: no-preference)` and on the `--wa-dur-*` / `--wa-ease`
+  tokens (`lib/ui/portalKitMotion.test.ts` holds the rules):
+  1. **Certification path fills in once** (`.wa-kit-segments`). Each `.wa-kit-segment__bar > i`
+     scales in from the left (`scaleX` 0 to 1, `--wa-dur-slow`), staggered by position with
+     `--wa-stagger` (70ms) up to the eighth segment. It is a CSS animation on mount, so a width
+     change or a re-render does not restart it.
+  2. **A task row strikes through and its check pops** (`.wa-kit-task-row[data-state='done']`).
+     The strike is a background strip on the title that draws in left to right over
+     `--wa-dur-base` (it follows every wrapped line; the title is inline in this block and the
+     body line-height is pinned so the row is the same height with motion off). The check pops
+     once, `scale` 0.8 to 1 over `--wa-dur-base`. The strike is a transition (plays when the row
+     becomes done); the pop is a keyframe animation whose name only changes when the row becomes
+     done, so a re-render of a done row does not replay it. A done row that mounts already done
+     pops its check once and shows the strike with no animation.
+  Under reduced motion the segments are simply full and the done title keeps the native
+  `line-through`. Do not add a third transition without a reason of this kind.
 - Hover-only affordances belong under `@media (hover: hover)`.
 
 ---
@@ -672,7 +977,14 @@ The Astryx design system is installed site-wide (`app/layout.tsx` imports `reset
   `member/MemberHomeKit.tsx`) — same brand-token bridge as everywhere else Astryx is used.
   A navigational action that should look like a button is `KitLinkButton`
   (`components/portal/kit/KitLinkButton.tsx`): one Next link with Astryx Button styling and the
-  kit focus ring. Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
+  kit focus ring. Its primary label colour comes from `css/astryx-brand-bridge.css`
+  (`a.astryx-button[data-variant='primary']`), because the global `a { color: inherit }` would
+  otherwise beat Astryx's layered foreground; do not override it per surface.
+  The primary fill is the next rule in that file: the org accent (`--org-accent`), else the
+  mode-constant `--wa-hero-crimson`, never the dark-lightened `--wa-accent`, so the white label holds
+  6.47:1 in both themes (2.2:1 on the dusty-rose dark `--wa-accent`, `#dd9fb0`). Do not retarget the label to
+  `--wa-on-accent-control` instead: dark ink on the pinned org accent is 2.78:1.
+  Never wrap an Astryx `<Button>` in a `<Link>`: that renders `<a><button>`,
   which is invalid and gives keyboard users two tab stops per action (WAP-252). The lint rule
   `wap-kit/no-button-in-link` (`scripts/lint/eslint-plugin-wap-kit.mjs`) fails `npm run lint` on
   a `Button` placed directly inside a `Link` or `AstryxLink` (WAP-268).
@@ -707,6 +1019,7 @@ section here in the same PR.*
 
 - Admin overview uses a compact metric strip and flat queue rows. All-zero measured placement series show a concise zero summary; absent series stay absent and nonzero series retain their chart. Program and system context stays secondary without stretching to the queue height. Actions retain full counts and destinations; bulk selection remains owned by the queue client.
 - Sidebar preference controls keep their radio keyboard interaction. The rail scrolls its destinations, with language and appearance visible below. Narrow or collapsed navigation must never expose clipped focusable controls.
+- The desktop shell body uses `overflow: clip` so focus or scroll-into-view cannot shift the entire rail and page; the main workspace and navigation list retain their own scrolling. Mobile drawer overflow rules stay independent.
 - Counselor messages use one neutral inbox workspace. Member metadata appears once per roster row, catalog names resolve on the server, and selected conversations/filter controls expose their state accessibly. Recipient identity, request guards, and draft ownership remain unchanged.
 - Partner share tools (`PartnerShareToolkit`, guide page) are dense edge-to-edge rows — landing page, per-channel UTM links with optional signup counts (counts only) — plus a copyable “About WorkforceAP” blurb (the mission statement, `mission.statement` in `messages/*.json`, passed in by the server page) and a read-only Apply-button snippet textarea; each Copy action is an Astryx `Button` whose failure stays visible. What a partner may see about referred members is decided in `lib/partner/dataAccess.ts`, never in a component (docs/PARTNER_TIERS.md).
 - Partner sharing keeps its primary Copy action visible; URL/code live in a native disclosure that opens on clipboard failure. Member sharing keeps the link/copy action visible and opens invitation preview for manual copying when needed. Privacy and aggregate-reward limits remain visible.

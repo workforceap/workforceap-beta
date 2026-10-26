@@ -45,7 +45,7 @@ describe('PartnerOutcomesPage pending-review dates', () => {
   });
 
   it('shows the submitted date on the Central calendar day', async () => {
-    const html = renderToStaticMarkup(await PartnerOutcomesPage());
+    const html = renderToStaticMarkup(await PartnerOutcomesPage({}));
     expect(html).toContain('Sep 18, 2026');
     expect(html).not.toContain('9/19/2026');
   });

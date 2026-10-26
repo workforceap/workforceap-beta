@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render as rtlRender, screen } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
+import en from '@/messages/en.json';
+import type { ReactNode } from 'react';
 
 /**
  * Inspection of #2485: the strip promised "we log it ... and alert your
@@ -12,6 +15,10 @@ const mocks = vi.hoisted(() => ({ confirmPlacement: vi.fn() }));
 vi.mock('@/app/(portal)/dashboard/placementAction', () => ({ confirmPlacement: mocks.confirmPlacement }));
 
 import Strip from '@/app/(portal)/dashboard/PlacementConfirmationStrip';
+
+function render(ui: ReactNode) {
+  return rtlRender(<NextIntlClientProvider locale="en" messages={en}>{ui}</NextIntlClientProvider>);
+}
 
 const HEX = /#[0-9a-fA-F]{3,8}\b/;
 const inlineStyles = (root: HTMLElement) =>
@@ -32,7 +39,8 @@ describe('PlacementConfirmationStrip tells the member what the confirmation did'
   it('first confirmation: the placement was logged as reported and the counselor alerted', async () => {
     const { status } = await confirmAcme('created');
     expect(mocks.confirmPlacement).toHaveBeenCalledWith('o1');
-    expect(status).toHaveTextContent(/Placement logged — Acme/);
+    // Copy rule (round 3): no em dashes; the kicker reads "Placement logged: Acme", like the home row title.
+    expect(status).toHaveTextContent(/Placement logged: Acme/);
     expect(status).toHaveTextContent(/logged as a placement you reported/i);
     expect(status).toHaveTextContent(/counselor has been alerted/i);
     expect(screen.queryByText(/Did you accept the role at Acme/)).toBeNull();
@@ -60,6 +68,16 @@ describe('PlacementConfirmationStrip tells the member what the confirmation did'
     expect(screen.getByRole('status')).toHaveTextContent(/Acme/);
     expect(screen.getByText(/Did you accept the role at Beta/)).toBeInTheDocument();
     expect(screen.queryByText(/Did you accept the role at Acme/)).toBeNull();
+  });
+
+  it('preview-only row explains the disabled confirmation inside What happens next', () => {
+    const { container } = render(<Strip offers={[{ id: 'o1', company: 'Acme' }]} variant="row" previewOnly />);
+    const disclosure = container.querySelector('details')!;
+    expect(disclosure).not.toHaveAttribute('open');
+    expect(disclosure).toHaveTextContent(en.common.disclosures.previewActionUnavailable);
+    expect(disclosure.querySelector('[role="note"]')).not.toBeNull();
+    expect(screen.getAllByRole('button')[0]).toBeDisabled();
+    expect(mocks.confirmPlacement).not.toHaveBeenCalled();
   });
 
   it('the acknowledgement is a kit card on --wa-* tokens with a lucide icon (WAP-194)', async () => {

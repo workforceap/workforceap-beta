@@ -92,40 +92,38 @@ export const TOUR_REGISTRY: Readonly<Record<TourKey, TourDefinition>> = {
     ],
   },
   /**
-   * Employer first-login tour (tours wave 3, v3). Written for the /employer
+   * Employer first-login tour (workspace consolidation, v4). Written for the /employer
    * overview: `tour-post-job` is the page's Post a job action, the `tour-*`
    * nav anchors are `tourTarget`s on `EMPLOYER_PORTAL_NAV_ITEMS` (rendered by
    * `WorkspaceShell`) and `tour-help` is the header Help menu that reopens the
-   * tour. Post a job → review candidates → pipeline → messages → settings.
-   * v3 supersedes the v2 rail walk-through (work queue / jobs / matches are
-   * named in the copy instead of getting their own step).
+   * tour. Post a job → Candidates → messages → settings. Applicants,
+   * Matches and Pipeline share one destination and one tour step.
    */
   'employer.home': {
     key: 'employer.home',
-    version: 3,
+    version: 4,
     role: 'employer',
     route: '/employer',
     steps: [
       step('employer.home', 'overview', 'tour-overview'),
       step('employer.home', 'postJob', 'tour-post-job', 'bottom'),
       step('employer.home', 'applicants', 'tour-applicants'),
-      step('employer.home', 'pipeline', 'tour-pipeline'),
       step('employer.home', 'messages', 'tour-messages'),
       step('employer.home', 'settings', 'tour-settings'),
       step('employer.home', 'help', 'tour-help', 'bottom'),
     ],
   },
   /**
-   * Partner first-login tour (tours wave 3, v3). Written for the /partner
+   * Partner first-login tour (workspace consolidation, v4). Written for the /partner
    * overview: `tour-referral-link` and `tour-payouts` are page sections
    * (payouts renders for referral partners only, so that step is skipped for
    * everyone else), the `tour-*` nav anchors are `tourTarget`s on
    * `PARTNER_PORTAL_NAV_ITEMS` and `tour-help` is the header Help menu.
-   * Referral link → referred members → attention → payouts → exports → messages.
+   * Referral link → referred members → attention → payouts → Impact → messages.
    */
   'partner.home': {
     key: 'partner.home',
-    version: 3,
+    version: 4,
     role: 'partner',
     route: '/partner',
     steps: [
@@ -140,9 +138,10 @@ export const TOUR_REGISTRY: Readonly<Record<TourKey, TourDefinition>> = {
   },
   /**
    * Counselor wave (tours wave 2). Written for the Today landing page: the
-   * three page anchors live in `CounselorTodayKit`, the three `tour-nav-*`
-   * anchors are `tourTarget`s on `COUNSELOR_PORTAL_NAV_ITEMS` (rendered by
-   * `WorkspaceShell`), and `tour-help` is the header Help menu that reopens
+   * three attention anchors live in `CounselorTodayKit`; `tour-nav-at-risk`
+   * is the visible attention filter in `CounselorWorkspace`. Members and
+   * Messages remain rail `tourTarget`s rendered by `WorkspaceShell`, and
+   * `tour-help` is the header Help menu that reopens
    * the tour (`PortalHelpMenu`). Every anchor is present on /counselor/today,
    * so the step counter never jumps; the same steps still resolve from any
    * counselor page for the shell anchors (missing page anchors are skipped).

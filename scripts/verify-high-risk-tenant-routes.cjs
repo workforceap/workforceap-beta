@@ -572,6 +572,21 @@ assertContains(
 
 assertContains(
   'app/admin/members/page.tsx',
+  ["@/components/admin/workspace/MemberManagementView", 'await MemberManagementView({ searchParams'],
+  'legacy admin roster delegates to the guarded shared management view',
+);
+
+assertContains(
+  'app/admin/students/page.tsx',
+  ["@/components/admin/workspace/MemberManagementView", 'resolveAdminPageTenant', 'await MemberManagementView({ searchParams'],
+  'Students management view retains its tenant gate and guarded loader',
+);
+
+// The roster loader is shared by the compatibility URL and Students workspace.
+// Keep the original tenant requirements on that actual query owner as well as
+// verifying both entry points above; extraction must not weaken this guard.
+assertContains(
+  'components/admin/workspace/MemberManagementView.tsx',
   ['resolveAdminPageTenant', 'withAdminPageScope'],
   'admin members roster is org-scoped',
 );
@@ -686,4 +701,4 @@ assertContains(
   'admin assessment reset refuses cross-tenant org admins before clearing official scores',
 );
 
-console.log('[verify-high-risk-tenant-routes] OK — 71 routes verified');
+console.log('[verify-high-risk-tenant-routes] OK — tenant route and shared-view checks verified');

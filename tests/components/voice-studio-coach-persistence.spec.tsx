@@ -52,7 +52,7 @@ const coaches: [VoiceStudioAgentKey, string][] = [
   ['readiness', 'Readiness Coach'],
   ['resume', 'Resume Coach'],
   ['mock', 'Mock Interview'],
-  ['counselor', 'Lilley Career Coach'],
+  ['counselor', 'Lilley · AI career coach'],
   ['business', 'Career & Business Coach'],
 ];
 

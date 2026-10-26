@@ -32,6 +32,8 @@ type Props = {
   bulletSuggestions: BulletSuggestionPair[];
   exportTitle?: string;
   pdfToolName?: string;
+  /** Result heading; Resume Analysis passes its own so a strength score is not titled a job match. */
+  title?: string;
   /** Hide history / follow-through — /dev/member proofs. */
   preview?: boolean;
 };
@@ -80,10 +82,13 @@ export default function ResumeAnalysisPanel({
   bulletSuggestions,
   exportTitle = 'Job Match Analysis',
   pdfToolName = 'Job Match Scorer',
+  title = 'Match analysis',
   preview = false,
 }: Props) {
   const { copy, copied } = useCopyToClipboard();
   const clamped = Math.min(100, Math.max(0, scorePercent));
+  // Screen-reader context only, so the visible pill text stays short.
+  const subject = title.toLowerCase();
 
   return (
     <div className="resume-analysis-split" style={{ marginTop: 24 }}>
@@ -94,22 +99,27 @@ export default function ResumeAnalysisPanel({
         >
           Your resume
         </div>
-        <div
-          className="resume-analysis-preview-doc"
-          style={{
-            background: 'var(--wa-surface-2)',
-            color: 'var(--wa-text)',
-            borderRadius: 'var(--wa-radius)',
-            border: '1px solid var(--wa-border)',
-            boxShadow: 'var(--wa-shadow)',
-            maxHeight: 'min(520px, 70vh)',
-            overflow: 'auto',
-            padding: 16,
-          }}
-        >
-          <pre className="resume-analysis-preview-pre" style={{ margin: 0, fontFamily: 'inherit', fontSize: 'var(--wa-type-meta)', lineHeight: 1.55, whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: 'var(--wa-text)' }}>
-            {resumePreview || '—'}
-          </pre>
+        {/* The shadow sits on a wrapper: an inline box-shadow on the focusable region would replace its focus ring. */}
+        <div style={{ borderRadius: 'var(--wa-radius)', boxShadow: 'var(--wa-shadow)' }}>
+          <div
+            className="resume-analysis-preview-doc"
+            role="region"
+            tabIndex={0}
+            aria-label="Your resume text"
+            style={{
+              background: 'var(--wa-surface-2)',
+              color: 'var(--wa-text)',
+              borderRadius: 'var(--wa-radius)',
+              border: '1px solid var(--wa-border)',
+              maxHeight: 'min(520px, 70vh)',
+              overflow: 'auto',
+              padding: 16,
+            }}
+          >
+            <pre className="resume-analysis-preview-pre" style={{ margin: 0, fontFamily: 'inherit', fontSize: 'var(--wa-type-meta)', lineHeight: 1.55, whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: 'var(--wa-text)' }}>
+              {resumePreview || '—'}
+            </pre>
+          </div>
         </div>
       </div>
 
@@ -125,7 +135,7 @@ export default function ResumeAnalysisPanel({
       >
         <div className="resume-rewriter-output-header" style={{ flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
           <h3 style={{ flex: '1 1 100%', margin: 0, color: 'var(--wa-text)', fontSize: 16, fontWeight: 700 }}>
-            Match analysis
+            {title}
           </h3>
           <button
             type="button"
@@ -137,8 +147,10 @@ export default function ResumeAnalysisPanel({
               {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
               {copied ? 'Copied' : 'Copy'}
             </span>
+            {' '}
+            <span className="wa-sr-only">{subject}</span>
           </button>
-          <ExportPdfButton text={analysisText} title={exportTitle} toolName={pdfToolName} kit />
+          <ExportPdfButton text={analysisText} title={exportTitle} toolName={pdfToolName} srSuffix={`of ${subject}`} kit />
         </div>
 
         {extractionWarning ? (
@@ -175,7 +187,7 @@ export default function ResumeAnalysisPanel({
                 fontSize: 'var(--wa-type-meta)',
                 fontWeight: 600,
                 background: 'var(--wa-success-soft)',
-                color: 'var(--wa-success)',
+                color: 'var(--wa-success-dark)',
                 display: 'inline-flex',
                 alignItems: 'center',
               }}
@@ -193,7 +205,7 @@ export default function ResumeAnalysisPanel({
                 fontSize: 'var(--wa-type-meta)',
                 fontWeight: 600,
                 background: 'var(--wa-danger-soft)',
-                color: 'var(--wa-danger)',
+                color: 'var(--wa-danger-text)',
                 display: 'inline-flex',
                 alignItems: 'center',
               }}
@@ -205,6 +217,9 @@ export default function ResumeAnalysisPanel({
 
         <pre
           className="resume-rewriter-output-content"
+          role="region"
+          tabIndex={0}
+          aria-label={`${title} text`}
           style={{ color: 'var(--wa-text)', fontFamily: 'inherit', fontSize: 'var(--wa-type-body)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}
         >
           {analysisText}
@@ -325,7 +340,7 @@ export default function ResumeAnalysisPanel({
                             fontWeight: 700,
                             letterSpacing: '0.06em',
                             textTransform: 'uppercase',
-                            color: 'var(--wa-success)',
+                            color: 'var(--wa-success-dark)',
                           }}
                         >
                           After

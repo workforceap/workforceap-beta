@@ -182,7 +182,9 @@ describe('StatusBadge variant contrast', () => {
 
   it.each<Scheme>(['light', 'dark'])('keeps solid CTA text and ghost boundaries readable in %s mode', (scheme) => {
     const color = (token: string) => parseColor(resolve(`var(${token})`, tokens, scheme));
-    expect(contrast(color('--wa-on-accent-control'), color('--wa-accent'))).toBeGreaterThanOrEqual(4.5);
+    // Solid CTAs paint --wa-accent-fill (crimson in both modes); --wa-accent is the
+    // text accent and is a dusty rose in dark, never a fill behind the white label.
+    expect(contrast(color('--wa-on-accent-control'), color('--wa-accent-fill'))).toBeGreaterThanOrEqual(4.5);
     for (const surface of surfaces) {
       expect(contrast(color('--wa-control-border'), color(surface))).toBeGreaterThanOrEqual(3);
       expect(contrast(color('--wa-muted'), color(surface))).toBeGreaterThanOrEqual(4.5);

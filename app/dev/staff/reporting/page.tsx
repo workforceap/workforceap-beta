@@ -140,7 +140,7 @@ function OutcomesShowcase() {
               <Link
                 key={period}
                 href="/dev/staff/reporting?tab=outcomes"
-                className={index === 0 ? 'btn btn-primary btn-small' : 'btn btn-muted btn-small'}
+                className={index === 0 ? 'wa-kit-cta' : 'wa-kit-cta wa-kit-cta--ghost'}
                 aria-current={index === 0 ? 'page' : undefined}
               >
                 {REPORTING_PERIOD_LABELS[period]}

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import PortalBackLink from '@/components/portal/PortalBackLink';
 import { notFound, redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { CheckCircle } from 'lucide-react';
@@ -322,9 +323,7 @@ export default async function PartnerReferredMemberDetailPage({ params }: Props)
     <PortalPageFrame>
       {readOnlyAudit ? <span hidden data-portal-audit-suppressed="partner-member-coursera-course-resolution" /> : null}
       <div style={{ paddingBottom: '6rem' }}>
-        <Link href="/partner/referred-members" style={{ color: 'var(--wa-accent)', display: 'inline-block', marginBottom: '1rem' }}>
-          ← Back to referred members
-        </Link>
+        <PortalBackLink fallbackHref="/partner/referred-members" fallbackLabel="← Back to referred members" style={{ color: 'var(--wa-accent)', display: 'inline-block', marginBottom: '1rem' }} />
         <PageHeader
           title={member.fullName}
           subtitle={showJobDetails

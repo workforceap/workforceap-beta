@@ -119,14 +119,13 @@ export function SystemHealthKit({
   issues,
   title = 'System Health',
   goal,
-  kicker,
   headerAction,
 }: SystemHealthKitProps) {
   const showIssues = Boolean(issues && issues.length > 0);
 
   return (
     <DesignSurface surface="dense" className="wa-p-6">
-      <PageOpener className="wa-mb-5" title={title} kicker={kicker ?? 'Admin'} lede={goal} action={headerAction} />
+      <PageOpener className="wa-mb-5" title={title} meta={goal} action={headerAction} />
 
       {showIssues ? (
         <Card

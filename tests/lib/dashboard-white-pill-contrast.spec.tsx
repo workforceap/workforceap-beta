@@ -1,14 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/react';
 
 import CertificationsEarnMoreCard from '@/components/portal/CertificationsEarnMoreCard';
-import { readCss, loadRootTokens, colorOf, contrast as tokenContrast } from '@/lib/ui/cssTokenContrast.test-helpers';
+import ReadinessCoachReturnButton from '@/components/portal/ReadinessCoachReturnButton';
+import { readCss, loadRootTokens, colorOf, contrast as tokenContrast, splitTopLevel } from '@/lib/ui/cssTokenContrast.test-helpers';
 
 /**
  * The member portal's white CTA pills keep `background: #fff` in both
  * colour modes. Their label used to be `var(--color-accent)`, which is
- * #ad2c4d in light mode (6.5:1) but #e0658a in dark mode — 3.28:1 on the
- * still-white pill. A white pill's label must clear WCAG AA on white.
+ * #ad2c4d in light mode (6.5:1) but the lightened dark accent in dark mode
+ * (#e0658a, 3.28:1 on the still-white pill; the dusty rose #dd9fb0 that
+ * replaced it is lighter still, 2.2:1). A white pill's label must clear WCAG AA
+ * on white.
  * (The mobile State A pill went with the retired ?ui=legacy home, WAP-195.)
  */
 
@@ -33,6 +36,28 @@ describe('certifications page "Earn More Credentials" pill', () => {
       const fg = colorOf(fgExpr as string, tokens, scheme);
       expect(bg, `${scheme} pill background`).toEqual({ r: 255, g: 255, b: 255, a: 1 });
       expect(tokenContrast(fg, bg), `${scheme} label "${fgExpr}" on the white pill`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});
+
+describe('floating readiness-coach action', () => {
+  it('keeps its label readable at both ends of the gold gradient in either theme', () => {
+    vi.stubGlobal('scrollY', 400);
+    const view = render(<ReadinessCoachReturnButton />);
+    try {
+      const button = view.getByRole('button', { name: 'Jump back to readiness coach' });
+      const background = button.style.background;
+      const stops = splitTopLevel(background.slice(background.indexOf('(') + 1, -1)).slice(1);
+      expect(stops).toHaveLength(2);
+      const tokens = loadRootTokens(readCss('css/wa-brand-tokens.css'), readCss('css/portal-tokens.css'));
+      for (const scheme of ['light', 'dark'] as const) {
+        for (const stop of stops) {
+          expect(tokenContrast(colorOf(button.style.color, tokens, scheme), colorOf(stop, tokens, scheme))).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+    } finally {
+      view.unmount();
+      vi.unstubAllGlobals();
     }
   });
 });

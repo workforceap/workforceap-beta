@@ -1,4 +1,7 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { NextIntlClientProvider } from 'next-intl';
+import type { ReactElement, ReactNode } from 'react';
+import en from '@/messages/en.json';
+import { cleanup, fireEvent, render as renderPlain, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import InterviewPrepBundle, { type PrepBundleItem } from '@/components/portal/InterviewPrepBundle';
 
@@ -14,7 +17,7 @@ describe('interview prep materials', () => {
     render(<InterviewPrepBundle preview items={[]} />);
     expect(screen.getByText('No prep materials yet')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Tools that create prep materials' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Create a resume' })).toHaveAttribute('href', '/dashboard/ai-tools/resume-studio?view=rewrite');
+    expect(screen.getByRole('link', { name: 'Create a resume' })).toHaveAttribute('href', '/dashboard/resume?view=rewrite');
     expect(screen.queryByRole('button', { name: 'Email me' })).not.toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -67,3 +70,7 @@ describe('interview prep materials', () => {
     expect(signal?.aborted).toBe(true);
   });
 });
+
+function render(ui: ReactElement) {
+  return renderPlain(ui, { wrapper: ({ children }: { children: ReactNode }) => <NextIntlClientProvider locale="en" messages={en}>{children}</NextIntlClientProvider> });
+}

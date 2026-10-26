@@ -52,7 +52,8 @@ describe('employer page opener', () => {
     const copy = (locale === 'es' ? es : en).employer;
     render(await EmployerApplicationsPage({ searchParams: Promise.resolve({ page: '2', status: 'reviewing', sort: 'applied_asc' }) }));
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(`${copy.applicantsMetaTitle} — ${copy.filtered} (0)`);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(copy.candidatesWorkspaceTitle);
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent(`${copy.applicantsMetaTitle} — ${copy.filtered} (0)`);
     expect(screen.getByText(copy.reviewCandidatesMobile)).toHaveClass('md:wa-hidden');
     expect(screen.getByText(copy.reviewCandidatesDesktop)).toHaveClass('md:wa-block');
     expect(screen.getByText(copy.employerPortal)).toBeInTheDocument();

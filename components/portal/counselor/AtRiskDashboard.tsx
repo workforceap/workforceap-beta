@@ -1,8 +1,15 @@
 'use client';
 
 import { useEffect, useMemo, useState, useCallback, type ReactNode } from 'react';
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import PortalRecordLink from '@/components/portal/PortalRecordLink';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+// "last activity" prints through the shared formatter: the active app locale and
+// a fixed IANA zone (PORTAL_TIMEZONE, America/Chicago), never the runtime's own
+// zone. A UTC server render and a browser elsewhere therefore print the same
+// text, so React raises no hydration mismatch (#418, which dropped html.dark).
+import { formatDate } from '@/lib/i18n/date';
+import { DEFAULT_LOCALE, isAppLocale } from '@/lib/i18n/config';
 import { requestFailureMessage } from '@/lib/http/requestFailureCopy';
 import { fetchWithTimeout } from '@/lib/fetchWithTimeout';
 import { describeMemberRequestException, readMemberRequestFailure } from '@/lib/portal/memberRequestFailure';
@@ -31,6 +38,7 @@ import {
   type KitColor,
   type KitTone} from '@/components/portal/kit';
 import AtRiskDetailModal from './AtRiskDetailModal';
+import styles from './AtRiskDashboard.module.css';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 
 /**
@@ -136,11 +144,6 @@ const STATUS_TOOLTIP: Record<AtRiskMember['status'], string> = {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function formatDate(d: string | null): string {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString();
-}
-
 function scoreLevel(score: number): AtRiskMember['riskLevel'] {
   if (score >= 70) return 'CRITICAL';
   if (score >= 50) return 'HIGH';
@@ -148,9 +151,17 @@ function scoreLevel(score: number): AtRiskMember['riskLevel'] {
   return 'LOW';
 }
 
+/** Opaque-in-light soft tints, each paired with its text twin (KIT_GUIDE §1). */
+const SOFT_TINT: Partial<Record<KitColor, string>> = {
+  accent: 'var(--wa-accent-soft)',
+  gold: 'var(--wa-gold-soft)',
+  info: 'var(--wa-info-soft)',
+  success: 'var(--wa-success-soft)'};
+
 function ScoreBadge({ score }: { score: number }) {
   const level = scoreLevel(score);
-  const c = colorVar(RISK_CONFIG[level].color);
+  const tierColor = RISK_CONFIG[level].color;
+  const c = colorVar(tierColor);
   return (
     <span
       title={`Risk score ${score}. ${SEVERITY_TOOLTIP[level]}`}
@@ -163,8 +174,10 @@ function ScoreBadge({ score }: { score: number }) {
         borderRadius: '50%',
         fontWeight: 800,
         fontSize: 13,
-        color: c,
-        background: `color-mix(in srgb, ${c} 14%, transparent)`,
+        // The fill hue is for the ring only; the number uses the text twin
+        // on the matching soft tint so it clears 4.5:1 in both themes.
+        color: textColorVar(tierColor),
+        background: SOFT_TINT[tierColor] ?? 'var(--wa-surface-2)',
         border: `2px solid color-mix(in srgb, ${c} 40%, transparent)`,
         flexShrink: 0,
         fontVariantNumeric: 'tabular-nums'}}
@@ -202,6 +215,9 @@ export function AtRiskDashboardView({
   onUpdateStatus,
   onBulkAcknowledge}: AtRiskDashboardViewProps) {
   const tCommon = useTranslations('common');
+  const locale = useLocale();
+  const pathname = usePathname();
+  const params = useSearchParams();
   const tEmpty = useTranslations('empty');
   // Local mirror of `members` so the detail modal's status-change callback
   // (which — matching the legacy behavior — only syncs local UI state, it
@@ -212,14 +228,32 @@ export function AtRiskDashboardView({
   }, [members]);
 
   // Filters
-  const [severityFilter, setSeverityFilter] = useState<AtRiskMember['riskLevel'] | 'all'>('all');
-  const [statusFilter, setStatusFilter] = useState<AtRiskMember['status'] | 'all'>('all');
-  const [unacknowledgedOnly, setUnacknowledgedOnly] = useState(false);
-  const [sortMode, setSortMode] = useState<SortMode>('risk');
+  const [severityFilter, setSeverityFilter] = useState<AtRiskMember['riskLevel'] | 'all'>(() => {
+    const value = params?.get('severity');
+    return RISK_LEVEL_ORDER.includes(value as AtRiskMember['riskLevel']) ? value as AtRiskMember['riskLevel'] : 'all';
+  });
+  const [statusFilter, setStatusFilter] = useState<AtRiskMember['status'] | 'all'>(() => {
+    const value = params?.get('caseStatus');
+    return value && Object.hasOwn(STATUS_LABEL, value) ? value as AtRiskMember['status'] : 'all';
+  });
+  const [unacknowledgedOnly, setUnacknowledgedOnly] = useState(() => params?.get('unacknowledged') === '1');
+  const [sortMode, setSortMode] = useState<SortMode>(() => params?.get('riskSort') === 'last_activity' ? 'last_activity' : 'risk');
 
   // Search + program filter
-  const [searchQuery, setSearchQuery] = useState('');
-  const [programFilter, setProgramFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState(() => params?.get('caseSearch') ?? '');
+  const [programFilter, setProgramFilter] = useState<string>(() => params?.get('caseProgram') ?? 'all');
+
+  const returnParams = new URLSearchParams(params?.toString() ?? '');
+  for (const [key, value] of Object.entries({
+    severity: severityFilter === 'all' ? '' : severityFilter,
+    caseStatus: statusFilter === 'all' ? '' : statusFilter,
+    unacknowledged: unacknowledgedOnly ? '1' : '', riskSort: sortMode,
+    caseSearch: searchQuery, caseProgram: programFilter === 'all' ? '' : programFilter,
+  })) {
+    if (value) returnParams.set(key, value);
+    else returnParams.delete(key);
+  }
+  const returnTo = `${pathname || '/counselor/at-risk'}${returnParams.size ? `?${returnParams.toString()}` : ''}`;
 
   // Selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -532,6 +566,7 @@ export function AtRiskDashboardView({
             />
             {programOptions.length > 0 && (
               <select
+                aria-label="Program"
                 value={programFilter}
                 onChange={(e) => setProgramFilter(e.target.value)}
                 className="wa-kit-focus"
@@ -618,17 +653,25 @@ export function AtRiskDashboardView({
 
         {/* Bulk actions */}
         {selectedIds.size > 0 && (
+          // The bar sits above the list, so on a phone it scrolled away as soon
+          // as a row further down was ticked. Below md it pins under the
+          // workspace header (sticky, not fixed: it stays in the flow above the
+          // list and never competes with the bottom nav); from md up the list
+          // fits the screen and it stays static. The accent tint is layered on
+          // the surface so rows scrolling underneath never show through.
           <div
-            className="wa-kit-card wa-kit-card--sm"
+            className="wa-kit-card wa-kit-card--sm wa-sticky wa-z-20 wa-top-[var(--workspace-top-offset,0px)] md:wa-static"
+            data-testid="at-risk-bulk-bar"
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              gap: 16,
-              background: 'var(--wa-accent-soft)',
+              flexWrap: 'wrap',
+              gap: 8,
+              background: 'linear-gradient(var(--wa-accent-soft), var(--wa-accent-soft)), var(--wa-surface)',
               borderColor: 'transparent'}}
           >
-            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)' }}>
+            <span role="status" style={{ fontSize: 13, fontWeight: 700, color: 'var(--wa-text)' }}>
               {selectedIds.size} selected
               {openSelectedCount !== selectedIds.size ? (
                 <span style={{ fontWeight: 500, opacity: 0.85 }}> · {openSelectedCount} open</span>
@@ -671,9 +714,10 @@ export function AtRiskDashboardView({
           </p>
         )}
 
-        {/* Results header */}
+        {/* Results header. Not "Needs attention": CounselorWorkspace already
+            renders that h2 above this dashboard, so it would repeat. */}
         <SectionHeader
-          title="Needs attention"
+          title="At-risk cases"
           goal={`Showing ${filteredMembers.length} member${filteredMembers.length === 1 ? '' : 's'}${loading ? ' · Refreshing…' : ''}`}
           action={
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -684,7 +728,7 @@ export function AtRiskDashboardView({
                     aria-label="Select all visible"
                     checked={allSelectedOnPage}
                     onChange={toggleSelectAll}
-                    style={{ cursor: 'pointer', width: 15, height: 15 }}
+                    style={{ cursor: 'pointer', width: 15, height: 15, accentColor: 'var(--wa-accent)' }}
                   />
                   Select all visible
                 </label>
@@ -744,6 +788,8 @@ export function AtRiskDashboardView({
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {filteredMembers.map((row) => (
               <RiskRow
+                locale={locale}
+                returnTo={returnTo}
                 key={row.alertId}
                 row={row}
                 selected={selectedIds.has(row.alertId)}
@@ -947,6 +993,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       title={title}
+      aria-pressed={active}
       className="wa-kit-focus"
       style={{
         display: 'inline-flex',
@@ -1008,7 +1055,7 @@ function FactorChips({ factors }: { factors: AtRiskFactor[] }) {
             padding: '3px 9px',
             borderRadius: 999,
             background: 'var(--wa-border)',
-            color: 'var(--wa-muted)',
+            color: 'var(--wa-muted-strong)',
             fontWeight: 600}}
         >
           {f.description}
@@ -1019,6 +1066,8 @@ function FactorChips({ factors }: { factors: AtRiskFactor[] }) {
 }
 
 function RiskRow({
+  locale,
+  returnTo,
   row,
   selected,
   onToggleSelect,
@@ -1026,6 +1075,8 @@ function RiskRow({
   onAcknowledge,
   onResolve,
   acting}: {
+  locale: string;
+  returnTo: string;
   row: AtRiskMember;
   selected: boolean;
   onToggleSelect: () => void;
@@ -1049,13 +1100,14 @@ function RiskRow({
         background: selected ? `color-mix(in srgb, ${c} 6%, var(--wa-surface))` : 'var(--wa-surface)'}}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-        <input
-          type="checkbox"
-          aria-label={`Select ${row.name}`}
-          checked={selected}
-          onChange={onToggleSelect}
-          style={{ cursor: 'pointer', width: 16, height: 16, marginTop: 10, flexShrink: 0 }}
-        />
+        <label className={`${styles.checkboxTarget} ${styles.checkboxIconTarget}`}>
+          <input
+            type="checkbox"
+            aria-label={`Select ${row.name}`}
+            checked={selected}
+            onChange={onToggleSelect}
+          />
+        </label>
         <div
           aria-hidden
           style={{
@@ -1080,7 +1132,7 @@ function RiskRow({
             >
               {row.name}
             </button>
-            <span title={SEVERITY_TOOLTIP[row.riskLevel]} style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: c }}>
+            <span title={SEVERITY_TOOLTIP[row.riskLevel]} style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: textColorVar(cfg.color) }}>
               {cfg.label}
             </span>
             <StatusTag tone={STATUS_TONE[row.status]}>{STATUS_LABEL[row.status]}</StatusTag>
@@ -1096,7 +1148,7 @@ function RiskRow({
                 padding: '2px 8px',
                 borderRadius: 999,
                 background: 'var(--wa-accent-soft)',
-                color: 'var(--wa-accent)'}}
+                color: 'var(--wa-accent-text)'}}
             >
               {RISK_ALERT_REASON.label}
             </span>
@@ -1106,7 +1158,7 @@ function RiskRow({
             {row.phone ? ` · ${row.phone}` : ''}
           </div>
           <div style={{ fontSize: 13, color: 'var(--wa-muted)', marginTop: 4 }}>
-            {row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : 'Not enrolled'} · {row.lastActivityAt ? `last activity ${formatDate(row.lastActivityAt)}` : 'No activity recorded'}
+            {row.enrolledProgram ? programDisplayTitle(row.enrolledProgram) : 'Not enrolled'} · {row.lastActivityAt ? `last activity ${formatDate(row.lastActivityAt, isAppLocale(locale) ? locale : DEFAULT_LOCALE)}` : 'No activity recorded'}
           </div>
           <FactorChips factors={row.factors} />
         </div>
@@ -1138,7 +1190,8 @@ function RiskRow({
             {acting ? <PortalInlineSpinner size={12} /> : 'Resolve'}
           </button>
         )}
-        <Link
+        <PortalRecordLink
+          returnTo={returnTo}
           href={`/counselor/students/${encodeURIComponent(row.userId)}#counselor-member-messages`}
           className="btn btn-outline btn-sm"
           style={{ fontSize: 13, padding: '5px 10px' }}
@@ -1146,15 +1199,16 @@ function RiskRow({
         >
           <MessageSquare size={12} style={{ marginRight: 6, verticalAlign: 'middle' }} />
           Message
-        </Link>
-        <Link
+        </PortalRecordLink>
+        <PortalRecordLink
+          returnTo={returnTo}
           href={`/counselor/students/${row.userId}`}
           className="btn btn-outline btn-sm"
           style={{ fontSize: 13, padding: '5px 10px' }}
           title="Counselor student profile and history"
         >
           View
-        </Link>
+        </PortalRecordLink>
       </div>
     </div>
   );

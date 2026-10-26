@@ -100,9 +100,12 @@ describe('buildNextBestActions', () => {
     expect(msg?.body).not.toContain('1 unread');
   });
 
-  it('shows upload_resume for state C/D without resume', () => {
+  it('keeps the resume action priority without treating a missing portal copy as missing email receipt', () => {
     const actions = buildNextBestActions(makeCtx({ state: 'C', enrolledProgram: 'cyber', hasResume: false }));
-    expect(actions.some((a) => a.id === 'upload_resume')).toBe(true);
+    const resume = actions.find((a) => a.id === 'upload_resume');
+    expect(resume).toMatchObject({ href: '/dashboard/resume', weight: 80, variant: 'default' });
+    expect(resume?.body).toContain('If you emailed your résumé, confirm receipt');
+    expect(resume?.cta).toBe('Open Résumé workspace');
   });
 
   it('does not show upload_resume when resume exists', () => {

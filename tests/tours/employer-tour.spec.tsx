@@ -6,6 +6,8 @@ import EmployerPortalShell, { EMPLOYER_GUIDE_HREF } from '@/components/portal/Em
 import { TourProvider } from '@/components/onboarding/TourContext';
 import { GuidedTour } from '@/components/portal/kit/GuidedTour';
 import { TOUR_REGISTRY, getHomeTourForRole } from '@/lib/tours/registry';
+import EmployerCandidatesHeader from '@/components/employer/EmployerCandidatesHeader';
+import { employerCandidatesCopy } from '@/lib/employer/candidatesWorkspace';
 
 const location = vi.hoisted(() => ({ pathname: '/employer' }));
 vi.mock('next/navigation', () => ({
@@ -33,7 +35,6 @@ const STEP_TITLES = [
   'Your hiring dashboard',
   'Post a job',
   'Review candidates',
-  'Track your pipeline',
   'Messages',
   'Company settings',
   'Come back any time',
@@ -68,12 +69,12 @@ function Overview() {
 }
 
 /** The real employer shell (WorkspaceShell + employer nav + header actions) with the gate the layout passes. */
-function Portal({ tour = { key: 'employer.home' as const, enabled: true, offer: false } }: { tour?: { key: 'employer.home'; enabled: boolean; offer: boolean } | null }) {
+function Portal({ tour = { key: 'employer.home' as const, enabled: true, offer: false }, children }: { tour?: { key: 'employer.home'; enabled: boolean; offer: boolean } | null; children?: React.ReactNode }) {
   return (
     <NextIntlClientProvider locale="en" messages={en}>
       <TourProvider>
         <EmployerPortalShell companyName="Acme Staffing" tour={tour}>
-          <Overview />
+          {children ?? <Overview />}
         </EmployerPortalShell>
         <GuidedTour />
       </TourProvider>
@@ -100,16 +101,15 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('employer guided tour (wave 3)', () => {
-  it('is the home tour the employer shell offers and walks post → review → pipeline → messages → settings', () => {
+describe('employer guided tour (workspace consolidation, v4)', () => {
+  it('is the home tour the employer shell offers and walks post → Candidates workspace → messages → settings', () => {
     expect(getHomeTourForRole('employer')?.key).toBe('employer.home');
-    expect(TOUR.version).toBe(3);
+    expect(TOUR.version).toBe(4);
     expect(TOUR.route).toBe('/employer');
     expect(TOUR.steps.map((s) => s.target)).toEqual([
       'tour-overview',
       'tour-post-job',
       'tour-applicants',
-      'tour-pipeline',
       'tour-messages',
       'tour-settings',
       'tour-help',
@@ -117,28 +117,46 @@ describe('employer guided tour (wave 3)', () => {
   });
 
   it('every registry step has exactly one real anchor in the employer shell or on the overview', () => {
-    render(<Portal />);
+    const { rerender } = render(<Portal />);
     for (const step of TOUR.steps) {
       const anchors = document.querySelectorAll(`[data-tour="${step.target}"]`);
       expect(anchors, step.target).toHaveLength(1);
     }
     expect(document.querySelector('[data-tour="tour-overview"]')).toHaveAttribute('href', '/employer');
     expect(document.querySelector('[data-tour="tour-post-job"]')).toHaveAttribute('href', '/employer/jobs/new');
-    expect(document.querySelector('[data-tour="tour-applicants"]')).toHaveAttribute('href', '/employer/applications');
-    expect(document.querySelector('[data-tour="tour-pipeline"]')).toHaveAttribute('href', '/employer/pipeline');
+    expect(document.querySelector('[data-tour="tour-applicants"]')).toHaveAttribute('href', '/employer/candidates');
     expect(document.querySelector('[data-tour="tour-messages"]')).toHaveAttribute('href', '/employer/messages');
     expect(document.querySelector('[data-tour="tour-settings"]')).toHaveAttribute('href', '/employer/settings');
     expect(document.querySelector('[data-tour="tour-help"]')).toBe(screen.getByRole('button', { name: 'Help' }));
+
+    // Pipeline and Matches are real contextual views, not extra home-tour
+    // stops pointing at the same rail row. Their anchors still exist there.
+    location.pathname = '/employer/candidates';
+    rerender(
+      <Portal>
+        <EmployerCandidatesHeader activeView="pipeline" copy={employerCandidatesCopy((key) => en.employer[key])}
+          kicker={en.employer.employerPortal} title={en.employer.candidatePipeline} />
+      </Portal>,
+    );
+    expect(document.querySelectorAll('[data-tour="tour-applicants"]')).toHaveLength(1);
+    const views = within(screen.getByRole('navigation', { name: en.employer.candidatesWorkspaceViews }));
+    expect(views.getByRole('link', { name: 'Applicants' })).toHaveAttribute('href', '/employer/candidates?view=applicants');
+    expect(document.querySelector('[data-tour="tour-matches"]')).toBe(views.getByRole('link', { name: 'Matches' }));
+    expect(document.querySelector('[data-tour="tour-matches"]')).toHaveAttribute('href', '/employer/candidates?view=matches');
+    expect(document.querySelector('[data-tour="tour-pipeline"]')).toBe(views.getByRole('link', { name: 'Pipeline' }));
+    expect(document.querySelector('[data-tour="tour-pipeline"]')).toHaveAttribute('href', '/employer/candidates?view=pipeline');
+    expect(views.getByRole('link', { name: 'Pipeline' })).toHaveAttribute('aria-current', 'page');
   });
 
-  it('walks a new employer through all seven steps in order and records COMPLETED', async () => {
+  it('walks a new employer through all six steps in order and records COMPLETED', async () => {
     render(<Portal />);
     const dialog = await openFromHelp();
     expect(dialog).toHaveAttribute('aria-modal', 'true');
     expect(screen.getByTestId('guided-tour-spotlight')).toBeInTheDocument();
     for (let i = 0; i < STEP_TITLES.length; i++) {
       await waitFor(() => expect(screen.getByRole('heading', { level: 2, name: STEP_TITLES[i] })).toBeInTheDocument());
-      expect(screen.getByRole('dialog')).toHaveTextContent(`Step ${i + 1} of 7`);
+      expect(screen.getByRole('dialog')).toHaveTextContent(`Step ${i + 1} of 6`);
+      if (i === 2) expect(screen.getByRole('dialog')).toHaveTextContent('Applicants, Matches and Pipeline');
       if (i < STEP_TITLES.length - 1) fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     }
     expect(screen.getByRole('dialog')).toHaveTextContent(/Help reopens this tour/);
@@ -153,7 +171,7 @@ describe('employer guided tour (wave 3)', () => {
       ]),
     );
     const completed = posted().find((p) => p.body.status === 'COMPLETED');
-    expect(completed?.body).toMatchObject({ version: 3, lastStep: 6 });
+    expect(completed?.body).toMatchObject({ version: 4, lastStep: 5 });
     // Employer keeps the legacy per-portal timestamp so the old auto-start also stops.
     await waitFor(() => expect(posted().some((p) => p.url === '/api/onboarding/tour-complete')).toBe(true));
   });
@@ -167,7 +185,7 @@ describe('employer guided tour (wave 3)', () => {
 
     const again = await openFromHelp();
     expect(again).toHaveTextContent('Your hiring dashboard');
-    expect(again).toHaveTextContent('Step 1 of 7');
+    expect(again).toHaveTextContent('Step 1 of 6');
     fireEvent.keyDown(document, { key: 'Escape' });
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Help' }));
@@ -191,11 +209,11 @@ describe('employer guided tour (wave 3)', () => {
       </NextIntlClientProvider>,
     );
     const dialog = await openFromHelp();
-    expect(dialog).toHaveTextContent('Step 1 of 7');
+    expect(dialog).toHaveTextContent('Step 1 of 6');
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
     // Step 2 (Post a job) has no anchor off the overview, so the engine lands on step 3.
     await waitFor(() => expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Review candidates'));
-    expect(screen.getByRole('dialog')).toHaveTextContent('Step 3 of 7');
+    expect(screen.getByRole('dialog')).toHaveTextContent('Step 3 of 6');
   });
 
   it('shows the first-login strip only when the offer says so; "Not now" persists DISMISSED at step 0', async () => {
@@ -208,7 +226,7 @@ describe('employer guided tour (wave 3)', () => {
     await waitFor(() => expect(screen.queryByTestId('tour-offer-strip')).toBeNull());
     await waitFor(() => expect(posted()).toHaveLength(1));
     expect(posted()[0].url).toBe('/api/tours/employer.home');
-    expect(posted()[0].body).toMatchObject({ version: 3, status: 'DISMISSED', lastStep: 0 });
+    expect(posted()[0].body).toMatchObject({ version: 4, status: 'DISMISSED', lastStep: 0 });
     unmount();
 
     render(<Portal tour={{ key: 'employer.home', enabled: true, offer: false }} />);
@@ -221,7 +239,7 @@ describe('employer guided tour (wave 3)', () => {
     fireEvent.click(screen.getByTestId('tour-offer-take'));
     const dialog = await screen.findByRole('dialog');
     expect(dialog).toHaveTextContent('Your hiring dashboard');
-    expect(dialog).toHaveTextContent('Step 1 of 7');
+    expect(dialog).toHaveTextContent('Step 1 of 6');
     expect(screen.queryByTestId('tour-offer-strip')).toBeNull();
   });
 

@@ -1,7 +1,7 @@
 import { PDFDocument, type PDFFont, type PDFPage, StandardFonts, rgb } from 'pdf-lib';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { getProgramSyllabus } from '@/shared/programSyllabi';
-import { CONTENT_VERSION, TUITION_AND_FEES_CENTS, TUITION_AND_FEES_LABEL, type ContentVersion } from './constants';
+import { CONTENT_VERSION, DOCUMENT_TITLES, J5_KIND, J6_KIND, TUITION_AND_FEES_CENTS, TUITION_AND_FEES_LABEL, type ContentVersion } from './constants';
 import { classEndDate } from './dates';
 
 /**
@@ -85,7 +85,7 @@ type CommonFacts = {
   readonly tuitionCents: 750_000;
   /** The accounting label, printed on J6 (`Tuition & Fees`); J5 uses fixed cost labels. */
   readonly tuitionLabel: string;
-  /** The printed document title, e.g. `Quote / Voucher Request`. */
+  /** The printed document title, e.g. `Quote/Bid Letter/Voucher Request`. */
   readonly title: string;
   /** Printed under the signature line as `name` and `title, organizationName`. This draft renderer never draws a signature. */
   readonly signer: { readonly name: string; readonly title: string };
@@ -558,7 +558,7 @@ export async function renderBillingDocumentPreviewPdf(input: BillingDocumentPrev
   if (facts.stage !== 'j5' && facts.stage !== 'j6') throw new Error('Unknown billing stage');
   const preparedAt = utcInstant(facts.preparedAt, 'preparedAt');
   const doc = await PDFDocument.create();
-  const title = facts.stage === 'j5' ? 'Quote / Voucher Request' : 'Invoice / Voucher Cover Letter';
+  const title = DOCUMENT_TITLES[facts.stage === 'j5' ? J5_KIND : J6_KIND];
   doc.setTitle(`${facts.stage.toUpperCase()} ${title} - PREVIEW`);
   doc.setAuthor(facts.letterhead.organizationName);
   doc.setCreationDate(preparedAt);

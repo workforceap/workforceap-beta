@@ -47,12 +47,15 @@ describe('standalone voice-studio fixture messages', () => {
 
     expect(intlError).not.toHaveBeenCalled();
     expect(consoleError).not.toHaveBeenCalled();
-    expect(screen.getByText(catalog.aiToolsDiscovery.hubIntro)).toBeVisible();
+    const preparation = screen.getByText(catalog.aiToolsDiscovery.preparationTitle);
+    expect(preparation).toBeVisible();
+    preparation.click();
+    expect(screen.getByText(catalog.aiToolsDiscovery.startIntro)).toBeVisible();
     const startingPoints = within(screen.getByRole('region', { name: catalog.aiToolsDiscovery.startTitle }));
     expect(startingPoints.getByRole('link', { name: catalog.aiToolsDiscovery.resume }))
-      .toHaveAttribute('href', '/dashboard/ai-tools/resume-studio');
-    expect(startingPoints.getByRole('link', { name: catalog.aiToolsDiscovery.interview }))
-      .toHaveAttribute('href', '/dashboard/ai-tools/interview-practice');
+      .toHaveAttribute('href', '/dashboard/resume');
+    expect(startingPoints.getByRole('link', { name: catalog.memberWorkspace.interviews.title }))
+      .toHaveAttribute('href', '/dashboard/ai-tools/interviews');
     expect(startingPoints.getByRole('link', { name: catalog.aiToolsDiscovery.coverLetter }))
       .toHaveAttribute('href', '/dashboard/ai-tools/cover-letter');
   });
