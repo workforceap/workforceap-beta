@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   generate: vi.fn(),
 }));
 const tx = vi.hoisted(() => ({
+  $executeRaw: vi.fn().mockResolvedValue(1),
   userCertification: { createMany: mocks.createMany, findUnique: mocks.findUnique },
   auditLog: { findMany: mocks.provenance },
 }));
@@ -107,6 +108,45 @@ describe('certificate identity survives display-label corrections', () => {
       data: [expect.objectContaining({ userId: completion.userId, certName: CERT_NAME, status: 'pending' })],
       skipDuplicates: true,
     }));
+  });
+
+  it.each([LEGACY_COURSE, 'unlisted-course'])('creates one certificate when first reports differ only in provider-ID availability: %s', async (courseSlug) => {
+    const rows = new Map<string, { id: string; certName: string; status: string }>();
+    const provenance: Array<{ targetId: string }> = [];
+    mocks.provenance.mockImplementation(async () => [...provenance]);
+    mocks.findUnique.mockImplementation(async ({ where }) => where.id
+      ? [...rows.values()].find((row) => row.id === where.id) ?? null
+      : rows.get(where.userId_certName.certName) ?? null);
+    mocks.createMany.mockImplementation(async ({ data }) => {
+      if (rows.has(data[0].certName)) return { count: 0 };
+      rows.set(data[0].certName, { id: `certificate-${rows.size}`, certName: data[0].certName, status: 'pending' });
+      return { count: 1 };
+    });
+    mocks.audit.mockImplementation(async ({ targetId }) => { provenance.push({ targetId }); });
+    // Serial transaction execution models the per-course database lock. The
+    // provenance check must happen inside it, and be committed with issuance.
+    let queue = Promise.resolve();
+    const db = {
+      ...tx, $executeRaw: vi.fn().mockResolvedValue(1),
+      $transaction: (fn: (client: unknown) => Promise<unknown>) => {
+        const result = queue.then(() => fn({ ...tx, $executeRaw: vi.fn().mockResolvedValue(1) }));
+        queue = result.then(() => undefined);
+        return result;
+      },
+    };
+    const results = await Promise.all([
+      ensurePendingCertificationForCompletion({ ...completion, courseSlug }, { db: db as never }),
+      ensurePendingCertificationForCompletion({ ...completion, courseSlug, courseraCourseId: null }, { db: db as never }),
+    ]);
+    expect(rows.size).toBe(1);
+    expect(new Set(results.map((result) => result.id)).size).toBe(1);
+    expect(results.filter((result) => result.created)).toHaveLength(1);
+    expect(provenance).toHaveLength(1);
+  });
+
+  it('requires the identity audit to succeed for a new legacy certificate', async () => {
+    mocks.audit.mockRejectedValue(new Error('identity audit unavailable'));
+    await expect(ensurePendingCertificationForCompletion(completion)).rejects.toThrow('identity audit unavailable');
   });
 
   it('fails closed when a legacy label exists without exact course provenance', async () => {

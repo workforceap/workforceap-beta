@@ -328,3 +328,29 @@ test('legacy course provenance preserves the certificate across a reviewed label
   assert.deepEqual(await prisma.userCertification.findUniqueOrThrow({ where: { id: original.id } }), corrected);
   assert.equal(await prisma.userCertification.count({ where: { userId: seeded.userId } }), beforeCount + 1);
 });
+
+test('first legacy reports with and without a provider ID share one certificate and atomic provenance', async () => {
+  // This separate disposable account has no prior certificates. The helper
+  // itself is shared; member eligibility belongs to its callers/backfill.
+  const input = {
+    userId: seeded.staffUserId,
+    programSlug: 'cybersecurity-professional-certificate-google',
+    courseSlug: 'cybersecurity-professional-certificate-google-course-1',
+    courseraCourseId: 'N0l8fiV4Ee6DuxLo8f8SVQ',
+    source: 'coursera-webhook' as const,
+  };
+  const results = await Promise.all(Array.from({ length: 6 }, (_, i) => {
+    const report = { ...input, courseraCourseId: i % 2 ? null : input.courseraCourseId };
+    return i % 3
+      ? ensurePendingCertificationForCompletion(report)
+      : prisma.$transaction((tx) => ensurePendingCertificationForCompletion(report, { db: tx }));
+  }));
+  assert.equal(results.filter((result) => result.created).length, 1);
+  assert.equal(new Set(results.map((result) => result.id)).size, 1);
+  assert.equal(await prisma.userCertification.count({ where: { userId: input.userId } }), 1);
+  assert.equal(await prisma.auditLog.count({ where: {
+    action: PENDING_CERTIFICATION_FROM_COMPLETION_ACTION,
+    targetId: results[0].id,
+  } }), 1);
+  assert.ok(results.every((result) => result.status === 'pending'));
+});

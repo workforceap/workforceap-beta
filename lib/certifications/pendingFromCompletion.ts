@@ -1,4 +1,4 @@
-import type { CertStatus, Prisma, PrismaClient } from '@prisma/client';
+import { Prisma, type CertStatus, type PrismaClient } from '@prisma/client';
 
 import { auditLog } from '@/lib/audit';
 import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCatalog';
@@ -30,7 +30,8 @@ import { prisma } from '@/lib/db/prisma';
  *  - `UserCertification` has no source column, so provenance goes to the
  *    audit trail: one `audit_logs` row per created certificate, action
  *    `system_certification_pending_from_completion`, with the program,
- *    course, Coursera course id and the write path that reported it.
+ *    course, Coursera course id and the write path that reported it. Legacy
+ *    name transitions also bind a reused natural-key row to that identity.
  *
  * The certificate name comes from catalog slugs or an exact provider ID
  * inside the attributed program. When a legacy label changes, its original
@@ -43,7 +44,8 @@ import { prisma } from '@/lib/db/prisma';
  * carries in more than one program is therefore qualified with the program's
  * display title; a name unique to one program stays as it is (see
  * `resolveCertificationNameForCourse`). The name never depends on what the
- * caller knew about the course, so every path spells it identically.
+ * caller knew about the course for catalog slugs. Legacy identities are
+ * serialized and provenance-bound when provider-ID availability differs.
  *
  * The client is injectable: the shared progress writer hands over the
  * transaction it is running in, so a rolled-back completion never leaves an
@@ -84,7 +86,7 @@ export type EnsurePendingCertificationResult = {
  * the caller is already inside (`$transaction` absent: the helper runs on it,
  * so the certificate commits or rolls back with the caller's write).
  */
-export type PendingCertificationDb = Pick<Prisma.TransactionClient, 'userCertification' | 'user' | 'auditLog'> & {
+export type PendingCertificationDb = Pick<Prisma.TransactionClient, 'userCertification' | 'user' | 'auditLog' | '$executeRaw'> & {
   $transaction?: PrismaClient['$transaction'];
 };
 
@@ -223,10 +225,36 @@ export async function ensurePendingCertificationForCompletion(
   const db = deps.db ?? prisma;
   const certName = resolveCertificationNameForCourse(input);
   const previousName = previousCertificationName(input);
-  if (certName !== previousName) {
+  const needsCourseIdentity = certName !== previousName
+    || !catalogCourseDisplayName({ programSlug: input.programSlug, courseSlug: input.courseSlug });
+  if (needsCourseIdentity) {
     const existing = await certificateBeforeLabelCorrection(input, db, previousName);
     if (existing) return existing;
+
+    const createWithCourseIdentity = async (tx: PendingCertificationDb) => {
+      const lockKey = `completion-certificate:${input.userId}:${canonicalizeProgramSlug(input.programSlug)}:${input.courseSlug}`;
+      await tx.$executeRaw(Prisma.sql`
+        SELECT pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))
+      `);
+      // Re-read after acquiring the lock. A report without a provider ID
+      // can propose another display label for this very same course.
+      const retained = await certificateBeforeLabelCorrection(input, tx, previousName);
+      if (retained) return retained;
+      return createPendingCertificate(input, tx, certName, true);
+    };
+    return db.$transaction
+      ? db.$transaction((tx) => createWithCourseIdentity(tx))
+      : createWithCourseIdentity(db);
   }
+  return createPendingCertificate(input, db, certName, false);
+}
+
+async function createPendingCertificate(
+  input: EnsurePendingCertificationInput,
+  db: PendingCertificationDb,
+  certName: string,
+  requireIdentityAudit: boolean,
+): Promise<EnsurePendingCertificationResult> {
   const now = new Date();
   const earnedAt =
     input.completedAt && Number.isFinite(input.completedAt.getTime()) ? input.completedAt : now;
@@ -261,11 +289,12 @@ export async function ensurePendingCertificationForCompletion(
     ? await db.$transaction((tx) => upsertPending(tx))
     : await upsertPending(db);
 
-  if (outcome.created) {
+  if (outcome.created || requireIdentityAudit) {
     // Provenance lives in the audit trail (no source column on the model).
-    // Best-effort: a failed audit write must not undo or block the
-    // certificate the member is waiting to see.
-    await auditLog(
+    // A label transition needs atomic provenance: otherwise another report
+    // could issue a second label after a missing audit. Catalog-only writes
+    // retain their existing best-effort audit behavior.
+    const writeAudit = auditLog(
       {
         actorUserId: null,
         actorEmailSnapshot: null,
@@ -276,15 +305,18 @@ export async function ensurePendingCertificationForCompletion(
         metadata: {
           userId: input.userId,
           certName,
-          programSlug: input.programSlug,
+          programSlug: canonicalizeProgramSlug(input.programSlug),
           courseSlug: input.courseSlug,
           courseraCourseId: input.courseraCourseId ?? null,
           completedAt: earnedAt.toISOString(),
           source: input.source,
+          ...(requireIdentityAudit ? { certificateCreated: outcome.created } : {}),
         },
       },
       db,
-    ).catch((error) => {
+    );
+    if (requireIdentityAudit) await writeAudit;
+    else await writeAudit.catch((error) => {
       console.error('[certifications] provenance audit for completion certificate failed:', error);
     });
   }
