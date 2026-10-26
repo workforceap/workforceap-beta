@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import {
   VoiceStudioKit,
   type VoiceStudioAgentKey,
+  type ResumeStudioData,
 } from '@/components/portal/kit/pages/VoiceStudioKit';
 
 /**
@@ -41,7 +42,7 @@ const FIXTURE_DESTINATION_HREFS = {
 export default async function DevMemberToolkitPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ tab?: string; agent?: string }>;
+  searchParams?: Promise<{ tab?: string; agent?: string; resumeState?: string }>;
 }) {
   if (process.env.VERCEL_ENV === 'production') notFound();
 
@@ -57,5 +58,9 @@ export default async function DevMemberToolkitPage({
     ? (requestedAgent as VoiceStudioAgentKey)
     : undefined;
 
-  return <VoiceStudioKit initialTab={initialTab} initialAgent={initialAgent} destinationHrefs={FIXTURE_DESTINATION_HREFS} />;
+  const resumeState = params?.resumeState;
+  const resumeStudio: ResumeStudioData | undefined = resumeState === 'unavailable' || resumeState === 'audit-suppressed'
+    ? { hasResume: false, loadStatus: resumeState }
+    : undefined;
+  return <VoiceStudioKit initialTab={initialTab} initialAgent={initialAgent} resumeStudio={resumeStudio} destinationHrefs={FIXTURE_DESTINATION_HREFS} />;
 }

@@ -11,6 +11,8 @@ import type { ResumeScorePayload } from '@/components/portal/tools/ResumeScoreBr
  *   /dev/member/resume-studio?view=rewrite    — rewrite form
  *   /dev/member/resume-studio?view=rewrite&state=filled
  *   /dev/member/resume-studio?view=coach      — honest coach empty
+ *   /dev/member/resume-studio?view=score&state=unavailable — retry with a retained draft
+ *   /dev/member/resume-studio?view=score&state=audit-suppressed — no storage retry
  * Analyze/rewrite POSTs, resume hydrate, file extract, and voice skip in preview.
  */
 export const dynamic = 'force-dynamic';
@@ -109,13 +111,17 @@ export default async function DevMemberResumeStudioPage({
   if (process.env.VERCEL_ENV === 'production') notFound();
   const { state } = await searchParams;
   const filled = state === 'filled';
+  const loadStatus = state === 'unavailable' || state === 'audit-suppressed' || state === 'absent'
+    ? state : 'available';
 
   return (
     <Suspense fallback={null}>
       <ResumeStudioKit
         preview
-        hasResume
+        hasResume={loadStatus === 'available'}
+        loadStatus={loadStatus}
         filesSlot={
+          loadStatus === 'available' ? (
           <ResumeClient
             completeness={75}
             witData={{ name: 'Jordan Reyes', email: 'jordan@example.test', phone: '', recentEmployer: '', targetJob: 'Cloud Support Associate', skills: 'Support, troubleshooting' }}
@@ -129,6 +135,7 @@ export default async function DevMemberResumeStudioPage({
               score: '/dev/member/resume-studio?view=score',
             }}
           />
+          ) : undefined
         }
         backHref="/dev/member/toolkit"
         basePath="/dev/member/resume-studio"
