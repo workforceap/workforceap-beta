@@ -13,15 +13,18 @@ export function selectPreviewDeployment(deployments, sha) {
 export async function waitForPreviewDeployment({
   sha, listDeployments, listStatuses, now = Date.now,
   sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-  signal, timeoutMs = 25 * 60_000, registrationTimeoutMs = 2 * 60_000,
+  signal, timeoutMs = 25 * 60_000, registrationTimeoutMs = timeoutMs,
   intervalMs = 20_000, log = () => {},
 }) {
   if (!/^[a-f0-9]{40}$/.test(sha)) throw new Error('Expected a full trusted commit SHA');
   for (const value of [timeoutMs, registrationTimeoutMs, intervalMs]) {
     if (!Number.isFinite(value) || value <= 0) throw new Error('Invalid polling window');
   }
-  const deadline = now() + timeoutMs;
-  const registrationDeadline = now() + Math.min(registrationTimeoutMs, timeoutMs);
+  // Vercel may publish its GitHub deployment record only when the build is ready.
+  // Registration and completion share one budget; registration never restarts it.
+  const startedAt = now();
+  const deadline = startedAt + timeoutMs;
+  const registrationDeadline = startedAt + Math.min(registrationTimeoutMs, timeoutMs);
   let observed = false;
   let lastState = 'missing';
   for (;;) {
@@ -59,7 +62,7 @@ export async function waitForPreviewDeployment({
 export function describePreviewFailure(outcome) {
   switch (outcome.reason) {
     case 'deployment_missing':
-      return 'No Vercel Preview deployment was registered for the exact trusted SHA (GitHub metadata does not attest the branch). A mirrored Git ref is not proof that a build was created; an unchanged ref does not retry a missing build. Check the Vercel Git integration, ignored-build decision and preview branch deployment for this SHA. An authorized operator must restore the Preview build trigger; rerunning the audit alone cannot create it. No login attempted.';
+      return 'No matching GitHub Preview deployment record was observed for the exact trusted SHA within the wait window (GitHub metadata does not attest the branch). The Vercel build may still be running; a missing record does not prove that no build exists. Check that SHA in Vercel, including build status, Git integration and ignored-build decision, before deciding whether a build trigger needs repair. No login attempted.';
     case 'deployment_failed':
       return `Preview deployment ${outcome.deploymentId} ended in ${outcome.state}. Inspect that deployment before retrying. No login attempted.`;
     case 'build_timeout': return 'The exact Preview deployment did not become successful within the build window. No login attempted.';

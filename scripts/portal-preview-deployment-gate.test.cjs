@@ -61,14 +61,57 @@ for (const state of ['failure', 'error', 'inactive', 'cancelled', 'canceled']) {
   });
 }
 
-test('missing deployment stops at registration deadline with actionable diagnostics', async () => {
+test('an explicitly shortened registration window fails closed with accurate diagnostics', async () => {
   const { waitForPreviewDeployment, describePreviewFailure } = await gate;
   const options = harness({ listDeployments: async () => [] });
   const result = await waitForPreviewDeployment(options);
   assert.equal(result.reason, 'deployment_missing');
   assert.deepEqual(options.sleeps, [7, 7, 6]);
-  assert.match(describePreviewFailure(result), /unchanged ref does not retry/);
+  assert.match(describePreviewFailure(result), /No matching GitHub Preview deployment record/);
+  assert.match(describePreviewFailure(result), /build may still be running/);
+  assert.doesNotMatch(describePreviewFailure(result), /must restore/);
   assert.match(describePreviewFailure(result), /No login attempted/);
+});
+
+test('default registration wait accepts a trusted success first recorded after eight minutes', async () => {
+  const { waitForPreviewDeployment } = await gate;
+  const options = harness({ timeoutMs: undefined, registrationTimeoutMs: undefined, intervalMs: 20_000 });
+  const seen = [];
+  options.listDeployments = async () => options.now() < 8 * 60_000 ? [] : [fixture];
+  options.listStatuses = async (id) => { seen.push(id); return [{ state: 'success' }]; };
+  assert.deepEqual(await waitForPreviewDeployment(options), { ok: true, deploymentId: fixture.id });
+  assert.equal(options.now(), 8 * 60_000);
+  assert.deepEqual(seen, [fixture.id]);
+});
+
+test('a missing record exhausts exactly the default 25-minute overall window', async () => {
+  const { waitForPreviewDeployment } = await gate;
+  const options = harness({ timeoutMs: undefined, registrationTimeoutMs: undefined, intervalMs: 70_000,
+    listDeployments: async () => [],
+    listStatuses: async () => assert.fail('must not read statuses without a matching deployment'),
+  });
+  assert.deepEqual(await waitForPreviewDeployment(options), {
+    ok: false, reason: 'deployment_missing', state: 'missing',
+  });
+  assert.equal(options.now(), 25 * 60_000);
+  assert.equal(options.sleeps.at(-1), 30_000);
+});
+
+test('late registration does not restart or extend the overall build deadline', async () => {
+  const { waitForPreviewDeployment } = await gate;
+  const options = harness({ timeoutMs: undefined, registrationTimeoutMs: undefined, intervalMs: 60_000,
+    listStatuses: async () => [{ state: 'in_progress' }],
+  });
+  options.listDeployments = async () => options.now() < 24 * 60_000 ? [] : [fixture];
+  assert.equal((await waitForPreviewDeployment(options)).reason, 'build_timeout');
+  assert.equal(options.now(), 25 * 60_000);
+});
+
+test('registration is capped by a shorter configured overall window', async () => {
+  const { waitForPreviewDeployment } = await gate;
+  const options = harness({ registrationTimeoutMs: 1_000, listDeployments: async () => [] });
+  assert.equal((await waitForPreviewDeployment(options)).reason, 'deployment_missing');
+  assert.equal(options.now(), 100);
 });
 
 test('registered pending build gets the full build window, not registration window', async () => {

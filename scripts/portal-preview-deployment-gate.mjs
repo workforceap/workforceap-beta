@@ -32,10 +32,11 @@ function configuredWindow(name, fallback) {
   return Number(value);
 }
 try {
+  const timeoutMs = configuredWindow('PORTAL_PREVIEW_BUILD_TIMEOUT_MS', 25 * 60_000);
   const outcome = await waitForPreviewDeployment({
     sha,
-    registrationTimeoutMs: configuredWindow('PORTAL_PREVIEW_REGISTRATION_TIMEOUT_MS', 2 * 60_000),
-    timeoutMs: configuredWindow('PORTAL_PREVIEW_BUILD_TIMEOUT_MS', 25 * 60_000),
+    registrationTimeoutMs: configuredWindow('PORTAL_PREVIEW_REGISTRATION_TIMEOUT_MS', timeoutMs),
+    timeoutMs,
     signal: controller.signal,
     listDeployments: () => readApi(`repos/${repository}/deployments?sha=${sha}&environment=Preview&per_page=100`),
     listStatuses: (id) => readApi(`repos/${repository}/deployments/${id}/statuses?per_page=100`),

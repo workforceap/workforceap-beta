@@ -103,13 +103,14 @@ not retry a missing build. For example, [nightly run 39273540181](https://github
 waited 25 minutes with no Preview deployment for `efc27e4a4`; its health and login
 steps never ran. GitHub listed only a Production deployment for that SHA.
 
-The read-only `scripts/portal-preview-deployment-gate.mjs` now distinguishes a
-missing deployment from a registered, still-building one. Registration defaults
-to two minutes; a registered build gets up to 25 minutes from the start of the
-wait. `PORTAL_PREVIEW_REGISTRATION_TIMEOUT_MS` and
-`PORTAL_PREVIEW_BUILD_TIMEOUT_MS` can override those windows (positive integer
-milliseconds, capped at 25 minutes). API/permission failures are reported
-separately. Failed, inactive, cancelled and unknown states never pass.
+The read-only `scripts/portal-preview-deployment-gate.mjs` distinguishes an absent
+GitHub deployment record from a registered, still-building one. Vercel may publish
+that record only when the build becomes ready, so registration and completion
+share one 25-minute window from the start of the wait. Registration does not
+restart the clock. `PORTAL_PREVIEW_BUILD_TIMEOUT_MS` can shorten the overall window;
+`PORTAL_PREVIEW_REGISTRATION_TIMEOUT_MS` can shorten the registration window within
+it (positive integer milliseconds, capped at 25 minutes). API/permission failures
+are reported separately. Failed, inactive, cancelled and unknown states never pass.
 
 GitHub records Vercel deployments with `ref` equal to the commit SHA and an empty
 payload, so those records do **not** prove the source branch. The waiter requires
@@ -118,9 +119,11 @@ the existing health gate must still prove the configured destination serves that
 SHA and uses DEMO before any login. Neither gate falls back to a newer READY
 commit, another branch's URL, or production.
 
-If registration times out, an authorized project operator must inspect Vercel's
-Git integration and ignored-build decision and restore/create the intended
-`preview` branch Preview build for that exact SHA. Vercel supports
+If registration times out, no matching GitHub record was observed within the
+window; that does not prove no build exists. An authorized project operator should
+inspect that SHA's Vercel build status, Git integration and ignored-build decision
+before deciding whether to repair/create the intended `preview` branch Preview
+build. Vercel supports
 [creating a deployment from a Git reference](https://vercel.com/docs/git);
 select the Preview branch configuration when a commit belongs to multiple
 branches. This code does not create deployments, change tokens/settings, or

@@ -106,7 +106,7 @@ jobs:
             test "$remote" = "https://github.com/workforceap/workforceap-beta.git"
 
       # A branch mirror is not proof of a deployment. Require the exact SHA in
-      # Preview, allow two minutes for registration and 25 minutes for a build.
+      # Preview, share one 25-minute window for registration and build completion.
       # The health gate below still verifies the configured destination and DEMO.
       - name: Wait for the Vercel Preview build of this commit
         if: env.AUDIT_TARGET != 'production_canary'
