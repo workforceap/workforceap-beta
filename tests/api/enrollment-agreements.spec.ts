@@ -105,7 +105,7 @@ describe('enrollment agreement authenticated routes', () => {
   });
   it('self reads a genuine missing agreement with no review permission', async () => {
     const response = await GET(new Request('https://portal.test/api/enrollment-agreements'));
-    expect(response.status).toBe(200); expect(await response.json()).toMatchObject({ status: 'missing', canUpload: true, canReview: false, submissions: [] });
+    expect(response.status).toBe(200); expect(await response.json()).toMatchObject({ status: 'missing', canUpload: true, canReview: false, canSendTemplate: false, submissions: [] });
     expect(mocks.withTenantScope).toHaveBeenCalledWith(ORG, expect.any(Function));
   });
   it('reads current status and history without leaking storage paths, hashes or provider URLs', async () => {
@@ -154,6 +154,15 @@ describe('enrollment agreement authenticated routes', () => {
   it('restricts template sending to an active same-org student selected by an admin', async () => {
     await expect(requireAgreementMemberAccess(member, MEMBER, 'send')).rejects.toMatchObject({ status: 403 });
     expect(await requireAgreementMemberAccess(admin, MEMBER, 'send')).toMatchObject({ canSendTemplate: true });
+    expect(mocks.findMember).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        id: MEMBER,
+        organizationId: ORG,
+        deletedAt: null,
+        profile: { is: { role: 'member' } },
+        userRoles: { none: { role: { name: { in: ['super_admin', 'admin', 'case_manager', 'counselor', 'employer', 'partner'] } } } },
+      }),
+    }));
     await expect(requireAgreementMemberAccess(admin, OTHER, 'send')).rejects.toMatchObject({ status: 404 });
   });
   it('uploads exact bytes as pending; names/text cannot establish signatures', async () => {

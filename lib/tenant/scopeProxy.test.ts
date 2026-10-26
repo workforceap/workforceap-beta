@@ -67,6 +67,9 @@ function makeFakePrisma() {
     courseEnrollment: makeModel('courseEnrollment'),
     organizationProgramCatalog: makeModel('organizationProgramCatalog'),
     preScreeningResponse: makeModel('preScreeningResponse'),
+    applyEligibilityScreening: makeModel('applyEligibilityScreening'),
+    publicWioaScreening: makeModel('publicWioaScreening'),
+    publicInquiry: makeModel('publicInquiry'),
     application: makeModel('application'),
     placementRecord: makeModel('placementRecord'),
     courseProgress: makeModel('courseProgress'),
@@ -110,6 +113,70 @@ test('count on Partner auto-injects organizationId', async () => {
   await db.partner.count();
   const [call] = fake.__getCalls();
   assert.deepEqual(call.args, { where: { organizationId: ORG_A } });
+});
+
+test('findMany on PublicInquiry auto-injects organizationId', async () => {
+  const fake = makeFakePrisma();
+  const db = createScopedClient(ORG_A, fake);
+  await db.publicInquiry.findMany({ where: { source: 'contact' } });
+  const [call] = fake.__getCalls();
+  assert.equal(call.model, 'publicInquiry');
+  assert.deepEqual(call.args, { where: { source: 'contact', organizationId: ORG_A } });
+});
+
+test('upsert on PublicInquiry injects organizationId into where and create', async () => {
+  const fake = makeFakePrisma();
+  const db = createScopedClient(ORG_A, fake);
+  await db.publicInquiry.upsert({
+    where: { id: 'inquiry-1' },
+    create: { id: 'inquiry-1', source: 'contact', email: 'lead@example.test' },
+    update: { status: 'open' },
+  });
+  const [call] = fake.__getCalls();
+  const args = call.args as {
+    where: { organizationId: string };
+    create: { organizationId: string };
+  };
+  assert.equal(call.model, 'publicInquiry');
+  assert.equal(args.where.organizationId, ORG_A);
+  assert.equal(args.create.organizationId, ORG_A);
+});
+
+test('updateMany on PublicInquiry injects organizationId and rejects a foreign org', async () => {
+  const fake = makeFakePrisma();
+  const db = createScopedClient(ORG_A, fake);
+  await db.publicInquiry.updateMany({
+    where: { email: 'lead@example.test' },
+    data: { status: 'closed' },
+  });
+  const [call] = fake.__getCalls();
+  assert.deepEqual(call.args, {
+    where: { email: 'lead@example.test', organizationId: ORG_A },
+    data: { status: 'closed' },
+  });
+  expectScopeViolation(() =>
+    db.publicInquiry.updateMany({
+      where: { organizationId: ORG_B },
+      data: { status: 'closed' },
+    }),
+  );
+});
+
+test('ApplyEligibilityScreening and PublicWioaScreening stay tenant-scoped', async () => {
+  const fake = makeFakePrisma();
+  const db = createScopedClient(ORG_A, fake);
+  await db.applyEligibilityScreening.findFirst({ where: { userId: 'member-1' } });
+  await db.publicWioaScreening.create({
+    data: { email: 'lead@example.test', organizationId: ORG_A },
+  });
+  const [read, write] = fake.__getCalls();
+  assert.deepEqual(read.args, { where: { userId: 'member-1', organizationId: ORG_A } });
+  assert.equal((write.args as { data: { organizationId: string } }).data.organizationId, ORG_A);
+  expectScopeViolation(() =>
+    db.applyEligibilityScreening.create({
+      data: { userId: 'member-1', organizationId: ORG_B },
+    }),
+  );
 });
 
 test('aggregate on Employer auto-injects organizationId', async () => {
