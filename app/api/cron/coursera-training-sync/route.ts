@@ -21,9 +21,23 @@ async function handle(_request: Request) {
     const pacer = createBulkEmailCronPacer({ maxDurationSeconds: maxDuration });
     const xapi = await withBulkEmailCronPacer(pacer, () => replayPendingXapiStatements(200));
     const runResult = { xapi };
-    await setCronRecordsProcessed(xapi.replayed ?? 0);
-    await logCronRun('cron_coursera_training_sync', runResult, 'ok');
-    return NextResponse.json(runResult);
+    // Count confirmed terminal outcomes conservatively, excluding unresolved
+    // progress as well as pending completions. Unresolved completion attribution
+    // stays pending; processing/outcome-read failures stay visible to cron
+    // health checks after the rest of the batch finishes.
+    await setCronRecordsProcessed(
+      xapi.breakdown.completedOk + xapi.breakdown.ignored
+      + xapi.breakdown.unmatched + xapi.skippedUnparsed,
+    );
+    const failed = xapi.breakdown.errored > 0;
+    if (failed) {
+      captureApiError(new Error('Pending xAPI replay had processing failures'), {
+        route: 'cron/coursera-training-sync',
+        extra: { scanned: xapi.scanned, replayed: xapi.replayed, errored: xapi.breakdown.errored },
+      });
+    }
+    await logCronRun('cron_coursera_training_sync', runResult, failed ? 'error' : 'ok');
+    return NextResponse.json(runResult, { status: failed ? 500 : 200 });
   } catch (err) {
     captureApiError(err, { route: 'cron/coursera-training-sync' });
     await logCronRun(
