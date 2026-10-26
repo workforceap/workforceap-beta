@@ -94,3 +94,44 @@ The authenticated portal smoke enforces the same rule mechanically: its health g
 reports the demo ref. The preview it audits is the `preview` branch, a mirror of `master`
 maintained by `.github/workflows/mirror-master-to-preview.yml` and allowed through
 `vercel.json`'s ignore step so Vercel builds it in the Preview environment.
+
+### Missing nightly Preview deployments
+
+A successful mirror job proves only that `preview` points at the trusted master
+SHA. It does not prove that Vercel created a deployment, and a no-op mirror does
+not retry a missing build. For example, [nightly run 39273540181](https://github.com/workforceap/workforceap-beta/actions/runs/39273540181)
+waited 25 minutes with no Preview deployment for `efc27e4a4`; its health and login
+steps never ran. GitHub listed only a Production deployment for that SHA.
+
+The read-only `scripts/portal-preview-deployment-gate.mjs` now distinguishes a
+missing deployment from a registered, still-building one. Registration defaults
+to two minutes; a registered build gets up to 25 minutes from the start of the
+wait. `PORTAL_PREVIEW_REGISTRATION_TIMEOUT_MS` and
+`PORTAL_PREVIEW_BUILD_TIMEOUT_MS` can override those windows (positive integer
+milliseconds, capped at 25 minutes). API/permission failures are reported
+separately. Failed, inactive, cancelled and unknown states never pass.
+
+GitHub records Vercel deployments with `ref` equal to the commit SHA and an empty
+payload, so those records do **not** prove the source branch. The waiter requires
+the exact SHA, Vercel bot creator, Preview environment and non-production flag;
+the existing health gate must still prove the configured destination serves that
+SHA and uses DEMO before any login. Neither gate falls back to a newer READY
+commit, another branch's URL, or production.
+
+If registration times out, an authorized project operator must inspect Vercel's
+Git integration and ignored-build decision and restore/create the intended
+`preview` branch Preview build for that exact SHA. Vercel supports
+[creating a deployment from a Git reference](https://vercel.com/docs/git);
+select the Preview branch configuration when a commit belongs to multiple
+branches. This code does not create deployments, change tokens/settings, or
+repair the external trigger. A later exact-SHA nightly audit is still required
+to establish end-to-end recovery.
+
+### Browser runner compatibility
+
+The authenticated smoke and credential-free Nightly E2E browser jobs use
+`ubuntu-24.04`. The frozen lock resolves Playwright 1.59.0, which rejects the
+Ubuntu 26.04 image currently selected by `ubuntu-latest` during Chromium
+dependency installation. Keep the runner compatible with the locked browser
+package; a future runner upgrade requires installation, browser launch and the
+actual suites to pass. The pin does not change audit targets or login gates.
