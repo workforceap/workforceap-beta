@@ -22,6 +22,8 @@ import { xapiLearnerActivityAt } from '@/lib/xapi/activityTimestamp';
 
 export type InboundStatementRunResult = {
   completions: Array<Record<string, unknown>>;
+  /** Durable classification, also available when a statement has only a hash. */
+  outcome?: 'completed' | 'ignored' | 'unresolved_course' | 'unmatched';
 };
 
 /**
@@ -69,7 +71,7 @@ export async function handleInboundParsedStatement(
     }
 
     await markXapiStatementProcessed(parsed.statementId, options.statementHash);
-    return { completions };
+    return { completions, outcome: 'unmatched' };
   };
 
   const expectedOrganizationId = options.organizationId?.trim() || null;
@@ -139,7 +141,40 @@ export async function handleInboundParsedStatement(
     assignments: dbUser.courseEnrollments,
     fallbackProgramSlug: enrolledProgram,
     fallbackCurriculumVersion: enrolledCurriculumVersion,
+    requireResolvedDetachedCourse: true,
   });
+
+  if (isXapiCompletionVerb(parsed) && inboundScopes.length === 0) {
+    // A matched learner is not sufficient course attribution. Keep the raw
+    // statement pending until mapping/assignment evidence resolves it; even
+    // an existing COMPLETED progress row must not choose a curriculum or
+    // justify consuming the live completion/reward/notification claim.
+    const error = 'Course attribution unresolved; retry after mapping or assignment is resolved';
+    await recordXapiEvent({
+      statementId: parsed.statementId,
+      identity,
+      courseSlug: parsed.courseSlug,
+      courseName: parsed.courseName,
+      verbId: parsed.verbId,
+      matchedUserId: resolvedUser.userId,
+      organizationId: options.organizationId,
+      mappingMethod: resolvedUser.mappingMethod,
+      completionStatus: 'unresolved_course',
+      error,
+      rawPayload: parsed.rawStatement,
+    });
+    completions.push({
+      email: parsed.email,
+      actorIdentifier: parsed.actorIdentifier,
+      statementId: parsed.statementId,
+      matchedUserId: resolvedUser.userId,
+      mappingMethod: resolvedUser.mappingMethod,
+      ok: false,
+      retryable: true,
+      error,
+    });
+    return { completions, outcome: 'unresolved_course' };
+  }
 
   // Enrollment gates rewards, not persistence. Detached linked learners still
   // keep exact mapped progress below, but must not receive a daily-study point
@@ -190,6 +225,9 @@ export async function handleInboundParsedStatement(
         });
       }
     }
+    const outcome = isXapiCourseProgressVerb(parsed) && !progressWritten
+      ? 'unresolved_course'
+      : 'ignored';
     await recordXapiEvent({
       statementId: parsed.statementId,
       identity,
@@ -203,16 +241,13 @@ export async function handleInboundParsedStatement(
       // did not resolve. Only those are replay/heal candidates; every other
       // non-completion statement (item completions, experienced, …) is normal
       // traffic (WAP-276).
-      completionStatus: isXapiCourseProgressVerb(parsed) && !progressWritten
-        ? 'unresolved_course'
-        : 'ignored',
+      completionStatus: outcome,
       rawPayload: parsed.rawStatement,
     });
     await markXapiStatementProcessed(parsed.statementId, options.statementHash);
-    return { completions };
+    return { completions, outcome };
   }
 
-  let attemptedCompletionTarget = false;
   let completionFailed = false;
   let retryableCompletionError: Error | null = null;
   try {
@@ -221,9 +256,7 @@ export async function handleInboundParsedStatement(
     // idempotent early return, and silently skip the first completion's
     // email/points/milestone transitions. The orchestrator writes the durable
     // completion first; the xAPI upsert then adds statement/score detail.
-    if (inboundScopes.length === 0) throw new Error('Course not found');
     for (const scope of inboundScopes) {
-      attemptedCompletionTarget = true;
       const result = await completeMemberCourse({
         userId: resolvedUser.userId,
         resolvedProgramSlug: scope.programSlug,
@@ -299,11 +332,11 @@ export async function handleInboundParsedStatement(
   // If any target fails, leave the durable statement unprocessed so replay
   // can retry the failed target. Successful targets are idempotent and may be
   // re-run; marking the statement here would permanently lose later scopes.
-  if (!completionFailed || !attemptedCompletionTarget) {
+  if (!completionFailed) {
     await markXapiStatementProcessed(parsed.statementId, options.statementHash);
   }
-  if (completionFailed && attemptedCompletionTarget) {
+  if (completionFailed) {
     throw retryableCompletionError ?? new Error('Unable to process statement');
   }
-  return { completions };
+  return { completions, outcome: 'completed' };
 }
