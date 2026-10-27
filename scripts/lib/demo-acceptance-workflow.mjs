@@ -9,7 +9,8 @@ export function assertDispatchContext(env) {
 export function assertProtectedDemoEnvironment(environment, branches) {
   if (environment?.name !== 'demo-qa' || !environment.deployment_branch_policy?.custom_branch_policies) throw new Error('The pre-existing demo-qa environment must restrict deployment branches.');
   const reviewers = environment.protection_rules?.find(rule => rule.type === 'required_reviewers');
-  if (!reviewers?.reviewers?.length || reviewers.prevent_self_review !== true) throw new Error('Independent environment review is required.');
+  if (reviewers?.reviewers?.length !== 1 || reviewers.reviewers[0].type !== 'User' || reviewers.reviewers[0].reviewer?.id !== 225406758 || reviewers.reviewers[0].reviewer?.login !== 'mabrown040' || reviewers.prevent_self_review !== false) throw new Error('The explicit Mike Brown manual review gate is required.');
+  if (environment.can_admins_bypass !== false) throw new Error('Administrators must not bypass the manual environment gate.');
   const policies = branches?.branch_policies;
   if (!Array.isArray(policies) || policies.length !== 1 || policies[0].name !== 'master' || policies[0].type !== 'branch') throw new Error('The demo-qa environment must allow only the master branch.');
   return true;

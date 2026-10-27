@@ -8,6 +8,16 @@ export const REQUIRED_SCENARIOS = Object.freeze([
   'member-location', 'member-notifications', 'member-message-read',
   'member-preassessment-incomplete', 'member-preassessment-completed',
 ]);
+export function assertAcceptanceAction(operation, mode) {
+  const allowed = [...REQUIRED_SCENARIOS.slice(0, 8), ...FIVE_ROLES.map(role => `login:${role}`),
+    ...['candidate', 'baseline'].flatMap(kind => FIVE_ROLES.map(role => `browser-login:${kind}:${role}`))];
+  if (mode !== 'acceptance' || !allowed.includes(operation)) throw new Error('Operation is not an approved acceptance action.');
+}
+
+export function loginRole(operation) {
+  const match = /^(?:login:|browser-login:(?:candidate|baseline):)(member|counselor|admin|employer|partner)$/.exec(operation);
+  return match?.[1] ?? null;
+}
 
 export function fixturePlan(runId, organizationId) {
   if (!/^\d{1,20}-1$/.test(runId)) throw new Error('Invalid first-attempt fixture run.');
@@ -49,10 +59,11 @@ export function fixtureStateFromJournal(state) {
   const fixture = structuredClone(latest);
   for (const event of state.events) {
     const role = event.data?.operationId?.match(/^auth-create:(member|counselor|admin|employer|partner)$/)?.[1];
-    if (role && event.kind === 'confirmed' && event.data.observed?.id) {
+    if (role && ['confirmed', 'failed-confirmed'].includes(event.kind) && event.data.observed?.id) {
       fixture.users[role] = { userId: event.data.observed.id, email: emailFor(state.identity.runId, role) };
       if (fixture.pending === role) delete fixture.pending;
     }
+    if (role && event.kind === 'failed-confirmed' && event.data.observed?.outcome === 'absent' && fixture.pending === role) delete fixture.pending;
   }
   return fixture;
 }
@@ -63,7 +74,7 @@ export function pendingOperations(state) {
     const id = event.data?.operationId;
     if (!id) continue;
     if (['intent', 'cleanup-intent'].includes(event.kind)) pending.set(id, event);
-    if (['confirmed', 'cleanup-confirmed', 'db-committed'].includes(event.kind)) pending.delete(id);
+    if (['confirmed', 'cleanup-confirmed', 'failed-confirmed', 'db-committed'].includes(event.kind)) pending.delete(id);
   }
   return [...pending.values()];
 }
@@ -96,21 +107,52 @@ export function createLifecycle(journal, identity, owner) {
       state = next;
     },
     async saveFixture(fixtureState) { return append('confirmed', { fixtureState }); },
-    async write(operationId, preimage, expectedPostimage, call, verify, { cleanup = false } = {}) {
+    /** @param {{cleanup?: boolean, deferDispatch?: boolean, readKnownFailure?: () => Promise<any>}} options */
+    async write(operationId, preimage, expectedPostimage, call, verify, options = {}) {
+      const { cleanup = false, deferDispatch = false, readKnownFailure } = options;
       await current();
       if (state.events.some(event => event.data?.operationId === operationId && ['intent', 'cleanup-intent'].includes(event.kind))) {
         throw new Error('This operation was already attempted; reconcile it instead of replaying it.');
       }
       if (!cleanup && pendingOperations(state).length) throw new Error('An unresolved write is quarantined.');
       await append(cleanup ? 'cleanup-intent' : 'intent', { operationId, preimage, expectedPostimage });
+      let responseReceived = false;
+      let dispatched = false;
+      const beforeSend = async () => {
+        if (dispatched) throw new Error('This operation already dispatched; a second send is forbidden.');
+        await append('dispatch-started', { operationId });
+        dispatched = true;
+      };
+      const observeResponse = async ({ status } = {}) => {
+        if (!dispatched) throw new Error('Response lacks a durable dispatch marker.');
+        if (!Number.isInteger(status) || status < 100 || status > 599) throw new Error('Invalid HTTP response evidence.');
+        if (responseReceived) return;
+        await append('response-received', { operationId, status });
+        responseReceived = true;
+      };
       try {
-        const result = await call();
+        if (!deferDispatch) await beforeSend();
+        const result = await call(observeResponse, beforeSend);
+        if (!dispatched) throw new Error('The operation never dispatched.');
         await current(); // A handoff during HTTP execution cannot authorize a stale confirmation.
         const observed = await verify(result);
         if (observed === false || observed == null) throw new Error('Mutation readback did not match.');
         await append(cleanup ? 'cleanup-confirmed' : 'confirmed', { operationId, observed });
         return result;
       } catch {
+        if ((responseReceived || !dispatched) && readKnownFailure) {
+          try {
+            await current();
+            if (!responseReceived && state.events.some(event => event.kind === 'dispatch-started' && event.data?.operationId === operationId)) throw new Error('Dispatch outcome remains unknown.');
+            const observed = await readKnownFailure();
+            if (observed) {
+              await append('failed-confirmed', { operationId, observed, acceptancePassed: false, neverDispatched: !dispatched });
+              throw new Error(`Operation ${operationId} failed after a received response; cleanup remains available.`);
+            }
+          } catch (error) {
+            if (state.events.at(-1)?.kind === 'failed-confirmed') throw error;
+          }
+        }
         // If journal access also failed the durable intent remains authoritative.
         await append('quarantined', { operationId, reason: 'outcome-unknown' }).catch(() => {});
         throw new Error(`Operation ${operationId} is quarantined; no automatic retry is allowed.`);
@@ -130,13 +172,17 @@ export function createLifecycle(journal, identity, owner) {
 }
 
 /** Only authoritative GitHub completion is accepted here. No elapsed-time takeover. */
-export async function terminalRunProof(identity, fetchRun) {
-  const run = await fetchRun(identity.workflowRunId);
-  if (!run || String(run.id) !== identity.workflowRunId || run.repository?.full_name !== identity.repository ||
-      run.head_sha !== identity.controlSha || run.run_attempt !== 1 || run.status !== 'completed' || !run.conclusion) {
+export async function terminalRunProof(identity, fetchRun, owner = `${identity.repository}/${identity.runId}`) {
+  const prefix = `${identity.repository}/`;
+  const ownerRun = owner.startsWith(prefix) ? owner.slice(prefix.length).match(/^([1-9]\d{0,19})-1$/)?.[1] : null;
+  if (!ownerRun) throw new Error('Current owner is not a trusted workflow run.');
+  const run = await fetchRun(ownerRun);
+  if (!run || String(run.id) !== ownerRun || run.repository?.full_name !== identity.repository ||
+      (ownerRun === identity.workflowRunId && run.head_sha !== identity.controlSha) || !/^[a-f0-9]{40}$/.test(run.head_sha ?? '') || run.run_attempt !== 1 || run.status !== 'completed' || !run.conclusion ||
+      (ownerRun !== identity.workflowRunId && (run.event !== 'workflow_dispatch' || run.head_branch !== 'master' || run.path !== '.github/workflows/five-role-demo-acceptance.yml'))) {
     throw new Error('Original workflow is not authoritatively terminal.');
   }
-  return { source: 'github', repository: identity.repository, runId: identity.workflowRunId,
+  return { source: 'github', repository: identity.repository, runId: ownerRun, owner, headSha: run.head_sha, workflowAttempt: 1,
     status: 'completed', conclusion: run.conclusion, observedAt: new Date().toISOString() };
 }
 

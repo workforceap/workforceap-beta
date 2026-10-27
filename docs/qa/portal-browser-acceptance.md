@@ -27,7 +27,11 @@ until the durable fixture plan and database readback establish the approved
 mentor fixture. The browser runner does not create or approve mentors.
 
 Before reading account credentials the entry point reads GitHub's exact
-deployment records and latest statuses, requires a Vercel-owned successful
+comparison evidence and requires a distinct baseline that is a strict ancestor
+of the candidate: `status: ahead`, both base and merge-base equal the full
+baseline SHA, and a positive integer `ahead_by`. Identical, reversed, diverged
+or unproven histories are refused before deployment or health requests. It then
+reads deployment records and latest statuses, requires a Vercel-owned successful
 Preview for each full SHA, rejects moving aliases, then probes both origins'
 health SHA and DEMO Auth/Prisma identity. It rechecks health immediately before
 login and each staff comparison. The current immutable-host matcher is pinned
@@ -36,13 +40,22 @@ never handled by accepting arbitrary hosts or branch aliases.
 
 Credential inputs are explicit `FIVE_ROLE_QA_<ROLE>_EMAIL`, `_PASSWORD`, `_ID`,
 plus matching `FIVE_ROLE_QA_RUN_ID`, for the exact
-`wap6-qa-<runId>-<role>@example.com` fixture. Read-only existing fixture use may
-instead supply `DEMO_QA_<ROLE>_EMAIL`, `_PASSWORD`, `_ID`, with exact
-`<role>-test@workforceap.org` identities. There is no `E2E_*` or `PREVIEW_*`
-fallback. Identity IDs/emails/roles are read back from the application, and
+`wap6-qa-<runId>-<role>@example.com` fixture. Shared `DEMO_QA_*` test accounts
+cannot substitute for this fixture in the hosted browser runner:
+login itself can create member events. There is no `E2E_*` or `PREVIEW_*`
+fallback. Each hosted login uses the protected workflow's durable journal and
+the operation `browser-login:<candidate|baseline>:<role>`, with the credential
+user ID checked against the journal-owned role before any sign-in request.
+Identity IDs/emails/roles are then read back from the application, and
 super-admin identities are refused. The fixture coordinator must independently
 bind these IDs to the approved DEMO organization; these endpoints do not expose
 organization identity and cannot establish that database fact.
+
+The login HTTP status is recorded durably before later UI assertions, including
+on a navigation or identity failure. A failed context is never retried; an
+uncertain outcome remains held for the journal recovery process. Redirects to
+MFA setup or verification remain explicit held gates. The local anonymous
+companion never imports or opens this credential-bearing journal runtime.
 
 Also provide `DEMO_QA_READ_ONLY_TOKEN` and, only when needed,
 `DEMO_QA_VERCEL_BYPASS_SECRET`. No credential or storage state is exported. The

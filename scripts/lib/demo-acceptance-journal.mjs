@@ -14,6 +14,9 @@ export const WORKFLOW_ATTEMPT = 1;
 export const ALLOWED_KINDS = Object.freeze([
   'claimed',
   'intent',
+  'dispatch-started',
+  'response-received',
+  'failed-confirmed',
   'confirmed',
   'quarantined',
   'db-committed',
@@ -204,7 +207,7 @@ function validateChain(events, runId) {
 
     if (revision > 1 && event.kind === 'claimed') fail('duplicate claim');
     if (revision > 1 && event.kind !== 'handoff' && event.owner !== owner) fail('owner changed without handoff');
-    if (revision > 1 && event.kind === 'handoff') assertTerminalProof(event.data.terminalProof, identity);
+    if (revision > 1 && event.kind === 'handoff') assertTerminalProof(event.data.terminalProof, identity, owner);
     owner = asOwner(event.owner);
     prevDigest = event.digest;
   }
@@ -234,7 +237,7 @@ function assertReadback(found, expected) {
  * bound to identity.repository + identity.workflowRunId, or an explicit
  * verified+acknowledged handoff object. No guessed/timeout completion.
  */
-export function assertTerminalProof(terminalProof, identity) {
+export function assertTerminalProof(terminalProof, identity, owner) {
   if (!isPlainObject(terminalProof)) fail('terminalProof must be an object');
   assertNoSecretKeys(terminalProof, 'terminalProof');
 
@@ -243,11 +246,16 @@ export function assertTerminalProof(terminalProof, identity) {
   }
 
   if (terminalProof.source === 'github') {
+    const prefix = `${identity.repository}/`;
+    const currentRun = typeof owner === 'string' && owner.startsWith(prefix) ? owner.slice(prefix.length).match(/^([1-9]\d{0,19})-1$/)?.[1] : null;
+    if (!currentRun || terminalProof.owner !== owner) fail('handoff rejects unbound current owner');
+    if (!SHA1_40.test(terminalProof.headSha ?? '') || terminalProof.workflowAttempt !== 1) fail('handoff requires exact owner SHA and first attempt');
+    if (currentRun === identity.workflowRunId && terminalProof.headSha !== identity.controlSha) fail('handoff rejects original owner SHA drift');
     if (terminalProof.repository !== identity.repository) {
       fail('handoff rejects wrong repository');
     }
     const proofRunId = asPositiveInt(terminalProof.runId, 'terminalProof.runId');
-    if (proofRunId !== identity.workflowRunId) {
+    if (proofRunId !== currentRun) {
       fail('handoff rejects wrong run');
     }
     if (terminalProof.status !== 'completed') {
@@ -266,40 +274,12 @@ export function assertTerminalProof(terminalProof, identity) {
       runId: proofRunId,
       source: 'github',
       status: 'completed',
+      owner,
+      headSha: terminalProof.headSha,
+      workflowAttempt: 1,
     };
   }
-
-  if (
-    terminalProof.verified === true &&
-    terminalProof.acknowledged === true &&
-    isPlainObject(terminalProof)
-  ) {
-    if (terminalProof.repository != null && terminalProof.repository !== identity.repository) {
-      fail('handoff rejects wrong repository');
-    }
-    if (terminalProof.runId != null) {
-      const proofRunId = asPositiveInt(terminalProof.runId, 'terminalProof.runId');
-      if (proofRunId !== identity.workflowRunId) fail('handoff rejects wrong run');
-    }
-    if (terminalProof.workflowRunId != null) {
-      const proofRunId = asPositiveInt(terminalProof.workflowRunId, 'terminalProof.workflowRunId');
-      if (proofRunId !== identity.workflowRunId) fail('handoff rejects wrong run');
-    }
-    if (terminalProof.status != null && terminalProof.status !== 'completed') {
-      fail('handoff rejects live run');
-    }
-    return {
-      acknowledged: true,
-      observedAt: terminalProof.observedAt ?? null,
-      repository: identity.repository,
-      runId: identity.workflowRunId,
-      source: 'verified',
-      status: 'completed',
-      verified: true,
-    };
-  }
-
-  fail('terminalProof must be github completed observation or verified acknowledged handoff');
+  fail('terminalProof must be a current-owner GitHub completed observation');
 }
 
 async function withLockedRun(store, runId, fn) {
@@ -412,7 +392,7 @@ export function createJournal(store) {
         if (state.revision === 0) fail('missing chain: journal not claimed');
         if (state.owner !== from) fail('stale owner');
         if (state.revision !== expectedRevision) fail('stale revision');
-        const proof = assertTerminalProof(terminalProof, state.identity);
+        const proof = assertTerminalProof(terminalProof, state.identity, from);
         const event = buildEvent({
           runId: id,
           revision: expectedRevision + 1,

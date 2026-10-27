@@ -3,11 +3,11 @@ import { dirname } from 'node:path';
 import { randomBytes, randomUUID } from 'node:crypto';
 import type { Prisma } from '@prisma/client';
 import { createJournal, createPrismaJournalStore, canonical, digest } from './demo-acceptance-journal.mjs';
-import { createLifecycle, identityFromEnvironment, fixturePlan, fixtureStateFromJournal, terminalRunProof, assertCleanupQuiescent, pendingOperations } from './demo-acceptance-lifecycle.mjs';
+import { createLifecycle, identityFromEnvironment, fixturePlan, fixtureStateFromJournal, terminalRunProof, assertCleanupQuiescent, pendingOperations, assertAcceptanceAction, loginRole } from './demo-acceptance-lifecycle.mjs';
 import { readPortalQaTarget } from './portal-qa-guard.cjs';
 import { probeDemoServiceKey } from './demo-service-key-probe.cjs';
 import { createFixtures, createRoleRowsIn, cleanupFixtures, liveDeps, readbackPersistence, type FixtureState, type Role, type PortalQaTarget } from '../five-role-demo-fixture';
-import { readOwnedGraph, assertGraphUnchanged, assertGraphTransition, type OwnedGraph } from './demo-acceptance-owned-rows';
+import { readOwnedGraph, assertGraphUnchanged, assertGraphTransition, assertJournaledLoginEvents, type OwnedGraph } from './demo-acceptance-owned-rows';
 import { FIVE_ROLES, READBACK_KIND, CLEANUP_KIND, writtenValueFor, runIdFor } from './five-role-acceptance.mjs';
 import { canonicalEventName } from '../../lib/events/names';
 import { execFileSync } from 'node:child_process';
@@ -73,14 +73,32 @@ function latestGraph(state: { events: Array<{ data?: { ownedGraph?: OwnedGraph; 
   return graph;
 }
 
+type JournalEvent = { kind: string; data?: { operationId?: string; ownedGraph?: OwnedGraph } };
+type JournalState = { events: JournalEvent[] };
+function verifyLoginEvents(graph: OwnedGraph, fixture: FixtureState, journal: JournalState) {
+  const seededIds = journal.events.find(event => event.kind === 'db-committed' && event.data?.operationId === 'role-rows')?.data?.ownedGraph?.MemberEvent?.map(row => row.id) ?? [];
+  const counts: Record<string, number> = {};
+  for (const event of journal.events) {
+    const role = event.kind === 'intent' && event.data?.operationId?.startsWith('app:') ? loginRole(event.data.operationId.slice(4)) as Role | null : null;
+    const id = role && fixture.users[role]?.userId;
+    if (id) counts[id] = (counts[id] ?? 0) + 1;
+  }
+  assertJournaledLoginEvents(graph, fixture, seededIds, counts);
+}
+
 /** Called immediately around one permitted browser API mutation, never retried. */
-export async function runAcceptanceAction<T>(env: NodeJS.ProcessEnv, operation: string, call: () => Promise<T>, verifyApp: (result: T) => boolean) {
+export async function runAcceptanceAction<T>(env: NodeJS.ProcessEnv, operation: string, call: (observeResponse: (evidence: { status: number }) => Promise<void>, beforeSend: () => Promise<void>) => Promise<T>, verifyApp: (result: T) => boolean, options: { expectedUserId?: string } = {}) {
+  assertDispatchContext(env);
+  assertAcceptanceAction(operation, env.DEMO_QA_MODE);
   const runtime = await openRuntime(env);
   const { lifecycle, prisma, identity } = runtime;
   try {
     const current = await lifecycle.current();
     const fixture = fixtureStateFromJournal(current) as FixtureState;
+    const expectedRole = loginRole(operation) as Role | null;
+    if (expectedRole && options.expectedUserId !== fixture.users[expectedRole]?.userId) throw new Error('Login identity differs from the journal-owned fixture.');
     const before = await readOwnedGraph(prisma, fixture);
+    verifyLoginEvents(before, fixture, current);
     const previous = latestGraph(current);
     if (canonical(previous) !== canonical(before)) {
       assertGraphTransition(previous, before, 'member-session', fixture);
@@ -90,10 +108,15 @@ export async function runAcceptanceAction<T>(env: NodeJS.ProcessEnv, operation: 
     const result = await lifecycle.write(`app:${operation}`, { graphDigest: digest(before) }, { operation }, call, async (value: T) => {
       if (!verifyApp(value)) return false;
       graph = await readOwnedGraph(prisma, fixture);
-      assertGraphTransition(before, graph, operation.startsWith('login:') ? 'member-session' : operation, fixture);
+      verifyLoginEvents(graph, fixture, await lifecycle.current());
+      assertGraphTransition(before, graph, loginRole(operation) ? 'member-session' : operation, fixture);
       assertScenarioValue(graph, operation, fixture, value);
       return { operation, appReadbackMatched: true, databaseMatched: true, ownedGraph: graph };
-    });
+    }, { deferDispatch: true, readKnownFailure: async () => {
+      const ownedGraph = await readOwnedGraph(prisma, fixture);
+      verifyLoginEvents(ownedGraph, fixture, await lifecycle.current());
+      return { operation, ownedGraph, acceptancePassed: false, responseReceived: true };
+    } });
     await lifecycle.append('readback', { operation, ownedGraph: graph });
     return { result, identity, journalDigest: (await lifecycle.current()).digest };
   } finally { await runtime.close(); }
@@ -105,7 +128,8 @@ function assertScenarioValue(graph: OwnedGraph, operation: string, fixture: Fixt
   const profile = graph.Profile?.find(row => row.userId === memberId);
   const record = value as { recordId?: string; timestamp?: string };
   let valid = false;
-  if (operation.startsWith('login:')) valid = record.recordId === fixture.users[operation.slice(6) as Role]?.userId;
+  const role = loginRole(operation) as Role | null;
+  if (role) valid = record.recordId === fixture.users[role]?.userId;
   if (operation === 'member-goal') valid = graph.Goal?.some(row => row.id === record.recordId && row.title === writtenValueFor(fixture.runId, 'member')) ?? false;
   if (operation === 'counselor-note' || operation === 'admin-note') valid = graph.CounselorNote?.some(row => row.id === record.recordId && row.content === writtenValueFor(fixture.runId, operation.split('-')[0])) ?? false;
   if (operation === 'employer-profile') valid = graph.Employer?.some(row => row.id === fixture.employerId && row.companyName === writtenValueFor(fixture.runId, 'employer')) ?? false;
@@ -118,6 +142,7 @@ function assertScenarioValue(graph: OwnedGraph, operation: string, fixture: Fixt
 
 export async function main(command: string | undefined, env: NodeJS.ProcessEnv) {
   assertDispatchContext(env);
+  if ((env.DEMO_QA_MODE === 'recover-cleanup') !== (command === 'recover-cleanup')) throw new Error('Cleanup-only dispatch cannot execute acceptance commands.');
   if (command === 'plan') {
     const identity = identityFromEnvironment(env);
     output(env.FIVE_ROLE_QA_PLAN_FILE, { identity, plan: fixturePlan(identity.runId, identity.organizationId),
@@ -148,10 +173,15 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
       await lifecycle.claim();
       const baseCreate = deps.createAuthUser;
       deps.createAuthUser = input => lifecycle.write(`auth-create:${input.appMetadata.role}`, null,
-        { email: input.email, metadata: input.appMetadata }, () => baseCreate(input), async (id: string) => {
+        { email: input.email, metadata: input.appMetadata }, (observeResponse: (response: { status: number }) => Promise<void>, beforeSend: () => Promise<void>) => runtime.withAuthObservation({ observeResponse, beforeSend }, () => baseCreate(input)), async (id: string) => {
           const actual = await deps.getAuthUser(id);
           return actual && actual.email === input.email && Object.entries(input.appMetadata).every(([key, value]) => actual.appMetadata[key] === value) ? { id, email: input.email, metadata: input.appMetadata } : false;
-        });
+        }, { deferDispatch: true, readKnownFailure: async () => {
+          const actual = await deps.findAuthUserByEmail(input.email);
+          if (!actual) return { outcome: 'absent', email: input.email };
+          if (!Object.entries(input.appMetadata).every(([key, value]) => actual.appMetadata[key] === value)) throw new Error('Foreign Auth identity cannot be adopted.');
+          return { outcome: 'owned', id: actual.id, email: input.email, metadata: input.appMetadata };
+        } });
       deps.createRoleRows = async input => {
         const state = await lifecycle.current();
         const result = await journal.atomic(identity.runId, owner, state.revision, 'db-committed', { operationId: 'role-rows', preimage: null },
@@ -180,7 +210,7 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
         const response = await fetch(`https://api.github.com/repos/${identity.repository}/actions/runs/${id}`, { redirect: 'error', signal: AbortSignal.timeout(15_000), headers: { Authorization: `Bearer ${env.GITHUB_TOKEN}`, Accept: 'application/vnd.github+json' } });
         if (!response.ok) throw new Error('Original workflow state is unreadable.');
         return response.json();
-      });
+      }, existing.owner);
       await journal.handoff(identity.runId, existing.owner, existing.revision, owner, proof);
       // Only positively observed completed Auth creates/deletes can resolve uncertainty.
       // An absent create or present delete may still be executing and stays quarantined.
@@ -192,6 +222,15 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
           const email = fixturePlan(identity.runId, identity.organizationId).users[role]?.email;
           if (!email) throw new Error('Unknown creation intent.');
           const user = await deps.findAuthUserByEmail(email);
+          const events = (await lifecycle.current()).events as JournalEvent[];
+          const dispatched = events.some(event => event.kind === 'dispatch-started' && event.data?.operationId === operationId);
+          const receivedResponse = events.some(event => event.kind === 'response-received' && event.data?.operationId === operationId);
+          if (!user && (!dispatched || receivedResponse)) {
+            await lifecycle.reconcile(operationId, async () => ({ outcome: 'absent', neverDispatched: !dispatched, receivedResponse, email }));
+            delete recovered.pending;
+            await lifecycle.saveFixture(recovered);
+            continue;
+          }
           if (!user || user.appMetadata.run_id !== identity.runId || user.appMetadata.role !== role ||
               user.appMetadata.wap6_five_role_fixture !== true || user.appMetadata.portal_qa_organization_id !== identity.organizationId) {
             throw new Error('Auth creation outcome is still quarantined.');
@@ -201,11 +240,38 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
           delete recovered.pending;
           await lifecycle.saveFixture(recovered);
         } else if (operationId.startsWith('auth-delete:')) {
-          const role = operationId.slice('auth-delete:'.length) as Role;
+          const role = operationId.split(':')[1] as Role;
           const user = recovered.users[role];
-          if (!user || await deps.getAuthUser(user.userId) || await deps.findAuthUserByEmail(user.email)) throw new Error('Auth deletion remains quarantined.');
-          await lifecycle.reconcile(operationId, async () => ({ outcome: 'absent', id: user.userId, email: user.email }));
-        } else throw new Error('Original app request outcome is unresolved; cleanup remains quarantined.');
+          if (!user) throw new Error('Unknown Auth deletion identity.');
+          const actual = await deps.getAuthUser(user.userId);
+          const byEmail = await deps.findAuthUserByEmail(user.email);
+          if (!actual && !byEmail) await lifecycle.reconcile(operationId, async () => ({ outcome: 'absent', id: user.userId, email: user.email }));
+          else {
+            const received = (await lifecycle.current()).events.some((event: JournalEvent) => event.kind === 'response-received' && event.data?.operationId === operationId);
+            if (!received || !actual || actual.email !== user.email || byEmail?.id !== user.userId || actual.appMetadata.run_id !== identity.runId || actual.appMetadata.role !== role || actual.appMetadata.wap6_five_role_fixture !== true || actual.appMetadata.portal_qa_organization_id !== identity.organizationId) throw new Error('Auth deletion remains quarantined.');
+            await lifecycle.reconcile(operationId, async () => ({ outcome: 'owned', receivedResponse: true, id: user.userId, email: user.email, acceptancePassed: false }));
+          }
+        } else if (operationId.startsWith('app:')) {
+          const state = await lifecycle.current();
+          const operation = operationId.slice(4);
+          assertAcceptanceAction(operation, 'acceptance');
+          const ownedGraph = await readOwnedGraph(prisma, recovered);
+          verifyLoginEvents(ownedGraph, recovered, state);
+          const received = state.events.some((event: JournalEvent) => event.kind === 'response-received' && event.data?.operationId === operationId);
+          const dispatched = state.events.some((event: JournalEvent) => event.kind === 'dispatch-started' && event.data?.operationId === operationId);
+          if (!received && dispatched) {
+            const previous = latestGraph(state);
+            assertGraphTransition(previous, ownedGraph, loginRole(operation) ? 'member-session' : operation, recovered);
+            const role = loginRole(operation) as Role | null;
+            const member = recovered.users.member?.userId;
+            const recordId = role ? recovered.users[role]?.userId : operation === 'member-goal' ? ownedGraph.Goal?.find(row => row.title === writtenValueFor(identity.runId, 'member'))?.id
+              : operation.endsWith('-note') ? ownedGraph.CounselorNote?.find(row => row.content === writtenValueFor(identity.runId, operation.split('-')[0]))?.id
+                : operation === 'employer-profile' ? recovered.employerId : operation === 'partner-profile' ? recovered.partnerId : undefined;
+            if (role && !ownedGraph.MemberEvent?.some(row => row.userId === recordId && row.eventName === 'member_logged_in' && row.sourcePage === '/login' && !previous.MemberEvent?.some(old => old.id === row.id))) throw new Error('Login transport outcome remains unknown.');
+            assertScenarioValue(ownedGraph, operation, recovered, { recordId, timestamp: ownedGraph.MessageThread?.find(row => row.memberId === member)?.memberLastReadAt });
+          }
+          await lifecycle.reconcile(operationId, async () => ({ outcome: 'owned', operation, ownedGraph, acceptancePassed: false, receivedResponse: received, neverDispatched: !dispatched }));
+        } else throw new Error('Original request outcome is unresolved; cleanup remains quarantined.');
       }
     }
     const current = await lifecycle.current();
@@ -216,7 +282,8 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
       if (canonical(acceptance.identity) !== canonical(identity)) throw new Error('Acceptance identity mismatch.');
       const result = await readbackPersistence(fixture, acceptance, deps);
       const graph = await readOwnedGraph(prisma, fixture);
-      assertGraphUnchanged(latestGraph(current), graph);
+      verifyLoginEvents(graph, fixture, current);
+      assertGraphTransition(latestGraph(current), graph, 'member-session', fixture);
       const state = await lifecycle.append('readback', { roleReadback: result, ownedGraph: graph });
       output(env.FIVE_ROLE_QA_READBACK_OUTPUT, { kind: READBACK_KIND, runId: identity.runId, identity, journalDigest: state.digest, ...result });
       if (!result.success) throw new Error('Database readback failed.');
@@ -224,6 +291,7 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
     }
     if (command === 'complete-preassessment') {
       const before = await readOwnedGraph(prisma, fixture);
+      verifyLoginEvents(before, fixture, current);
       if (canonical(latestGraph(current)) !== canonical(before)) {
         assertGraphTransition(latestGraph(current), before, 'member-session', fixture);
         await lifecycle.append('readback', { sessionObserved: true, ownedGraph: before });
@@ -244,11 +312,16 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
       if (Object.values(expected).some(rows => rows.length)) throw new Error('Unjournaled database creation remains quarantined.');
       await lifecycle.append('readback', { ownedGraph: expected, partialAuthOnly: true });
     }
+    const settled = await readOwnedGraph(prisma, fixture);
+    verifyLoginEvents(settled, fixture, current);
+    assertGraphTransition(expected, settled, 'member-session', fixture);
+    if (canonical(expected) !== canonical(settled)) await lifecycle.append('readback', { sessionObserved: true, ownedGraph: settled });
+    expected = settled;
     deps.validateCleanup = async () => { assertGraphUnchanged(expected, await readOwnedGraph(prisma, fixture)); };
     const noteIds = expected.CounselorNote?.map(row => row.id) ?? [];
     deps.deleteNotes = async () => {
       const state = await lifecycle.current();
-      if (state.events.some(event => event.data?.operationId === 'cleanup-db')) return 0;
+      if (state.events.some((event: JournalEvent) => event.data?.operationId === 'cleanup-db')) return 0;
       const deleted = await journal.atomic(identity.runId, owner, state.revision, 'db-committed',
         { operationId: 'cleanup-db', preimage: expected }, async (tx: Prisma.TransactionClient) => {
           assertGraphUnchanged(expected, await readOwnedGraph(tx, fixture));
@@ -274,8 +347,17 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
       const role = (FIVE_ROLES as Role[]).find(key => fixture.users[key]?.userId === id);
       if (!role) throw new Error('Auth deletion does not name a journal-owned identity.');
       const user = fixture.users[role]!;
-      await lifecycle.write(`auth-delete:${role}`, { id, email: user.email }, null, () => deleteAuth(id), async () =>
-        !(await deps.getAuthUser(id)) && !(await deps.findAuthUserByEmail(user.email)) ? { outcome: 'absent', id, email: user.email } : false, { cleanup: true });
+      // A later cleanup owner may make a new attempt after a known response failure; unknown requests remain pending and block entry.
+      await lifecycle.write(`auth-delete:${role}:${env.GITHUB_RUN_ID}`, { id, email: user.email }, null,
+        (observeResponse: (response: { status: number }) => Promise<void>, beforeSend: () => Promise<void>) => runtime.withAuthObservation({ observeResponse, beforeSend }, () => deleteAuth(id)), async () =>
+          !(await deps.getAuthUser(id)) && !(await deps.findAuthUserByEmail(user.email)) ? { outcome: 'absent', id, email: user.email } : false,
+        { cleanup: true, deferDispatch: true, readKnownFailure: async () => {
+          const actual = await deps.getAuthUser(id);
+          const byEmail = await deps.findAuthUserByEmail(user.email);
+          if (!actual && !byEmail) return { outcome: 'absent', id, email: user.email };
+          if (!actual || actual.email !== user.email || byEmail?.id !== id || actual.appMetadata.run_id !== identity.runId || actual.appMetadata.wap6_five_role_fixture !== true || actual.appMetadata.role !== role || actual.appMetadata.portal_qa_organization_id !== identity.organizationId) throw new Error('Auth deletion readback is not exactly owned.');
+          return { outcome: 'present', id, email: user.email, acceptancePassed: false };
+        } });
     };
     // Only journal-confirmed action IDs can authorize deletion; a local acceptance file is not authority.
     const recordIds = { member: expected.Goal?.[0]?.id, counselor: expected.CounselorNote?.find(row => row.authorId === fixture.users.counselor?.userId)?.id,

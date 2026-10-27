@@ -20,7 +20,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { test, expect, type APIResponse, type Page } from '@playwright/test';
+import { test, expect, type APIResponse, type Page, type Response } from '@playwright/test';
 import {
   ACCEPTANCE_KIND,
   acceptanceRefusal,
@@ -85,15 +85,18 @@ async function login(page: Page, email: string, password: string) {
   await expect(page).not.toHaveURL(/\/login([?#]|$)/, { timeout: 60_000 });
 }
 
-const once = { maxRetries: 0, maxRedirects: 0, timeout: 60_000,
-  headers: env.DEMO_QA_VERCEL_BYPASS_SECRET ? { 'x-vercel-protection-bypass': env.DEMO_QA_VERCEL_BYPASS_SECRET } : {} } as const;
+const requestHeaders: Record<string, string> = env.DEMO_QA_VERCEL_BYPASS_SECRET ? { 'x-vercel-protection-bypass': env.DEMO_QA_VERCEL_BYPASS_SECRET } : {};
+const once = { maxRetries: 0, maxRedirects: 0, timeout: 60_000, headers: requestHeaders } as const;
 const memberId = () => account('member').userId;
 
 /** One write and one app readback per role. Each write is sent exactly once. */
-const STEPS: Record<Role, (page: Page, entry: RoleEntry) => Promise<void>> = {
-  async member(page, entry) {
+type ObserveResponse = (evidence: { status: number }) => Promise<void>;
+const STEPS: Record<Role, (page: Page, entry: RoleEntry, observeResponse: ObserveResponse, beforeSend: () => Promise<void>) => Promise<void>> = {
+  async member(page, entry, observeResponse, beforeSend) {
     const title = writtenValueFor(runId, 'member');
+    await beforeSend();
     const created = await page.request.post('/api/member/goals', { ...once, data: { goalType: 'wap6_qa', title } });
+    await observeResponse({ status: created.status() });
     entry.action.status = created.status();
     const goal = ((await jsonOf(created)) as { goal?: { id?: unknown } } | null)?.goal;
     entry.action.ok = created.ok() && typeof goal?.id === 'string';
@@ -104,15 +107,17 @@ const STEPS: Record<Role, (page: Page, entry: RoleEntry) => Promise<void>> = {
     const goals = ((await jsonOf(read)) as { goals?: Array<{ id?: unknown; title?: unknown }> } | null)?.goals ?? [];
     entry.appReadback.matched = read.ok() && goals.some((g) => g.id === entry.recordId && g.title === title);
   },
-  async counselor(page, entry) {
-    await writeNote(page, entry, 'counselor', `/api/counselor/members/${memberId()}/notes`);
+  async counselor(page, entry, observeResponse, beforeSend) {
+    await writeNote(page, entry, 'counselor', `/api/counselor/members/${memberId()}/notes`, observeResponse, beforeSend);
   },
-  async admin(page, entry) {
-    await writeNote(page, entry, 'admin', `/api/admin/members/${memberId()}/notes`);
+  async admin(page, entry, observeResponse, beforeSend) {
+    await writeNote(page, entry, 'admin', `/api/admin/members/${memberId()}/notes`, observeResponse, beforeSend);
   },
-  async employer(page, entry) {
+  async employer(page, entry, observeResponse, beforeSend) {
     const companyName = writtenValueFor(runId, 'employer');
+    await beforeSend();
     const updated = await page.request.patch('/api/employer/onboarding-profile', { ...once, data: { companyName } });
+    await observeResponse({ status: updated.status() });
     entry.action.status = updated.status();
     entry.action.ok = updated.ok();
     entry.recordId = env.FIVE_ROLE_QA_EMPLOYER_RECORD_ID!.trim();
@@ -123,9 +128,11 @@ const STEPS: Record<Role, (page: Page, entry: RoleEntry) => Promise<void>> = {
     const shown = (await field.count()) === 1 ? await field.inputValue() : null;
     entry.appReadback.matched = Boolean(read?.ok()) && shown === companyName;
   },
-  async partner(page, entry) {
+  async partner(page, entry, observeResponse, beforeSend) {
     const name = writtenValueFor(runId, 'partner');
+    await beforeSend();
     const updated = await page.request.patch('/api/partner/onboarding-profile', { ...once, data: { name } });
+    await observeResponse({ status: updated.status() });
     entry.action.status = updated.status();
     entry.action.ok = updated.ok();
     entry.recordId = env.FIVE_ROLE_QA_PARTNER_RECORD_ID!.trim();
@@ -137,9 +144,11 @@ const STEPS: Record<Role, (page: Page, entry: RoleEntry) => Promise<void>> = {
   },
 };
 
-async function writeNote(page: Page, entry: RoleEntry, role: 'counselor' | 'admin', path: string) {
+async function writeNote(page: Page, entry: RoleEntry, role: 'counselor' | 'admin', path: string, observeResponse: ObserveResponse, beforeSend: () => Promise<void>) {
   const content = writtenValueFor(runId, role);
+  await beforeSend();
   const created = await page.request.post(path, { ...once, data: { content } });
+  await observeResponse({ status: created.status() });
   entry.action.status = created.status();
   const note = (await jsonOf(created)) as { id?: unknown } | null;
   entry.action.ok = created.ok() && typeof note?.id === 'string';
@@ -187,24 +196,40 @@ test.describe('WAP-6 five-role DEMO acceptance', () => {
       const context = await browser.newContext({ baseURL });
       try {
         const origin = new URL(baseURL!).origin;
+        let beforeLoginSend: (() => Promise<void>) | undefined;
+        let loginSent = false;
         await context.route('**/*', async route => {
           const request = route.request();
           const url = new URL(request.url());
-          const auth = url.origin === 'https://esbdrgaonplpvzmtrdhw.supabase.co' && url.pathname === '/auth/v1/token' && url.searchParams.get('grant_type') === 'password';
-          if (auth) return route.continue();
           const loginRequest = url.origin === origin && url.pathname === '/api/auth/login' && request.method() === 'POST' && !entry.identityVerified;
           if (url.origin !== origin || (!loginRequest && !['GET', 'HEAD'].includes(request.method()))) return route.abort('blockedbyclient');
+          if (loginRequest) {
+            if (!beforeLoginSend || loginSent) return route.abort('blockedbyclient');
+            loginSent = true;
+            try { await beforeLoginSend(); } catch { return route.abort('blockedbyclient'); }
+          }
           const headers = { ...request.headers(), ...once.headers };
           return route.continue({ headers });
         });
         const page = await context.newPage();
         entry.failedAt = 'login';
-        await runAcceptanceAction(env, `login:${role}`, async () => {
-          await login(page, email, password);
+        await runAcceptanceAction(env, `login:${role}`, async (observeResponse, beforeSend) => {
+          beforeLoginSend = beforeSend;
+          let responseReceipt: Promise<void> | undefined;
+          const received = (response: Response) => {
+            if (response.request().method() === 'POST' && response.url() === `${origin}/api/auth/login`) {
+              responseReceipt = observeResponse({ status: response.status() });
+              void responseReceipt.catch(() => {}); // Awaited below; avoid an unhandled rejection while UI settles.
+            }
+          };
+          page.on('response', received);
+          try { await login(page, email, password); }
+          finally { beforeLoginSend = undefined; page.off('response', received); await responseReceipt; }
+          if (/\/(?:setup-mfa|verify-mfa)(?:[/?#]|$)/.test(page.url())) throw new Error('Staff MFA requires a separately approved fixture; acceptance is held.');
           const identity = sessionIdentityFromCookies(await context.cookies());
           entry.identityVerified = identity?.userId === userId && identity?.sub === userId;
           return { recordId: userId, matched: entry.identityVerified };
-        }, result => result.matched);
+        }, result => result.matched, { expectedUserId: userId });
         if (!entry.identityVerified) {
           entry.failedAt = 'identity';
           continue;
@@ -221,14 +246,16 @@ test.describe('WAP-6 five-role DEMO acceptance', () => {
           (receipt.memberScenarios as Record<string, unknown>)['member-preassessment-completed'] = { passed: true, fixtureSetupOnly: true };
         }
         entry.failedAt = 'action';
-        const evidence = await runAcceptanceAction(env, operationFor[role], async () => {
-          await STEPS[role](page, entry);
+        const evidence = await runAcceptanceAction(env, operationFor[role], async (observeResponse, beforeSend) => {
+          await STEPS[role](page, entry, observeResponse, beforeSend);
           return { recordId: entry.recordId, matched: entry.action.ok && entry.appReadback.matched };
         }, result => result.matched);
         receipt.journalDigest = evidence.journalDigest;
         if (role === 'member') {
-          const location = await runAcceptanceAction(env, 'member-location', async () => {
+          const location = await runAcceptanceAction(env, 'member-location', async (observeResponse, beforeSend) => {
+            await beforeSend();
             const response = await page.request.patch('/api/member/profile', { ...once, data: { city: 'QA City', state: 'GA', zip: '30301' } });
+            await observeResponse({ status: response.status() });
             const readback = await page.request.get('/api/member/profile', once);
             const body = await readback.json();
             await page.goto('/dashboard/profile', { waitUntil: 'domcontentloaded' });
@@ -237,8 +264,10 @@ test.describe('WAP-6 five-role DEMO acceptance', () => {
             await expect(page.getByLabel('ZIP', { exact: true })).toHaveValue('30301');
             return { matched: response.ok() && readback.ok() && body.profile?.city === 'QA City' && body.profile?.state === 'GA' && body.profile?.zip === '30301' };
           }, result => result.matched);
-          const preferences = await runAcceptanceAction(env, 'member-notifications', async () => {
+          const preferences = await runAcceptanceAction(env, 'member-notifications', async (observeResponse, beforeSend) => {
+            await beforeSend();
             const response = await page.request.patch('/api/member/settings', { ...once, data: { notificationsUpdates: false, notificationsReminders: false } });
+            await observeResponse({ status: response.status() });
             await page.reload({ waitUntil: 'domcontentloaded' });
             const updates = page.getByRole('checkbox', { name: 'Updates from WorkforceAP' });
             const reminders = page.getByRole('checkbox', { name: 'Training reminders' });
@@ -246,8 +275,10 @@ test.describe('WAP-6 five-role DEMO acceptance', () => {
             await expect(reminders).not.toBeChecked();
             return { matched: response.ok() };
           }, result => result.matched);
-          const message = await runAcceptanceAction(env, 'member-message-read', async () => {
+          const message = await runAcceptanceAction(env, 'member-message-read', async (observeResponse, beforeSend) => {
+            await beforeSend();
             const response = await page.request.patch('/api/member/messages', once);
+            await observeResponse({ status: response.status() });
             const body = await response.json();
             const readback = await page.request.get('/api/member/messages', once);
             const readBody = await readback.json();
@@ -268,7 +299,7 @@ test.describe('WAP-6 five-role DEMO acceptance', () => {
     }
     const passed = (FIVE_ROLES as readonly Role[]).every((role) => {
       const entry = receipt.roles[role];
-      return Boolean(entry?.identityVerified && entry.action.ok && entry.recordId && entry.appReadback.matched);
+      return Boolean(entry?.identityVerified && entry.action.ok && entry.recordId && entry.appReadback.matched && !entry.failedAt);
     });
     receipt.pass = passed;
     receipt.outcome = passed ? 'success' : 'failed';

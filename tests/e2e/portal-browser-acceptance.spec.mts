@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync, renameSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { test, expect, type BrowserContext, type Page, type Browser, type TestInfo } from '@playwright/test';
+import { createRequire } from 'node:module';
+import { test, expect, type BrowserContext, type Page, type Browser, type TestInfo, type Response } from '@playwright/test';
 import { createPortalBrowserPlan } from '../../scripts/lib/portal-browser-plan.mjs';
 import { acceptanceCredentials, verifyLocalFixtureHealth } from '../../scripts/lib/portal-browser-targets.mjs';
 import { LANE_SCHEMA_VERSION } from '../../scripts/lib/portal-acceptance-lanes.mjs';
@@ -15,6 +16,7 @@ import { beginStaffDataReadiness, navigateMemberInventoryRoute } from '../../scr
 type Case = { id: string; lane: string; role: string; path?: string; expectedPath?: string; width?: number; theme?: string; state?: string; missing?: string };
 type CaseResult = { id: string; status: string; reason?: string };
 type Target = { origin: string; sha: string };
+type TargetKind = 'candidate' | 'baseline';
 type Guard = { login: boolean; loginUsed: boolean; blocked: number };
 
 
@@ -51,13 +53,15 @@ async function health(target: Target) {
   if (!result.ok) throw new Error('Exact deployment health changed before browser use');
 }
 
-async function guardedContext(browser: Browser, target: Target, role: string): Promise<{ context: BrowserContext; page: Page; guard: Guard }> {
+async function guardedContext(browser: Browser, target: Target, kind: TargetKind, role: string): Promise<{ context: BrowserContext; page: Page; guard: Guard }> {
   await health(target); // No credential resolution until this independently refreshed proof.
   if (input.localFixturesOnly && role !== 'anonymous') throw new Error('Local fixture companion cannot log in');
   const token = input.localFixturesOnly ? process.env.PORTAL_ACCEPTANCE_LOCAL_AUDIT_TOKEN : process.env.DEMO_QA_READ_ONLY_TOKEN;
   if (!token || token.length < 32) throw new Error('Explicit DEMO read-only capability required');
   const context = await browser.newContext({ baseURL: target.origin, serviceWorkers: 'block' });
-  const guard = { login: role !== 'anonymous', loginUsed: false, blocked: 0 };
+  const guard = { login: false, loginUsed: false, blocked: 0 };
+  let beforeLoginSend: (() => Promise<void>) | undefined;
+  let loginDispatchError: unknown;
   try {
     await installReadOnlyAuditCookie(context, target.origin, token);
     await context.route('**/*', async route => {
@@ -69,7 +73,17 @@ async function guardedContext(browser: Browser, target: Target, role: string): P
       };
       // One explicit login submission; every later request uses the existing audit policy.
       if (guard.login && !guard.loginUsed && request.method() === 'POST' && url.pathname === '/api/auth/login') {
-        guard.loginUsed = true; await route.continue({ headers }); return;
+        guard.loginUsed = true; // Reserve the singleton before awaiting the durable dispatch marker.
+        try {
+          if (!beforeLoginSend) throw new Error('Login dispatch boundary is missing');
+          await beforeLoginSend();
+          await route.continue({ headers });
+        } catch (error) {
+          loginDispatchError = error;
+          guard.blocked++;
+          await route.abort('blockedbyclient');
+        }
+        return;
       }
       const disposition = classifyReadOnlyAuditRequest(request.method(), request.url(), target.origin);
       if (disposition === 'suppress_telemetry') { await route.fulfill({ status: 204, body: '' }); return; }
@@ -83,22 +97,55 @@ async function guardedContext(browser: Browser, target: Target, role: string): P
     await context.addInitScript(() => { if (!localStorage.getItem('wap-theme')) localStorage.setItem('wap-theme', 'light'); });
     const page = await context.newPage();
     if (role !== 'anonymous') {
+      // Shared accounts cannot be journal-owned; even sign-in can write MemberEvent rows.
+      if (!process.env[`FIVE_ROLE_QA_${role.toUpperCase()}_EMAIL`]) throw new Error('Hosted login requires a run-owned FIVE_ROLE_QA identity');
       const credentials = acceptanceCredentials(role, process.env, plan.identity.runId);
-      await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 30_000 });
-      const decline = page.getByRole('button', { name: /decline/i });
-      if (await decline.count()) await decline.click();
-      await page.locator('#email').fill(credentials.email);
-      await page.locator('#password').fill(credentials.password);
-      await page.getByRole('button', { name: /sign in/i }).click();
-      await page.waitForURL(url => url.origin === target.origin && !/^\/(?:[a-z]{2}\/)?login\/?$/.test(url.pathname), { timeout: 60_000 });
-      guard.login = false;
-      const actor = await page.evaluate(async () => {
-        const profile = await fetch('/api/member/profile', { redirect: 'error' });
-        const claims = await fetch('/api/auth/me', { redirect: 'error' });
-        if (!profile.ok || !claims.ok) throw new Error('Identity readback failed');
-        return { profile: await profile.json(), claims: await claims.json() };
-      });
-      if (actor.profile.user?.id !== credentials.userId || actor.profile.user?.email?.toLowerCase() !== credentials.email || actor.claims.role !== role || actor.claims.superAdmin !== false || !actor.claims.availablePortals?.some((portal: { role: string }) => portal.role === role)) throw new Error('Server identity or role differs from the approved synthetic fixture');
+      // Keep the journal and its credential-bearing runtime out of the local anonymous path.
+      // Playwright's CommonJS TS hook loads the CLI; native .mts imports retain ESM audit guards.
+      const { runAcceptanceAction } = createRequire(import.meta.url)('../../scripts/lib/demo-acceptance-cli') as typeof import('../../scripts/lib/demo-acceptance-cli');
+      const evidence = await runAcceptanceAction(process.env, `browser-login:${kind}:${role}`, async (observeResponse, beforeSend) => {
+        beforeLoginSend = beforeSend;
+        let observedResponse: Promise<unknown> | undefined;
+        const captureLoginResponse = (response: Response) => {
+          const url = new URL(response.url());
+          if (observedResponse || response.request().method() !== 'POST' || url.origin !== target.origin || url.pathname !== '/api/auth/login') return;
+          observedResponse = observeResponse({ status: response.status() });
+          // The finally block awaits this same promise; avoid an early unhandled rejection.
+          void observedResponse.catch(() => {});
+        };
+        page.on('response', captureLoginResponse);
+        try {
+          await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+          const decline = page.getByRole('button', { name: /decline/i });
+          if (await decline.count()) await decline.click();
+          await page.locator('#email').fill(credentials.email);
+          await page.locator('#password').fill(credentials.password);
+          // The durable intent and expected fixture actor check precede this only sign-in.
+          guard.login = true;
+          await page.getByRole('button', { name: /sign in/i }).click();
+          await page.waitForURL(url => url.origin === target.origin && !/^\/(?:[a-z]{2}\/)?login\/?$/.test(url.pathname), { timeout: 60_000 });
+          guard.login = false;
+          if (!observedResponse) throw new Error('Login completed without a durable HTTP response observation');
+          await observedResponse;
+          if (/^\/(?:[a-z]{2}\/)?(?:setup|verify)-mfa(?:\/|$)/.test(new URL(page.url()).pathname)) throw new Error('MFA setup or verification remains an explicit held gate');
+          const actor = await page.evaluate(async () => {
+            const profile = await fetch('/api/member/profile', { redirect: 'error' });
+            const claims = await fetch('/api/auth/me', { redirect: 'error' });
+            if (!profile.ok || !claims.ok) throw new Error('Identity readback failed');
+            return { profile: await profile.json(), claims: await claims.json() };
+          });
+          if (actor.profile.user?.id !== credentials.userId || actor.profile.user?.email?.toLowerCase() !== credentials.email || actor.claims.role !== role || actor.claims.superAdmin !== false || !actor.claims.availablePortals?.some((portal: { role: string }) => portal.role === role)) throw new Error('Server identity or role differs from the approved synthetic fixture');
+          return { recordId: credentials.userId, matched: true };
+        } finally {
+          guard.login = false;
+          beforeLoginSend = undefined;
+          page.off('response', captureLoginResponse);
+          // Preserve a known HTTP outcome even if navigation, MFA or identity assertions fail.
+          if (observedResponse) await observedResponse;
+          if (loginDispatchError) throw loginDispatchError;
+        }
+      }, result => result.matched === true, { expectedUserId: credentials.userId });
+      if (!evidence.result.matched) throw new Error('Journaled browser identity did not match');
     } else await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 30_000 });
     guard.login = false;
     return { context, page, guard };
@@ -159,9 +206,14 @@ test('current portal browser acceptance records every required case', async ({ b
   }
   checkpoint();
   const pages = new Map<string, Awaited<ReturnType<typeof guardedContext>>>();
-  const getPage = async (kind: string, role: string) => {
+  const failedContexts = new Set<string>();
+  const getPage = async (kind: TargetKind, role: string) => {
     const key = `${kind}:${role}`;
-    if (!pages.has(key)) pages.set(key, await guardedContext(browser, input.targets[kind], role));
+    if (failedContexts.has(key)) throw new Error('A failed browser context cannot retry sign-in');
+    if (!pages.has(key)) {
+      try { pages.set(key, await guardedContext(browser, input.targets[kind], kind, role)); }
+      catch (error) { failedContexts.add(key); throw error; }
+    }
     return pages.get(key)!;
   };
   try {

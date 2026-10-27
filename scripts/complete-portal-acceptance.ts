@@ -5,6 +5,7 @@ import { createPortalBrowserPlan } from './lib/portal-browser-plan.mjs';
 import { evaluateAcceptanceLanes, mergeLocalFixtureCompanion } from './lib/portal-acceptance-lanes.mjs';
 import { identityFromEnvironment } from './lib/demo-acceptance-lifecycle.mjs';
 import { verifyDurableAcceptance, MUTATING_SCENARIOS, MEMBER_SCENARIOS } from './lib/demo-acceptance-receipt.mjs';
+import { verifyLocalExecution } from './lib/demo-acceptance-local.mjs';
 const env = process.env;
 const read = (path: string | undefined) => { try { return JSON.parse(readFileSync(path!, 'utf8')); } catch { return null; } };
 const identity = identityFromEnvironment(env);
@@ -25,7 +26,15 @@ const supplemental = Object.entries(actionCases).map(([lane, cases]) => ({ schem
 const browser = read(env.PORTAL_BROWSER_OUTPUT);
 const local = read(env.PORTAL_LOCAL_FIXTURE_OUTPUT);
 let browserReceipts = browser?.receipts ?? [];
-if (local) browserReceipts = mergeLocalFixtureCompanion(browser, local, identity, plan.cases.filter(item => item.missing === 'local_development_only_fixture').map(item => item.id));
+const localFixtureCaseIds = plan.cases.filter(item => item.missing === 'local_development_only_fixture').map(item => item.id);
+for (const [path, value] of [[env.PORTAL_ACTION_LANES_OUTPUT, { identity, receipts: supplemental }], [env.PORTAL_ACCEPTANCE_CONTRACT_OUTPUT, { identity, expectedCases, localFixtureCaseIds }]] as const) {
+  if (!path) throw new Error('Export paths for the trusted case contract and action lanes are required.');
+  mkdirSync(dirname(path), { recursive: true }); writeFileSync(path, JSON.stringify(value, null, 2));
+}
+if (local) {
+  verifyLocalExecution(read(`${env.PORTAL_LOCAL_FIXTURE_OUTPUT}.execution.json`), readFileSync(env.PORTAL_LOCAL_FIXTURE_OUTPUT!), identity);
+  browserReceipts = mergeLocalFixtureCompanion(browser, local, identity, localFixtureCaseIds);
+}
 const report = evaluateAcceptanceLanes(identity, expectedCases, [...browserReceipts, ...supplemental]);
 const output = env.FIVE_ROLE_QA_FINAL_OUTPUT;
 if (!output) throw new Error('Final receipt output path is required.');

@@ -490,12 +490,22 @@ export async function createRoleRowsIn(tx: Prisma.TransactionClient, target: Por
 
 export function liveDeps(target: PortalQaTarget, env: NodeJS.ProcessEnv) {
   const prisma = new PrismaClient({ datasourceUrl: target.databaseUrl });
+  type AuthObservation = { beforeSend: () => Promise<void>; observeResponse: (response: { status: number }) => Promise<void> };
+  let authObservation: AuthObservation | undefined;
   const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL!, env.SUPABASE_SERVICE_ROLE_KEY!, {
     auth: { autoRefreshToken: false, persistSession: false },
     global: { fetch: async (input, init) => {
       const url = new URL(typeof input === 'string' || input instanceof URL ? input : input.url);
       if (url.origin !== 'https://esbdrgaonplpvzmtrdhw.supabase.co' || !/^\/auth\/v1\/admin\/users(?:\/[0-9a-f-]+)?$/.test(url.pathname)) throw new Error('Unexpected Auth admin destination.');
-      return fetch(input, { ...init, redirect: 'manual', signal: AbortSignal.timeout(15_000) });
+      const method = init?.method?.toUpperCase() ?? 'GET';
+      const mutation = !['GET', 'HEAD'].includes(method);
+      if (mutation) {
+        if (!authObservation) throw new Error('Auth mutation lacks the durable coordinator.');
+        await authObservation.beforeSend();
+      }
+      const response = await fetch(input, { ...init, redirect: 'manual', signal: AbortSignal.timeout(15_000) });
+      if (mutation) await authObservation!.observeResponse({ status: response.status });
+      return response;
     } },
   });
   const noteWhere = ({ memberId, authorIds }: { memberId: string | null; authorIds: string[] }) => ({
@@ -551,7 +561,13 @@ export function liveDeps(target: PortalQaTarget, env: NodeJS.ProcessEnv) {
     findNote: (id) => prisma.counselorNote.findUnique({ where: { id }, select: { id: true, memberId: true, authorId: true, content: true } }),
     findEmployer: (id) => prisma.employer.findUnique({ where: { id }, select: { id: true, userId: true, companyName: true } }),
   };
-  return { deps, prisma, close: () => prisma.$disconnect() };
+  return { deps, prisma, close: () => prisma.$disconnect(),
+    async withAuthObservation<T>(observation: AuthObservation, call: () => Promise<T>): Promise<T> {
+      if (authObservation) throw new Error('Concurrent Auth mutation refused.');
+      authObservation = observation;
+      try { return await call(); } finally { authObservation = undefined; }
+    },
+  };
 }
 
 if (basename(process.argv[1] ?? '') === 'five-role-demo-fixture.ts') {

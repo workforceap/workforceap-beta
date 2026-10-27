@@ -12,10 +12,29 @@ import {
   createFixtures,
   FIXTURE_FLAG,
   readbackPersistence,
+  liveDeps,
   type FixtureDeps,
   type FixtureState,
   type Role,
 } from './five-role-demo-fixture';
+
+test('[mocked — NOT acceptance] native Auth client records dispatch before fetch and HTTP response before failure', async () => {
+  const originalFetch = globalThis.fetch;
+  const order: string[] = [];
+  const runtime = liveDeps({ organizationId: '11111111-2222-4333-8444-555555555555', organizationSlug: 'portal-qa-local-test', databaseUrl: 'postgresql://fixture@127.0.0.1:55427/unopened' },
+    { NEXT_PUBLIC_SUPABASE_URL: 'https://esbdrgaonplpvzmtrdhw.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'offline-placeholder-key' });
+  globalThis.fetch = async () => { order.push('fetch'); return new Response(JSON.stringify({ msg: 'Injected validation error' }), { status: 400, headers: { 'Content-Type': 'application/json' } }); };
+  const create = () => runtime.deps.createAuthUser({ email: 'wap6-qa-42-1-member@example.com', password: 'offline-placeholder-password', fullName: 'Fixture', appMetadata: {} });
+  try {
+    await assert.rejects(create());
+    assert.equal(order.length, 0, 'uncoordinated Auth calls never reach fetch');
+    await assert.rejects(runtime.withAuthObservation({ beforeSend: async () => { order.push('dispatch'); }, observeResponse: async ({ status }) => { order.push(`response:${status}`); } }, create));
+    assert.deepEqual(order, ['dispatch', 'fetch', 'response:400']);
+    order.length = 0;
+    await assert.rejects(runtime.withAuthObservation({ beforeSend: async () => { throw new Error('Journal unavailable'); }, observeResponse: async () => { order.push('response'); } }, create));
+    assert.equal(order.length, 0, 'a failed durable boundary forbids the external send');
+  } finally { globalThis.fetch = originalFetch; await runtime.close(); }
+});
 
 // Independent oracles for the synthetic identity formats (deliberately not
 // imported from the module under test).

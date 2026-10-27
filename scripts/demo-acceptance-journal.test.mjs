@@ -40,6 +40,7 @@ function identity(overrides = {}) {
 
 function githubProof(overrides = {}) {
   return {
+    owner: 'workforceap/workforceap-beta/13-1', headSha: SHA40_A, workflowAttempt: 1,
     source: 'github',
     repository: 'workforceap/workforceap-beta',
     runId: 13,
@@ -238,41 +239,45 @@ test('crash after durable intent survives; recovery continues from stored chain'
 test('handoff rejects live run, wrong run, guessed timeout; accepts completed proof', async () => {
   const journal = createJournal(createMemoryJournalStore());
   const id = identity({ runId: 13, workflowRunId: 9001 });
-  const claimed = await journal.claim(id, 'owner-a');
+  const oldOwner = `${id.repository}/13-1`;
+  const nextOwner = `${id.repository}/14-1`;
+  const claimed = await journal.claim(id, oldOwner);
 
   await assert.rejects(
     () =>
-      journal.handoff('13-1', 'owner-a', claimed.revision, 'owner-b', githubProof({ status: 'in_progress' })),
+      journal.handoff('13-1', oldOwner, claimed.revision, nextOwner, githubProof({ status: 'in_progress' })),
     /live run/,
   );
   await assert.rejects(
-    () => journal.handoff('13-1', 'owner-a', claimed.revision, 'owner-b', githubProof({ runId: 9999 })),
+    () => journal.handoff('13-1', oldOwner, claimed.revision, nextOwner, githubProof({ runId: 9999 })),
     /wrong run/,
   );
   await assert.rejects(
     () =>
-      journal.handoff('13-1', 'owner-a', claimed.revision, 'owner-b', githubProof({ guessed: true, timeout: true })),
+      journal.handoff('13-1', oldOwner, claimed.revision, nextOwner, githubProof({ guessed: true, timeout: true })),
     /guessed timeout/,
   );
 
   const handed = await journal.handoff(
     '13-1',
-    'owner-a',
+    oldOwner,
     claimed.revision,
-    'owner-b',
+    nextOwner,
     githubProof(),
   );
-  assert.equal(handed.owner, 'owner-b');
+  assert.equal(handed.owner, nextOwner);
   assert.equal(handed.events.at(-1).kind, 'handoff');
   assert.equal(handed.revision, 2);
 
-  const verified = await journal.handoff('13-1', 'owner-b', handed.revision, 'owner-c', {
+  await assert.rejects(journal.handoff('13-1', nextOwner, handed.revision, `${id.repository}/15-1`, {
     verified: true,
     acknowledged: true,
     repository: id.repository,
     workflowRunId: id.workflowRunId,
-  });
-  assert.equal(verified.owner, 'owner-c');
+  }), /current-owner GitHub/);
+  await assert.rejects(journal.handoff('13-1', nextOwner, handed.revision, `${id.repository}/15-1`, githubProof()), /current owner/);
+  const recovered = await journal.handoff('13-1', nextOwner, handed.revision, `${id.repository}/15-1`, githubProof({ owner: nextOwner, runId: 14 }));
+  assert.equal(recovered.owner, `${id.repository}/15-1`);
 });
 
 test('allowed kinds cover the DEMO journal vocabulary', () => {
@@ -281,6 +286,9 @@ test('allowed kinds cover the DEMO journal vocabulary', () => {
     [
       'claimed',
       'intent',
+      'dispatch-started',
+      'response-received',
+      'failed-confirmed',
       'confirmed',
       'quarantined',
       'db-committed',

@@ -15,6 +15,12 @@ export function verifiedPreviewOrigin(deployment, statuses, expectedSha) {
 
 export async function verifyBrowserTargets(input, readApi, fetchHealth) {
   validateAcceptanceIdentity(input.identity);
+  const { baselineSha, deployedSha } = input.identity;
+  if (baselineSha === deployedSha) throw new Error('Baseline must be a distinct strict ancestor of the candidate');
+  const comparison = await readApi(`repos/${REPOSITORY}/compare/${baselineSha}...${deployedSha}?per_page=1`);
+  if (comparison?.status !== 'ahead' || comparison.base_commit?.sha !== baselineSha || comparison.merge_base_commit?.sha !== baselineSha || !Number.isSafeInteger(comparison.ahead_by) || comparison.ahead_by <= 0) {
+    throw new Error('GitHub comparison does not prove the baseline is a strict candidate ancestor');
+  }
   /** @type {Record<string, {origin: string, sha: string, githubDeploymentId: number, observedAt: string}>} */
   const targets = {};
   for (const kind of ['baseline', 'candidate']) {

@@ -53,6 +53,7 @@ export async function readOwnedGraph(db: Reader, state: FixtureState): Promise<O
       const known = new Map((graph[model.name] ?? []).map(row => [row.id, row]));
       for (const raw of found) {
         const row = sanitized(raw, model.name);
+        if (roots[model.name] && !roots[model.name].includes(row.id)) throw new Error(`Foreign ${model.name} root reached through a relationship.`);
         if (!known.has(row.id)) { known.set(row.id, row); changed = true; }
       }
       if (known.size) graph[model.name] = [...known.values()].sort((a, b) => a.id.localeCompare(b.id));
@@ -73,6 +74,19 @@ export async function readOwnedGraph(db: Reader, state: FixtureState): Promise<O
 
 export function assertGraphUnchanged(expected: OwnedGraph, actual: OwnedGraph) {
   if (canonical(expected) !== canonical(actual)) throw new Error('Owned fixture fields or dependents drifted; cleanup refused.');
+}
+
+/** Login analytics are asynchronous. Every observed row needs a prior exact-user login intent. */
+export function assertJournaledLoginEvents(graph: OwnedGraph, fixture: FixtureState, seededIds: string[], allowedCounts: Record<string, number>) {
+  const counts: Record<string, number> = {};
+  const users = new Set(Object.values(fixture.users).map(user => user!.userId));
+  for (const row of graph.MemberEvent ?? []) {
+    if (row.eventName !== 'member_logged_in' || seededIds.includes(row.id)) continue;
+    if (!users.has(row.userId as string) || row.sourcePage !== '/login' || row.entityType !== null || row.entityId !== null) throw new Error('Unowned login event; cleanup refused.');
+    const userId = row.userId as string;
+    counts[userId] = (counts[userId] ?? 0) + 1;
+    if (counts[userId] > (allowedCounts[userId] ?? 0)) throw new Error('Login event lacks a durable attempt; cleanup refused.');
+  }
 }
 
 /** Allow only the one documented scenario's writes; unknown application side effects remain red. */
@@ -104,7 +118,7 @@ export function assertGraphTransition(before: OwnedGraph, after: OwnedGraph, ope
   }
   for (const [model, rows] of Object.entries(after)) for (const row of rows) {
     if (before[model]?.some(old => old.id === row.id)) continue;
-    if (operation === 'member-session' && model === 'MemberEvent' && row.userId === state.users.member?.userId && row.eventName === 'member_logged_in') continue;
+    if (model === 'MemberEvent' && Object.values(state.users).some(user => user?.userId === row.userId) && row.eventName === 'member_logged_in' && row.sourcePage === '/login' && row.entityType === null && row.entityId === null) continue;
     if (operation === 'member-goal' && model === 'Goal' && row.userId === state.users.member?.userId &&
         row.title === writtenValueFor(state.runId, 'member') && row.goalType === 'wap6_qa') continue;
     if (operation === 'member-goal' && model === 'MemberEvent' && row.userId === state.users.member?.userId &&

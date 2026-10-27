@@ -61,11 +61,6 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       DEMO_QA_ENABLED: ${{ vars.DEMO_QA_ENABLED }}
       DEMO_QA_MODE: ${{ inputs.mode }}
-      DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
-      DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
-      DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
-      DEMO_QA_READ_ONLY_TOKEN: ${{ secrets.DEMO_QA_READ_ONLY_TOKEN }}
-      DEMO_QA_VERCEL_BYPASS_SECRET: ${{ secrets.DEMO_QA_VERCEL_BYPASS_SECRET }}
       PORTAL_QA_ORGANIZATION_ID: ${{ vars.DEMO_QA_ORGANIZATION_ID }}
       PORTAL_QA_ORGANIZATION_SLUG: ${{ vars.DEMO_QA_ORGANIZATION_SLUG }}
       DEMO_QA_APP_SHA: ${{ github.sha }}
@@ -76,6 +71,9 @@ jobs:
       FIVE_ROLE_QA_PLAN_FILE: test-results/portal-acceptance/plan.json
       PORTAL_BROWSER_INPUT: test-results/portal-acceptance/browser-input.json
       PORTAL_BROWSER_OUTPUT: test-results/portal-acceptance/browser.json
+      PORTAL_LOCAL_FIXTURE_OUTPUT: test-results/portal-acceptance/local-fixtures.json
+      PORTAL_ACTION_LANES_OUTPUT: test-results/portal-acceptance/action-lanes.json
+      PORTAL_ACCEPTANCE_CONTRACT_OUTPUT: test-results/portal-acceptance/contract.json
       FIVE_ROLE_QA_STATE_FILE: test-results/portal-acceptance/state.json
       FIVE_ROLE_ACCEPTANCE_OUTPUT: test-results/portal-acceptance/actions.json
       FIVE_ROLE_QA_READBACK_OUTPUT: test-results/portal-acceptance/readback.json
@@ -111,30 +109,64 @@ jobs:
           if-no-files-found: error
       - if: inputs.mode == 'acceptance'
         name: Prove both immutable Preview deployments before credentials or fixture writes
+        env:
+          DEMO_QA_VERCEL_BYPASS_SECRET: ${{ secrets.DEMO_QA_VERCEL_BYPASS_SECRET }}
         run: node scripts/portal-browser-acceptance.mjs --preflight-only --input "$PORTAL_BROWSER_INPUT" --output test-results/portal-acceptance/preflight.json
       - if: inputs.mode == 'acceptance'
-        name: Create journal-owned disposable fixtures
-        run: pnpm exec tsx scripts/five-role-demo-fixture.ts create
-      - if: inputs.mode == 'acceptance'
-        name: Install Chromium
+        name: Install Chromium before creating disposable users
         run: pnpm exec playwright install --with-deps chromium
+      - if: inputs.mode == 'acceptance'
+        name: Run current local-only fixtures on a disconnected exact-source server
+        run: node scripts/run-portal-local-fixtures.mjs
+      - if: inputs.mode == 'acceptance'
+        name: Create journal-owned disposable fixtures
+        id: fixture_create
+        env:
+          DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
+          DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
+          DEMO_QA_VERCEL_BYPASS_SECRET: ${{ secrets.DEMO_QA_VERCEL_BYPASS_SECRET }}
+        run: pnpm exec tsx scripts/five-role-demo-fixture.ts create
       - if: inputs.mode == 'acceptance'
         name: Bind mutating browser to the verified candidate origin
         run: node scripts/demo-acceptance-target-env.mjs
       - if: inputs.mode == 'acceptance'
         name: Five roles and disposable-member mutation acceptance
+        env:
+          DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
+          DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
+          DEMO_QA_VERCEL_BYPASS_SECRET: ${{ secrets.DEMO_QA_VERCEL_BYPASS_SECRET }}
         run: pnpm exec playwright test --config five-role-demo-playwright.config.ts
       - if: inputs.mode == 'acceptance'
         name: Current route, state matrix and staff comparison
+        env:
+          DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
+          DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
+          DEMO_QA_READ_ONLY_TOKEN: ${{ secrets.DEMO_QA_READ_ONLY_TOKEN }}
+          DEMO_QA_VERCEL_BYPASS_SECRET: ${{ secrets.DEMO_QA_VERCEL_BYPASS_SECRET }}
         run: node scripts/portal-browser-acceptance.mjs --input "$PORTAL_BROWSER_INPUT" --output "$PORTAL_BROWSER_OUTPUT"
-      - if: always() && inputs.mode == 'acceptance'
+      - if: always() && inputs.mode == 'acceptance' && (steps.fixture_create.outcome == 'success' || steps.fixture_create.outcome == 'failure')
         name: Independent database readback
+        env:
+          DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
+          DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
         run: pnpm exec tsx scripts/five-role-demo-fixture.ts readback
-      - if: always() && inputs.mode == 'acceptance'
+      - if: always() && inputs.mode == 'acceptance' && (steps.fixture_create.outcome == 'success' || steps.fixture_create.outcome == 'failure')
         name: Exact owned-fixture cleanup and absence checks
+        env:
+          DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
+          DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
         run: pnpm exec tsx scripts/five-role-demo-fixture.ts cleanup
       - if: inputs.mode == 'recover-cleanup'
         name: Recover cleanup from the durable journal after original-run terminal proof
+        env:
+          DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
+          DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
         run: pnpm exec tsx scripts/five-role-demo-fixture.ts recover-cleanup
       - if: always() && inputs.mode == 'acceptance'
         name: Require all evidence, including incomplete fixture gates
@@ -152,5 +184,9 @@ jobs:
             test-results/portal-acceptance/cleanup.json
             test-results/portal-acceptance/journal.json
             test-results/portal-acceptance/browser.json
+            test-results/portal-acceptance/local-fixtures.json
+            test-results/portal-acceptance/local-fixtures.json.execution.json
+            test-results/portal-acceptance/action-lanes.json
+            test-results/portal-acceptance/contract.json
             test-results/portal-acceptance/failure.json
             test-results/portal-acceptance/final.json
