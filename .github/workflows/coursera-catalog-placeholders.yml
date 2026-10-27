@@ -2,11 +2,13 @@ name: Coursera Catalog Placeholders
 
 on:
   pull_request:
-    branches: [master]
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened, edited, ready_for_review]
   # Merge queue (WAP-201): report on the queue commit too, so this check can
   # be required without stalling the queue.
   merge_group:
+
+permissions:
+  contents: read
 
 jobs:
   check-placeholders:

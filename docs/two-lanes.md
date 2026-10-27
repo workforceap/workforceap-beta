@@ -3,8 +3,10 @@
 ## Workforce AP
 
 Application source, tests, database migrations and deployment configuration belong
-in `mabrown040/workforceap-beta`. Follow that repository's AGENTS.md. Use a feature
-branch/worktree and PR per task. Run `npm run prepush` before every push; it runs the
+in `workforceap/workforceap-beta`. Follow that repository's AGENTS.md and
+[agent delivery contract](AGENT-DELIVERY.md). Use a fresh integration branch per
+coherent feature, scoped child branches/worktrees as useful, and one release PR.
+Run `npm run prepush` before every push; it runs the
 same static gates as CI's `static-gates` job (see AGENTS.md "Lint / Test / Build"), and
 `git config core.hooksPath .githooks` makes `git push` run it automatically (opt-in).
 Verify in development/preview before the authorized

@@ -9,9 +9,12 @@
  *   node scripts/prepush.mjs --ci     CI static-gates: guards, tsc, the full
  *                                     `lint` script and knip. No Vitest here;
  *                                     the sharded Vitest jobs run every file.
+ *   node scripts/prepush.mjs --ci-affected --base <sha>
+ *                                     child CI: same guards/typecheck/knip,
+ *                                     changed-file ESLint; Vitest runs separately.
  *
  * Options:
- *   --base <ref>   compare against <ref> instead of origin/master (local only)
+ *   --base <ref>   compare against <ref> instead of origin/master
  *   --list         print the checks this scope would run, then exit
  *
  * Fails fast: the first failing check stops the run and exits non-zero.
@@ -35,13 +38,17 @@ const WORKFLOW = path.join(ROOT, '.github', 'workflows', 'ci-gate.yml');
 const LINTABLE = /\.(c|m)?[jt]sx?$/;
 
 const args = process.argv.slice(2);
-const CI_SCOPE = args.includes('--ci');
+const AFFECTED_CI = args.includes('--ci-affected');
+const CI_SCOPE = args.includes('--ci') || AFFECTED_CI;
 const LIST_ONLY = args.includes('--list');
 const baseIndex = args.indexOf('--base');
 const BASE_REF = baseIndex >= 0 ? args[baseIndex + 1] : 'origin/master';
 const IN_ACTIONS = process.env.GITHUB_ACTIONS === 'true';
 
 if (baseIndex >= 0 && !BASE_REF) fail('usage', '--base needs a git ref');
+if (AFFECTED_CI && (baseIndex < 0 || !/^[0-9a-f]{40}$/.test(BASE_REF))) {
+  fail('usage', '--ci-affected requires an immutable --base SHA from the CI plan');
+}
 
 function fail(name, message) {
   if (IN_ACTIONS) console.log(`::error title=${name}::${message}`);
@@ -82,8 +89,8 @@ function changedFiles() {
       `no merge base with ${BASE_REF}. Run \`git fetch origin master\` (or pass --base <ref>).`,
     );
   }
-  const out = git('diff', '--name-only', '--diff-filter=ACMR', mergeBase);
-  return { mergeBase, files: out ? out.split('\n').filter(Boolean) : [] };
+  const out = git('diff', '--name-only', '-z', '--diff-filter=ACMR', mergeBase);
+  return { mergeBase, files: out ? out.split('\0').filter(Boolean) : [] };
 }
 
 const pkg = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
@@ -112,7 +119,7 @@ function plan() {
   ];
 
   let changed = null;
-  if (!CI_SCOPE) {
+  if (!CI_SCOPE || AFFECTED_CI) {
     changed = changedFiles();
     if (changed.files.includes('prisma/schema.prisma')) {
       checks.push({ name: 'Prisma client (schema changed)', cmd: 'node scripts/prisma-env.js prisma generate' });
@@ -123,7 +130,7 @@ function plan() {
 
   for (const part of lintParts) {
     if (/^eslint(\s|$)/.test(part)) {
-      if (CI_SCOPE) {
+      if (CI_SCOPE && !AFFECTED_CI) {
         checks.push({ name: 'Lint (ESLint, whole repo)', cmd: part });
       } else {
         const lintable = changed.files.filter((file) => LINTABLE.test(file));
@@ -132,6 +139,8 @@ function plan() {
             ? {
                 name: `Lint (ESLint, ${lintable.length} changed file${lintable.length === 1 ? '' : 's'})`,
                 cmd: `eslint --no-warn-ignored ${lintable.map(quote).join(' ')}`,
+                // Changed paths are data, never shell source (including on Windows).
+                args: [path.join(ROOT, 'node_modules', 'eslint', 'bin', 'eslint.js'), '--no-warn-ignored', ...lintable],
               }
             : { name: 'Lint (ESLint)', skip: 'no changed JS/TS files' },
         );
@@ -153,7 +162,7 @@ function plan() {
 }
 
 const checks = plan();
-console.log(`[prepush] scope: ${CI_SCOPE ? 'ci (static-gates)' : `local (vs ${BASE_REF})`}, ${checks.length} checks`);
+console.log(`[prepush] scope: ${AFFECTED_CI ? `ci affected (vs ${BASE_REF})` : CI_SCOPE ? 'ci (static-gates)' : `local (vs ${BASE_REF})`}, ${checks.length} checks`);
 
 if (LIST_ONLY) {
   for (const check of checks) console.log(`  - ${check.name}: ${check.skip ? `skipped (${check.skip})` : check.cmd}`);
@@ -176,7 +185,9 @@ for (const check of checks) {
   if (IN_ACTIONS) console.log(`::group::${check.name}`);
   console.log(`\n[prepush] ${check.name}\n  $ ${check.cmd}`);
   const t0 = Date.now();
-  const result = spawnSync(check.cmd, { cwd: ROOT, env, stdio: 'inherit', shell: true });
+  const result = check.args
+    ? spawnSync(process.execPath, check.args, { cwd: ROOT, env, stdio: 'inherit' })
+    : spawnSync(check.cmd, { cwd: ROOT, env, stdio: 'inherit', shell: true });
   const seconds = ((Date.now() - t0) / 1000).toFixed(1);
   if (IN_ACTIONS) console.log('::endgroup::');
   timings.push([check.name, `${seconds}s`]);

@@ -81,25 +81,25 @@ Use this checklist for every production deploy. Do not skip steps.
 
 ---
 
-## Merging a PR (merge queue)
+## Merging a PR (verified repository rules)
 
-Several agents ship PRs in parallel, so two PRs that are each green can still break `master` together. With the merge queue on (WAP-201), a PR lands only after CI passes on a temporary commit of that PR on top of the latest `master` plus every PR queued ahead of it.
+Several agents ship PRs in parallel, so two PRs that are each green can still break `master` together. Inspect the live rules before landing: `gh api repos/workforceap/workforceap-beta/rules/branches/master`. Workflow comments and the presence of a `merge_group` trigger do not prove that a merge queue or required checks are enabled. On October 26, 2026, the delivery-infrastructure rollout verified strict current-base enforcement of the five release checks below, PR-only squash landing and no bypass actors in ruleset `17057530`. No GitHub merge queue was enabled. Recheck these settings; this dated receipt is not current permission.
 
-- **Nobody merges directly or pushes to `master`.** When a PR is approved and ready, enable auto-merge with squash instead of clicking Merge: `gh pr merge <number> --auto --squash`, or the GitHub MCP `enable_pr_auto_merge` with merge method `SQUASH`. GitHub queues the PR once its required checks pass on the PR, reruns the required checks on the queue commit (`merge_group` event) and merges it only if they are green.
-- **Squash only.** The `master` ruleset enforces linear history, so the queue must use squash (or rebase) merges, never merge commits.
-- **A red queue run removes the PR from the queue.** The PR itself is untouched. Rebase on `master` or fix the clash, push, and enable auto-merge again.
+- **Nobody pushes directly to `master` or bypasses repository gates.** The single merge owner checks the independent current-head review, current base, required results and release preflight, then uses the normal guarded merge interface with an expected head. For AO-managed work, associate the PR with its responsible worker and let the existing Hermes coordinator execute the guarded merge. A coordinator session is not a builder claim.
+- **Auto-merge is not a queue.** `gh pr merge <number> --auto --squash` may merge immediately if eligible. Use it only through the named release owner's verified process. When an actual merge-queue rule is active, GitHub tests the combined queue tree through `merge_group` before landing.
+- **Squash only.** The `master` ruleset permits squash PR merges and enforces linear history. Preserve both constraints.
+- **If a queue is enabled, a red queue run removes the PR from it.** The PR itself is untouched. Refresh against `master`, fix the clash, validate and ask the named release owner to enqueue again.
 - **Workflows that report a required check must also trigger on `merge_group`**, or the queue waits for a check that never arrives. `ci-gate.yml` ("Typecheck & Build", "Database contract (PostgreSQL 16)"), `locked-product-stakes.yml` (passes on the queue commit because it already ran against the PR's files and labels), `coursera-catalog-placeholders.yml` and `knowledge-base.yml` do. Checks posted by outside apps (Vercel, Supabase) or by `deployment_status` workflows do not run on the queue commit, so don't make them required while the queue is on.
-- The queue is a GitHub setting Mike turns on (branch protection or ruleset for `master` → **Require merge queue**, with **Typecheck & Build** as a required check). Until it is on, `--auto --squash` merges as soon as the PR's checks pass, so agents can use it now.
+- Require the full-release `Typecheck & Build`, database contract, knowledge-base, catalog and locked-stakes checks through live rules. Feature-base PRs report `Feature child checks`; that result must never satisfy the master full-release requirement. Keep strict current-base checks and the independent audit receipt. A separate shared GitHub identity may not be available for formal approval; do not claim the author's COMMENT is a formal independent GitHub approval.
+- A merge queue is a separate repository-policy setting. If enabled, preserve its checks and supported squash behavior. If absent, the single merge owner serializes candidates and revalidates after base drift; never describe that as a configured GitHub merge queue.
 
 ---
 
 ## Deploy
 
-- [ ] **Push to production branch**
-  ```bash
-  git push origin master
-  # or via PR through the merge queue (see "Merging a PR" above); Vercel auto-deploys
-  ```
+- [ ] **Verify the approved PR landed on the production branch**
+  - Read back the merge commit and its intended changes on `master`.
+  - Vercel's existing Git integration deploys that commit. Do not push directly to the default branch or start a second deployment as a shortcut.
 
 - [ ] **Verify the production migration stage**
   - The Vercel build runs `build:with-migrate` after building marketing. Inspect that stage's output; do not start a concurrent manual migration.

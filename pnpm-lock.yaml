@@ -223,6 +223,10 @@ importers:
         specifier: ^4.1.6
         version: 4.1.6(@opentelemetry/api@1.9.1)(@types/node@22.19.15)(@vitest/coverage-v8@4.1.6)(jsdom@29.1.1)(vite@8.0.12(@types/node@22.19.15)(esbuild@0.28.0)(jiti@1.21.7)(terser@5.46.1)(tsx@4.22.0)(yaml@2.9.0))
 
+      yaml:
+        specifier: 2.9.0
+        version: 2.9.0
+
 packages:
 
   '@adobe/css-tools@4.4.4':
