@@ -215,6 +215,21 @@ No hosted run or pixel comparison was performed during implementation. These
 contracts require independently verified preview deployments, approved fixtures
 and configured credentials before they can produce end-to-end evidence.
 
+The disconnected companion fulfills three exact external development bootstrap
+GETs with empty JavaScript and sends no external request: the checked-in
+`GTM-53JCT6WN` GTM URL, plus `https://va.vercel-scripts.com/v1/script.debug.js`
+and `https://va.vercel-scripts.com/v1/speed-insights/script.debug.js`.
+The latter two are emitted by the installed Vercel packages through
+`DeferredAnalytics` and `SafeVercelMetrics`; a diagnostic observed their blocked
+requests as console failures. Their receipt counters are separately named
+`vercelAnalyticsBootstrap` and `vercelSpeedInsightsBootstrap`, alongside
+`analyticsBootstrap` and the exact loopback `developmentHmr` socket suppression.
+The two Vercel rules reject all method, host, path, query, and fragment variants.
+All hosted guards and unrelated local network or console failures remain strict.
+`appReady` proves visible content without a loading marker; it does not certify
+that every deferred effect has completed. Local evidence does not establish
+authenticated middleware behavior or hosted acceptance.
+
 The Playwright suite is `.mts` so it can load the existing native ESM audit
 guards without CommonJS transformation. Current repository TS/lint globs do
 not cover that extension. Run `node scripts/check-portal-browser-source.mjs`

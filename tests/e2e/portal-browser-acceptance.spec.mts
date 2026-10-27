@@ -13,7 +13,7 @@ import { auditPortalRouteInventory } from '../../scripts/lib/portal-audit-invent
 import { STATIC_PATHS, DYNAMIC_PATHS, REDIRECT_ONLY_PATHS } from '../../scripts/lib/portal-audit-paths.mjs';
 import { beginStaffDataReadiness, navigateMemberInventoryRoute } from '../../scripts/lib/portal-c-browser-readiness.mjs';
 import { verifyLocalOwnershipEnvironment } from '../../scripts/lib/portal-local-ownership.mjs';
-import { isLocalFixtureGtmBootstrap, isLocalFixtureHmrSocket } from '../../scripts/lib/portal-local-network.mjs';
+import { isLocalFixtureGtmBootstrap, isLocalFixtureHmrSocket, localFixtureVercelBootstrap } from '../../scripts/lib/portal-local-network.mjs';
 import { assertBrowserBootstrap } from '../../scripts/lib/portal-browser-bootstrap.mjs';
 
 type Case = { id: string; lane: string; role: string; path?: string; expectedPath?: string; width?: number; theme?: string; state?: string; missing?: string };
@@ -31,7 +31,7 @@ const input = JSON.parse(readFileSync(inputPath, 'utf8'));
 validateBrowserPhaseInput(input, { localFixturesOnly: Boolean(input.localFixturesOnly), phasesEnabled: process.env.DEMO_QA_PHASES_ENABLED === 'true' });
 let plan: ReturnType<typeof createPortalBrowserPlan>;
 const results = new Map<string, CaseResult>();
-const localSuppressions = { analyticsBootstrap: 0, developmentHmr: 0 };
+const localSuppressions = { analyticsBootstrap: 0, developmentHmr: 0, vercelAnalyticsBootstrap: 0, vercelSpeedInsightsBootstrap: 0 };
 const startedAt = new Date().toISOString();
 const patterns = Object.values(DYNAMIC_PATHS).flat();
 
@@ -79,6 +79,11 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
     await context.route('**/*', async route => {
       const request = route.request();
       const url = new URL(request.url());
+      const localVercelBootstrap = input.localFixturesOnly && localFixtureVercelBootstrap(request.method(), request.url());
+      if (localVercelBootstrap) {
+        localSuppressions[localVercelBootstrap]++;
+        await route.fulfill({ status: 200, contentType: 'application/javascript', body: '/* Suppressed by disconnected fixture contract. */' }); return;
+      }
       if (input.localFixturesOnly && isLocalFixtureGtmBootstrap(request.method(), request.url())) {
         localSuppressions.analyticsBootstrap++;
         await route.fulfill({ status: 200, contentType: 'application/javascript', body: '/* Suppressed by disconnected fixture contract. */' }); return;
