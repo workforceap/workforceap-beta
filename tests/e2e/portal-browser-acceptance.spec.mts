@@ -152,6 +152,11 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
         }
       }, result => result.matched === true, { expectedUserId: credentials.userId, ...(plan.phase ? { expectedPhase: plan.phase } : {}) });
       if (!evidence.result.matched) throw new Error('Journaled browser identity did not match');
+    } else if (input.localFixturesOnly) {
+      contextStage = 'local_fixture_start';
+      const firstFixture = plan.cases.find(item => item.lane === 'fixture-render-matrix' && item.path)?.path;
+      if (!firstFixture) throw new Error('Current local registry is empty');
+      await page.goto(firstFixture, { waitUntil: 'domcontentloaded', timeout: 90_000 });
     } else await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 30_000 });
     guard.login = false;
     return { context, page, guard };
@@ -255,7 +260,7 @@ test('current portal browser acceptance records every required case', async ({ b
         results.set(item.id, { id: item.id, status: 'passed' });
       } catch (error) {
         // No private DOM text, response bodies, URL tokens or credentials in receipts.
-        const code = error instanceof Error && /^browser_context_(?:health|cookie|request_guards|new_page|login)_failed$/.test(error.message) ? error.message : 'required_browser_contract_failed';
+        const code = error instanceof Error && /^browser_context_(?:health|cookie|request_guards|new_page|login|local_fixture_start)_failed$/.test(error.message) ? error.message : 'required_browser_contract_failed';
         results.set(item.id, { id: item.id, status: 'failed', reason: code });
       }
       checkpoint();
