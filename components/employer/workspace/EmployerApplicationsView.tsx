@@ -16,7 +16,8 @@ import {
   parseEmployerApplicationStatusFilter,
   parseEmployerApplicationsSort,
 } from '@/lib/employer/employerApplicationsListQuery';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
+import type { EmployerApplicationsEmptyContext } from '@/lib/employer/applicationEmptyState';
 
 const PAGE_SIZE = 25;
 
@@ -77,7 +78,9 @@ export default async function EmployerApplicationsView({
     student: app.student,
   }));
 
-  const t = await getTranslations('employer');
+  const [t, locale] = await Promise.all([getTranslations('employer'), getLocale()]);
+  // The request locale and this predicate's total gate the English-only client empty states.
+  const emptyContext: EmployerApplicationsEmptyContext = { locale, filteredTotal: totalCount };
 
   const headerTitle = statusFilter
     ? `${t('applicantsMetaTitle')} — ${t('filtered')} (${totalCount})`
@@ -134,7 +137,12 @@ export default async function EmployerApplicationsView({
       ) : (
         <>
           <div className="wa-block md:wa-hidden wa-pb-24">
-            <MobileApplicationsClient initialRows={initialRows} activeStatusFilter={statusFilter} activeSort={sortOrder} />
+            <MobileApplicationsClient
+              initialRows={initialRows}
+              activeStatusFilter={statusFilter}
+              activeSort={sortOrder}
+              emptyContext={emptyContext}
+            />
             <div className="wa-px-4">
               <EmployerApplicationsPager page={page} totalPages={totalPages} status={statusFilter} sort={sortOrder} />
             </div>
@@ -144,6 +152,7 @@ export default async function EmployerApplicationsView({
               initialRows={initialRows}
               activeStatusFilter={statusFilter}
               activeSort={sortOrder}
+              emptyContext={emptyContext}
             />
             <EmployerApplicationsPager page={page} totalPages={totalPages} status={statusFilter} sort={sortOrder} />
           </div>
