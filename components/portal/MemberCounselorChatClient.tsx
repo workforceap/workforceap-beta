@@ -42,8 +42,11 @@ function dispatchBadgeRefresh() {
 
 export default function MemberCounselorChatClient({
   initial,
+  readOnlyAudit = false,
 }: {
   initial: InitialPayload;
+  /** Server-validated audit mode preserves history without messaging effects. */
+  readOnlyAudit?: boolean;
 }) {
   const { memberUserId } = initial;
   const [thread, setThread] = useState(initial.thread);
@@ -62,6 +65,7 @@ export default function MemberCounselorChatClient({
   }, []);
 
   const markRead = useCallback(async () => {
+    if (readOnlyAudit) return;
     try {
       const r = await fetch('/api/member/messages', { method: 'PATCH', credentials: 'include' });
       if (r.ok) {
@@ -74,7 +78,7 @@ export default function MemberCounselorChatClient({
     } catch {
       /* ignore */
     }
-  }, []);
+  }, [readOnlyAudit]);
 
   useEffect(() => {
     scrollToBottom();
@@ -82,14 +86,16 @@ export default function MemberCounselorChatClient({
   }, [messages.length, scrollToBottom, markRead]);
 
   useEffect(() => {
+    if (readOnlyAudit) return;
     const onFocus = () => void markRead();
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
-  }, [markRead]);
+  }, [markRead, readOnlyAudit]);
 
   const threadId = thread.id;
 
   useEffect(() => {
+    if (readOnlyAudit) return;
     let cancelled = false;
     try {
       const supabase = createSupabaseBrowserClient();
@@ -144,12 +150,12 @@ export default function MemberCounselorChatClient({
       console.warn('[MemberCounselorChat] Realtime unavailable', e);
       return undefined;
     }
-  }, [threadId, memberUserId, markRead]);
+  }, [threadId, memberUserId, markRead, readOnlyAudit]);
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = draft.trim();
-    if (!text || sending) return;
+    if (readOnlyAudit || !text || sending) return;
     setSending(true);
     setError(null);
     try {
@@ -208,7 +214,7 @@ export default function MemberCounselorChatClient({
             }
             title={thread.counselorUserId ? t('counselorThread.title') : t('counselorUnassigned.title')}
             description={thread.counselorUserId ? t('counselorThread.body') : t('counselorUnassigned.body')}
-            primaryAction={{
+            primaryAction={readOnlyAudit ? undefined : {
               label: thread.counselorUserId ? t('counselorThread.action') : t('counselorUnassigned.action'),
               onClick: () => inputRef.current?.focus(),
             }}
@@ -241,11 +247,12 @@ export default function MemberCounselorChatClient({
           className="member-counselor-chat__input"
           rows={3}
           value={draft}
+          disabled={readOnlyAudit}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Type a message…"
           maxLength={8000}
         />
-        <button type="submit" className="btn btn-primary" disabled={sending || !draft.trim()}>
+        <button type="submit" className="btn btn-primary" disabled={readOnlyAudit || sending || !draft.trim()}>
           {sending ? 'Sending…' : 'Send'}
         </button>
       </form>

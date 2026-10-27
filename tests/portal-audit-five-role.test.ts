@@ -412,6 +412,55 @@ describe('portal route inventory gate', () => {
     });
   });
 
+  it('requires the ordinary-admin partner signup gate to reach a healthy read-only partner directory', () => {
+    const path = '/admin/partner-signups';
+    expect(STATIC_PATHS.admin).not.toContain(path);
+    const entry = REDIRECT_ONLY_PATHS.admin.find((candidate) => candidate.path === path);
+    expect(entry?.fixtureCondition).toBe('regular_admin');
+    expect(fixtureConditionMatches(entry?.fixtureCondition, 'admin', { role: 'admin', superAdmin: false })).toBe(true);
+    expect(fixtureConditionMatches(entry?.fixtureCondition, 'admin', { role: 'admin', superAdmin: true })).toBe(false);
+    expect(fixtureConditionMatches(entry?.fixtureCondition, 'member', { role: 'member', superAdmin: false })).toBe(false);
+    expect(fixtureConditionMatches(entry?.fixtureCondition, 'admin', {})).toBe(false);
+
+    const resolved = resolveRedirectAuditEntry(entry);
+    expect(resolved).toEqual({ sourcePath: path, targetPath: '/admin/partners' });
+    const destination = {
+      finalUrl: 'https://portal.test/admin/partners',
+      expectedTarget: resolved!.targetPath,
+      trustedOrigin: 'https://portal.test',
+      documentStatus: 200,
+      inspection: {
+        readOnlyCapabilityActive: true,
+        appReady: true,
+        h1Count: 1,
+        errorFallbackDetected: false,
+        errorFallbackStates: [],
+      },
+    };
+    expect(redirectDestinationFailureReasons(destination)).toEqual([]);
+    for (const wrongTarget of [
+      'https://portal.test/admin',
+      'https://portal.test/admin/partner-signups',
+      'https://portal.test/admin/partners/new',
+      'https://other.test/admin/partners',
+    ]) {
+      expect(redirectDestinationFailureReasons({ ...destination, finalUrl: wrongTarget }))
+        .toContain('redirect_target_mismatch');
+    }
+    for (const [change, failure] of [
+      [{ documentStatus: 500 }, 'redirect_destination_document_not_200'],
+      [{ inspection: { ...destination.inspection, readOnlyCapabilityActive: false } }, 'read_only_audit_capability_not_active'],
+      [{ inspection: { ...destination.inspection, appReady: false } }, 'redirect_destination_not_ready'],
+      [{ inspection: { ...destination.inspection, errorFallbackDetected: true } }, 'route_error_fallback'],
+      [{ blockedWriteRequestCount: 1 }, 'non_get_request_blocked'],
+      [{ pageErrorCount: 1 }, 'page_errors'],
+      [{ consoleErrorCount: 1 }, 'console_errors'],
+      [{ dataErrorCount: 1 }, 'same_origin_data_request_failed'],
+    ] as const) {
+      expect(redirectDestinationFailureReasons({ ...destination, ...change })).toContain(failure);
+    }
+  });
+
   it('audits the bare enrollment handoff as a missing-course redirect rather than a rendered course screen', () => {
     const path = '/dashboard/program/coursera-enrollment';
     expect(STATIC_PATHS.member).not.toContain(path);
