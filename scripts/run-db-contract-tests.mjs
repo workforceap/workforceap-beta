@@ -17,7 +17,8 @@
  *  2. tests/migrations/*.mjs — isolated migration proofs (need SHADOW_DATABASE_URL).
  *  3. tests/rls/*.mjs — RLS proofs (skipped unless RLS_PROOF_DATABASE_URL is set).
  *  4. The node:test suites the default lane skips as `realDb`, with TEST_REAL_DB=1.
- *  5. Vitest PostgreSQL SLO aggregates and operational queue predicates,
+ *  5. Demo acceptance journal and owned-row proofs, with TEST_REAL_DB=1.
+ *  6. Vitest PostgreSQL SLO aggregates and operational queue predicates,
  *     using connection-local temporary fixtures with TEST_REAL_DB=1.
  */
 import { spawnSync } from 'node:child_process';
@@ -87,6 +88,9 @@ if (rlsProofUrl) {
 }
 
 run('real-database node:test suites', 'node', ['scripts/test-unit.mjs', ...REAL_DB_SUITES.flatMap((file) => ['--only', file])], { ...prismaEnv, TEST_REAL_DB: '1' });
+
+run('real-database demo acceptance journal', 'node', ['scripts/demo-acceptance-journal.realdb.mjs'], { ...prismaEnv, TEST_REAL_DB: '1' });
+run('real-database demo acceptance owned rows', 'node', ['--import', 'tsx', 'scripts/demo-acceptance-owned-rows.realdb.ts'], { ...prismaEnv, TEST_REAL_DB: '1' });
 
 run('real-database email SLO, operational queue and assignment predicates', 'npm', ['exec', '--', 'vitest', 'run', 'tests/lib/slo-email-realdb.spec.ts', 'tests/api/cron-operational-queues-realdb.spec.ts', 'tests/lib/current-program-assignment-realdb.spec.ts'], { ...prismaEnv, TEST_REAL_DB: '1' });
 
