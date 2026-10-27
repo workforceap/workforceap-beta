@@ -170,13 +170,16 @@ async function settle(page: Page, item: Case, origin: string) {
   await page.evaluate(theme => localStorage.setItem('wap-theme', theme), item.theme ?? 'light');
   const ready = beginStaffDataReadiness(page, item.expectedPath ?? item.path!, origin);
   try {
-    await navigateMemberInventoryRoute(page, item.path!, { trustedOrigin: origin, expectedPath: item.expectedPath ?? item.path!, dynamicPatterns: patterns, timeout: 45_000 });
-    await ready();
+    try { await navigateMemberInventoryRoute(page, item.path!, { trustedOrigin: origin, expectedPath: item.expectedPath ?? item.path!, dynamicPatterns: patterns, timeout: 45_000 }); }
+    catch { throw new Error('browser_case_readiness_failed'); }
+    try { await ready(); } catch { throw new Error('browser_case_staff_data_failed'); }
     const inspection = await inspectPortalPage(page, patterns);
     // Anonymous local fixtures cannot have the authenticated middleware marker.
     // Their separate capability is the positively bound, disconnected owned process.
     if (input.localFixturesOnly) verifyLocalOwnershipEnvironment(process.env, plan.identity.controlSha, origin);
-    if ((!input.localFixturesOnly && !inspection.readOnlyCapabilityActive) || !inspection.appReady || inspection.errorFallbackDetected || inspection.horizontalOverflowPx > 1) throw new Error('Final page content, isolation or layout check failed');
+    if (!input.localFixturesOnly && !inspection.readOnlyCapabilityActive) throw new Error('browser_case_capability_failed');
+    if (!inspection.appReady || inspection.errorFallbackDetected) throw new Error('browser_case_content_failed');
+    if (inspection.horizontalOverflowPx > 1) throw new Error('browser_case_layout_failed');
     if (/placeholder|future batch/i.test(inspection.bodyText) && item.lane === 'fixture-render-matrix') throw new Error('Fixture is a placeholder and cannot establish rendering coverage');
     // The reviewed no-mentor phase redirects to the public application, which has no workspace shell.
     if (item.role !== 'anonymous' && item.expectedPath !== '/mentor/apply') {
@@ -258,14 +261,15 @@ test('current portal browser acceptance records every required case', async ({ b
               await compare(baseline.page, candidate.page, item, info, index);
               if (baseline.guard.blocked !== baselineBlocked) throw new Error('Baseline attempted a blocked request');
             } else await settle(candidate.page, item, input.targets.candidate.origin);
-            if (errors.length || candidate.guard.blocked !== blockedBefore) throw new Error('Browser errors or blocked requests occurred');
+            if (errors.length) throw new Error('browser_case_page_error_failed');
+            if (candidate.guard.blocked !== blockedBefore) throw new Error('browser_case_network_failed');
             if (item.expectedPath && !redirectTargetMatches(candidate.page.url(), item.expectedPath, input.targets.candidate.origin)) throw new Error('Final route changed after readiness');
           } finally { candidate.page.off('pageerror', pageError); }
         }
         results.set(item.id, { id: item.id, status: 'passed' });
       } catch (error) {
         // No private DOM text, response bodies, URL tokens or credentials in receipts.
-        const code = error instanceof Error && /^browser_context_(?:health|cookie|request_guards|new_page|login|local_fixture_start)_failed$/.test(error.message) ? error.message : 'required_browser_contract_failed';
+        const code = error instanceof Error && /^browser_(?:context_(?:health|cookie|request_guards|new_page|login|local_fixture_start)|case_(?:readiness|staff_data|capability|content|layout|page_error|network))_failed$/.test(error.message) ? error.message : 'required_browser_contract_failed';
         results.set(item.id, { id: item.id, status: 'failed', reason: code });
       }
       checkpoint();
