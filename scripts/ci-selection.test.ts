@@ -4,7 +4,6 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { createVitest } from 'vitest/node';
 import { collectDiskReaderTests, executeSelection, readsDisk, selectTests, withVitestEnvironment } from './ci-vitest-affected.mjs';
 
 test('affected selection covers every runtime file and always includes disk readers', async () => {
@@ -46,6 +45,7 @@ test('collection and spawned tests use test NODE_ENV without leaking into the ca
 });
 
 test('real Vite graph includes specs behind a disk-reading helper', async (t) => {
+  const { createVitest } = await import('vitest/node');
   const root = mkdtempSync(path.join(tmpdir(), 'wap-ci-reader-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   mkdirSync(path.join(root, 'helpers'));
