@@ -49,7 +49,7 @@ async function health(target: Target) {
     ...(!input.localFixturesOnly && process.env.DEMO_QA_VERCEL_BYPASS_SECRET ? { 'x-vercel-protection-bypass': process.env.DEMO_QA_VERCEL_BYPASS_SECRET } : {}),
   } });
   const health = { status: response.status, body: await response.text() };
-  if (input.localFixturesOnly) { verifyLocalFixtureHealth(plan.identity, target.origin, health); return; }
+  if (input.localFixturesOnly) { verifyLocalFixtureHealth(plan.identity, target.origin, health, { ownedDisconnectedServer: process.env.PORTAL_ACCEPTANCE_OWNED_DISCONNECTED_SERVER === 'true' }); return; }
   const result = evaluateHealthPayload({ ...health, trustedSha: target.sha, mode: 'isolated_preview' });
   if (!result.ok) throw new Error('Exact deployment health changed before browser use');
 }

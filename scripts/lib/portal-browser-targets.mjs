@@ -46,14 +46,17 @@ export function validateLocalFixtureOrigin(origin) {
   return url.origin;
 }
 
-export function verifyLocalFixtureHealth(identity, origin, health) {
+export function verifyLocalFixtureHealth(identity, origin, health, { ownedDisconnectedServer = false } = {}) {
   validateAcceptanceIdentity(identity);
   validateLocalFixtureOrigin(origin);
   if (identity.controlSha !== identity.deployedSha) throw new Error('Local fixture code must be the same trusted candidate commit');
   const result = evaluateHealthPayload({ ...health, trustedSha: identity.deployedSha, mode: 'local' });
   if (!result.ok) throw new Error('Local fixture application SHA is not verified');
   const body = JSON.parse(health.body);
-  if ((body.supabaseRef && body.supabaseRef !== identity.projectRef) || (body.prismaProject && !['demo', 'unset'].includes(body.prismaProject))) throw new Error('Local fixture server must be disconnected or wired only to DEMO');
+  // Current health labels an absent datasource "unknown". Accept that only for
+  // the companion's owned subprocess with an explicit credential-free environment.
+  const ownedDisconnected = ownedDisconnectedServer === true && body.supabaseRef === null && body.prismaProject === 'unknown';
+  if (!ownedDisconnected && ((body.supabaseRef && body.supabaseRef !== identity.projectRef) || (body.prismaProject && !['demo', 'unset'].includes(body.prismaProject)))) throw new Error('Local fixture server must be disconnected or wired only to DEMO');
   return { origin, sha: identity.deployedSha, observedAt: new Date().toISOString() };
 }
 

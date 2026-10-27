@@ -79,5 +79,9 @@ describe('immutable deployment destination before credentials', () => {
     expect(() => validateLocalFixtureOrigin('https://workforceap.org')).toThrow('loopback');
     expect(() => verifyLocalFixtureHealth({ ...identity, controlSha: 'f'.repeat(40) }, 'http://127.0.0.1:3107', health)).toThrow('same trusted');
     expect(() => verifyLocalFixtureHealth(identity, 'http://127.0.0.1:3107', { ...health, body: JSON.stringify({ version: sha, prismaProject: 'prod' }) })).toThrow('DEMO');
+    const disconnected = { status: 200, body: JSON.stringify({ version: sha, supabaseRef: null, prismaProject: 'unknown' }) };
+    expect(() => verifyLocalFixtureHealth(identity, 'http://127.0.0.1:3107', disconnected)).toThrow('DEMO');
+    expect(verifyLocalFixtureHealth(identity, 'http://127.0.0.1:3107', disconnected, { ownedDisconnectedServer: true }).sha).toBe(sha);
+    for (const patch of [{ supabaseRef: identity.projectRef }, { prismaProject: 'prod' }, { supabaseRef: 'jqddnyuszufndwwezdwp' }]) expect(() => verifyLocalFixtureHealth(identity, 'http://127.0.0.1:3107', { status: 200, body: JSON.stringify({ version: sha, supabaseRef: null, prismaProject: 'unknown', ...patch }) }, { ownedDisconnectedServer: true })).toThrow('DEMO');
   });
 });

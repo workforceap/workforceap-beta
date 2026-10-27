@@ -45,7 +45,7 @@ try {
   while (Date.now() < deadline && server.exitCode === null) {
     try {
       const response = await fetch(`${origin}/api/health`, { signal: AbortSignal.timeout(5_000), redirect: 'error' });
-      verifyLocalFixtureHealth(identity, origin, { status: response.status, body: await response.text() }); ready = true; break;
+      verifyLocalFixtureHealth(identity, origin, { status: response.status, body: await response.text() }, { ownedDisconnectedServer: true }); ready = true; break;
     } catch { await delay(500); }
   }
   if (!ready) throw new Error('Task-owned local fixture server did not prove readiness.');

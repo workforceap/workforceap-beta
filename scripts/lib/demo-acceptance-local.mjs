@@ -6,6 +6,7 @@ export function localFixtureEnvironment(env, sha, token) {
   if (!/^[a-f0-9]{40}$/.test(sha) || typeof token !== 'string' || token.length < 32) throw new Error('Explicit local source and capability required.');
   const child = Object.fromEntries(['PATH', 'HOME', 'TMPDIR', 'TMP', 'TEMP', 'LANG', 'LC_ALL', 'CI', 'PLAYWRIGHT_BROWSERS_PATH'].filter(key => typeof env[key] === 'string').map(key => [key, env[key]]));
   return { ...child, NEXT_TELEMETRY_DISABLED: '1', VERCEL_GIT_COMMIT_SHA: sha,
+    PORTAL_ACCEPTANCE_OWNED_DISCONNECTED_SERVER: 'true',
     PORTAL_AUDIT_READ_ONLY_TOKEN: token, PORTAL_ACCEPTANCE_LOCAL_AUDIT_TOKEN: token };
 }
 

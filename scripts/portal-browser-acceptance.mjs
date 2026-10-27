@@ -35,7 +35,7 @@ try {
   let targets;
   if (localFixturesOnly) {
     const origin = validateLocalFixtureOrigin(option('--local-origin'));
-    targets = { candidate: verifyLocalFixtureHealth(input.identity, origin, await fetchHealth(origin)) };
+    targets = { candidate: verifyLocalFixtureHealth(input.identity, origin, await fetchHealth(origin), { ownedDisconnectedServer: process.env.PORTAL_ACCEPTANCE_OWNED_DISCONNECTED_SERVER === 'true' }) };
   } else targets = await verifyBrowserTargets(input, readApi, fetchHealth);
   mkdirSync(dirname(output), { recursive: true });
   const verifiedPath = `${output}.targets.json`;

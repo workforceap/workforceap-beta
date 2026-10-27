@@ -4,6 +4,7 @@ import { localFixtureEnvironment, localReceiptDigest, verifyLocalExecution } fro
 test('local server and browser environment excludes all hosted credentials', () => {
   const env = localFixtureEnvironment({ PATH: '/bin', HOME: '/home/test', DEMO_QA_DATABASE_URL: 'private', DEMO_QA_SERVICE_ROLE_KEY: 'private', GH_TOKEN: 'private', FIVE_ROLE_QA_ADMIN_PASSWORD: 'private', NODE_OPTIONS: '--require unsafe' }, 'a'.repeat(40), 'local-only'.repeat(5));
   assert.equal(env.PATH, '/bin');
+  assert.equal(env.PORTAL_ACCEPTANCE_OWNED_DISCONNECTED_SERVER, 'true');
   for (const key of ['DEMO_QA_DATABASE_URL', 'DEMO_QA_SERVICE_ROLE_KEY', 'GH_TOKEN', 'FIVE_ROLE_QA_ADMIN_PASSWORD', 'NODE_OPTIONS']) assert.equal(env[key], undefined);
 });
 test('local fixture execution binds exact bytes, source and workflow identity', () => {
