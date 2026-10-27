@@ -11,6 +11,8 @@ import PortalEmptyState from '@/components/portal/PortalEmptyState';
 import DataTable from '@/components/portal/ui/DataTable';
 import { employerApplicationsListHref, type EmployerApplicationsSort } from '@/lib/employer/employerApplicationsListQuery';
 import { employerJobPostingApplicationStatusLabel } from '@/lib/employer/jobPostingApplicationStatus';
+import { classifyEmployerApplicationsEmpty, type EmployerApplicationsEmptyContext } from '@/lib/employer/applicationEmptyState';
+import EmployerApplicationsEmptyState from './EmployerApplicationsEmptyState';
 import styles from './EmployerApplicationsClient.module.css';
 
 export type AppMsg = {
@@ -42,10 +44,12 @@ export default function EmployerApplicationsClient({
   initialRows,
   activeStatusFilter,
   activeSort,
+  emptyContext,
 }: {
   initialRows: EmployerApplicationRow[];
   activeStatusFilter: JobPostingApplicationStatus | null;
   activeSort: EmployerApplicationsSort;
+  emptyContext?: EmployerApplicationsEmptyContext;
 }) {
   const tCommon = useTranslations('common');
   const [rows, setRows] = useState(initialRows);
@@ -182,6 +186,7 @@ export default function EmployerApplicationsClient({
 
   if (rows.length === 0) {
     const filtered = !!activeStatusFilter;
+    const emptyCase = classifyEmployerApplicationsEmpty({ rowCount: rows.length, activeStatusFilter, context: emptyContext });
     return (
       <div className="employer-applications-root">
         <div className={`employer-applications-toolbar ${styles.toolbar}`} role="search" aria-label="Filter applicants by hiring stage">
@@ -240,20 +245,24 @@ export default function EmployerApplicationsClient({
             </div>
           </div>
         </div>
-        <PortalEmptyState
-          title={filtered ? 'No applicants match this filter' : 'No applications yet'}
-          description={
-            filtered
-              ? 'Adjust the pipeline filter above or reset to view all applicants in your funnel.'
-              : 'When candidates apply to your jobs, they will appear here with status and messaging.'
-          }
-          icon={<span className="material-symbols-outlined" style={{ fontSize: 48, color: 'var(--color-on-surface-variant)' }} aria-hidden>badge</span>}
-          primaryAction={
-            filtered
-              ? { label: 'Show all applicants', href: employerApplicationsListHref({ sort: activeSort }) }
-              : { label: 'Post a role', href: '/employer/jobs/new' }
-          }
-        />
+        {emptyCase ? (
+          <EmployerApplicationsEmptyState emptyCase={emptyCase} activeSort={activeSort} />
+        ) : (
+          <PortalEmptyState
+            title={filtered ? 'No applicants match this filter' : 'No applications yet'}
+            description={
+              filtered
+                ? 'Adjust the pipeline filter above or reset to view all applicants in your funnel.'
+                : 'When candidates apply to your jobs, they will appear here with status and messaging.'
+            }
+            icon={<span className="material-symbols-outlined" style={{ fontSize: 48, color: 'var(--color-on-surface-variant)' }} aria-hidden>badge</span>}
+            primaryAction={
+              filtered
+                ? { label: 'Show all applicants', href: employerApplicationsListHref({ sort: activeSort }) }
+                : { label: 'Post a role', href: '/employer/jobs/new' }
+            }
+          />
+        )}
       </div>
     );
   }

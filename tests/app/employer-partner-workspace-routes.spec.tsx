@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock('next/navigation', () => ({ redirect: (href: string) => { throw new Error(`redirect:${href}`); } }));
 vi.mock('next/link', () => ({ default: ({ href, children, ...rest }: React.ComponentProps<'a'>) => <a href={href} {...rest}>{children}</a> }));
-vi.mock('next-intl/server', () => ({ getTranslations: async (namespace: 'employer' | 'partner') => (key: string) => (en[namespace] as Record<string, unknown>)[key] ?? key }));
+vi.mock('next-intl/server', () => ({ getLocale: async () => 'en', getTranslations: async (namespace: 'employer' | 'partner') => (key: string) => (en[namespace] as Record<string, unknown>)[key] ?? key }));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: vi.fn() }));
 vi.mock('@/lib/auth/server', () => ({ getUser: mocks.user }));
 vi.mock('@/lib/auth/roles', () => ({ getEmployerForUser: mocks.employer, getPartnerForUser: mocks.partner }));

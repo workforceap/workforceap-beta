@@ -13,7 +13,7 @@ vi.mock('@/lib/auth/roles', () => ({ getEmployerForUser: mocks.employer }));
 vi.mock('@/lib/auth/portalGuards', () => ({ unlinkedEmployerHref: async () => '/employer/setup' }));
 vi.mock('@/lib/db/prisma', () => ({ prisma: { jobPostingApplication: { findMany: mocks.rows, count: mocks.count } } }));
 vi.mock('@/app/seo', () => ({ buildPageMetadataAsync: async (value: unknown) => value }));
-vi.mock('next-intl/server', () => ({ getTranslations: async () => createTranslator({ locale: mocks.locale, messages: mocks.locale === 'es' ? es : en, namespace: 'employer' }) }));
+vi.mock('next-intl/server', () => ({ getLocale: async () => mocks.locale, getTranslations: async () => createTranslator({ locale: mocks.locale, messages: mocks.locale === 'es' ? es : en, namespace: 'employer' }) }));
 vi.mock('next/navigation', () => ({ redirect: (href: string) => { throw new Error(`redirect:${href}`); }, usePathname: () => '/employer/applications' }));
 vi.mock('@/components/employer/EmployerApplicationsClient', () => ({ default: () => <div>Desktop applicants fixture</div> }));
 vi.mock('@/components/employer/MobileApplicationsClient', () => ({ default: () => <div>Mobile applicants fixture</div> }));

@@ -1,0 +1,16 @@
+{
+  "empty": {
+    "employer": {
+      "applicationsFiltered": {
+        "title": "No applicants at the {stage} stage",
+        "body": "Clear the stage filter to see every applicant.",
+        "action": "Show all applicants"
+      },
+      "applicationsPage": {
+        "title": "No applicants on this page",
+        "body": "Return to the first page to see the current list.",
+        "action": "Show all applicants"
+      }
+    }
+  }
+}

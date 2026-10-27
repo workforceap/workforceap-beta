@@ -11,6 +11,8 @@ import { KitEmptyState, StatusTag, type KitTone } from '@/components/portal/kit'
 import type { AppMsg, EmployerApplicationRow } from './EmployerApplicationsClient';
 import { employerApplicationsListHref, type EmployerApplicationsSort } from '@/lib/employer/employerApplicationsListQuery';
 import PortalRecordLink from '@/components/portal/PortalRecordLink';
+import { classifyEmployerApplicationsEmpty, type EmployerApplicationsEmptyContext } from '@/lib/employer/applicationEmptyState';
+import EmployerApplicationsEmptyState from './EmployerApplicationsEmptyState';
 
 const STATUS_CHIP_FILTERS = [
   { label: 'All', value: 'all' as const },
@@ -55,10 +57,12 @@ export default function MobileApplicationsClient({
   initialRows,
   activeStatusFilter = null,
   activeSort = 'applied_desc',
+  emptyContext,
 }: {
   initialRows: EmployerApplicationRow[];
   activeStatusFilter?: JobPostingApplicationStatus | null;
   activeSort?: EmployerApplicationsSort;
+  emptyContext?: EmployerApplicationsEmptyContext;
 }) {
   const tCommon = useTranslations('common');
   const t = useTranslations('employer');
@@ -141,6 +145,7 @@ export default function MobileApplicationsClient({
 
   // The same server filter and pager now serve both responsive layouts.
   const visible = rows;
+  const emptyCase = classifyEmployerApplicationsEmpty({ rowCount: visible.length, activeStatusFilter, context: emptyContext });
 
   return (
     <div>
@@ -175,7 +180,9 @@ export default function MobileApplicationsClient({
 
       {/* Applicant cards */}
       <div style={{ padding: '0 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        {visible.length === 0 ? (
+        {emptyCase ? (
+          <EmployerApplicationsEmptyState emptyCase={emptyCase} activeSort={activeSort} />
+        ) : visible.length === 0 ? (
           <KitEmptyState
             framed
             title={activeStatusFilter ? 'No applicants match this filter' : t('noApplicationsYet')}
