@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { createVitest } from 'vitest/node';
-import { collectDiskReaderTests, executeSelection, readsDisk, selectTests } from './ci-vitest-affected.mjs';
+import { collectDiskReaderTests, executeSelection, readsDisk, selectTests, withVitestEnvironment } from './ci-vitest-affected.mjs';
 
 test('affected selection covers every runtime file and always includes disk readers', async () => {
   assert.deepEqual((await selectTests(['a', 'b'], async (source: string) => [`${source}.spec.tsx`], ['disk.spec.ts'])).files, ['a.spec.tsx', 'b.spec.tsx', 'disk.spec.ts']);
@@ -25,6 +26,23 @@ test('unknown ownership or empty docs coverage fails before invoking any test co
     assert.equal(executeSelection(selection, () => assert.fail('cannot report full validation inside affected job')), 1);
   }
   assert.equal(executeSelection({ mode: 'affected', files: ['owned.spec.ts'], reason: 'covered' }, () => 7), 7);
+});
+
+test('collection and spawned tests use test NODE_ENV without leaking into the caller', async () => {
+  const previous = process.env.NODE_ENV;
+  const provided = { PATH: process.env.PATH };
+  await withVitestEnvironment(provided, async (env: NodeJS.ProcessEnv) => {
+    assert.equal(process.env.NODE_ENV, 'test');
+    const result = spawnSync(process.execPath, ['-p', 'process.env.NODE_ENV'], { env, encoding: 'utf8' });
+    assert.equal(result.status, 0);
+    assert.equal(result.stdout.trim(), 'test');
+  });
+  assert.equal(process.env.NODE_ENV, previous);
+  assert.equal(Object.hasOwn(provided, 'NODE_ENV'), false);
+  await assert.rejects(withVitestEnvironment({}, async () => { throw new Error('collection failed'); }));
+  assert.equal(process.env.NODE_ENV, previous);
+  await withVitestEnvironment({ NODE_ENV: 'production' }, async (env: NodeJS.ProcessEnv) => assert.equal(env.NODE_ENV, 'production'));
+  assert.equal(process.env.NODE_ENV, previous);
 });
 
 test('real Vite graph includes specs behind a disk-reading helper', async (t) => {

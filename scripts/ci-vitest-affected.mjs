@@ -51,7 +51,25 @@ export function executeSelection(selection, run) {
   return run(selection.files);
 }
 
+// Match the Vitest CLI before Vite can default NODE_ENV to development. Keep
+// the child process environment stable and restore the caller after collection.
+export async function withVitestEnvironment(env, run) {
+  const testEnv = { ...env, NODE_ENV: env.NODE_ENV || 'test' };
+  const previous = process.env.NODE_ENV;
+  process.env.NODE_ENV = testEnv.NODE_ENV;
+  try {
+    return await run(testEnv);
+  } finally {
+    if (previous === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previous;
+  }
+}
+
 export async function main(env = process.env, cwd = process.cwd()) {
+  return withVitestEnvironment(env, (testEnv) => runAffected(testEnv, cwd));
+}
+
+async function runAffected(env, cwd) {
   const plan = readPlan(env, cwd);
   if (plan.mode !== 'affected') throw new Error('Affected job has no valid affected plan');
   let ctx;
