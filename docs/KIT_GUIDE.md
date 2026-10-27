@@ -679,6 +679,12 @@ check bundles the real components/CSS and mocks every transport; it verifies
 reading position, both themes, mobile back/return and pending-draft recovery.
 Surface translations are passed in `labels`; generic kit previews keep defaults.
 
+The Messages page passes its validated `readOnlyAudit` state to the kit inbox
+and both legacy clients. In that mode they show saved history and unread state,
+keep conversation navigation available, and disable composing, read-marker writes
+and realtime connections. This is separate from `previewOnly`, which controls
+synthetic conversation switching; normal member messaging keeps its existing effects.
+
 **Member request failures (audit 7c):** browser requests from member tools
 (AI generation such as `ElevatorPitchClient`, `uploadMemberResumeFile`) go
 through `fetchWithTimeout` with `MEMBER_REQUEST_TIMEOUT_MS` and describe any

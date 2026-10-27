@@ -111,7 +111,6 @@ export const STATIC_PATHS = {
     '/admin/mentors',
     '/admin/outcomes/methodology',
     '/admin/overview',
-    '/admin/partner-signups',
     '/admin/partners',
     '/admin/partners/new',
     '/admin/pipeline',
@@ -491,6 +490,12 @@ export const REDIRECT_ONLY_PATHS = {
     },
   ],
   admin: [
+    {
+      path: '/admin/partner-signups',
+      target: '/admin/partners',
+      reason: 'super_admin_only_for_regular_admin_fixture',
+      fixtureCondition: 'regular_admin',
+    },
     ...[
       '/admin/audit-logs',
       '/admin/csp-report',

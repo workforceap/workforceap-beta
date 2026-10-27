@@ -175,6 +175,7 @@ export default async function MemberMessagesPage({
 
     return (
       <MemberMessagesKit
+        readOnlyAudit={readOnlyAudit}
         memberUserId={user.id}
         threadId={thread.id}
         conversations={conversations}
@@ -199,6 +200,7 @@ export default async function MemberMessagesPage({
       {/* ── Mobile-only messages view (≤md) ── */}
       <div className="md:wa-hidden" style={{ paddingBottom: '6rem', maxWidth: '100%', overflowX: 'hidden' }}>
         <MemberMessagesMobileClient
+          readOnlyAudit={readOnlyAudit}
           initial={{
             memberUserId: user.id,
             counselorName,
@@ -221,6 +223,7 @@ export default async function MemberMessagesPage({
       {/* ── Desktop view ── */}
       <div className="wa-hidden md:wa-block">
         <MemberCounselorChatClient
+          readOnlyAudit={readOnlyAudit}
           initial={{
             memberUserId: user.id,
             counselorName,

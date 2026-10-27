@@ -232,7 +232,7 @@ export function derivePointsMetrics(
     currentStreak: effectiveStreak({
       currentStreak: row.memberPoints?.currentStreak,
       lastActiveDate: row.memberPoints?.lastActiveDate,
-    }),
+    }, new Date(now)),
     longestStreak: row.memberPoints?.longestStreak ?? 0,
   };
 }

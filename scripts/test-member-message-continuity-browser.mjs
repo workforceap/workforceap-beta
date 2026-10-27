@@ -44,12 +44,14 @@ try {
             ? components.map((item) => `export { ${item} } from ${JSON.stringify(path.join(root, 'components/portal/kit', `${item}.tsx`))};`).join('\n')
             : name === 'next/link'
               ? 'export default function Link(props) { return <a {...props} />; }'
-              : `export function createSupabaseBrowserClient() { return {
+              : `export function createSupabaseBrowserClient() {
+                  window.messageFixture.browserClientCreations += 1;
+                  return {
                   channel() { const channel = {
                     on(_event, filter, callback) {
                       if (filter.filter !== 'thread_id=eq.fixture-thread') throw new Error('Unexpected fixture thread');
                       window.messageFixture.insert = callback; return channel;
-                    }, subscribe() { return channel; }
+                    }, subscribe() { window.messageFixture.subscriptions += 1; return channel; }
                   }; return channel; }, removeChannel() { delete window.messageFixture.insert; }
                 }; }`,
         }));
@@ -171,10 +173,45 @@ try {
         await page.screenshot({ path: path.join(output, 'messages-375-feedback-resize.png'), fullPage: true });
         checks.push({ width: 375, height: 667, theme: 'light', reducedMotion: true, status: 'passed', checks: ['feedback context retained', 'resizable composer capped', 'history remains readable', 'send action remains visible'], pageErrors: errors, unexpectedNetwork: blocked });
       }
+      if ([375, 1440].includes(width) && theme === 'light') {
+        const height = width === 375 ? 844 : 1000;
+        await page.setViewportSize({ width, height });
+        await page.goto(`${origin}/?audit=1`);
+        await expect(log).toBeVisible();
+        await expect(log.locator('[data-message-id]')).toHaveCount(40);
+        await expect(log).toContainText('Fixture message 40: Thank you. I have a question about the next course assignment.');
+        await expect(page.getByRole('textbox')).toBeDisabled();
+        await expect(page.getByRole('button', { name: 'Send message', exact: true })).toBeDisabled();
+        await expect(page.getByText('1 unread', { exact: true })).toBeVisible();
+        await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+        if (width < 768) {
+          await page.getByRole('button', { name: 'Back to messages' }).click();
+          await expect(log).not.toBeVisible();
+          await expect(page.getByLabel('Unread message', { exact: true })).toBeVisible();
+          await page.getByRole('button', { name: /Fixture Counselor Assigned counselor/ }).click();
+          await expect(log).toBeVisible();
+          await expect(page.getByRole('textbox')).toBeDisabled();
+        }
+        // Let passive effects and focus/navigation callbacks run before checking
+        // that this saved-history view opened no messaging transport.
+        await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve(undefined)))));
+        const auditTransport = await page.evaluate(() => ({
+          requests: window.messageFixture.requests,
+          browserClientCreations: window.messageFixture.browserClientCreations,
+          subscriptions: window.messageFixture.subscriptions,
+          insertHandlerPresent: Boolean(window.messageFixture.insert),
+        }));
+        assert.deepEqual(auditTransport, { requests: [], browserClientCreations: 0, subscriptions: 0, insertHandlerPresent: false });
+        assert.deepEqual(errors, []);
+        assert.deepEqual(blocked, []);
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'audit history does not overflow the viewport');
+        await page.screenshot({ path: path.join(output, `messages-${width}-read-only-audit.png`), fullPage: true });
+        checks.push({ width, height, theme: 'light', readOnlyAudit: true, reducedMotion: true, status: 'passed', checks: ['saved history visible', 'unread state retained', 'composer disabled', 'focus does not write', 'zero messaging requests', 'zero realtime clients or subscriptions', ...(width < 768 ? ['mobile back/return'] : [])], pageErrors: errors, unexpectedNetwork: blocked, ...auditTransport });
+      }
       await context.close();
     }
   }
-  await writeFile(path.join(output, 'browser-results.json'), JSON.stringify({ fixture: 'production message components with mocked transport; not hosted acceptance', checks }, null, 2) + '\n');
+  await writeFile(path.join(output, 'browser-results.json'), JSON.stringify({ fixture: 'production message components with mocked transport; not hosted acceptance', nodeVersion: process.version, checks }, null, 2) + '\n');
   console.log(JSON.stringify({ output, checks }, null, 2));
 } finally {
   await browser?.close();
