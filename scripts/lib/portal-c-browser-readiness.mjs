@@ -2,6 +2,17 @@ import { redirectTargetMatches } from './portal-audit-actions.mjs';
 import { waitForPortalReady, waitForRedirectTargetCommit } from './portal-audit-browser.mjs';
 import { trackSameOriginDataRequests } from './portal-audit-data-requests.mjs';
 
+/** Console text stays in memory; receipts receive only one bounded diagnostic code. */
+export function readinessConsoleCategory(messages) {
+  if (messages.some(message => /ERR_ABORTED/.test(message))) return 'console_resource_aborted';
+  if (messages.some(message => /ERR_BLOCKED_BY_CLIENT/.test(message))) return 'console_resource_blocked';
+  if (messages.some(message => /Content Security Policy|Content-Security-Policy/.test(message))) return 'console_csp';
+  if (messages.some(message => /[Hh]ydration|Minified React error/.test(message))) return 'console_hydration';
+  if (messages.some(message => /WebSocket/.test(message))) return 'console_websocket';
+  if (messages.some(message => /RSC payload/.test(message))) return 'console_rsc';
+  return 'console_other';
+}
+
 /** Await the final redirect and its data before starting another inventory navigation. */
 export async function navigateMemberInventoryRoute(page, path, {
   trustedOrigin, expectedPath = path, dynamicPatterns = /** @type {string[]} */ ([]), timeout = 60_000,
@@ -40,7 +51,7 @@ export async function navigateMemberInventoryRoute(page, path, {
     }
     if (documentStatus === null || documentStatus >= 400) throw Object.assign(new Error('The final inventory document did not load successfully.'), { portalReadinessCode: 'document_status' });
     if (data.errors.length) throw Object.assign(new Error(`Inventory data did not settle successfully: ${data.errors.join('; ')}`), { portalReadinessCode: 'data' });
-    if (pageErrorCount || data.consoleErrors.length || data.pendingDataRequestCount) throw Object.assign(new Error('Inventory runtime, console or pending data errors prevent readiness.'), { portalReadinessCode: pageErrorCount ? 'page_error' : data.consoleErrors.length ? 'console' : 'pending_data' });
+    if (pageErrorCount || data.consoleErrors.length || data.pendingDataRequestCount) throw Object.assign(new Error('Inventory runtime, console or pending data errors prevent readiness.'), { portalReadinessCode: pageErrorCount ? 'page_error' : data.consoleErrors.length ? readinessConsoleCategory(data.consoleErrors) : 'pending_data' });
   } finally {
     page.off('response', responseListener);
     page.off('console', consoleListener);

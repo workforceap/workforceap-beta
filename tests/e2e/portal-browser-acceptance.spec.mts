@@ -14,6 +14,7 @@ import { STATIC_PATHS, DYNAMIC_PATHS, REDIRECT_ONLY_PATHS } from '../../scripts/
 import { beginStaffDataReadiness, navigateMemberInventoryRoute } from '../../scripts/lib/portal-c-browser-readiness.mjs';
 import { verifyLocalOwnershipEnvironment } from '../../scripts/lib/portal-local-ownership.mjs';
 import { isLocalFixtureGtmBootstrap, isLocalFixtureHmrSocket } from '../../scripts/lib/portal-local-network.mjs';
+import { assertBrowserBootstrap } from '../../scripts/lib/portal-browser-bootstrap.mjs';
 
 type Case = { id: string; lane: string; role: string; path?: string; expectedPath?: string; width?: number; theme?: string; state?: string; missing?: string };
 type CaseResult = { id: string; status: string; reason?: string };
@@ -68,6 +69,10 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
   let beforeLoginSend: (() => Promise<void>) | undefined;
   let loginDispatchError: unknown;
   let contextStage = 'cookie';
+  let bootstrapPage: Page | undefined;
+  let bootstrapPageErrors = 0, bootstrapConsoleErrors = 0;
+  const bootstrapPageError = () => { bootstrapPageErrors++; };
+  const bootstrapConsoleError = (message: { type(): string }) => { if (message.type() === 'error') bootstrapConsoleErrors++; };
   try {
     await installReadOnlyAuditCookie(context, target.origin, token);
     contextStage = 'request_guards';
@@ -112,6 +117,8 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
     await context.addInitScript(() => { if (!localStorage.getItem('wap-theme')) localStorage.setItem('wap-theme', 'light'); });
     contextStage = 'new_page';
     const page = await context.newPage();
+    bootstrapPage = page;
+    page.on('pageerror', bootstrapPageError); page.on('console', bootstrapConsoleError);
     contextStage = 'login';
     if (role !== 'anonymous') {
       // Shared accounts cannot be journal-owned; even sign-in can write MemberEvent rows.
@@ -171,8 +178,11 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
       await page.goto(firstFixture, { waitUntil: 'domcontentloaded', timeout: 90_000 });
     } else await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 30_000 });
     guard.login = false;
+    contextStage = 'bootstrap';
+    assertBrowserBootstrap({ blocked: guard.blocked, pageErrors: bootstrapPageErrors, consoleErrors: bootstrapConsoleErrors });
     return { context, page, guard };
   } catch { await context.close(); throw new Error(`browser_context_${contextStage}_failed`); }
+  finally { bootstrapPage?.off('pageerror', bootstrapPageError); bootstrapPage?.off('console', bootstrapConsoleError); }
 }
 
 async function settle(page: Page, item: Case, origin: string) {
@@ -183,7 +193,7 @@ async function settle(page: Page, item: Case, origin: string) {
     try { await navigateMemberInventoryRoute(page, item.path!, { trustedOrigin: origin, expectedPath: item.expectedPath ?? item.path!, dynamicPatterns: patterns, timeout: 45_000 }); }
     catch (error) {
       const code = (error as { portalReadinessCode?: string })?.portalReadinessCode;
-      throw new Error(code && ['document_status', 'data', 'page_error', 'console', 'pending_data'].includes(code) ? `browser_case_readiness_${code}_failed` : 'browser_case_readiness_failed');
+      throw new Error(code && /^(?:document_status|data|page_error|pending_data|console_(?:resource_aborted|resource_blocked|csp|hydration|websocket|rsc|other))$/.test(code) ? `browser_case_readiness_${code}_failed` : 'browser_case_readiness_failed');
     }
     try { await ready(); } catch { throw new Error('browser_case_staff_data_failed'); }
     const inspection = await inspectPortalPage(page, patterns);
@@ -259,7 +269,6 @@ test('current portal browser acceptance records every required case', async ({ b
         } else {
           const role = item.lane === 'logged-out-routes' ? 'anonymous' : item.role;
           const candidate = await getPage('candidate', role);
-          const blockedBefore = candidate.guard.blocked;
           const errors: string[] = [];
           const pageError = () => errors.push('page_error');
           candidate.page.on('pageerror', pageError);
@@ -270,19 +279,18 @@ test('current portal browser acceptance records every required case', async ({ b
               await expect(candidate.page.locator('#email')).toBeVisible();
             } else if (item.lane.endsWith('comparison')) {
               const baseline = await getPage('baseline', role);
-              const baselineBlocked = baseline.guard.blocked;
               await compare(baseline.page, candidate.page, item, info, index);
-              if (baseline.guard.blocked !== baselineBlocked) throw new Error('Baseline attempted a blocked request');
+              if (baseline.guard.blocked !== 0) throw new Error('Baseline attempted a blocked request');
             } else await settle(candidate.page, item, input.targets.candidate.origin);
             if (errors.length) throw new Error('browser_case_page_error_failed');
-            if (candidate.guard.blocked !== blockedBefore) throw new Error('browser_case_network_failed');
+            if (candidate.guard.blocked !== 0) throw new Error('browser_case_network_failed');
             if (item.expectedPath && !redirectTargetMatches(candidate.page.url(), item.expectedPath, input.targets.candidate.origin)) throw new Error('Final route changed after readiness');
           } finally { candidate.page.off('pageerror', pageError); }
         }
         results.set(item.id, { id: item.id, status: 'passed' });
       } catch (error) {
         // No private DOM text, response bodies, URL tokens or credentials in receipts.
-        const code = error instanceof Error && /^browser_(?:context_(?:health|cookie|request_guards|new_page|login|local_fixture_start)|case_(?:readiness(?:_(?:document_status|data|page_error|console|pending_data))?|staff_data|capability|content|layout|page_error|network))_failed$/.test(error.message) ? error.message : 'required_browser_contract_failed';
+        const code = error instanceof Error && /^browser_(?:context_(?:health|cookie|request_guards|new_page|login|local_fixture_start|bootstrap)|case_(?:readiness(?:_(?:document_status|data|page_error|pending_data|console_(?:resource_aborted|resource_blocked|csp|hydration|websocket|rsc|other)))?|staff_data|capability|content|layout|page_error|network))_failed$/.test(error.message) ? error.message : 'required_browser_contract_failed';
         results.set(item.id, { id: item.id, status: 'failed', reason: code });
       }
       checkpoint();

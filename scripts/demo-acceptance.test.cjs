@@ -7,3 +7,4 @@ require('./demo-acceptance-local.test.mjs');
 require('./demo-acceptance-phase-plan.test.mjs');
 require('./demo-acceptance-final.test.mjs');
 require('./portal-local-network.test.mjs');
+require('./portal-browser-bootstrap.test.mjs');
