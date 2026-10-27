@@ -5,26 +5,22 @@ vi.mock('@/lib/ai/groq', () => ({ groqChatCompletion: vi.fn() }));
 import { groqChatCompletion } from '@/lib/ai/groq';
 import { generateResumeBullet } from '@/lib/ai/proactiveResumeGenerator';
 
-describe('proactive resume bullet provider contract', () => {
+describe('proactive resume coursework evidence contract', () => {
   beforeEach(() => vi.resetAllMocks());
 
-  it('uses the configured shared model path with a bounded one-bullet request', async () => {
-    vi.mocked(groqChatCompletion).mockResolvedValue('  • Applied cloud fundamentals.  ');
-    await expect(generateResumeBullet('Cloud Fundamentals')).resolves.toBe('Applied cloud fundamentals.');
-    expect(groqChatCompletion).toHaveBeenCalledWith([
-      expect.objectContaining({ role: 'system', content: expect.stringContaining('exactly one') }),
-      { role: 'user', content: 'Course: Cloud Fundamentals' },
-    ], { maxTokens: 150 });
+  it('states coursework completion without inventing skills, results or a credential', async () => {
+    vi.mocked(groqChatCompletion).mockResolvedValue('Certified cloud engineer with ten years of experience.');
+    await expect(generateResumeBullet('Cloud Fundamentals')).resolves.toBe('Completed coursework: Cloud Fundamentals.');
+    expect(groqChatCompletion).not.toHaveBeenCalled();
   });
 
-  it.each([null, '', '  ', ' • '])('keeps the factual completion fallback for empty or unconfigured output %j', async (output) => {
-    vi.mocked(groqChatCompletion).mockResolvedValue(output);
-    await expect(generateResumeBullet('Cloud Fundamentals')).resolves.toBe('Completed Cloud Fundamentals');
+  it.each(['', '  ', 'program-certificate-course-17'])('keeps incomplete course metadata factual: %j', async (title) => {
+    await expect(generateResumeBullet(title)).resolves.toBe('Completed a training course.');
+    expect(groqChatCompletion).not.toHaveBeenCalled();
   });
 
-  it('propagates provider failure instead of presenting a generated bullet as successful', async () => {
-    const failure = new Error('provider unavailable');
-    vi.mocked(groqChatCompletion).mockRejectedValue(failure);
-    await expect(generateResumeBullet('Cloud Fundamentals')).rejects.toBe(failure);
+  it('normalizes whitespace and punctuation without expanding the available evidence', async () => {
+    await expect(generateResumeBullet('  Cloud\nFundamentals.  ')).resolves.toBe('Completed coursework: Cloud Fundamentals.');
+    expect(groqChatCompletion).not.toHaveBeenCalled();
   });
 });
