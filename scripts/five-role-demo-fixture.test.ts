@@ -22,7 +22,7 @@ test('[mocked — NOT acceptance] native Auth client records dispatch before fet
   const originalFetch = globalThis.fetch;
   const order: string[] = [];
   const runtime = liveDeps({ organizationId: '11111111-2222-4333-8444-555555555555', organizationSlug: 'portal-qa-local-test', databaseUrl: 'postgresql://fixture@127.0.0.1:55427/unopened' },
-    { NEXT_PUBLIC_SUPABASE_URL: 'https://esbdrgaonplpvzmtrdhw.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'offline-placeholder-key' });
+    { NODE_ENV: 'test', NEXT_PUBLIC_SUPABASE_URL: 'https://esbdrgaonplpvzmtrdhw.supabase.co', SUPABASE_SERVICE_ROLE_KEY: 'offline-placeholder-key' });
   globalThis.fetch = async () => { order.push('fetch'); return new Response(JSON.stringify({ msg: 'Injected validation error' }), { status: 400, headers: { 'Content-Type': 'application/json' } }); };
   const create = () => runtime.deps.createAuthUser({ email: 'wap6-qa-42-1-member@example.com', password: 'offline-placeholder-password', fullName: 'Fixture', appMetadata: {} });
   try {
