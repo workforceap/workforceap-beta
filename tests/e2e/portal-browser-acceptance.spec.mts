@@ -55,7 +55,7 @@ async function health(target: Target) {
 }
 
 async function guardedContext(browser: Browser, target: Target, kind: TargetKind, role: string): Promise<{ context: BrowserContext; page: Page; guard: Guard }> {
-  await health(target); // No credential resolution until this independently refreshed proof.
+  try { await health(target); } catch { throw new Error('browser_context_health_failed'); } // No credentials before this proof.
   if (input.localFixturesOnly && role !== 'anonymous') throw new Error('Local fixture companion cannot log in');
   const token = input.localFixturesOnly ? process.env.PORTAL_ACCEPTANCE_LOCAL_AUDIT_TOKEN : process.env.DEMO_QA_READ_ONLY_TOKEN;
   if (!token || token.length < 32) throw new Error('Explicit DEMO read-only capability required');
@@ -63,8 +63,10 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
   const guard = { login: false, loginUsed: false, blocked: 0 };
   let beforeLoginSend: (() => Promise<void>) | undefined;
   let loginDispatchError: unknown;
+  let contextStage = 'cookie';
   try {
     await installReadOnlyAuditCookie(context, target.origin, token);
+    contextStage = 'request_guards';
     await context.route('**/*', async route => {
       const request = route.request();
       const url = new URL(request.url());
@@ -96,7 +98,9 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
     });
     await context.routeWebSocket('**/*', socket => { guard.blocked++; socket.close(); });
     await context.addInitScript(() => { if (!localStorage.getItem('wap-theme')) localStorage.setItem('wap-theme', 'light'); });
+    contextStage = 'new_page';
     const page = await context.newPage();
+    contextStage = 'login';
     if (role !== 'anonymous') {
       // Shared accounts cannot be journal-owned; even sign-in can write MemberEvent rows.
       if (!process.env[`FIVE_ROLE_QA_${role.toUpperCase()}_EMAIL`]) throw new Error('Hosted login requires a run-owned FIVE_ROLE_QA identity');
@@ -151,7 +155,7 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
     } else await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 30_000 });
     guard.login = false;
     return { context, page, guard };
-  } catch (error) { await context.close(); throw error; }
+  } catch { await context.close(); throw new Error(`browser_context_${contextStage}_failed`); }
 }
 
 async function settle(page: Page, item: Case, origin: string) {
@@ -249,9 +253,10 @@ test('current portal browser acceptance records every required case', async ({ b
           } finally { candidate.page.off('pageerror', pageError); }
         }
         results.set(item.id, { id: item.id, status: 'passed' });
-      } catch {
+      } catch (error) {
         // No private DOM text, response bodies, URL tokens or credentials in receipts.
-        results.set(item.id, { id: item.id, status: 'failed', reason: 'required_browser_contract_failed' });
+        const code = error instanceof Error && /^browser_context_(?:health|cookie|request_guards|new_page|login)_failed$/.test(error.message) ? error.message : 'required_browser_contract_failed';
+        results.set(item.id, { id: item.id, status: 'failed', reason: code });
       }
       checkpoint();
     }
