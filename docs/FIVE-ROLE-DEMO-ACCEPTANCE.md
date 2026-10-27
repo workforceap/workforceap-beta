@@ -30,6 +30,14 @@ The browser contract is documented in [portal-browser-acceptance.md](qa/portal-b
 
 The workflow runs `node scripts/run-portal-local-fixtures.mjs` on Ubuntu before creating accounts. This starts a task-owned disconnected Next dev server from the clean exact commit, with a fresh local read-only token and an allowlisted child environment. It runs the real current-registry local fixture browser cases, stops only that server process group, and writes an execution receipt bound to the run, source and browser receipt bytes. Environment files are refused. Logs, capabilities and browser targets are not uploaded. The companion fills only expected local-only omissions; a failed case cannot become green through merging.
 
+Anonymous local fixtures do not receive the authenticated middleware suppression
+marker. The local contract instead verifies the listener's Linux process group,
+checkout directory, exact source SHA and fresh nonce-bearing environment through
+`/proc`; browser checks revalidate that ownership and keep network mutation guards.
+Only the nonce digest and process IDs enter receipts. Hosted cases still require
+the actual app suppression marker. This is isolated fixture rendering evidence,
+not authenticated application acceptance.
+
 `scripts/complete-portal-acceptance.ts` derives expected cases from trusted source, exports `contract.json` and `action-lanes.json`, verifies same-run local execution provenance, and combines browser evidence with the durable mutation verifier. Every receipt must bind the same run, organization, plan hash, trusted control revision, deployed SHA and baseline SHA. All mutations require one durable attempt, successful application readback, matching database evidence and verified cleanup. Missing, skipped, errored or partial evidence cannot become green because the reporter itself ran.
 
 ## Local validation
@@ -48,7 +56,9 @@ TEST_REAL_DB=1 POSTGRES_PRISMA_URL=postgresql://user@127.0.0.1:55427/disposable 
 The two PostgreSQL contracts reject remote or ambiguous targets. They require the current schema in a task-owned disposable database. Their proofs cover claim exclusion, CAS, rollback after journal readback failure, atomic creation, compound-key inventories, unexpected dependents, concurrent drift, sensitive-field refusal and atomic cleanup. Mocks and local PostgreSQL prove safety properties, not hosted acceptance. The full release still needs current-head prepush, applicable CI, independent review and authorized exact-SHA DEMO acceptance, including controlled interruption and cleanup-only recovery. Preserve the original proposal branches until the coordinator links their replacement and records the remaining gates.
 
 For a disconnected local runtime contract outside GitHub, the companion accepts
-`--local-contract-only`. Its execution receipt explicitly records that mode and is
+`PORTAL_LOCAL_FIXTURE_OUTPUT=test-results/local.json node scripts/run-portal-local-fixtures.mjs --local-contract-only`.
+It builds a fresh local identity with no repository or GitHub run provenance; no
+GitHub environment variables or credentials are required. Its execution receipt explicitly records that mode and is
 rejected by the hosted finalizer even if all browser cases pass. This can verify
 the Linux process and browser path without representing a local simulation as a
 protected workflow execution.

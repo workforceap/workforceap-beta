@@ -26,6 +26,8 @@ test('hosted activation requires actual GitHub human approval and immutable pref
   ]) assert.throws(() => assertPhaseAuthorizationEvidence(env, blueprint, approval, altered));
   assert.throws(() => assertPhaseAuthorizationEvidence({ ...env, DEMO_QA_PHASE_BLUEPRINT_HASH: 'e'.repeat(64) }, blueprint, approval, evidence));
   assert.throws(() => assertPhaseAuthorizationEvidence(env, blueprint, { ...approval, scopes: PHASE_SCOPES.slice(0, 3) }, evidence));
+  assert.throws(() => assertPhaseApproval({ ...approval, reference: 'https://github.com/workforceap/workforceap-beta/actions/runs/43' }, blueprint, 'approved-profile', { now }));
+  assert.throws(() => assertPhaseApproval({ ...approval, reference: 'https://github.com/workforceap/workforceap-beta/pull/42' }, blueprint, 'approved-profile', { now }));
 });
 test('phase activation has no enabled or approval default and binds explicit reviewed scopes', () => {
   assert.throws(() => phaseActivationFromEnvironment({}, blueprint, 'assigned-owner', { now }));

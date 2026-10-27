@@ -87,8 +87,6 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       DEMO_QA_ENABLED: ${{ vars.DEMO_QA_ENABLED }}
       DEMO_QA_MODE: ${{ inputs.mode }}
-      DEMO_QA_PHASES_ENABLED: ${{ vars.DEMO_QA_PHASES_ENABLED }}
-      DEMO_QA_PHASE_APPROVAL: ${{ vars.DEMO_QA_PHASE_APPROVAL }}
       DEMO_QA_PHASE_PLAN_FILE: test-results/portal-acceptance/phase-plan.json
       DEMO_QA_PHASE_BLUEPRINT_HASH: ${{ needs.protection.outputs.blueprint_hash }}
       DEMO_QA_PHASE_ARTIFACT_ID: ${{ needs.protection.outputs.artifact_id }}
@@ -139,6 +137,9 @@ jobs:
         run: node scripts/check-portal-browser-source.mjs
       - if: inputs.mode == 'acceptance'
         name: Require the explicit protected-environment scope and blueprint approval
+        env:
+          DEMO_QA_PHASES_ENABLED: ${{ vars.DEMO_QA_PHASES_ENABLED }}
+          DEMO_QA_PHASE_APPROVAL: ${{ vars.DEMO_QA_PHASE_APPROVAL }}
         run: node scripts/check-demo-acceptance-phase-approval.mjs
       - if: inputs.mode == 'acceptance'
         name: Export exact creation plan before any fixture write

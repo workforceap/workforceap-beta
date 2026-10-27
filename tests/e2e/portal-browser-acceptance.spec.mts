@@ -12,6 +12,7 @@ import { inspectPortalPage } from '../../scripts/lib/portal-audit-browser.mjs';
 import { auditPortalRouteInventory } from '../../scripts/lib/portal-audit-inventory.mjs';
 import { STATIC_PATHS, DYNAMIC_PATHS, REDIRECT_ONLY_PATHS } from '../../scripts/lib/portal-audit-paths.mjs';
 import { beginStaffDataReadiness, navigateMemberInventoryRoute } from '../../scripts/lib/portal-c-browser-readiness.mjs';
+import { verifyLocalOwnershipEnvironment } from '../../scripts/lib/portal-local-ownership.mjs';
 
 type Case = { id: string; lane: string; role: string; path?: string; expectedPath?: string; width?: number; theme?: string; state?: string; missing?: string };
 type CaseResult = { id: string; status: string; reason?: string };
@@ -40,7 +41,8 @@ function checkpoint() {
     return { schemaVersion: LANE_SCHEMA_VERSION, identity: plan.identity, ...(plan.phase ? { phase: plan.phase } : {}), lane, status, startedAt, completedAt: new Date().toISOString(), cases };
   });
   mkdirSync(dirname(outputPath!), { recursive: true });
-  writeFileSync(`${outputPath}.tmp`, JSON.stringify({ schemaVersion: LANE_SCHEMA_VERSION, kind: input.localFixturesOnly ? 'local-fixture-companion' : 'hosted-browser', identity: plan.identity, ...(plan.phase ? { phase: plan.phase } : {}), expectedCases: plan.expectedCases, receipts }, null, 2));
+  const localIsolation = input.localFixturesOnly ? verifyLocalOwnershipEnvironment(process.env, plan.identity.controlSha, input.targets.candidate.origin) : undefined;
+  writeFileSync(`${outputPath}.tmp`, JSON.stringify({ schemaVersion: LANE_SCHEMA_VERSION, kind: input.localFixturesOnly ? 'local-fixture-companion' : 'hosted-browser', identity: plan.identity, ...(localIsolation ? { localIsolation } : {}), ...(plan.phase ? { phase: plan.phase } : {}), expectedCases: plan.expectedCases, receipts }, null, 2));
   renameSync(`${outputPath}.tmp`, outputPath!);
 }
 
@@ -49,7 +51,7 @@ async function health(target: Target) {
     ...(!input.localFixturesOnly && process.env.DEMO_QA_VERCEL_BYPASS_SECRET ? { 'x-vercel-protection-bypass': process.env.DEMO_QA_VERCEL_BYPASS_SECRET } : {}),
   } });
   const health = { status: response.status, body: await response.text() };
-  if (input.localFixturesOnly) { verifyLocalFixtureHealth(plan.identity, target.origin, health, { ownedDisconnectedServer: process.env.PORTAL_ACCEPTANCE_OWNED_DISCONNECTED_SERVER === 'true' }); return; }
+  if (input.localFixturesOnly) { verifyLocalOwnershipEnvironment(process.env, plan.identity.controlSha, target.origin); verifyLocalFixtureHealth(plan.identity, target.origin, health, { ownedDisconnectedServer: true }); return; }
   const result = evaluateHealthPayload({ ...health, trustedSha: target.sha, mode: 'isolated_preview' });
   if (!result.ok) throw new Error('Exact deployment health changed before browser use');
 }
@@ -171,7 +173,10 @@ async function settle(page: Page, item: Case, origin: string) {
     await navigateMemberInventoryRoute(page, item.path!, { trustedOrigin: origin, expectedPath: item.expectedPath ?? item.path!, dynamicPatterns: patterns, timeout: 45_000 });
     await ready();
     const inspection = await inspectPortalPage(page, patterns);
-    if (!inspection.readOnlyCapabilityActive || !inspection.appReady || inspection.errorFallbackDetected || inspection.horizontalOverflowPx > 1) throw new Error('Final page content, read-only capability or layout check failed');
+    // Anonymous local fixtures cannot have the authenticated middleware marker.
+    // Their separate capability is the positively bound, disconnected owned process.
+    if (input.localFixturesOnly) verifyLocalOwnershipEnvironment(process.env, plan.identity.controlSha, origin);
+    if ((!input.localFixturesOnly && !inspection.readOnlyCapabilityActive) || !inspection.appReady || inspection.errorFallbackDetected || inspection.horizontalOverflowPx > 1) throw new Error('Final page content, isolation or layout check failed');
     if (/placeholder|future batch/i.test(inspection.bodyText) && item.lane === 'fixture-render-matrix') throw new Error('Fixture is a placeholder and cannot establish rendering coverage');
     // The reviewed no-mentor phase redirects to the public application, which has no workspace shell.
     if (item.role !== 'anonymous' && item.expectedPath !== '/mentor/apply') {

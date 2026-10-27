@@ -6,6 +6,7 @@ import { createRequire } from 'node:module';
 import { verifyBrowserTargets, validateLocalFixtureOrigin, verifyLocalFixtureHealth } from './lib/portal-browser-targets.mjs';
 import { validateAcceptanceIdentity } from './lib/portal-acceptance-lanes.mjs';
 import { validateBrowserPhaseInput } from './lib/portal-browser-plan.mjs';
+import { verifyLocalOwnershipEnvironment } from './lib/portal-local-ownership.mjs';
 
 const require = createRequire(import.meta.url);
 const args = process.argv.slice(2);
@@ -35,6 +36,7 @@ try {
   let targets;
   if (localFixturesOnly) {
     const origin = validateLocalFixtureOrigin(option('--local-origin'));
+    verifyLocalOwnershipEnvironment(process.env, input.identity.controlSha, origin);
     targets = { candidate: verifyLocalFixtureHealth(input.identity, origin, await fetchHealth(origin), { ownedDisconnectedServer: process.env.PORTAL_ACCEPTANCE_OWNED_DISCONNECTED_SERVER === 'true' }) };
   } else targets = await verifyBrowserTargets(input, readApi, fetchHealth);
   mkdirSync(dirname(output), { recursive: true });

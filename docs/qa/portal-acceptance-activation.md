@@ -11,7 +11,9 @@ Mike's permitted manual self-review is an activation gate, not independent code 
    as its sole required reviewer, self-review allowed, administrator bypass disabled,
    and only the `master` branch allowed. The workflow refuses a missing environment;
    the coordinator owns configuration. Set the nonsecret organization ID at repository
-   scope so the credential-free preflight can prepare the exact plan.
+   scope so the credential-free preflight can prepare the exact plan. Keep
+   `DEMO_QA_ENABLED` and `DEMO_QA_ORGANIZATION_ID` at repository scope without
+   conflicting environment-level definitions.
 2. A first-attempt master dispatch prepares `portal-phase-blueprint-<run ID>` before
    the protected job starts. Inspect `phase-plan.json`, `creation-plan.json` and
    `review.txt`: deterministic reserved UUIDs, run/organization, both immutable commits,
@@ -23,7 +25,7 @@ Mike's permitted manual self-review is an activation gate, not independent code 
    `DEMO_QA_PHASES_ENABLED=true` and `DEMO_QA_PHASE_APPROVAL` with the exact
    `portal-phase-approval-v1` contract described in the pure plan validator. The
    contract binds run, org, project, both commits, blueprint hash, Mike's identity,
-   concrete approval reference, explicit scopes and a maximum 24-hour validity.
+   this exact workflow run's approval URL, explicit scopes and a maximum 24-hour validity.
    The synthetic job also expires four hours after the run was created. Missing,
    stale or partial scopes stop full acceptance before fixture creation. Expiration
    requires a new reviewed dispatch; it never authorizes a retry of a previous write.
@@ -34,6 +36,13 @@ Mike's permitted manual self-review is an activation gate, not independent code 
    another reviewer, stale run, altered artifact, duplicate review or different scope
    set fails closed. The same read-only proof is required by hosted creation, phase
    and browser action processes. No script posts approvals or modifies environment data.
+
+The protected phase variables are bound on the runner's validation step after the
+job has entered `demo-qa`, not in the earlier job-level environment expression.
+Only validated canonical values are propagated through `GITHUB_ENV` to later
+steps. GitHub documents [environment variable availability](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#vars-context)
+and [configuration precedence](https://docs.github.com/en/actions/reference/workflows-and-actions/variables#configuration-variable-precedence);
+the first hosted run must still verify the timing and artifact handoff in practice.
 
 The explicit scopes are `saved-result`, `synthetic-assignment`, `mentor-owner`,
 `mentor-directory-exposure`, and `synthetic-live-job`. The final two expose clearly

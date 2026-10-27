@@ -62,7 +62,7 @@ export function assertPhaseApproval(approval, blueprint, phase, { now = Date.now
   required(approval.schemaVersion === 1 && approval.contract === 'portal-phase-approval-v1' && approval.approved === true && approval.blueprintHash === phaseBlueprintHash(blueprint), 'Approval must bind the exact blueprint digest.');
   for (const key of ['repository', 'projectRef', 'runId', 'organizationId', 'controlSha', 'baselineSha']) required(approval[key] === blueprint[key], `Approval ${key} mismatch.`);
   required(canonical(approval.reviewer) === canonical({ login: 'mabrown040', id: 225406758 }), 'Explicit authorized reviewer required.');
-  required(typeof approval.reference === 'string' && /^https:\/\/github\.com\/workforceap\/workforceap-beta\/(?:actions\/runs|issues|pull)\/[1-9]\d*(?:#[A-Za-z0-9-]+)?$/.test(approval.reference), 'A concrete repository approval reference is required.');
+  required(approval.reference === `https://github.com/${blueprint.repository}/actions/runs/${blueprint.runId.slice(0, -2)}`, 'Approval reference must identify this exact workflow run.');
   const approved = Date.parse(approval.approvedAt), expires = Date.parse(approval.expiresAt);
   required(Number.isFinite(approved) && Number.isFinite(expires) && approved <= now && expires > now && expires > approved && expires - approved <= 24 * 60 * 60_000 && Date.parse(blueprint.job.expiresAt) > now, 'Approval or bounded synthetic job lifetime is invalid or expired.');
   required(Array.isArray(approval.scopes) && new Set(approval.scopes).size === approval.scopes.length && approval.scopes.every(scope => PHASE_SCOPES.includes(scope)), 'Approval scopes are invalid.');
