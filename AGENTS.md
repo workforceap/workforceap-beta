@@ -5,6 +5,27 @@
 - Cut taglines, helper text and secondary labels. If a screen needs them to make sense, fix the layout.
 - Make the best decision that will elevate all three: the user experience (UX), developer experience (DX), and agent experience (AX) always, without breaking anything.
 
+## Coordinated feature delivery
+
+Read [the agent delivery contract](docs/AGENT-DELIVERY.md) before assigning,
+implementing, reviewing or landing work. Use one short-lived integration branch
+per coherent feature, scoped child branches when useful, and one release PR.
+The coordinator owns the landing queue and closeout; a worker finishing a patch
+does not complete delivery. Record the exact base/head, scope, native agent handle,
+implementation/review/publication/merge owners, checks and next action.
+
+Claude CLI, Cursor and Hermes use their existing identities and configured
+providers. Assign disjoint responsibilities and preserve active claims. Hermes
+is the existing WAP merge coordinator unless a verified explicit handoff names a
+replacement; builders never create a competing merge owner. Obtain independent
+review of the current head, enforce applicable CI, and verify the deployed
+outcome. Preserve explicit product, data and environment decisions.
+
+Child PRs need always-reported checks and conservative affected tests. Full
+validation remains required for release candidates and cross-cutting changes.
+Inspect live workflow/ruleset behavior; a feature branch, green hosting label or
+workflow comment does not prove coverage, a preview, or merge protection.
+
 ## Repository knowledge and navigation
 
 Start with [the Workforce AP knowledge base](docs/knowledge-base/README.md) and its

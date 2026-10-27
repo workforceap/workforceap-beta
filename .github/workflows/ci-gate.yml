@@ -2,7 +2,8 @@ name: CI
 
 on:
   pull_request:
-    branches: [master]
+    # Every base reports a verdict. Retargeting changes the required lane.
+    types: [opened, synchronize, reopened, edited, ready_for_review, labeled, unlabeled]
   # Merge queue (WAP-201): the queue builds a temporary commit of the PR on top
   # of the latest master (plus any PRs ahead of it) and merges only if every
   # required check passes on that commit, so two individually green PRs can't
@@ -28,15 +29,37 @@ concurrency:
 
 # WAP-200: the gate used to be one serial ~20-minute job. It is now four
 # parallel jobs (static-gates, unit, vitest shards, build) plus the
-# "Typecheck & Build" aggregator at the bottom, which keeps the check name
-# branch protection and reviewers look for. Every command the serial job ran
-# still runs on every PR and every push to master; only the order and the
-# parallelism changed. Each job repeats the same stub env block below.
+# "Typecheck & Build" aggregator, which keeps the stable required-check name.
+# Releases, merge groups and master pushes retain every full gate. A bounded
+# child PR can use affected Vitest; static guards and Node tests always run.
 jobs:
+  plan:
+    name: Plan CI scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      version: ${{ steps.scope.outputs.version }}
+      mode: ${{ steps.scope.outputs.mode }}
+      merge-base: ${{ steps.scope.outputs.merge-base }}
+      runtime-count: ${{ steps.scope.outputs.runtime-count }}
+      check-name: ${{ steps.scope.outputs.check-name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+      - name: Select scope from immutable PR parents and the tested tree
+        id: scope
+        run: node scripts/ci-plan.mjs
+
   # Cheap static gates first, so a scoping, audit or migration-history mistake
   # goes red in about a minute instead of 10-20 minutes in.
   static-gates:
     name: Static gates (guards, typecheck, lint, knip)
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -61,6 +84,7 @@ jobs:
         with:
           # No job pushes; the fail-fast step authenticates with GH_TOKEN.
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -125,9 +149,17 @@ jobs:
       # exports fail the build; unused files / exports / types are still
       # reported as warnings while the reviewed deletion batches land.
       - name: Static gates (scripts/prepush.mjs --ci)
+        if: needs.plan.outputs.mode != 'affected'
         run: node scripts/prepush.mjs --ci
         env:
           TENANT_SCOPING_MAX_UNSCOPED: "672"
+        timeout-minutes: 12
+
+      - name: Child static gates (same guards, affected ESLint)
+        if: needs.plan.outputs.mode == 'affected'
+        run: node scripts/prepush.mjs --ci-affected --base "$CI_MERGE_BASE"
+        env:
+          CI_MERGE_BASE: ${{ needs.plan.outputs.merge-base }}
         timeout-minutes: 12
 
       # Fail fast across jobs (WAP-200): the gate jobs run in parallel, and
@@ -148,6 +180,7 @@ jobs:
 
   unit:
     name: Unit tests (node:test)
+    needs: plan
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -219,6 +252,8 @@ jobs:
   # one shard, so the two jobs together run the same files the single step did.
   vitest:
     name: Vitest (shard ${{ matrix.shard }}/2)
+    needs: plan
+    if: needs.plan.outputs.mode != 'affected'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -308,8 +343,93 @@ jobs:
           echo "::error title=${{ github.job }} failed::${{ github.job }} failed, so the other gate jobs were cancelled (fail fast). Open this job's red step for the cause."
           gh run cancel "${{ github.run_id }}" --repo "${{ github.repository }}"
 
+  vitest-affected:
+    name: Vitest (affected child)
+    needs: plan
+    if: needs.plan.outputs.mode == 'affected'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      # Lets a failing gate job cancel its siblings (see the last step).
+      actions: write
+
+    env:
+      # Stub values so Next.js/Prisma don't crash at build time in CI.
+      # Real secrets are never needed for a typecheck+build gate.
+      DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci"
+      NEXTAUTH_SECRET: "ci-secret-placeholder"
+      NEXTAUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_SUPABASE_URL: "https://placeholder.supabase.co"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "placeholder"
+      NODE_OPTIONS: "--max-old-space-size=8192"
+      RATE_LIMIT_ALLOW_MISSING_UPSTASH: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # No job pushes; the fail-fast step authenticates with GH_TOKEN.
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The serial job ran Vitest after staging the marketing build into
+      # public/, and tests/next-config-redirect-destinations.spec.ts accepts
+      # marketing/dist pages as redirect targets. Stage it here too so the
+      # suite sees the same tree it always did.
+      - name: Install marketing dependencies
+        working-directory: marketing
+        run: npm ci --no-audit --no-fund
+
+      - name: Build marketing
+        working-directory: marketing
+        run: npm run build
+        timeout-minutes: 5
+
+      - name: Stage marketing output for Next.js
+        run: node -e "require('./scripts/vercel-build.cjs').copyMarketingBuild(process.cwd())"
+
+      - name: Generate Prisma client
+        run: node scripts/prisma-env.js prisma generate
+
+      # Collection must cover every changed runtime file. Unknown coverage fails
+      # closed; adding ci-full reruns the entire build, database and test lane.
+      - name: Test affected components or require ci-full escalation
+        run: node scripts/ci-vitest-affected.mjs
+        timeout-minutes: 18
+
+      # Fail fast across jobs (WAP-200): the gate jobs run in parallel, and
+      # "Typecheck & Build" can only report once every job it needs has
+      # finished. When this job fails on a PR, cancel the rest of the run so
+      # the aggregator reports red within about a minute instead of waiting
+      # ~9 minutes for the build. Pushes to master always run every job to
+      # completion. Best effort: a read-only token (fork PRs) just skips it.
+      - name: Cancel the other gate jobs (fail fast)
+        if: failure() && github.event_name != 'push'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # This job is marked cancelled too; the annotation keeps the culprit visible.
+          echo "::error title=${{ github.job }} failed::${{ github.job }} failed, so the other gate jobs were cancelled (fail fast). Open this job's red step for the cause."
+          gh run cancel "${{ github.run_id }}" --repo "${{ github.repository }}"
+
   build:
     name: Next build
+    needs: plan
+    if: needs.plan.outputs.mode != 'affected'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
@@ -420,27 +540,26 @@ jobs:
 
   # Required check. Branch protection and reviewers match the check by this
   # exact name, so it stays "Typecheck & Build" and passes only when every
-  # gate job above succeeded. `if: always()` makes it report red (never
+  # gate required by the successful plan succeeded. `if: always()` reports red (never
   # "skipped", which protection treats as passing) when a needed job fails or
   # is cancelled.
   ci:
-    name: Typecheck & Build
+    name: ${{ needs.plan.outputs.check-name || 'Typecheck & Build' }}
     if: always()
-    needs: [static-gates, unit, vitest, build]
+    needs: [plan, static-gates, unit, vitest, vitest-affected, build, database-contract]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Require every gate job to succeed
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+      - name: Require every planned gate, including the PostgreSQL contract
         env:
           NEEDS_JSON: ${{ toJSON(needs) }}
-        run: |
-          echo "$NEEDS_JSON" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
-          failed=$(echo "$NEEDS_JSON" | jq -r '[to_entries[] | select(.value.result != "success") | .key] | join(", ")')
-          if [ -n "$failed" ]; then
-            echo "::error title=Typecheck & Build::Gate job(s) did not succeed: $failed"
-            exit 1
-          fi
-          echo "All gate jobs succeeded."
+        run: node scripts/ci-gate-result.mjs
 
   # Real PostgreSQL contract (WAP-175 lever 1). The typecheck/build job above
   # has no database, so migrations, RLS policies and role queries were never
@@ -452,6 +571,8 @@ jobs:
   # and the real-Prisma role tests. Required gate.
   database-contract:
     name: Database contract (PostgreSQL 16)
+    needs: plan
+    if: needs.plan.outputs.mode != 'affected'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 

@@ -2,6 +2,7 @@ name: Knowledge Base
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
   # Merge queue (WAP-201): report on the queue commit too, so this check can
   # be required without stalling the queue.
   merge_group:

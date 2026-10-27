@@ -2,12 +2,15 @@ name: Locked Product Stakes
 
 on:
   pull_request:
-    branches: [master]
-    types: [opened, edited, synchronize, labeled, unlabeled, reopened]
+    types: [opened, edited, synchronize, labeled, unlabeled, reopened, ready_for_review]
   # Merge queue (WAP-201): the check must report on the queue commit when it is
   # a required check, or the queue waits forever. It already ran against the
   # PR (and re-runs on every label change), so on merge_group it passes.
   merge_group:
+
+permissions:
+  contents: read
+  pull-requests: read
 
 jobs:
   locked-stakes-check:
@@ -51,6 +54,13 @@ jobs:
               pull_number: pr.number,
               per_page: 100,
             });
+
+            // GitHub truncates this endpoint at 3,000 files. An incomplete
+            // inventory cannot establish that no locked file changed.
+            if (files.length >= 3000) {
+              core.setFailed('PR file inventory reached the API limit; split the change or review a complete inventory.');
+              return;
+            }
 
             const changed = files.map((file) => file.filename);
             const touchedLocked = changed.filter((file) => lockedPatterns.includes(file));
