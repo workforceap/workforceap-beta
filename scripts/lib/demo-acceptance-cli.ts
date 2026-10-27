@@ -1,0 +1,296 @@
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { randomBytes, randomUUID } from 'node:crypto';
+import type { Prisma } from '@prisma/client';
+import { createJournal, createPrismaJournalStore, canonical, digest } from './demo-acceptance-journal.mjs';
+import { createLifecycle, identityFromEnvironment, fixturePlan, fixtureStateFromJournal, terminalRunProof, assertCleanupQuiescent, pendingOperations } from './demo-acceptance-lifecycle.mjs';
+import { readPortalQaTarget } from './portal-qa-guard.cjs';
+import { probeDemoServiceKey } from './demo-service-key-probe.cjs';
+import { createFixtures, createRoleRowsIn, cleanupFixtures, liveDeps, readbackPersistence, type FixtureState, type Role, type PortalQaTarget } from '../five-role-demo-fixture';
+import { readOwnedGraph, assertGraphUnchanged, assertGraphTransition, type OwnedGraph } from './demo-acceptance-owned-rows';
+import { FIVE_ROLES, READBACK_KIND, CLEANUP_KIND, writtenValueFor, runIdFor } from './five-role-acceptance.mjs';
+import { canonicalEventName } from '../../lib/events/names';
+import { execFileSync } from 'node:child_process';
+import { assertDispatchContext } from './demo-acceptance-workflow.mjs';
+import { verifyBrowserTargets } from './portal-browser-targets.mjs';
+
+function output(path: string | undefined, value: unknown) {
+  if (!path) throw new Error('Receipt output path is required.');
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
+}
+function browserInput(env: NodeJS.ProcessEnv, identity: Record<string, unknown>, memberId?: string) {
+  output(env.PORTAL_BROWSER_INPUT, { identity, baselineDeploymentId: Number(env.DEMO_QA_BASELINE_DEPLOYMENT_ID),
+    candidateDeploymentId: Number(env.DEMO_QA_CANDIDATE_DEPLOYMENT_ID), ...(memberId ? { memberId } : {}), dynamicRoutes: [] });
+}
+const read = (path: string | undefined) => { if (!path) throw new Error('Receipt path missing.'); return JSON.parse(readFileSync(path, 'utf8')); };
+
+/** Exact database fixture operation shared by the live coordinator and local contract proof. */
+export async function createAcceptanceRows(tx: Prisma.TransactionClient, target: PortalQaTarget, input: Parameters<typeof createRoleRowsIn>[2], runId: string) {
+  const created = await createRoleRowsIn(tx, target, input);
+  await tx.messageThread.create({ data: { memberId: input.users.member.userId, counselorUserId: input.users.counselor.userId } });
+  // The production writer imports ambient app Prisma. Validate its vocabulary here and
+  // seed only canonical synthetic login events inside this dedicated journal transaction.
+  const eventName = canonicalEventName('member_logged_in');
+  if (!eventName) throw new Error('Canonical login event is unavailable.');
+  for (let count = 0; count < 6; count++) await tx.$executeRaw`INSERT INTO member_events (id, user_id, event_name, metadata, created_at) VALUES (${randomUUID()}, ${input.users.member.userId}, ${eventName}, ${JSON.stringify({ fixtureRunId: runId, fixtureSetupOnly: true })}::jsonb, NOW())`;
+  const fixtureState = { runId, organizationId: target.organizationId, users: input.users, ...created };
+  const ownedGraph = await readOwnedGraph(tx, fixtureState);
+  return { result: created, evidence: { fixtureState, ownedGraph } };
+}
+
+/** No PREVIEW_ or normal app credential fallback. The session/direct DB must retain transactions. */
+export function dedicatedEnvironment(env: NodeJS.ProcessEnv) {
+  const direct = env.DEMO_QA_DATABASE_URL;
+  if (env.DEMO_QA_SUPABASE_URL !== 'https://esbdrgaonplpvzmtrdhw.supabase.co') throw new Error('The canonical DEMO Auth origin is required.');
+  if (!direct || new URL(direct).port === '6543' || new URL(direct).searchParams.get('pgbouncer') === 'true') {
+    throw new Error('A dedicated DEMO direct/session database URL is required.');
+  }
+  return { ...env, PORTAL_QA_TARGET: 'demo', NEXT_PUBLIC_SUPABASE_URL: env.DEMO_QA_SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY: env.DEMO_QA_SERVICE_ROLE_KEY, POSTGRES_PRISMA_URL: direct,
+    POSTGRES_URL_NON_POOLING: direct, DATABASE_URL: direct };
+}
+
+export async function openRuntime(env: NodeJS.ProcessEnv, originalRunId?: string) {
+  const dedicated = dedicatedEnvironment(env);
+  const target = readPortalQaTarget(dedicated) as PortalQaTarget;
+  const live = liveDeps(target, dedicated);
+  const journal = createJournal(createPrismaJournalStore(live.prisma));
+  try {
+    const identity = originalRunId ? (await journal.read(originalRunId)).identity : identityFromEnvironment(env);
+    if (!identity || identity.organizationId !== target.organizationId || identity.projectRef !== 'esbdrgaonplpvzmtrdhw') {
+      throw new Error('Journal target does not match the independently verified DEMO target.');
+    }
+    const owner = `${env.GITHUB_REPOSITORY}/${runIdFor(env.GITHUB_RUN_ID, env.GITHUB_RUN_ATTEMPT)}`;
+    const lifecycle = createLifecycle(journal, identity, owner);
+    return { ...live, journal, identity, lifecycle, owner, target, dedicated };
+  } catch (error) { await live.close(); throw error; }
+}
+
+function latestGraph(state: { events: Array<{ data?: { ownedGraph?: OwnedGraph; observed?: { ownedGraph?: OwnedGraph } } }> }): OwnedGraph {
+  const graph = state.events.map(event => event.data?.ownedGraph ?? event.data?.observed?.ownedGraph).filter(Boolean).at(-1);
+  if (!graph) throw new Error('No authoritative owned-row graph is available.');
+  return graph;
+}
+
+/** Called immediately around one permitted browser API mutation, never retried. */
+export async function runAcceptanceAction<T>(env: NodeJS.ProcessEnv, operation: string, call: () => Promise<T>, verifyApp: (result: T) => boolean) {
+  const runtime = await openRuntime(env);
+  const { lifecycle, prisma, identity } = runtime;
+  try {
+    const current = await lifecycle.current();
+    const fixture = fixtureStateFromJournal(current) as FixtureState;
+    const before = await readOwnedGraph(prisma, fixture);
+    const previous = latestGraph(current);
+    if (canonical(previous) !== canonical(before)) {
+      assertGraphTransition(previous, before, 'member-session', fixture);
+      await lifecycle.append('readback', { sessionObserved: true, ownedGraph: before });
+    }
+    let graph: OwnedGraph | undefined;
+    const result = await lifecycle.write(`app:${operation}`, { graphDigest: digest(before) }, { operation }, call, async (value: T) => {
+      if (!verifyApp(value)) return false;
+      graph = await readOwnedGraph(prisma, fixture);
+      assertGraphTransition(before, graph, operation.startsWith('login:') ? 'member-session' : operation, fixture);
+      assertScenarioValue(graph, operation, fixture, value);
+      return { operation, appReadbackMatched: true, databaseMatched: true, ownedGraph: graph };
+    });
+    await lifecycle.append('readback', { operation, ownedGraph: graph });
+    return { result, identity, journalDigest: (await lifecycle.current()).digest };
+  } finally { await runtime.close(); }
+}
+
+function assertScenarioValue(graph: OwnedGraph, operation: string, fixture: FixtureState, value: unknown) {
+  const memberId = fixture.users.member?.userId;
+  const member = graph.User?.find(row => row.id === memberId);
+  const profile = graph.Profile?.find(row => row.userId === memberId);
+  const record = value as { recordId?: string; timestamp?: string };
+  let valid = false;
+  if (operation.startsWith('login:')) valid = record.recordId === fixture.users[operation.slice(6) as Role]?.userId;
+  if (operation === 'member-goal') valid = graph.Goal?.some(row => row.id === record.recordId && row.title === writtenValueFor(fixture.runId, 'member')) ?? false;
+  if (operation === 'counselor-note' || operation === 'admin-note') valid = graph.CounselorNote?.some(row => row.id === record.recordId && row.content === writtenValueFor(fixture.runId, operation.split('-')[0])) ?? false;
+  if (operation === 'employer-profile') valid = graph.Employer?.some(row => row.id === fixture.employerId && row.companyName === writtenValueFor(fixture.runId, 'employer')) ?? false;
+  if (operation === 'partner-profile') valid = graph.Partner?.some(row => row.id === fixture.partnerId && row.name === writtenValueFor(fixture.runId, 'partner')) ?? false;
+  if (operation === 'member-location') valid = profile?.city === 'QA City' && profile?.state === 'GA' && profile?.zip === '30301';
+  if (operation === 'member-notifications') valid = member?.notificationsUpdates === false && member?.notificationsReminders === false;
+  if (operation === 'member-message-read') valid = typeof record.timestamp === 'string' && graph.MessageThread?.some(row => row.memberId === memberId && row.memberLastReadAt === record.timestamp) === true;
+  if (!valid) throw new Error('The scenario database value did not match its exact contract.');
+}
+
+export async function main(command: string | undefined, env: NodeJS.ProcessEnv) {
+  assertDispatchContext(env);
+  if (command === 'plan') {
+    const identity = identityFromEnvironment(env);
+    output(env.FIVE_ROLE_QA_PLAN_FILE, { identity, plan: fixturePlan(identity.runId, identity.organizationId),
+      baselineDeploymentId: env.DEMO_QA_BASELINE_DEPLOYMENT_ID, candidateDeploymentId: env.DEMO_QA_CANDIDATE_DEPLOYMENT_ID });
+    browserInput(env, identity);
+    return;
+  }
+  if (!['create', 'readback', 'cleanup', 'recover-cleanup', 'complete-preassessment'].includes(command ?? '')) throw new Error('Usage: plan|create|readback|cleanup|recover-cleanup|complete-preassessment');
+  if (command === 'create') {
+    const plan = read(env.PORTAL_BROWSER_INPUT);
+    if (canonical(plan.identity) !== canonical(identityFromEnvironment(env))) throw new Error('Browser preflight plan identity differs from the trusted workflow.');
+    await verifyBrowserTargets(plan,
+      async (path: string) => JSON.parse(execFileSync('gh', ['api', '--method', 'GET', path], { encoding: 'utf8', timeout: 15_000, windowsHide: true })),
+      async (origin: string) => {
+        const response = await fetch(`${origin}/api/health`, { redirect: 'error', signal: AbortSignal.timeout(15_000), headers: env.DEMO_QA_VERCEL_BYPASS_SECRET ? { 'x-vercel-protection-bypass': env.DEMO_QA_VERCEL_BYPASS_SECRET } : {} });
+        return { status: response.status, body: await response.text() };
+      });
+  }
+  const original = command === 'recover-cleanup' ? env.DEMO_QA_ORIGINAL_RUN_ID : undefined;
+  if (command === 'recover-cleanup' && !/^\d{1,20}-1$/.test(original ?? '')) throw new Error('Cleanup-only requires the original first-attempt run ID.');
+  const runtime = await openRuntime(env, original);
+  const { deps, prisma, journal, lifecycle, identity, target, owner } = runtime;
+  try {
+    if (command === 'create') {
+      const probe = await probeDemoServiceKey({ url: runtime.dedicated.NEXT_PUBLIC_SUPABASE_URL, key: runtime.dedicated.SUPABASE_SERVICE_ROLE_KEY });
+      if (probe.urlProject !== 'demo' || probe.key !== 'valid') throw new Error('DEMO key read probe failed.');
+      if (!env.GITHUB_ENV) throw new Error('Credential handoff file missing.');
+      await lifecycle.claim();
+      const baseCreate = deps.createAuthUser;
+      deps.createAuthUser = input => lifecycle.write(`auth-create:${input.appMetadata.role}`, null,
+        { email: input.email, metadata: input.appMetadata }, () => baseCreate(input), async (id: string) => {
+          const actual = await deps.getAuthUser(id);
+          return actual && actual.email === input.email && Object.entries(input.appMetadata).every(([key, value]) => actual.appMetadata[key] === value) ? { id, email: input.email, metadata: input.appMetadata } : false;
+        });
+      deps.createRoleRows = async input => {
+        const state = await lifecycle.current();
+        const result = await journal.atomic(identity.runId, owner, state.revision, 'db-committed', { operationId: 'role-rows', preimage: null },
+          (tx: Prisma.TransactionClient) => createAcceptanceRows(tx, target, input, identity.runId));
+        lifecycle.adopt(result.state);
+        return result.result;
+      };
+      const passwords = Object.fromEntries(FIVE_ROLES.map(role => [role, randomBytes(24).toString('base64url')])) as Record<Role, string>;
+      const fixture = await createFixtures(target, identity.runId, passwords, deps,
+        async state => { await lifecycle.saveFixture(state); output(env.FIVE_ROLE_QA_STATE_FILE, state); },
+        async marker => { await lifecycle.append('confirmed', { marker }); });
+      const lines = [`FIVE_ROLE_QA_RUN_ID=${identity.runId}`, `FIVE_ROLE_QA_EMPLOYER_RECORD_ID=${fixture.employerId}`, `FIVE_ROLE_QA_PARTNER_RECORD_ID=${fixture.partnerId}`];
+      for (const role of FIVE_ROLES as Role[]) {
+        console.log(`::add-mask::${passwords[role]}`);
+        lines.push(`FIVE_ROLE_QA_${role.toUpperCase()}_ID=${fixture.users[role]!.userId}`, `FIVE_ROLE_QA_${role.toUpperCase()}_EMAIL=${fixture.users[role]!.email}`, `FIVE_ROLE_QA_${role.toUpperCase()}_PASSWORD=${passwords[role]}`);
+      }
+      appendFileSync(env.GITHUB_ENV, `${lines.join('\n')}\n`);
+      output(env.FIVE_ROLE_QA_PLAN_FILE, { identity, plan: fixturePlan(identity.runId, identity.organizationId), memberId: fixture.users.member!.userId,
+        baselineDeploymentId: env.DEMO_QA_BASELINE_DEPLOYMENT_ID, candidateDeploymentId: env.DEMO_QA_CANDIDATE_DEPLOYMENT_ID });
+      browserInput(env, identity, fixture.users.member!.userId);
+      return;
+    }
+    if (command === 'recover-cleanup') {
+      const existing = await journal.read(identity.runId);
+      const proof = await terminalRunProof(identity, async (id: string) => {
+        const response = await fetch(`https://api.github.com/repos/${identity.repository}/actions/runs/${id}`, { redirect: 'error', signal: AbortSignal.timeout(15_000), headers: { Authorization: `Bearer ${env.GITHUB_TOKEN}`, Accept: 'application/vnd.github+json' } });
+        if (!response.ok) throw new Error('Original workflow state is unreadable.');
+        return response.json();
+      });
+      await journal.handoff(identity.runId, existing.owner, existing.revision, owner, proof);
+      // Only positively observed completed Auth creates/deletes can resolve uncertainty.
+      // An absent create or present delete may still be executing and stays quarantined.
+      let recovered = fixtureStateFromJournal(await lifecycle.current()) as FixtureState;
+      for (const pending of pendingOperations(await lifecycle.current())) {
+        const operationId = pending.data.operationId as string;
+        if (operationId.startsWith('auth-create:')) {
+          const role = operationId.slice('auth-create:'.length) as Role;
+          const email = fixturePlan(identity.runId, identity.organizationId).users[role]?.email;
+          if (!email) throw new Error('Unknown creation intent.');
+          const user = await deps.findAuthUserByEmail(email);
+          if (!user || user.appMetadata.run_id !== identity.runId || user.appMetadata.role !== role ||
+              user.appMetadata.wap6_five_role_fixture !== true || user.appMetadata.portal_qa_organization_id !== identity.organizationId) {
+            throw new Error('Auth creation outcome is still quarantined.');
+          }
+          await lifecycle.reconcile(operationId, async () => ({ outcome: 'owned', id: user.id, email }));
+          recovered.users[role] = { userId: user.id, email };
+          delete recovered.pending;
+          await lifecycle.saveFixture(recovered);
+        } else if (operationId.startsWith('auth-delete:')) {
+          const role = operationId.slice('auth-delete:'.length) as Role;
+          const user = recovered.users[role];
+          if (!user || await deps.getAuthUser(user.userId) || await deps.findAuthUserByEmail(user.email)) throw new Error('Auth deletion remains quarantined.');
+          await lifecycle.reconcile(operationId, async () => ({ outcome: 'absent', id: user.userId, email: user.email }));
+        } else throw new Error('Original app request outcome is unresolved; cleanup remains quarantined.');
+      }
+    }
+    const current = await lifecycle.current();
+    assertCleanupQuiescent(current);
+    const fixture = fixtureStateFromJournal(current) as FixtureState;
+    if (command === 'readback') {
+      const acceptance = read(env.FIVE_ROLE_ACCEPTANCE_OUTPUT);
+      if (canonical(acceptance.identity) !== canonical(identity)) throw new Error('Acceptance identity mismatch.');
+      const result = await readbackPersistence(fixture, acceptance, deps);
+      const graph = await readOwnedGraph(prisma, fixture);
+      assertGraphUnchanged(latestGraph(current), graph);
+      const state = await lifecycle.append('readback', { roleReadback: result, ownedGraph: graph });
+      output(env.FIVE_ROLE_QA_READBACK_OUTPUT, { kind: READBACK_KIND, runId: identity.runId, identity, journalDigest: state.digest, ...result });
+      if (!result.success) throw new Error('Database readback failed.');
+      return;
+    }
+    if (command === 'complete-preassessment') {
+      const before = await readOwnedGraph(prisma, fixture);
+      if (canonical(latestGraph(current)) !== canonical(before)) {
+        assertGraphTransition(latestGraph(current), before, 'member-session', fixture);
+        await lifecycle.append('readback', { sessionObserved: true, ownedGraph: before });
+      }
+      await journal.atomic(identity.runId, owner, (await lifecycle.current()).revision, 'db-committed', { operationId: 'preassessment-fixture', preimage: { assessmentCompleted: false }, fixtureSetupOnly: true }, async (tx: Prisma.TransactionClient) => {
+        const changed = await tx.user.updateMany({ where: { id: fixture.users.member!.userId, organizationId: target.organizationId, assessmentCompleted: false, assessmentCompletedAt: null }, data: { assessmentCompleted: true, assessmentCompletedAt: new Date(), assessmentScore: 80, assessmentScorePct: 80 } });
+        if (changed.count !== 1) throw new Error('Assessment fixture compare-and-set failed.');
+        const ownedGraph = await readOwnedGraph(tx, fixture);
+        assertGraphTransition(before, ownedGraph, 'member-preassessment-completed', fixture);
+        return { result: true, evidence: { ownedGraph } };
+      });
+      return;
+    }
+    let expected: OwnedGraph;
+    try { expected = latestGraph(current); } catch {
+      // Before the atomic role-row transaction, public rows must be proven absent.
+      expected = await readOwnedGraph(prisma, fixture);
+      if (Object.values(expected).some(rows => rows.length)) throw new Error('Unjournaled database creation remains quarantined.');
+      await lifecycle.append('readback', { ownedGraph: expected, partialAuthOnly: true });
+    }
+    deps.validateCleanup = async () => { assertGraphUnchanged(expected, await readOwnedGraph(prisma, fixture)); };
+    const noteIds = expected.CounselorNote?.map(row => row.id) ?? [];
+    deps.deleteNotes = async () => {
+      const state = await lifecycle.current();
+      if (state.events.some(event => event.data?.operationId === 'cleanup-db')) return 0;
+      const deleted = await journal.atomic(identity.runId, owner, state.revision, 'db-committed',
+        { operationId: 'cleanup-db', preimage: expected }, async (tx: Prisma.TransactionClient) => {
+          assertGraphUnchanged(expected, await readOwnedGraph(tx, fixture));
+          const notes = await tx.counselorNote.deleteMany({ where: { id: { in: noteIds } } });
+          if (notes.count !== noteIds.length) throw new Error('Note deletion compare-and-set failed.');
+          for (const role of FIVE_ROLES as Role[]) {
+            const user = fixture.users[role];
+            if (user) await tx.user.deleteMany({ where: { id: user.userId, email: user.email, organizationId: target.organizationId } });
+          }
+          if (fixture.partnerId) await tx.partner.deleteMany({ where: { id: fixture.partnerId, organizationId: target.organizationId } });
+          const ownedGraph = await readOwnedGraph(tx, fixture);
+          if (Object.values(ownedGraph).some(rows => rows.length)) throw new Error('Database fixture absence did not verify.');
+          return { result: notes.count, evidence: { ownedGraph } };
+        });
+      lifecycle.adopt(deleted.state);
+      return deleted.result;
+    };
+    // Database destruction already happened atomically above; these callbacks may only confirm absence.
+    deps.deleteUser = async id => { if (await deps.findUserById(id)) throw new Error('Database delete was not committed.'); };
+    deps.deletePartner = async id => { if (await deps.findPartner(id)) throw new Error('Partner delete was not committed.'); };
+    const deleteAuth = deps.deleteAuthUser;
+    deps.deleteAuthUser = async id => {
+      const role = (FIVE_ROLES as Role[]).find(key => fixture.users[key]?.userId === id);
+      if (!role) throw new Error('Auth deletion does not name a journal-owned identity.');
+      const user = fixture.users[role]!;
+      await lifecycle.write(`auth-delete:${role}`, { id, email: user.email }, null, () => deleteAuth(id), async () =>
+        !(await deps.getAuthUser(id)) && !(await deps.findAuthUserByEmail(user.email)) ? { outcome: 'absent', id, email: user.email } : false, { cleanup: true });
+    };
+    // Only journal-confirmed action IDs can authorize deletion; a local acceptance file is not authority.
+    const recordIds = { member: expected.Goal?.[0]?.id, counselor: expected.CounselorNote?.find(row => row.authorId === fixture.users.counselor?.userId)?.id,
+      admin: expected.CounselorNote?.find(row => row.authorId === fixture.users.admin?.userId)?.id, employer: fixture.employerId, partner: fixture.partnerId };
+    const result = await cleanupFixtures(target, fixture, deps, recordIds);
+    const state = await lifecycle.append('cleanup-complete', { result, cleanupOnly: command === 'recover-cleanup' });
+    output(env.FIVE_ROLE_QA_CLEANUP_OUTPUT, { kind: CLEANUP_KIND, runId: identity.runId, identity, journalDigest: state.digest, success: true, auditRowsRetained: true, cleanupOnly: command === 'recover-cleanup', ...result });
+    output(env.FIVE_ROLE_QA_JOURNAL_OUTPUT, { identity, events: state.events, digest: state.digest });
+  } catch {
+    const failurePath = command === 'readback' ? env.FIVE_ROLE_QA_READBACK_OUTPUT : command === 'cleanup' || command === 'recover-cleanup' ? env.FIVE_ROLE_QA_CLEANUP_OUTPUT : env.FIVE_ROLE_QA_FAILURE_OUTPUT;
+    if (failurePath) output(failurePath, { kind: 'demo-acceptance-step-failure', command, identity, runId: identity.runId, success: false, reason: 'step-refused-or-outcome-quarantined', observedAt: new Date().toISOString() });
+    try {
+      const state = await journal.read(identity.runId);
+      if (env.FIVE_ROLE_QA_JOURNAL_OUTPUT) output(env.FIVE_ROLE_QA_JOURNAL_OUTPUT, { identity, events: state.events, digest: state.digest });
+    } catch { /* A missing export is never a successful receipt; the DB journal remains authoritative. */ }
+    throw new Error('DEMO acceptance step failed; inspect the sanitized receipt and retained journal.');
+  } finally { await runtime.close(); }
+}

@@ -1,0 +1,208 @@
+import { readFileSync, writeFileSync, mkdirSync, renameSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { test, expect, type BrowserContext, type Page, type Browser, type TestInfo } from '@playwright/test';
+import { createPortalBrowserPlan } from '../../scripts/lib/portal-browser-plan.mjs';
+import { acceptanceCredentials, verifyLocalFixtureHealth } from '../../scripts/lib/portal-browser-targets.mjs';
+import { LANE_SCHEMA_VERSION } from '../../scripts/lib/portal-acceptance-lanes.mjs';
+import { evaluateHealthPayload } from '../../scripts/lib/portal-audit-health-gate.mjs';
+import { installReadOnlyAuditCookie } from '../../scripts/lib/portal-audit-cookie.mjs';
+import { classifyReadOnlyAuditRequest, redirectTargetMatches } from '../../scripts/lib/portal-audit-actions.mjs';
+import { inspectPortalPage } from '../../scripts/lib/portal-audit-browser.mjs';
+import { auditPortalRouteInventory } from '../../scripts/lib/portal-audit-inventory.mjs';
+import { STATIC_PATHS, DYNAMIC_PATHS, REDIRECT_ONLY_PATHS } from '../../scripts/lib/portal-audit-paths.mjs';
+import { beginStaffDataReadiness, navigateMemberInventoryRoute } from '../../scripts/lib/portal-c-browser-readiness.mjs';
+
+type Case = { id: string; lane: string; role: string; path?: string; expectedPath?: string; width?: number; theme?: string; state?: string; missing?: string };
+type CaseResult = { id: string; status: string; reason?: string };
+type Target = { origin: string; sha: string };
+type Guard = { login: boolean; loginUsed: boolean; blocked: number };
+
+
+const inputPath = process.env.PORTAL_ACCEPTANCE_INPUT;
+const outputPath = process.env.PORTAL_ACCEPTANCE_OUTPUT;
+// This suite must only run through the exact-deployment-gated entry point.
+if (!inputPath || !outputPath) throw new Error('Use scripts/portal-browser-acceptance.mjs with explicit input and output');
+const input = JSON.parse(readFileSync(inputPath, 'utf8'));
+let plan: ReturnType<typeof createPortalBrowserPlan>;
+const results = new Map<string, CaseResult>();
+const startedAt = new Date().toISOString();
+const patterns = Object.values(DYNAMIC_PATHS).flat();
+
+function checkpoint() {
+  const receipts = Object.entries(plan.expectedCases).map(([lane, ids]) => {
+    const cases = (ids as string[]).map(id => results.get(id) ?? { id, status: 'pending' });
+    const status = cases.some(item => item.status === 'failed') ? 'failed'
+      : cases.some(item => item.status === 'error') ? 'error'
+        : cases.every(item => item.status === 'passed') ? 'passed' : 'incomplete';
+    return { schemaVersion: LANE_SCHEMA_VERSION, identity: plan.identity, lane, status, startedAt, completedAt: new Date().toISOString(), cases };
+  });
+  mkdirSync(dirname(outputPath!), { recursive: true });
+  writeFileSync(`${outputPath}.tmp`, JSON.stringify({ schemaVersion: LANE_SCHEMA_VERSION, kind: input.localFixturesOnly ? 'local-fixture-companion' : 'hosted-browser', identity: plan.identity, expectedCases: plan.expectedCases, receipts }, null, 2));
+  renameSync(`${outputPath}.tmp`, outputPath!);
+}
+
+async function health(target: Target) {
+  const response = await fetch(`${target.origin}/api/health`, { redirect: 'error', signal: AbortSignal.timeout(15_000), headers: {
+    ...(!input.localFixturesOnly && process.env.DEMO_QA_VERCEL_BYPASS_SECRET ? { 'x-vercel-protection-bypass': process.env.DEMO_QA_VERCEL_BYPASS_SECRET } : {}),
+  } });
+  const health = { status: response.status, body: await response.text() };
+  if (input.localFixturesOnly) { verifyLocalFixtureHealth(plan.identity, target.origin, health); return; }
+  const result = evaluateHealthPayload({ ...health, trustedSha: target.sha, mode: 'isolated_preview' });
+  if (!result.ok) throw new Error('Exact deployment health changed before browser use');
+}
+
+async function guardedContext(browser: Browser, target: Target, role: string): Promise<{ context: BrowserContext; page: Page; guard: Guard }> {
+  await health(target); // No credential resolution until this independently refreshed proof.
+  if (input.localFixturesOnly && role !== 'anonymous') throw new Error('Local fixture companion cannot log in');
+  const token = input.localFixturesOnly ? process.env.PORTAL_ACCEPTANCE_LOCAL_AUDIT_TOKEN : process.env.DEMO_QA_READ_ONLY_TOKEN;
+  if (!token || token.length < 32) throw new Error('Explicit DEMO read-only capability required');
+  const context = await browser.newContext({ baseURL: target.origin, serviceWorkers: 'block' });
+  const guard = { login: role !== 'anonymous', loginUsed: false, blocked: 0 };
+  try {
+    await installReadOnlyAuditCookie(context, target.origin, token);
+    await context.route('**/*', async route => {
+      const request = route.request();
+      const url = new URL(request.url());
+      if (url.origin !== target.origin) { guard.blocked++; await route.abort('blockedbyclient'); return; }
+      const headers = { ...request.headers(), 'x-vercel-skip-toolbar': '1',
+        ...(!input.localFixturesOnly && process.env.DEMO_QA_VERCEL_BYPASS_SECRET ? { 'x-vercel-protection-bypass': process.env.DEMO_QA_VERCEL_BYPASS_SECRET } : {}),
+      };
+      // One explicit login submission; every later request uses the existing audit policy.
+      if (guard.login && !guard.loginUsed && request.method() === 'POST' && url.pathname === '/api/auth/login') {
+        guard.loginUsed = true; await route.continue({ headers }); return;
+      }
+      const disposition = classifyReadOnlyAuditRequest(request.method(), request.url(), target.origin);
+      if (disposition === 'suppress_telemetry') { await route.fulfill({ status: 204, body: '' }); return; }
+      if (disposition === 'suppress_side_effect_get') {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ mfaEnforcement: false, mfaRequired: false, currentAal: 'aal2', nextAal: 'aal2', auditSuppressed: true }) }); return;
+      }
+      if (disposition !== 'continue') { guard.blocked++; await route.abort('blockedbyclient'); return; }
+      await route.continue({ headers });
+    });
+    await context.routeWebSocket('**/*', socket => { guard.blocked++; socket.close(); });
+    await context.addInitScript(() => { if (!localStorage.getItem('wap-theme')) localStorage.setItem('wap-theme', 'light'); });
+    const page = await context.newPage();
+    if (role !== 'anonymous') {
+      const credentials = acceptanceCredentials(role, process.env, plan.identity.runId);
+      await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+      const decline = page.getByRole('button', { name: /decline/i });
+      if (await decline.count()) await decline.click();
+      await page.locator('#email').fill(credentials.email);
+      await page.locator('#password').fill(credentials.password);
+      await page.getByRole('button', { name: /sign in/i }).click();
+      await page.waitForURL(url => url.origin === target.origin && !/^\/(?:[a-z]{2}\/)?login\/?$/.test(url.pathname), { timeout: 60_000 });
+      guard.login = false;
+      const actor = await page.evaluate(async () => {
+        const profile = await fetch('/api/member/profile', { redirect: 'error' });
+        const claims = await fetch('/api/auth/me', { redirect: 'error' });
+        if (!profile.ok || !claims.ok) throw new Error('Identity readback failed');
+        return { profile: await profile.json(), claims: await claims.json() };
+      });
+      if (actor.profile.user?.id !== credentials.userId || actor.profile.user?.email?.toLowerCase() !== credentials.email || actor.claims.role !== role || actor.claims.superAdmin !== false || !actor.claims.availablePortals?.some((portal: { role: string }) => portal.role === role)) throw new Error('Server identity or role differs from the approved synthetic fixture');
+    } else await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    guard.login = false;
+    return { context, page, guard };
+  } catch (error) { await context.close(); throw error; }
+}
+
+async function settle(page: Page, item: Case, origin: string) {
+  await page.setViewportSize({ width: item.width ?? 1440, height: item.width === 390 ? 844 : 900 });
+  await page.evaluate(theme => localStorage.setItem('wap-theme', theme), item.theme ?? 'light');
+  const ready = beginStaffDataReadiness(page, item.expectedPath ?? item.path!, origin);
+  try {
+    await navigateMemberInventoryRoute(page, item.path!, { trustedOrigin: origin, expectedPath: item.expectedPath ?? item.path!, dynamicPatterns: patterns, timeout: 45_000 });
+    await ready();
+    const inspection = await inspectPortalPage(page, patterns);
+    if (!inspection.readOnlyCapabilityActive || !inspection.appReady || inspection.errorFallbackDetected || inspection.horizontalOverflowPx > 1) throw new Error('Final page content, read-only capability or layout check failed');
+    if (/placeholder|future batch/i.test(inspection.bodyText) && item.lane === 'fixture-render-matrix') throw new Error('Fixture is a placeholder and cannot establish rendering coverage');
+    if (item.role !== 'anonymous') {
+      const workspaceRole = item.path!.startsWith('/dashboard') ? 'member' : item.role;
+      await expect(page.locator(`.workspace-shell-root[data-workspace-role="${workspaceRole}"]`)).toHaveCount(1);
+      await expect(page.locator('[data-workspace-role]:not([data-workspace-role="member"])[data-member-home-compact]')).toHaveCount(0);
+    }
+    await page.evaluate(() => document.fonts.ready);
+    if (item.state === 'drawer') {
+      await page.getByRole('button', { name: 'Open menu', exact: true }).click();
+      await expect(page.getByRole('button', { name: 'Close menu', exact: true })).toBeVisible();
+    } else if (item.width !== 390 && ['expanded', 'collapsed'].includes(item.state ?? '')) {
+      const desired = page.getByRole('button', { name: item.state === 'collapsed' ? 'Expand sidebar' : 'Collapse sidebar', exact: true });
+      if (!(await desired.isVisible())) await page.getByRole('button', { name: item.state === 'collapsed' ? 'Collapse sidebar' : 'Expand sidebar', exact: true }).click();
+      await expect(desired).toBeVisible();
+    }
+  } finally { ready.dispose(); }
+}
+
+function mask(page: Page) {
+  return [page.locator('time, [data-dynamic-time]'), page.getByText(/^\d{1,2}:\d{2}(?:\s*[AP]M)?$/i), page.getByText(/\b(?:just now|\d+\s*[smhd]\s*ago)\b/i)];
+}
+
+async function compare(baseline: Page, candidate: Page, item: Case, info: TestInfo, index: number) {
+  await health(input.targets.baseline);
+  await health(input.targets.candidate);
+  await settle(baseline, item, input.targets.baseline.origin);
+  await settle(candidate, item, input.targets.candidate.origin);
+  const name = `${plan.identity.runId}-${index}.png`;
+  const file = info.snapshotPath(name);
+  mkdirSync(dirname(file), { recursive: true });
+  // Baseline is freshly captured from the separately attested deployment only.
+  writeFileSync(file, await baseline.screenshot({ fullPage: true, animations: 'disabled', mask: mask(baseline) }));
+  await expect(candidate).toHaveScreenshot(name, { fullPage: true, animations: 'disabled', mask: mask(candidate), maxDiffPixels: 0, threshold: 0.02 });
+}
+
+test('current portal browser acceptance records every required case', async ({ browser }, info) => {
+  // The trusted config imports the current TS registry; this ESM suite keeps native .mjs guards intact.
+  plan = createPortalBrowserPlan({ ...input, fixtures: info.config.metadata.portalReviewFixtures });
+  if (input.localFixturesOnly) {
+    plan.cases = plan.cases.filter(item => item.lane === 'fixture-render-matrix' && item.missing === 'local_development_only_fixture').map(item => ({ ...item, missing: undefined }));
+    if (!plan.cases.length) throw new Error('Current registry has no local-only companion cases');
+    plan.expectedCases = { 'fixture-render-matrix': plan.cases.map(item => item.id) };
+  }
+  checkpoint();
+  const pages = new Map<string, Awaited<ReturnType<typeof guardedContext>>>();
+  const getPage = async (kind: string, role: string) => {
+    const key = `${kind}:${role}`;
+    if (!pages.has(key)) pages.set(key, await guardedContext(browser, input.targets[kind], role));
+    return pages.get(key)!;
+  };
+  try {
+    for (const [index, item] of (plan.cases as Case[]).entries()) {
+      if (item.missing) { results.set(item.id, { id: item.id, status: 'incomplete', reason: item.missing }); checkpoint(); continue; }
+      try {
+        if (item.lane === 'inventory-readiness') {
+          const inventory = auditPortalRouteInventory({ appRoot: 'app', staticPaths: STATIC_PATHS, dynamicPaths: DYNAMIC_PATHS, redirectOnlyPaths: REDIRECT_ONLY_PATHS });
+          if (!inventory.ok) throw new Error('Current route inventory drift');
+        } else {
+          const role = item.lane === 'logged-out-routes' ? 'anonymous' : item.role;
+          const candidate = await getPage('candidate', role);
+          const blockedBefore = candidate.guard.blocked;
+          const errors: string[] = [];
+          const pageError = () => errors.push('page_error');
+          candidate.page.on('pageerror', pageError);
+          try {
+            if (item.lane === 'logged-out-routes') {
+              await candidate.page.goto(item.path!, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+              await candidate.page.waitForURL(url => url.origin === input.targets.candidate.origin && /^\/(?:[a-z]{2}\/)?login\/?$/.test(url.pathname), { timeout: 15_000 });
+              await expect(candidate.page.locator('#email')).toBeVisible();
+            } else if (item.lane.endsWith('comparison')) {
+              const baseline = await getPage('baseline', role);
+              const baselineBlocked = baseline.guard.blocked;
+              await compare(baseline.page, candidate.page, item, info, index);
+              if (baseline.guard.blocked !== baselineBlocked) throw new Error('Baseline attempted a blocked request');
+            } else await settle(candidate.page, item, input.targets.candidate.origin);
+            if (errors.length || candidate.guard.blocked !== blockedBefore) throw new Error('Browser errors or blocked requests occurred');
+            if (item.expectedPath && !redirectTargetMatches(candidate.page.url(), item.expectedPath, input.targets.candidate.origin)) throw new Error('Final route changed after readiness');
+          } finally { candidate.page.off('pageerror', pageError); }
+        }
+        results.set(item.id, { id: item.id, status: 'passed' });
+      } catch {
+        // No private DOM text, response bodies, URL tokens or credentials in receipts.
+        results.set(item.id, { id: item.id, status: 'failed', reason: 'required_browser_contract_failed' });
+      }
+      checkpoint();
+    }
+  } finally {
+    await Promise.all([...pages.values()].map(value => value.context.close()));
+    checkpoint();
+  }
+  expect([...results.values()].filter(result => result.status !== 'passed'), 'All required browser cases must pass; missing fixtures remain incomplete').toEqual([]);
+});

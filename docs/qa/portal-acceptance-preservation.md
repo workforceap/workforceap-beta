@@ -1,0 +1,13 @@
+# Portal acceptance preservation map
+
+| Source | Preserved or superseding contract |
+| --- | --- |
+| #2719 `744bd3ae92a3ebad991bc890eb250b0efec551b4` | `scripts/five-role-demo-fixture.ts`, `scripts/lib/five-role-acceptance.mjs`, five-role browser spec and focused tests preserve disposable identities, one-attempt actions, exact-email/slug recovery and persistence/cleanup receipts. `demo-acceptance-*` modules replace local-file authority and broad note cleanup with the retained journal and exact dependency graph. |
+| #2829 `0e3c7f96cef65a15243ec0fa726ada1e1da383dd` | Current route/state-matrix and logged-out coverage are generated from `portal-audit-paths.mjs` and `PORTAL_REVIEW_FIXTURES`, through `portal-browser-plan.mjs`. Preflight precedes credentials and fixture writes. No fixture writes were added to any build. |
+| #2833 `76e8dbc91b29aa4d1216a18881c0149a1bf5f080` | Independent baseline/candidate staff comparison, cookie capability, canonical-route and responsive/theme contracts live in the browser acceptance runner. Old mentor approval, markerless mentor deletion and fabricated counselor result helpers are excluded. |
+| #2835 `f62c4d0a4fb96c5986bc42ab1be89ff7a568860a` | Bounded response-body readiness and streamed-not-found refusal remain in `portal-c-browser-readiness.mjs`; staff route parsing remains in `portal-c-staff-compare.mjs`. The new lane manifest and aggregator require complete same-identity evidence. |
+| Current master and #2864 | Existing portal screens, route discovery, query preservation, read-only request classification, cookie installation/stripping and message audit/clock fixes are retained. Existing trusted nightly smoke remains unchanged. |
+
+The old prototype pages, shell, KPI layout, CSS, locales, dev placeholders, historical snapshots and old package/Playwright configuration are not acceptance authority. The separate preview assessment-schema recovery script remains held; this feature does not execute DDL or attach it to a build. Existing benefits, owned-session and staff-shell tests retain ownership of current product behavior; this feature adds acceptance tooling rather than reverting application structure to satisfy obsolete assertions.
+
+Open fixture definitions remain owned by the coordinator: approved synthetic program assignment/current curriculum, owned counselor result, and any inactive mentor workspace fixture or approved browse-mentor fixture. No new program assignment, curriculum version, mentor approval or provider action is inferred from a missing route. A replacement PR may supersede the old proposals without claiming that these unrun hosted scenarios passed.
