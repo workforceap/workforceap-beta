@@ -283,3 +283,11 @@ triggers in place; do not drop active applicants’ saved reports during rollbac
 [report/PDF tests](../../tests/lib/application-report.spec.ts),
 [authorization tests](../../tests/api/application-report.spec.ts), and
 [staff email tests](../../tests/email/application-report.spec.ts) use synthetic data.
+
+## Coordinated feature delivery
+
+Small related changes can share a short-lived feature branch and one release PR.
+Eligible child PRs retain global guards and Node tests while selecting covered
+Vitest tests; sensitive changes and the combined release receive full validation.
+Unknown coverage blocks the child lane until `ci-full` requests all release gates.
+See the [agent delivery contract](../AGENT-DELIVERY.md) for ownership and closeout.
