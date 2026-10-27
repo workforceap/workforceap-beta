@@ -74,7 +74,7 @@ async function listTestFiles() {
   for await (const entry of glob('scripts/**/*.test.cjs', { cwd: ROOT })) {
     out.add(entry);
   }
-  return [...out];
+  return [...out].map((file) => file.replace(/\\/g, '/'));
 }
 
 /**
