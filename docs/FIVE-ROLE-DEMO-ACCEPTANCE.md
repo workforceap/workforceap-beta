@@ -37,6 +37,10 @@ checkout directory, exact source SHA and fresh nonce-bearing environment through
 Only the nonce digest and process IDs enter receipts. Hosted cases still require
 the actual app suppression marker. This is isolated fixture rendering evidence,
 not authenticated application acceptance.
+The exact checked-in GTM bootstrap is fulfilled with empty JavaScript and the exact
+loopback development HMR socket is closed without a server connection. These
+local-only suppressions are counted in the receipt; all other external requests,
+writes and unexpected sockets remain failures. No analytics or provider call is sent.
 
 `scripts/complete-portal-acceptance.ts` derives expected cases from trusted source, exports `contract.json` and `action-lanes.json`, verifies same-run local execution provenance, and combines browser evidence with the durable mutation verifier. Every receipt must bind the same run, organization, plan hash, trusted control revision, deployed SHA and baseline SHA. All mutations require one durable attempt, successful application readback, matching database evidence and verified cleanup. Missing, skipped, errored or partial evidence cannot become green because the reporter itself ran.
 

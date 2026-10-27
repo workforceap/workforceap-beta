@@ -13,6 +13,7 @@ import { auditPortalRouteInventory } from '../../scripts/lib/portal-audit-invent
 import { STATIC_PATHS, DYNAMIC_PATHS, REDIRECT_ONLY_PATHS } from '../../scripts/lib/portal-audit-paths.mjs';
 import { beginStaffDataReadiness, navigateMemberInventoryRoute } from '../../scripts/lib/portal-c-browser-readiness.mjs';
 import { verifyLocalOwnershipEnvironment } from '../../scripts/lib/portal-local-ownership.mjs';
+import { isLocalFixtureGtmBootstrap, isLocalFixtureHmrSocket } from '../../scripts/lib/portal-local-network.mjs';
 
 type Case = { id: string; lane: string; role: string; path?: string; expectedPath?: string; width?: number; theme?: string; state?: string; missing?: string };
 type CaseResult = { id: string; status: string; reason?: string };
@@ -29,6 +30,7 @@ const input = JSON.parse(readFileSync(inputPath, 'utf8'));
 validateBrowserPhaseInput(input, { localFixturesOnly: Boolean(input.localFixturesOnly), phasesEnabled: process.env.DEMO_QA_PHASES_ENABLED === 'true' });
 let plan: ReturnType<typeof createPortalBrowserPlan>;
 const results = new Map<string, CaseResult>();
+const localSuppressions = { analyticsBootstrap: 0, developmentHmr: 0 };
 const startedAt = new Date().toISOString();
 const patterns = Object.values(DYNAMIC_PATHS).flat();
 
@@ -42,7 +44,7 @@ function checkpoint() {
   });
   mkdirSync(dirname(outputPath!), { recursive: true });
   const localIsolation = input.localFixturesOnly ? verifyLocalOwnershipEnvironment(process.env, plan.identity.controlSha, input.targets.candidate.origin) : undefined;
-  writeFileSync(`${outputPath}.tmp`, JSON.stringify({ schemaVersion: LANE_SCHEMA_VERSION, kind: input.localFixturesOnly ? 'local-fixture-companion' : 'hosted-browser', identity: plan.identity, ...(localIsolation ? { localIsolation } : {}), ...(plan.phase ? { phase: plan.phase } : {}), expectedCases: plan.expectedCases, receipts }, null, 2));
+  writeFileSync(`${outputPath}.tmp`, JSON.stringify({ schemaVersion: LANE_SCHEMA_VERSION, kind: input.localFixturesOnly ? 'local-fixture-companion' : 'hosted-browser', identity: plan.identity, ...(localIsolation ? { localIsolation, localSuppressions } : {}), ...(plan.phase ? { phase: plan.phase } : {}), expectedCases: plan.expectedCases, receipts }, null, 2));
   renameSync(`${outputPath}.tmp`, outputPath!);
 }
 
@@ -72,6 +74,10 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
     await context.route('**/*', async route => {
       const request = route.request();
       const url = new URL(request.url());
+      if (input.localFixturesOnly && isLocalFixtureGtmBootstrap(request.method(), request.url())) {
+        localSuppressions.analyticsBootstrap++;
+        await route.fulfill({ status: 200, contentType: 'application/javascript', body: '/* Suppressed by disconnected fixture contract. */' }); return;
+      }
       if (url.origin !== target.origin) { guard.blocked++; await route.abort('blockedbyclient'); return; }
       const headers = { ...request.headers(), 'x-vercel-skip-toolbar': '1',
         ...(!input.localFixturesOnly && process.env.DEMO_QA_VERCEL_BYPASS_SECRET ? { 'x-vercel-protection-bypass': process.env.DEMO_QA_VERCEL_BYPASS_SECRET } : {}),
@@ -98,7 +104,11 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
       if (disposition !== 'continue') { guard.blocked++; await route.abort('blockedbyclient'); return; }
       await route.continue({ headers });
     });
-    await context.routeWebSocket('**/*', socket => { guard.blocked++; socket.close(); });
+    await context.routeWebSocket('**/*', socket => {
+      if (input.localFixturesOnly && isLocalFixtureHmrSocket(socket.url())) localSuppressions.developmentHmr++;
+      else guard.blocked++;
+      socket.close();
+    });
     await context.addInitScript(() => { if (!localStorage.getItem('wap-theme')) localStorage.setItem('wap-theme', 'light'); });
     contextStage = 'new_page';
     const page = await context.newPage();
