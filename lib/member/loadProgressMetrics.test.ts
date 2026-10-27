@@ -266,6 +266,28 @@ test('a lapsed streak reads 0 while the best streak is kept (the points page and
   assert.equal(metrics.longestStreak, 11);
 });
 
+test('streak expiry follows the injected UTC day across midnight, independent of the wall clock', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2030-01-01T12:00:00.000Z') });
+  const { db } = mockDb({
+    rows: {
+      [USER_ID]: fixture({
+        memberPoints: { totalPoints: 250, currentStreak: 4, longestStreak: 9, lastActiveDate: new Date('2026-10-25T23:59:59.999Z') },
+      }),
+    },
+  });
+
+  for (const [at, expectedStreak] of [
+    ['2026-10-25T23:59:59.999Z', 4],
+    ['2026-10-26T23:59:59.999Z', 4],
+    ['2026-10-27T00:00:00.000Z', 0],
+  ] as const) {
+    const metrics = await loadProgressMetrics(USER_ID, db, Date.parse(at));
+    assert.equal(metrics.currentStreak, expectedStreak, at);
+    assert.equal(metrics.longestStreak, 9, 'expiry does not change the best streak');
+    assert.equal(metrics.points, 250, 'expiry does not change earned points');
+  }
+});
+
 test('"this week" is the rolling 7-day window: exactly 7 days old counts, older does not, future-dated counts', async () => {
   const { db } = mockDb({
     rows: {
