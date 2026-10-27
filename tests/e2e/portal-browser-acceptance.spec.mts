@@ -79,7 +79,7 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
     await context.route('**/*', async route => {
       const request = route.request();
       const url = new URL(request.url());
-      const localVercelBootstrap = input.localFixturesOnly && localFixtureVercelBootstrap(request.method(), request.url());
+      const localVercelBootstrap = input.localFixturesOnly ? localFixtureVercelBootstrap(request.method(), request.url()) : null;
       if (localVercelBootstrap) {
         localSuppressions[localVercelBootstrap]++;
         await route.fulfill({ status: 200, contentType: 'application/javascript', body: '/* Suppressed by disconnected fixture contract. */' }); return;
