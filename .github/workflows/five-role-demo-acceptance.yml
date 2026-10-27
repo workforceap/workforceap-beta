@@ -1,0 +1,239 @@
+name: Portal DEMO acceptance
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Reviewed acceptance or cleanup of a terminal original run
+        type: choice
+        options: [acceptance, recover-cleanup]
+        default: acceptance
+        required: true
+      baseline_sha:
+        description: Full immutable base commit (acceptance only)
+        type: string
+      baseline_deployment_id:
+        description: GitHub Preview deployment ID for the base (acceptance only)
+        type: string
+      candidate_deployment_id:
+        description: GitHub Preview deployment ID for this exact master SHA (acceptance only)
+        type: string
+      original_run_id:
+        description: Original first-attempt run ID, for example 123456-1 (cleanup only)
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  deployments: read
+
+concurrency:
+  group: portal-demo-acceptance
+  cancel-in-progress: false
+
+jobs:
+  protection:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      blueprint_hash: ${{ steps.blueprint.outputs.blueprint_hash }}
+      artifact_id: ${{ steps.blueprint_artifact.outputs.artifact-id }}
+      artifact_digest: ${{ steps.blueprint_artifact.outputs.artifact-digest }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify the pre-existing protected environment before referencing it
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEMO_QA_ENABLED: ${{ vars.DEMO_QA_ENABLED }}
+          DEMO_QA_MODE: ${{ inputs.mode }}
+          DEMO_QA_ORIGINAL_RUN_ID: ${{ inputs.original_run_id }}
+        run: node scripts/check-demo-acceptance-environment.mjs
+      - if: inputs.mode == 'acceptance'
+        name: Prepare exact synthetic blueprint for review before the protected job
+        id: blueprint
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEMO_QA_ENABLED: ${{ vars.DEMO_QA_ENABLED }}
+          DEMO_QA_MODE: ${{ inputs.mode }}
+          DEMO_QA_BASELINE_SHA: ${{ inputs.baseline_sha }}
+          PORTAL_QA_ORGANIZATION_ID: ${{ vars.DEMO_QA_ORGANIZATION_ID }}
+          DEMO_QA_PHASE_PLAN_FILE: test-results/portal-acceptance/phase-plan.json
+        run: node scripts/prepare-demo-acceptance-phase-plan.mjs
+      - if: inputs.mode == 'acceptance'
+        uses: actions/upload-artifact@v4
+        id: blueprint_artifact
+        with:
+          name: portal-phase-blueprint-${{ github.run_id }}
+          path: |
+            test-results/portal-acceptance/phase-plan.json
+            test-results/portal-acceptance/creation-plan.json
+            test-results/portal-acceptance/review.txt
+          if-no-files-found: error
+
+  acceptance:
+    needs: protection
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    environment: demo-qa
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+      DEMO_QA_ENABLED: ${{ vars.DEMO_QA_ENABLED }}
+      DEMO_QA_MODE: ${{ inputs.mode }}
+      DEMO_QA_PHASE_PLAN_FILE: test-results/portal-acceptance/phase-plan.json
+      DEMO_QA_PHASE_BLUEPRINT_HASH: ${{ needs.protection.outputs.blueprint_hash }}
+      DEMO_QA_PHASE_ARTIFACT_ID: ${{ needs.protection.outputs.artifact_id }}
+      DEMO_QA_PHASE_ARTIFACT_DIGEST: ${{ needs.protection.outputs.artifact_digest }}
+      PORTAL_QA_ORGANIZATION_ID: ${{ vars.DEMO_QA_ORGANIZATION_ID }}
+      PORTAL_QA_ORGANIZATION_SLUG: ${{ vars.DEMO_QA_ORGANIZATION_SLUG }}
+      DEMO_QA_APP_SHA: ${{ github.sha }}
+      DEMO_QA_BASELINE_SHA: ${{ inputs.baseline_sha }}
+      DEMO_QA_BASELINE_DEPLOYMENT_ID: ${{ inputs.baseline_deployment_id }}
+      DEMO_QA_CANDIDATE_DEPLOYMENT_ID: ${{ inputs.candidate_deployment_id }}
+      DEMO_QA_ORIGINAL_RUN_ID: ${{ inputs.original_run_id }}
+      FIVE_ROLE_QA_PLAN_FILE: test-results/portal-acceptance/plan.json
+      PORTAL_BROWSER_INPUT: test-results/portal-acceptance/browser-input.json
+      PORTAL_BROWSER_OUTPUT: test-results/portal-acceptance/browser.json
+      PORTAL_LOCAL_FIXTURE_OUTPUT: test-results/portal-acceptance/local-fixtures.json
+      PORTAL_ACTION_LANES_OUTPUT: test-results/portal-acceptance/action-lanes.json
+      PORTAL_ACCEPTANCE_CONTRACT_OUTPUT: test-results/portal-acceptance/contract.json
+      FIVE_ROLE_QA_STATE_FILE: test-results/portal-acceptance/state.json
+      FIVE_ROLE_ACCEPTANCE_OUTPUT: test-results/portal-acceptance/actions.json
+      FIVE_ROLE_QA_READBACK_OUTPUT: test-results/portal-acceptance/readback.json
+      FIVE_ROLE_QA_CLEANUP_OUTPUT: test-results/portal-acceptance/cleanup.json
+      FIVE_ROLE_QA_JOURNAL_OUTPUT: test-results/portal-acceptance/journal.json
+      FIVE_ROLE_QA_FAILURE_OUTPUT: test-results/portal-acceptance/failure.json
+      FIVE_ROLE_QA_FINAL_OUTPUT: test-results/portal-acceptance/final.json
+      FIVE_ROLE_ACCEPTANCE_MODE: workflow
+      FIVE_ROLE_ACCEPTANCE_CONFIRMED: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - if: inputs.mode == 'acceptance'
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ needs.protection.outputs.artifact_id }}
+          merge-multiple: true
+          path: test-results/portal-acceptance
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Validate browser runner source
+        run: node scripts/check-portal-browser-source.mjs
+      - if: inputs.mode == 'acceptance'
+        name: Require the explicit protected-environment scope and blueprint approval
+        env:
+          DEMO_QA_PHASES_ENABLED: ${{ vars.DEMO_QA_PHASES_ENABLED }}
+          DEMO_QA_PHASE_APPROVAL: ${{ vars.DEMO_QA_PHASE_APPROVAL }}
+        run: node scripts/check-demo-acceptance-phase-approval.mjs
+      - if: inputs.mode == 'acceptance'
+        name: Export exact creation plan before any fixture write
+        run: pnpm exec tsx scripts/five-role-demo-fixture.ts plan
+      - if: inputs.mode == 'acceptance'
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-acceptance-plan-${{ github.run_id }}
+          path: test-results/portal-acceptance/plan.json
+          if-no-files-found: error
+      - if: inputs.mode == 'acceptance'
+        name: Prove both immutable Preview deployments before credentials or fixture writes
+        env:
+          DEMO_QA_VERCEL_BYPASS_SECRET: ${{ secrets.DEMO_QA_VERCEL_BYPASS_SECRET }}
+        run: node scripts/portal-browser-acceptance.mjs --preflight-only --input "$PORTAL_BROWSER_INPUT" --output test-results/portal-acceptance/preflight.json
+      - if: inputs.mode == 'acceptance'
+        name: Install Chromium before creating disposable users
+        run: pnpm exec playwright install --with-deps chromium
+      - if: inputs.mode == 'acceptance'
+        name: Run current local-only fixtures on a disconnected exact-source server
+        run: node scripts/run-portal-local-fixtures.mjs
+      - if: inputs.mode == 'acceptance'
+        name: Create journal-owned disposable fixtures
+        id: fixture_create
+        env:
+          DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
+          DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
+          DEMO_QA_VERCEL_BYPASS_SECRET: ${{ secrets.DEMO_QA_VERCEL_BYPASS_SECRET }}
+        run: pnpm exec tsx scripts/five-role-demo-fixture.ts create
+      - if: inputs.mode == 'acceptance'
+        name: Bind mutating browser to the verified candidate origin
+        run: node scripts/demo-acceptance-target-env.mjs
+      - if: inputs.mode == 'acceptance'
+        name: Five roles and disposable-member mutation acceptance
+        env:
+          DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
+          DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
+          DEMO_QA_VERCEL_BYPASS_SECRET: ${{ secrets.DEMO_QA_VERCEL_BYPASS_SECRET }}
+        run: pnpm exec playwright test --config five-role-demo-playwright.config.ts
+      - if: inputs.mode == 'acceptance'
+        name: Run the three reviewed synthetic browser phases in order
+        env:
+          DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
+          DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
+          DEMO_QA_READ_ONLY_TOKEN: ${{ secrets.DEMO_QA_READ_ONLY_TOKEN }}
+          DEMO_QA_VERCEL_BYPASS_SECRET: ${{ secrets.DEMO_QA_VERCEL_BYPASS_SECRET }}
+        run: node scripts/run-portal-phase-acceptance.mjs
+      - if: always() && inputs.mode == 'acceptance' && (steps.fixture_create.outcome == 'success' || steps.fixture_create.outcome == 'failure')
+        name: Independent database readback
+        env:
+          DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
+          DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
+        run: pnpm exec tsx scripts/five-role-demo-fixture.ts readback
+      - if: always() && inputs.mode == 'acceptance' && (steps.fixture_create.outcome == 'success' || steps.fixture_create.outcome == 'failure')
+        name: Exact owned-fixture cleanup and absence checks
+        env:
+          DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
+          DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
+        run: pnpm exec tsx scripts/five-role-demo-fixture.ts cleanup
+      - if: inputs.mode == 'recover-cleanup'
+        name: Recover cleanup from the durable journal after original-run terminal proof
+        env:
+          DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
+          DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
+          DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
+        run: pnpm exec tsx scripts/five-role-demo-fixture.ts recover-cleanup
+      - if: always() && inputs.mode == 'acceptance'
+        name: Require all evidence, including incomplete fixture gates
+        run: pnpm exec tsx scripts/complete-portal-acceptance.ts
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-acceptance-receipts-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            test-results/portal-acceptance/plan.json
+            test-results/portal-acceptance/phase-plan.json
+            test-results/portal-acceptance/actions.json
+            test-results/portal-acceptance/readback.json
+            test-results/portal-acceptance/cleanup.json
+            test-results/portal-acceptance/journal.json
+            test-results/portal-acceptance/browser.json
+            test-results/portal-acceptance/browser.json.unassigned.json
+            test-results/portal-acceptance/browser.json.assigned-owner.json
+            test-results/portal-acceptance/browser.json.approved-profile.json
+            test-results/portal-acceptance/local-fixtures.json
+            test-results/portal-acceptance/local-fixtures.json.execution.json
+            test-results/portal-acceptance/action-lanes.json
+            test-results/portal-acceptance/contract.json
+            test-results/portal-acceptance/failure.json
+            test-results/portal-acceptance/final.json

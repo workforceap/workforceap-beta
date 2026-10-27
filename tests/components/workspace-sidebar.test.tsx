@@ -76,6 +76,37 @@ function show(role: 'member' | 'employer' = 'member') {
   </NextIntlClientProvider>);
 }
 
+describe('current member styling remains isolated from staff roles', () => {
+  it.each(['admin', 'counselor', 'employer', 'partner', 'group'] as const)('keeps %s role chrome and its own rail preference on a member pathname', (role) => {
+    location.pathname = '/dashboard/program';
+    localStorage.setItem('wa_nav_collapsed_member', '1');
+    localStorage.setItem(`wa_nav_collapsed_${role}`, '0');
+    const view = render(<NextIntlClientProvider locale="en" messages={messages}>
+      <WorkspaceShell portalRole={role} navItems={EMPLOYER_PORTAL_NAV_ITEMS} workspaceLabel="Staff portal" contextLabel="Test staff" readOnlyAudit memberShellClassName="member-only-refinement">
+        <h1>Staff content</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>);
+    const shell = view.container.querySelector('.workspace-shell-root')!;
+    expect(shell).toHaveAttribute('data-workspace-role', role);
+    expect(shell).not.toHaveAttribute('data-member-tabs');
+    expect(shell).not.toHaveClass('member-only-refinement');
+    expect(view.container.querySelector('.workspace-sidebar')).not.toHaveClass('workspace-sidebar--collapsed');
+    expect(view.getByRole('heading', { name: 'Staff content' })).toBeVisible();
+  });
+
+  it('still applies the member-only styling and navigation contract to a member shell', () => {
+    const view = render(<NextIntlClientProvider locale="en" messages={messages}>
+      <WorkspaceShell portalRole="member" navItems={MEMBER_PORTAL_NAV_ITEMS} workspaceLabel="Member portal" contextLabel="Test member" readOnlyAudit memberShellClassName="member-only-refinement">
+        <h1>Member content</h1>
+      </WorkspaceShell>
+    </NextIntlClientProvider>);
+    const shell = view.container.querySelector('.workspace-shell-root')!;
+    expect(shell).toHaveAttribute('data-workspace-role', 'member');
+    expect(shell).toHaveAttribute('data-member-tabs', 'true');
+    expect(shell).toHaveClass('member-only-refinement');
+  });
+});
+
 describe('workspace navigation', () => {
   it('exposes a focusable desktop member nav landmark for skip navigation', () => {
     const { container } = show();
