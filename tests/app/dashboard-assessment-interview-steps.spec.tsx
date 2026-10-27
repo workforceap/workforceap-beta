@@ -37,7 +37,21 @@ vi.mock('next-intl/server', () => ({
     return node.replace(/\{(\w+)\}/g, (_, name: string) => values?.[name] ?? `{${name}}`);
   }),
 }));
-vi.mock('@/components/portal/AssessmentForm', () => ({ default: () => <div data-testid="assessment-form" /> }));
+vi.mock('@/components/portal/AssessmentForm', () => ({
+  default: ({
+    progressScope,
+    retakeRequestedAt,
+  }: {
+    progressScope?: string;
+    retakeRequestedAt?: string | null;
+  }) => (
+    <div
+      data-testid="assessment-form"
+      data-progress-scope={progressScope ?? ''}
+      data-retake-requested-at={retakeRequestedAt ?? ''}
+    />
+  ),
+}));
 
 import AssessmentPage from '@/app/(portal)/dashboard/assessment/page';
 
@@ -104,6 +118,37 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
     expect(screen.getByText('Your final preassessment attempt is ready')).toBeInTheDocument();
     expect(screen.getByTestId('assessment-form')).toBeInTheDocument();
     expect(screen.getByText('1 of 2 attempts completed.')).toBeInTheDocument();
+  });
+
+  it('scopes the first unused attempt separately from any later authorized retake', async () => {
+    await renderPage({ assessmentCompleted: false });
+    const form = screen.getByTestId('assessment-form');
+    expect(form).toHaveAttribute('data-progress-scope', 'member-1:0:initial');
+    expect(form).toHaveAttribute('data-retake-requested-at', '');
+  });
+
+  it('binds the authorized retake form to the staff timestamp so a later authorization remounts it', async () => {
+    const first = await renderPage({ assessmentRetakeRequestedAt: new Date('2026-10-15T00:00:00Z') });
+    const firstForm = screen.getByTestId('assessment-form');
+    expect(firstForm).toHaveAttribute('data-progress-scope', 'member-1:1:2026-10-15T00:00:00.000Z');
+    expect(firstForm).toHaveAttribute('data-retake-requested-at', '2026-10-15T00:00:00.000Z');
+    first.unmount();
+
+    await renderPage({ assessmentRetakeRequestedAt: new Date('2026-10-16T12:00:00Z') });
+    const remounted = screen.getByTestId('assessment-form');
+    expect(remounted).toHaveAttribute('data-progress-scope', 'member-1:1:2026-10-16T12:00:00.000Z');
+    expect(remounted).toHaveAttribute('data-retake-requested-at', '2026-10-16T12:00:00.000Z');
+  });
+
+  it('does not mount a first-attempt form while a leftover retake timestamp is still stored', async () => {
+    await renderPage({
+      assessmentCompleted: false,
+      assessmentAttemptCount: 0,
+      assessmentRetakeRequestedAt: new Date('2026-01-01T00:00:00Z'),
+    });
+    expect(screen.queryByTestId('assessment-form')).toBeNull();
+    expect(screen.queryByText(/You have one final attempt available/)).toBeNull();
+    expect(screen.queryByText(/Both preassessment chances/)).toBeNull();
   });
 
   it('does not render a form after both chances even with a stale pending flag', async () => {
