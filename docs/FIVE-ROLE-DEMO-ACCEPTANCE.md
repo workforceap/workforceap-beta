@@ -49,7 +49,7 @@ writes and unexpected sockets remain failures. No analytics or provider call is 
 Use Node 22 and the existing dependency lockfile. Focused commands:
 
 ```sh
-node --test scripts/demo-acceptance.test.cjs
+node scripts/test-unit.mjs
 node --import tsx --test scripts/five-role-demo-fixture.test.ts scripts/five-role-acceptance-receipt.test.ts
 node scripts/check-portal-browser-source.mjs
 pnpm exec playwright test --config five-role-demo-playwright.config.ts --list

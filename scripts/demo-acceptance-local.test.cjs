@@ -1,6 +1,6 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { localFixtureEnvironment, localReceiptDigest, verifyLocalExecution, localContractIdentity } from './lib/demo-acceptance-local.mjs';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { localFixtureEnvironment, localReceiptDigest, verifyLocalExecution, localContractIdentity } = require('./lib/demo-acceptance-local.mjs');
 test('local-only identity carries no invented hosted workflow provenance', () => {
   const identity = localContractIdentity('a'.repeat(40), 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee');
   assert.equal(identity.runId, 'local-aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee');

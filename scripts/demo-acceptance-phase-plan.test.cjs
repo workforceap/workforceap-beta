@@ -1,7 +1,7 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { PHASE_CONTENT_PATHS, PHASE_SCOPES, createPhaseBlueprint, validatePhaseBlueprint, phaseBlueprintHash, assertPhaseApproval, phaseActivationFromEnvironment } from './lib/demo-acceptance-phase-plan.mjs';
-import { assertPhaseAuthorizationEvidence, phaseApprovalComment } from './lib/demo-acceptance-phase-authorization.mjs';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { PHASE_CONTENT_PATHS, PHASE_SCOPES, createPhaseBlueprint, validatePhaseBlueprint, phaseBlueprintHash, assertPhaseApproval, phaseActivationFromEnvironment } = require('./lib/demo-acceptance-phase-plan.mjs');
+const { assertPhaseAuthorizationEvidence, phaseApprovalComment } = require('./lib/demo-acceptance-phase-authorization.mjs');
 const context = { runId: '42-1', organizationId: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee', controlSha: 'a'.repeat(40), baselineSha: 'b'.repeat(40), fixtureAsOf: '2026-10-27T04:00:00.000Z', contentProof: PHASE_CONTENT_PATHS.map(path => ({ path, baselineBlob: 'c'.repeat(40), candidateBlob: 'c'.repeat(40) })) };
 const blueprint = createPhaseBlueprint(context);
 const now = Date.parse('2026-10-27T04:30:00Z');

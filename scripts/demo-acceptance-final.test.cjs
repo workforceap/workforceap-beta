@@ -1,11 +1,9 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync, readFileSync, unlinkSync, rmdirSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { spawnSync } from 'node:child_process';
-import { createRequire } from 'node:module';
-const require = createRequire(import.meta.url);
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { mkdtempSync, writeFileSync, readFileSync, unlinkSync, rmdirSync } = require('node:fs');
+const { tmpdir } = require('node:os');
+const { join } = require('node:path');
+const { spawnSync } = require('node:child_process');
 test('finalizer writes explicit failed evidence when local exists but hosted is missing or malformed', () => {
   const directory = mkdtempSync(join(tmpdir(), 'wap-portal-final-test-'));
   const paths = Object.fromEntries(['PORTAL_LOCAL_FIXTURE_OUTPUT', 'PORTAL_BROWSER_OUTPUT', 'PORTAL_ACTION_LANES_OUTPUT', 'PORTAL_ACCEPTANCE_CONTRACT_OUTPUT', 'FIVE_ROLE_QA_FINAL_OUTPUT'].map(key => [key, join(directory, `${key}.json`)]));

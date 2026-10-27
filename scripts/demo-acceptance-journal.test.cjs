@@ -2,9 +2,9 @@
  * Native unit tests for the DEMO portal QA journal (no network, no DB).
  * Memory store simulates SERIALIZABLE transactions for competing claims/CAS.
  */
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import {
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const {
   ALLOWED_KINDS,
   PROJECT_REF,
   canonical,
@@ -13,7 +13,7 @@ import {
   createPrismaJournalStore,
   digest,
   normalizeIdentity,
-} from './lib/demo-acceptance-journal.mjs';
+} = require('./lib/demo-acceptance-journal.mjs');
 
 const SHA40_A = 'a'.repeat(40);
 const SHA40_B = 'b'.repeat(40);

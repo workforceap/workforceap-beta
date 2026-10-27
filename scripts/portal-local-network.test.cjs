@@ -1,6 +1,6 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { isLocalFixtureGtmBootstrap, isLocalFixtureHmrSocket, localFixtureVercelBootstrap } from './lib/portal-local-network.mjs';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { isLocalFixtureGtmBootstrap, isLocalFixtureHmrSocket, localFixtureVercelBootstrap } = require('./lib/portal-local-network.mjs');
 test('local analytics suppression is exact and cannot admit another resource or payload', () => {
   const url = 'https://www.googletagmanager.com/gtm.js?id=GTM-53JCT6WN';
   assert.equal(isLocalFixtureGtmBootstrap('GET', url), true);

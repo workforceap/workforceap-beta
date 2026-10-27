@@ -1,7 +1,7 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { createJournal, createMemoryJournalStore, digest } from './lib/demo-acceptance-journal.mjs';
-import { createLifecycle, fixturePlan, fixtureStateFromJournal, pendingOperations, terminalRunProof, assertCleanupQuiescent, assertAcceptanceAction } from './lib/demo-acceptance-lifecycle.mjs';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { createJournal, createMemoryJournalStore, digest } = require('./lib/demo-acceptance-journal.mjs');
+const { createLifecycle, fixturePlan, fixtureStateFromJournal, pendingOperations, terminalRunProof, assertCleanupQuiescent, assertAcceptanceAction } = require('./lib/demo-acceptance-lifecycle.mjs');
 
 const identity = { repository: 'workforceap/workforceap-beta', workflowRunId: '42', workflowAttempt: 1, runId: '42-1', projectRef: 'esbdrgaonplpvzmtrdhw', organizationId: 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee', controlSha: 'a'.repeat(40), deployedSha: 'b'.repeat(40), baselineSha: 'c'.repeat(40), planHash: digest(fixturePlan('42-1', 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee')) };
 async function setup() {

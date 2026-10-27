@@ -1,8 +1,8 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { createJournal, createMemoryJournalStore } from './lib/demo-acceptance-journal.mjs';
-import { verifyDurableAcceptance, MUTATING_SCENARIOS, MEMBER_SCENARIOS } from './lib/demo-acceptance-receipt.mjs';
-import { FIVE_ROLES, emailFor, ACCEPTANCE_KIND, READBACK_KIND, CLEANUP_KIND, ROLE_ACTIONS } from './lib/five-role-acceptance.mjs';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { createJournal, createMemoryJournalStore } = require('./lib/demo-acceptance-journal.mjs');
+const { verifyDurableAcceptance, MUTATING_SCENARIOS, MEMBER_SCENARIOS } = require('./lib/demo-acceptance-receipt.mjs');
+const { FIVE_ROLES, emailFor, ACCEPTANCE_KIND, READBACK_KIND, CLEANUP_KIND, ROLE_ACTIONS } = require('./lib/five-role-acceptance.mjs');
 
 async function evidence() {
   const runId = '4242-1';

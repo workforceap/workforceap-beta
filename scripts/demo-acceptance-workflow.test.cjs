@@ -1,6 +1,6 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { assertDispatchContext, assertProtectedDemoEnvironment } from './lib/demo-acceptance-workflow.mjs';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { assertDispatchContext, assertProtectedDemoEnvironment } = require('./lib/demo-acceptance-workflow.mjs');
 const env = { GITHUB_REPOSITORY: 'workforceap/workforceap-beta', GITHUB_REF: 'refs/heads/master', GITHUB_EVENT_NAME: 'workflow_dispatch', GITHUB_RUN_ATTEMPT: '1', DEMO_QA_ENABLED: 'true', DEMO_QA_MODE: 'acceptance' };
 const environment = { name: 'demo-qa', can_admins_bypass: false, deployment_branch_policy: { custom_branch_policies: true }, protection_rules: [{ type: 'required_reviewers', reviewers: [{ type: 'User', reviewer: { id: 225406758, login: 'mabrown040' } }], prevent_self_review: false }] };
 const branches = { branch_policies: [{ name: 'master', type: 'branch' }] };
