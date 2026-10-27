@@ -24,6 +24,13 @@ function sanitized(row: Row, model: string): Row {
 /** Enumerate every FK reachable from an owned root. A new relation fails closed by default. */
 export async function readOwnedGraph(db: Reader, state: FixtureState): Promise<OwnedGraph> {
   const graph: OwnedGraph = {};
+  const allowed = new Set(ALLOWED);
+  const phaseIds: Record<string, string> = {};
+  if (state.phase && state.phase.name !== 'unassigned') {
+    Object.assign(phaseIds, { AIToolResult: state.phase.ids.counselorResult, CourseEnrollment: state.phase.ids.enrollment, Mentor: state.phase.ids.mentor });
+    if (state.phase.name === 'approved-profile') phaseIds.Job = state.phase.ids.job;
+    for (const model of Object.keys(phaseIds)) allowed.add(model);
+  }
   const roots: Record<string, string[]> = {
     User: Object.values(state.users).map(user => user!.userId),
     Partner: state.partnerId ? [state.partnerId] : [], Employer: state.employerId ? [state.employerId] : [],
@@ -49,10 +56,11 @@ export async function readOwnedGraph(db: Reader, state: FixtureState): Promise<O
       });
       if (!clauses.length) continue;
       const found = await rowsFor(db, model.name).findMany({ where: { OR: clauses } });
-      if (found.length && !ALLOWED.has(model.name)) throw new Error(`Unexpected related ${model.name}; cleanup refused.`);
+      if (found.length && !allowed.has(model.name)) throw new Error(`Unexpected related ${model.name}; cleanup refused.`);
       const known = new Map((graph[model.name] ?? []).map(row => [row.id, row]));
       for (const raw of found) {
         const row = sanitized(raw, model.name);
+        if (phaseIds[model.name] && row.id !== phaseIds[model.name]) throw new Error(`Foreign ${model.name} phase record; cleanup refused.`);
         if (roots[model.name] && !roots[model.name].includes(row.id)) throw new Error(`Foreign ${model.name} root reached through a relationship.`);
         if (!known.has(row.id)) { known.set(row.id, row); changed = true; }
       }
@@ -62,7 +70,7 @@ export async function readOwnedGraph(db: Reader, state: FixtureState): Promise<O
   // Every reference between deletable models must remain inside this run's graph.
   for (const model of Prisma.dmmf.datamodel.models) {
     for (const row of graph[model.name] ?? []) for (const field of model.fields) {
-      if (field.kind !== 'object' || field.relationFromFields?.length !== 1 || !ALLOWED.has(field.type)) continue;
+      if (field.kind !== 'object' || field.relationFromFields?.length !== 1 || !allowed.has(field.type)) continue;
       const value = row[field.relationFromFields[0]];
       if (value !== null && value !== undefined && !(graph[field.type] ?? []).some(parent => parent.id === value)) {
         throw new Error(`Foreign ${field.type} relationship in ${model.name}; cleanup refused.`);

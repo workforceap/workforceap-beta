@@ -14,12 +14,14 @@ import { localFixtureEnvironment, localReceiptDigest } from './lib/demo-acceptan
 
 const require = createRequire(import.meta.url);
 const origin = 'http://127.0.0.1:3107';
+const localContractOnly = process.argv.slice(2).length === 1 && process.argv[2] === '--local-contract-only';
 const startedAt = new Date().toISOString();
 let server, log, exitPromise;
 let serverStopped = false;
 let result = null;
 const childExit = child => new Promise((resolveExit, reject) => { child.once('error', reject); child.once('exit', (code, signal) => resolveExit({ code, signal })); });
 try {
+  if (process.argv.length > 2 && !localContractOnly) throw new Error('Unknown local companion option.');
   assertDispatchContext(process.env);
   if (process.env.DEMO_QA_MODE !== 'acceptance' || process.platform !== 'linux') throw new Error('Use the trusted Ubuntu acceptance workflow.');
   const identity = identityFromEnvironment(process.env);
@@ -50,6 +52,7 @@ try {
   const browser = spawn(process.execPath, ['scripts/portal-browser-acceptance.mjs', '--local-fixtures-only', '--local-origin', origin, '--input', input, '--output', output], { env: childEnv, stdio: ['ignore', log, log] });
   const browserResult = await childExit(browser);
   result = { kind: 'portal-local-fixture-execution', command: 'node scripts/run-portal-local-fixtures.mjs', identity, controlSha: head,
+    localContractOnly,
     sourceTreeClean: true, workflowRunId: process.env.GITHUB_RUN_ID, workflowAttempt: 1, startedAt,
     receiptDigest: localReceiptDigest(readFileSync(output)), browserExitCode: browserResult.code };
   if (browserResult.code !== 0) process.exitCode = 1;

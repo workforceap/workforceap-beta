@@ -35,11 +35,16 @@ jobs:
   protection:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    outputs:
+      blueprint_hash: ${{ steps.blueprint.outputs.blueprint_hash }}
+      artifact_id: ${{ steps.blueprint_artifact.outputs.artifact-id }}
+      artifact_digest: ${{ steps.blueprint_artifact.outputs.artifact-digest }}
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -50,6 +55,27 @@ jobs:
           DEMO_QA_MODE: ${{ inputs.mode }}
           DEMO_QA_ORIGINAL_RUN_ID: ${{ inputs.original_run_id }}
         run: node scripts/check-demo-acceptance-environment.mjs
+      - if: inputs.mode == 'acceptance'
+        name: Prepare exact synthetic blueprint for review before the protected job
+        id: blueprint
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEMO_QA_ENABLED: ${{ vars.DEMO_QA_ENABLED }}
+          DEMO_QA_MODE: ${{ inputs.mode }}
+          DEMO_QA_BASELINE_SHA: ${{ inputs.baseline_sha }}
+          PORTAL_QA_ORGANIZATION_ID: ${{ vars.DEMO_QA_ORGANIZATION_ID }}
+          DEMO_QA_PHASE_PLAN_FILE: test-results/portal-acceptance/phase-plan.json
+        run: node scripts/prepare-demo-acceptance-phase-plan.mjs
+      - if: inputs.mode == 'acceptance'
+        uses: actions/upload-artifact@v4
+        id: blueprint_artifact
+        with:
+          name: portal-phase-blueprint-${{ github.run_id }}
+          path: |
+            test-results/portal-acceptance/phase-plan.json
+            test-results/portal-acceptance/creation-plan.json
+            test-results/portal-acceptance/review.txt
+          if-no-files-found: error
 
   acceptance:
     needs: protection
@@ -61,6 +87,12 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       DEMO_QA_ENABLED: ${{ vars.DEMO_QA_ENABLED }}
       DEMO_QA_MODE: ${{ inputs.mode }}
+      DEMO_QA_PHASES_ENABLED: ${{ vars.DEMO_QA_PHASES_ENABLED }}
+      DEMO_QA_PHASE_APPROVAL: ${{ vars.DEMO_QA_PHASE_APPROVAL }}
+      DEMO_QA_PHASE_PLAN_FILE: test-results/portal-acceptance/phase-plan.json
+      DEMO_QA_PHASE_BLUEPRINT_HASH: ${{ needs.protection.outputs.blueprint_hash }}
+      DEMO_QA_PHASE_ARTIFACT_ID: ${{ needs.protection.outputs.artifact_id }}
+      DEMO_QA_PHASE_ARTIFACT_DIGEST: ${{ needs.protection.outputs.artifact_digest }}
       PORTAL_QA_ORGANIZATION_ID: ${{ vars.DEMO_QA_ORGANIZATION_ID }}
       PORTAL_QA_ORGANIZATION_SLUG: ${{ vars.DEMO_QA_ORGANIZATION_SLUG }}
       DEMO_QA_APP_SHA: ${{ github.sha }}
@@ -88,6 +120,13 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.sha }}
+          fetch-depth: 0
+      - if: inputs.mode == 'acceptance'
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ needs.protection.outputs.artifact_id }}
+          merge-multiple: true
+          path: test-results/portal-acceptance
       - uses: pnpm/action-setup@v4
         with:
           version: 10.34.3
@@ -98,6 +137,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Validate browser runner source
         run: node scripts/check-portal-browser-source.mjs
+      - if: inputs.mode == 'acceptance'
+        name: Require the explicit protected-environment scope and blueprint approval
+        run: node scripts/check-demo-acceptance-phase-approval.mjs
       - if: inputs.mode == 'acceptance'
         name: Export exact creation plan before any fixture write
         run: pnpm exec tsx scripts/five-role-demo-fixture.ts plan
@@ -139,14 +181,14 @@ jobs:
           DEMO_QA_VERCEL_BYPASS_SECRET: ${{ secrets.DEMO_QA_VERCEL_BYPASS_SECRET }}
         run: pnpm exec playwright test --config five-role-demo-playwright.config.ts
       - if: inputs.mode == 'acceptance'
-        name: Current route, state matrix and staff comparison
+        name: Run the three reviewed synthetic browser phases in order
         env:
           DEMO_QA_DATABASE_URL: ${{ secrets.DEMO_QA_DATABASE_URL }}
           DEMO_QA_SUPABASE_URL: ${{ secrets.DEMO_QA_SUPABASE_URL }}
           DEMO_QA_SERVICE_ROLE_KEY: ${{ secrets.DEMO_QA_SERVICE_ROLE_KEY }}
           DEMO_QA_READ_ONLY_TOKEN: ${{ secrets.DEMO_QA_READ_ONLY_TOKEN }}
           DEMO_QA_VERCEL_BYPASS_SECRET: ${{ secrets.DEMO_QA_VERCEL_BYPASS_SECRET }}
-        run: node scripts/portal-browser-acceptance.mjs --input "$PORTAL_BROWSER_INPUT" --output "$PORTAL_BROWSER_OUTPUT"
+        run: node scripts/run-portal-phase-acceptance.mjs
       - if: always() && inputs.mode == 'acceptance' && (steps.fixture_create.outcome == 'success' || steps.fixture_create.outcome == 'failure')
         name: Independent database readback
         env:
@@ -179,11 +221,15 @@ jobs:
           if-no-files-found: error
           path: |
             test-results/portal-acceptance/plan.json
+            test-results/portal-acceptance/phase-plan.json
             test-results/portal-acceptance/actions.json
             test-results/portal-acceptance/readback.json
             test-results/portal-acceptance/cleanup.json
             test-results/portal-acceptance/journal.json
             test-results/portal-acceptance/browser.json
+            test-results/portal-acceptance/browser.json.unassigned.json
+            test-results/portal-acceptance/browser.json.assigned-owner.json
+            test-results/portal-acceptance/browser.json.approved-profile.json
             test-results/portal-acceptance/local-fixtures.json
             test-results/portal-acceptance/local-fixtures.json.execution.json
             test-results/portal-acceptance/action-lanes.json

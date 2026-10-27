@@ -28,12 +28,20 @@ export const FIXTURE_FLAG = 'wap6_five_role_fixture';
 
 export interface PortalQaTarget { organizationId: string; organizationSlug: string; databaseUrl: string }
 export interface RecordedUser { userId: string; email: string }
+export type PhaseName = 'unassigned' | 'assigned-owner' | 'approved-profile';
+export interface FixturePhase {
+  name: PhaseName;
+  blueprintHash: string;
+  stateDigest: string;
+  ids: { counselorResult: string; enrollment: string; mentor: string; job: string };
+}
 export interface FixtureState {
   runId: string;
   organizationId: string;
   users: Partial<Record<Role, RecordedUser>>;
   partnerId?: string;
   employerId?: string;
+  phase?: FixturePhase;
   /**
    * The write in flight, saved BEFORE it is sent: a role while its Auth user is
    * being created, `role-rows` while the database transaction runs. A crash
@@ -60,7 +68,7 @@ export interface FixtureDeps {
     users: Record<Role, RecordedUser>;
     partner: { slug: string; name: string; referralCode: string };
     employerCompanyName: string;
-  }): Promise<{ partnerId: string; employerId: string }>;
+  }): Promise<{ partnerId: string; employerId: string; phase?: FixturePhase }>;
   deleteUser(id: string): Promise<void>;
   findPartner(id: string): Promise<{ id: string; organizationId: string; slug: string; name: string } | null>;
   /** The partner with this (globally unique) slug, in any organization. */
@@ -151,7 +159,7 @@ export async function createFixtures(
   }
   state.pending = 'role-rows';
   await onState(structuredClone(state));
-  const { partnerId, employerId } = await deps.createRoleRows({
+  const { partnerId, employerId, phase } = await deps.createRoleRows({
     organizationId: target.organizationId,
     users: state.users as Record<Role, RecordedUser>,
     partner: { slug: partnerSlugFor(runId), name: seededValueFor(runId, 'partner'), referralCode: `QA-WAP6-${runId}` },
@@ -159,6 +167,7 @@ export async function createFixtures(
   });
   state.partnerId = partnerId;
   state.employerId = employerId;
+  if (phase) state.phase = phase;
   delete state.pending;
   await onState(structuredClone(state));
   return state;

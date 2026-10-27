@@ -12,7 +12,7 @@ export function localFixtureEnvironment(env, sha, token) {
 export const localReceiptDigest = bytes => createHash('sha256').update(bytes).digest('hex');
 
 export function verifyLocalExecution(execution, bytes, identity) {
-  if (execution?.kind !== 'portal-local-fixture-execution' || execution.status !== 'completed' || execution.serverStopped !== true ||
+  if (execution?.kind !== 'portal-local-fixture-execution' || execution.localContractOnly === true || execution.status !== 'completed' || execution.serverStopped !== true ||
       execution.sourceTreeClean !== true || execution.controlSha !== identity.controlSha || execution.controlSha !== identity.deployedSha ||
       canonical(execution.identity) !== canonical(identity) || execution.workflowRunId !== identity.workflowRunId || execution.workflowAttempt !== 1 ||
       execution.command !== 'node scripts/run-portal-local-fixtures.mjs' || execution.receiptDigest !== localReceiptDigest(bytes) ||

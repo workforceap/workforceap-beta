@@ -8,6 +8,8 @@ import { createLifecycle, assertCleanupQuiescent } from './lib/demo-acceptance-l
 import { type Role, type FixtureState } from './five-role-demo-fixture';
 import { createAcceptanceRows } from './lib/demo-acceptance-cli';
 import { FIVE_ROLES, emailFor, partnerSlugFor, seededValueFor, writtenValueFor } from './lib/five-role-acceptance.mjs';
+import { PHASE_CONTENT_PATHS, PHASE_SCOPES, createPhaseBlueprint, phaseBlueprintHash, assertPhaseApproval } from './lib/demo-acceptance-phase-plan.mjs';
+import { phaseDescriptor, transitionPhaseRows, assertPhaseRows, deletePhaseRows, verifyPhaseAbsence, phaseCheckpointsFromJournal } from './lib/demo-acceptance-phase-rows';
 
 async function main() {
   if (process.env.TEST_REAL_DB !== '1') { console.log('SKIP: owned-row proof needs explicitly enabled local PostgreSQL.'); return; }
@@ -21,6 +23,12 @@ async function main() {
   const state: FixtureState = { runId, organizationId, users };
   const identity = { repository: 'workforceap/workforceap-beta', workflowRunId: runId.slice(0, -2), workflowAttempt: 1, runId,
     projectRef: 'esbdrgaonplpvzmtrdhw', organizationId, controlSha: 'a'.repeat(40), deployedSha: 'b'.repeat(40), baselineSha: 'c'.repeat(40), planHash: digest({ localTest: runId }) };
+  const phaseNow = Date.now();
+  const blueprint = createPhaseBlueprint({ ...identity, fixtureAsOf: new Date(phaseNow).toISOString(), contentProof: PHASE_CONTENT_PATHS.map(path => ({ path, baselineBlob: 'd'.repeat(40), candidateBlob: 'd'.repeat(40) })) });
+  // Simulation confined to this disposable localhost contract. It is never exported as hosted approval.
+  const simulatedApproval = { schemaVersion: 1, contract: 'portal-phase-approval-v1', approved: true, blueprintHash: phaseBlueprintHash(blueprint), repository: identity.repository, projectRef: identity.projectRef,
+    runId, organizationId, controlSha: identity.controlSha, baselineSha: identity.baselineSha, reviewer: { login: 'mabrown040', id: 225406758 }, scopes: [...PHASE_SCOPES],
+    approvedAt: new Date(phaseNow).toISOString(), expiresAt: new Date(phaseNow + 3 * 60 * 60_000).toISOString(), reference: `https://github.com/workforceap/workforceap-beta/actions/runs/${identity.workflowRunId}` };
   const store = createPrismaJournalStore(db);
   const journal = createJournal(store);
   const createdRoles: string[] = [];
@@ -32,7 +40,7 @@ async function main() {
     const claim = await journal.claim(identity, 'local-owner');
     const input = { organizationId, users, partner: { slug: partnerSlugFor(runId), name: seededValueFor(runId, 'partner'), referralCode: `QA-${runId}` }, employerCompanyName: seededValueFor(runId, 'employer') };
     const atomic = async (tx: Prisma.TransactionClient) => {
-      const result = await createAcceptanceRows(tx, target, input, runId);
+      const result = await createAcceptanceRows(tx, target, input, runId, blueprint);
       const ownedGraph = result.evidence.ownedGraph;
       assert.equal(ownedGraph.UserRole.length, 5, 'compound primary keys retain all roles');
       assert.equal(ownedGraph.MemberEvent.length, 6, 'incomplete preassessment gate is seeded exactly');
@@ -80,22 +88,65 @@ async function main() {
     assertCleanupQuiescent(await journal.read(runId));
     // Production login emits this event for every role, asynchronously. Exercise late arrival during a goal window.
     for (const role of FIVE_ROLES as Role[]) await db.$executeRaw`INSERT INTO member_events (id, user_id, event_name, source_page, metadata, created_at) VALUES (${randomUUID()}, ${users[role].userId}, 'member_logged_in', '/login', '{}'::jsonb, NOW())`;
-    const cleanupGraph = await readOwnedGraph(db, state);
+    let cleanupGraph = await readOwnedGraph(db, state);
     const loginBudgets = Object.fromEntries(Object.values(users).map(user => [user.userId, 1]));
     assertJournaledLoginEvents(cleanupGraph, state, original.MemberEvent.map(row => row.id), loginBudgets);
     assert.throws(() => assertJournaledLoginEvents(cleanupGraph, state, original.MemberEvent.map(row => row.id), {}), /durable attempt/);
     assertGraphTransition(original, cleanupGraph, 'member-goal', state);
+    state.phase = phaseDescriptor(blueprint, 'unassigned', cleanupGraph);
+    await journal.atomic(runId, 'local-owner', (await journal.read(runId)).revision, 'db-committed', { operationId: 'phase:unassigned', preimage: cleanupGraph }, async () => ({ result: state, evidence: { fixtureState: state, phase: state.phase, ownedGraph: cleanupGraph, approval: assertPhaseApproval(simulatedApproval, blueprint, 'unassigned', { now: phaseNow }) } }));
+    const assignedRevision = (await journal.read(runId)).revision;
+    await assert.rejects(journal.atomic(runId, 'local-owner', assignedRevision, 'db-committed', { operationId: 'phase:assigned-owner', preimage: cleanupGraph }, (tx: Prisma.TransactionClient) =>
+      transitionPhaseRows(tx, state, cleanupGraph, blueprint, 'assigned-owner', { ...simulatedApproval, scopes: [] }, phaseNow)), /required synthetic/);
+    await assert.rejects(sabotage.atomic(runId, 'local-owner', assignedRevision, 'db-committed', { operationId: 'phase:assigned-owner', preimage: cleanupGraph }, (tx: Prisma.TransactionClient) =>
+      transitionPhaseRows(tx, state, cleanupGraph, blueprint, 'assigned-owner', simulatedApproval, phaseNow)), /readback failure/);
+    assert.equal(await db.courseEnrollment.count({ where: { userId: users.member.userId } }), 0, 'lost journal readback rolls back canonical enrollment');
+    assert.equal(await db.aIToolResult.count({ where: { userId: users.member.userId } }), 0);
+    assert.equal(await db.mentor.count({ where: { userId: users.member.userId } }), 0);
+    const assigned = await journal.atomic(runId, 'local-owner', assignedRevision, 'db-committed', { operationId: 'phase:assigned-owner', preimage: cleanupGraph }, (tx: Prisma.TransactionClient) =>
+      transitionPhaseRows(tx, state, cleanupGraph, blueprint, 'assigned-owner', simulatedApproval, phaseNow));
+    Object.assign(state, assigned.result); cleanupGraph = await readOwnedGraph(db, state);
+    assertPhaseRows(blueprint, state, cleanupGraph);
+    assert.equal((await db.user.findUniqueOrThrow({ where: { id: users.member.userId } })).enrolledProgram, null, 'legacy program pointer remains untouched');
+    assert.equal(await db.courseProgress.count({ where: { userId: users.member.userId } }), 0);
+    const foreignResult = await db.aIToolResult.create({ data: { userId: users.member.userId, toolType: 'career_counselor', inputSummary: 'Foreign local probe', output: 'Must not be swept', parentToolResultId: blueprint.ids.counselorResult } });
+    try { await assert.rejects(readOwnedGraph(db, state), /Foreign AIToolResult phase record/); }
+    finally { await db.aIToolResult.delete({ where: { id: foreignResult.id } }); }
+    const approvedRevision = (await journal.read(runId)).revision;
+    await assert.rejects(journal.atomic(runId, 'local-owner', approvedRevision, 'db-committed', { operationId: 'phase:approved-profile', preimage: cleanupGraph }, (tx: Prisma.TransactionClient) =>
+      transitionPhaseRows(tx, state, cleanupGraph, blueprint, 'approved-profile', { ...simulatedApproval, scopes: PHASE_SCOPES.slice(0, 3) }, phaseNow)), /required synthetic/);
+    await assert.rejects(sabotage.atomic(runId, 'local-owner', approvedRevision, 'db-committed', { operationId: 'phase:approved-profile', preimage: cleanupGraph }, (tx: Prisma.TransactionClient) =>
+      transitionPhaseRows(tx, state, cleanupGraph, blueprint, 'approved-profile', simulatedApproval, phaseNow)), /readback failure/);
+    assert.equal((await db.mentor.findUniqueOrThrow({ where: { id: blueprint.ids.mentor } })).isActive, false, 'exposure rolls back with journal failure');
+    assert.equal(await db.job.count({ where: { id: blueprint.ids.job } }), 0);
+    const approved = await journal.atomic(runId, 'local-owner', approvedRevision, 'db-committed', { operationId: 'phase:approved-profile', preimage: cleanupGraph }, (tx: Prisma.TransactionClient) =>
+      transitionPhaseRows(tx, state, cleanupGraph, blueprint, 'approved-profile', simulatedApproval, phaseNow));
+    Object.assign(state, approved.result); cleanupGraph = await readOwnedGraph(db, state); assertPhaseRows(blueprint, state, cleanupGraph);
+    await assert.rejects(verifyPhaseAbsence(db, state), /record remains/);
+    const checkpoints = (await journal.read(runId)).events;
+    assert.deepEqual(phaseCheckpointsFromJournal(checkpoints, blueprint, simulatedApproval).issues, []);
+    const tampered = structuredClone(checkpoints);
+    tampered.find((event: { data?: { operationId?: string } }) => event.data?.operationId === 'phase:assigned-owner').data.phase.stateDigest = '0'.repeat(64);
+    assert.deepEqual(phaseCheckpointsFromJournal(tampered, blueprint, simulatedApproval).issues, ['phase:assigned-owner:checkpoint_invalid']);
+    assert.ok(phaseCheckpointsFromJournal(checkpoints.slice(0, -1), blueprint, simulatedApproval).issues.includes('phase:approved-profile:checkpoint_missing_or_duplicate'));
     await journal.atomic(runId, 'local-owner', (await journal.read(runId)).revision, 'db-committed', { operationId: 'cleanup-db', preimage: cleanupGraph }, async (tx: Prisma.TransactionClient) => {
       assertGraphUnchanged(cleanupGraph, await readOwnedGraph(tx, state));
+      await deletePhaseRows(tx, state, cleanupGraph);
       await tx.user.deleteMany({ where: { id: { in: Object.values(users).map(user => user.userId) }, organizationId } });
       await tx.partner.delete({ where: { id: state.partnerId! } });
       const ownedGraph = await readOwnedGraph(tx, state);
       assert.ok(Object.values(ownedGraph).every(rows => rows.length === 0));
-      return { result: true, evidence: { ownedGraph } };
+      const phaseAbsence = await verifyPhaseAbsence(tx, state);
+      assert.deepEqual(phaseAbsence, { ids: blueprint.ids, absent: true });
+      return { result: true, evidence: { ownedGraph, phaseAbsence } };
     });
     assert.ok((await journal.read(runId)).events.length >= 3, 'journal remains after owned rows are removed');
-    console.log(JSON.stringify({ ok: true, target: 'isolated-local-postgresql', runId, checks: ['atomic-fixture-and-journal', 'rollback-after-lost-readback', 'compound-primary-key-inventory', 'foreign-root-refusal', 'unexpected-related-row-refusal', 'stale-owner-refusal', 'compare-and-set-drift-refusal', 'sensitive-field-refusal', 'received-write-then-ui-failure-cleanup', 'all-role-late-login-events', 'unattempted-login-refusal', 'atomic-cleanup-and-absence', 'journal-retention'] }));
+    console.log(JSON.stringify({ ok: true, target: 'isolated-local-postgresql', simulatedApprovalOnly: true, runId, checks: ['atomic-fixture-and-journal', 'rollback-after-lost-readback', 'compound-primary-key-inventory', 'foreign-root-refusal', 'unexpected-related-row-refusal', 'stale-owner-refusal', 'compare-and-set-drift-refusal', 'sensitive-field-refusal', 'received-write-then-ui-failure-cleanup', 'all-role-late-login-events', 'unattempted-login-refusal', 'phase-approval-scope-refusal', 'canonical-enrollment-without-legacy-pointer', 'assigned-phase-atomic-rollback', 'foreign-phase-child-refusal', 'exposure-phase-atomic-rollback', 'all-three-phase-readback', 'atomic-phase-cleanup-and-absence', 'journal-retention'] }));
   } finally {
+    await db.job.deleteMany({ where: { id: blueprint.ids.job, employerId: state.employerId } });
+    await db.mentor.deleteMany({ where: { id: blueprint.ids.mentor, userId: users.member.userId } });
+    await db.aIToolResult.deleteMany({ where: { id: blueprint.ids.counselorResult, userId: users.member.userId } });
+    await db.courseEnrollment.deleteMany({ where: { id: blueprint.ids.enrollment, userId: users.member.userId } });
     await db.user.deleteMany({ where: { id: foreignUserId, organizationId } });
     if (notificationId) await db.notification.deleteMany({ where: { id: notificationId } });
     await db.user.deleteMany({ where: { id: { in: Object.values(users).map(user => user.userId) }, organizationId } });

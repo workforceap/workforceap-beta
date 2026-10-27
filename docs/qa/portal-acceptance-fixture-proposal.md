@@ -1,6 +1,8 @@
 # Run-owned portal acceptance fixture proposal
 
-Status: proposed, not authorized for hosted creation. Prepared 2026-10-27 from
+Status: implemented as default-disabled harness code and isolated synthetic contracts;
+not authorized for hosted creation. See the [activation runbook](portal-acceptance-activation.md)
+for the authoritative implementation and approval flow. The route/schema analysis below was prepared 2026-10-27 from
 the current route loaders and Prisma schema at integration HEAD
 `6e1214aca3e9f13af3c008e984b2b20e211c4800` plus the concurrent acceptance changes.
 This document creates no records and grants no enrollment, mentor, catalog,

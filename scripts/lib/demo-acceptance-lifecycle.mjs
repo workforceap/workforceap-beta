@@ -1,6 +1,8 @@
 /** Durable orchestration. Dependencies are explicit; this module has no clients or credentials. */
 import { digest } from './demo-acceptance-journal.mjs';
 import { FIVE_ROLES, emailFor, partnerSlugFor, runIdFor } from './five-role-acceptance.mjs';
+import { readFileSync } from 'node:fs';
+import { PHASE_NAMES, validatePhaseBlueprint } from './demo-acceptance-phase-plan.mjs';
 
 export const FIXTURE_PLAN_VERSION = 2;
 export const REQUIRED_SCENARIOS = Object.freeze([
@@ -10,16 +12,17 @@ export const REQUIRED_SCENARIOS = Object.freeze([
 ]);
 export function assertAcceptanceAction(operation, mode) {
   const allowed = [...REQUIRED_SCENARIOS.slice(0, 8), ...FIVE_ROLES.map(role => `login:${role}`),
-    ...['candidate', 'baseline'].flatMap(kind => FIVE_ROLES.map(role => `browser-login:${kind}:${role}`))];
+    ...['candidate', 'baseline'].flatMap(kind => FIVE_ROLES.map(role => `browser-login:${kind}:${role}`)),
+    ...PHASE_NAMES.flatMap(phase => ['candidate', 'baseline'].flatMap(kind => FIVE_ROLES.map(role => `browser-login:${phase}:${kind}:${role}`)))];
   if (mode !== 'acceptance' || !allowed.includes(operation)) throw new Error('Operation is not an approved acceptance action.');
 }
 
 export function loginRole(operation) {
-  const match = /^(?:login:|browser-login:(?:candidate|baseline):)(member|counselor|admin|employer|partner)$/.exec(operation);
+  const match = /^(?:login:|browser-login:(?:(?:unassigned|assigned-owner|approved-profile):)?(?:candidate|baseline):)(member|counselor|admin|employer|partner)$/.exec(operation);
   return match?.[1] ?? null;
 }
 
-export function fixturePlan(runId, organizationId) {
+export function fixturePlan(runId, organizationId, phaseBlueprint = undefined) {
   if (!/^\d{1,20}-1$/.test(runId)) throw new Error('Invalid first-attempt fixture run.');
   return {
     version: FIXTURE_PLAN_VERSION, runId, organizationId,
@@ -30,7 +33,14 @@ export function fixturePlan(runId, organizationId) {
     scenarios: REQUIRED_SCENARIOS,
     // No provider, invitation, test-email, enrollment, mentor approval or product assessment scoring.
     providerActions: false, emailActions: false,
+    ...(phaseBlueprint ? { phaseBlueprint } : {}),
   };
+}
+
+export function phaseBlueprintFromEnvironment(env) {
+  if (!env.DEMO_QA_PHASE_PLAN_FILE) return undefined;
+  const blueprint = JSON.parse(readFileSync(env.DEMO_QA_PHASE_PLAN_FILE, 'utf8'));
+  return validatePhaseBlueprint(blueprint, { runId: runIdFor(env.GITHUB_RUN_ID, env.GITHUB_RUN_ATTEMPT), organizationId: env.PORTAL_QA_ORGANIZATION_ID, controlSha: env.GITHUB_SHA, baselineSha: env.DEMO_QA_BASELINE_SHA });
 }
 
 export function identityFromEnvironment(env) {
@@ -39,7 +49,7 @@ export function identityFromEnvironment(env) {
     repository: env.GITHUB_REPOSITORY, workflowRunId: env.GITHUB_RUN_ID, workflowAttempt: 1,
     runId, projectRef: 'esbdrgaonplpvzmtrdhw', organizationId: env.PORTAL_QA_ORGANIZATION_ID,
     controlSha: env.GITHUB_SHA, deployedSha: env.DEMO_QA_APP_SHA, baselineSha: env.DEMO_QA_BASELINE_SHA,
-    planHash: digest(fixturePlan(runId, env.PORTAL_QA_ORGANIZATION_ID)),
+    planHash: digest(fixturePlan(runId, env.PORTAL_QA_ORGANIZATION_ID, phaseBlueprintFromEnvironment(env))),
   };
   if (identity.repository !== 'workforceap/workforceap-beta' || env.GITHUB_REF !== 'refs/heads/master') {
     throw new Error('Only the trusted repository master workflow may own fixtures.');
@@ -80,7 +90,7 @@ export function pendingOperations(state) {
 }
 
 /** A timeout never establishes absence or permission to repeat a mutation. */
-export function createLifecycle(journal, identity, owner) {
+export function createLifecycle(journal, identity, owner, plan = fixturePlan(identity.runId, identity.organizationId)) {
   let state;
   const current = async () => {
     const next = await journal.read(identity.runId);
@@ -96,8 +106,9 @@ export function createLifecycle(journal, identity, owner) {
   };
   return {
     async claim() {
+      if (digest(plan) !== identity.planHash) throw new Error('Creation plan does not match immutable identity.');
       state = await journal.claim(identity, owner);
-      await append('confirmed', { operationId: 'fixture-plan', plan: fixturePlan(identity.runId, identity.organizationId),
+      await append('confirmed', { operationId: 'fixture-plan', plan,
         fixtureState: { runId: identity.runId, organizationId: identity.organizationId, users: {} } });
       return state;
     },

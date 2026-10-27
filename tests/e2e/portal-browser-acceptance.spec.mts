@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, renameSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { createRequire } from 'node:module';
 import { test, expect, type BrowserContext, type Page, type Browser, type TestInfo, type Response } from '@playwright/test';
-import { createPortalBrowserPlan } from '../../scripts/lib/portal-browser-plan.mjs';
+import { createPortalBrowserPlan, validateBrowserPhaseInput } from '../../scripts/lib/portal-browser-plan.mjs';
 import { acceptanceCredentials, verifyLocalFixtureHealth } from '../../scripts/lib/portal-browser-targets.mjs';
 import { LANE_SCHEMA_VERSION } from '../../scripts/lib/portal-acceptance-lanes.mjs';
 import { evaluateHealthPayload } from '../../scripts/lib/portal-audit-health-gate.mjs';
@@ -25,6 +25,7 @@ const outputPath = process.env.PORTAL_ACCEPTANCE_OUTPUT;
 // This suite must only run through the exact-deployment-gated entry point.
 if (!inputPath || !outputPath) throw new Error('Use scripts/portal-browser-acceptance.mjs with explicit input and output');
 const input = JSON.parse(readFileSync(inputPath, 'utf8'));
+validateBrowserPhaseInput(input, { localFixturesOnly: Boolean(input.localFixturesOnly), phasesEnabled: process.env.DEMO_QA_PHASES_ENABLED === 'true' });
 let plan: ReturnType<typeof createPortalBrowserPlan>;
 const results = new Map<string, CaseResult>();
 const startedAt = new Date().toISOString();
@@ -36,10 +37,10 @@ function checkpoint() {
     const status = cases.some(item => item.status === 'failed') ? 'failed'
       : cases.some(item => item.status === 'error') ? 'error'
         : cases.every(item => item.status === 'passed') ? 'passed' : 'incomplete';
-    return { schemaVersion: LANE_SCHEMA_VERSION, identity: plan.identity, lane, status, startedAt, completedAt: new Date().toISOString(), cases };
+    return { schemaVersion: LANE_SCHEMA_VERSION, identity: plan.identity, ...(plan.phase ? { phase: plan.phase } : {}), lane, status, startedAt, completedAt: new Date().toISOString(), cases };
   });
   mkdirSync(dirname(outputPath!), { recursive: true });
-  writeFileSync(`${outputPath}.tmp`, JSON.stringify({ schemaVersion: LANE_SCHEMA_VERSION, kind: input.localFixturesOnly ? 'local-fixture-companion' : 'hosted-browser', identity: plan.identity, expectedCases: plan.expectedCases, receipts }, null, 2));
+  writeFileSync(`${outputPath}.tmp`, JSON.stringify({ schemaVersion: LANE_SCHEMA_VERSION, kind: input.localFixturesOnly ? 'local-fixture-companion' : 'hosted-browser', identity: plan.identity, ...(plan.phase ? { phase: plan.phase } : {}), expectedCases: plan.expectedCases, receipts }, null, 2));
   renameSync(`${outputPath}.tmp`, outputPath!);
 }
 
@@ -103,7 +104,8 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
       // Keep the journal and its credential-bearing runtime out of the local anonymous path.
       // Playwright's CommonJS TS hook loads the CLI; native .mts imports retain ESM audit guards.
       const { runAcceptanceAction } = createRequire(import.meta.url)('../../scripts/lib/demo-acceptance-cli') as typeof import('../../scripts/lib/demo-acceptance-cli');
-      const evidence = await runAcceptanceAction(process.env, `browser-login:${kind}:${role}`, async (observeResponse, beforeSend) => {
+      const operation = plan.phase ? `browser-login:${plan.phase.name}:${kind}:${role}` : `browser-login:${kind}:${role}`;
+      const evidence = await runAcceptanceAction(process.env, operation, async (observeResponse, beforeSend) => {
         beforeLoginSend = beforeSend;
         let observedResponse: Promise<unknown> | undefined;
         const captureLoginResponse = (response: Response) => {
@@ -144,7 +146,7 @@ async function guardedContext(browser: Browser, target: Target, kind: TargetKind
           if (observedResponse) await observedResponse;
           if (loginDispatchError) throw loginDispatchError;
         }
-      }, result => result.matched === true, { expectedUserId: credentials.userId });
+      }, result => result.matched === true, { expectedUserId: credentials.userId, ...(plan.phase ? { expectedPhase: plan.phase } : {}) });
       if (!evidence.result.matched) throw new Error('Journaled browser identity did not match');
     } else await page.goto('/login', { waitUntil: 'domcontentloaded', timeout: 30_000 });
     guard.login = false;
@@ -162,7 +164,8 @@ async function settle(page: Page, item: Case, origin: string) {
     const inspection = await inspectPortalPage(page, patterns);
     if (!inspection.readOnlyCapabilityActive || !inspection.appReady || inspection.errorFallbackDetected || inspection.horizontalOverflowPx > 1) throw new Error('Final page content, read-only capability or layout check failed');
     if (/placeholder|future batch/i.test(inspection.bodyText) && item.lane === 'fixture-render-matrix') throw new Error('Fixture is a placeholder and cannot establish rendering coverage');
-    if (item.role !== 'anonymous') {
+    // The reviewed no-mentor phase redirects to the public application, which has no workspace shell.
+    if (item.role !== 'anonymous' && item.expectedPath !== '/mentor/apply') {
       const workspaceRole = item.path!.startsWith('/dashboard') ? 'member' : item.role;
       await expect(page.locator(`.workspace-shell-root[data-workspace-role="${workspaceRole}"]`)).toHaveCount(1);
       await expect(page.locator('[data-workspace-role]:not([data-workspace-role="member"])[data-member-home-compact]')).toHaveCount(0);

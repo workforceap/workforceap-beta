@@ -3,30 +3,40 @@ import { dirname } from 'node:path';
 import { randomBytes, randomUUID } from 'node:crypto';
 import type { Prisma } from '@prisma/client';
 import { createJournal, createPrismaJournalStore, canonical, digest } from './demo-acceptance-journal.mjs';
-import { createLifecycle, identityFromEnvironment, fixturePlan, fixtureStateFromJournal, terminalRunProof, assertCleanupQuiescent, pendingOperations, assertAcceptanceAction, loginRole } from './demo-acceptance-lifecycle.mjs';
+import { createLifecycle, identityFromEnvironment, fixturePlan, fixtureStateFromJournal, terminalRunProof, assertCleanupQuiescent, pendingOperations, assertAcceptanceAction, loginRole, phaseBlueprintFromEnvironment } from './demo-acceptance-lifecycle.mjs';
 import { readPortalQaTarget } from './portal-qa-guard.cjs';
 import { probeDemoServiceKey } from './demo-service-key-probe.cjs';
-import { createFixtures, createRoleRowsIn, cleanupFixtures, liveDeps, readbackPersistence, type FixtureState, type Role, type PortalQaTarget } from '../five-role-demo-fixture';
+import { createFixtures, createRoleRowsIn, cleanupFixtures, liveDeps, readbackPersistence, type FixtureState, type Role, type PortalQaTarget, type FixturePhase, type PhaseName } from '../five-role-demo-fixture';
 import { readOwnedGraph, assertGraphUnchanged, assertGraphTransition, assertJournaledLoginEvents, type OwnedGraph } from './demo-acceptance-owned-rows';
 import { FIVE_ROLES, READBACK_KIND, CLEANUP_KIND, writtenValueFor, runIdFor } from './five-role-acceptance.mjs';
 import { canonicalEventName } from '../../lib/events/names';
 import { execFileSync } from 'node:child_process';
 import { assertDispatchContext } from './demo-acceptance-workflow.mjs';
 import { verifyBrowserTargets } from './portal-browser-targets.mjs';
+import { PHASE_CONTENT_PATHS, phaseBlueprintHash } from './demo-acceptance-phase-plan.mjs';
+import { verifyHostedPhaseAuthorization } from './demo-acceptance-phase-authorization.mjs';
+import { phaseDescriptor, assertPhaseRows, transitionPhaseRows, deletePhaseRows, verifyPhaseAbsence, type PhaseBlueprint } from './demo-acceptance-phase-rows';
 
 function output(path: string | undefined, value: unknown) {
   if (!path) throw new Error('Receipt output path is required.');
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
 }
-function browserInput(env: NodeJS.ProcessEnv, identity: Record<string, unknown>, memberId?: string) {
+function browserInput(env: NodeJS.ProcessEnv, identity: Record<string, unknown>, memberId?: string, phase?: FixturePhase) {
   output(env.PORTAL_BROWSER_INPUT, { identity, baselineDeploymentId: Number(env.DEMO_QA_BASELINE_DEPLOYMENT_ID),
-    candidateDeploymentId: Number(env.DEMO_QA_CANDIDATE_DEPLOYMENT_ID), ...(memberId ? { memberId } : {}), dynamicRoutes: [] });
+    candidateDeploymentId: Number(env.DEMO_QA_CANDIDATE_DEPLOYMENT_ID), ...(memberId ? { memberId } : {}), ...(phase ? { phase } : {}), dynamicRoutes: [] });
+}
+
+function verifyPhaseSource(blueprint: PhaseBlueprint) {
+  for (const [index, path] of PHASE_CONTENT_PATHS.entries()) for (const [sha, key] of [[blueprint.baselineSha, 'baselineBlob'], [blueprint.controlSha, 'candidateBlob']]) {
+    const actual = execFileSync('git', ['rev-parse', `${sha}:${path}`], { encoding: 'utf8', windowsHide: true }).trim();
+    if (actual !== blueprint.contentProof[index][key]) throw new Error('Reviewed phase source content changed.');
+  }
 }
 const read = (path: string | undefined) => { if (!path) throw new Error('Receipt path missing.'); return JSON.parse(readFileSync(path, 'utf8')); };
 
 /** Exact database fixture operation shared by the live coordinator and local contract proof. */
-export async function createAcceptanceRows(tx: Prisma.TransactionClient, target: PortalQaTarget, input: Parameters<typeof createRoleRowsIn>[2], runId: string) {
+export async function createAcceptanceRows(tx: Prisma.TransactionClient, target: PortalQaTarget, input: Parameters<typeof createRoleRowsIn>[2], runId: string, phaseBlueprint?: PhaseBlueprint) {
   const created = await createRoleRowsIn(tx, target, input);
   await tx.messageThread.create({ data: { memberId: input.users.member.userId, counselorUserId: input.users.counselor.userId } });
   // The production writer imports ambient app Prisma. Validate its vocabulary here and
@@ -34,9 +44,10 @@ export async function createAcceptanceRows(tx: Prisma.TransactionClient, target:
   const eventName = canonicalEventName('member_logged_in');
   if (!eventName) throw new Error('Canonical login event is unavailable.');
   for (let count = 0; count < 6; count++) await tx.$executeRaw`INSERT INTO member_events (id, user_id, event_name, metadata, created_at) VALUES (${randomUUID()}, ${input.users.member.userId}, ${eventName}, ${JSON.stringify({ fixtureRunId: runId, fixtureSetupOnly: true })}::jsonb, NOW())`;
-  const fixtureState = { runId, organizationId: target.organizationId, users: input.users, ...created };
+  const fixtureState: FixtureState = { runId, organizationId: target.organizationId, users: input.users, ...created };
   const ownedGraph = await readOwnedGraph(tx, fixtureState);
-  return { result: created, evidence: { fixtureState, ownedGraph } };
+  if (phaseBlueprint) fixtureState.phase = phaseDescriptor(phaseBlueprint, 'unassigned', ownedGraph);
+  return { result: { ...created, ...(fixtureState.phase ? { phase: fixtureState.phase } : {}) }, evidence: { fixtureState, ownedGraph } };
 }
 
 /** No PREVIEW_ or normal app credential fallback. The session/direct DB must retain transactions. */
@@ -57,13 +68,16 @@ export async function openRuntime(env: NodeJS.ProcessEnv, originalRunId?: string
   const live = liveDeps(target, dedicated);
   const journal = createJournal(createPrismaJournalStore(live.prisma));
   try {
-    const identity = originalRunId ? (await journal.read(originalRunId)).identity : identityFromEnvironment(env);
+    const previous = originalRunId ? await journal.read(originalRunId) : undefined;
+    const identity = previous ? previous.identity : identityFromEnvironment(env);
     if (!identity || identity.organizationId !== target.organizationId || identity.projectRef !== 'esbdrgaonplpvzmtrdhw') {
       throw new Error('Journal target does not match the independently verified DEMO target.');
     }
     const owner = `${env.GITHUB_REPOSITORY}/${runIdFor(env.GITHUB_RUN_ID, env.GITHUB_RUN_ATTEMPT)}`;
-    const lifecycle = createLifecycle(journal, identity, owner);
-    return { ...live, journal, identity, lifecycle, owner, target, dedicated };
+    const plan = previous ? previous.events.find((event: { data?: { operationId?: string; plan?: ReturnType<typeof fixturePlan> } }) => event.data?.operationId === 'fixture-plan')?.data.plan : fixturePlan(identity.runId, identity.organizationId, phaseBlueprintFromEnvironment(env));
+    if (!plan || digest(plan) !== identity.planHash) throw new Error('Durable fixture plan is missing or differs from identity.');
+    const lifecycle = createLifecycle(journal, identity, owner, plan);
+    return { ...live, journal, identity, lifecycle, owner, target, dedicated, plan };
   } catch (error) { await live.close(); throw error; }
 }
 
@@ -87,7 +101,7 @@ function verifyLoginEvents(graph: OwnedGraph, fixture: FixtureState, journal: Jo
 }
 
 /** Called immediately around one permitted browser API mutation, never retried. */
-export async function runAcceptanceAction<T>(env: NodeJS.ProcessEnv, operation: string, call: (observeResponse: (evidence: { status: number }) => Promise<void>, beforeSend: () => Promise<void>) => Promise<T>, verifyApp: (result: T) => boolean, options: { expectedUserId?: string } = {}) {
+export async function runAcceptanceAction<T>(env: NodeJS.ProcessEnv, operation: string, call: (observeResponse: (evidence: { status: number }) => Promise<void>, beforeSend: () => Promise<void>) => Promise<T>, verifyApp: (result: T) => boolean, options: { expectedUserId?: string; expectedPhase?: FixturePhase } = {}) {
   assertDispatchContext(env);
   assertAcceptanceAction(operation, env.DEMO_QA_MODE);
   const runtime = await openRuntime(env);
@@ -97,8 +111,14 @@ export async function runAcceptanceAction<T>(env: NodeJS.ProcessEnv, operation: 
     const fixture = fixtureStateFromJournal(current) as FixtureState;
     const expectedRole = loginRole(operation) as Role | null;
     if (expectedRole && options.expectedUserId !== fixture.users[expectedRole]?.userId) throw new Error('Login identity differs from the journal-owned fixture.');
+    if (runtime.plan.phaseBlueprint) {
+      verifyHostedPhaseAuthorization(env, runtime.plan.phaseBlueprint, fixture.phase?.name);
+      if (operation.startsWith('browser-login:') && (!options.expectedPhase || canonical(options.expectedPhase) !== canonical(fixture.phase) || operation.split(':')[1] !== fixture.phase?.name)) throw new Error('Browser operation differs from the journaled fixture phase.');
+      if (!operation.startsWith('browser-login:') && fixture.phase?.name !== 'unassigned') throw new Error('Application mutations are restricted to the initial phase.');
+    } else if (options.expectedPhase) throw new Error('No reviewed synthetic phase plan is active.');
     const before = await readOwnedGraph(prisma, fixture);
     verifyLoginEvents(before, fixture, current);
+    if (runtime.plan.phaseBlueprint) assertPhaseRows(runtime.plan.phaseBlueprint, fixture, before);
     const previous = latestGraph(current);
     if (canonical(previous) !== canonical(before)) {
       assertGraphTransition(previous, before, 'member-session', fixture);
@@ -145,12 +165,12 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
   if ((env.DEMO_QA_MODE === 'recover-cleanup') !== (command === 'recover-cleanup')) throw new Error('Cleanup-only dispatch cannot execute acceptance commands.');
   if (command === 'plan') {
     const identity = identityFromEnvironment(env);
-    output(env.FIVE_ROLE_QA_PLAN_FILE, { identity, plan: fixturePlan(identity.runId, identity.organizationId),
+    output(env.FIVE_ROLE_QA_PLAN_FILE, { identity, plan: fixturePlan(identity.runId, identity.organizationId, phaseBlueprintFromEnvironment(env)),
       baselineDeploymentId: env.DEMO_QA_BASELINE_DEPLOYMENT_ID, candidateDeploymentId: env.DEMO_QA_CANDIDATE_DEPLOYMENT_ID });
     browserInput(env, identity);
     return;
   }
-  if (!['create', 'readback', 'cleanup', 'recover-cleanup', 'complete-preassessment'].includes(command ?? '')) throw new Error('Usage: plan|create|readback|cleanup|recover-cleanup|complete-preassessment');
+  if (!['create', 'readback', 'cleanup', 'recover-cleanup', 'complete-preassessment', 'phase-unassigned', 'phase-assigned-owner', 'phase-approved-profile'].includes(command ?? '')) throw new Error('Unknown acceptance command.');
   if (command === 'create') {
     const plan = read(env.PORTAL_BROWSER_INPUT);
     if (canonical(plan.identity) !== canonical(identityFromEnvironment(env))) throw new Error('Browser preflight plan identity differs from the trusted workflow.');
@@ -167,6 +187,10 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
   const { deps, prisma, journal, lifecycle, identity, target, owner } = runtime;
   try {
     if (command === 'create') {
+      if (runtime.plan.phaseBlueprint) {
+        verifyHostedPhaseAuthorization(env, runtime.plan.phaseBlueprint, 'approved-profile');
+        verifyPhaseSource(runtime.plan.phaseBlueprint);
+      }
       const probe = await probeDemoServiceKey({ url: runtime.dedicated.NEXT_PUBLIC_SUPABASE_URL, key: runtime.dedicated.SUPABASE_SERVICE_ROLE_KEY });
       if (probe.urlProject !== 'demo' || probe.key !== 'valid') throw new Error('DEMO key read probe failed.');
       if (!env.GITHUB_ENV) throw new Error('Credential handoff file missing.');
@@ -185,7 +209,7 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
       deps.createRoleRows = async input => {
         const state = await lifecycle.current();
         const result = await journal.atomic(identity.runId, owner, state.revision, 'db-committed', { operationId: 'role-rows', preimage: null },
-          (tx: Prisma.TransactionClient) => createAcceptanceRows(tx, target, input, identity.runId));
+          (tx: Prisma.TransactionClient) => createAcceptanceRows(tx, target, input, identity.runId, runtime.plan.phaseBlueprint));
         lifecycle.adopt(result.state);
         return result.result;
       };
@@ -199,9 +223,9 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
         lines.push(`FIVE_ROLE_QA_${role.toUpperCase()}_ID=${fixture.users[role]!.userId}`, `FIVE_ROLE_QA_${role.toUpperCase()}_EMAIL=${fixture.users[role]!.email}`, `FIVE_ROLE_QA_${role.toUpperCase()}_PASSWORD=${passwords[role]}`);
       }
       appendFileSync(env.GITHUB_ENV, `${lines.join('\n')}\n`);
-      output(env.FIVE_ROLE_QA_PLAN_FILE, { identity, plan: fixturePlan(identity.runId, identity.organizationId), memberId: fixture.users.member!.userId,
+      output(env.FIVE_ROLE_QA_PLAN_FILE, { identity, plan: runtime.plan, memberId: fixture.users.member!.userId,
         baselineDeploymentId: env.DEMO_QA_BASELINE_DEPLOYMENT_ID, candidateDeploymentId: env.DEMO_QA_CANDIDATE_DEPLOYMENT_ID });
-      browserInput(env, identity, fixture.users.member!.userId);
+      browserInput(env, identity, fixture.users.member!.userId, fixture.phase);
       return;
     }
     if (command === 'recover-cleanup') {
@@ -277,6 +301,29 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
     const current = await lifecycle.current();
     assertCleanupQuiescent(current);
     const fixture = fixtureStateFromJournal(current) as FixtureState;
+    if (command!.startsWith('phase-')) {
+      const next = command!.slice('phase-'.length) as PhaseName;
+      const blueprint = runtime.plan.phaseBlueprint;
+      if (!blueprint || !fixture.phase || fixture.phase.blueprintHash !== phaseBlueprintHash(blueprint)) throw new Error('A reviewed durable phase plan is required.');
+      const approval = verifyHostedPhaseAuthorization(env, blueprint, next);
+      verifyPhaseSource(blueprint);
+      if (current.events.some((event: JournalEvent) => event.data?.operationId === `phase:${next}`)) throw new Error('This phase checkpoint already exists; it cannot be replayed.');
+      const before = await readOwnedGraph(prisma, fixture);
+      verifyLoginEvents(before, fixture, current);
+      assertGraphTransition(latestGraph(current), before, 'member-session', fixture);
+      const transition = await journal.atomic(identity.runId, owner, current.revision, 'db-committed', { operationId: `phase:${next}`, preimage: before }, async (tx: Prisma.TransactionClient) => {
+        if (next !== 'unassigned') return transitionPhaseRows(tx, fixture, before, blueprint, next, JSON.parse(env.DEMO_QA_PHASE_APPROVAL!));
+        if (fixture.phase?.name !== 'unassigned') throw new Error('The unassigned checkpoint cannot overwrite a later phase.');
+        assertGraphUnchanged(before, await readOwnedGraph(tx, fixture));
+        assertPhaseRows(blueprint, fixture, before);
+        const fixtureState: FixtureState = { ...fixture, phase: phaseDescriptor(blueprint, next, before) };
+        return { result: fixtureState, evidence: { fixtureState, phase: fixtureState.phase, ownedGraph: before, approval, fixtureSetupOnly: true } };
+      });
+      lifecycle.adopt(transition.state);
+      output(env.FIVE_ROLE_QA_STATE_FILE, transition.result);
+      browserInput(env, identity, fixture.users.member!.userId, transition.result.phase);
+      return;
+    }
     if (command === 'readback') {
       const acceptance = read(env.FIVE_ROLE_ACCEPTANCE_OUTPUT);
       if (canonical(acceptance.identity) !== canonical(identity)) throw new Error('Acceptance identity mismatch.');
@@ -327,6 +374,7 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
           assertGraphUnchanged(expected, await readOwnedGraph(tx, fixture));
           const notes = await tx.counselorNote.deleteMany({ where: { id: { in: noteIds } } });
           if (notes.count !== noteIds.length) throw new Error('Note deletion compare-and-set failed.');
+          await deletePhaseRows(tx, fixture, expected);
           for (const role of FIVE_ROLES as Role[]) {
             const user = fixture.users[role];
             if (user) await tx.user.deleteMany({ where: { id: user.userId, email: user.email, organizationId: target.organizationId } });
@@ -334,7 +382,8 @@ export async function main(command: string | undefined, env: NodeJS.ProcessEnv) 
           if (fixture.partnerId) await tx.partner.deleteMany({ where: { id: fixture.partnerId, organizationId: target.organizationId } });
           const ownedGraph = await readOwnedGraph(tx, fixture);
           if (Object.values(ownedGraph).some(rows => rows.length)) throw new Error('Database fixture absence did not verify.');
-          return { result: notes.count, evidence: { ownedGraph } };
+          const phaseAbsence = await verifyPhaseAbsence(tx, fixture);
+          return { result: notes.count, evidence: { ownedGraph, ...(phaseAbsence ? { phaseAbsence } : {}) } };
         });
       lifecycle.adopt(deleted.state);
       return deleted.result;

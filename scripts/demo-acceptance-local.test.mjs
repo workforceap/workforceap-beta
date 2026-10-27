@@ -11,5 +11,5 @@ test('local fixture execution binds exact bytes, source and workflow identity', 
   const bytes = Buffer.from('{"receipts":[]}');
   const execution = { kind: 'portal-local-fixture-execution', status: 'completed', serverStopped: true, sourceTreeClean: true, identity, controlSha: identity.controlSha, workflowRunId: '42', workflowAttempt: 1, command: 'node scripts/run-portal-local-fixtures.mjs', receiptDigest: localReceiptDigest(bytes), startedAt: '2026-10-27T00:00:00Z', completedAt: '2026-10-27T00:01:00Z' };
   verifyLocalExecution(execution, bytes, identity);
-  for (const patch of [{ workflowRunId: '43' }, { controlSha: 'b'.repeat(40) }, { serverStopped: false }, { receiptDigest: '0'.repeat(64) }]) assert.throws(() => verifyLocalExecution({ ...execution, ...patch }, bytes, identity));
+  for (const patch of [{ workflowRunId: '43' }, { controlSha: 'b'.repeat(40) }, { serverStopped: false }, { localContractOnly: true }, { receiptDigest: '0'.repeat(64) }]) assert.throws(() => verifyLocalExecution({ ...execution, ...patch }, bytes, identity));
 });
