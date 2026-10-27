@@ -57,7 +57,11 @@ function CareerTipCard() {
 
 // ── Main Client ───────────────────────────────────────────────────────────────
 
-export default function MemberMessagesMobileClient({ initial }: { initial: InitialPayload }) {
+export default function MemberMessagesMobileClient({ initial, readOnlyAudit = false }: {
+  initial: InitialPayload;
+  /** Server-validated audit mode preserves history without messaging effects. */
+  readOnlyAudit?: boolean;
+}) {
   const {
     memberUserId,
     counselorName,
@@ -93,6 +97,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
   }, []);
 
   const markRead = useCallback(async () => {
+    if (readOnlyAudit) return;
     try {
       const r = await fetch('/api/member/messages', { method: 'PATCH', credentials: 'include' });
       if (r.ok) {
@@ -104,7 +109,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
         try { window.dispatchEvent(new CustomEvent('wa-nav-badges-refresh')); } catch { /* ignore */ }
       }
     } catch { /* ignore */ }
-  }, []);
+  }, [readOnlyAudit]);
 
   useEffect(() => {
     if (view === 'thread') {
@@ -119,6 +124,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
   // Realtime subscription
   const threadId = thread.id;
   useEffect(() => {
+    if (readOnlyAudit) return;
     let cancelled = false;
     try {
       const supabase = createSupabaseBrowserClient();
@@ -155,12 +161,12 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
       console.warn('[MemberMessages] Realtime unavailable', e);
       return undefined;
     }
-  }, [threadId, memberUserId]);
+  }, [threadId, memberUserId, readOnlyAudit]);
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = draft.trim();
-    if (!text || sending) return;
+    if (readOnlyAudit || !text || sending) return;
     setSending(true);
     setError(null);
     try {
@@ -342,7 +348,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
             }
             title={thread.counselorUserId ? t('counselorThread.title') : t('counselorUnassigned.title')}
             description={thread.counselorUserId ? t('counselorThread.body') : t('counselorUnassigned.body')}
-            primaryAction={{
+            primaryAction={readOnlyAudit ? undefined : {
               label: thread.counselorUserId ? t('counselorThread.action') : t('counselorUnassigned.action'),
               onClick: () => composeRef.current?.focus(),
             }}
@@ -400,6 +406,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
           id="portal-messages-compose-input"
           ref={composeRef}
           value={draft}
+          disabled={readOnlyAudit}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -415,7 +422,7 @@ export default function MemberMessagesMobileClient({ initial }: { initial: Initi
         />
         <button
           type="submit"
-          disabled={sending || !draft.trim()}
+          disabled={readOnlyAudit || sending || !draft.trim()}
           className="wa-flex-shrink-0 wa-w-11 wa-h-11 wa-rounded-full wa-flex wa-items-center wa-justify-center active:wa-scale-95 wa-transition-all"
           style={{
             background: draft.trim() ? 'var(--color-accent-dark, #6b0c29)' : 'var(--surface-container-high)',

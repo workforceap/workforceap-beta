@@ -209,6 +209,15 @@ For the admin `/admin/dashboard` route, the static audit also waits for a same-o
 
 For a redirect-only route, the [audit runner](../../scripts/audit-portal-routes.mjs) retries a Playwright `ERR_ABORTED` or interrupted navigation only when an intermediate navigation was canceled, with a brief yield inside the original seven-second wait for the exact target commit. It then applies the same destination URL, HTTP, readiness, H1, read-only, page/console/data, and blocked-write checks; a missing or unhealthy target still fails. See the [bounded wait helper](../../scripts/lib/portal-audit-browser.mjs).
 
+The ordinary-admin fixture checks `/admin/partner-signups` as a conditional redirect
+to `/admin/partners`, preserving the page's super-admin-only historical intake view.
+That gate is excluded from unconditional static rendering checks and does not apply
+to super-admin fixtures. The exact destination must pass all existing health and
+blocked-write checks. Member Messages likewise passes its validated read-only audit
+state into the kit and legacy clients: they retain saved history and unread indicators
+without read-marker writes, sending or realtime connections. These guards do not
+prove live message delivery or resolve unrelated production transaction timeouts.
+
 The two member program subpages remain in that coverage inventory but now choose their expected behavior from authenticated, self-scoped reads. The existing [member profile GET](../../app/api/member/profile/route.ts) adds `programRouteFacts` only for the `portalAudit=program-subpages` opt-in with the validated read-only audit capability. The [facts loader](../../lib/member/programRouteAuditFacts.ts) reuses the start page's active-program resolver and the screening page's exact enrollment/legacy and latest-active-pack lookups; a progress-only program may resolve for start while screening still redirects. The [audit decision helper](../../scripts/lib/portal-audit-program-routes.mjs) persists only booleans and bounded enums, never the returned profile or fixture identifiers. An enrolled page must render its exact H1 and pass the existing destination health checks; a verified absent program must reach a healthy `/dashboard/program`. A verified absent screening pack records `not_applicable` with `screening_pack_absent_noncoverage`, and no successful page-render claim. An invalid pack, failed read, missing capability facts or unknown fact shape fails the check. The [artifact schema](../portal-audit-results.schema.json) records the selected behavior and facts beside the existing `redirectCoverage` entries; this legacy field includes conditional renders, redirects and explicit unavailable coverage. These checks do not contact training providers or change admin failure rules.
 
 Internal inspection starts with [workflow diagnostics](../../lib/diagnostics.ts), [cron executions](../../lib/cron/cronExecution.ts), [audit logging](../../lib/audit/log.ts), and the relevant admin page. Vercel runtime logs, deployment status and Sentry are separate signals; preserve target, SHA, timestamp and sanitized outcome in verification receipts.

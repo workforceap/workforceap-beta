@@ -11,12 +11,14 @@ declare global {
     messageFixture: {
       insert?: (payload: { new: Record<string, unknown> }) => void;
       requests: { method: string; url: string; body?: string }[];
+      browserClientCreations: number;
+      subscriptions: number;
       settle?: (ok: boolean, echoFirst?: boolean) => void;
     };
   }
 }
 
-window.messageFixture = { requests: [] };
+window.messageFixture = { requests: [], browserClientCreations: 0, subscriptions: 0 };
 window.fetch = async (input, init) => {
   const url = String(input);
   const method = init?.method ?? 'GET';
@@ -49,13 +51,15 @@ const messages = Array.from({ length: 40 }, (_, index) => ({
     : `Fixture message ${index + 1}: Thank you. I have a question about the next course assignment.`,
   createdAt: new Date(Date.UTC(2026, 9, 19, 22, index * 30)).toISOString(),
 }));
+const readOnlyAudit = new URLSearchParams(window.location.search).has('audit');
 
 createRoot(document.getElementById('root')!).render(
   <NextIntlClientProvider locale="en" messages={en} timeZone="America/Chicago">
     <header className="fixture-banner"><strong>WorkforceAP</strong><span>Member messages · synthetic review fixture</span></header>
     <main>
       <MemberMessagesKit
-        conversations={[{ id: 'fixture-thread', name: 'Fixture Counselor', role: 'Assigned counselor', preview: 'Your training progress is saved.', active: true }]}
+        readOnlyAudit={readOnlyAudit}
+        conversations={[{ id: 'fixture-thread', name: 'Fixture Counselor', role: 'Assigned counselor', preview: 'Your training progress is saved.', active: true, unread: readOnlyAudit }]}
         activeName="Fixture Counselor"
         activeRole="Assigned counselor"
         activeInitials="FC"

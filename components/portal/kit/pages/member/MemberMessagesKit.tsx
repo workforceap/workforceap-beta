@@ -22,6 +22,8 @@ import styles from './memberPages.module.css';
  * same mechanism `MemberCounselorChatClient` uses. No new backend.
  * Saved server/realtime timestamps remain intact. Optimistic rows are marked
  * pending, and a realtime echo is reconciled with its POST response by saved ID.
+ * Read-only audits retain the real conversation and unread state while disabling
+ * composing, read-marker writes and realtime connections.
  */
 
 interface Conversation {
@@ -40,6 +42,8 @@ export interface MemberMessagesKitProps {
   conversations?: Conversation[];
   /** Enables local conversation switching only for an explicitly synthetic inbox. */
   previewOnly?: boolean;
+  /** Server-validated audit mode: render saved history without messaging effects. */
+  readOnlyAudit?: boolean;
   /** Header for the open thread. */
   activeName?: string;
   activeRole?: string;
@@ -120,6 +124,7 @@ export function MemberMessagesKit({
   feedbackDraft,
   feedbackNotice,
   previewOnly = false,
+  readOnlyAudit = false,
 }: MemberMessagesKitProps) {
   const t = useTranslations('empty');
   const tm = useTranslations('messages');
@@ -158,7 +163,7 @@ export function MemberMessagesKit({
   // is open) marks it read, the same way the legacy clients do. Without this
   // the badge the nav turns on for a never-opened thread could never clear.
   const markRead = useCallback(async () => {
-    if (previewOnly || !memberUserId || !threadId) return;
+    if (readOnlyAudit || previewOnly || !memberUserId || !threadId) return;
     try {
       const r = await fetch('/api/member/messages', { method: 'PATCH', credentials: 'include' });
       if (r.ok) {
@@ -177,21 +182,21 @@ export function MemberMessagesKit({
     } catch {
       /* ignore */
     }
-  }, [memberUserId, previewOnly, threadId]);
+  }, [memberUserId, previewOnly, readOnlyAudit, threadId]);
   const markReadRef = useRef(markRead);
   markReadRef.current = markRead;
 
   useEffect(() => {
-    if (previewOnly || !memberUserId || !threadId) return;
+    if (readOnlyAudit || previewOnly || !memberUserId || !threadId) return;
     void markRead();
-  }, [memberUserId, previewOnly, threadId, markRead]);
+  }, [memberUserId, previewOnly, readOnlyAudit, threadId, markRead]);
 
   // Live send path: reuse the existing legacy endpoint that
   // MemberCounselorChatClient posts to. Only active when a real member id is
   // present and no explicit onSend override was passed.
   const sendLive = useCallback(
     async (text: string) => {
-      if (previewOnly) return false;
+      if (readOnlyAudit || previewOnly) return false;
       setError(null);
       // Optimistic append so the thread feels responsive; reconcile on response.
       const tempId = `temp-${Date.now()}`;
@@ -240,12 +245,12 @@ export function MemberMessagesKit({
         return false;
       }
     },
-    [feedbackDraft, previewOnly, tm],
+    [feedbackDraft, previewOnly, readOnlyAudit, tm],
   );
 
   const handleSend = useCallback(
     (text: string) => {
-        if (previewOnly) return false;
+      if (readOnlyAudit || previewOnly) return false;
       if (onSend) {
         return onSend(text);
       }
@@ -253,7 +258,7 @@ export function MemberMessagesKit({
         return sendLive(text);
       }
     },
-    [onSend, memberUserId, previewOnly, sendLive],
+    [onSend, memberUserId, previewOnly, readOnlyAudit, sendLive],
   );
 
   // Live RECEIVE path: mirror MemberCounselorChatClient's realtime subscription
@@ -261,7 +266,7 @@ export function MemberMessagesKit({
   // thread id; fails soft (current behavior preserved) if realtime is
   // unavailable or the env client cannot be created.
   useEffect(() => {
-    if (previewOnly || !memberUserId || !threadId) return undefined;
+    if (readOnlyAudit || previewOnly || !memberUserId || !threadId) return undefined;
     let cancelled = false;
     try {
       const supabase = createSupabaseBrowserClient();
@@ -302,9 +307,9 @@ export function MemberMessagesKit({
       console.warn('[MemberMessagesKit] Realtime unavailable', e);
       return undefined;
     }
-  }, [memberUserId, previewOnly, threadId]);
+  }, [memberUserId, previewOnly, readOnlyAudit, threadId]);
 
-  const canSend = !previewOnly && (Boolean(onSend) || Boolean(memberUserId));
+  const canSend = !readOnlyAudit && !previewOnly && (Boolean(onSend) || Boolean(memberUserId));
   const unreadCount = conversations.filter((c) => c.unread && !readIds.has(c.id)).length;
 
   return (
