@@ -38,9 +38,9 @@ export async function navigateMemberInventoryRoute(page, path, {
     if (await page.getByRole('heading', { level: 1, name: /^(?:Page not found|404)$/i }).count()) {
       throw new Error('The inventory route rendered a not-found page.');
     }
-    if (documentStatus === null || documentStatus >= 400) throw new Error('The final inventory document did not load successfully.');
-    if (data.errors.length) throw new Error(`Inventory data did not settle successfully: ${data.errors.join('; ')}`);
-    if (pageErrorCount || data.consoleErrors.length || data.pendingDataRequestCount) throw new Error('Inventory runtime, console or pending data errors prevent readiness.');
+    if (documentStatus === null || documentStatus >= 400) throw Object.assign(new Error('The final inventory document did not load successfully.'), { portalReadinessCode: 'document_status' });
+    if (data.errors.length) throw Object.assign(new Error(`Inventory data did not settle successfully: ${data.errors.join('; ')}`), { portalReadinessCode: 'data' });
+    if (pageErrorCount || data.consoleErrors.length || data.pendingDataRequestCount) throw Object.assign(new Error('Inventory runtime, console or pending data errors prevent readiness.'), { portalReadinessCode: pageErrorCount ? 'page_error' : data.consoleErrors.length ? 'console' : 'pending_data' });
   } finally {
     page.off('response', responseListener);
     page.off('console', consoleListener);

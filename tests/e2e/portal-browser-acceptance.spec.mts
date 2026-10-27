@@ -181,7 +181,10 @@ async function settle(page: Page, item: Case, origin: string) {
   const ready = beginStaffDataReadiness(page, item.expectedPath ?? item.path!, origin);
   try {
     try { await navigateMemberInventoryRoute(page, item.path!, { trustedOrigin: origin, expectedPath: item.expectedPath ?? item.path!, dynamicPatterns: patterns, timeout: 45_000 }); }
-    catch { throw new Error('browser_case_readiness_failed'); }
+    catch (error) {
+      const code = (error as { portalReadinessCode?: string })?.portalReadinessCode;
+      throw new Error(code && ['document_status', 'data', 'page_error', 'console', 'pending_data'].includes(code) ? `browser_case_readiness_${code}_failed` : 'browser_case_readiness_failed');
+    }
     try { await ready(); } catch { throw new Error('browser_case_staff_data_failed'); }
     const inspection = await inspectPortalPage(page, patterns);
     // Anonymous local fixtures cannot have the authenticated middleware marker.
@@ -279,7 +282,7 @@ test('current portal browser acceptance records every required case', async ({ b
         results.set(item.id, { id: item.id, status: 'passed' });
       } catch (error) {
         // No private DOM text, response bodies, URL tokens or credentials in receipts.
-        const code = error instanceof Error && /^browser_(?:context_(?:health|cookie|request_guards|new_page|login|local_fixture_start)|case_(?:readiness|staff_data|capability|content|layout|page_error|network))_failed$/.test(error.message) ? error.message : 'required_browser_contract_failed';
+        const code = error instanceof Error && /^browser_(?:context_(?:health|cookie|request_guards|new_page|login|local_fixture_start)|case_(?:readiness(?:_(?:document_status|data|page_error|console|pending_data))?|staff_data|capability|content|layout|page_error|network))_failed$/.test(error.message) ? error.message : 'required_browser_contract_failed';
         results.set(item.id, { id: item.id, status: 'failed', reason: code });
       }
       checkpoint();
