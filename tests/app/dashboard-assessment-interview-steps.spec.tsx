@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   findUnique: vi.fn(),
   fetch: vi.fn(),
   refresh: vi.fn(),
+  formMounts: 0,
 }));
 
 vi.mock('next/link', () => ({
@@ -37,21 +38,31 @@ vi.mock('next-intl/server', () => ({
     return node.replace(/\{(\w+)\}/g, (_, name: string) => values?.[name] ?? `{${name}}`);
   }),
 }));
-vi.mock('@/components/portal/AssessmentForm', () => ({
-  default: ({
-    progressScope,
-    retakeRequestedAt,
-  }: {
-    progressScope?: string;
-    retakeRequestedAt?: string | null;
-  }) => (
-    <div
-      data-testid="assessment-form"
-      data-progress-scope={progressScope ?? ''}
-      data-retake-requested-at={retakeRequestedAt ?? ''}
-    />
-  ),
-}));
+// Like the real form, mount-only state is captured once, so a stale mount
+// keeps its first scope unless the page remounts the form.
+vi.mock('@/components/portal/AssessmentForm', async () => {
+  const { useState } = await import('react');
+  return {
+    default: function AssessmentFormMock({
+      progressScope,
+      retakeRequestedAt,
+    }: {
+      progressScope?: string;
+      retakeRequestedAt?: string | null;
+    }) {
+      const [mount] = useState(() => ({ id: ++mocks.formMounts, scope: progressScope ?? '' }));
+      return (
+        <div
+          data-testid="assessment-form"
+          data-progress-scope={progressScope ?? ''}
+          data-retake-requested-at={retakeRequestedAt ?? ''}
+          data-mount-id={String(mount.id)}
+          data-mount-scope={mount.scope}
+        />
+      );
+    },
+  };
+});
 
 import AssessmentPage from '@/app/(portal)/dashboard/assessment/page';
 
@@ -128,16 +139,24 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
   });
 
   it('binds the authorized retake form to the staff timestamp so a later authorization remounts it', async () => {
-    const first = await renderPage({ assessmentRetakeRequestedAt: new Date('2026-10-15T00:00:00Z') });
+    mocks.formMounts = 0;
+    const { rerender } = await renderPage({ assessmentRetakeRequestedAt: new Date('2026-10-15T00:00:00Z') });
     const firstForm = screen.getByTestId('assessment-form');
     expect(firstForm).toHaveAttribute('data-progress-scope', 'member-1:1:2026-10-15T00:00:00.000Z');
     expect(firstForm).toHaveAttribute('data-retake-requested-at', '2026-10-15T00:00:00.000Z');
-    first.unmount();
+    expect(firstForm).toHaveAttribute('data-mount-id', '1');
+    expect(firstForm).toHaveAttribute('data-mount-scope', 'member-1:1:2026-10-15T00:00:00.000Z');
 
-    await renderPage({ assessmentRetakeRequestedAt: new Date('2026-10-16T12:00:00Z') });
+    // Same React root, no unmount: only the page's key can force a fresh form.
+    mocks.findUnique.mockResolvedValue(member({ assessmentRetakeRequestedAt: new Date('2026-10-16T12:00:00Z') }));
+    rerender(await AssessmentPage({ searchParams: Promise.resolve({}) }));
     const remounted = screen.getByTestId('assessment-form');
     expect(remounted).toHaveAttribute('data-progress-scope', 'member-1:1:2026-10-16T12:00:00.000Z');
     expect(remounted).toHaveAttribute('data-retake-requested-at', '2026-10-16T12:00:00.000Z');
+    expect(remounted).toHaveAttribute('data-mount-scope', 'member-1:1:2026-10-16T12:00:00.000Z');
+    expect(remounted).toHaveAttribute('data-mount-id', '2');
+    expect(remounted).not.toBe(firstForm);
+    expect(firstForm).not.toBeInTheDocument();
   });
 
   it('does not mount a first-attempt form while a leftover retake timestamp is still stored', async () => {
