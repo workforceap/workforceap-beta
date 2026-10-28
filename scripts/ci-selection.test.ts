@@ -10,6 +10,8 @@ test('affected selection covers every runtime file and always includes disk read
   assert.deepEqual((await selectTests(['a', 'b'], async (source: string) => [`${source}.spec.tsx`], ['disk.spec.ts'])).files, ['a.spec.tsx', 'b.spec.tsx', 'disk.spec.ts']);
   assert.equal((await selectTests(['a', 'b'], async (source: string) => source === 'a' ? ['a.spec.tsx'] : [], ['disk.spec.ts'])).mode, 'full-required');
   assert.equal((await selectTests(['a'], async () => { throw new Error('collection failed'); })).mode, 'full-required');
+  assert.equal((await selectTests(['a'], async () => ['a.spec.ts', ''])).mode, 'full-required');
+  assert.equal((await selectTests(['a'], async () => ['a.spec.ts', null as unknown as string])).mode, 'full-required');
   assert.deepEqual((await selectTests([], async () => [], ['docs.spec.ts'])).files, ['docs.spec.ts']);
   assert.equal(readsDisk("import { readFile } from 'node:fs/promises'"), true);
   assert.equal(readsDisk('const files = glob("docs/**")'), true);
@@ -25,6 +27,10 @@ test('unknown ownership or empty docs coverage fails before invoking any test co
     assert.equal(executeSelection(selection, () => assert.fail('cannot report full validation inside affected job')), 1);
   }
   assert.equal(executeSelection({ mode: 'affected', files: ['owned.spec.ts'], reason: 'covered' }, () => 7), 7);
+  const documented = await selectTests([], async () => [], ['frozen-source-text.spec.ts']);
+  assert.equal(documented.mode, 'affected');
+  assert.deepEqual(documented.files, ['frozen-source-text.spec.ts']);
+  assert.equal(executeSelection(documented, () => 0), 0);
 });
 
 test('collection and spawned tests use test NODE_ENV without leaking into the caller', async () => {
@@ -66,4 +72,8 @@ test('real Vite graph includes specs behind a disk-reading helper', async (t) =>
   });
   assert.deepEqual(selected, ['reader.spec.ts']);
   await assert.rejects(collectDiskReaderTests({ files: ['missing'], read: () => { throw new Error('unreadable'); }, collect: () => [] }));
+  const diskFile = 'helpers/input.ts';
+  const diskSource = "import { readFileSync } from 'node:fs';";
+  await assert.rejects(collectDiskReaderTests({ files: [diskFile], read: () => diskSource, collect: async () => null as unknown as string[] }));
+  await assert.rejects(collectDiskReaderTests({ files: [diskFile], read: () => diskSource, collect: async () => [''] }));
 });
