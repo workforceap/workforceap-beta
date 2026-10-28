@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
+import { MEMBER_ONLY_ROLE_NOT } from '@/lib/admin/memberOnlyWhere';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -24,7 +25,7 @@ async function resendWelcome(request: Request, context: { params: Promise<{ id: 
     const organizationId = await getActorOrganizationId(actor.id).catch(() => null);
     if (!organizationId?.trim()) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     const member = await withTenantScope(organizationId, (db) => db.user.findFirst({
-      where: { id, organizationId, deletedAt: null },
+      where: { id, organizationId, deletedAt: null, NOT: MEMBER_ONLY_ROLE_NOT },
       select: { email: true, fullName: true },
     }));
     if (!member?.email) return NextResponse.json({ error: 'Member not found' }, { status: 404 });

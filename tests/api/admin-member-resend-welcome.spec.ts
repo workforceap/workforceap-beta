@@ -18,8 +18,18 @@ vi.mock('@/lib/email', () => ({ sendMemberWelcomeLetterEmail: mocks.send }));
 vi.mock('@/lib/audit', () => ({ auditLog: mocks.audit }));
 vi.mock('@/lib/audit/log', () => ({ auditRequestMeta: () => ({ marker: 'request' }), logAuditEvent: mocks.event }));
 import { POST } from '@/app/api/admin/members/[id]/resend-welcome/route';
+import { matchesWhere } from '../helpers/prismaWhereMatches';
 const request = (headers?: HeadersInit) => new Request('http://localhost/api/admin/members/m1/resend-welcome', { method: 'POST', headers });
 const context = () => ({ params: Promise.resolve({ id: 'm1' }) });
+const recipient = (overrides: Record<string, unknown> = {}) => ({
+  id: 'm1', organizationId: 'org-a', deletedAt: null,
+  email: 'recorded@member.test', fullName: 'Member Name',
+  profile: { role: 'member' }, userRoles: [{ role: { name: 'member' } }],
+  ...overrides,
+});
+const useRecipient = (row: ReturnType<typeof recipient>) => {
+  mocks.member.mockImplementation(async ({ where }: { where: unknown }) => matchesWhere(row, where) ? row : null);
+};
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -27,7 +37,7 @@ beforeEach(() => {
   mocks.admin.mockResolvedValue(true);
   mocks.superAdmin.mockResolvedValue(false);
   mocks.org.mockResolvedValue('org-a');
-  mocks.member.mockResolvedValue({ email: 'recorded@member.test', fullName: 'Member Name' });
+  useRecipient(recipient());
   mocks.limit.mockResolvedValue({ success: true });
   mocks.send.mockResolvedValue({ ok: true });
   mocks.audit.mockResolvedValue(undefined);
@@ -52,8 +62,38 @@ describe('admin welcome letter resend', () => {
   it('uses tenant and active-member filters; absent, cross-tenant or deleted members cannot receive mail', async () => {
     mocks.member.mockResolvedValueOnce(null);
     expect((await POST(request(), context())).status).toBe(404);
-    expect(mocks.member).toHaveBeenCalledWith({ where: { id: 'm1', organizationId: 'org-a', deletedAt: null }, select: { email: true, fullName: true } });
+    expect(mocks.member).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ id: 'm1', organizationId: 'org-a', deletedAt: null }) }));
     expect(mocks.send).not.toHaveBeenCalled();
+  });
+  it.each([
+    ['cross tenant', { organizationId: 'org-b' }],
+    ['deleted', { deletedAt: new Date() }],
+    ['missing email', { email: '' }],
+    ['missing role', { profile: null, userRoles: [] }],
+    ['unknown role', { profile: { role: 'unknown' }, userRoles: [{ role: { name: 'unknown' } }] }],
+    ...['admin', 'super_admin', 'case_manager', 'counselor', 'employer', 'partner'].map((role) => [
+      `${role} profile with baseline member row`, { profile: { role } },
+    ]),
+  ])('rejects %s before rate limiting or sending', async (_description, overrides) => {
+    useRecipient(recipient(overrides as Record<string, unknown>));
+    expect((await POST(request(), context())).status).toBe(404);
+    expect(mocks.limit).not.toHaveBeenCalled();
+    expect(mocks.send).not.toHaveBeenCalled();
+    expect(mocks.audit).not.toHaveBeenCalled();
+  });
+  it('accepts a member profile without a backfilled role row', async () => {
+    useRecipient(recipient({ userRoles: [] }));
+    expect((await POST(request(), context())).status).toBe(200);
+    expect(mocks.send).toHaveBeenCalledOnce();
+  });
+  it.each([
+    ['missing profile', { profile: null }],
+    ['unknown profile', { profile: { role: 'unknown' } }],
+    ['member profile with staff row', { userRoles: [{ role: { name: 'member' } }, { role: { name: 'admin' } }] }],
+  ])('preserves canonical member eligibility for %s', async (_description, overrides) => {
+    useRecipient(recipient(overrides as Record<string, unknown>));
+    expect((await POST(request(), context())).status).toBe(200);
+    expect(mocks.send).toHaveBeenCalledOnce();
   });
   it('blocks read-only audits and rate-limited sends', async () => {
     expect((await POST(request({ 'x-workforceap-read-only-audit': '1' }), context())).status).toBe(403);
