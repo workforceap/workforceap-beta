@@ -92,6 +92,8 @@ let adminInviteRateLimiter: Ratelimit | null = null;
 // the domain reputation craters. 3 bulk-sends per hour per admin
 // covers normal communications while blocking compromise/abuse.
 let bulkEmailRateLimiter: Ratelimit | null = null;
+let welcomeResendAdminRateLimiter: Ratelimit | null = null;
+let welcomeResendMemberRateLimiter: Ratelimit | null = null;
 let enrollmentTemplateAdminRateLimiter: Ratelimit | null = null;
 let enrollmentTemplateMemberRateLimiter: Ratelimit | null = null;
 let employerJobImportRateLimiter: Ratelimit | null = null;
@@ -333,6 +335,12 @@ if (redisUrl && redisToken) {
     redis,
     limiter: Ratelimit.slidingWindow(3, '1 h'),
     prefix: 'ratelimit:bulk-email',
+  });
+  welcomeResendAdminRateLimiter = new Ratelimit({
+    redis, limiter: Ratelimit.slidingWindow(30, '1 h'), prefix: 'ratelimit:welcome-resend-admin',
+  });
+  welcomeResendMemberRateLimiter = new Ratelimit({
+    redis, limiter: Ratelimit.slidingWindow(3, '1 h'), prefix: 'ratelimit:welcome-resend-member',
   });
   enrollmentTemplateAdminRateLimiter = new Ratelimit({
     redis, limiter: Ratelimit.slidingWindow(30, '1 h'), prefix: 'ratelimit:enrollment-template-admin',
@@ -608,6 +616,15 @@ export async function checkAdminInviteRateLimit(userId: string): Promise<{ succe
  */
 export async function checkBulkEmailRateLimit(userId: string, request?: Request): Promise<{ success: boolean; remaining?: number }> {
   return failClosedLimit(bulkEmailRateLimiter, 'bulk-email', `bulk-email:${userId}`, request);
+}
+
+/** Limit welcome-letter resends per staff actor and recipient. */
+export async function checkWelcomeResendRateLimit(
+  adminId: string, memberId: string, request?: Request,
+): Promise<{ success: boolean }> {
+  const admin = await failClosedLimit(welcomeResendAdminRateLimiter, 'welcome-resend-admin', adminId, request);
+  if (!admin.success) return { success: false };
+  return failClosedLimit(welcomeResendMemberRateLimiter, 'welcome-resend-member', memberId, request);
 }
 
 /** Explicit agreement-template sends and bounded same-key retries. */

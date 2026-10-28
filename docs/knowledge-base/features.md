@@ -259,8 +259,7 @@ additive columns/history on an application rollback rather than deleting results
 
 ### Application filing reports
 
-The admin member profile’s **Eligibility → Download application report** action
-uses the [staff report endpoint](../../app/api/admin/members/[id]/applications/[applicationId]/report/route.ts).
+The admin member profile offers **Download application report** under Overview → Admin Actions and Eligibility. Both controls use the [staff report endpoint](../../app/api/admin/members/[id]/applications/[applicationId]/report/route.ts).
 New applications keep a submission snapshot; older applications are captured once
 on explicit POST and labeled “recovered from current records.” GET never creates a
 snapshot. Downloads require an active member in the actor’s tenant plus admin or
@@ -270,6 +269,8 @@ replacement after capture. Soft deletion clears that member’s report copies as
 of account anonymization; restoring the account does not resurrect those copies.
 Hard account deletion still cascades. Member data
 exports naturally include the applicant-only snapshot.
+
+Overview also offers a [welcome-letter resend](../../app/api/admin/members/[id]/resend-welcome/route.ts) to the recorded address of an active member in the admin's organization. The canonical [letter](../../emails/member-welcome-letter.ts) is shared with signup; the resend does not assert an application or attach its report. The send is blocked in read-only audits, rate-limited by actor and member, and success indicates provider acceptance rather than inbox delivery.
 
 Email attachment and profile download use the same saved data. The embedded licensed
 DejaVu font handles accents and common Unicode. Normal applications print

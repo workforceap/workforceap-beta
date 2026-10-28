@@ -38,6 +38,7 @@ import {
   newJobApplicationHtml,
   aiMatchSuggestionHtml,
   applicationConfirmationHtml,
+  memberWelcomeEmailHtml,
   eligibilityScreeningConfirmationHtml,
   eligibilityScreeningAdminAlertHtml,
   schoolEnrollmentParentAckHtml,
@@ -1891,6 +1892,41 @@ export async function sendApplicationConfirmationEmail(params: {
     }
     console.error('sendApplicationConfirmationEmail failed:', err);
     return { ok: false, error: err instanceof Error ? err.message : 'Send failed' };
+  }
+}
+
+/** Resend the canonical membership letter without asserting an application exists. */
+export async function sendMemberWelcomeLetterEmail(params: {
+  to: string;
+  fullName: string;
+  memberId: string;
+}): Promise<{ ok: boolean }> {
+  const resend = getResend();
+  if (!resend) return { ok: false };
+  const first = params.fullName.trim().split(/\s+/)[0] || 'there';
+  const html = brandedEmailLayout({
+    title: 'Welcome to Workforce Advancement Project — Your Next Steps',
+    bodyHtml: memberWelcomeEmailHtml(first),
+    ctaText: 'Open your member portal',
+    ctaUrl: `${SITE_URL}/login`,
+  });
+  try {
+    await sendBrandedEmail(resend, {
+      from: getFrom(),
+      to: params.to,
+      subject: 'Welcome to Workforce Advancement Project — Your Next Steps',
+      html,
+      templateKey: EMAIL_TEMPLATE_KEYS.application_received,
+      userId: params.memberId,
+      entityType: 'User',
+      entityId: params.memberId,
+      // A deliberate resend is a new event; wrapper retries retain this key.
+      idempotencyKey: `member-welcome-${crypto.randomUUID()}`,
+    });
+    return { ok: true };
+  } catch {
+    console.error('sendMemberWelcomeLetterEmail failed');
+    return { ok: false };
   }
 }
 

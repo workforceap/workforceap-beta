@@ -32,6 +32,11 @@ export function memberStartHereHtml(): string {
   `.trim();
 }
 
+/** Shared welcome content, independent of whether an application is on file. */
+export function memberWelcomeEmailHtml(firstName: string): string {
+  return `<p>Hi ${escapeHtml(firstName)},</p>${memberStartHereHtml()}${memberWelcomeLetterHtml()}`;
+}
+
 export function applicationConfirmationHtml(params: {
   firstName: string;
   /** WS4 adult eligibility answers when collected on apply. */
@@ -47,9 +52,7 @@ export function applicationConfirmationHtml(params: {
     ? ` Your application id is <strong>${escapeHtml(applicationId)}</strong>.`
     : '';
   return `
-    <p>Hi ${escapeHtml(firstName)},</p>
-    ${memberStartHereHtml()}
-    ${memberWelcomeLetterHtml()}
+    ${memberWelcomeEmailHtml(firstName)}
     ${eligibilityBlock}
     <p>Your application is on file.${applicationRef} A counselor reviews every application. You&rsquo;ll get an email when a decision is made.</p>
     <p>If you do not hear from us after 5 business days, call or email and we will check your application with you.</p>
