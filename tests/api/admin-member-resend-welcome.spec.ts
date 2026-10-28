@@ -71,7 +71,7 @@ describe('admin welcome letter resend', () => {
     ['missing email', { email: '' }],
     ['missing role', { profile: null, userRoles: [] }],
     ['unknown role', { profile: { role: 'unknown' }, userRoles: [{ role: { name: 'unknown' } }] }],
-    ...['admin', 'super_admin', 'case_manager', 'counselor', 'employer', 'partner'].map((role) => [
+    ...['admin', 'super_admin', 'case_manager', 'counselor', 'employer', 'partner'].map((role): [string, Record<string, unknown>] => [
       `${role} profile with baseline member row`, { profile: { role } },
     ]),
   ])('rejects %s before rate limiting or sending', async (_description, overrides) => {
