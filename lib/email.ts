@@ -1922,7 +1922,7 @@ export async function sendMemberWelcomeLetterEmail(params: {
       entityId: params.memberId,
       // A deliberate resend is a new event; wrapper retries retain this key.
       idempotencyKey: `member-welcome-${crypto.randomUUID()}`,
-    });
+    }, { consultSuppressions: true });
     return { ok: true };
   } catch {
     console.error('sendMemberWelcomeLetterEmail failed');
