@@ -78,6 +78,38 @@ describe('AssessmentForm', () => {
     expect((screen.getByRole('radio', { name: /A planned travel route/ }) as HTMLInputElement).checked).toBe(true);
   });
 
+  it('does not restore a previous attempt after remounting with a new progress scope', async () => {
+    const firstScope = 'member-1:0:initial';
+    const retakeScope = 'member-1:1:2026-10-15T00:00:00.000Z';
+    writeAssessmentProgress(
+      { answers: { 1: 'A', 2: 'C', 3: 'C' }, programInterest: 'IT Support', step: 2, seed: 'first-attempt' },
+      Date.now(),
+      firstScope,
+    );
+    const first = render(<AssessmentForm {...props} key={firstScope} progressScope={firstScope} />);
+    expect(await screen.findByTestId('assessment-progress-restored')).toBeTruthy();
+    expect(screen.getByText('Step 2 of 8 · Basic skills')).toBeTruthy();
+    first.unmount();
+
+    render(
+      <AssessmentForm
+        {...props}
+        key={retakeScope}
+        progressScope={retakeScope}
+        retakeRequestedAt="2026-10-15T00:00:00.000Z"
+      />,
+    );
+    expect(screen.queryByTestId('assessment-progress-restored')).toBeNull();
+    expect(screen.getByText('Step 1 of 8 · About you')).toBeTruthy();
+    expect(screen.getByLabelText('First name *')).toBeTruthy();
+    expect(screen.queryByRole('radio', { name: /A planned travel route/ })).toBeNull();
+    expect(readAssessmentProgress(Date.now(), firstScope)).toMatchObject({
+      answers: { 1: 'A', 2: 'C', 3: 'C' },
+      step: 2,
+    });
+    expect(readAssessmentProgress(Date.now(), retakeScope)).toBeNull();
+  });
+
   it('warns once when a section is all the same on-screen letter, then lets the member continue', async () => {
     writeAssessmentProgress({ answers: {}, programInterest: 'IT Support', step: 2, seed: 'fixed-seed' });
     render(<AssessmentForm {...props} />);
