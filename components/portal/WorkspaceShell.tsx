@@ -619,6 +619,7 @@ export default function WorkspaceShell({
             aria-controls="workspace-sidebar"
           >
             <Menu size={22} strokeWidth={2} aria-hidden />
+            {portalRole === 'member' ? <span>{tNav('menu')}</span> : null}
           </button>
           <div className="workspace-shell-brand-block">
             <Link href={firstHref} prefetch={false} className="workspace-shell-brand">
