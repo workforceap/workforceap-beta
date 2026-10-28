@@ -40,8 +40,10 @@ The member Eligibility tab offers the same action beside the saved assessment
 answers. The Overview link uses the Tabs component's native fragment navigation
 to open that review block; preserve the attempt count and pending state.
 
-The applicant Eligibility tab offers **Download application report**. Keep its busy,
-error and download-complete states accessible. The report is saved on the application;
+The member Overview Admin Actions and Eligibility tab offer **Download application report**
+when an application exists; otherwise Overview says no application is on file. Overview
+also offers **Resend welcome letter** with provider-acceptance and error feedback. Keep
+the controls’ busy, error and download-complete states accessible. The report is saved on the application;
 older records are explicitly recovered and labeled, never presented as an original
 submission snapshot.
 

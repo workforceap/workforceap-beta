@@ -155,3 +155,18 @@ describe('rendered self-service HTML hrefs (transport and Auth are synthetic)', 
     expect(renderedLinks(html).find((a) => a.label === 'Verify')!.href).toBe(`${SITE}/`);
   });
 });
+
+it('resends the canonical letter without asserting an application or attaching a report', async () => {
+  const { sendMemberWelcomeLetterEmail } = await import('@/lib/email');
+  expect(await sendMemberWelcomeLetterEmail({ to: 'member@example.test', fullName: 'Fixture Member', memberId: 'member-1' })).toEqual({ ok: true });
+  const payload = mocks.send.mock.calls.at(-1)?.[1];
+  expect(payload.to).toBe('member@example.test');
+  expect(payload.userId).toBe('member-1');
+  expect(payload.html).toContain('approximately 160-200 hours of training');
+  expect(payload.html).toContain('Complete the WorkforceAP Pre assessment');
+  expect(payload.html).toContain('Start here: your first two steps');
+  expect(payload.html).not.toContain('Your application is on file');
+  expect(payload.attachments).toBeUndefined();
+  mocks.send.mockRejectedValueOnce(new Error('provider rejected'));
+  expect(await sendMemberWelcomeLetterEmail({ to: 'member@example.test', fullName: 'Fixture Member', memberId: 'member-1' })).toEqual({ ok: false });
+});

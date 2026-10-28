@@ -342,6 +342,24 @@ describe('AdminMemberDetailPage record tabs (server render)', () => {
     }
   });
 
+  it('keeps the report and welcome actions in Overview and the report in Eligibility', async () => {
+    const doc = await renderPage();
+    const actions = doc.querySelector('[aria-labelledby="admin-member-actions-title"]')!;
+    expect(actions.textContent).toContain('Download application report');
+    expect(actions.textContent).toContain('Resend welcome letter');
+    expect(panel(doc, 'eligibility').textContent).toContain('Download application report');
+  });
+
+  it('explains when no application exists without showing a report control', async () => {
+    const baseUser = db.overrides['user.findFirst'];
+    db.overrides['user.findFirst'] = async () => ({ ...(await baseUser({}) as object), applications: [] });
+    const doc = await renderPage();
+    const actions = doc.querySelector('[aria-labelledby="admin-member-actions-title"]')!;
+    expect(actions.textContent).toContain('No application is on file to download.');
+    expect(actions.textContent).not.toContain('Download application report');
+    expect(actions.textContent).toContain('Resend welcome letter');
+  });
+
   it('groups the record sections under the expected tabs', async () => {
     const doc = await renderPage();
     const headingsIn = (id: string) => Array.from(panel(doc, id).querySelectorAll('h2')).map((h) => h.textContent);

@@ -32,6 +32,7 @@ import AdminMemberConsentPanel from '@/components/admin/AdminMemberConsentPanel'
 import AdminMemberDbActions from '@/components/admin/AdminMemberDbActions';
 import AdminMemberQuickSummary from '@/components/admin/AdminMemberQuickSummary';
 import AdminMemberSendLinks from '@/components/admin/AdminMemberSendLinks';
+import AdminMemberResendWelcome from '@/components/admin/AdminMemberResendWelcome';
 import MemberPartnerSection from '@/components/admin/MemberPartnerSection';
 import MemberSubgroupSection from '@/components/admin/MemberSubgroupSection';
 import AdminMemberCounselorChatClient from '@/components/admin/AdminMemberCounselorChatClient';
@@ -931,6 +932,14 @@ export default async function AdminMemberDetailPage({
                 currentProfileBio={member.profile?.profileBio ?? null}
                 currentProfileLinkedin={member.profile?.profileLinkedin ?? null}
               />
+              <div className={styles.spaced}>
+                {latestApplication
+                  ? <ApplicationReportButton memberId={member.id} applicationId={latestApplication.id} />
+                  : <p className={styles.emptyCopy}>No application is on file to download.</p>}
+              </div>
+              <div className={styles.spaced}>
+                <AdminMemberResendWelcome memberId={member.id} />
+              </div>
               <div className={styles.spaced}>
                 <AdminMemberQuickSummary memberId={id} />
               </div>

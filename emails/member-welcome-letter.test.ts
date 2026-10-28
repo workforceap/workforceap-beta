@@ -1,11 +1,11 @@
 /**
  * Ops welcome letter — distinctive phrases from the uploaded
- * "Welcome Letter-To everyone who applies and gets a membership".
+ * "Welcome and Member Instruction Letter-To everyone who applies and gets a membership".
  */
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { applicationAcceptedHtml } from './application-accepted';
-import { applicationConfirmationHtml } from './application-confirmation';
+import { applicationConfirmationHtml, memberWelcomeEmailHtml } from './application-confirmation';
 import {
   MEMBER_WELCOME_LETTER_TITLE,
   memberWelcomeLetterHtml,
@@ -17,7 +17,7 @@ const LETTER_PHRASES = [
   'Our Two-Platform Process',
   'You have successfully registered for our complimentary member platform.',
   'Registration as a Workforce Advancement Project member does not automatically enroll you',
-  'approximately 160 hours of training',
+  'approximately 160-200 hours of training',
   'Training Funding Opportunities',
   'Workforce Innovation and Opportunity Act (WIOA)',
   'Email your current résumé to',
@@ -48,6 +48,17 @@ describe('memberWelcomeLetterHtml', () => {
     const html = memberWelcomeLetterHtml();
     assert.equal(MEMBER_WELCOME_LETTER_TITLE, LETTER_PHRASES[0]);
     assertLetterPhrases(html);
+    const steps = html.match(/<ol>([\s\S]*?)<\/ol>/)?.[1] ?? '';
+    assert.equal((steps.match(/<li>/g) ?? []).length, 7);
+    for (const phrase of [
+      'load your resume on the WorkforceAP site',
+      'Complete the WorkforceAP Pre assessment',
+      'Use the AI Tool section',
+      'Review the available training programs',
+      'Be prepared to discuss whether your desired career transition',
+      'Use the Book an Appointment link',
+      'Be prepared to do some work and create a better future',
+    ]) assert.ok(steps.includes(phrase), `missing next step: ${phrase}`);
   });
 });
 
@@ -58,6 +69,7 @@ describe('applicationConfirmationHtml welcome letter', () => {
       applicationId: 'app-welcome-1',
     });
     assert.ok(html.includes('Hi Alex'));
+    assert.ok(html.includes(memberWelcomeEmailHtml('Alex')));
     assertLetterPhrases(html);
     assert.match(html, /application id is <strong>app-welcome-1<\/strong>/);
     assert.doesNotMatch(html, /1(?:&ndash;|–|-)\s*2 business days/);
