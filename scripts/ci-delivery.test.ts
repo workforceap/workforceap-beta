@@ -145,3 +145,39 @@ test('affected prepush rejects mutable or omitted base refs', () => {
     assert.equal(result.status, 1); assert.match(result.stderr, /immutable --base SHA/);
   }
 });
+
+test('more than twenty leaf files, nested components and escaped paths stay full', () => {
+  const leaves = Array.from({ length: 21 }, (_, index) => change(`components/counselor/Widget${index}.tsx`));
+  const large = classifyChanges(leaves);
+  assert.equal(large.mode, 'full');
+  assert.equal(large.reason, 'Large child change');
+  assert.deepEqual(large.runtimePaths, []);
+  assert.equal(classifyChanges(leaves.slice(0, 20)).mode, 'affected');
+  assert.equal(classifyChanges([change('components/counselor/Panel.tsx')]).mode, 'affected');
+  assert.equal(classifyChanges([change('components/member/Panel.tsx')]).mode, 'affected');
+  assert.equal(classifyChanges([change('components/partner/Panel.tsx')]).mode, 'affected');
+  assert.equal(classifyChanges([change('components/counselor/nested/Panel.tsx')]).mode, 'full');
+  assert.equal(classifyChanges([change('components/employer/../secret.tsx')]).mode, 'full');
+  assert.equal(classifyChanges([change('components\\employer\\Jobs.tsx')]).mode, 'full');
+});
+
+test('documentation-only children stay affected and an invalid merge base stays full', () => {
+  const docsGit = (...args: string[]) => args[0] === 'merge-base' ? c : args.includes('--raw') ? raw('docs/knowledge-base/features.md') : '';
+  const plan = planCi({ eventName: 'pull_request', event: event(), git: docsGit });
+  assert.equal(plan.mode, 'affected');
+  assert.equal(plan.reason, 'Documentation only');
+  assert.deepEqual(plan.runtimePaths, []);
+  assert.equal(planCi({
+    eventName: 'pull_request',
+    event: event(),
+    git: (...args: string[]) => args[0] === 'merge-base' ? 'not-a-sha' : fakeGit(...args),
+  }).mode, 'full');
+});
+
+test('gate rejects a missing or unknown plan mode even when every job reports success', () => {
+  for (const mode of [undefined, 'partial', 'full-required']) {
+    const needs = receipt();
+    needs.plan.outputs!.mode = mode as string;
+    assert.equal(evaluateGate(needs).ok, false, String(mode));
+  }
+});
