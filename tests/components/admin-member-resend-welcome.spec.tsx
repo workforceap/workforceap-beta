@@ -26,4 +26,21 @@ describe('resend welcome letter', () => {
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Please try again later.'));
     expect(screen.getByRole('button')).not.toBeDisabled();
   });
+  it('treats a dropped connection as unconfirmed provider acceptance', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+    render(<AdminMemberResendWelcome memberId="m1" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Resend welcome letter' }));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(
+      'Email provider acceptance could not be confirmed. Check before retrying.',
+    ));
+    expect(screen.getByRole('button')).not.toBeDisabled();
+  });
+  it('uses the fallback message when an error body is not JSON', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<html>gateway</html>', { status: 502 })));
+    render(<AdminMemberResendWelcome memberId="m1" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Resend welcome letter' }));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(
+      'The welcome letter could not be sent. Please try again later.',
+    ));
+  });
 });

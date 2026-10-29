@@ -108,6 +108,15 @@ describe('admin welcome letter resend', () => {
     expect(JSON.stringify(await response.json())).not.toContain('secret');
     expect(mocks.audit).not.toHaveBeenCalled();
   });
+  it('returns a safe 500 when the send path throws', async () => {
+    mocks.send.mockRejectedValueOnce(new Error('secret provider crash'));
+    const response = await POST(request(), context());
+    expect(response.status).toBe(500);
+    const body = await response.json();
+    expect(body).toEqual({ error: 'The welcome letter could not be sent. Please try again later.' });
+    expect(JSON.stringify(body)).not.toContain('secret');
+    expect(mocks.audit).not.toHaveBeenCalled();
+  });
   it.each([false, true])('sends only to the recorded address and audits provider acceptance (super admin: %s)', async (superAdmin) => {
     mocks.superAdmin.mockResolvedValue(superAdmin);
     const response = await POST(request(), context());

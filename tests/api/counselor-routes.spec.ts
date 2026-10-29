@@ -1449,6 +1449,46 @@ describe('GET /api/counselor/placements', () => {
     );
   });
 
+  it('keeps org-specific catalog keys off staff-facing placement titles', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.counselorUser, email: 'counselor@wap.org' } as any);
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    vi.mocked(isCounselor).mockResolvedValue(true);
+    vi.mocked(getProgramBySlug).mockReturnValue(undefined);
+    vi.mocked(prisma.user.findMany).mockResolvedValue([
+      {
+        id: UUIDS.memberUser,
+        fullName: 'Jane Doe',
+        email: 'jane@example.com',
+        enrolledProgram: ' Org-Specific-Track ',
+        courseEnrollments: [],
+      },
+    ] as any);
+    vi.mocked(prisma.$queryRawUnsafe).mockResolvedValue([
+      {
+        id: 'placement-1',
+        user_id: UUIDS.memberUser,
+        employer_name: 'TechCorp',
+        job_title: 'Junior IT Support',
+        member_name: 'Jane Doe',
+        member_email: 'jane@example.com',
+        program_slug: 'org-specific-track',
+      },
+    ] as any);
+
+    const res = await getPlacements(makeRequest('http://localhost:3000/api/counselor/placements'));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.placements[0].program_title).toBe('Assigned program');
+    expect(body.memberOptions).toEqual([
+      {
+        id: UUIDS.memberUser,
+        fullName: 'Jane Doe',
+        email: 'jane@example.com',
+        programTitle: 'Assigned program',
+      },
+    ]);
+  });
+
   it('limits organization admins to active members in their own organization', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.adminUser, email: 'admin@wap.org' } as any);
     vi.mocked(isAdmin).mockResolvedValue(true);
