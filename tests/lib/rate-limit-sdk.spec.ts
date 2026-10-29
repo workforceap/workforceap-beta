@@ -157,6 +157,27 @@ describe('configured rate limits through the installed SDK', () => {
     expect((await app.checkEnrollmentTemplateSendRateLimit('admin-1', 'member-1')).success).toBe(true);
     expect(redisState.calls).toBe(2);
   });
+
+  it('short-circuits welcome resend on the admin bucket before consulting the member bucket', async () => {
+    redisState.mode = 'deny';
+    const app = await loadLimiters();
+    expect((await app.checkWelcomeResendRateLimit('admin-1', 'member-1')).success).toBe(false);
+    expect(redisState.calls).toBe(1);
+  });
+
+  it('still applies the welcome-resend member bucket after the admin bucket allows', async () => {
+    redisState.mode = 'allow-then-deny';
+    const app = await loadLimiters();
+    expect((await app.checkWelcomeResendRateLimit('admin-1', 'member-1')).success).toBe(false);
+    expect(redisState.calls).toBe(2);
+  });
+
+  it('requires both welcome-resend buckets to allow', async () => {
+    redisState.mode = 'allow';
+    const app = await loadLimiters();
+    expect((await app.checkWelcomeResendRateLimit('admin-1', 'member-1')).success).toBe(true);
+    expect(redisState.calls).toBe(2);
+  });
 });
 
 describe('missing limiter configuration remains distinct from a provider outage', () => {
@@ -176,6 +197,7 @@ describe('missing limiter configuration remains distinct from a provider outage'
     expect((await app.checkAuthRateLimit('synthetic-user')).success).toBe(true);
     expect((await app.checkApplySignupRateLimit('192.0.2.10')).success).toBe(true);
     expect((await app.checkEnrollmentTemplateSendRateLimit('admin-1', 'member-1')).success).toBe(true);
+    expect((await app.checkWelcomeResendRateLimit('admin-1', 'member-1')).success).toBe(true);
     expect((await app.checkPublicCareersGetRateLimit('192.0.2.10')).success).toBe(true);
     vi.stubEnv('WAP_APPLY_RATE_LIMIT_FAIL_CLOSED', '1');
     expect((await app.checkApplySignupRateLimit('192.0.2.10')).success).toBe(false);
