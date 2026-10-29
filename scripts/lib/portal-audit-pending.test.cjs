@@ -9,6 +9,16 @@ const request = (path, { method = 'GET', resourceType = 'fetch', headers = {} } 
   headers: () => headers,
 });
 
+test('settlement timeouts are identifiable without treating them as independent data failures', async () => {
+  const { independentDataRequestErrors, isPendingSettlementDiagnostic } = await import('./portal-audit-pending.mjs');
+  assert.equal(isPendingSettlementDiagnostic('Same-origin data requests did not settle within 5000ms (2 pending)'), true);
+  assert.equal(isPendingSettlementDiagnostic('Same-origin data request failed (aborted) at /api/member/resume'), false);
+  assert.deepEqual(independentDataRequestErrors([
+    'Same-origin data requests did not settle within 5000ms (1 pending)',
+    'Same-origin data request returned HTTP 500 at /api/admin/metrics',
+  ]), ['Same-origin data request returned HTTP 500 at /api/admin/metrics']);
+});
+
 test('pending paths use checked-in templates and redact unknown short IDs and queries', async () => {
   const { safePendingRequestPath } = await import('./portal-audit-pending.mjs');
   assert.equal(safePendingRequestPath(`${origin}/admin/dashboard?_rsc=PRIVATE_TOKEN`, origin),

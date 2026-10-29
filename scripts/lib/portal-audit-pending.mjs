@@ -109,6 +109,16 @@ export function snapshotPendingDataRequests(inFlight, trustedOrigin) {
   return { count: inFlight.size, requests };
 }
 
+/** Settlement timeouts are diagnostics until the destination fails independent health checks. */
+export function isPendingSettlementDiagnostic(value) {
+  return /did not settle within \d+ms/.test(String(value ?? ''));
+}
+
+/** Real same-origin failures, excluding hung GETs still waiting on settlement. */
+export function independentDataRequestErrors(errors = []) {
+  return errors.filter((value) => !isPendingSettlementDiagnostic(value));
+}
+
 /** Preserve the existing failure message while attaching a bounded diagnostic snapshot. */
 export function recordPendingDataRequestTimeout(inFlight, errors, timeoutMs, trustedOrigin) {
   if (inFlight.size === 0) return null;
