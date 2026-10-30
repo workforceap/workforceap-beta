@@ -1,0 +1,656 @@
+name: PR 2873 isolated acceptance
+
+# Draft infrastructure only: merge and each credentialed dispatch need separate approval.
+# The operator must independently map the selected immutable URL to Vercel project
+# prj_pfOpwxedCID96oF2hlaE5J7kbNid / team_zTfMkbIIH6ADgy5Hy43MCM5K before dispatch.
+# No Vercel credential, deployment operation, account provisioning or production target.
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: "Approved full SHA of canonical PR 2873 after the workflow-only base refresh"
+        required: true
+        type: string
+      preview_deployment_id:
+        description: "Approved canonical GitHub Preview deployment ID for that SHA (not dpl_*)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+  deployments: read
+
+concurrency:
+  group: pr2873-isolated-acceptance
+  cancel-in-progress: false
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+      PREVIEW_DEPLOYMENT_ID: ${{ inputs.preview_deployment_id }}
+    steps:
+      - name: Reject unsupported dispatch contexts before checkout or secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'workforceap/workforceap-beta'
+          test "$GITHUB_EVENT_NAME" = 'workflow_dispatch'
+          test "$GITHUB_REF" = 'refs/heads/master'
+          test "$GITHUB_RUN_ATTEMPT" = '1'
+          test "$GITHUB_WORKFLOW_SHA" = "$GITHUB_SHA"
+          test "$GITHUB_WORKFLOW_REF" = 'workforceap/workforceap-beta/.github/workflows/pr2873-acceptance.yml@refs/heads/master'
+          [[ "$CANDIDATE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$PREVIEW_DEPLOYMENT_ID" =~ ^[1-9][0-9]{0,14}$ ]]
+
+      - name: Checkout immutable trusted control
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: workforceap/workforceap-beta
+          ref: ${{ github.sha }}
+          path: control
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Checkout immutable candidate without executing it
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: workforceap/workforceap-beta
+          ref: ${{ inputs.candidate_sha }}
+          path: candidate
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup reviewed Node major
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: control/.nvmrc
+
+      - name: Materialize trusted control and coverage validator
+        shell: bash
+        run: |
+          cat > "$RUNNER_TEMP/pr2873-controller.mjs" <<'PR2873_CONTROL'
+          import { execFileSync, spawnSync } from 'node:child_process';
+          import { appendFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+          import { join, resolve } from 'node:path';
+          import { fileURLToPath, pathToFileURL } from 'node:url';
+          import { expectedFromManifest, validateAuditResult } from './coverage-validator.mjs';
+
+          export const REPOSITORY = 'workforceap/workforceap-beta';
+          export const WORKFLOW_PATH = '.github/workflows/pr2873-acceptance.yml';
+          export const REVIEWED_BASE = '9a218aeb00f76859c884d0fdcdbb5d39e64d1f99';
+          export const REVIEWED_SOURCE = '7c4742ed5e9785025e553d2d83002ab1451b53b4';
+          export const REQUIRED_CHECKS = ['Typecheck & Build', 'Database contract (PostgreSQL 16)',
+            'knowledge-base', 'Check Coursera catalog for TODO_courseId_ placeholders', 'Locked product stakes approval'];
+          // The last two policy workflows do not trigger on master push. Their PR gates
+          // remain required on the candidate; never fabricate missing control-SHA receipts.
+          export const CONTROL_CHECKS = ['Typecheck & Build', 'Database contract (PostgreSQL 16)', 'knowledge-base'];
+          export const SECRET_KEYS = ['MEMBER', 'ADMIN', 'EMPLOYER', 'PARTNER', 'COUNSELOR']
+            .flatMap((role) => [`E2E_${role}_EMAIL`, `E2E_${role}_PASSWORD`]).concat('PORTAL_AUDIT_READ_ONLY_TOKEN');
+
+          function check(condition, code) { if (!condition) throw Object.assign(new Error(code), { safeCode: code }); }
+          export function validateContext(e) {
+            check(e.GITHUB_REPOSITORY === REPOSITORY && e.GITHUB_EVENT_NAME === 'workflow_dispatch' &&
+              e.GITHUB_REF === 'refs/heads/master' && e.GITHUB_RUN_ATTEMPT === '1', 'dispatch_context');
+            check(/^[a-f0-9]{40}$/.test(e.CANDIDATE_SHA ?? '') && /^[a-f0-9]{40}$/.test(e.GITHUB_SHA ?? '') &&
+              e.GITHUB_WORKFLOW_SHA === e.GITHUB_SHA, 'immutable_input');
+            check(e.GITHUB_WORKFLOW_REF === `${REPOSITORY}/${WORKFLOW_PATH}@refs/heads/master`, 'workflow_identity');
+            check(/^[1-9][0-9]{0,14}$/.test(e.PREVIEW_DEPLOYMENT_ID ?? '') &&
+              Number.isSafeInteger(Number(e.PREVIEW_DEPLOYMENT_ID)), 'deployment_input');
+          }
+
+          export function immutableOrigin(value) {
+            check(typeof value === 'string' &&
+              /^https:\/\/workforceap-beta-[a-z0-9]+-mabrown040-5207s-projects\.vercel\.app\/?$/.test(value), 'preview_origin');
+            const url = new URL(value);
+            check(!url.username && !url.password && !url.port && !url.search && !url.hash && url.pathname === '/', 'preview_origin');
+            return url.origin;
+          }
+
+          export function validateDeployment(deployment, statuses, candidateSha, deploymentId) {
+            check(deployment.id === Number(deploymentId) && deployment.sha === candidateSha &&
+              deployment.environment === 'Preview' && deployment.creator?.login === 'vercel[bot]', 'deployment_identity');
+            check(Array.isArray(statuses) && statuses.length > 0, 'deployment_status_missing');
+            const latest = statuses.reduce((a, b) => {
+              check(Number.isFinite(Date.parse(b.created_at)) && Number.isSafeInteger(b.id), 'deployment_status_shape');
+              return !a || Date.parse(b.created_at) > Date.parse(a.created_at) ||
+                (b.created_at === a.created_at && b.id > a.id) ? b : a;
+            }, null);
+            check(latest.state === 'success' && latest.environment === 'Preview' &&
+              latest.creator?.login === 'vercel[bot]', 'deployment_not_current_success');
+            const origin = immutableOrigin(latest.environment_url);
+            check(immutableOrigin(latest.target_url) === origin, 'deployment_url_ambiguity');
+            return { origin, deploymentId: deployment.id, deploymentStatusId: latest.id };
+          }
+
+          export function validatePull(pr, candidateSha, controlSha) {
+            check(pr.number === 2873 && pr.state === 'open' && pr.head?.repo?.full_name === REPOSITORY &&
+              pr.base?.repo?.full_name === REPOSITORY && pr.base.ref === 'master' &&
+              pr.head.sha === candidateSha && pr.base.sha === controlSha, 'pull_identity');
+          }
+
+          export function requireChecks(payload, sha, required = REQUIRED_CHECKS) {
+            check(Number.isSafeInteger(payload.total_count) && payload.total_count <= 100 &&
+              Array.isArray(payload.check_runs) && payload.check_runs.length === payload.total_count, 'check_inventory');
+            for (const name of required) {
+              const matches = payload.check_runs.filter((c) => c.name === name && c.app?.id === 15368 && c.head_sha === sha);
+              const latest = matches.sort((a, b) => b.id - a.id)[0];
+              check(latest?.status === 'completed' && latest.conclusion === 'success', 'required_ci_not_current_success');
+            }
+          }
+
+          function git(directory, ...args) {
+            return execFileSync('git', ['-C', directory, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+              maxBuffer: 16 * 1024 * 1024 });
+          }
+
+          export function parseTree(text) {
+            const entries = text.split('\0').filter(Boolean).map((entry) => {
+              const tab = entry.indexOf('\t');
+              check(tab > 0, 'git_tree_shape');
+              const path = entry.slice(tab + 1), object = entry.slice(0, tab);
+              check(/^[0-7]{6} (blob|commit) [a-f0-9]{40}$/.test(object), 'git_tree_shape');
+              return [path, object];
+            });
+            const tree = new Map(entries);
+            check(tree.size === entries.length, 'duplicate_git_path');
+            return tree;
+          }
+
+          export function requireTreeAddition(original, refreshed, workflowObject) {
+            check(!original.has(WORKFLOW_PATH) && refreshed.get(WORKFLOW_PATH) === workflowObject &&
+              /^100644 blob [a-f0-9]{40}$/.test(workflowObject ?? '') &&
+              refreshed.size === original.size + 1, 'workflow_only_tree');
+            for (const [path, object] of original) check(refreshed.get(path) === object, 'reviewed_tree_changed');
+          }
+
+          function verifyTrees(p, e) {
+            check(git(p.control, 'rev-parse', 'HEAD').trim() === e.GITHUB_SHA &&
+              git(p.candidate, 'rev-parse', 'HEAD').trim() === e.CANDIDATE_SHA, 'checkout_identity');
+            for (const directory of [p.control, p.candidate]) {
+              check(git(directory, 'status', '--porcelain', '--untracked-files=all').trim() === '', 'checkout_changed');
+              const authConfig = spawnSync('git', ['-C', directory, 'config', '--name-only', '--get-regexp',
+                '(^credential\.|^http\..*extraheader$)'], { encoding: 'utf8' });
+              check(authConfig.status === 1 && authConfig.stdout.trim() === '', 'persisted_git_credential');
+            }
+            for (const name of ['.env', '.env.local', '.env.e2e.local']) {
+              check(!existsSync(join(p.candidate, name)), 'unexpected_audit_env_file');
+            }
+            const tree = (directory, sha) => parseTree(git(directory, 'ls-tree', '-r', '--full-tree', '-z', sha));
+            const control = tree(p.control, e.GITHUB_SHA), workflowObject = control.get(WORKFLOW_PATH);
+            requireTreeAddition(tree(p.control, REVIEWED_BASE), control, workflowObject);
+            requireTreeAddition(tree(p.candidate, REVIEWED_SOURCE), tree(p.candidate, e.CANDIDATE_SHA), workflowObject);
+            check(spawnSync('git', ['-C', p.candidate, 'merge-base', '--is-ancestor', e.GITHUB_SHA, e.CANDIDATE_SHA]).status === 0,
+              'candidate_not_current_base');
+            check(lstatSync(join(p.control, WORKFLOW_PATH)).isFile(), 'workflow_file_type');
+          }
+
+          async function github(endpoint, token) {
+            check(token, 'github_token_missing');
+            const response = await fetch(`https://api.github.com/repos/${REPOSITORY}/${endpoint}`, {
+              method: 'GET', headers: { authorization: `Bearer ${token}`, accept: 'application/vnd.github+json',
+                'x-github-api-version': '2022-11-28' }, redirect: 'error', signal: AbortSignal.timeout(20000),
+            });
+            check(response.ok, 'github_metadata_unavailable');
+            return response.json();
+          }
+
+          async function health(p, binding) {
+            const response = await fetch(`${binding.origin}/api/health`, { method: 'GET', redirect: 'manual', signal: AbortSignal.timeout(15000) });
+            const body = await response.text();
+            check(body.length <= 65536, 'health_payload_size');
+            const { evaluateHealthPayload } = await import(pathToFileURL(join(p.control, 'scripts/lib/portal-audit-health-gate.mjs')));
+            const result = evaluateHealthPayload({ status: response.status, body, trustedSha: binding.candidateSha, mode: 'isolated_preview' });
+            check(result.ok, 'candidate_health_identity');
+            const payload = JSON.parse(body);
+            check(payload.status === 'ok' && payload.probe === 'live', 'candidate_health_contract');
+          }
+
+          function paths(e) {
+            check(e.GITHUB_WORKSPACE && e.RUNNER_TEMP, 'runner_paths');
+            return { control: join(e.GITHUB_WORKSPACE, 'control'), candidate: join(e.GITHUB_WORKSPACE, 'candidate'),
+              binding: join(e.RUNNER_TEMP, 'pr2873-binding.json'), receipt: join(e.RUNNER_TEMP, 'pr2873-receipt.json'),
+              raw: join(e.RUNNER_TEMP, 'pr2873-raw-audit.json'), browsers: join(e.RUNNER_TEMP, 'pr2873-browsers'),
+              home: join(e.RUNNER_TEMP, 'pr2873-audit-home'), tmp: join(e.RUNNER_TEMP, 'pr2873-audit-tmp') };
+          }
+
+          async function preflight(p, e) {
+            validateContext(e);
+            verifyTrees(p, e);
+            const [master, pr, deployment, statuses, candidateChecks, controlChecks] = await Promise.all([
+              github('branches/master', e.GH_TOKEN), github('pulls/2873', e.GH_TOKEN),
+              github(`deployments/${e.PREVIEW_DEPLOYMENT_ID}`, e.GH_TOKEN),
+              github(`deployments/${e.PREVIEW_DEPLOYMENT_ID}/statuses?per_page=100`, e.GH_TOKEN),
+              github(`commits/${e.CANDIDATE_SHA}/check-runs?per_page=100`, e.GH_TOKEN),
+              github(`commits/${e.GITHUB_SHA}/check-runs?per_page=100`, e.GH_TOKEN),
+            ]);
+            check(master.commit?.sha === e.GITHUB_SHA, 'master_drift');
+            validatePull(pr, e.CANDIDATE_SHA, e.GITHUB_SHA);
+            requireChecks(candidateChecks, e.CANDIDATE_SHA);
+            requireChecks(controlChecks, e.GITHUB_SHA, CONTROL_CHECKS);
+            const selected = validateDeployment(deployment, statuses, e.CANDIDATE_SHA, e.PREVIEW_DEPLOYMENT_ID);
+            const binding = { ...selected, repository: REPOSITORY, pr: 2873, candidateSha: e.CANDIDATE_SHA,
+              controlSha: e.GITHUB_SHA, reviewedSource: REVIEWED_SOURCE, reviewedBase: REVIEWED_BASE,
+              runId: e.GITHUB_RUN_ID, runAttempt: 1 };
+            if (existsSync(p.binding)) {
+              const previous = JSON.parse(readFileSync(p.binding, 'utf8'));
+              check(JSON.stringify(previous) === JSON.stringify(binding), 'binding_drift');
+            }
+            await health(p, binding);
+            writeFileSync(p.binding, JSON.stringify(binding));
+            console.log('[pr2873] live metadata, source trees, current CI and DEMO health verified');
+          }
+
+          function scanSecrets(text, values) {
+            for (const value of values) {
+              for (const spelling of [value, encodeURIComponent(value), Buffer.from(value).toString('base64')]) {
+                check(!text.includes(spelling), 'secret_in_artifact');
+              }
+            }
+          }
+
+          async function audit(p, e) {
+            validateContext(e);
+            check(!e.GH_TOKEN && !e.GITHUB_TOKEN, 'api_token_in_audit_step');
+            verifyTrees(p, e);
+            const binding = JSON.parse(readFileSync(p.binding, 'utf8'));
+            check(binding.candidateSha === e.CANDIDATE_SHA && binding.controlSha === e.GITHUB_SHA &&
+              binding.deploymentId === Number(e.PREVIEW_DEPLOYMENT_ID), 'audit_binding');
+            immutableOrigin(binding.origin);
+            await health(p, binding);
+            const values = SECRET_KEYS.map((key) => e[key]);
+            check(values.every((value) => typeof value === 'string' && value.trim().length >= 4) &&
+              e.PORTAL_AUDIT_READ_ONLY_TOKEN.trim().length >= 32, 'existing_credentials_missing');
+            const emails = ['MEMBER', 'ADMIN', 'EMPLOYER', 'PARTNER', 'COUNSELOR'].map((r) => e[`E2E_${r}_EMAIL`].trim().toLowerCase());
+            check(new Set(emails).size === 5, 'dedicated_credentials_reused');
+            for (const directory of [p.home, p.tmp]) mkdirSync(directory, { recursive: true, mode: 0o700 });
+            rmSync(p.raw, { force: true });
+            rmSync(p.receipt, { force: true });
+            const childEnv = { PATH: e.PATH, HOME: p.home, TMPDIR: p.tmp, TMP: p.tmp, TEMP: p.tmp, CI: 'true',
+              PLAYWRIGHT_BROWSERS_PATH: p.browsers, PLAYWRIGHT_BASE_URL: binding.origin,
+              PORTAL_AUDIT_TRUSTED_PREVIEW_ORIGIN: binding.origin, PORTAL_AUDIT_MODE: 'isolated_preview',
+              PORTAL_AUDIT_SECTION: 'all', PORTAL_AUDIT_OUTPUT: p.raw, PORTAL_AUDIT_ROUTE_CONCURRENCY: '8',
+              PORTAL_AUDIT_HYDRATION_TRACE: '0', PORTAL_AUDIT_SKIP_VERCEL_TOOLBAR: '0' };
+            for (const key of SECRET_KEYS) childEnv[key] = e[key];
+            const startedAtMs = Date.now();
+            try {
+              // No shell, ambient GitHub/Actions tokens, raw child logs or browser auth artifacts.
+              const result = spawnSync(process.execPath, ['scripts/audit-portal-routes.mjs'], {
+                cwd: p.candidate, env: childEnv, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+                maxBuffer: 16 * 1024 * 1024, timeout: 27 * 60 * 1000,
+              });
+              check(!result.error && result.status === 0, 'audit_process_failed');
+              check(existsSync(p.raw) && lstatSync(p.raw).isFile() && lstatSync(p.raw).size <= 16 * 1024 * 1024, 'audit_artifact_missing');
+              const raw = readFileSync(p.raw, 'utf8');
+              scanSecrets(raw, values);
+              const manifest = await import(pathToFileURL(join(p.candidate, 'scripts/lib/portal-audit-paths.mjs')));
+              const coverage = validateAuditResult(JSON.parse(raw), expectedFromManifest(manifest, {
+                origin: binding.origin, startedAtMs, nowMs: Date.now(),
+              }));
+              const { origin: privateOrigin, ...publicBinding } = binding;
+              const receipt = { schema: 'pr2873-acceptance-receipt-v1', binding: publicBinding, coverage, completedAt: new Date().toISOString() };
+              const safe = JSON.stringify(receipt, null, 2);
+              scanSecrets(safe, values);
+              writeFileSync(p.receipt, safe, { mode: 0o600 });
+              console.log('[pr2873] complete five-role artifact validated; only projected evidence is eligible for publication');
+            } finally {
+              rmSync(p.raw, { force: true });
+              rmSync(p.home, { recursive: true, force: true });
+              rmSync(p.tmp, { recursive: true, force: true });
+            }
+          }
+
+          async function main() {
+            const e = process.env, p = paths(e), mode = process.argv[2];
+            if (mode === 'preflight') await preflight(p, e);
+            else if (mode === 'audit') await audit(p, e);
+            else if (mode === 'finalize') {
+              // Default step success prevents this from running after an audit failure.
+              await preflight(p, e);
+              const receipt = JSON.parse(readFileSync(p.receipt, 'utf8'));
+              const { origin: privateOrigin, ...publicBinding } = JSON.parse(readFileSync(p.binding, 'utf8'));
+              check(receipt.coverage?.status === 'passed' && JSON.stringify(receipt.binding) === JSON.stringify(publicBinding), 'final_receipt');
+              if (e.GITHUB_STEP_SUMMARY) appendFileSync(e.GITHUB_STEP_SUMMARY,
+                `PR #2873: complete five-role audit passed for ${e.CANDIDATE_SHA}.\n` +
+                `GitHub Preview deployment ${e.PREVIEW_DEPLOYMENT_ID}; current metadata and DEMO health rechecked.\n`);
+              console.log('[pr2873] final live identity check passed');
+            } else check(false, 'unsupported_control_mode');
+          }
+
+          if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+            main().catch((error) => {
+              console.error(`[pr2873] blocked: ${/^[a-z_]+$/.test(error?.safeCode ?? '') ? error.safeCode : 'validation_or_execution_failed'}`);
+              process.exitCode = 1;
+            });
+          }
+          PR2873_CONTROL
+          cat > "$RUNNER_TEMP/coverage-validator.mjs" <<'PR2873_COVERAGE'
+          // Embed these two exports in the trusted workflow; this file is an offline draft aid.
+          export function expectedFromManifest(manifest, { origin, startedAtMs, nowMs = Date.now() }) {
+            const roles = ['member', 'admin', 'employer', 'partner', 'counselor'];
+            return {
+              origin, startedAtMs, nowMs, roles,
+              viewports: [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile', width: 390, height: 844 }],
+              staticPaths: manifest.STATIC_PATHS,
+              dynamicPaths: manifest.DYNAMIC_PATHS,
+              requiredDynamic: manifest.REQUIRED_DYNAMIC_PATHS,
+              redirects: manifest.REDIRECT_ONLY_PATHS,
+              actions: manifest.SAFE_ACTION_CONTRACTS,
+              access: manifest.ROLE_ACCESS_MATRIX,
+              roots: manifest.ROLE_ACCESS_ROOTS,
+              loginRedirects: manifest.SECTION_LOGIN_REDIRECT,
+            };
+          }
+
+          export function validateAuditResult(a, e) {
+            try {
+            const check = (condition, code) => { if (!condition) throw new Error(`Audit evidence rejected: ${code}`); };
+            const empty = (value) => Array.isArray(value) && value.length === 0;
+            const keys = (value) => value && typeof value === 'object' && !Array.isArray(value) ? Object.keys(value) : [];
+            const exact = (actual, expected, code) => {
+              check(Array.isArray(actual) && actual.length === expected.length && new Set(actual).size === actual.length &&
+                actual.every((item) => expected.includes(item)), code);
+            };
+            const count = (value) => Number.isSafeInteger(value) && value >= 0;
+            const sameOrigin = (value) => {
+              try { return new URL(value).origin === e.origin; } catch { return false; }
+            };
+            const healthRow = (r, role, viewport) => {
+              check(r && r.role === role && r.viewport === viewport && r.ok === true && empty(r.failureReasons), 'route_verdict');
+              check(r.originMatched === true && sameOrigin(r.finalUrl) && r.documentStatus === 200 &&
+                r.appReady === true && r.readOnlyCapabilityActive === true && r.h1Count === 1, 'route_health');
+              check(r.consoleErrorCount === 0 && r.pageErrorCount === 0 && r.blockedWriteRequestCount === 0 &&
+                r.routeErrorFallback === false && r.notFoundFallback === false, 'route_errors');
+              if (String(r.path).includes('?')) check(r.queryVariantMatched === true, 'route_query');
+            };
+            const summary = (actual, expected, code) => {
+              check(actual && Object.entries(expected).every(([key, value]) => actual[key] === value), code);
+            };
+            check(a && a.schemaVersion === '3.5.0' && a.status === 'passed' && a.fatalError === null, 'terminal_status');
+            check(a.baseURL === e.origin, 'target_origin');
+            const generated = Date.parse(a.generatedAt), completed = Date.parse(a.completedAt);
+            check(Number.isSafeInteger(e.startedAtMs) && Number.isFinite(generated) && Number.isFinite(completed) &&
+              generated >= e.startedAtMs && completed >= generated && completed <= e.nowMs, 'fresh_completion');
+            check(a.targetValidation?.ok === true && a.targetValidation.mode === 'isolated_preview' &&
+              a.targetValidation.targetClass === 'isolated_preview' && empty(a.targetValidation.errors), 'target_policy');
+            exact(a.requestedSections, e.roles, 'requested_roles');
+            exact(a.viewports?.map((v) => v.name), e.viewports.map((v) => v.name), 'viewports');
+            for (const v of e.viewports) {
+              const actual = a.viewports.find((entry) => entry.name === v.name);
+              check(actual.width === v.width && actual.height === v.height, 'viewport_dimensions');
+            }
+            const p = a.executionPolicy;
+            check(p?.mode === 'isolated_preview' && p.evidenceScope === 'complete_five_role_matrix' &&
+              p.mutations === 'authentication_login_only' && p.authState === 'in_memory_per_role' &&
+              p.dynamicRoutes === 'safe_visible_link_discovery' && p.actions === 'internal_read_only_anchor_navigation' &&
+              Number.isSafeInteger(p.routeConcurrency) && p.routeConcurrency >= 1 && p.routeConcurrency <= 12 &&
+              p.deadlineMs === 1500000, 'execution_policy');
+            const c = a.credentialValidation;
+            check(c?.ok === true && c.authenticatedIdentitiesDistinct === true && empty(c.errors), 'credential_verification');
+            exact(keys(c.sources), e.roles, 'credential_roles');
+            check(e.roles.every((role) => c.sources[role] === 'canonical'), 'canonical_credentials');
+            check(a.inventory?.ok === true && a.inventory.status === 'passed' &&
+              empty(a.inventory.unexpectedManifestSections), 'inventory_verdict');
+            exact(keys(a.inventory.sections), e.roles, 'inventory_roles');
+            for (const role of e.roles) {
+              const section = a.inventory.sections[role];
+              check(section.ok === true && ['missingStatic', 'staleStatic', 'missingDynamic', 'staleDynamic',
+                'overlappingStatic', 'overlappingDynamic', 'invalidRedirectOnly'].every((key) => empty(section[key])), 'inventory_drift');
+            }
+            exact(keys(a.roles), e.roles, 'completed_roles');
+            const totals = { totalStaticChecks: 0, passedStaticChecks: 0, failedStaticChecks: 0, failedRoles: 0,
+              totalAccessProbes: 0, failedAccessProbes: 0, totalDynamicChecks: 0, passedDynamicChecks: 0,
+              failedDynamicChecks: 0, notApplicableDynamicRoutes: 0, totalRedirectChecks: 0, passedRedirectChecks: 0,
+              failedRedirectChecks: 0, notApplicableRedirectChecks: 0, totalRequiredActions: 0,
+              satisfiedRequiredActions: 0, failedRequiredActions: 0 };
+            const expectedPairs = e.roles.flatMap((source) => e.roles.map((target) => `${source}:${target}`));
+            exact(keys(a.accessMatrix?.policy), e.roles, 'access_policy_roles');
+            for (const role of e.roles) {
+              exact(a.accessMatrix.policy[role].allowed, e.access[role].allowed, 'access_policy_allowed');
+              exact(a.accessMatrix.policy[role].denied, e.access[role].denied, 'access_policy_denied');
+            }
+            exact(a.accessMatrix?.probes?.map((probe) => `${probe.sourceRole}:${probe.targetRole}`), expectedPairs, 'access_pairs');
+            for (const probe of a.accessMatrix.probes) {
+              const expectation = e.access[probe.sourceRole].allowed.includes(probe.targetRole) ? 'allowed' : 'denied';
+              check(probe.expectation === expectation && probe.requestedPath === e.roots[probe.targetRole] &&
+                probe.ok === true && Array.isArray(probe.failureReasons) &&
+                probe.targetUsable === (expectation === 'allowed'), 'access_probe');
+              check(probe.consoleErrorCount === 0 && probe.pageErrorCount === 0 &&
+                probe.routeErrorFallback === false && probe.notFoundFallback === false, 'access_probe_errors');
+              if (expectation === 'allowed') {
+                check(empty(probe.failureReasons) && probe.denialEvidence === null && probe.documentStatus === 200 &&
+                  probe.appReady === true && probe.h1Count === 1 && probe.readOnlyCapabilityActive === true, 'allowed_probe_health');
+              } else {
+                let allowedFailures;
+                if (probe.denialEvidence === 'http_401' || probe.denialEvidence === 'http_403') {
+                  check(probe.documentStatus === Number(probe.denialEvidence.slice(5)) &&
+                    probe.failureReasons.includes('document_error_status'), 'denied_http_evidence');
+                  allowedFailures = ['document_error_status', 'app_not_ready', 'missing_h1'];
+                } else if (probe.denialEvidence === 'exact_public_access_landing') {
+                  const landing = probe.targetRole === 'employer' ? '/employers' : probe.targetRole === 'partner' ? '/partners' : null;
+                  check(landing && probe.finalPathname === landing && probe.documentStatus === 200 &&
+                    probe.appReady === true && probe.h1Count === 1 &&
+                    probe.failureReasons.includes('wrong_role_redirect') && probe.failureReasons.includes('unexpected_redirect'), 'denied_public_evidence');
+                  allowedFailures = ['wrong_role_redirect', 'unexpected_redirect', 'read_only_audit_capability_not_active'];
+                } else {
+                  const targetRoot = e.loginRedirects[probe.targetRole];
+                  check(probe.denialEvidence === 'safe_redirect_outside_target' &&
+                    !['employer', 'partner'].includes(probe.targetRole) &&
+                    typeof probe.finalPathname === 'string' && probe.finalPathname.startsWith('/') &&
+                    probe.finalPathname !== targetRoot && !probe.finalPathname.startsWith(`${targetRoot}/`) &&
+                    probe.failureReasons.some((reason) => ['login_redirect', 'wrong_role_redirect'].includes(reason)), 'denied_redirect_evidence');
+                  allowedFailures = ['login_redirect', 'wrong_role_redirect', 'unexpected_redirect'];
+                }
+                check(probe.failureReasons.every((reason) => allowedFailures.includes(reason)), 'denied_probe_failures');
+              }
+            }
+            totals.totalAccessProbes = expectedPairs.length;
+            summary(a.accessMatrix.summary, { total: expectedPairs.length, passed: expectedPairs.length, failed: 0 }, 'access_summary');
+            const roleCoverage = [];
+            for (const role of e.roles) {
+              const r = a.roles[role], auth = r.auth;
+              check(r.status === 'passed' && r.error === null && r.accessProbeFailures === 0 &&
+                r.loginRedirect === e.loginRedirects[role], 'role_verdict');
+              check(auth?.credentialSource === 'canonical' && auth.storageState === 'captured_in_memory' &&
+                auth.identityVerification === 'server_user_id_distinct' && auth.blockedPostLoginWriteRequestCount === 0, 'role_auth');
+              exact(keys(r.viewports), e.viewports.map((v) => v.name), 'role_viewports');
+              for (const viewport of e.viewports) {
+                const v = r.viewports[viewport.name];
+                check(v.viewport?.name === viewport.name && v.viewport.width === viewport.width &&
+                  v.viewport.height === viewport.height, 'role_viewport_dimensions');
+                exact(v.rows?.map((row) => row.path), e.staticPaths[role], 'static_identities');
+                for (const row of v.rows) healthRow(row, role, viewport.name);
+                summary(v.summary, { total: v.rows.length, passed: v.rows.length, failed: 0 }, 'static_summary');
+                totals.totalStaticChecks += v.rows.length;
+              }
+              exact(r.dynamicRoutes?.map((row) => row.pattern), e.dynamicPaths[role], 'dynamic_identities');
+              for (const d of r.dynamicRoutes) {
+                const required = (e.requiredDynamic[role] ?? []).includes(d.pattern);
+                check(d.requirement === (required ? 'required' : 'when_discoverable'), 'dynamic_requirement');
+                if (d.status === 'passed') {
+                  check(d.reason === 'safe_visible_fixture_audited' && d.routeCheck?.path === d.pattern, 'dynamic_pass');
+                  healthRow(d.routeCheck, role, 'desktop'); totals.passedDynamicChecks += 1;
+                } else {
+                  check(!required && d.status === 'not_applicable' && d.reason === 'no_safe_visible_fixture' &&
+                    d.routeCheck === null && d.discoveredFrom === null, 'dynamic_noncoverage');
+                  totals.notApplicableDynamicRoutes += 1;
+                }
+              }
+              totals.totalDynamicChecks += r.dynamicRoutes.length;
+              const redirects = r.redirectCoverage;
+              exact(redirects?.results?.map((row) => row.path), e.redirects[role].map((row) => row.path), 'redirect_identities');
+              let redirectNA = 0;
+              for (const d of redirects.results) {
+                const contract = e.redirects[role].find((row) => row.path === d.path);
+                let expectedTarget = contract.target;
+                if (contract.fixtureCondition === 'member_program_route') {
+                  const fixture = d.programFixture, facts = fixture?.facts;
+                  check(role === 'member' && fixture?.source === 'authenticated_read_only_profile' && facts?.version === 1 &&
+                    typeof facts.start?.hasResolvedProgram === 'boolean' &&
+                    typeof facts.employerScreening?.hasResolvedProgram === 'boolean' &&
+                    ['available', 'absent', 'invalid', 'not_applicable'].includes(facts.employerScreening.pack) &&
+                    facts.employerScreening.hasResolvedProgram !== (facts.employerScreening.pack === 'not_applicable'), 'program_fixture_facts');
+                  const start = d.path === '/dashboard/program/start';
+                  const hasProgram = start ? facts.start.hasResolvedProgram : facts.employerScreening.hasResolvedProgram;
+                  const behavior = !hasProgram ? 'redirect' : !start && facts.employerScreening.pack === 'absent' ? 'unavailable' : 'render';
+                  check((start || facts.employerScreening.pack !== 'invalid') && fixture.expectedBehavior === behavior, 'program_fixture_behavior');
+                  expectedTarget = behavior === 'redirect' ? '/dashboard/program' : d.path;
+                }
+                check(d.target === expectedTarget && d.reason === contract.reason && empty(d.failureReasons) &&
+                  empty(d.consoleErrors) && empty(d.pageErrors) && d.blockedWriteRequestCount === 0, 'redirect_contract');
+                if (d.status === 'passed') check(sameOrigin(d.finalUrl), 'redirect_origin');
+                else {
+                  const optionalDynamic = e.dynamicPaths[role].includes(contract.target) &&
+                    !(e.requiredDynamic[role] ?? []).includes(contract.target) && d.resultReason === 'no_safe_visible_fixture';
+                  const screeningAbsent = role === 'member' && d.path === '/dashboard/program/employer-screening' &&
+                    d.resultReason === 'screening_pack_absent_noncoverage' &&
+                    d.programFixture?.source === 'authenticated_read_only_profile' &&
+                    d.programFixture.expectedBehavior === 'unavailable' &&
+                    d.programFixture.facts?.employerScreening?.hasResolvedProgram === true &&
+                    d.programFixture.facts.employerScreening.pack === 'absent';
+                  check(d.status === 'not_applicable' && d.finalUrl === null && (optionalDynamic || screeningAbsent), 'redirect_noncoverage');
+                  redirectNA += 1;
+                }
+              }
+              summary(redirects.summary, { total: redirects.results.length, passed: redirects.results.length - redirectNA,
+                failed: 0, notApplicable: redirectNA }, 'redirect_summary');
+              totals.totalRedirectChecks += redirects.results.length;
+              totals.passedRedirectChecks += redirects.results.length - redirectNA;
+              totals.notApplicableRedirectChecks += redirectNA;
+              const actions = r.actionCoverage;
+              exact(actions?.results?.map((row) => row.id), e.actions[role].map((row) => row.id), 'action_identities');
+              let actionNA = 0, requiredActions = 0;
+              for (const action of actions.results) {
+                const contract = e.actions[role].find((row) => row.id === action.id);
+                check(action.kind === contract.kind && action.sourcePath === contract.sourcePath &&
+                  action.target === (contract.targetPath ?? contract.targetPattern) &&
+                  action.required === Boolean(contract.required) && action.requiredWhenApplicable === Boolean(contract.requiredWhenApplicable) &&
+                  empty(action.failureReasons) && action.blockedWriteRequestCount === 0 && sameOrigin(action.finalUrl), 'action_contract');
+                if (action.status !== 'passed') {
+                  check(action.status === 'not_applicable' && Boolean(contract.requiredWhenApplicable) &&
+                    typeof contract.emptyStateText === 'string' && action.reason === 'declared_empty_state_verified', 'action_noncoverage');
+                  actionNA += 1;
+                }
+                if (contract.required || contract.requiredWhenApplicable) requiredActions += 1;
+              }
+              summary(actions.summary, { total: actions.results.length, passed: actions.results.length - actionNA,
+                failed: 0, notApplicable: actionNA, required: requiredActions, satisfiedRequired: requiredActions,
+                failedRequired: 0 }, 'action_summary');
+              totals.totalRequiredActions += requiredActions;
+              roleCoverage.push({
+                role, status: 'passed',
+                viewports: e.viewports.map((v) => ({ ...v, status: 'passed', paths: [...e.staticPaths[role]] })),
+                dynamic: e.dynamicPaths[role].map((pattern) => {
+                  const row = r.dynamicRoutes.find((d) => d.pattern === pattern);
+                  return { pattern, status: row.status,
+                    ...(row.status === 'not_applicable' ? { noncoverageReason: 'no_safe_visible_fixture' } : {}) };
+                }),
+                redirects: e.redirects[role].map(({ path }) => {
+                  const row = redirects.results.find((d) => d.path === path);
+                  return { path, status: row.status,
+                    ...(row.status === 'not_applicable' ? { noncoverageReason: row.resultReason === 'no_safe_visible_fixture'
+                      ? 'no_safe_visible_fixture' : 'screening_pack_absent_noncoverage' } : {}) };
+                }),
+                actions: e.actions[role].map(({ id }) => {
+                  const row = actions.results.find((d) => d.id === id);
+                  return { id, status: row.status,
+                    ...(row.status === 'not_applicable' ? { noncoverageReason: 'declared_empty_state_verified' } : {}) };
+                }),
+              });
+            }
+            totals.passedStaticChecks = totals.totalStaticChecks;
+            totals.satisfiedRequiredActions = totals.totalRequiredActions;
+            summary(a.summary, totals, 'aggregate_summary');
+            check(count(a.summary.abortedDataRequestCount), 'abort_diagnostic_count');
+            return { status: 'passed', ...totals, authenticatedIdentitiesDistinct: true, roleCoverage };
+            } catch (error) {
+              if (/^Audit evidence rejected: [a-z_]+$/.test(error?.message ?? '')) throw error;
+              throw new Error('Audit evidence rejected: malformed_structure');
+            }
+          }
+          PR2873_COVERAGE
+          chmod 400 "$RUNNER_TEMP/pr2873-controller.mjs" "$RUNNER_TEMP/coverage-validator.mjs"
+
+      - name: Prove source trees, current CI, Preview provenance and DEMO identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' '15901d6a962e2c0ae8ff0496924298c4657223bf5e1450b5ce82db47dd13fdb3' "$RUNNER_TEMP/pr2873-controller.mjs" | /usr/bin/sha256sum --check --status
+          printf '%s  %s\n' 'b1f0de9dfffea69ea85218601828d479a3887fa893a882a8cf1319777dc85da3' "$RUNNER_TEMP/coverage-validator.mjs" | /usr/bin/sha256sum --check --status
+          node "$RUNNER_TEMP/pr2873-controller.mjs" preflight
+
+      - name: Setup pinned pnpm without automatic installation
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10.34.3
+          run_install: false
+
+      - name: Install the reviewed candidate dependency lock without audit credentials
+        working-directory: candidate
+        run: pnpm install --frozen-lockfile
+
+      - name: Install matching Chromium without audit credentials
+        working-directory: candidate
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/pr2873-browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Recheck immutable checkouts and live identities after setup
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' '15901d6a962e2c0ae8ff0496924298c4657223bf5e1450b5ce82db47dd13fdb3' "$RUNNER_TEMP/pr2873-controller.mjs" | /usr/bin/sha256sum --check --status
+          printf '%s  %s\n' 'b1f0de9dfffea69ea85218601828d479a3887fa893a882a8cf1319777dc85da3' "$RUNNER_TEMP/coverage-validator.mjs" | /usr/bin/sha256sum --check --status
+          node "$RUNNER_TEMP/pr2873-controller.mjs" preflight
+
+      # This single step is the proposed credential boundary. It must not run until
+      # an operator separately approves this exact candidate SHA and deployment.
+      # The reviewed candidate process receives only these eleven audit values
+      # plus a minimal environment; raw logs/artifacts and auth state are not uploaded.
+      - name: Run the approved read-only five-role audit and validate complete evidence
+        if: ${{ success() && github.repository == 'workforceap/workforceap-beta' && github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch' && github.run_attempt == 1 }}
+        env:
+          E2E_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
+          E2E_MEMBER_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
+          E2E_ADMIN_EMAIL: ${{ secrets.PREVIEW_E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.PREVIEW_E2E_ADMIN_PASSWORD }}
+          E2E_EMPLOYER_EMAIL: ${{ secrets.PREVIEW_E2E_EMPLOYER_EMAIL }}
+          E2E_EMPLOYER_PASSWORD: ${{ secrets.PREVIEW_E2E_EMPLOYER_PASSWORD }}
+          E2E_PARTNER_EMAIL: ${{ secrets.PREVIEW_E2E_PARTNER_EMAIL }}
+          E2E_PARTNER_PASSWORD: ${{ secrets.PREVIEW_E2E_PARTNER_PASSWORD }}
+          E2E_COUNSELOR_EMAIL: ${{ secrets.PREVIEW_E2E_COUNSELOR_EMAIL }}
+          E2E_COUNSELOR_PASSWORD: ${{ secrets.PREVIEW_E2E_COUNSELOR_PASSWORD }}
+          PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PREVIEW_PORTAL_AUDIT_READ_ONLY_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' '15901d6a962e2c0ae8ff0496924298c4657223bf5e1450b5ce82db47dd13fdb3' "$RUNNER_TEMP/pr2873-controller.mjs" | /usr/bin/sha256sum --check --status
+          printf '%s  %s\n' 'b1f0de9dfffea69ea85218601828d479a3887fa893a882a8cf1319777dc85da3' "$RUNNER_TEMP/coverage-validator.mjs" | /usr/bin/sha256sum --check --status
+          node "$RUNNER_TEMP/pr2873-controller.mjs" audit
+
+      - name: Recheck live head, master, latest deployment status and health after audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' '15901d6a962e2c0ae8ff0496924298c4657223bf5e1450b5ce82db47dd13fdb3' "$RUNNER_TEMP/pr2873-controller.mjs" | /usr/bin/sha256sum --check --status
+          printf '%s  %s\n' 'b1f0de9dfffea69ea85218601828d479a3887fa893a882a8cf1319777dc85da3' "$RUNNER_TEMP/coverage-validator.mjs" | /usr/bin/sha256sum --check --status
+          node "$RUNNER_TEMP/pr2873-controller.mjs" finalize
+
+      - name: Upload only the validated projection receipt
+        if: ${{ success() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pr2873-acceptance-${{ github.run_id }}
+          path: ${{ runner.temp }}/pr2873-receipt.json
+          if-no-files-found: error
+          retention-days: 14
