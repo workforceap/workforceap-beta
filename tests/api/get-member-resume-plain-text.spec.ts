@@ -25,6 +25,7 @@ vi.mock('@/lib/resume/extractTextFromResumeBuffer', () => ({
 }));
 
 import { getMemberResumePlainText } from '@/lib/member/getMemberResumePlainText';
+import { RESUME_PLAIN_TEXT_MAX_CHARS } from '@/lib/resume/extractionQuality';
 
 describe('getMemberResumePlainText substantive text gate', () => {
   beforeEach(() => {
@@ -121,6 +122,22 @@ describe('getMemberResumePlainText substantive text gate', () => {
 
     await expect(getMemberResumePlainText('member-1', 8000, { originalOnly: true })).resolves.toBe('');
     expect(mocks.download).not.toHaveBeenCalled();
+  });
+
+  it('keeps a 20k stored draft intact at the save max while tool-context reads still crop', async () => {
+    const uniqueTail = 'UNIQUE_STORED_DRAFT_TAIL_SHOULD_SURVIVE_SAVE_MAX_READ';
+    const text = `Jordan Candidate\nExperience\n${'Database administrator using SQL, backups, and recovery.\n'.repeat(400)}${uniqueTail}`;
+    mocks.extract.mockResolvedValue(text);
+
+    const cropped = await getMemberResumePlainText('member-1', 12_000);
+    expect(cropped).toHaveLength(12_000);
+    expect(cropped).toBe(text.slice(0, 12_000));
+    expect(cropped).not.toContain(uniqueTail);
+
+    const full = await getMemberResumePlainText('member-1', RESUME_PLAIN_TEXT_MAX_CHARS);
+    expect(full).toBe(text);
+    expect(full).toContain(uniqueTail);
+    expect(full.length).toBeGreaterThan(12_000);
   });
 
   it('skips a stored AI extraction-failure narrative and returns the original resume', async () => {
