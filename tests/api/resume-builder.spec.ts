@@ -113,6 +113,7 @@ import { isGroqConfigured } from '@/lib/ai/groq';
 import { claudeChat, isAnthropicConfigured } from '@/lib/ai/anthropicChat';
 import { checkAIToolRateLimit } from '@/lib/rate-limit';
 import { getMemberResumePlainText } from '@/lib/member/getMemberResumePlainText';
+import { RESUME_PLAIN_TEXT_MAX_CHARS } from '@/lib/resume/extractionQuality';
 import { completeCareerOsResumeActions } from '@/lib/workflows/completeCareerOsActions';
 import {
   isResumeProfileConflict,
@@ -810,7 +811,7 @@ describe('GET /api/member/resume', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.resumePlainText).toBe('Plain text resume content');
-    expect(getMemberResumePlainText).toHaveBeenCalledWith(UUIDS.user, 12000);
+    expect(getMemberResumePlainText).toHaveBeenCalledWith(UUIDS.user, RESUME_PLAIN_TEXT_MAX_CHARS);
   });
 
   it('keeps the original available when the enhanced download URL cannot be signed', async () => {
