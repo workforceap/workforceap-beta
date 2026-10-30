@@ -1027,7 +1027,7 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
           inspection,
           consoleErrorCount: dataRequests.consoleErrors.length,
           pageErrorCount: pageErrors.length,
-          dataErrorCount: independentDataRequestErrors(dataRequests.errors).length,
+          dataErrorCount: independentDataRequestErrors(dataRequests.errors, dataRequests).length,
           abortedDataRequestCount: dataRequests.abortedDataRequestCount,
           pendingDataRequestCount: dataRequests.pendingDataRequestCount,
           blockedWriteRequestCount: readOnlyGuard.blockedWriteCount(page),
@@ -1211,7 +1211,7 @@ async function exerciseReadOnlyNavigation(
           errorFallbackDetected: sourceInspection.errorFallbackDetected,
           consoleErrorCount: uniqueDiagnostics(dataRequests.consoleErrors).length,
           pageErrorCount: uniqueDiagnostics(pageErrors).length,
-          otherFailureCount: independentDataRequestErrors(dataRequests.errors).length +
+          otherFailureCount: independentDataRequestErrors(dataRequests.errors, dataRequests).length +
             (readOnlyGuard.blockedWriteCount(page) > 0 ? 1 : 0),
         });
         result.status = verifiedDestination ? 'not_applicable' : 'failed';
@@ -1298,7 +1298,7 @@ async function exerciseReadOnlyNavigation(
       consoleErrorCount: uniqueDiagnostics(dataRequests.consoleErrors).length,
       pageErrorCount: uniqueDiagnostics(pageErrors).length,
       otherFailureCount: result.failureReasons.length +
-        independentDataRequestErrors(dataRequests.errors).length +
+        independentDataRequestErrors(dataRequests.errors, dataRequests).length +
         (readOnlyGuard.blockedWriteCount(page) > 0 ? 1 : 0),
     });
     result.status = result.failureReasons.length === 0 ? 'passed' : 'failed';
@@ -1337,7 +1337,7 @@ async function exerciseReadOnlyNavigation(
     ) {
       result.reason = 'action_checks_failed';
     }
-    const independentDataErrors = independentDataRequestErrors(dataRequests.errors);
+    const independentDataErrors = independentDataRequestErrors(dataRequests.errors, dataRequests);
     verifiedDestination = verifiedDestination &&
       (result.status === 'passed' ||
         (result.status === 'not_applicable' && result.reason === 'declared_empty_state_verified')) &&

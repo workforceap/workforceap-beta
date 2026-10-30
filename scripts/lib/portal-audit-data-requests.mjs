@@ -18,6 +18,7 @@ import {
   isGatedApiResponseCandidate,
 } from './portal-audit-gated-api.mjs';
 import {
+  hasOnlyPendingReadRequests,
   independentDataRequestErrors,
   isPendingSettlementDiagnostic,
   recordPendingDataRequestTimeout,
@@ -216,6 +217,7 @@ export function classifyCollectedPortalAuditRow(rowInput, dataRequests, options 
     .map((value) => sanitizeAuditDiagnostic(value, options.dynamicPatterns ?? []))
     .filter(Boolean))].slice(0, 20);
   const incomingPageErrors = rowInput.pageErrors ?? [];
+  const pendingReadsVerified = hasOnlyPendingReadRequests(dataRequests);
   const pendingDiagnostics = uniqueDiagnostics([
     ...incomingPageErrors.filter(isPendingSettlementDiagnostic),
     ...dataRequests.errors.filter(isPendingSettlementDiagnostic),
@@ -224,8 +226,9 @@ export function classifyCollectedPortalAuditRow(rowInput, dataRequests, options 
     ...rowInput,
     consoleErrors: uniqueDiagnostics([...(rowInput.consoleErrors ?? []), ...dataRequests.consoleErrors]),
     pageErrors: uniqueDiagnostics([
-      ...incomingPageErrors.filter((value) => !isPendingSettlementDiagnostic(value)),
-      ...independentDataRequestErrors(dataRequests.errors),
+      ...incomingPageErrors.filter((value) =>
+        !pendingReadsVerified || !isPendingSettlementDiagnostic(value)),
+      ...independentDataRequestErrors(dataRequests.errors, dataRequests),
     ]),
     abortedDataRequestCount: dataRequests.abortedDataRequestCount,
     abortedDataRequests: dataRequests.abortedDataRequests,

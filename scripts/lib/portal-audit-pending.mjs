@@ -109,24 +109,40 @@ export function snapshotPendingDataRequests(inFlight, trustedOrigin) {
   return { count: inFlight.size, requests };
 }
 
-/** Settlement timeouts are diagnostics until the destination fails independent health checks. */
+/** Recognize settlement messages; only complete read-method evidence can excuse them. */
 export function isPendingSettlementDiagnostic(value) {
-  return /did not settle within \d+ms/.test(String(value ?? ''));
+  return /^Same-origin data requests did not settle within \d+ms \(\d+ pending\)$/.test(String(value ?? ''));
 }
 
-/** Real same-origin failures, excluding hung GETs still waiting on settlement. */
-export function independentDataRequestErrors(errors = []) {
+/** A bounded or missing snapshot cannot prove that every pending request is a read. */
+export function hasOnlyPendingReadRequests({ pendingDataRequestCount, pendingDataRequests } = {}) {
+  return Number.isSafeInteger(pendingDataRequestCount) && pendingDataRequestCount > 0 &&
+    Array.isArray(pendingDataRequests) && pendingDataRequests.length === pendingDataRequestCount &&
+    pendingDataRequests.every((request) =>
+      request && (request.method === 'GET' || request.method === 'HEAD') &&
+      (request.resourceType === 'fetch' || request.resourceType === 'xhr'));
+}
+
+/** Real failures, excluding settlement timeouts proved to contain only pending reads. */
+export function independentDataRequestErrors(errors = [], pending = {}) {
+  if (!hasOnlyPendingReadRequests(pending)) return errors;
   return errors.filter((value) => !isPendingSettlementDiagnostic(value));
 }
 
-/** Preserve the existing failure message while attaching a bounded diagnostic snapshot. */
+/** Preserve timeout failures when a later settlement snapshot contains only reads. */
 export function recordPendingDataRequestTimeout(inFlight, errors, timeoutMs, trustedOrigin) {
   if (inFlight.size === 0) return null;
-  errors.push(`Same-origin data requests did not settle within ${timeoutMs}ms (${inFlight.size} pending)`);
+  let snapshot;
   try {
-    return snapshotPendingDataRequests(inFlight, trustedOrigin);
+    snapshot = snapshotPendingDataRequests(inFlight, trustedOrigin);
   } catch {
     // Diagnostic collection must not replace the existing timeout verdict.
-    return { count: inFlight.size, requests: [] };
+    snapshot = { count: inFlight.size, requests: [] };
   }
+  const readOnly = hasOnlyPendingReadRequests({
+    pendingDataRequestCount: snapshot.count, pendingDataRequests: snapshot.requests,
+  });
+  errors.push(`Same-origin data requests did not settle within ${timeoutMs}ms (${inFlight.size} pending)` +
+    (readOnly ? '' : ' [non-read or incomplete method evidence]'));
+  return snapshot;
 }

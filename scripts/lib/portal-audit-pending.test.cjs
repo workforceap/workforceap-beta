@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
+const { EventEmitter } = require('node:events');
 
 const origin = 'https://preview.example.test';
 const request = (path, { method = 'GET', resourceType = 'fetch', headers = {} } = {}) => ({
@@ -9,6 +10,68 @@ const request = (path, { method = 'GET', resourceType = 'fetch', headers = {} } 
   headers: () => headers,
 });
 
+test('healthy destinations cannot excuse pending non-read or incomplete request evidence', async () => {
+  const { classifyCollectedPortalAuditRow, trackSameOriginDataRequests } =
+    await import('./portal-audit-data-requests.mjs');
+  const healthy = {
+    path: '/dashboard/profile', finalUrl: `${origin}/dashboard/profile`,
+    documentStatus: 200, appReady: true, h1Count: 1,
+    readOnlyCapabilityActive: true, bodyText: 'My Profile',
+  };
+  for (const method of ['GET', 'HEAD', 'POST', 'OTHER']) {
+    const page = new EventEmitter();
+    page.waitForTimeout = (ms) => new Promise((done) => setTimeout(done, ms));
+    const collected = trackSameOriginDataRequests(page, { trustedOrigin: origin });
+    page.emit('request', request('/api/member/resume/docx-html', { method }));
+    await collected.waitForSettlement(1);
+    const row = classifyCollectedPortalAuditRow(healthy, collected);
+    assert.equal(row.ok, method === 'GET' || method === 'HEAD', method);
+    if (method !== 'GET' && method !== 'HEAD') {
+      assert.ok(row.failureReasons.includes('page_errors'), method);
+    }
+    collected.detach();
+  }
+  const diagnostics = {
+    errors: ['Same-origin data requests did not settle within 5000ms (1 pending)'],
+    consoleErrors: [], abortedDataRequestCount: 0, abortedDataRequests: [], abortedErrors: [],
+    pendingDataRequestCount: 1,
+    pendingDataRequests: [{ method: 'GET', resourceType: 'fetch' }],
+  };
+  for (const evidence of [
+    { pendingDataRequests: [] },
+    { pendingDataRequests: undefined },
+    { pendingDataRequestCount: undefined },
+    { pendingDataRequestCount: 2 },
+    { pendingDataRequests: [{ resourceType: 'fetch' }] },
+  ]) {
+    assert.equal(classifyCollectedPortalAuditRow(healthy, { ...diagnostics, ...evidence }).ok,
+      false, JSON.stringify(evidence));
+  }
+  const page = new EventEmitter();
+  page.waitForTimeout = (ms) => new Promise((done) => setTimeout(done, ms));
+  const collected = trackSameOriginDataRequests(page, { trustedOrigin: origin });
+  for (let index = 0; index < 10; index += 1) page.emit('request', request('/api/member/resume'));
+  page.emit('request', request('/api/member/resume/docx-html', { method: 'POST' }));
+  await collected.waitForSettlement(1);
+  assert.equal(collected.pendingDataRequests.length, 10);
+  assert.equal(classifyCollectedPortalAuditRow(healthy, collected).ok, false,
+    'a non-read beyond the bounded snapshot must still fail');
+  collected.detach();
+
+  const repeatedPage = new EventEmitter();
+  repeatedPage.waitForTimeout = page.waitForTimeout;
+  const repeated = trackSameOriginDataRequests(repeatedPage, { trustedOrigin: origin });
+  const pendingPost = request('/api/member/resume/docx-html', { method: 'POST' });
+  repeatedPage.emit('request', request('/api/member/resume'));
+  repeatedPage.emit('request', pendingPost);
+  await repeated.waitForSettlement(1);
+  repeatedPage.emit('requestfinished', pendingPost);
+  await repeated.waitForSettlement(1);
+  assert.equal(classifyCollectedPortalAuditRow(healthy, repeated).ok, false,
+    'a later read-only snapshot cannot erase an earlier non-read timeout');
+  repeated.detach();
+});
+
 test('settlement timeouts are identifiable without treating them as independent data failures', async () => {
   const { independentDataRequestErrors, isPendingSettlementDiagnostic } = await import('./portal-audit-pending.mjs');
   assert.equal(isPendingSettlementDiagnostic('Same-origin data requests did not settle within 5000ms (2 pending)'), true);
@@ -16,7 +79,13 @@ test('settlement timeouts are identifiable without treating them as independent 
   assert.deepEqual(independentDataRequestErrors([
     'Same-origin data requests did not settle within 5000ms (1 pending)',
     'Same-origin data request returned HTTP 500 at /api/admin/metrics',
-  ]), ['Same-origin data request returned HTTP 500 at /api/admin/metrics']);
+  ], {
+    pendingDataRequestCount: 1,
+    pendingDataRequests: [{ method: 'GET', resourceType: 'fetch' }],
+  }), ['Same-origin data request returned HTTP 500 at /api/admin/metrics']);
+  assert.deepEqual(independentDataRequestErrors([
+    'Same-origin data requests did not settle within 5000ms (1 pending)',
+  ]), ['Same-origin data requests did not settle within 5000ms (1 pending)']);
 });
 
 test('pending paths use checked-in templates and redact unknown short IDs and queries', async () => {
@@ -65,7 +134,7 @@ test('timeout snapshot is bounded and drops browser-controlled strings and heade
     method: 'POST', path: '/counselor/placements',
     resourceType: 'xhr', prefetch: false, rsc: true,
   });
-  assert.deepEqual(errors, ['Same-origin data requests did not settle within 5000ms (14 pending)']);
+  assert.deepEqual(errors, ['Same-origin data requests did not settle within 5000ms (14 pending) [non-read or incomplete method evidence]']);
   assert.doesNotMatch(JSON.stringify(snapshot), /PRIVATE_TOKEN|member-123|member-\d|jane-doe|authorization|cookie/);
 
   inFlight.clear();
@@ -97,5 +166,5 @@ test('diagnostic read errors cannot replace the existing settlement failure', as
   assert.deepEqual(recordPendingDataRequestTimeout(new Set([poisoned]), errors, 5000, origin), {
     count: 1, requests: [],
   });
-  assert.deepEqual(errors, ['Same-origin data requests did not settle within 5000ms (1 pending)']);
+  assert.deepEqual(errors, ['Same-origin data requests did not settle within 5000ms (1 pending) [non-read or incomplete method evidence]']);
 });
