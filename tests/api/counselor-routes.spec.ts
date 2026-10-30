@@ -1551,6 +1551,118 @@ describe('GET /api/counselor/placements', () => {
     const body = await res.json();
     expect(body.error).toBe('Forbidden');
   });
+
+  it.each([
+    ['missing actor row', null],
+    ['null organizationId', { organizationId: null }],
+    ['blank organizationId', { organizationId: '' }],
+  ])('fails closed when an org admin has %s', async (_label, actorRow) => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.adminUser, email: 'admin@wap.org' } as any);
+    vi.mocked(isAdmin).mockResolvedValue(true);
+    vi.mocked(isCounselor).mockResolvedValue(false);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(actorRow as any);
+
+    const res = await getPlacements(makeRequest('http://localhost:3000/api/counselor/placements'));
+
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({ error: 'Forbidden' });
+    expect(prisma.$queryRawUnsafe).not.toHaveBeenCalled();
+    expect(prisma.user.findMany).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['null', null],
+    ['blank', '   '],
+  ])('falls back to member email when the stored name is %s', async (_label, memberName) => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.counselorUser, email: 'counselor@wap.org' } as any);
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    vi.mocked(isCounselor).mockResolvedValue(true);
+    vi.mocked(prisma.$queryRawUnsafe).mockResolvedValue([
+      {
+        id: 'placement-1',
+        user_id: UUIDS.memberUser,
+        employer_name: 'TechCorp',
+        job_title: 'Junior IT Support',
+        member_name: memberName,
+        member_email: 'jane@example.com',
+        program_slug: 'comptia-a-plus',
+      },
+    ] as any);
+
+    const res = await getPlacements(makeRequest('http://localhost:3000/api/counselor/placements'));
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).placements[0].member_name).toBe('jane@example.com');
+  });
+
+  it.each([
+    ['null', null],
+    ['blank', '   '],
+  ])('keeps program_title empty when the stored slug is %s', async (_label, programSlug) => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.counselorUser, email: 'counselor@wap.org' } as any);
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    vi.mocked(isCounselor).mockResolvedValue(true);
+    vi.mocked(prisma.$queryRawUnsafe).mockResolvedValue([
+      {
+        id: 'placement-1',
+        user_id: UUIDS.memberUser,
+        employer_name: 'TechCorp',
+        job_title: 'Junior IT Support',
+        member_name: 'Jane Doe',
+        member_email: 'jane@example.com',
+        program_slug: programSlug,
+      },
+    ] as any);
+
+    const res = await getPlacements(makeRequest('http://localhost:3000/api/counselor/placements'));
+
+    expect(res.status).toBe(200);
+    expect((await res.json()).placements[0].program_title).toBeNull();
+    expect(getProgramBySlug).not.toHaveBeenCalled();
+  });
+
+  it('forwards a positive days window into the placements query and ignores non-numeric days', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.counselorUser, email: 'counselor@wap.org' } as any);
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    vi.mocked(isCounselor).mockResolvedValue(true);
+    vi.mocked(prisma.$queryRawUnsafe).mockResolvedValue([] as any);
+
+    const windowed = await getPlacements(
+      makeRequest('http://localhost:3000/api/counselor/placements?days=30'),
+    );
+    expect(windowed.status).toBe(200);
+    const [windowQuery, staffId, bound] = vi.mocked(prisma.$queryRawUnsafe).mock.calls[0];
+    expect(windowQuery).toMatch(/pr\.placed_at >= \$2/);
+    expect(staffId).toBe(UUIDS.counselorUser);
+    expect(bound).toBeInstanceOf(Date);
+
+    vi.mocked(prisma.$queryRawUnsafe).mockClear();
+    const ignored = await getPlacements(
+      makeRequest('http://localhost:3000/api/counselor/placements?days=abc'),
+    );
+    expect(ignored.status).toBe(200);
+    const [ignoredQuery, ignoredStaff] = vi.mocked(prisma.$queryRawUnsafe).mock.calls[0];
+    expect(ignoredQuery).not.toMatch(/pr\.placed_at >=/);
+    expect(ignoredStaff).toBe(UUIDS.counselorUser);
+  });
+
+  it('returns a generic 500 when the placements query throws', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.counselorUser, email: 'counselor@wap.org' } as any);
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    vi.mocked(isCounselor).mockResolvedValue(true);
+    vi.mocked(prisma.$queryRawUnsafe).mockRejectedValue(new Error('relation placement_records leaked'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    try {
+      const res = await getPlacements(makeRequest('http://localhost:3000/api/counselor/placements'));
+      expect(res.status).toBe(500);
+      const body = await res.json();
+      expect(body).toEqual({ error: 'Internal server error' });
+      expect(JSON.stringify(body)).not.toContain('placement_records leaked');
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
 });
 
 // ─── POST /api/counselor/placements ───
@@ -1690,6 +1802,29 @@ describe('POST /api/counselor/placements', () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toContain('Member, employer, and job title are required');
+  });
+
+  it.each([
+    ['whitespace-only employer and title', { userId: UUIDS.memberUser, employerName: '   ', jobTitle: '\t' }],
+    ['invalid JSON', '{'],
+    ['non-object JSON', JSON.stringify(['member-1', 'TechCorp'])],
+  ])('returns 400 for %s without looking up a member', async (_label, body) => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.counselorUser, email: 'counselor@wap.org' } as any);
+    vi.mocked(isAdmin).mockResolvedValue(false);
+    vi.mocked(isCounselor).mockResolvedValue(true);
+
+    const res = await postPlacement(
+      makeRequest('http://localhost:3000/api/counselor/placements', {
+        method: 'POST',
+        body: typeof body === 'string' ? body : JSON.stringify(body),
+      }),
+    );
+
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'Member, employer, and job title are required' });
+    expect(assertStaffCanAccessMemberRecord).not.toHaveBeenCalled();
+    expect(prisma.user.findFirst).not.toHaveBeenCalled();
+    expect(prisma.$queryRaw).not.toHaveBeenCalled();
   });
 
   it('returns 401 when not authenticated', async () => {
