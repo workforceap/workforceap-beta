@@ -20,11 +20,15 @@ export const maxDuration = 300;
 /**
  * Nightly at-risk check — THE at-risk scorer (WAP-30 / TODO-006).
  *
- * Scores every active member, persists MEDIUM+ scores to `AtRiskAlert` — the
+ * Scores the enrolled, not-yet-placed member population (capped inside
+ * `calculateAllAtRiskScores`), persists MEDIUM+ scores to `AtRiskAlert` — the
  * single risk source the admin command center, counselor command center,
  * at-risk dashboard and the weekly counselor alert all read — and resolves
- * alerts for members no longer at risk, except member-reported escalations
- * (see MEMBER_REPORTED_FACTOR_NAMES), which stay until staff close them. Sends no email: the one at-risk email
+ * alerts only for members this run scored below MEDIUM. Unscored members
+ * (the scoring cap, or a thrown Coursera/B4B lookup) keep their open
+ * alerts; treating them as "no longer at risk" would empty counselor
+ * queues on a provider outage. Member-reported escalations
+ * (see MEMBER_REPORTED_FACTOR_NAMES) stay until staff close them. Sends no email: the one at-risk email
  * is the weekly `/api/cron/at-risk-alerts`, which reads these rows.
  *
  * Vercel Cron uses GET — both GET and POST are supported.
@@ -48,37 +52,45 @@ async function handle(request: Request) {
     await persistAtRiskAlert(score);
   }
 
-  const activeAlertUserIds = new Set(atRiskScores.map((s) => s.userId));
+  // Only members this run actually scored below MEDIUM. `notIn: tonight's
+  // medium+ ids` also matches people the scorer never returned — the 500-cap
+  // remainder, or anyone whose Coursera/B4B lookup threw and was swallowed.
+  const scoredBelowMediumUserIds = scores
+    .filter((s) => s.score < THRESHOLDS.MEDIUM)
+    .map((s) => s.userId);
 
-  // Member-reported escalations (First 90 Days trouble, placement-survey job
-  // loss) are never auto-resolved: a counselor must see them and staff close
-  // them. They are excluded IN THE QUERY so preserved rows cannot fill the
-  // take:100 batch and starve real stale alerts, then re-checked per row.
-  const staleCandidates = await prisma.atRiskAlert.findMany({
-    where: {
-      status: { in: ['open', 'acknowledged'] },
-      userId: { notIn: Array.from(activeAlertUserIds) },
-      NOT: {
-        OR: MEMBER_REPORTED_FACTOR_NAMES.map((name) => ({
-          factors: { array_contains: [{ name }] },
-        })),
-      },
-    },
-    select: { id: true, factors: true },
-    take: 100,
-  });
-  const staleAlerts = staleCandidates.filter((a) => !hasMemberReportedFactor(a.factors));
-
-  if (staleAlerts.length > 0) {
-    await prisma.atRiskAlert.updateMany({
+  let staleAlerts: Array<{ id: string; factors: unknown }> = [];
+  if (scoredBelowMediumUserIds.length > 0) {
+    // Member-reported escalations (First 90 Days trouble, placement-survey job
+    // loss) are never auto-resolved: a counselor must see them and staff close
+    // them. They are excluded IN THE QUERY so preserved rows cannot fill the
+    // take:100 batch and starve real stale alerts, then re-checked per row.
+    const staleCandidates = await prisma.atRiskAlert.findMany({
       where: {
-        id: { in: staleAlerts.map((a) => a.id) },
+        status: { in: ['open', 'acknowledged'] },
+        userId: { in: scoredBelowMediumUserIds },
+        NOT: {
+          OR: MEMBER_REPORTED_FACTOR_NAMES.map((name) => ({
+            factors: { array_contains: [{ name }] },
+          })),
+        },
       },
-      data: {
-        status: 'resolved',
-        resolvedAt: new Date(),
-      },
+      select: { id: true, factors: true },
+      take: 100,
     });
+    staleAlerts = staleCandidates.filter((a) => !hasMemberReportedFactor(a.factors));
+
+    if (staleAlerts.length > 0) {
+      await prisma.atRiskAlert.updateMany({
+        where: {
+          id: { in: staleAlerts.map((a) => a.id) },
+        },
+        data: {
+          status: 'resolved',
+          resolvedAt: new Date(),
+        },
+      });
+    }
   }
 
   const durationMs = Date.now() - startTime;
