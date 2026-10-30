@@ -469,6 +469,9 @@ export async function calculateAllAtRiskScores(): Promise<AtRiskScore[]> {
     where: AT_RISK_SCORING_POPULATION_WHERE,
     select: { id: true },
   });
+  // Members omitted here (the cap, or a thrown per-member lookup below) must
+  // not have their open alerts auto-resolved. `/api/cron/at-risk-check`
+  // resolves only ids present in this return with a below-MEDIUM score.
 
   const scores: AtRiskScore[] = [];
   for (let i = 0; i < activeMembers.length; i += SCORING_BATCH_SIZE) {
