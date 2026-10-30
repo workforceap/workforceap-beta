@@ -12,6 +12,7 @@ import {
 } from '@/lib/ai/skillMissionEval';
 import {
   commitMissionVerdict,
+  releaseMissionAttempt,
   reserveMissionAttempt,
 } from '@/lib/member/skillMissions';
 import {
@@ -58,6 +59,7 @@ export const POST = withApiGuc(
     request: NextRequest,
     context: { params: Promise<{ courseSlug: string }> }
   ) => {
+    let pendingAttempt: Parameters<typeof releaseMissionAttempt>[0] | null = null;
     try {
       // 1. Auth
       const user = await getUser();
@@ -153,7 +155,7 @@ export const POST = withApiGuc(
       }, 0);
 
       // 8. Claim an attempt. Under a per-mission lock this enforces the daily
-      //    cap (AI-failed attempts count too) and writes the submission event.
+      //    cap, including in-flight calls, and writes the submission event.
       //    It also says whether the mission is already passed: a passed member
       //    can practise again and get feedback, but never a second pass.
       const reservation = await reserveMissionAttempt({
@@ -172,9 +174,10 @@ export const POST = withApiGuc(
           'attempt_cap'
         );
       }
+      pendingAttempt = { userId: user.id, missionKey, submissionId: reservation.submissionId };
 
       // 9. Run AI evaluation (throws MissionEvalUnavailableError on AI failure
-      //    — nothing is persisted in that case and the mission stays unpassed)
+      //    - finally releases the reservation if no usable result is returned)
       let evalResult: MissionResult;
       try {
         evalResult = await evaluateSkillMission({
@@ -252,10 +255,23 @@ export const POST = withApiGuc(
         aiToolResultId: storedPass ? storedPass.aiToolResultId : aiToolResultId,
         ...(storedPass || practiceOnly ? { alreadyPassed: true } : {}),
       };
-      return NextResponse.json(response);
+      const json = NextResponse.json(response);
+      pendingAttempt = null;
+      return json;
     } catch (err) {
       console.error('[skill-missions/evaluate] unhandled error:', err instanceof Error ? err.message : err);
       return fail('Something went wrong on our side. Your response was not graded. Please try again.', 500, 'server_error');
+    } finally {
+      if (pendingAttempt) {
+        try {
+          await releaseMissionAttempt(pendingAttempt);
+        } catch (releaseErr) {
+          // Fail closed if storage is unavailable: never refund another call or
+          // hide the original retryable error. A later call still pays the AI
+          // rate limit, independent of this per-mission reservation.
+          console.error('[skill-missions/evaluate] releaseMissionAttempt failed:', releaseErr instanceof Error ? releaseErr.message : releaseErr);
+        }
+      }
     }
   }
 );

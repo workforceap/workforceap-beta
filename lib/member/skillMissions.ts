@@ -325,7 +325,7 @@ export async function recordMissionResult(args: MissionVerdictArgs): Promise<voi
 }
 
 export type MissionAttemptReservation =
-  | { kind: 'reserved'; alreadyPassed: boolean }
+  | { kind: 'reserved'; alreadyPassed: boolean; submissionId: string }
   | { kind: 'cap_reached' };
 
 /**
@@ -368,7 +368,7 @@ export async function reserveMissionAttempt(args: {
     });
     if (recent >= args.maxAttempts) return { kind: 'cap_reached' } as const;
 
-    await persistEvent({
+    const submission = await persistEvent({
       userId: args.userId,
       eventName: MISSION_EVENT_SUBMITTED,
       entityType: 'skill_checkpoint',
@@ -381,7 +381,31 @@ export async function reserveMissionAttempt(args: {
         curriculumVersion: args.curriculumVersion,
       },
     }, tx);
-    return { kind: 'reserved', alreadyPassed } as const;
+    return { kind: 'reserved', alreadyPassed, submissionId: submission.id } as const;
+  });
+}
+
+/** Release only this request's reservation when no usable evaluation could be
+    returned. In-flight reservations still count until released, so parallel
+    requests cannot spend the same slot. Repeated cleanup is a no-op and cannot
+    release a replacement request. Callers retain the reservation after returning
+    a usable evaluation; this helper is only for failed requests. */
+export async function releaseMissionAttempt(args: {
+  userId: string;
+  missionKey: string;
+  submissionId: string;
+}): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    await lockMission(tx, args.userId, args.missionKey);
+    await tx.memberEvent.deleteMany({
+      where: {
+        id: args.submissionId,
+        userId: args.userId,
+        entityType: 'skill_checkpoint',
+        entityId: args.missionKey,
+        eventName: MISSION_EVENT_SUBMITTED,
+      },
+    });
   });
 }
 
