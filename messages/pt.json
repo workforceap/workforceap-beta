@@ -123,6 +123,7 @@
     "donate": "Doar",
     "contactUs": "Fale Conosco",
     "memberPortal": "Portal do membro",
+    "menu": "Menu",
     "openMenu": "Abrir menu",
     "menuLoading": "Carregando a navegação…",
     "expandSidebar": "Expandir barra lateral",
@@ -3029,6 +3030,7 @@
         "employedPartTime": "Employed part-time",
         "unemployed": "Unemployed",
         "member": "Member",
+        "student": "Estudante",
         "selfEmployed": "Self-employed",
         "other": "Other"
       },
