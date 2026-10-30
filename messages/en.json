@@ -3087,6 +3087,7 @@
         "employedPartTime": "Employed part-time",
         "unemployed": "Unemployed",
         "member": "Member",
+        "student": "Student",
         "selfEmployed": "Self-employed",
         "other": "Other"
       },
