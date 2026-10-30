@@ -202,13 +202,22 @@ export function observeAdminDashboardMetrics(page, trustedOrigin, responseTimeou
 /** An intermediate canceled navigation must not preempt the final redirect commit. */
 export async function waitForRedirectTargetCommit(page, matchesTarget, timeout) {
   const deadline = Date.now() + timeout;
+  const alreadyAtTarget = () => {
+    try {
+      return Boolean(matchesTarget(new URL(page.url())));
+    } catch {
+      return false;
+    }
+  };
   while (true) {
+    if (alreadyAtTarget()) return;
     const remaining = deadline - Date.now();
     if (remaining <= 0) throw new Error('Exact redirect target did not commit before timeout');
     try {
       await page.waitForURL(matchesTarget, { waitUntil: 'commit', timeout: remaining });
       return;
     } catch (error) {
+      if (alreadyAtTarget()) return;
       const message = error?.message ?? String(error);
       if (!/net::ERR_ABORTED|interrupted by another navigation/.test(message) || page.isClosed()) {
         throw error;

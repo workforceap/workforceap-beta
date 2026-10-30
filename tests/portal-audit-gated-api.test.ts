@@ -157,6 +157,31 @@ describe('portal audit gated two-stage billing responses', () => {
     }
   });
 
+  it('keeps a pending settlement diagnostic when the destination is independently healthy', async () => {
+    const page = new AuditPage();
+    const dataRequests = trackSameOriginDataRequests(page, { trustedOrigin: ORIGIN });
+    const hung = requestFor(`${ORIGIN}/api/member/pathway-steps/progress`);
+    page.emit('request', hung);
+    await dataRequests.waitForSettlement(20);
+
+    expect(dataRequests.pendingDataRequestCount).toBe(1);
+    expect(dataRequests.errors.some((value) => /did not settle/.test(value))).toBe(true);
+    const row = classifyBillingRoute(dataRequests);
+    expect(row.ok).toBe(true);
+    expect(row.pageErrors).toEqual([]);
+    expect(row.pendingDataRequestCount).toBe(1);
+    expect(row.pendingDataRequests[0]).toMatchObject({
+      method: 'GET',
+      path: '/api/member/pathway-steps/progress',
+    });
+    const unhealthy = classifyCollectedPortalAuditRow(
+      { ...billingRouteInput(), appReady: false },
+      dataRequests,
+    );
+    expect(unhealthy.failureReasons).toContain('page_errors');
+    expect(unhealthy.pageErrors[0]).toMatch(/did not settle/);
+  });
+
   it('keeps the actual verified destination and aborted RSC prefetch diagnostic', async () => {
     const { page, dataRequests } = await collect([
       { status: 503, url: GATED_API, body: gateBody('MIGRATION_NOT_APPLIED') },

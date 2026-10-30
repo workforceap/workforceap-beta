@@ -51,6 +51,7 @@ describe('MemberProfileKit contact fields', () => {
       </NextIntlClientProvider>,
     );
 
+    expect(document.getElementById('settings')).not.toBeNull();
     expect(screen.getByLabelText('Phone')).toHaveValue('512-555-0100');
     fireEvent.change(screen.getByLabelText('Phone'), { target: { value: ' 512-555-0199 ' } });
     fireEvent.change(screen.getByLabelText('LinkedIn URL'), { target: { value: 'https://linkedin.com/in/dana' } });
