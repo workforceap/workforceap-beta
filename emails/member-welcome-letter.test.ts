@@ -86,6 +86,20 @@ describe('applicationConfirmationHtml welcome letter', () => {
     assert.ok(html.includes('https://www.workforceap.org/login?redirectTo=%2Fdashboard%2Fassessment'));
     assert.ok(html.includes('https://www.workforceap.org/login?redirectTo=%2Fdashboard%2Fai-tools'));
   });
+
+  it('escapes a hostile first name and application id in the confirmation body', () => {
+    const html = applicationConfirmationHtml({
+      firstName: 'Alex</p><img src=x onerror=alert(1)>',
+      applicationId: 'app-1</strong><script>alert(1)</script>',
+    });
+    assert.match(html, /Hi Alex&lt;\/p&gt;&lt;img src=x onerror=alert\(1\)&gt;/);
+    assert.match(
+      html,
+      /application id is <strong>app-1&lt;\/strong&gt;&lt;script&gt;alert\(1\)&lt;\/script&gt;<\/strong>/,
+    );
+    assert.doesNotMatch(html, /<img/);
+    assert.doesNotMatch(html, /<script>/);
+  });
 });
 
 describe('applicationAcceptedHtml welcome letter', () => {
