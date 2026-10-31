@@ -81,7 +81,7 @@ import { authorizeCronRequest } from '@/lib/cron/authorizeCronRequest';
 import { calculateAllAtRiskScores, classifyMember, getRiskLevel, loadPersistedAtRiskScores, persistAtRiskAlert } from '@/lib/member/atRiskScoring';
 import { getAtRiskDigestRecipients, sendCounselorAtRiskAlertEmail, sendMemberCheckInEmail, sendMemberStuckEmail } from '@/lib/email';
 import { prisma } from '@/lib/db/prisma';
-import { counselorAtRiskBatchHtml } from '@/emails/counselor-at-risk-alert';
+import { counselorAtRiskAlertHtml, counselorAtRiskBatchHtml } from '@/emails/counselor-at-risk-alert';
 
 // ─── Helpers ───
 function makeRequest(headers?: Record<string, string>): any {
@@ -736,5 +736,33 @@ describe('email template — counselorAtRiskBatchHtml', () => {
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
     expect(html).not.toContain('<b>bold</b>');
     expect(html).toContain('&lt;b&gt;bold&lt;/b&gt;');
+  });
+});
+
+describe('email template — counselorAtRiskAlertHtml', () => {
+  it('escapes member fields, factors, and CTA hrefs', () => {
+    const html = counselorAtRiskAlertHtml({
+      memberName: '<img src=x onerror=1>',
+      memberEmail: 'ada+"<script>@example.com',
+      score: 81.9,
+      level: '<svg onload=1>',
+      factors: ['<b>no login</b>'],
+      recommendedAction: '<script>alert(1)</script>',
+      messageUrl: 'https://evil.test/" onclick="alert(1)',
+      profileUrl: 'https://www.workforceap.org/counselor/students/user-1',
+      dashboardUrl: 'https://www.workforceap.org/counselor/at-risk',
+    });
+
+    expect(html).not.toContain('<img ');
+    expect(html).not.toContain('<script>');
+    expect(html).not.toContain('<svg ');
+    expect(html).not.toContain('onclick="alert');
+    expect(html).toContain('&lt;img src=x onerror=1&gt;');
+    expect(html).toContain('ada+&quot;&lt;script&gt;@example.com');
+    expect(html).toContain('&lt;svg onload=1&gt;');
+    expect(html).toContain('&lt;b&gt;no login&lt;/b&gt;');
+    expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(html).toContain('href="https://evil.test/&quot; onclick=&quot;alert(1)"');
+    expect(html).toContain('81');
   });
 });
