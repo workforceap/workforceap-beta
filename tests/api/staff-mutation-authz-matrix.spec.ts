@@ -131,6 +131,8 @@ vi.mock('@/lib/db/prisma', () => {
         const member = where.id ? fx.members[where.id] : undefined;
         return member ? { organizationId: member.orgId, fullName: `Member ${where.id}` } : null;
       }),
+      // Walk-in duplicate check is case-insensitive findMany + exact equality.
+      findMany: vi.fn(async () => []),
       // Subject member lookups. An org filter that names another org hides
       // the row; a missing filter would find it.
       findFirst: vi.fn(async ({ where }: { where: Where }) => {
@@ -712,6 +714,7 @@ describe('POST /api/counselor/sessions/walk-in', () => {
       signInAs(userId);
       expect((await run()).status).toBe(403);
       expect(prisma.user.findUnique).not.toHaveBeenCalledWith(expect.objectContaining({ where: { email: body.email } }));
+      expect(prisma.user.findMany).not.toHaveBeenCalled();
       expect(tenant.withTenantScope).not.toHaveBeenCalled();
       await expectNoWrites();
     },
