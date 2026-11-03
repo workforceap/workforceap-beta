@@ -17,7 +17,12 @@ import {
   isExpectedGatedApiBody,
   isGatedApiResponseCandidate,
 } from './portal-audit-gated-api.mjs';
-import { recordPendingDataRequestTimeout } from './portal-audit-pending.mjs';
+import {
+  hasOnlyPendingReadRequests,
+  independentDataRequestErrors,
+  isPendingSettlementDiagnostic,
+  recordPendingDataRequestTimeout,
+} from './portal-audit-pending.mjs';
 
 const boundedDiagnosticPush = (list, diagnostic) => {
   if (list.length < 10) list.push(diagnostic);
@@ -211,10 +216,20 @@ export function classifyCollectedPortalAuditRow(rowInput, dataRequests, options 
   const uniqueDiagnostics = (values) => [...new Set(values
     .map((value) => sanitizeAuditDiagnostic(value, options.dynamicPatterns ?? []))
     .filter(Boolean))].slice(0, 20);
+  const incomingPageErrors = rowInput.pageErrors ?? [];
+  const pendingReadsVerified = hasOnlyPendingReadRequests(dataRequests);
+  const pendingDiagnostics = uniqueDiagnostics([
+    ...incomingPageErrors.filter(isPendingSettlementDiagnostic),
+    ...dataRequests.errors.filter(isPendingSettlementDiagnostic),
+  ]);
   const collectedInput = {
     ...rowInput,
     consoleErrors: uniqueDiagnostics([...(rowInput.consoleErrors ?? []), ...dataRequests.consoleErrors]),
-    pageErrors: uniqueDiagnostics([...(rowInput.pageErrors ?? []), ...dataRequests.errors]),
+    pageErrors: uniqueDiagnostics([
+      ...incomingPageErrors.filter((value) =>
+        !pendingReadsVerified || !isPendingSettlementDiagnostic(value)),
+      ...independentDataRequestErrors(dataRequests.errors, dataRequests),
+    ]),
     abortedDataRequestCount: dataRequests.abortedDataRequestCount,
     abortedDataRequests: dataRequests.abortedDataRequests,
     pendingDataRequestCount: dataRequests.pendingDataRequestCount,
@@ -236,10 +251,19 @@ export function classifyCollectedPortalAuditRow(rowInput, dataRequests, options 
   const deniedRedirectVerified = isVerifiedDeniedRedirectWithCanceledGets(
     candidateRow, options.accessExpectation, options.accessSourceHome
   );
-  return dataRequests.abortedDataRequestCount === 0 || exactDestinationVerified || deniedRedirectVerified
-    ? candidateRow
-    : classifyPortalAuditRow({
-        ...collectedInput,
-        pageErrors: uniqueDiagnostics([...collectedInput.pageErrors, ...dataRequests.abortedErrors]),
-      });
+  const cancellationIsDiagnostic = exactDestinationVerified || deniedRedirectVerified;
+  if (
+    cancellationIsDiagnostic ||
+    (dataRequests.abortedDataRequestCount === 0 && pendingDiagnostics.length === 0)
+  ) {
+    return candidateRow;
+  }
+  return classifyPortalAuditRow({
+    ...collectedInput,
+    pageErrors: uniqueDiagnostics([
+      ...collectedInput.pageErrors,
+      ...dataRequests.abortedErrors,
+      ...pendingDiagnostics,
+    ]),
+  });
 }
