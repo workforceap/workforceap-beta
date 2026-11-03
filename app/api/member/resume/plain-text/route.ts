@@ -5,6 +5,7 @@ import { completeCareerOsResumeActions } from '@/lib/workflows/completeCareerOsA
 import { prisma } from '@/lib/db/prisma';
 import {
   hasSubstantiveResumeText,
+  RESUME_PLAIN_TEXT_MAX_CHARS,
   RESUME_TEXT_SAVE_ERROR,
   sanitizeResumePlainText,
 } from '@/lib/resume/extractionQuality';
@@ -19,7 +20,7 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 
-const MAX_CHARS = 120_000;export const POST = withApiGuc(async (request: Request) => {
+export const POST = withApiGuc(async (request: Request) => {
   try {
     const user = await getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -37,7 +38,9 @@ const MAX_CHARS = 120_000;export const POST = withApiGuc(async (request: Request
     }
     const raw = typeof body.plainText === 'string' ? body.plainText : '';
     const safeText = sanitizeResumePlainText(raw);
-    const plainText = safeText.length > MAX_CHARS ? safeText.slice(0, MAX_CHARS) : safeText;
+    const plainText = safeText.length > RESUME_PLAIN_TEXT_MAX_CHARS
+      ? safeText.slice(0, RESUME_PLAIN_TEXT_MAX_CHARS)
+      : safeText;
     if (!hasSubstantiveResumeText(plainText)) {
       return NextResponse.json({ error: RESUME_TEXT_SAVE_ERROR }, { status: 400 });
     }
