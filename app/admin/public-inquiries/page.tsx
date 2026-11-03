@@ -6,6 +6,7 @@ import { buildPageMetadataAsync } from '@/app/seo';
 import { getUser } from '@/lib/auth/server';
 import { resolveAdminPageTenant, withAdminPageScope } from '@/lib/tenant/adminPageScope';
 import { PUBLIC_LEAD_RETENTION_DAYS } from '@/lib/retention/config';
+import AdminDataLoadError from '@/components/admin/AdminDataLoadError';
 import { DesignSurface, PageOpener, DataTable, StatusTag, type Column } from '@/components/portal/kit';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -50,13 +51,22 @@ export default async function PublicInquiriesPage({ searchParams }: {
   const params = await searchParams;
   const requested = Number(params?.page);
   const page = Number.isSafeInteger(requested) && requested > 0 ? Math.min(requested, 10000) : 1;
-  const { inquiries, total } = await withAdminPageScope(scope, async (db) => {
-    const [inquiries, total] = await Promise.all([
-      db.publicInquiry.findMany({ orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: (page - 1) * PAGE_SIZE, take: PAGE_SIZE }),
-      db.publicInquiry.count(),
-    ]);
-    return { inquiries, total };
-  });
+  let inquiries: PublicInquiry[] = [];
+  let total = 0;
+  try {
+    const loaded = await withAdminPageScope(scope, async (db) => {
+      const [rows, count] = await Promise.all([
+        db.publicInquiry.findMany({ orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: (page - 1) * PAGE_SIZE, take: PAGE_SIZE }),
+        db.publicInquiry.count(),
+      ]);
+      return { inquiries: rows, total: count };
+    });
+    inquiries = loaded.inquiries;
+    total = loaded.total;
+  } catch (error) {
+    console.error('[admin/public-inquiries] failed to load inquiries:', error);
+    return <AdminDataLoadError title="Could not load public inquiries" />;
+  }
   return (
     <DesignSurface surface="dense">
       <PageOpener kicker="Administration" title="Public inquiries" lede="Contact, sponsorship and careers inquiries received through public forms." />

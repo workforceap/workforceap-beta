@@ -3,6 +3,9 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { NextIntlClientProvider } from 'next-intl';
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import messages from '@/messages/en.json';
+import esMessages from '@/messages/es.json';
+import frMessages from '@/messages/fr.json';
+import ptMessages from '@/messages/pt.json';
 
 vi.hoisted(() => { vi.stubEnv('NEXT_PUBLIC_CAPTCHA_ENABLED', 'false'); });
 
@@ -14,6 +17,7 @@ vi.mock('next/navigation', () => ({ usePathname: () => '/en/signup' }));
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
 
 import SignupForm from '@/app/(auth)/signup/SignupForm';
+import { memberSignupSchema } from '@/lib/validation/member';
 
 const fetchMock = vi.fn<typeof fetch>();
 const PROGRAM_INTEREST = 'Digital Literacy Empowerment Class (6 weeks, 30 hours total)';
@@ -57,6 +61,41 @@ afterEach(() => {
 afterAll(() => { vi.unstubAllEnvs(); });
 
 describe('member signup form response contract (mocked transport)', () => {
+  it.each([
+    ['en', messages, 'Student'],
+    ['es', esMessages, 'Estudiante'],
+    ['fr', frMessages, 'Étudiant'],
+    ['pt', ptMessages, 'Estudante'],
+  ])('renders the student employment choice in %s', (locale, localeMessages, label) => {
+    render(
+      <NextIntlClientProvider locale={locale} messages={localeMessages} timeZone="America/New_York">
+        <SignupForm />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByRole('option', { name: label })).toHaveValue('Student');
+  });
+
+  it('posts Student when the student employment choice is selected', async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ success: true }));
+    renderSignup();
+    fillRequiredFields();
+    const employment = screen.getByLabelText('Employment Status');
+    expect(screen.getByRole('option', { name: 'Student' })).toHaveValue('Student');
+    fireEvent.change(employment, { target: { value: 'Student' } });
+    submit();
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(fetchMock.mock.calls[0][1]!.body as string).employmentStatus).toBe('Student');
+  });
+
+  it.each(['Student', 'Member'])('keeps employment status %s in the shared signup schema', (employmentStatus) => {
+    const input = {
+      fullName: 'Test User', email: 'test@example.com', password: 'Password1',
+      programInterest: PROGRAM_INTEREST, consentTerms: true, employmentStatus,
+    };
+    expect(memberSignupSchema.parse(input).employmentStatus).toBe(employmentStatus);
+  });
+
   it('carries the mentor destination into confirmation signup and the manual login link', async () => {
     fetchMock.mockResolvedValueOnce(Response.json({ success: true }));
     renderSignup('/mentor/apply');

@@ -7036,8 +7036,10 @@ img.img-fade.loaded { opacity: 1; }
         display: flex !important;
         align-items: center;
         justify-content: center;
-        width: 44px;
+        min-width: 44px;
         height: 44px;
+        gap: 8px;
+        padding: 0 12px;
         border-radius: 14px;
         border: 1px solid var(--outline-variant, rgba(0,0,0,0.12));
         background: var(--surface-container);
@@ -7053,6 +7055,11 @@ img.img-fade.loaded { opacity: 1; }
         background: var(--surface-container-high);
         border-color: var(--color-on-surface-variant);
         transform: translateY(-1px);
+    }
+    .mobile-nav-toggle__label {
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
     }
     .mobile-nav-toggle:active { 
         transform: scale(0.92);
