@@ -53,6 +53,12 @@ describe('applicantFollowupHtml', () => {
   it('does not use eligibility language', () => {
     expect(applicantFollowupHtml({ firstName: 'Taylor' })).not.toMatch(/eligib/i);
   });
+
+  it('escapes a hostile first name', () => {
+    const html = applicantFollowupHtml({ firstName: '<img src=x onerror=alert(1)>' });
+    expect(html).toContain('Hi &lt;img src=x onerror=alert(1)&gt;,');
+    expect(html).not.toContain('<img src=x onerror=alert(1)>');
+  });
 });
 
 describe('GET /api/cron/applicant-followup', () => {
