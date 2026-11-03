@@ -157,7 +157,7 @@ export function hasPortalRouteContent() {
     const style = window.getComputedStyle(element);
     return style.display !== 'none' && style.visibility !== 'hidden' && element.getClientRects().length > 0;
   };
-  if ([...main.querySelectorAll('.portal-route-loading')].some(visible)) return false;
+  if ([...main.querySelectorAll('.portal-route-loading, [aria-busy="true"], [data-portal-loading-state]')].some(visible)) return false;
   return [...main.querySelectorAll('h1')].some(visible);
 }
 
@@ -202,13 +202,22 @@ export function observeAdminDashboardMetrics(page, trustedOrigin, responseTimeou
 /** An intermediate canceled navigation must not preempt the final redirect commit. */
 export async function waitForRedirectTargetCommit(page, matchesTarget, timeout) {
   const deadline = Date.now() + timeout;
+  const alreadyAtTarget = () => {
+    try {
+      return Boolean(matchesTarget(new URL(page.url())));
+    } catch {
+      return false;
+    }
+  };
   while (true) {
+    if (alreadyAtTarget()) return;
     const remaining = deadline - Date.now();
     if (remaining <= 0) throw new Error('Exact redirect target did not commit before timeout');
     try {
       await page.waitForURL(matchesTarget, { waitUntil: 'commit', timeout: remaining });
       return;
     } catch (error) {
+      if (alreadyAtTarget()) return;
       const message = error?.message ?? String(error);
       if (!/net::ERR_ABORTED|interrupted by another navigation/.test(message) || page.isClosed()) {
         throw error;
@@ -311,7 +320,7 @@ export async function inspectPortalPage(page, dynamicPatterns = []) {
     const viewportWidth = window.innerWidth || document.documentElement?.clientWidth || 0;
     const visibleH1Count = [...document.querySelectorAll('h1')].filter(isVisible).length;
     const routeLoadingVisible = [
-      ...document.querySelectorAll('main#main-content .portal-route-loading'),
+      ...document.querySelectorAll('main#main-content .portal-route-loading, main#main-content [aria-busy="true"], main#main-content [data-portal-loading-state]'),
     ].some(isVisible);
     const errorFallbackStates = [
       ...document.querySelectorAll('[data-portal-error-state]'),

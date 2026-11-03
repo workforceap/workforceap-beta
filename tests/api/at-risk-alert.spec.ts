@@ -179,7 +179,6 @@ describe('GET /api/cron/at-risk-alerts — the weekly at-risk email from persist
 
     it('the nightly at-risk-check scores and persists but sends no email (single scorer)', async () => {
       vi.mocked(calculateAllAtRiskScores).mockResolvedValue(mockScores());
-      vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValueOnce([]); // stale-alert sweep
       const result = await runAtRiskCheck(
         new Request('http://localhost/api/cron/at-risk-check', { headers: { 'x-cron-secret': 'super-secret-cron-key' } }),
       );

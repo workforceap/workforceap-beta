@@ -123,6 +123,7 @@
     "donate": "Donar",
     "contactUs": "Contáctanos",
     "memberPortal": "Portal de miembros",
+    "menu": "Menú",
     "openMenu": "Abrir menú",
     "menuLoading": "Cargando la navegación…",
     "closeMenu": "Cerrar menú",
@@ -3086,6 +3087,7 @@
         "employedPartTime": "Empleado a tiempo parcial",
         "unemployed": "Desempleado",
         "member": "Miembro",
+        "student": "Estudiante",
         "selfEmployed": "Trabajador independiente",
         "other": "Otro"
       },

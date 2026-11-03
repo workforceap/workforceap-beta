@@ -61,6 +61,7 @@ import {
   normalizePortalAuditMode,
   validatePortalAuditTarget,
 } from '../scripts/lib/portal-audit-target.mjs';
+import { reportingRedirectHref } from '@/lib/admin/reportingHub';
 
 const roles = ['member', 'admin', 'employer', 'partner', 'counselor'];
 
@@ -133,6 +134,50 @@ describe('portal navigation readiness', () => {
 
     await expect(waitForRedirectTargetCommit(page, () => true, 1_000))
       .rejects.toThrow('Navigation failed because page crashed!');
+    expect(attempts).toBe(1);
+  });
+
+  it('succeeds when the page is already at the redirect target', async () => {
+    let attempts = 0;
+    const page = {
+      isClosed: () => false,
+      url: () => 'https://portal.test/admin/reporting?tab=overview',
+      waitForURL: async () => {
+        attempts += 1;
+        throw new Error('Timeout 1000ms exceeded waiting for navigation');
+      },
+    };
+
+    await waitForRedirectTargetCommit(
+      page,
+      (url: URL) => redirectTargetMatches(url.toString(), '/admin/reporting?tab=overview', 'https://portal.test'),
+      1_000
+    );
+    expect(attempts).toBe(0);
+  });
+
+  it('treats an already-committed target as success after waitForURL times out', async () => {
+    let attempts = 0;
+    let current = 'https://portal.test/dashboard/settings';
+    const page = {
+      isClosed: () => false,
+      url: () => current,
+      waitForURL: async () => {
+        attempts += 1;
+        current = 'https://portal.test/dashboard/profile?section=settings';
+        throw new Error('Timeout 50ms exceeded waiting for navigation');
+      },
+    };
+
+    await waitForRedirectTargetCommit(
+      page,
+      (url: URL) => redirectTargetMatches(
+        url.toString(),
+        '/dashboard/profile?section=settings',
+        'https://portal.test'
+      ),
+      50
+    );
     expect(attempts).toBe(1);
   });
 
@@ -1272,6 +1317,7 @@ describe('read-only portal action contracts', () => {
     // A canceled read prefetch during navigation is diagnostic after the
     // destination passes the same independent health checks as a static route.
     expect(redirectDestinationFailureReasons({ ...destination, abortedDataRequestCount: 1 })).toEqual([]);
+    expect(redirectDestinationFailureReasons({ ...destination, pendingDataRequestCount: 1 })).toEqual([]);
     expect(redirectDestinationFailureReasons({ ...destination, documentStatus: 500 })).toContain('redirect_destination_document_not_200');
     expect(redirectDestinationFailureReasons({ ...destination, finalUrl: 'https://preview.example.test/dashboard' })).toContain('redirect_target_mismatch');
     expect(redirectDestinationFailureReasons({ ...destination, dataErrorCount: 1 })).toContain('same_origin_data_request_failed');
@@ -1367,6 +1413,28 @@ describe('read-only portal action contracts', () => {
     ).toBe(false);
   });
 
+  it('ignores kit overlay query keys when matching workspace navigation', () => {
+    expect(
+      navigationTargetMatches('/admin/students?search=ada&sort=name&page=2', {
+        targetPath: '/admin/students',
+      }),
+    ).toBe(true);
+    expect(
+      navigationTargetMatches(
+        '/employer/jobs/job-a?returnTo=%2Femployer%2Fjobs',
+        { targetPattern: '/employer/jobs/[id]' },
+        '/employer/jobs/job-a',
+      ),
+    ).toBe(true);
+    expect(
+      navigationTargetMatches(
+        '/employer/jobs/job-a?tab=edit',
+        { targetPattern: '/employer/jobs/[id]' },
+        '/employer/jobs/job-a',
+      ),
+    ).toBe(false);
+  });
+
   it('resolves dynamic redirect aliases and verifies exact internal targets', () => {
     const resolved = resolveRedirectAuditEntry(
       {
@@ -1437,11 +1505,50 @@ describe('read-only portal action contracts', () => {
     ).toBe(true);
     expect(
       redirectTargetMatches(
+        `${origin}/dashboard/profile?section=settings`,
+        '/dashboard/profile?section=settings',
+        origin,
+      ),
+    ).toBe(true);
+    expect(
+      redirectTargetMatches(
+        `${origin}/dashboard/profile`,
+        '/dashboard/profile?section=settings',
+        origin,
+      ),
+    ).toBe(false);
+    expect(
+      redirectTargetMatches(
         `${origin}/dashboard/profile`,
         '/dashboard/profile#settings',
         origin,
       ),
     ).toBe(false);
+  });
+
+  it('pins settings and reporting aliases to destinations HTTP redirects can keep', () => {
+    expect(REDIRECT_ONLY_PATHS.member).toContainEqual({
+      path: '/dashboard/settings',
+      target: '/dashboard/profile?section=settings',
+      reason: 'consolidated_experience',
+    });
+    const settingsPage = readFileSync(
+      join(process.cwd(), 'app', '(portal)', 'dashboard', 'settings', 'page.tsx'),
+      'utf8',
+    );
+    expect(settingsPage).toContain("redirect('/dashboard/profile?section=settings')");
+    const profilePage = readFileSync(
+      join(process.cwd(), 'app', '(portal)', 'dashboard', 'profile', 'page.tsx'),
+      'utf8',
+    );
+    expect(profilePage).toContain('ProfileSectionFocus');
+    for (const path of ['/admin/analytics', '/admin/metrics'] as const) {
+      expect(REDIRECT_ONLY_PATHS.admin).toContainEqual({
+        path,
+        target: reportingRedirectHref(path),
+        reason: 'consolidated_experience',
+      });
+    }
   });
 
   it('expects the training and Coursera stubs to land on My Program, where they redirect', () => {
