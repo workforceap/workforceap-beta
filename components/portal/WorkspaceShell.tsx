@@ -229,6 +229,7 @@ export default function WorkspaceShell({
   const [badges, setBadges] = useState<Partial<Record<NavBadgeKey, number>>>({});
   const [badgeFetchError, setBadgeFetchError] = useState(false);
   const isMemberHomeCompact = portalRole === 'member' && isMemberHomeCompactPath(pathname);
+  const isMentorStaffView = portalRole === 'member' && (pathname === '/dashboard/mentor' || pathname.startsWith('/dashboard/mentor/') || pathname === '/dev/member/v/mentor');
   const persistentRail = wide && !isMemberHomeCompact;
   const isCollapsedDesktop = collapsed && persistentRail;
   const isMobileDrawer = drawerOpen && !persistentRail;
@@ -504,6 +505,7 @@ export default function WorkspaceShell({
       className="workspace-shell-root"
       data-workspace-role={portalRole}
       data-member-home-compact={isMemberHomeCompact ? 'true' : undefined}
+      data-member-staff-view={isMentorStaffView ? 'mentor' : undefined}
       style={rootStyle}
     >
       {/* Mirror the data-portal-role effect at parse time so <html>/<body> take the

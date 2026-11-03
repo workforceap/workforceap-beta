@@ -18,28 +18,88 @@ const PROD_URL =
 const SHA = '7f72d403ea4a772da90d664ef1d3e6d2f6c64a31';
 
 function previewEnv(url: string): NodeJS.ProcessEnv {
-  return { VERCEL_ENV: 'preview', POSTGRES_PRISMA_URL: url } as unknown as NodeJS.ProcessEnv;
+  return { VERCEL_ENV: 'preview', POSTGRES_PRISMA_URL: url, VERCEL_GIT_COMMIT_SHA: SHA } as unknown as NodeJS.ProcessEnv;
 }
 
 function memberPrisma(initial = { assessmentCompleted: false, assessmentCompletedAt: null as Date | null }) {
-  const stored = { ...initial };
+  const stored = {
+    ...initial,
+    notificationsUpdates: false,
+    profile: { city: null as string | null },
+    messageThreadsAsMember: [],
+    mentorProfile: null as null | { id: string; bio: string; isActive: boolean; approvedAt: Date | null; _count: { sessions: number; specialties: number } },
+    browseMentorUserId: null as string | null,
+    browseMentor: null as null | { id: string; bio: string; isActive: boolean; approvedAt: Date | null; _count: { sessions: number; specialties: number } },
+    counselorSessions: [] as Array<{
+      id: string;
+      toolType: string;
+      inputSummary: string;
+      parentToolResultId: null;
+      _count: { childResults: number; primaryForApplicationFeedbacks: number };
+    }>,
+  };
   return {
     stored,
     prisma: {
+      async $transaction(fn: (tx: unknown) => Promise<unknown>) { return fn(this); },
       $executeRawUnsafe: async () => 1,
       organization: { findFirst: async () => ({ id: 'org-qa' }) },
       user: {
-        findFirst: async () => ({ id: 'user-fixture-1', ...stored }),
+        findFirst: async ({ where }: { where?: { email?: string | { equals?: string } } } = {}) => {
+          const email = typeof where?.email === 'string' ? where.email : where?.email?.equals;
+          if (email === 'portal-c-browse-mentor@workforceap.org') {
+            return stored.browseMentorUserId ? { id: stored.browseMentorUserId } : null;
+          }
+          return { id: 'user-fixture-1', organizationId: 'org-qa', ...stored };
+        },
         findUnique: async () => ({ ...stored }),
+        create: async () => {
+          stored.browseMentorUserId = 'browse-mentor-user';
+          return { id: stored.browseMentorUserId };
+        },
         update: async ({
           data,
         }: {
-          data: { assessmentCompleted: boolean; assessmentCompletedAt: Date | null };
+          data: Partial<typeof stored>;
         }) => {
-          stored.assessmentCompleted = data.assessmentCompleted;
-          stored.assessmentCompletedAt = data.assessmentCompletedAt;
+          Object.assign(stored, data);
         },
       },
+      mentor: {
+        findUnique: async ({ where }: { where: { userId?: string } }) => {
+          if (where.userId === stored.browseMentorUserId) return stored.browseMentor;
+          return stored.mentorProfile;
+        },
+        create: async ({ data }: { data: { bio: string; isActive?: boolean; approvedAt?: Date | null; userId?: string } }) => {
+          const row = { id: data.bio.includes('browse') ? 'synthetic-browse-mentor' : 'synthetic-mentor', bio: data.bio, isActive: Boolean(data.isActive), approvedAt: data.approvedAt ?? null, _count: { sessions: 0, specialties: 0 } };
+          if (data.userId === stored.browseMentorUserId || data.bio.includes('browse')) stored.browseMentor = row;
+          else stored.mentorProfile = row;
+          return row;
+        },
+        update: async ({ data }: { data: { isActive?: boolean; approvedAt?: Date | null } }) => {
+          if (stored.browseMentor) Object.assign(stored.browseMentor, data);
+          return stored.browseMentor;
+        },
+        delete: async ({ where }: { where: { userId?: string } }) => {
+          if (where.userId === stored.browseMentorUserId) stored.browseMentor = null;
+          else stored.mentorProfile = null;
+        },
+      },
+      aIToolResult: {
+        findFirst: async () => stored.counselorSessions[0] ?? null,
+        findMany: async () => stored.counselorSessions.filter((session) => session.inputSummary.startsWith('Portal C temporary counselor session fixture')),
+        create: async ({ data }: { data: { inputSummary: string; toolType: string } }) => {
+          stored.counselorSessions.push({
+            id: 'synthetic-counselor-session',
+            toolType: data.toolType,
+            inputSummary: data.inputSummary,
+            parentToolResultId: null,
+            _count: { childResults: 0, primaryForApplicationFeedbacks: 0 },
+          });
+        },
+        delete: async () => { stored.counselorSessions = []; },
+      },
+      profile: { update: async ({ data }: { data: { city: string | null } }) => Object.assign(stored.profile, data) },
     },
   };
 }
@@ -138,6 +198,125 @@ describe('portal C fixture OIDC', () => {
   });
 });
 
+describe('fixture deployment and target binding', () => {
+  const verify = async () => ({ ok: true as const, claims: {
+    repository: PORTAL_C_FIXTURE_REPOSITORY, workflowRef: 'workflow', eventName: 'deployment_status', ref: SHA, sha: SHA,
+  } });
+
+  it('creates an inactive mentor workspace only for the synthetic member and removes it on verified restore', async () => {
+    const { prisma, stored } = memberPrisma();
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    const original = await call({ action: 'snapshot' });
+    expect((await call({ action: 'prepare-mentor' })).status).toBe(200);
+    expect(stored.mentorProfile).toMatchObject({ isActive: false, approvedAt: null });
+    expect((await call({ action: 'restore', snapshot: original.body.snapshot })).status).toBe(200);
+    expect(stored.mentorProfile).toBeNull();
+  });
+
+  it('prepare removes a leftover marked mentor so inventory sees a plain member', async () => {
+    const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: new Date('2026-01-01T00:00:00Z') });
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    expect((await call({ action: 'prepare-mentor' })).status).toBe(200);
+    expect(stored.mentorProfile).not.toBeNull();
+    const prepared = await call({ action: 'prepare' });
+    expect(prepared.status).toBe(200);
+    expect(stored.mentorProfile).toBeNull();
+    const leftoverSnapshot = prepared.body as { snapshot: { before: { mentorId: string | null } } };
+    expect(leftoverSnapshot.snapshot.before.mentorId).toBeNull();
+  });
+
+  it('prepare fails closed when a leftover mentor is still present after cleanup', async () => {
+    const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: new Date('2026-01-01T00:00:00Z') });
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    stored.mentorProfile = { id: 'stuck-mentor', bio: 'Portal C temporary mentor fixture; restored by the serialized CI job.', isActive: false, approvedAt: null, _count: { sessions: 0, specialties: 0 } };
+    prisma.mentor.delete = async () => undefined;
+    const prepared = await call({ action: 'prepare' });
+    expect(prepared.status).toBe(500);
+    expect(prepared.body).toMatchObject({ error: 'fixture_failed' });
+    expect(String(prepared.body.detail)).toMatch(/still has a mentor row/);
+    expect(stored.mentorProfile).not.toBeNull();
+  });
+
+  it('prepare deletes a leftover mentor even when the relation is missing and adds a browse mentor', async () => {
+    const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: new Date('2026-01-01T00:00:00Z') });
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    stored.mentorProfile = { id: 'orphan-mentor', bio: 'Portal C temporary mentor fixture; restored by the serialized CI job.', isActive: false, approvedAt: null, _count: { sessions: 0, specialties: 0 } };
+    const prepared = await call({ action: 'prepare' });
+    expect(prepared.status).toBe(200);
+    expect(stored.mentorProfile).toBeNull();
+    expect(stored.browseMentor).toMatchObject({ isActive: true });
+    const orphanSnapshot = (prepared.body as { snapshot: unknown }).snapshot;
+    expect((await call({ action: 'restore', snapshot: orphanSnapshot })).status).toBe(200);
+    expect(stored.browseMentor).toBeNull();
+  });
+
+  it('prepare adds a marked counselor session when none exist and restore removes it', async () => {
+    const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: new Date('2026-01-01T00:00:00Z') });
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    const prepared = await call({ action: 'prepare' });
+    expect(prepared.status).toBe(200);
+    expect(stored.counselorSessions).toHaveLength(1);
+    expect(stored.counselorSessions[0]?.inputSummary).toMatch(/temporary counselor session fixture/);
+    const sessionSnapshot = (prepared.body as { snapshot: unknown }).snapshot;
+    expect((await call({ action: 'restore', snapshot: sessionSnapshot })).status).toBe(200);
+    expect(stored.counselorSessions).toHaveLength(0);
+  });
+
+  it('refuses to delete a temporary counselor session if unexpected children appear', async () => {
+    const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: new Date('2026-01-01T00:00:00Z') });
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    const prepared = await call({ action: 'prepare' });
+    stored.counselorSessions[0]!._count.childResults = 1;
+    const blockedSnapshot = (prepared.body as { snapshot: unknown }).snapshot;
+    expect((await call({ action: 'restore', snapshot: blockedSnapshot })).status).toBe(500);
+    expect(stored.counselorSessions).toHaveLength(1);
+  });
+
+  it('refuses to delete a temporary mentor if unexpected sessions appear', async () => {
+    const { prisma, stored } = memberPrisma();
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    const original = await call({ action: 'snapshot' });
+    await call({ action: 'prepare-mentor' });
+    stored.mentorProfile!._count.sessions = 1;
+    expect((await call({ action: 'restore', snapshot: original.body.snapshot })).status).toBe(500);
+    expect(stored.mentorProfile).not.toBeNull();
+  });
+
+  it('refuses a token for a different deployment before acquiring a database client', async () => {
+    let opened = false;
+    const result = await handlePortalCMemberFixture({ authorization: 'Bearer token', payload: { action: 'prepare' },
+      env: { ...previewEnv(DEMO_URL), VERCEL_GIT_COMMIT_SHA: 'b'.repeat(40) }, verify,
+      getPrisma: () => { opened = true; throw new Error('must not connect'); },
+    });
+    expect(result).toMatchObject({ status: 403, body: { error: 'deployment_sha_mismatch' } });
+    expect(opened).toBe(false);
+  });
+
+  it('refuses a restore snapshot naming another user', async () => {
+    const { prisma, stored } = memberPrisma();
+    const result = await handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma,
+      payload: { action: 'restore', snapshot: { userId: 'another-user-id', before: { assessmentCompleted: true, assessmentCompletedAt: null } } },
+    });
+    expect(result.status).toBe(500);
+    expect(stored.assessmentCompleted).toBe(false);
+  });
+
+  it('captures the original state before the gate reset and restores that state after preparation', async () => {
+    const original = new Date('2026-01-01T00:00:00.000Z');
+    const { prisma, stored } = memberPrisma({ assessmentCompleted: true, assessmentCompletedAt: original });
+    const call = (payload: unknown) => handlePortalCMemberFixture({ authorization: 'Bearer token', env: previewEnv(DEMO_URL), verify, prisma, payload });
+    const captured = await call({ action: 'snapshot' });
+    expect(stored.assessmentCompleted).toBe(true);
+    await call({ action: 'ensure-incomplete' });
+    expect(stored.assessmentCompleted).toBe(false);
+    await call({ action: 'prepare' });
+    expect(stored.assessmentCompleted).toBe(true);
+    const result = await call({ action: 'restore', snapshot: captured.body.snapshot });
+    expect(result.status).toBe(200);
+    expect(stored.assessmentCompletedAt).toEqual(original);
+  });
+});
+
 describe('portal C member fixture handler', () => {
   it('does not touch the database unless the deployment is a DEMO preview', async () => {
     const { prisma } = memberPrisma();
@@ -202,7 +381,7 @@ describe('portal C member fixture handler', () => {
       prisma,
       verify,
     });
-    expect(reset).toEqual({ status: 200, body: { ok: true, changed: true } });
+    expect(reset).toMatchObject({ status: 200, body: { ok: true, changed: true } });
     expect(stored.assessmentCompleted).toBe(false);
 
     const prepared = await handlePortalCMemberFixture({
@@ -231,6 +410,7 @@ describe('portal C member fixture handler', () => {
 
   it('redacts database URLs from fixture failures', async () => {
     const prisma = {
+      async $transaction(fn: (tx: unknown) => Promise<unknown>) { return fn(this); },
       $executeRawUnsafe: async () => 1,
       organization: {
         findFirst: async () => {
@@ -238,6 +418,7 @@ describe('portal C member fixture handler', () => {
         },
       },
       user: { findFirst: async () => null, findUnique: async () => null, update: async () => ({}) },
+      aIToolResult: { findFirst: async () => null, findMany: async () => [], create: async () => ({}), delete: async () => ({}) },
     };
     const result = await handlePortalCMemberFixture({
       authorization: 'Bearer header.payload.sig',

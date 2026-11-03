@@ -14,6 +14,8 @@ export interface KpiItem {
 
 interface KpiStripProps extends KitBaseProps<HTMLDivElement>, KitDataAttrs {
   items: KpiItem[];
+  /** Member C opts into phrase-aware phone stacking. Staff retain the original grid. */
+  responsive?: 'member';
   /** Desktop column count from 1024px. Default 4. */
   cols?: 4 | 5 | 6;
 }
@@ -22,6 +24,12 @@ const COLS: Record<number, string> = {
   4: 'wa-kit-kpi-strip--cols-4',
   5: 'wa-kit-kpi-strip--cols-5',
   6: 'wa-kit-kpi-strip--cols-6',
+};
+
+const STAFF_COLS = {
+  4: 'lg:wa-grid-cols-4',
+  5: 'lg:wa-grid-cols-5',
+  6: 'lg:wa-grid-cols-6',
 };
 
 /** Short scores and counts ("72 / 100", "—"). Phrases force a single phone column. */
@@ -55,10 +63,13 @@ export function kpiPhoneColumns(items: readonly KpiItem[]): 1 | 2 {
  * Responsive KPI row. Phone: 1 column when any value is a phrase, 2 columns
  * for short numbers. Tablet stays 2. Desktop uses `cols`.
  */
-export function KpiStrip({ items, cols = 4, className, style, ref, ...rest }: KpiStripProps) {
+export function KpiStrip({ items, cols = 4, responsive, className, style, ref, ...rest }: KpiStripProps) {
   const phone = kpiPhoneColumns(items) === 1 ? 'wa-kit-kpi-strip--stack' : 'wa-kit-kpi-strip--pair';
+  const grid = responsive === 'member'
+    ? cx('wa-kit-kpi-strip', phone, COLS[cols])
+    : `wa-grid wa-grid-cols-2 ${STAFF_COLS[cols]} wa-gap-3`;
   return (
-    <div ref={ref} className={cx('wa-kit-kpi-strip', phone, COLS[cols], className)} style={style} {...rest}>
+    <div ref={ref} className={cx(grid, className)} style={style} {...rest}>
       {items.map((it) => (
         <StatTile key={it.label} {...it} />
       ))}

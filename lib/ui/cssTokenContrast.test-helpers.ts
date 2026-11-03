@@ -16,7 +16,7 @@ export type Scheme = 'light' | 'dark';
 export const ROOT = process.cwd();
 
 export function readCss(relPath: string): string {
-  return readFileSync(path.join(ROOT, relPath), 'utf8');
+  return readFileSync(path.join(ROOT, relPath), 'utf8').replace(/\r\n/g, '\n');
 }
 
 function stripComments(css: string): string {

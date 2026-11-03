@@ -842,7 +842,7 @@
       "kicker": "Job board and matches",
       "claim": "{count} open roles on the job board.",
       "claimGeneric": "{count} open roles on the job board.",
-      "lede": "Openings synced with your active coursework and residency.",
+      "lede": "Browse open roles and keep track of your applications.",
       "kpiQualified": "Open roles",
       "kpiQualifiedDelta": "Across {count} employers",
       "kpiHighMatches": "High matches (≥85%)",

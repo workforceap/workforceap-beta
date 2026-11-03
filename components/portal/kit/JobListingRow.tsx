@@ -11,6 +11,8 @@ interface JobListingRowProps extends KitBaseProps<HTMLAnchorElement>, KitDataAtt
   meta: string;
   match?: string;
   applied?: boolean;
+  /** Member C keeps company and location readable instead of truncating them. */
+  wrapMeta?: boolean;
   /** Inner content of the 40×40 tile. Defaults to a briefcase. */
   icon?: ReactNode;
   trailing?: ReactNode;
@@ -28,6 +30,7 @@ export function JobListingRow({
   meta,
   match,
   applied,
+  wrapMeta = false,
   icon,
   trailing,
   first = false,
@@ -86,9 +89,9 @@ export function JobListingRow({
           className="wa-kit-meta"
           style={{
             margin: '4px 0 0',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
+            overflow: wrapMeta ? 'visible' : 'hidden',
+            textOverflow: wrapMeta ? 'clip' : 'ellipsis',
+            whiteSpace: wrapMeta ? 'normal' : 'nowrap',
           }}
         >
           {meta}

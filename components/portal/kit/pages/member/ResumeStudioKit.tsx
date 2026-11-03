@@ -129,6 +129,7 @@ export function ResumeStudioKit({
         />
         <div className="wa-kit-card">
           <KpiStrip
+            responsive="member"
             items={[
               {
                 label: t('kpiHealth'),

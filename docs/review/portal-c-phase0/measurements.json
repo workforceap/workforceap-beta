@@ -1,0 +1,238 @@
+{
+  "origin": "https://workforceap-beta-j38jcitrw-mabrown040-5207s-projects.vercel.app",
+  "sha": "33b278dc4980c63fa94a9077611da9dc008d1db3",
+  "flow": [
+    "program",
+    "jobs",
+    "ai-tools",
+    "resume-studio"
+  ],
+  "video": "click-path.webm",
+  "capturedAt": "2026-10-18T20:06:45.862Z",
+  "results": [
+    {
+      "slug": "home",
+      "width": 1440,
+      "theme": "light",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "You are 2 modules away from completing your AWS Certified Cloud Practitioner Certificate training.",
+      "exampleData": true,
+      "file": "home-1440-light.png"
+    },
+    {
+      "slug": "jobs",
+      "width": 1440,
+      "theme": "light",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "12 open roles on the job board.",
+      "exampleData": true,
+      "file": "jobs-1440-light.png"
+    },
+    {
+      "slug": "program",
+      "width": 1440,
+      "theme": "light",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "You are 2 modules away from completing your AWS Certified Cloud Practitioner Certificate training.",
+      "exampleData": true,
+      "file": "program-1440-light.png"
+    },
+    {
+      "slug": "ai-tools",
+      "width": 1440,
+      "theme": "light",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "Tools picked for Cloud Support Associate at Brightline and Module 8.",
+      "exampleData": true,
+      "file": "ai-tools-1440-light.png"
+    },
+    {
+      "slug": "resume-studio",
+      "width": 1440,
+      "theme": "light",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "Your resume scores 72. Three targeted fixes will make it stronger.",
+      "exampleData": true,
+      "file": "resume-studio-1440-light.png"
+    },
+    {
+      "slug": "home",
+      "width": 1440,
+      "theme": "dark",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "You are 2 modules away from completing your AWS Certified Cloud Practitioner Certificate training.",
+      "exampleData": true,
+      "file": "home-1440-dark.png"
+    },
+    {
+      "slug": "jobs",
+      "width": 1440,
+      "theme": "dark",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "12 open roles on the job board.",
+      "exampleData": true,
+      "file": "jobs-1440-dark.png"
+    },
+    {
+      "slug": "program",
+      "width": 1440,
+      "theme": "dark",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "You are 2 modules away from completing your AWS Certified Cloud Practitioner Certificate training.",
+      "exampleData": true,
+      "file": "program-1440-dark.png"
+    },
+    {
+      "slug": "ai-tools",
+      "width": 1440,
+      "theme": "dark",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "Tools picked for Cloud Support Associate at Brightline and Module 8.",
+      "exampleData": true,
+      "file": "ai-tools-1440-dark.png"
+    },
+    {
+      "slug": "resume-studio",
+      "width": 1440,
+      "theme": "dark",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "Your resume scores 72. Three targeted fixes will make it stronger.",
+      "exampleData": true,
+      "file": "resume-studio-1440-dark.png"
+    },
+    {
+      "slug": "home",
+      "width": 390,
+      "theme": "light",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "You are 2 modules away from completing your AWS Certified Cloud Practitioner Certificate training.",
+      "exampleData": true,
+      "file": "home-390-light.png"
+    },
+    {
+      "slug": "jobs",
+      "width": 390,
+      "theme": "light",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "12 open roles on the job board.",
+      "exampleData": true,
+      "file": "jobs-390-light.png"
+    },
+    {
+      "slug": "program",
+      "width": 390,
+      "theme": "light",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "You are 2 modules away from completing your AWS Certified Cloud Practitioner Certificate training.",
+      "exampleData": true,
+      "file": "program-390-light.png"
+    },
+    {
+      "slug": "ai-tools",
+      "width": 390,
+      "theme": "light",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "Tools picked for Cloud Support Associate at Brightline and Module 8.",
+      "exampleData": true,
+      "file": "ai-tools-390-light.png"
+    },
+    {
+      "slug": "resume-studio",
+      "width": 390,
+      "theme": "light",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "Your resume scores 72. Three targeted fixes will make it stronger.",
+      "exampleData": true,
+      "file": "resume-studio-390-light.png"
+    },
+    {
+      "slug": "home",
+      "width": 390,
+      "theme": "dark",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "You are 2 modules away from completing your AWS Certified Cloud Practitioner Certificate training.",
+      "exampleData": true,
+      "file": "home-390-dark.png"
+    },
+    {
+      "slug": "jobs",
+      "width": 390,
+      "theme": "dark",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "12 open roles on the job board.",
+      "exampleData": true,
+      "file": "jobs-390-dark.png"
+    },
+    {
+      "slug": "program",
+      "width": 390,
+      "theme": "dark",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "You are 2 modules away from completing your AWS Certified Cloud Practitioner Certificate training.",
+      "exampleData": true,
+      "file": "program-390-dark.png"
+    },
+    {
+      "slug": "ai-tools",
+      "width": 390,
+      "theme": "dark",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "Tools picked for Cloud Support Associate at Brightline and Module 8.",
+      "exampleData": true,
+      "file": "ai-tools-390-dark.png"
+    },
+    {
+      "slug": "resume-studio",
+      "width": 390,
+      "theme": "dark",
+      "status": 200,
+      "clipped": [],
+      "overflow": false,
+      "heading": "Your resume scores 72. Three targeted fixes will make it stronger.",
+      "exampleData": true,
+      "file": "resume-studio-390-dark.png"
+    }
+  ],
+  "representativeImages": [
+    "home-phone.png",
+    "jobs-phone.png"
+  ]
+}

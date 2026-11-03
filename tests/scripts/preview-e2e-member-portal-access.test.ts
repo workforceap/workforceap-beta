@@ -23,6 +23,44 @@ function supabaseAnonJwt(ref: string) {
   return `${header}.${payload}.test-signature`;
 }
 
+function mentorFixtureDelegate() {
+  return {
+    findUnique: async () => null,
+    create: async () => ({ id: 'synthetic-browse-mentor' }),
+    update: async () => ({ id: 'synthetic-browse-mentor' }),
+    delete: async () => ({}),
+  };
+}
+
+function counselorFixtureDelegate() {
+  const sessions: Array<{
+    id: string;
+    toolType: string;
+    inputSummary: string;
+    parentToolResultId: null;
+    _count: { childResults: number; primaryForApplicationFeedbacks: number };
+  }> = [];
+  return {
+    sessions,
+    aIToolResult: {
+      findFirst: async () => sessions[0] ?? null,
+      findMany: async () => sessions,
+      create: async ({ data }: { data: { inputSummary: string; toolType: string } }) => {
+        sessions.push({
+          id: 'synthetic-counselor-session',
+          toolType: data.toolType,
+          inputSummary: data.inputSummary,
+          parentToolResultId: null,
+          _count: { childResults: 0, primaryForApplicationFeedbacks: 0 },
+        });
+      },
+      delete: async () => {
+        sessions.length = 0;
+      },
+    },
+  };
+}
+
 describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
   it('allows fixture database access only on DEMO direct URLs', () => {
     expect(() =>
@@ -57,19 +95,25 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
       assessmentCompletedAt: null,
     };
     const lockCalls: string[] = [];
+    const counselor = counselorFixtureDelegate();
     const prisma = {
+      $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma),
       $executeRawUnsafe: async (sql: string) => {
         lockCalls.push(sql);
       },
+      aIToolResult: counselor.aIToolResult,
+      mentor: mentorFixtureDelegate(),
       organization: {
         findFirst: async () => ({ id: 'org-qa' }),
       },
       user: {
         findFirst: async () => ({
           id: 'user-fixture',
+          organizationId: 'org-qa',
           assessmentCompleted: stored.assessmentCompleted,
           assessmentCompletedAt: stored.assessmentCompletedAt,
         }),
+        create: async () => ({ id: 'browse-mentor-user' }),
         findUnique: async () => ({
           assessmentCompleted: stored.assessmentCompleted,
           assessmentCompletedAt: stored.assessmentCompletedAt,
@@ -90,7 +134,7 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
     const prepared = await fixture.prepareMemberForSignedInRoutes(prisma);
     expect(prepared.applied).toBe(true);
     expect(stored.assessmentCompleted).toBe(true);
-    expect(lockCalls.some((sql) => sql.includes('pg_advisory_lock'))).toBe(true);
+    expect(lockCalls.some((sql) => sql.includes('pg_advisory_xact_lock'))).toBe(true);
 
     await fixture.restoreMemberSnapshot(prisma, prepared);
     expect(stored.assessmentCompleted).toBe(false);
@@ -100,15 +144,21 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
 
   it('does not mutate when the fixture member is already assessment-complete', async () => {
     let updates = 0;
+    const counselor = counselorFixtureDelegate();
     const prisma = {
+      $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma),
       $executeRawUnsafe: async () => {},
+      aIToolResult: counselor.aIToolResult,
+      mentor: mentorFixtureDelegate(),
       organization: { findFirst: async () => ({ id: 'org-qa' }) },
       user: {
         findFirst: async () => ({
           id: 'user-fixture',
+          organizationId: 'org-qa',
           assessmentCompleted: true,
           assessmentCompletedAt: new Date('2026-01-01T00:00:00.000Z'),
         }),
+        create: async () => ({ id: 'browse-mentor-user' }),
         update: async () => {
           updates += 1;
         },
@@ -128,6 +178,7 @@ describe('preview E2E member fixture (DEMO only, not build:preview)', () => {
       assessmentCompletedAt: new Date('2026-02-02T00:00:00.000Z'),
     };
     const prisma = {
+      $transaction: async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma),
       $executeRawUnsafe: async () => {},
       organization: { findFirst: async () => ({ id: 'org-qa' }) },
       user: {

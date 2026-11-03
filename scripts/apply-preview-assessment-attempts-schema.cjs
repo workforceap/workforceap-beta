@@ -19,7 +19,7 @@ const REQUIRED_FUNCTION = 'guard_assessment_attempt_fields';
 
 async function readColumnState(prisma) {
   const rows = await prisma.$queryRawUnsafe(`
-    SELECT column_name
+    SELECT column_name, data_type, is_nullable, column_default
     FROM information_schema.columns
     WHERE table_schema = 'public'
       AND table_name = 'users'
@@ -30,7 +30,13 @@ async function readColumnState(prisma) {
       )
     ORDER BY column_name
   `);
-  return new Set(rows.map((row) => row.column_name));
+  return new Set(rows.filter(columnDefinitionReady).map((row) => row.column_name));
+}
+
+function columnDefinitionReady(row) {
+  if (row.column_name === 'assessment_attempt_count') return row.data_type === 'integer' && row.is_nullable === 'NO' && row.column_default === '0';
+  if (row.column_name === 'assessment_history') return row.data_type === 'jsonb' && row.is_nullable === 'NO' && row.column_default === "'[]'::jsonb";
+  return row.column_name === 'assessment_retake_requested_at' && row.data_type === 'timestamp without time zone' && row.is_nullable === 'YES' && row.column_default == null;
 }
 
 function columnsReady(present) {
@@ -42,13 +48,14 @@ async function readProtectionState(prisma) {
   const constraints = await prisma.$queryRawUnsafe(`
     SELECT conname
     FROM pg_constraint
-    WHERE conname = '${REQUIRED_CONSTRAINT}'
+    WHERE conname = '${REQUIRED_CONSTRAINT}' AND conrelid = 'public.users'::regclass AND convalidated
   `);
   const triggers = await prisma.$queryRawUnsafe(`
     SELECT tgname
     FROM pg_trigger
     WHERE tgname = '${REQUIRED_TRIGGER}'
-      AND NOT tgisinternal
+      AND NOT tgisinternal AND tgrelid = 'public.users'::regclass AND tgenabled IN ('O', 'A')
+      AND tgtype = 23 AND tgfoid = to_regprocedure('public.guard_assessment_attempt_fields()')
   `);
   const functions = await prisma.$queryRawUnsafe(`
     SELECT proname
@@ -56,6 +63,7 @@ async function readProtectionState(prisma) {
     JOIN pg_namespace n ON n.oid = pg_proc.pronamespace
     WHERE n.nspname = 'public'
       AND proname = '${REQUIRED_FUNCTION}'
+      AND NOT prosecdef AND pronargs = 0
   `);
   return {
     columns,
@@ -76,6 +84,7 @@ function protectionsReady(state) {
 
 async function applyAllProtections(prisma) {
   await prisma.$transaction(async (tx) => {
+    await tx.$executeRawUnsafe('SELECT pg_advisory_xact_lock(902902)');
     await tx.$executeRawUnsafe(`
       ALTER TABLE users
         ADD COLUMN IF NOT EXISTS assessment_attempt_count INTEGER NOT NULL DEFAULT 0,
@@ -85,7 +94,7 @@ async function applyAllProtections(prisma) {
     await tx.$executeRawUnsafe(`
       DO $$ BEGIN
         IF NOT EXISTS (
-          SELECT 1 FROM pg_constraint WHERE conname = '${REQUIRED_CONSTRAINT}'
+          SELECT 1 FROM pg_constraint WHERE conname = '${REQUIRED_CONSTRAINT}' AND conrelid = 'public.users'::regclass
         ) THEN
           ALTER TABLE users ADD CONSTRAINT ${REQUIRED_CONSTRAINT}
             CHECK (assessment_attempt_count >= 0);
@@ -119,6 +128,7 @@ async function applyAllProtections(prisma) {
       BEFORE INSERT OR UPDATE ON users
       FOR EACH ROW EXECUTE FUNCTION ${REQUIRED_FUNCTION}()
     `);
+    await assertAssessmentAttemptProtections(tx);
   });
 }
 
@@ -181,6 +191,7 @@ module.exports = {
   REQUIRED_FUNCTION,
   validatePreviewTarget,
   columnsReady,
+  columnDefinitionReady,
   readProtectionState,
   protectionsReady,
   applyAllProtections,

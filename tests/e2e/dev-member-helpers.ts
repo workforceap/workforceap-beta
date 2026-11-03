@@ -93,7 +93,7 @@ export async function expectCScreenPhoneLayout(page: Page): Promise<void> {
   const result = await page.evaluate(() => {
     const root = document.documentElement;
     const clipped: string[] = [];
-    for (const el of document.querySelectorAll('.wa-kit-stat-label, .wa-kit-stat-tile__value')) {
+    for (const el of document.querySelectorAll('.wa-kit-stat-label, .wa-kit-stat-tile__value, .wa-kit-oneline, .wa-job-listing-row__title, .wa-job-listing-row__body > .wa-kit-meta')) {
       if (el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > el.clientHeight + 2) {
         clipped.push((el.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 60));
       }

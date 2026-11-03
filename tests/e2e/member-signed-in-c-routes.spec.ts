@@ -57,10 +57,13 @@ test.describe('signed-in C member routes', () => {
   test.describe.configure({ mode: 'serial' });
   test.skip(!hasProdE2ECredentials(), 'Set PLAYWRIGHT_MEMBER_EMAIL and PLAYWRIGHT_PORTAL_PASSWORD');
 
-  test('Home, Job board, My program, Resume Studio, and AI tools load honestly', async ({
+  for (const width of [1440, 390]) for (const theme of ['light', 'dark']) {
+  test(`C member views load honestly at ${width} in ${theme}`, async ({
     page,
   }, testInfo) => {
     test.setTimeout(180_000);
+    await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+    await page.addInitScript(theme => localStorage.setItem('wap-theme', theme), theme);
     await loginSignedInMember(page);
 
     const untested: string[] = [];
@@ -83,6 +86,7 @@ test.describe('signed-in C member routes', () => {
       }
 
       await assertHonestState(page, route.name);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), `${route.path} horizontal overflow`).toBe(false);
       expect(errors, `${route.path} console errors:\n${errors.join('\n')}`).toEqual([]);
 
       const shot = await page.screenshot({ fullPage: true, animations: 'disabled' });
@@ -101,6 +105,8 @@ test.describe('signed-in C member routes', () => {
     expect(untested, `routes that could not be tested signed-in: ${untested.join('; ')}`).toEqual([]);
   });
 
+  }
+
   test('reversible member actions persist after reload, then restore', async ({ page }) => {
     test.setTimeout(180_000);
     await loginSignedInMember(page);
@@ -116,6 +122,7 @@ async function loginSignedInMember(page: Page) {
   if (!email || !password) {
     throw new Error('Set PLAYWRIGHT_MEMBER_EMAIL and PLAYWRIGHT_PORTAL_PASSWORD');
   }
+  if (email.toLowerCase() !== 'member-test@workforceap.org') throw new Error('Dedicated synthetic member credentials are required.');
   await page.goto('/login?redirectTo=%2Fdashboard', { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: /decline/i }).click().catch(() => {});
   await page.locator('#email').fill(email);

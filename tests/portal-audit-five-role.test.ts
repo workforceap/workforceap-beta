@@ -789,7 +789,7 @@ describe('read-only portal action contracts', () => {
       ['app', '(portal)', 'dashboard', 'ai-tools', 'training-bridge', 'page.tsx'],
       ['app', '(portal)', 'dashboard', 'career-library', 'page.tsx'],
       ['app', '(portal)', 'dashboard', 'career-library', '[id]', 'page.tsx'],
-      ['app', '(portal)', 'dashboard', 'page.tsx'],
+      ['app', '(portal)', 'dashboard', '(home)', 'page.tsx'],
       ['app', '(portal)', 'dashboard', 'jobs', 'page.tsx'],
       ['app', '(portal)', 'dashboard', 'profile', 'page.tsx'],
     ];

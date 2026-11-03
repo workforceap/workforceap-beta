@@ -89,13 +89,6 @@ html[data-portal-role][data-theme='dark'] body {
   background: transparent;
   border: 0;
   box-shadow: none;
-  min-width: 0;
-  max-width: 100%;
-}
-.wa-page-opener h1,
-.wa-page-opener-lede {
-  overflow-wrap: anywhere;
-  max-width: 100%;
 }
 
 /* Quiet PageOpener action — stays on the wash instead of becoming a header chip. */
@@ -319,9 +312,6 @@ html.dark [data-surface] .wa-kit-card,
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--wa-muted);
-  line-height: 1.25;
-  max-width: 100%;
-  overflow-wrap: anywhere;
 }
 .wa-kit-stat-value {
   font-variant-numeric: tabular-nums;
@@ -532,109 +522,16 @@ html.dark [data-surface] .wa-kit-card,
    hook, so a definition caption stays muted inside an alert tile. */
 .wa-kit-stat-tile {
   height: 100%;
-  min-width: 0;
-  max-width: 100%;
-  container-type: inline-size;
-}
-/* Labels stay on one or two lines. A third line is clipped rather than wrapping out of the tile. */
-.wa-kit-stat-tile .wa-kit-stat-label {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
 }
 .wa-kit-stat-tile__value {
   margin-top: 4px;
   font-size: 1.875rem;
-  line-height: 1.2;
   color: var(--wa-text);
-  max-width: 100%;
-  overflow-wrap: anywhere;
 }
 .wa-kit-stat-tile__delta {
   margin-top: 4px;
   font-weight: 700;
   color: var(--wa-kit-tone, var(--wa-muted));
-  max-width: 100%;
-  overflow-wrap: anywhere;
-}
-/* Phone figures scale with the viewport, then again inside a narrow 2-up tile. */
-@media (max-width: 767px) {
-  .wa-kit-stat-tile__value {
-    font-size: clamp(1rem, 0.7rem + 2.4vw, 1.65rem);
-  }
-}
-@container (max-width: 14rem) {
-  .wa-kit-stat-tile__value {
-    font-size: clamp(1rem, 18cqi, 1.35rem);
-  }
-  .wa-kit-stat-tile .wa-kit-stat-label {
-    letter-spacing: 0.04em;
-  }
-}
-
-/* Phone: one column when any value is a phrase; two only for short numbers.
-   From 768px every strip is two-up. Desktop column count starts at 1024px. */
-.wa-kit-kpi-strip {
-  display: grid;
-  gap: 0.75rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  min-width: 0;
-}
-.wa-kit-kpi-strip > * {
-  min-width: 0;
-}
-@media (max-width: 767px) {
-  .wa-kit-kpi-strip--stack {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  /* Two-up tiles are ~126px. Tighter padding keeps labels on two lines. */
-  .wa-kit-kpi-strip--pair .wa-kit-stat-tile {
-    padding: 12px 10px;
-  }
-  .wa-kit-kpi-strip--pair .wa-kit-stat-label {
-    letter-spacing: 0.02em;
-  }
-}
-@media (min-width: 1024px) {
-  .wa-kit-kpi-strip--cols-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-  .wa-kit-kpi-strip--cols-5 {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-  .wa-kit-kpi-strip--cols-6 {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-}
-
-/* Card mode: the table stays off-screen through the phone and 768px checks.
-   Tailwind's lg: utilities agree; this rule wins if a later sheet resets `.wa-hidden`. */
-@media (max-width: 1023px) {
-  [data-mobile='cards'] > .wa-kit-table-desktop {
-    display: none;
-  }
-  [data-mobile='cards'] > .wa-kit-table-cards {
-    display: block;
-    min-width: 0;
-  }
-}
-
-/* Curriculum / lesson rows: title wraps, status tag drops instead of leaving the card. */
-.wa-kit-phone-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  flex-wrap: wrap;
-}
-.wa-kit-phone-row > :first-child {
-  min-width: 0;
-  flex: 1 1 12rem;
-}
-.wa-kit-phone-row strong {
-  overflow-wrap: anywhere;
 }
 
 /* Section tabs (Tabs / TabPanel in components/portal/kit/Tabs.tsx). One row
@@ -1472,7 +1369,7 @@ a.wa-kit-tab {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-@media (max-width: 767px) {
+@media (max-width: 480px) {
   .wa-job-listing-row {
     display: grid;
     grid-template-columns: 40px minmax(0, 1fr);
@@ -2345,4 +2242,145 @@ a.wa-kit-tab {
   font-weight: 700;
   color: var(--wa-accent);
   text-decoration: none;
+}
+
+/* Direction C adaptations are member-only; staff retain master styles. */
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-page-opener {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  min-width: 0;
+  max-width: 100%;
+}
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-page-opener h1,
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-page-opener-lede {
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-stat-label {
+  font-size: var(--wa-type-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wa-muted);
+  line-height: 1.25;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-stat-tile {
+  height: 100%;
+  min-width: 0;
+  max-width: 100%;
+  container-type: inline-size;
+}
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-stat-tile .wa-kit-stat-label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-stat-tile__value {
+  margin-top: 4px;
+  font-size: 1.875rem;
+  line-height: 1.2;
+  color: var(--wa-text);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-stat-tile__delta {
+  margin-top: 4px;
+  font-weight: 700;
+  color: var(--wa-kit-tone, var(--wa-muted));
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 767px) {
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-stat-tile__value {
+    font-size: clamp(1rem, 0.7rem + 2.4vw, 1.65rem);
+  }
+}
+@container (max-width: 14rem) {
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-stat-tile__value {
+    font-size: clamp(1rem, 18cqi, 1.35rem);
+  }
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-stat-tile .wa-kit-stat-label {
+    letter-spacing: 0.04em;
+  }
+}
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-kpi-strip {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-width: 0;
+}
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-kpi-strip > * {
+  min-width: 0;
+}
+@media (max-width: 767px) {
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-kpi-strip--stack {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-kpi-strip--pair .wa-kit-stat-tile {
+    padding: 12px 10px;
+  }
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-kpi-strip--pair .wa-kit-stat-label {
+    letter-spacing: 0.02em;
+  }
+}
+@media (min-width: 1024px) {
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-kpi-strip--cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-kpi-strip--cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-kpi-strip--cols-6 {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1023px) {
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) [data-mobile='cards'] > .wa-kit-table-desktop {
+    display: none;
+  }
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) [data-mobile='cards'] > .wa-kit-table-cards {
+    display: block;
+    min-width: 0;
+  }
+}
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-phone-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-phone-row > :first-child {
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-kit-phone-row strong {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 767px) {
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-job-listing-row {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: start;
+    gap: 10px 12px;
+  }
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-job-listing-row__body,
+:where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-job-listing-row__actions {
+    grid-column: 2;
+  }
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-job-listing-row__title {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+  :where(.workspace-shell-root[data-workspace-role='member']:not([data-member-staff-view])) .wa-job-listing-row__actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
 }

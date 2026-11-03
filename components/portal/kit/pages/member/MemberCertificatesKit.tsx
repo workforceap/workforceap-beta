@@ -128,7 +128,7 @@ export function MemberCertificatesKit({
           lede="Verified credentials, plus what's in progress."
           icon={<Award size={13} aria-hidden="true" />}
         />
-        <KpiStrip items={kpiItems} />
+        <KpiStrip responsive="member" items={kpiItems} />
 
         <div className="wa-space-y-4">
           {/* Earned certificates — quiet bordered surface, rows + hairlines

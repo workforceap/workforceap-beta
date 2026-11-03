@@ -672,7 +672,7 @@ test('the dashboard page (one implementation since WAP-195) calls the loader and
   // must stay lean: every read goes through loadMemberDashboardHome (plus the
   // approval-wait estimate), never a direct prisma read, B4B or getMemberState.
   // Code only: the page's comments may name what it deliberately does not call.
-  const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8')
+  const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/(home)/page.tsx'), 'utf8')
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/^\s*\/\/.*$/gm, '');
   assert.match(src, /await loadMemberDashboardHome\(/);
@@ -860,7 +860,7 @@ test('courseProgressStale: the zeroed view for a missing user row is not stalled
  * one hop that cannot be.
  */
 test('the dashboard page passes courseProgressStale through to the kit', () => {
-  const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8');
+  const src = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/(home)/page.tsx'), 'utf8');
   assert.match(src, /courseProgressStale=\{home\.courseProgressStale\}/);
 });
 
@@ -1675,7 +1675,7 @@ test('WAP-196: secondaryProgramAction points My Program steps at the program on 
 
 test('WAP-194: the dashboard page passes ?program= to the loader and mounts the four pieces on the kit home', () => {
   // Since WAP-195 the whole page is the kit home, so the whole file is the block.
-  const kitBlock = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/page.tsx'), 'utf8');
+  const kitBlock = readFileSync(path.join(ROOT, 'app/(portal)/dashboard/(home)/page.tsx'), 'utf8');
   assert.match(kitBlock, /requestedProgramSlug: args\.requestedProgramSlug/);
   assert.match(kitBlock, /<PWAInstallPrompt \/>/);
   assert.match(kitBlock, /<PortalEntryClient[\s\S]*portal="member"/);

@@ -58,7 +58,7 @@ export default function MemberAiToolsCard({
           {th('viewAll')}
         </Link>
       </div>
-      <p className="wa-kit-meta wa-kit-oneline" style={{ margin: '0 0 12px' }}>{th('aiAssistNote')}</p>
+      <p className="wa-kit-meta" style={{ margin: '0 0 12px' }}>{th('aiAssistNote')}</p>
       {recommendedTool ? (
         <div style={{ marginBottom: 10 }} data-testid="recommended-tool" data-tool={recommendedTool.slug}>
           <p className="wa-kit-meta" style={{ margin: 0, fontWeight: 700 }}>{t('tryNext', { title: recommendedTool.title })}</p>
@@ -68,7 +68,7 @@ export default function MemberAiToolsCard({
         {tiles.map((tile) => (
           <article key={tile.slug} className="wa-kit-card wa-kit-card--sm">
             <h3 style={{ margin: 0, fontWeight: 800, fontSize: 'var(--wa-type-body)' }}>{tile.title}</h3>
-            <p className="wa-kit-meta wa-kit-oneline" style={{ margin: '6px 0 8px' }}>{tile.body}</p>
+            <p className="wa-kit-meta" style={{ margin: '6px 0 8px' }}>{tile.body}</p>
             <Link
               href={tile.href}
               className="wa-kit-focus"

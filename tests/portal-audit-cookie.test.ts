@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   PORTAL_AUDIT_TOKEN_COOKIE_NAME,
   installReadOnlyAuditCookie,
+  assertReadOnlyAuditCookieInstalled,
+  assertDeploymentAcceptedReadOnlyAudit,
   stripReadOnlyAuditCookieFromStorageState,
 } from '../scripts/lib/portal-audit-cookie.mjs';
 import { READ_ONLY_PORTAL_AUDIT_TOKEN_COOKIE } from '../lib/audit/readOnlyPortalAudit';
@@ -42,5 +44,27 @@ describe('portal audit cookie transport', () => {
       .rejects.toThrow('read_only_audit_cookie_origin_invalid');
     await expect(installReadOnlyAuditCookie(context, 'http://preview.example', 'd'.repeat(40)))
       .rejects.toThrow('read_only_audit_cookie_origin_invalid');
+  });
+
+  it('proves the capability cookie is present without reading its value', async () => {
+    const context = {
+      cookies: async () => [{
+        name: PORTAL_AUDIT_TOKEN_COOKIE_NAME,
+        path: '/',
+        sameSite: 'Strict',
+        httpOnly: true,
+      }],
+    };
+    await expect(assertReadOnlyAuditCookieInstalled(context, 'https://preview.example')).resolves.toBeUndefined();
+    await expect(assertReadOnlyAuditCookieInstalled({ cookies: async () => [] }, 'https://preview.example'))
+      .rejects.toThrow('read_only_audit_cookie_missing_in_browser');
+    await expect(assertReadOnlyAuditCookieInstalled({
+      cookies: async () => [{ name: PORTAL_AUDIT_TOKEN_COOKIE_NAME, path: '/', sameSite: 'Lax', httpOnly: true }],
+    }, 'https://preview.example')).rejects.toThrow('read_only_audit_cookie_transport_invalid');
+  });
+
+  it('rejects a page that never minted the deployment audit marker', async () => {
+    const page = { locator: () => ({ count: async () => 0 }) };
+    await expect(assertDeploymentAcceptedReadOnlyAudit(page)).rejects.toThrow(/read_only_audit_capability_rejected_by_deployment origin=/);
   });
 });

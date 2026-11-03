@@ -27,7 +27,7 @@ permissions:
 
 concurrency:
   group: portal-c-safety-net-${{ github.event_name }}-${{ github.event.deployment.environment || github.ref }}-${{ github.event.deployment.sha || github.sha }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   registry-lock:
@@ -166,6 +166,7 @@ jobs:
       contents: read
       deployments: read
       pull-requests: read
+      statuses: read
       id-token: write
     concurrency:
       group: portal-c-signed-in-e2e-member
@@ -179,7 +180,6 @@ jobs:
       github.repository == 'workforceap/workforceap-beta' &&
       (
         github.event_name == 'workflow_dispatch' ||
-        github.event_name == 'pull_request' ||
         (
           github.event.deployment_status.state == 'success' &&
           github.event.deployment.environment == 'Preview' &&
@@ -192,6 +192,7 @@ jobs:
       CI: "true"
       HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.deployment.sha || github.sha }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      PORTAL_C_REQUIRED: "1"
       PLAYWRIGHT_TRACE: "off"
       PLAYWRIGHT_VIDEO: ""
       PLAYWRIGHT_SCREENSHOT: ""
@@ -337,6 +338,7 @@ jobs:
 
       - name: Run signed-in C route specs
         env:
+          PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PREVIEW_PORTAL_AUDIT_READ_ONLY_TOKEN }}
           PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
           PLAYWRIGHT_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
           PLAYWRIGHT_PORTAL_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
@@ -345,9 +347,51 @@ jobs:
         run: |
           pnpm exec playwright test \
             tests/e2e/member-signed-in-c-routes.spec.ts \
+            tests/e2e/member-all-routes.spec.ts \
             --project=chromium \
             --reporter=list,html,github \
             --trace=off
+
+      - name: Wait for rebuilt master staff baseline Preview
+        id: staff-baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: 3f5186a87cbed0b962c94c195fddcf873cce8d27
+        run: echo "origin=$(node scripts/portal-c-preview-origin.mjs)" >> "$GITHUB_OUTPUT"
+
+      - name: Verify master reference for the mentor staff comparison
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          PLAYWRIGHT_BASE_URL: ${{ steps.staff-baseline.outputs.origin }}
+          PORTAL_C_TRUSTED_SHA: 3f5186a87cbed0b962c94c195fddcf873cce8d27
+          PORTAL_C_TRUSTED_BRANCH: feature/portal-c-staff-baseline
+        run: |
+          set -euo pipefail
+          master=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/master" --jq .object.sha)
+          test "$master" = f8a12f527810ba8c1e08840a762358b0fd86e4f1 || { echo '::error::Refresh the master staff reference'; exit 1; }
+          gh api "repos/${GITHUB_REPOSITORY}/compare/${master}...${PORTAL_C_TRUSTED_SHA}" > "$RUNNER_TEMP/mentor-baseline.json"
+          node -e 'const c=require(process.env.RUNNER_TEMP+"/mentor-baseline.json");const a=new Set(["docs/PORTAL_C_STAFF_BASELINE.md","scripts/audit-tenant-scoping.cjs","scripts/audit-tenant-scoping.test.cjs"]);if(c.behind_by!==0||c.ahead_by!==2||!c.files?.length||c.files.some(f=>!a.has(f.filename)))throw Error("Master reference application changed")'
+          node scripts/portal-c-signed-in-guard.mjs
+
+      - name: Prepare inactive temporary mentor record on the synthetic member
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: node scripts/portal-c-member-fixture-call.mjs prepare-mentor
+
+      - name: Compare the mentor staff workspace against master
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.base_url }}
+          PORTAL_C_STAFF_BASELINE_URL: ${{ steps.staff-baseline.outputs.origin }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          PORTAL_AUDIT_READ_ONLY_TOKEN: ${{ secrets.PREVIEW_PORTAL_AUDIT_READ_ONLY_TOKEN }}
+          PLAYWRIGHT_MEMBER_EMAIL: ${{ secrets.PREVIEW_E2E_MEMBER_EMAIL }}
+          PLAYWRIGHT_PORTAL_PASSWORD: ${{ secrets.PREVIEW_E2E_MEMBER_PASSWORD }}
+        run: pnpm exec playwright test tests/e2e/staff-portal-protection.spec.ts --project=chromium --grep "mentor staff" --reporter=list,html,github --trace=off
 
       - name: Restore DEMO test member fixture
         if: always()

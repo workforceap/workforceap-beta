@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join, relative, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -76,7 +76,7 @@ const LEGACY_SR_ONLY_H1 = new Set([
 ]);
 
 const portalPages = [...walk(join(root, 'app/(portal)')), ...walk(join(root, 'app/admin'))]
-  .map((file) => relative(root, file))
+  .map((file) => relative(root, file).split(sep).join('/'))
   .sort();
 
 describe('portal route h1 ownership', () => {

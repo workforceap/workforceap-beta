@@ -34,3 +34,12 @@ test('a malformed pin throws instead of silently disabling the gate', () => {
     assert.throws(() => parseMaxUnscoped(bad), /non-negative integer/, JSON.stringify(bad));
   }
 });
+
+
+test('existing tenant-audit exemptions use the same paths on Windows and POSIX', () => {
+  const { shouldSkipPath } = require('./audit-tenant-scoping.cjs');
+  assert.equal(shouldSkipPath('C:\\repo\\lib\\tenant\\organization.ts'), true);
+  assert.equal(shouldSkipPath('/repo/lib/tenant/organization.ts'), true);
+  assert.equal(shouldSkipPath('C:\\repo\\lib\\member\\service.ts'), false);
+  assert.equal(shouldSkipPath('/repo/lib/member/service.ts'), false);
+});
