@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import schemaContract from '../../scripts/lib/public-inquiries-schema-contract.cjs';
+
+const { readSchemaState, evaluateSchema } = schemaContract;
 
 const target = new URL(process.env.SHADOW_DATABASE_URL ?? '');
 assert.ok(['postgres:', 'postgresql:'].includes(target.protocol));
@@ -12,6 +15,7 @@ assert.equal(target.search, '');
 assert.equal(target.hash, '');
 const database = 'wap_public_inquiries_proof';
 const reader = 'wap_public_inquiries_proof_reader';
+const apiRoles = ['anon', 'authenticated', 'service_role'];
 const env = { ...process.env, PGHOST: target.hostname, PGPORT: target.port || '5432', PGUSER: decodeURIComponent(target.username), PGPASSWORD: decodeURIComponent(target.password), PGCONNECT_TIMEOUT: '5' };
 for (const key of ['PGSERVICE', 'PGSERVICEFILE', 'PGHOSTADDR', 'PGOPTIONS']) delete env[key];
 function execute(input, db = database) {
@@ -29,16 +33,69 @@ function rejects(input, code) {
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, new RegExp(`\\b${code}\\b`));
 }
+async function catalogState() {
+  // Exercise the production collector's exact SQL through the local psql helper.
+  return readSchemaState({
+    $queryRawUnsafe: async (query) => [{ state: JSON.parse(sql(query)) }],
+  });
+}
+async function acceptsSchema() {
+  const result = evaluateSchema(await catalogState());
+  assert.equal(result.ok, true, result.errors.join(', '));
+}
+async function rejectsApiGrant(role, field, privilege) {
+  const state = await catalogState();
+  const privileges = state.apiRoles.find((entry) => entry.name === role);
+  assert.ok(privileges[field].includes(privilege), `Collector missed ${role} ${field} ${privilege}`);
+  if (field === 'columnPrivileges') assert.deepEqual(privileges.tablePrivileges, [], 'Column-only grant must not become a table grant');
+  const result = evaluateSchema(state);
+  assert.equal(result.ok, false);
+  assert.ok(result.errors.includes(`api_role_privileges:${role}`), result.errors.join(', '));
+}
 const insert = (id, org = 'org-a', key = id, extra = '') => `INSERT INTO public_inquiries(id, organization_id, submission_key, payload_hash, kind, first_name, last_name, email, topic, message, updated_at ${extra ? ', seats' : ''}) VALUES ('${id}', '${org}', '${key}', '${'a'.repeat(64)}', 'contact', 'Synthetic', 'Inquiry', 'synthetic@example.invalid', 'Programs', 'Synthetic message', now() ${extra ? `, ${extra}` : ''});`;
 let createdDb = false;
-let createdRole = false;
+const createdRoles = [];
+let readerMembershipAdded = false;
 try {
   sql(`CREATE DATABASE ${database};`, 'wap_shadow');
   createdDb = true;
   sql(`CREATE ROLE ${reader} NOLOGIN;`);
-  createdRole = true;
+  createdRoles.push(reader);
+  for (const role of apiRoles) {
+    if (sql(`SELECT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='${role}');`) === 'f') {
+      sql(`CREATE ROLE ${role} NOLOGIN NOINHERIT;`);
+      createdRoles.push(role);
+    }
+  }
   sql('CREATE TABLE organizations(id TEXT PRIMARY KEY); INSERT INTO organizations VALUES (\'org-a\'), (\'org-b\'); ALTER DEFAULT PRIVILEGES GRANT ALL ON TABLES TO PUBLIC;');
   sql(readFileSync(resolve('prisma/migrations/20261015225832_public_inquiries/migration.sql'), 'utf8'));
+  await acceptsSchema();
+  sql('GRANT SELECT ON public_inquiries TO anon;');
+  await rejectsApiGrant('anon', 'tablePrivileges', 'SELECT');
+  sql('REVOKE SELECT ON public_inquiries FROM anon;');
+  await acceptsSchema();
+  sql('GRANT SELECT (email) ON public_inquiries TO anon;');
+  await rejectsApiGrant('anon', 'columnPrivileges', 'SELECT');
+  sql('REVOKE SELECT (email) ON public_inquiries FROM anon;');
+  await acceptsSchema();
+  sql(`GRANT SELECT ON public_inquiries TO ${reader};`);
+  // This edge cannot preexist: reader was created by this proof. Preserve all
+  // API-role attributes and unrelated memberships, including preexisting roles.
+  readerMembershipAdded = true;
+  sql(`GRANT ${reader} TO anon;`);
+  await rejectsApiGrant('anon', 'tablePrivileges', 'SELECT');
+  sql(`REVOKE ${reader} FROM anon;`);
+  readerMembershipAdded = false;
+  sql(`REVOKE SELECT ON public_inquiries FROM ${reader};`);
+  await acceptsSchema();
+  const serverVersion = Number(sql('SHOW server_version_num;'));
+  assert.ok(Number.isSafeInteger(serverVersion) && serverVersion > 0);
+  if (serverVersion >= 170000) {
+    sql('GRANT MAINTAIN ON public_inquiries TO anon;');
+    await rejectsApiGrant('anon', 'tablePrivileges', 'MAINTAIN');
+    sql('REVOKE MAINTAIN ON public_inquiries FROM anon;');
+    await acceptsSchema();
+  }
   sql(insert('receipt-a', 'org-a', 'stable-key'));
   rejects(insert('duplicate', 'org-a', 'stable-key'), '23505');
   sql(insert('receipt-b', 'org-b', 'stable-key'));
@@ -52,8 +109,15 @@ try {
   rejects(`SET ROLE ${reader}; ${insert('browser-write')}`, '42501');
   sql("UPDATE public_inquiries SET created_at=now()-interval '181 days' WHERE id='receipt-a'; DELETE FROM public_inquiries WHERE created_at < date_trunc('day',now()-interval '180 days');");
   assert.equal(sql('SELECT id FROM public_inquiries;'), 'receipt-b');
-  console.log('PASS public inquiry migration: durable unique receipts, tenant key boundary, FK/field bounds, RLS/grants, retention deletion');
+  console.log('PASS public inquiry migration: durable unique receipts, tenant key boundary, FK/field bounds, RLS/grants, actual catalog grant extraction, retention deletion');
 } finally {
-  if (createdDb) sql(`DROP DATABASE ${database};`, 'wap_shadow');
-  if (createdRole) sql(`DROP ROLE ${reader};`, 'wap_shadow');
+  const cleanup = [];
+  if (readerMembershipAdded) cleanup.push(() => sql(`REVOKE ${reader} FROM anon;`, 'wap_shadow'));
+  if (createdDb) cleanup.push(() => sql(`DROP DATABASE ${database};`, 'wap_shadow'));
+  for (const role of createdRoles.reverse()) cleanup.push(() => sql(`DROP ROLE ${role};`, 'wap_shadow'));
+  const failures = [];
+  for (const action of cleanup) {
+    try { action(); } catch (error) { failures.push(error); }
+  }
+  if (failures.length) throw new AggregateError(failures, 'Public inquiry proof cleanup failed');
 }
