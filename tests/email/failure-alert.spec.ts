@@ -78,6 +78,35 @@ describe('alertOnRecentEmailFailures', () => {
   });
 });
 
+const CRITICAL_CRONS = [
+  { workflow: 'cron_applicant_followup', schedule: 'daily', maxAgeHours: 30 },
+  { workflow: 'cron_inactive_nudge', schedule: 'daily', maxAgeHours: 30 },
+  { workflow: 'cron_milestone_celebration', schedule: 'daily', maxAgeHours: 30 },
+  { workflow: 'cron_inactivity_nudge', schedule: 'weekly', maxAgeHours: 8 * 24 },
+  { workflow: 'cron_partner_digest', schedule: 'weekly', maxAgeHours: 8 * 24 },
+  { workflow: 'cron_weekly_recap_email', schedule: 'weekly', maxAgeHours: 8 * 24 },
+  { workflow: 'cron_weekly_recap', schedule: 'weekly', maxAgeHours: 8 * 24 },
+] as const;
+
+function diagnostic(
+  workflow: string,
+  hoursAgo: number,
+  status: 'ok' | 'error' = 'ok',
+) {
+  return {
+    workflow,
+    createdAt: new Date(NOW.getTime() - hoursAgo * 60 * 60 * 1000),
+    status,
+  };
+}
+
+function freshCriticalRuns(overrides: Array<ReturnType<typeof diagnostic>> = []) {
+  const byWorkflow = new Map(overrides.map((run) => [run.workflow, run]));
+  return CRITICAL_CRONS.map(
+    (cron) => byWorkflow.get(cron.workflow) ?? diagnostic(cron.workflow, 1),
+  );
+}
+
 describe('GET /api/cron/verification', () => {
   it('reports the 24h email failure count and turns not-ok when failures exceed the threshold', async () => {
     vi.mocked(prisma.workflowDiagnostic.count).mockResolvedValue(2);
@@ -88,12 +117,80 @@ describe('GET /api/cron/verification', () => {
 
   it('keeps the cron-freshness verdict when no email failed', async () => {
     vi.mocked(prisma.workflowDiagnostic.count).mockResolvedValue(0);
-    vi.mocked(prisma.workflowDiagnostic.findMany).mockResolvedValue(
-      ['cron_applicant_followup', 'cron_inactive_nudge', 'cron_milestone_celebration', 'cron_inactivity_nudge', 'cron_partner_digest', 'cron_weekly_recap_email', 'cron_weekly_recap']
-        .map((workflow) => ({ workflow, createdAt: new Date(NOW.getTime() - 60 * 60 * 1000), status: 'ok' })) as never,
-    );
+    vi.mocked(prisma.workflowDiagnostic.findMany).mockResolvedValue(freshCriticalRuns() as never);
     const body = await (await GET(new Request('http://localhost/api/cron/verification'))).json();
     expect(body).toMatchObject({ ok: true, emailFailures24h: 0, emailFailureAlerted: false, staleOrMissing: [], failures: [] });
     expect(notifyDiscord).not.toHaveBeenCalled();
+  });
+
+  it('uses a 30h daily window and an 8-day weekly window, and does not apply the daily bound to weekly crons', async () => {
+    vi.mocked(prisma.workflowDiagnostic.count).mockResolvedValue(0);
+    vi.mocked(prisma.workflowDiagnostic.findMany).mockResolvedValue(
+      freshCriticalRuns([
+        diagnostic('cron_applicant_followup', 29),
+        diagnostic('cron_inactive_nudge', 31),
+        diagnostic('cron_inactivity_nudge', 31),
+        diagnostic('cron_partner_digest', 8 * 24 + 1),
+      ]) as never,
+    );
+
+    const body = await (await GET(new Request('http://localhost/api/cron/verification'))).json();
+    expect(body.ok).toBe(false);
+    expect(body.staleOrMissing).toEqual(['cron_inactive_nudge', 'cron_partner_digest']);
+    expect(body.windows).toEqual(
+      CRITICAL_CRONS.map((cron) => ({
+        workflow: cron.workflow,
+        schedule: cron.schedule,
+        maxAgeHours: cron.maxAgeHours,
+        lastRunAt: expect.any(String),
+      })),
+    );
+  });
+
+  it('treats a missing last run as stale even when other critical crons are fresh', async () => {
+    vi.mocked(prisma.workflowDiagnostic.count).mockResolvedValue(0);
+    vi.mocked(prisma.workflowDiagnostic.findMany).mockResolvedValue(
+      freshCriticalRuns().filter((run) => run.workflow !== 'cron_weekly_recap') as never,
+    );
+
+    const body = await (await GET(new Request('http://localhost/api/cron/verification'))).json();
+    expect(body).toMatchObject({
+      ok: false,
+      staleOrMissing: ['cron_weekly_recap'],
+      failures: [],
+      ran: 6,
+    });
+    expect(body.windows.find((row: { workflow: string }) => row.workflow === 'cron_weekly_recap')).toMatchObject({
+      lastRunAt: null,
+      maxAgeHours: 8 * 24,
+    });
+  });
+
+  it('fails closed on a fresh error-status last run and keeps only the newest row per workflow', async () => {
+    vi.mocked(prisma.workflowDiagnostic.count).mockResolvedValue(0);
+    vi.mocked(prisma.workflowDiagnostic.findMany).mockResolvedValue([
+      diagnostic('cron_milestone_celebration', 1, 'error'),
+      diagnostic('cron_milestone_celebration', 2, 'ok'),
+      ...freshCriticalRuns().filter((run) => run.workflow !== 'cron_milestone_celebration'),
+    ] as never);
+
+    const body = await (await GET(new Request('http://localhost/api/cron/verification'))).json();
+    expect(body).toMatchObject({
+      ok: false,
+      staleOrMissing: [],
+      failures: ['cron_milestone_celebration'],
+    });
+  });
+
+  it('ignores an older error once a newer ok run exists for that workflow', async () => {
+    vi.mocked(prisma.workflowDiagnostic.count).mockResolvedValue(0);
+    vi.mocked(prisma.workflowDiagnostic.findMany).mockResolvedValue([
+      diagnostic('cron_milestone_celebration', 1, 'ok'),
+      diagnostic('cron_milestone_celebration', 2, 'error'),
+      ...freshCriticalRuns().filter((run) => run.workflow !== 'cron_milestone_celebration'),
+    ] as never);
+
+    const body = await (await GET(new Request('http://localhost/api/cron/verification'))).json();
+    expect(body).toMatchObject({ ok: true, staleOrMissing: [], failures: [] });
   });
 });
