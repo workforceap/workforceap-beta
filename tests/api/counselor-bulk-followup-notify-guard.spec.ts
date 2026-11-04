@@ -194,4 +194,17 @@ describe.each([
       }),
     );
   });
+
+  it('still reports the send as successful when the post-commit notification throws', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.mocked(createNotification).mockRejectedValueOnce(new Error('notification store down'));
+
+    const res = await send([MEMBER_A]);
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({ sent: 1, failed: 0, skipped: 0 });
+    expect(db.message.create).toHaveBeenCalledTimes(1);
+    expect(createNotification).toHaveBeenCalledTimes(1);
+    consoleError.mockRestore();
+  });
 });
+

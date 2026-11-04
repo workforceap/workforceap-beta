@@ -242,6 +242,28 @@ describe('GET /api/cron/applicant-followup', () => {
     expect(body.ledgerAvailable).toBe(false);
     expect(captureApiError).toHaveBeenCalledWith(expect.any(Error), expect.objectContaining({ extra: { phase: 'chase_ledger' } }));
   });
+
+  it('keeps applicant chase at 200 when the staff alert is refused or throws', async () => {
+    fixture([{ id: 'd3', userId: 'u-d3', ageDays: 4 }]);
+    vi.mocked(sendAdminPendingApplicantsEmail).mockResolvedValueOnce({ ok: false, error: 'refused' });
+    const refused = await (await GET(request())).json();
+    expect(refused).toMatchObject({ ok: true, applicantEmailsSent: 1, adminEmailSent: false });
+    expect(sendApplicantFollowupEmail).toHaveBeenCalledTimes(1);
+
+    vi.mocked(sendAdminPendingApplicantsEmail).mockRejectedValueOnce(new Error('staff alert threw'));
+    const thrown = await GET(request());
+    expect(thrown.status).toBe(200);
+    await expect(thrown.json()).resolves.toMatchObject({
+      ok: true,
+      applicantEmailsSent: 1,
+      adminEmailSent: false,
+    });
+    expect(captureApiError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ route: 'cron/applicant-followup/admin-alert' }),
+    );
+    expect(sendApplicantFollowupEmail).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe('applicantChaseHtml', () => {
