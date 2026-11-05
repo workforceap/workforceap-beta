@@ -29,6 +29,17 @@ describe('counselor contact links in stalled-training emails', () => {
     expect(html).not.toContain('Book 15 minutes');
     expect(html).not.toContain('/counselor/book-15');
   });
+  it('escapes the member and counselor names in the stuck-nudge body', () => {
+    const html = memberStuckHtml({
+      firstName: 'Ada <script>alert(1)</script>',
+      counselorName: 'Pat <b>Lee</b>',
+    });
+    expect(html).not.toContain('<script>');
+    expect(html).not.toContain('<b>Lee</b>');
+    expect(html).toContain('Hi Ada &lt;script&gt;alert(1)&lt;/script&gt;,');
+    expect(html).toContain('Send Pat &lt;b&gt;Lee&lt;/b&gt; a message');
+  });
+
   it('reads configured HTTPS calendar URLs at render time and escapes the link', () => {
     vi.stubEnv('COUNSELOR_BOOKING_URL', ' https://calendar.example.test/meet?a=1&b=2 ');
     expect(memberStuckHtml(message)).toContain('https://calendar.example.test/meet?a=1&amp;b=2');

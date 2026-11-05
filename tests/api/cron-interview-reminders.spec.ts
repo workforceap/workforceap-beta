@@ -121,4 +121,25 @@ describe('GET /api/cron/interview-reminders', () => {
     expect(json.ok).toBe(false);
     expect(captureApiError).toHaveBeenCalled();
   });
+
+  it('fails closed and does not stamp when a prep send throws', async () => {
+    (prisma.jobApplication.findMany as any)
+      .mockResolvedValueOnce([makeRow('pre-1'), makeRow('pre-2')])
+      .mockResolvedValueOnce([makeRow('post-1')]);
+    (sendInterviewPrepReminderEmail as any)
+      .mockRejectedValueOnce(new Error('resend down'))
+      .mockResolvedValue({ ok: true });
+    (sendInterviewDebriefPromptEmail as any).mockResolvedValue({ ok: true });
+
+    const res = await GET(new Request('http://localhost/api/cron/interview-reminders') as any);
+    expect(res.status).toBe(500);
+    await expect(res.json()).resolves.toEqual({ ok: false, error: 'Cron failed' });
+    expect(prisma.jobApplication.update).not.toHaveBeenCalled();
+    expect(sendInterviewPrepReminderEmail).toHaveBeenCalledTimes(1);
+    expect(sendInterviewDebriefPromptEmail).not.toHaveBeenCalled();
+    expect(captureApiError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'resend down' }),
+      { route: 'cron/interview-reminders' },
+    );
+  });
 });
