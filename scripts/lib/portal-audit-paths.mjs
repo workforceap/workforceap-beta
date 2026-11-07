@@ -405,9 +405,15 @@ export const REDIRECT_ONLY_PATHS = {
     {
       // A rendered enrollment handoff requires an assigned course query.
       // The bare route intentionally returns to My Program without enrolling.
+      // CourseraLaunchErrorNotice shows the code and then drops ?error from the
+      // address bar, so the visible notice proves the consumed query.
       path: '/dashboard/program/coursera-enrollment',
       target: '/dashboard/program?error=course_not_assigned',
       reason: 'course_selection_required',
+      consumedNotice: {
+        param: 'error',
+        selector: '[data-coursera-launch-error="course_not_assigned"]',
+      },
     },
     {
       path: '/dashboard/ai-tools/application-tracker',

@@ -21,6 +21,7 @@ import { isVerifiedReadOnlyDestination } from '../scripts/lib/portal-audit-envir
 import {
   applyBlockedWriteFailure,
   classifyReadOnlyAuditRequest,
+  consumedNoticeAuditUrl,
   redirectDestinationFailureReasons,
   dataRequestQuietWindowSatisfied,
   dynamicRoutePatternMatches,
@@ -469,11 +470,55 @@ describe('portal route inventory gate', () => {
       path,
       target: '/dashboard/program?error=course_not_assigned',
       reason: 'course_selection_required',
+      consumedNotice: {
+        param: 'error',
+        selector: '[data-coursera-launch-error="course_not_assigned"]',
+      },
     });
     const resolved = resolveRedirectAuditEntry(entry);
     expect(resolved).toEqual({ sourcePath: path, targetPath: '/dashboard/program?error=course_not_assigned' });
     expect(redirectTargetMatches('https://portal.test/dashboard/program?error=course_not_assigned', resolved!.targetPath, 'https://portal.test')).toBe(true);
     expect(redirectTargetMatches('https://portal.test/dashboard/program', resolved!.targetPath, 'https://portal.test')).toBe(false);
+  });
+
+  describe('consumed notice query', () => {
+    const origin = 'https://portal.test';
+    const target = '/dashboard/program?error=course_not_assigned';
+    const notice = { param: 'error', selector: '[data-coursera-launch-error="course_not_assigned"]' };
+    const healthy = {
+      expectedTarget: target,
+      trustedOrigin: origin,
+      documentStatus: 200,
+      inspection: { appReady: true, h1Count: 1, readOnlyCapabilityActive: true, bodyText: 'My Program' },
+      abortedDataRequestCount: 4,
+    };
+    const audit = (finalUrl: string, visible: boolean) => redirectDestinationFailureReasons({
+      ...healthy,
+      finalUrl: consumedNoticeAuditUrl(finalUrl, target, notice, visible),
+    });
+
+    // Run 42381007697: the notice dropped ?error before the audit read the URL.
+    it('accepts the stripped target once the matching notice is visible', () => {
+      expect(audit(`${origin}/dashboard/program`, true)).toEqual([]);
+    });
+
+    it('still accepts the unstripped target', () => {
+      expect(audit(`${origin}${target}`, true)).toEqual([]);
+    });
+
+    it('rejects the stripped target when the notice never rendered', () => {
+      expect(audit(`${origin}/dashboard/program`, false))
+        .toEqual(expect.arrayContaining(['redirect_target_mismatch', 'same_origin_data_request_failed']));
+    });
+
+    it('does not repair another path, another error value, or an entry without a notice', () => {
+      expect(audit(`${origin}/dashboard`, true)).toContain('redirect_target_mismatch');
+      expect(audit(`${origin}/dashboard/program?error=launch_failed`, true)).toContain('redirect_target_mismatch');
+      expect(consumedNoticeAuditUrl(`${origin}/dashboard/program`, target, undefined, true))
+        .toBe(`${origin}/dashboard/program`);
+      expect(consumedNoticeAuditUrl(`${origin}/dashboard/program`, '/dashboard/program', notice, true))
+        .toBe(`${origin}/dashboard/program`);
+    });
   });
 
   it('counts redirect-only pages as discovered inventory coverage and rejects overlap', () => {

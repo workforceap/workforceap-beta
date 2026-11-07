@@ -55,6 +55,7 @@ import {
 import {
   applyBlockedWriteFailure,
   classifyReadOnlyAuditRequest,
+  consumedNoticeAuditUrl,
   redirectDestinationFailureReasons,
   evaluateAccessProbe,
   failedAccessProbeDiagnostics,
@@ -1010,16 +1011,26 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
             timeout: remainingTimeout(5_000),
           }).catch(() => {});
         }
+        let consumedNoticeVisible = false;
+        if (entry.consumedNotice) {
+          consumedNoticeVisible = await page.locator(entry.consumedNotice.selector).first()
+            .waitFor({ state: 'visible', timeout: remainingTimeout(5_000) })
+            .then(() => true, () => false);
+          if (!consumedNoticeVisible) result.failureReasons.push('consumed_notice_missing');
+        }
         await dataRequests.waitForSettlement(remainingTimeout(5_000));
         const finalUrl = page.url();
         result.finalUrl = sanitizeAuditUrl(finalUrl, allDynamicPatterns);
+        const auditedUrl = consumedNoticeAuditUrl(
+          finalUrl, resolved.targetPath, entry.consumedNotice, consumedNoticeVisible
+        );
         const inspection = await inspectPortalPage(page, allDynamicPatterns);
         const finalDocument =
-          [...documentResponses].reverse().find((response) => response.url === finalUrl) ??
+          [...documentResponses].reverse().find((response) => response.url === auditedUrl) ??
           documentResponses.at(-1) ??
           null;
         result.failureReasons.push(...redirectDestinationFailureReasons({
-          finalUrl,
+          finalUrl: auditedUrl,
           expectedTarget: resolved.targetPath,
           trustedOrigin,
           documentStatus: finalDocument?.status ?? null,
