@@ -1584,7 +1584,7 @@
       "languageSubtitles": "{language} subtitles",
       "languageAuto": "{language} (auto)",
       "enrollingNow": "Enrolling now",
-      "heroDescription": "Earn a {partner} Professional Certificate in {duration}. No cost for members who qualify through scholarship/grant funded membership through WIOA funding.",
+      "heroDescription": "Earn a {partner} Professional Certificate in {duration}. May be available at no cost to qualifying members through WIOA or grant funding, depending on eligibility and your local workforce board.",
       "outcomesTitle": "Career outcomes",
       "outcomesSubtitle": "Salary ranges and growth potential for graduates of this program.",
       "skillsTitle": "Skills you'll learn",
@@ -1599,7 +1599,7 @@
       "ctaSubtitle": "Apply for {program} today. No cost for members who qualify through scholarship/grant funded membership.",
       "ctaDisclaimer": "WIOA eligibility required. An advisor reviews your application; you'll get an email when a decision is made.",
       "metaTitleSuffix": "Free Professional Certificate | WorkforceAP",
-      "metaDescription": "{program} — {salary}. {duration}. No cost for members who qualify through scholarship/grant funded membership through WIOA and workforce development funding."
+      "metaDescription": "{program} — {salary}. {duration}. May be available at no cost to qualifying members through WIOA or workforce development funding, depending on eligibility."
     },
     "faq": {
       "knowledgeBase": "Knowledge Base",

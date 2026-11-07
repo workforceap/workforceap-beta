@@ -1,7 +1,7 @@
 ---
 import { useT } from '../../i18n/t';
 const t = useT('en');
-import { publicProgramFundingCopy } from '../../data/programFunding';
+import { programFundingRequiresConfirmation, publicProgramFundingCopy } from '../../data/programFunding';
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
 import { PROGRAMS, partnerBadge, type Program } from '../../data/programs';
@@ -36,6 +36,9 @@ const rampNote = program.slug === 'cybersecurity-professional-certificate-google
   : extra?.rampNote;
 
 const fundingCopy = publicProgramFundingCopy(program);
+// Hours, delivery and funding are unconfirmed for these programs, so the CTA
+// invites an advisor conversation instead of implying enrollment is ready.
+const detailsPending = programFundingRequiresConfirmation(program);
 
 // Language support (verbatim labels from the Next ProgramDetailClient)
 type LangLevel = 'full' | 'subtitles' | 'ai-subtitles' | 'none';
@@ -86,7 +89,7 @@ const applyHomeHref = partnerRef ? `/apply?ref=${encodeURIComponent(partnerRef)}
 // for member support stays available as the secondary action.
 const externalCourseUrl = program.externalCourseUrl ?? '';
 const primaryHref = externalCourseUrl || applyHref;
-const primaryLabel = externalCourseUrl ? 'Start the free course' : 'Apply Now';
+const primaryLabel = externalCourseUrl ? 'Start the free course' : detailsPending ? 'Ask about this program' : 'Apply Now';
 const primaryAttrs = externalCourseUrl ? { target: '_blank', rel: 'noopener noreferrer' } : {};
 
 const pageTitle = `${display} Training & Certification`;
@@ -373,7 +376,9 @@ const metaDescription = `Explore ${display}: ${program.duration}, course content
       <!-- Bottom CTA -->
       <div class="bottomcta">
         <h3>Ready to start your career in {program.categoryLabel}?</h3>
-        <p>{t('apply.applicationTimeEstimate')} to apply. No cost for <a href={applyHomeHref}>qualifying members</a>. A counselor reviews every application and you'll hear by email.</p>
+        {detailsPending
+          ? <p>Program details, costs and funding are still being confirmed. Applying starts a conversation with a counselor; it is not an enrollment, and you'll hear by email.</p>
+          : <p>{t('apply.applicationTimeEstimate')} to apply. No cost for <a href={applyHomeHref}>qualifying members</a>. A counselor reviews every application and you'll hear by email.</p>}
         <a class="btn btn--primary btn--lg" href={primaryHref} {...primaryAttrs}>{primaryLabel}</a>
         <div class="cta-links">
           {externalCourseUrl && <a href={applyHref}>Want a WorkforceAP advisor alongside the course? Apply here</a>}
@@ -404,7 +409,9 @@ const metaDescription = `Explore ${display}: ${program.duration}, course content
         <a class="btn btn--primary sapply" href={primaryHref} {...primaryAttrs}>{primaryLabel}</a>
         {externalCourseUrl
           ? <p class="snote">Free, self-paced Microsoft course — opens in a new tab. <a href={applyHref}>Apply</a> if you also want WorkforceAP member support.</p>
-          : <p class="snote">No cost to members who qualify through scholarship/grant funded membership.</p>}
+          : detailsPending
+            ? <p class="snote">Details and funding pending confirmation. An advisor will confirm costs before any enrollment.</p>
+            : <p class="snote">No cost to members who qualify through scholarship/grant funded membership.</p>}
         <a class="squiz" href="/find-your-path">Not sure? Take the pathfinder quiz →</a>
         <a class="scompare" href="/program-comparison">Open comparison tool (featured tracks)</a>
       </div>

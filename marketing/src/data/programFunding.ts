@@ -12,10 +12,18 @@ const FUNDING_REQUIRES_CONFIRMATION = new Set([
 
 type FundingProgram = { slug: string; fundingSource?: string };
 
+/**
+ * Local workforce boards approve WIOA funding per participant and per program,
+ * so public copy may say a source *can* cover a program, never that it will.
+ */
+export function programFundingRequiresConfirmation(program: FundingProgram): boolean {
+  return FUNDING_REQUIRES_CONFIRMATION.has(program.slug);
+}
+
 export function publicProgramFundingLabel(program: FundingProgram): string {
-  if (FUNDING_REQUIRES_CONFIRMATION.has(program.slug)) return 'Funding confirmation required';
+  if (programFundingRequiresConfirmation(program)) return 'Funding confirmation required';
   const source = program.fundingSource ?? 'WIOA';
-  return source === 'WIOA' ? 'WIOA/Grant' : source;
+  return source === 'WIOA' ? 'WIOA/Grant if eligible' : source;
 }
 
 export function publicProgramFundingCopy(program: FundingProgram): string {
@@ -23,6 +31,6 @@ export function publicProgramFundingCopy(program: FundingProgram): string {
     return 'Ask an advisor to confirm available funding and any costs before enrollment.';
   }
   return program.fundingSource
-    ? `Available at no cost through ${program.fundingSource} funding for qualifying members.`
-    : 'No-cost training for qualifying members.';
+    ? `May be available at no cost to qualifying members through ${program.fundingSource} or other funding. Approval depends on your eligibility, this program, and your local workforce board.`
+    : 'May be available at no cost to qualifying members, depending on eligibility and available funding.';
 }

@@ -20,14 +20,16 @@ type PublicRouteConfig = {
   changeFrequency: MetadataRoute.Sitemap[number]['changeFrequency'];
   priority: number;
   lastModified?: Date;
+  /** Next-rendered routes that middleware 308s to /{locale}/…; list the final URL. */
+  localePrefixed?: boolean;
 };
 
-function buildAlternates(path: string, siteUrl: string) {
+function buildAlternates(path: string, siteUrl: string, localePrefixed = false) {
   const languages: Record<string, string> = {};
   for (const { code, prefix } of SITEMAP_LOCALES) {
-    languages[code] = `${siteUrl}${prefix}${path}`;
+    languages[code] = `${siteUrl}${localePrefixed ? `/${code}` : prefix}${path}`;
   }
-  languages['x-default'] = `${siteUrl}${path}`;
+  languages['x-default'] = languages.en!;
   return { languages };
 }
 
@@ -38,7 +40,7 @@ export const revalidate = 86400;
 
 const PUBLIC_ROUTES: PublicRouteConfig[] = [
   { path: '/', changeFrequency: 'weekly', priority: 1 },
-  { path: '/apply', changeFrequency: 'monthly', priority: 0.8 },
+  { path: '/apply', changeFrequency: 'monthly', priority: 0.8, localePrefixed: true },
   { path: '/blog', changeFrequency: 'weekly', priority: 0.8 },
   { path: '/contact', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/donate', changeFrequency: 'monthly', priority: 0.9 },
@@ -72,12 +74,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // re-crawls and make Search Console think every page changed on every hit.
   const fallbackModified = new Date();
 
-  const mainPages: MetadataRoute.Sitemap = PUBLIC_ROUTES.map(({ path, changeFrequency, priority, lastModified }) => ({
-    url: `${siteUrl}${path}`,
+  const mainPages: MetadataRoute.Sitemap = PUBLIC_ROUTES.map(({ path, changeFrequency, priority, lastModified, localePrefixed }) => ({
+    url: `${siteUrl}${localePrefixed ? '/en' : ''}${path}`,
     lastModified: lastModified ?? fallbackModified,
     changeFrequency,
     priority,
-    alternates: buildAlternates(path, siteUrl),
+    alternates: buildAlternates(path, siteUrl, localePrefixed),
   }));
 
   const activePrograms = await getActiveProgramSlugsForSitemap();

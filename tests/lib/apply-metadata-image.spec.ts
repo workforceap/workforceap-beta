@@ -24,6 +24,10 @@ describe('application social previews', () => {
     expect(image.height).toBe(data.readUInt32BE(20));
     expect(image.alt).toContain('Workforce Advancement Project');
     expect(metadata.twitter?.images).toEqual([{ url: image.url, alt: image.alt }]);
-    if (program) expect(metadata.alternates?.canonical).toContain(`?program=${program}`);
+    if (program) {
+      // The program query preselects the form only; it must not split canonicals.
+      expect(String(metadata.alternates?.canonical)).toMatch(/\/(en|es|fr|pt)\/apply$/);
+      expect(String(metadata.alternates?.canonical)).not.toContain('?');
+    }
   });
 });
