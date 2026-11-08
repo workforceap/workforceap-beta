@@ -16,6 +16,7 @@ const NODE_TEST_GLOBS = [
 const NODE_REAL_DB_SKIP = new Set(['lib/auth/roles.test.ts']);
 const VITEST_OWNED_OUTSIDE_LIB = new Set(['app/api/apply/signup/route.test.ts']);
 const KB_TEST_LANE = new Set(['scripts/knowledge-index.test.mjs']);
+const MARKETING_BUILD_TEST_LANE = new Set(['marketing/tests/programs-journey.test.mjs']);
 const AUDIT_ONLY_UNCOLLECTED = 'graph/evidence/';
 
 function normalize(file: string): string {
@@ -145,6 +146,7 @@ describe('repository test-runner coverage', () => {
       if (vitest.has(file)) add(file, 'vitest');
       if (nodeRunnable.has(file)) add(file, 'node-unit');
       if (KB_TEST_LANE.has(file)) add(file, 'kb:test');
+      if (MARKETING_BUILD_TEST_LANE.has(file)) add(file, 'marketing:build');
     }
 
     const explicitNodeSkip = new Set([...node.skippedVitest, ...node.skippedRealDb]);
