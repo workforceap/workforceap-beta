@@ -968,17 +968,10 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
       if (traceHydration) await page.addInitScript(installPortalHydrationTrace).catch(() => {});
       const dataRequests = trackSameOriginDataRequests(page, { trustedOrigin, dynamicPatterns: allDynamicPatterns });
       const pageErrors = [];
-      const documentResponses = [];
       const handleConsole = (message) => recordConsoleError(message, dataRequests);
       const handlePageError = (error) => pageErrors.push(error?.message ?? String(error));
-      const handleResponse = (response) => {
-        if (response.request().resourceType() === 'document') {
-          documentResponses.push({ status: response.status(), url: response.url() });
-        }
-      };
       page.on('console', handleConsole);
       page.on('pageerror', handlePageError);
-      page.on('response', handleResponse);
       const redirectCommit = observeRedirectTargetCommit(
         page,
         (url) => redirectTargetMatches(url.toString(), resolved.targetPath, trustedOrigin)
@@ -1005,6 +998,7 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
           remainingTimeout(7_000),
           redirectCommit
         );
+        const inspectedDocument = redirectCommit.currentDocument();
         await waitForPortalReady(page, remainingTimeout(5_000));
         if (programExpectation?.behavior === 'render') {
           await waitForPortalRouteContent(page, remainingTimeout(5_000)).catch(() => {});
@@ -1025,16 +1019,16 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
           if (!consumedNoticeVisible) result.failureReasons.push('consumed_notice_missing');
         }
         await dataRequests.waitForSettlement(remainingTimeout(5_000));
+        const inspection = await inspectPortalPage(page, allDynamicPatterns);
+        const finalDocument = redirectCommit.currentDocument();
+        if (!inspectedDocument?.matchesTarget || finalDocument !== inspectedDocument) {
+          result.failureReasons.push('redirect_document_changed');
+        }
         const finalUrl = page.url();
         result.finalUrl = sanitizeAuditUrl(finalUrl, allDynamicPatterns);
         const auditedUrl = consumedNoticeAuditUrl(
           finalUrl, resolved.targetPath, entry.consumedNotice, consumedNoticeVisible
         );
-        const inspection = await inspectPortalPage(page, allDynamicPatterns);
-        const finalDocument =
-          [...documentResponses].reverse().find((response) => response.url === auditedUrl) ??
-          documentResponses.at(-1) ??
-          null;
         result.failureReasons.push(...redirectDestinationFailureReasons({
           finalUrl: auditedUrl,
           expectedTarget: resolved.targetPath,
@@ -1073,7 +1067,6 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
         redirectCommit.detach();
         page.off('console', handleConsole);
         page.off('pageerror', handlePageError);
-        page.off('response', handleResponse);
         result.consoleErrors = uniqueDiagnostics(dataRequests.consoleErrors);
         result.pageErrors = uniqueDiagnostics(pageErrors);
         result.blockedWriteRequestCount = readOnlyGuard.blockedWriteCount(page);

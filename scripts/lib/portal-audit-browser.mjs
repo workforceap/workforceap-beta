@@ -203,9 +203,11 @@ export function observeAdminDashboardMetrics(page, trustedOrigin, responseTimeou
  * Arm before navigation: a destination can consume its query before goto resolves.
  * Pair the main-frame document response with its commit, preserving query and hash.
  * A same-document replaceState has no new response and cannot supply this proof.
+ * Each full commit replaces the document identity, even when its URL is unchanged.
  */
 export function observeRedirectTargetCommit(page, matchesTarget) {
-  let pendingDocumentUrl = null;
+  let pendingDocument = null;
+  let currentDocument = null;
   let committedUrl = null;
   let notifyCommit = null;
   const withoutHash = (value) => {
@@ -216,23 +218,30 @@ export function observeRedirectTargetCommit(page, matchesTarget) {
   const handleResponse = (response) => {
     const request = response.request();
     if (request.resourceType() === 'document' && request.frame() === page.mainFrame()) {
-      pendingDocumentUrl = response.url();
+      pendingDocument = { url: response.url(), status: response.status() };
     }
   };
   const handleNavigation = (frame) => {
     if (frame !== page.mainFrame()) return;
     const url = frame.url();
-    const documentUrl = pendingDocumentUrl;
-    pendingDocumentUrl = null;
-    if (!documentUrl || withoutHash(url) !== withoutHash(documentUrl)) return;
-    if (matchesTarget(new URL(url))) {
-      committedUrl = url;
-      notifyCommit?.();
-    }
+    const response = pendingDocument;
+    pendingDocument = null;
+    if (!response || withoutHash(url) !== withoutHash(response.url)) return;
+    currentDocument = Object.freeze({
+      url,
+      status: response.status,
+      matchesTarget: matchesTarget(new URL(url)),
+    });
+    // Evidence from an earlier document cannot validate a later queryless read.
+    committedUrl = currentDocument.matchesTarget ? url : null;
+    if (committedUrl) notifyCommit?.();
   };
   page.on('response', handleResponse);
   page.on('framenavigated', handleNavigation);
   return {
+    currentDocument() {
+      return currentDocument;
+    },
     wait(timeout) {
       if (committedUrl) return Promise.resolve(committedUrl);
       return new Promise((resolve, reject) => {

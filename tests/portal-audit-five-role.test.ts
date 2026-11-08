@@ -76,8 +76,9 @@ describe('original redirect document commit evidence', () => {
     let currentUrl = 'about:blank';
     const mainFrame = { url: () => currentUrl };
     const page = Object.assign(new EventEmitter(), { mainFrame: () => mainFrame });
-    const response = (url: string, frame = mainFrame) => page.emit('response', {
+    const response = (url: string, frame = mainFrame, status = 200) => page.emit('response', {
       url: () => url,
+      status: () => status,
       request: () => ({ resourceType: () => 'document', frame: () => frame }),
     });
     const navigate = (url: string) => {
@@ -110,6 +111,90 @@ describe('original redirect document commit evidence', () => {
       response(exactUrl);
       navigate(exactUrl);
       await expect(waiting).resolves.toBe(exactUrl);
+    } finally {
+      observation.detach();
+    }
+  });
+
+  it('rejects earlier exact-query evidence after a second queryless document commits before the wait', async () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    const querylessUrl = `${origin}/dashboard/program`;
+    try {
+      response(exactUrl);
+      navigate(exactUrl);
+      response(querylessUrl);
+      navigate(querylessUrl);
+
+      expect(observation.currentDocument()).toEqual({
+        url: querylessUrl, status: 200, matchesTarget: false,
+      });
+      await expect(waitForRedirectTargetCommit(page, matches, 5, observation))
+        .rejects.toThrow('Exact redirect target did not commit before timeout');
+    } finally {
+      observation.detach();
+    }
+  });
+
+  it('changes document identity when a queryless document replaces an already resolved exact target', async () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    const querylessUrl = `${origin}/dashboard/program`;
+    try {
+      response(exactUrl);
+      navigate(exactUrl);
+      await expect(waitForRedirectTargetCommit(page, matches, 50, observation)).resolves.toBe(exactUrl);
+      const verifiedDocument = observation.currentDocument();
+
+      response(querylessUrl);
+      navigate(querylessUrl);
+
+      expect(observation.currentDocument()).not.toBe(verifiedDocument);
+      expect(observation.currentDocument()).toEqual({
+        url: querylessUrl, status: 200, matchesTarget: false,
+      });
+      expect(verifiedDocument).toEqual({ url: exactUrl, status: 200, matchesTarget: true });
+    } finally {
+      observation.detach();
+    }
+  });
+
+  it('retains document identity for replaceState but creates a new identity for a same-URL reload', () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    const querylessUrl = `${origin}/dashboard/program`;
+    try {
+      response(exactUrl);
+      navigate(exactUrl);
+      const originalDocument = observation.currentDocument();
+      navigate(querylessUrl);
+      expect(observation.currentDocument()).toBe(originalDocument);
+
+      response(exactUrl);
+      navigate(exactUrl);
+      const reloadedDocument = observation.currentDocument();
+      expect(reloadedDocument).not.toBe(originalDocument);
+      expect(reloadedDocument).toEqual({ url: exactUrl, status: 200, matchesTarget: true });
+      navigate(querylessUrl);
+      expect(observation.currentDocument()).toBe(reloadedDocument);
+    } finally {
+      observation.detach();
+    }
+  });
+
+  it('reports the latest document status when the same target reloads with an error response', () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    try {
+      response(exactUrl);
+      navigate(exactUrl);
+      const healthyDocument = observation.currentDocument();
+      response(exactUrl, page.mainFrame(), 500);
+      navigate(exactUrl);
+
+      expect(observation.currentDocument()).not.toBe(healthyDocument);
+      expect(observation.currentDocument()).toEqual({ url: exactUrl, status: 500, matchesTarget: true });
+      expect(healthyDocument).toEqual({ url: exactUrl, status: 200, matchesTarget: true });
     } finally {
       observation.detach();
     }
