@@ -1,8 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { PROGRAMS as CATALOG } from '../data/programs';
-import { publicProgramFundingLabel } from '../data/programFunding';
+import { catalogProgramAction, publicProgramFundingLabel, programFundingRequiresConfirmation } from '../data/programFunding';
 import { languageSupportLine } from '../data/languageSupport';
+import { getProgramEnrollmentSteps } from '../../../lib/content/programEnrollmentSteps';
 import Icon from '../components/Icon.astro';
 
 // Card rows derive title/duration/partner/funding/skills from the
@@ -54,22 +55,26 @@ const lanes = [
   },
 ];
 
-// ── "How to choose" factors (verbatim labels + copy from marketing.programs.howToChooseFactor*) ──
-const factors = [
-  { label: 'Your interests', desc: 'What work feels natural or exciting to you?', icon: 'heart' },
-  { label: 'Device access', desc: 'Some programs work on phones; others need a laptop.', icon: 'laptop' },
-  { label: 'Time available', desc: 'Most programs need 5–10 hours per week for 3–5 months.', icon: 'clock' },
-  { label: 'Earning goal', desc: 'Research pay for a specific occupation and location, then compare current job requirements.', icon: 'dollar' },
-  { label: 'Growth path', desc: 'Some certificates lead directly to jobs; others are stepping stones.', icon: 'trending-up' },
-];
-
-// ── Enrollment-to-employment journey (verbatim marketing.programs.journeyStep*) ──
-const journey = [
-  { num: '1', title: 'Find your path', desc: 'Use the pathfinder to align your interests, timeline, and goals with the right program.' },
-  { num: '2', title: 'Build skills', desc: 'Complete training at your own pace or in cohort and earn an industry-recognized certificate.' },
-  { num: '3', title: 'Get job-ready', desc: 'Resume review, mock interviews, and practical prep for the roles you’re targeting.' },
-  { num: '4', title: 'Connect to work', desc: 'Employer-facing support, job-search guidance, and help finding openings that match your training.' },
-];
+const STARTER_SLUGS = [
+  'digital-literacy-empowerment-class',
+  'it-support-professional-certificate-ibm',
+  'project-management-professional-certificate-microsoft',
+] as const;
+const starters = STARTER_SLUGS.map((slug) => {
+  const p = CATALOG_BY_SLUG.get(slug);
+  if (!p) throw new Error(`programs.astro: starter slug not in catalog: ${slug}`);
+  return {
+    slug,
+    title: p.title,
+    preparation: p.extra?.rampNote || p.extra?.bestFor || 'Confirm preparation with an advisor.',
+    duration: p.duration,
+    partner: p.partner,
+    funding: publicProgramFundingLabel(p),
+    external: p.externalCourseUrl ?? '',
+    pending: programFundingRequiresConfirmation(p),
+  };
+});
+const afterApply = getProgramEnrollmentSteps(undefined);
 
 // ════════════════════════════════════════════════════════════════════
 // FULL CATALOG — all 20 real programs from lib/content/programs.ts (PROGRAMS).
@@ -218,7 +223,7 @@ const filterChips = [
         <strong>{catalogSize}</strong>
       </div>
       <div class="hg-chips">
-        <span>No cost to qualifying members</span>
+        <span>Confirm costs with an advisor</span>
         <span>WIOA &amp; grant funding if eligible</span>
       </div>
     </div>
@@ -246,32 +251,39 @@ const filterChips = [
   </div>
 </div></section>
 
-<!-- ══════════════════════════════════════════════ TOOL ROUTING ══════════════════════════════════════════════ -->
-<section class="band" style="padding-bottom:0"><div class="wrap">
-  <div class="tools-row">
-    <a class="btn btn--primary" href="/find-your-path">Not sure? Take the 2-minute pathfinder</a>
-    <a class="btn btn--ghost" href="/program-comparison">Compare Programs</a>
-    <a class="btn btn--ghost" href="/salary-guide">Research pay and job requirements</a>
-  </div>
-</div></section>
-
-<!-- ══════════════════════════════════════════════ HOW TO CHOOSE ══════════════════════════════════════════════ -->
-<section class="band"><div class="wrap">
+<!-- ══════════════════════════════════════════════ THREE STARTING PATHS ══════════════════════════════════════════════ -->
+<section class="band" id="compare-starting-paths"><div class="wrap">
   <div class="sec-head">
-    <span class="eyebrow">Decision guide</span>
-    <h2>How to <span class="grad-text">choose a program</span></h2>
-    <p>Pick what fits your life: your current skills, how much time you have, and the kind of work you want.</p>
+    <span class="eyebrow">Compare</span>
+    <h2>Compare three <span class="grad-text">starting paths</span></h2>
+    <p>Compare the time, preparation and next step for each program. You can explore the full catalog below.</p>
   </div>
-  <div class="choose">
-    {factors.map((f) => (
-      <div class="fcard">
-        <div class="fic"><Icon name={f.icon} size={22} /></div>
-        <h3>{f.label}</h3>
-        <p>{f.desc}</p>
-      </div>
+  <div class="path-compare">
+    {starters.map((s) => (
+      <article class="path-card">
+        <h3><a href={`/programs/${s.slug}`}>{s.title}</a></h3>
+        <dl>
+          <dt>Preparation</dt>
+          <dd>{s.preparation}</dd>
+          <dt>Commitment</dt>
+          <dd>{s.duration}</dd>
+          <dt>Provider</dt>
+          <dd>{s.partner}</dd>
+          <dt>Funding</dt>
+          <dd>{s.funding}</dd>
+        </dl>
+        <div class="pacts">
+          <a class="btn btn--ghost btn--sm" href={`/programs/${s.slug}`}>View program</a>
+          {s.external
+            ? <a class="btn btn--primary btn--sm" href={s.external} target="_blank" rel="noopener noreferrer">Start the free course</a>
+            : s.pending
+              ? <a class="btn btn--primary btn--sm" href={`/programs/${s.slug}`}>Ask about this program</a>
+              : <a class="btn btn--primary btn--sm" href={`/apply?program=${s.slug}`}>Apply</a>}
+        </div>
+        {s.external ? <p class="path-note"><a href={`/apply?program=${s.slug}`}>Apply for member support</a></p> : null}
+      </article>
     ))}
   </div>
-  <p class="truth">Still unsure? <a href="/find-your-path">The pathfinder guide helps in about two minutes.</a></p>
 </div></section>
 
 <!-- ══════════════════════════════════════════════ PROGRAM CATALOG ══════════════════════════════════════════════ -->
@@ -322,9 +334,17 @@ const filterChips = [
               <span class="ppartner">Partner: {p.partner}</span>
               <div class="pacts">
                 <a class="btn btn--ghost btn--sm" href={`/programs/${p.slug}`}>View Program</a>
-                {p.external
-                  ? <a class="btn btn--primary btn--sm" href={p.external} target="_blank" rel="noopener noreferrer">Start the free course →</a>
-                  : <a class="btn btn--primary btn--sm" href={`/apply?program=${p.slug}`}>Get Started →</a>}
+                {(() => {
+                  const action = catalogProgramAction({ slug: p.slug, externalCourseUrl: p.external });
+                  return action.external ? (
+                    <>
+                      <a class="btn btn--primary btn--sm" href={action.href} target="_blank" rel="noopener noreferrer">{action.label} →</a>
+                      <a class="btn btn--ghost btn--sm" href={`/apply?program=${p.slug}`}>Apply for member support</a>
+                    </>
+                  ) : (
+                    <a class="btn btn--primary btn--sm" href={action.href}>{action.label}{action.label === 'Get Started' ? ' →' : ''}</a>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -393,16 +413,16 @@ const filterChips = [
   })();
 </script>
 
-<!-- ══════════════════════════════════════════════ JOURNEY — 4-step flow ══════════════════════════════════════════════ -->
-<section class="band band--surface"><div class="wrap">
+<!-- ══════════════════════════════════════════════ AFTER YOU APPLY ══════════════════════════════════════════════ -->
+<section class="band band--surface" id="after-you-apply"><div class="wrap">
   <div class="sec-head" style="max-width:660px">
-    <span class="eyebrow">The journey</span>
-    <h2>From enrollment to <span class="grad-text">employment</span></h2>
-    <p>WorkforceAP supports members at every step, from choosing a program to preparing for the job search in your field.</p>
+    <span class="eyebrow">After you apply</span>
+    <h2>What happens <span class="grad-text">next</span></h2>
+    <p>These are the steps after an application is accepted. A certificate from the training is not the same as a separate vendor exam, and job-search help is not a job offer.</p>
   </div>
   <div class="steps">
-    {journey.map((s) => (
-      <div class="stepcard"><div class="num">0{s.num}</div><h3>{s.title}</h3><p>{s.desc}</p></div>
+    {afterApply.map((s, i) => (
+      <div class="stepcard"><div class="num">0{i + 1}</div><h3>{s.title}</h3><p>{s.description}</p></div>
     ))}
   </div>
 </div></section>
@@ -514,6 +534,17 @@ const filterChips = [
   .acard p{color:var(--muted);font-size:16px;line-height:1.55;margin-bottom:20px}
   @media(max-width:880px){.tri{grid-template-columns:1fr}}
 
+  .path-compare{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+  .path-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-width:0}
+  .path-card h3{font-size:18px;font-weight:800;margin-bottom:14px}
+  .path-card h3 a{color:inherit}
+  .path-card dl{margin:0 0 16px}
+  .path-card dt{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+  .path-card dd{margin:4px 0 0;font-size:15px;line-height:1.45}
+  .path-note{margin-top:10px;font-size:14px}
+  .path-note a{color:var(--crimson);font-weight:700}
+  @media(max-width:880px){.path-compare{grid-template-columns:1fr}}
+
   /* tool routing */
   .tools-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 
@@ -602,7 +633,7 @@ const filterChips = [
   .catalog-foot{text-align:center;margin-top:28px;font-size:13px;color:var(--muted);max-width:640px;margin-left:auto;margin-right:auto}
 
   /* journey steps */
-  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
   .stepcard{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);transition:transform .2s,box-shadow .25s}
   .stepcard:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg)}
   .stepcard .num{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:30px;

@@ -4,7 +4,8 @@ import Icon from '../components/Icon.astro';
 import { PROGRAM_COMPARISON_TRACKS, STARTER_SLUGS } from '../data/programComparison';
 import { PROGRAMS, partnerBadge } from '../data/programs';
 import { languageSupportLine } from '../data/languageSupport';
-import { publicProgramFundingLabel } from '../data/programFunding';
+import { programFundingRequiresConfirmation, publicProgramFundingLabel } from '../data/programFunding';
+import { getProgramEnrollmentSteps } from '../../../lib/content/programEnrollmentSteps';
 
 function tuitionFundingCell(program: (typeof PROGRAMS)[number]): {
   fundingLabel: string;
@@ -22,6 +23,18 @@ function tuitionFundingCell(program: (typeof PROGRAMS)[number]): {
     tuitionLabel,
     cellLabel: `${tuitionLabel} · ${fundingLabel}`,
   };
+}
+
+const EXAM_NOTE_SLUGS = new Set([
+  'it-support-professional-certificate-ibm',
+  'project-management-professional-certificate-microsoft',
+  'aws-cloud-technology-amazon',
+  'comptia-security-professional-certificate',
+]);
+function examNote(slug: string): string | null {
+  if (!EXAM_NOTE_SLUGS.has(slug)) return null;
+  const step = getProgramEnrollmentSteps(slug).find((entry) => entry.id === 'exam');
+  return step ? `${step.title}. ${step.description}` : null;
 }
 
 // Preserve the familiar grouping while using the same current syllabus facts
@@ -48,6 +61,8 @@ const tracks = PROGRAM_COMPARISON_TRACKS.map((track) => {
       : (program.extra?.bestFor ?? program.description),
     roles: program.extra?.jobOutcomes ?? [],
     fundingLabel: tuitionFunding.fundingLabel,
+    examNote: examNote(program.slug),
+    pending: programFundingRequiresConfirmation(program),
     tuitionLabel: tuitionFunding.tuitionLabel,
     tuitionFunding: tuitionFunding.cellLabel,
   };
@@ -249,7 +264,8 @@ const factors = [
                 data-slug={t.slug}
                 data-short={t.shortName}
                 data-href={`/programs/${t.slug}`}
-                data-apply={`/apply?program=${t.slug}`}
+                data-apply={t.pending ? `/programs/${t.slug}` : `/apply?program=${t.slug}`}
+                data-action-label={t.pending ? 'Ask about this program' : 'Apply'}
                 data-duration={t.duration}
                 data-tuition-funding={t.tuitionFunding}
                 data-languages={t.languages}
@@ -265,6 +281,7 @@ const factors = [
                 </td>
                 <th scope="row" class="cmp-track" data-label="Track">
                   <a href={`/programs/${t.slug}`}>{t.title}</a>
+                  {t.examNote ? <p class="cmp-exam">{t.examNote}</p> : null}
                 </th>
                 <td data-label="Duration">{t.duration}</td>
                 <td data-label="Tuition / Funding" class="cmp-funding">
@@ -276,7 +293,7 @@ const factors = [
                 <td data-label="Roles to research">{t.roles.join(' · ') || '—'}</td>
                 <td data-label="Training providers">{t.provider}</td>
                 <td data-label="Apply" class="cmp-act">
-                  <a class="btn btn--ghost btn--sm" href={`/apply?program=${t.slug}`}>Apply</a>
+                  <a class="btn btn--ghost btn--sm" href={t.pending ? `/programs/${t.slug}` : `/apply?program=${t.slug}`}>{t.pending ? 'Ask about this program' : 'Apply'}</a>
                 </td>
               </tr>
             ))}
@@ -452,8 +469,9 @@ const factors = [
       tracks.forEach(function (row) {
         var name = row.getAttribute('data-short') || 'program';
         var apply = row.getAttribute('data-apply') || '/apply';
+        var label = row.getAttribute('data-action-label') || 'Apply';
         var td = cell('td', '', { 'data-label': name });
-        td.appendChild(cell('a', 'Apply', {
+        td.appendChild(cell('a', label, {
           class: 'btn btn--ghost btn--sm',
           href: apply
         }));
@@ -646,6 +664,7 @@ const factors = [
   .cmp tbody td,.cmp tbody th,.cmp-matrix tbody td,.cmp-matrix tbody th{padding:14px 16px;border-bottom:1px solid var(--border);vertical-align:top;text-align:left;font-weight:400}
   .cmp tbody tr:hover td,.cmp tbody tr:hover th{background:var(--surface-2)}
   .cmp tbody tr:hover .cmp-track,.cmp tbody tr:hover .cmp-pick{background:var(--surface-2)}
+  .cmp-exam{font-weight:500;font-size:13px;line-height:1.45;color:var(--muted);margin:8px 0 0;max-width:28rem;white-space:normal}
   .cmp .cmp-track{font-weight:700;position:sticky;left:var(--cmp-pick-width);z-index:1;background:var(--surface);box-shadow:1px 0 0 var(--border)}
   .cmp thead .cmp-track{left:var(--cmp-pick-width);z-index:3;background:var(--surface-2)}
   .cmp .cmp-pick{width:var(--cmp-pick-width);min-width:var(--cmp-pick-width);max-width:var(--cmp-pick-width);text-align:center;position:sticky;left:0;z-index:2;background:var(--surface-2);box-shadow:1px 0 0 var(--border)}

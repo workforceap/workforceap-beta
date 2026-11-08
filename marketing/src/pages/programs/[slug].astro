@@ -1,7 +1,8 @@
 ---
 import { useT } from '../../i18n/t';
 const t = useT('en');
-import { programFundingRequiresConfirmation, publicProgramFundingCopy } from '../../data/programFunding';
+import { detailProgramAction, programFundingRequiresConfirmation, publicProgramFundingCopy } from '../../data/programFunding';
+import { getProgramEnrollmentSteps } from '../../../../lib/content/programEnrollmentSteps';
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon.astro';
 import { PROGRAMS, partnerBadge, type Program } from '../../data/programs';
@@ -82,18 +83,20 @@ const partnerRef = /^[a-z0-9-]{1,64}$/i.test(rawRef.trim()) ? rawRef.trim().toLo
 const applyHref = partnerRef
   ? `/apply?ref=${encodeURIComponent(partnerRef)}&program=${encodeURIComponent(program.slug)}`
   : `/apply?program=${program.slug}`;
-const applyHomeHref = partnerRef ? `/apply?ref=${encodeURIComponent(partnerRef)}` : '/apply';
-
 // One-stop external course (ops 9/2/26: Digital Literacy → Microsoft's free
 // course). The primary CTA opens the course directly; applying to WorkforceAP
 // for member support stays available as the secondary action.
 const externalCourseUrl = program.externalCourseUrl ?? '';
-const primaryHref = externalCourseUrl || applyHref;
-const primaryLabel = externalCourseUrl ? 'Start the free course' : detailsPending ? 'Ask about this program' : 'Apply Now';
-const primaryAttrs = externalCourseUrl ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+const detailAction = detailProgramAction(program, partnerRef);
+const primaryHref = detailAction.href;
+const primaryLabel = detailAction.label;
+const primaryAttrs = detailAction.external ? { target: '_blank', rel: 'noopener noreferrer' } : {};
+const enrollmentSteps = program.slug === 'it-support-professional-certificate-ibm'
+  ? getProgramEnrollmentSteps(program.slug)
+  : [];
 
 const pageTitle = `${display} Training & Certification`;
-const metaDescription = `Explore ${display}: ${program.duration}, course content, and program preparation. Training at no cost for members who qualify through scholarship/grant funded membership.`;
+const metaDescription = `Explore ${display}: ${program.duration}, course content, and program preparation. Confirm available funding and any costs with an advisor.`;
 ---
 <Layout title={pageTitle} description={metaDescription}>
 <div class="pdepth">
@@ -353,9 +356,24 @@ const metaDescription = `Explore ${display}: ${program.duration}, course content
             <div>
               <h3>Funding</h3>
               <p>{fundingCopy}</p>
-              <p>Program costs are covered by grants, scholarships, partnerships, and donations — never billed to qualifying members.</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {enrollmentSteps.length > 0 && (
+        <div class="block" id="after-you-apply">
+          <h2 class="block-h">Credential and what happens after you apply</h2>
+          <p>Completing this training is not the same as earning a CompTIA certification. The course titles on this page are the published names for this track. A separate exam, when you choose to take one, is optional and billed on its own.</p>
+          <div class="courses">
+            {enrollmentSteps.map((step) => (
+              <div class="course">
+                <p><strong>{step.title}</strong></p>
+                <p>{step.description}</p>
+              </div>
+            ))}
+          </div>
+          <p class="muted">Related paths: <a href="/programs/comptia-a-professional-certificate">CompTIA A+</a>, <a href="/programs/it-support-and-entry-level-cyber-security-certificate">IT Support and Entry-level Cybersecurity</a>, and the <a href="/program-comparison">full program comparison</a>.</p>
         </div>
       )}
 
@@ -377,8 +395,8 @@ const metaDescription = `Explore ${display}: ${program.duration}, course content
       <div class="bottomcta">
         <h3>Ready to start your career in {program.categoryLabel}?</h3>
         {detailsPending
-          ? <p>Program details, costs and funding are still being confirmed. Applying starts a conversation with a counselor; it is not an enrollment, and you'll hear by email.</p>
-          : <p>{t('apply.applicationTimeEstimate')} to apply. No cost for <a href={applyHomeHref}>qualifying members</a>. A counselor reviews every application and you'll hear by email.</p>}
+          ? <p>{fundingCopy}</p>
+          : <p>{t('apply.applicationTimeEstimate')} to apply. {fundingCopy} A counselor reviews every application and you'll hear by email.</p>}
         <a class="btn btn--primary btn--lg" href={primaryHref} {...primaryAttrs}>{primaryLabel}</a>
         <div class="cta-links">
           {externalCourseUrl && <a href={applyHref}>Want a WorkforceAP advisor alongside the course? Apply here</a>}
@@ -409,9 +427,7 @@ const metaDescription = `Explore ${display}: ${program.duration}, course content
         <a class="btn btn--primary sapply" href={primaryHref} {...primaryAttrs}>{primaryLabel}</a>
         {externalCourseUrl
           ? <p class="snote">Free, self-paced Microsoft course — opens in a new tab. <a href={applyHref}>Apply</a> if you also want WorkforceAP member support.</p>
-          : detailsPending
-            ? <p class="snote">Details and funding pending confirmation. An advisor will confirm costs before any enrollment.</p>
-            : <p class="snote">No cost to members who qualify through scholarship/grant funded membership.</p>}
+          : <p class="snote">{fundingCopy}</p>}
         <a class="squiz" href="/find-your-path">Not sure? Take the pathfinder quiz →</a>
         <a class="scompare" href="/program-comparison">Open comparison tool (featured tracks)</a>
       </div>
@@ -426,7 +442,7 @@ const metaDescription = `Explore ${display}: ${program.duration}, course content
   <div class="close__inner wrap">
     <span class="pill pill--solid"><span class="pill__star">★</span>Reviewed by a real team — decision by email</span>
     <h2>Ready to start?</h2>
-    <p>Apply in minutes. A member advisor reviews every application and follows up by email.</p>
+    <p>{detailsPending ? fundingCopy : 'Apply in minutes. A member advisor reviews every application and follows up by email.'}</p>
     <div class="acts acts--center">
       <a class="bbtn bbtn--gold" href={primaryHref} {...primaryAttrs}>{primaryLabel} →</a>
       <a class="bbtn bbtn--outline" href="/programs">Browse all programs</a>

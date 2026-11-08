@@ -26,11 +26,42 @@ export function publicProgramFundingLabel(program: FundingProgram): string {
   return source === 'WIOA' ? 'WIOA/Grant if eligible' : source;
 }
 
+const WIOA_COPY =
+  'Funding may cover this program if you qualify and your local workforce board approves your training. Confirm your eligibility and any costs with an advisor before enrollment.';
+const GRANT_COPY =
+  'Grant or scholarship support may be available if you meet its eligibility requirements. Confirm available support and any costs with an advisor before enrollment.';
+const PENDING_COPY =
+  'Program details, costs and available funding are still being confirmed. Ask an advisor about this program before starting an application.';
+
+/** One public status for the badge, paragraph, reassurance, and call to action. */
 export function publicProgramFundingCopy(program: FundingProgram): string {
-  if (FUNDING_REQUIRES_CONFIRMATION.has(program.slug)) {
-    return 'Ask an advisor to confirm available funding and any costs before enrollment.';
+  if (programFundingRequiresConfirmation(program)) return PENDING_COPY;
+  if (program.fundingSource === 'WIOA') return WIOA_COPY;
+  if (program.fundingSource === 'Grant') return GRANT_COPY;
+  return 'Confirm available support and any costs with an advisor before enrollment.';
+}
+
+type ProgramLink = FundingProgram & { externalCourseUrl?: string | null };
+
+export function catalogProgramAction(program: ProgramLink): { label: string; href: string; external: boolean } {
+  if (programFundingRequiresConfirmation(program)) {
+    return { label: 'Ask about this program', href: `/programs/${program.slug}`, external: false };
   }
-  return program.fundingSource
-    ? `May be available at no cost to qualifying members through ${program.fundingSource} or other funding. Approval depends on your eligibility, this program, and your local workforce board.`
-    : 'May be available at no cost to qualifying members, depending on eligibility and available funding.';
+  if (program.externalCourseUrl) {
+    return { label: 'Start the free course', href: program.externalCourseUrl, external: true };
+  }
+  return { label: 'Get Started', href: `/apply?program=${program.slug}`, external: false };
+}
+
+export function detailProgramAction(program: ProgramLink, partnerRef = ''): { label: string; href: string; external: boolean } {
+  if (programFundingRequiresConfirmation(program)) {
+    return { label: 'Ask about this program', href: '/contact', external: false };
+  }
+  if (program.externalCourseUrl) {
+    return { label: 'Start the free course', href: program.externalCourseUrl, external: true };
+  }
+  const href = partnerRef
+    ? `/apply?ref=${encodeURIComponent(partnerRef)}&program=${encodeURIComponent(program.slug)}`
+    : `/apply?program=${program.slug}`;
+  return { label: 'Apply Now', href, external: false };
 }

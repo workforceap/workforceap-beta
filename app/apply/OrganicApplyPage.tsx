@@ -227,9 +227,13 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
           <PreLaunchTag compact />
         </div>
         <p className="apply-hero-desc-full" style={sPage.heroDesc}>
-          {isSchool ? t('schoolHeroDesc') : t('heroDesc')}
-          <strong> {isSchool ? t('schoolHeroDescHighlight') : t('heroDescHighlight')}</strong>
-          <span> {isSchool ? t('schoolHeroDescSuffix') : t('heroDescSuffix')}</span>
+          {program && !isSchool ? t('heroDescSelected') : (
+            <>
+              {isSchool ? t('schoolHeroDesc') : t('heroDesc')}
+              <strong> {isSchool ? t('schoolHeroDescHighlight') : t('heroDescHighlight')}</strong>
+              <span> {isSchool ? t('schoolHeroDescSuffix') : t('heroDescSuffix')}</span>
+            </>
+          )}
         </p>
         <p className="apply-hero-help-compact">
           {t('questionsCall')}{' '}

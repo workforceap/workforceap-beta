@@ -59,6 +59,7 @@ export default function ApplyResultsClient({
   const [isSchool, setIsSchool] = useState(schoolApplyFromServer);
   const [schoolLabel, setSchoolLabel] = useState(schoolName ?? '');
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
+  const selectedProgram = !isSchool && programParam ? getProgramBySlug(programParam) : undefined;
   /** From Find Your Path v1 localStorage — used to label + order cards. */
   const [quizRecommendedSlugs, setQuizRecommendedSlugs] = useState<string[]>([]);
   const continuedRef = useRef(false);
@@ -246,7 +247,7 @@ export default function ApplyResultsClient({
     <div className="apply-flow">
       <div className="apply-progress-bar">
         <div className="apply-progress-fill" style={{ width: '66%' }} />
-        <p className="apply-progress-label">{t(isSchool ? 'schoolResultsProgressLabel' : 'resultsProgressLabel')}</p>
+        <p className="apply-progress-label">{selectedProgram ? t('resultsProgressLabelSelected') : t(isSchool ? 'schoolResultsProgressLabel' : 'resultsProgressLabel')}</p>
       </div>
 
       <div className="apply-step-content">
@@ -285,13 +286,16 @@ export default function ApplyResultsClient({
                 )}
               </p>
             </div>
+            {selectedProgram ? null : (
             <div className="apply-undecided-reassurance" style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem', background: 'var(--surface-container)', borderRadius: '8px', border: '1px solid var(--outline-variant)' }}>
               <p style={{ margin: 0, fontSize: '0.95rem', lineHeight: 1.6, color: 'var(--color-on-surface-variant)' }}>
                 <strong style={{ color: 'var(--color-on-surface)' }}>{t('resultsUndecidedLead')}</strong> {t('resultsUndecidedBody')}
               </p>
             </div>
-            <h2 className="apply-step-title">{t('resultsTitleQualifies')}</h2>
-            <p className="apply-results-program-hint">{t('resultsHintQualifies')}</p>
+            )}
+            <h2 className="apply-step-title">{selectedProgram ? t('resultsTitleSelected') : t('resultsTitleQualifies')}</h2>
+            <p className="apply-results-program-hint">{selectedProgram ? t('resultsHintSelected') : t('resultsHintQualifies')}</p>
+            {selectedProgram ? <p><a href="#apply-results-programs">{t('resultsChangeProgram')}</a></p> : null}
           </>
         ) : (
           <>
@@ -315,8 +319,9 @@ export default function ApplyResultsClient({
                 </li>
               </ul>
             </section>
-            <h2 className="apply-step-title">{t('resultsTitleNonQual')}</h2>
-            <p className="apply-results-program-hint">{t('resultsHintNonQual')}</p>
+            <h2 className="apply-step-title">{selectedProgram ? t('resultsTitleSelected') : t('resultsTitleNonQual')}</h2>
+            <p className="apply-results-program-hint">{selectedProgram ? t('resultsHintSelected') : t('resultsHintNonQual')}</p>
+            {selectedProgram ? <p><a href="#apply-results-programs">{t('resultsChangeProgram')}</a></p> : null}
           </>
         )}
         </div>
@@ -325,6 +330,7 @@ export default function ApplyResultsClient({
           <LocalizedLink href="/salary-guide" style={{ display: 'inline-flex', alignItems: 'center', minHeight: '44px' }}>{tCta('viewSalaryGuide')}</LocalizedLink>
         </p>
         <div
+          id="apply-results-programs"
           className="apply-results-program-grid"
           style={{
             display: 'grid',
