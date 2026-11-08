@@ -373,8 +373,9 @@ describe('WAP-272 jobs pagination through the actual route and member page', () 
   });
 
   it('reports unavailable for a crowded legitimate-candidate set instead of inspecting it without a bound', async () => {
+    // Use the first padding alternative to keep recursive mock filtering cheap across all 26 reads.
     state.jobs = Array.from({ length: 5001 }, (_, index) => job(index + 1, {
-      employer: { companyName: '\u00a0Contest Labs\u00a0', logoUrl: null, status: 'active' },
+      employer: { companyName: '\tContest Labs\t', logoUrl: null, status: 'active' },
     }));
     const response = await GET(new NextRequest('http://localhost/api/dashboard/jobs?page=1'));
     expect(response.status).toBe(500);
