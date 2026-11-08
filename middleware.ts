@@ -300,6 +300,14 @@ export async function middleware(request: NextRequest) {
     const target = new URL(withLocalePrefix(pathname, loc), request.url);
     // Persist explicit ?lang= choice and strip it from the URL for cleanliness
     if (localeFromQuery) {
+      // Only the legacy apply landing redirect carries supported funnel inputs.
+      // Build the query explicitly so lang, tokens and navigation inputs stay out.
+      if (pathname === '/apply') {
+        for (const key of ['program', 'ref', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
+          const value = request.nextUrl.searchParams.get(key);
+          if (value) target.searchParams.set(key, value);
+        }
+      }
       target.searchParams.delete('lang');
       const redirectResponse = NextResponse.redirect(target, 308);
       redirectResponse.cookies.set(WAP_LOCALE_COOKIE, loc, {

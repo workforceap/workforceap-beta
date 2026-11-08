@@ -293,3 +293,14 @@ Eligible child PRs retain global guards and Node tests while selecting covered
 Vitest tests; sensitive changes and the combined release receive full validation.
 Unknown coverage blocks the child lane until `ci-full` requests all release gates.
 See the [agent delivery contract](../AGENT-DELIVERY.md) for ownership and closeout.
+
+The program catalog hero and metadata describe training and vendor-exam preparation;
+completion and separate certification exams remain distinct. Root and Astro locale
+catalogs keep the same qualified hero meaning in en/es/fr/pt. The legacy
+`/apply?lang=es&program=...` redirect retains the selected program, referral and
+existing UTM fields, removes `lang` and excludes other inputs. Only the exact apply
+landing redirect changes; locale cookies, other redirects and prefixed rewrites
+retain their contracts. [Middleware regression](../../tests/api/middleware-explicit-locale.spec.ts)
+checks all four locales, safe attribution and generic entry. The
+[generated-page regression](../../marketing/tests/programs-journey.test.mjs) checks
+the rendered hero/description and both locale catalogs.

@@ -116,3 +116,37 @@ describe('localized Astro homepage selection', () => {
     expect(await response.json()).toEqual({ error: 'Unauthorized' });
   });
 });
+
+
+describe('legacy apply locale redirect', () => {
+  const program = 'it-support-professional-certificate-ibm';
+
+  it.each(['en', 'es', 'fr', 'pt'])('retains the selected program and supported attribution for %s', async (locale) => {
+    const request = new NextRequest(`https://www.workforceap.org/apply?lang=${locale}&program=${program}&ref=partner%26other%3D1&utm_source=google&utm_medium=organic&utm_campaign=career&utm_content=ibm&utm_term=it&redirectTo=https%3A%2F%2Fevil.example&token=private&unknown=1`);
+    const response = await middleware(request);
+    const destination = new URL(response.headers.get('location')!);
+    expect(response.status).toBe(308);
+    expect(destination.origin).toBe('https://www.workforceap.org');
+    expect(destination.pathname).toBe(`/${locale}/apply`);
+    expect(Object.fromEntries(destination.searchParams)).toEqual({
+      program, ref: 'partner&other=1', utm_source: 'google', utm_medium: 'organic',
+      utm_campaign: 'career', utm_content: 'ibm', utm_term: 'it',
+    });
+    expect(response.cookies.get('wap-locale')?.value).toBe(locale);
+    const rewritten = await middleware(new NextRequest(destination));
+    const rewrite = new URL(rewritten.headers.get('x-middleware-rewrite')!);
+    expect(rewrite.pathname).toBe('/apply');
+    expect(rewrite.search).toBe(destination.search);
+    expect(forwarded(rewritten, WAP_EXPLICIT_LOCALE_HEADER)).toBe(locale);
+  });
+
+  it('keeps bare Spanish apply generic and drops unknown or navigation parameters', async () => {
+    const response = await middleware(new NextRequest('https://www.workforceap.org/apply?lang=es&redirectTo=%2Fadmin&token=private'));
+    expect(response.headers.get('location')).toBe('https://www.workforceap.org/es/apply');
+  });
+
+  it('keeps existing non-apply locale-query redirects unchanged', async () => {
+    const response = await middleware(new NextRequest('https://www.workforceap.org/login?lang=es&program=ignored&ref=ignored'));
+    expect(response.headers.get('location')).toBe('https://www.workforceap.org/es/login');
+  });
+});
