@@ -199,8 +199,64 @@ export function observeAdminDashboardMetrics(page, trustedOrigin, responseTimeou
   );
 }
 
+/**
+ * Arm before navigation: a destination can consume its query before goto resolves.
+ * Pair the main-frame document response with its commit, preserving query and hash.
+ * A same-document replaceState has no new response and cannot supply this proof.
+ */
+export function observeRedirectTargetCommit(page, matchesTarget) {
+  let pendingDocumentUrl = null;
+  let committedUrl = null;
+  let notifyCommit = null;
+  const withoutHash = (value) => {
+    const url = new URL(value);
+    url.hash = '';
+    return url.toString();
+  };
+  const handleResponse = (response) => {
+    const request = response.request();
+    if (request.resourceType() === 'document' && request.frame() === page.mainFrame()) {
+      pendingDocumentUrl = response.url();
+    }
+  };
+  const handleNavigation = (frame) => {
+    if (frame !== page.mainFrame()) return;
+    const url = frame.url();
+    const documentUrl = pendingDocumentUrl;
+    pendingDocumentUrl = null;
+    if (!documentUrl || withoutHash(url) !== withoutHash(documentUrl)) return;
+    if (matchesTarget(new URL(url))) {
+      committedUrl = url;
+      notifyCommit?.();
+    }
+  };
+  page.on('response', handleResponse);
+  page.on('framenavigated', handleNavigation);
+  return {
+    wait(timeout) {
+      if (committedUrl) return Promise.resolve(committedUrl);
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          notifyCommit = null;
+          reject(new Error('Exact redirect target did not commit before timeout'));
+        }, timeout);
+        notifyCommit = () => {
+          clearTimeout(timer);
+          notifyCommit = null;
+          resolve(committedUrl);
+        };
+      });
+    },
+    detach() {
+      page.off('response', handleResponse);
+      page.off('framenavigated', handleNavigation);
+    },
+  };
+}
+
 /** An intermediate canceled navigation must not preempt the final redirect commit. */
-export async function waitForRedirectTargetCommit(page, matchesTarget, timeout) {
+export async function waitForRedirectTargetCommit(page, matchesTarget, timeout, observation) {
+  if (observation) return observation.wait(timeout);
   const deadline = Date.now() + timeout;
   while (true) {
     const remaining = deadline - Date.now();

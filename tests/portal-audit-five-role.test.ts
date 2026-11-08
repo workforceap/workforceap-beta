@@ -2,6 +2,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { EventEmitter } from 'node:events';
 import { describe, expect, it } from 'vitest';
 import {
   resolvePortalRoleCredentials,
@@ -10,6 +11,7 @@ import {
 import {
   evaluatePortalPageAfterNavigation,
   isReadOnlyAuditCapabilityActive,
+  observeRedirectTargetCommit,
   redactDynamicHrefPath,
   sanitizeAuditDiagnostic,
   sanitizeAuditUrl,
@@ -64,6 +66,89 @@ import {
 } from '../scripts/lib/portal-audit-target.mjs';
 
 const roles = ['member', 'admin', 'employer', 'partner', 'counselor'];
+
+describe('original redirect document commit evidence', () => {
+  const origin = 'https://portal.test';
+  const target = '/dashboard/program?error=course_not_assigned';
+  const exactUrl = `${origin}${target}`;
+  const matches = (url: URL) => redirectTargetMatches(url.toString(), target, origin);
+  const fixture = () => {
+    let currentUrl = 'about:blank';
+    const mainFrame = { url: () => currentUrl };
+    const page = Object.assign(new EventEmitter(), { mainFrame: () => mainFrame });
+    const response = (url: string, frame = mainFrame) => page.emit('response', {
+      url: () => url,
+      request: () => ({ resourceType: () => 'document', frame: () => frame }),
+    });
+    const navigate = (url: string) => {
+      currentUrl = url;
+      page.emit('framenavigated', mainFrame);
+    };
+    return { page, response, navigate };
+  };
+
+  it('retains the original exact query when it is consumed before the audit waits', async () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    try {
+      response(exactUrl);
+      navigate(exactUrl);
+      navigate(`${origin}/dashboard/program`);
+      await expect(waitForRedirectTargetCommit(page, matches, 50, observation)).resolves.toBe(exactUrl);
+    } finally {
+      observation.detach();
+    }
+    expect(page.listenerCount('response')).toBe(0);
+    expect(page.listenerCount('framenavigated')).toBe(0);
+  });
+
+  it('accepts an exact document commit whose query is still present', async () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    try {
+      const waiting = waitForRedirectTargetCommit(page, matches, 50, observation);
+      response(exactUrl);
+      navigate(exactUrl);
+      await expect(waiting).resolves.toBe(exactUrl);
+    } finally {
+      observation.detach();
+    }
+  });
+
+  it.each([
+    '?error=unexpected',
+    '?error=course_not_assigned&error=unexpected',
+    '?error=unexpected&error=course_not_assigned',
+  ])('rejects original query %s even when replaceState later synthesizes the exact target', async (query) => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    try {
+      const originalUrl = `${origin}/dashboard/program${query}`;
+      response(originalUrl);
+      navigate(originalUrl);
+      navigate(exactUrl);
+      await expect(waitForRedirectTargetCommit(page, matches, 5, observation))
+        .rejects.toThrow('Exact redirect target did not commit before timeout');
+    } finally {
+      observation.detach();
+    }
+  });
+
+  it('does not use an iframe document response or navigation as main-frame evidence', async () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    try {
+      const iframe = { url: () => exactUrl };
+      response(exactUrl, iframe);
+      page.emit('framenavigated', iframe);
+      navigate(exactUrl);
+      await expect(waitForRedirectTargetCommit(page, matches, 5, observation))
+        .rejects.toThrow('Exact redirect target did not commit before timeout');
+    } finally {
+      observation.detach();
+    }
+  });
+});
 
 describe('portal navigation readiness', () => {
   it('retries a canceled intermediate redirect until the exact target commits', async () => {

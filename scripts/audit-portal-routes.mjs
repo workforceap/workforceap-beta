@@ -43,6 +43,7 @@ import {
   PORTAL_AUDIT_NAVIGATION_TIMEOUT_MS,
   PORTAL_AUDIT_VIEWPORTS,
   inspectPortalPage,
+  observeRedirectTargetCommit,
   observeAdminDashboardMetrics,
   READ_ONLY_AUDIT_ROOT_SUPPRESSION_MARKER,
   sanitizeAuditDiagnostic,
@@ -978,6 +979,10 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
       page.on('console', handleConsole);
       page.on('pageerror', handlePageError);
       page.on('response', handleResponse);
+      const redirectCommit = observeRedirectTargetCommit(
+        page,
+        (url) => redirectTargetMatches(url.toString(), resolved.targetPath, trustedOrigin)
+      );
       try {
         try {
           await page.goto(routeURL(resolved.sourcePath), {
@@ -997,7 +1002,8 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
           // Wait for the final navigation to commit, then inspect its document,
           // readiness, and read-only health below instead of treating the
           // intermediate load cancellation as a failed destination.
-          remainingTimeout(7_000)
+          remainingTimeout(7_000),
+          redirectCommit
         );
         await waitForPortalReady(page, remainingTimeout(5_000));
         if (programExpectation?.behavior === 'render') {
@@ -1064,6 +1070,7 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
           ? 'program_page_probe_failed'
           : 'redirect_probe_failed';
       } finally {
+        redirectCommit.detach();
         page.off('console', handleConsole);
         page.off('pageerror', handlePageError);
         page.off('response', handleResponse);
