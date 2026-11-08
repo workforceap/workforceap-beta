@@ -140,6 +140,48 @@ describe('legacy apply locale redirect', () => {
     expect(forwarded(rewritten, WAP_EXPLICIT_LOCALE_HEADER)).toBe(locale);
   });
 
+  it.each([
+    { lang: 'bogus', headers: new Headers(), locale: 'en' },
+    { lang: 'bogus', headers: new Headers({ cookie: 'wap-locale=es' }), locale: 'es' },
+    { lang: 'bogus', headers: new Headers({ 'accept-language': 'es-MX,es;q=0.9,en;q=0.8' }), locale: 'es' },
+    { lang: '', headers: new Headers({ cookie: 'wap-locale=pt' }), locale: 'pt' },
+    { lang: null, headers: new Headers(), locale: 'en' },
+  ])('filters apply inputs when lang=$lang falls back to $locale', async ({ lang, headers, locale }) => {
+    const query = new URLSearchParams({
+      program, ref: 'partner&other=1', utm_source: 'google', utm_medium: 'organic',
+      utm_campaign: 'career', utm_content: 'ibm', utm_term: 'it',
+      token: 'synthetic-private', redirectTo: 'https://evil.example', unknown: '1',
+    });
+    if (lang !== null) query.set('lang', lang);
+    const response = await middleware(new NextRequest(`https://www.workforceap.org/apply?${query}`, { headers }));
+    const destination = new URL(response.headers.get('location')!);
+    expect(response.status).toBe(308);
+    expect(destination.origin).toBe('https://www.workforceap.org');
+    expect(destination.pathname).toBe(`/${locale}/apply`);
+    expect(Object.fromEntries(destination.searchParams)).toEqual({
+      program, ref: 'partner&other=1', utm_source: 'google', utm_medium: 'organic',
+      utm_campaign: 'career', utm_content: 'ibm', utm_term: 'it',
+    });
+    expect(response.cookies.get('wap-locale')).toBeUndefined();
+    const rewritten = await middleware(new NextRequest(destination));
+    expect(rewritten.headers.get('location')).toBeNull();
+    const rewrite = new URL(rewritten.headers.get('x-middleware-rewrite')!);
+    expect(rewrite.pathname).toBe('/apply');
+    expect(rewrite.search).toBe(destination.search);
+  });
+
+  it.each(['es', 'bogus'])('keeps first allowlisted values encoded as data for lang=%s', async (lang) => {
+    const hostileLookingProgram = '//evil.example/?x=1&token=synthetic';
+    const query = new URLSearchParams({ lang, program: hostileLookingProgram, token: 'synthetic-private' });
+    query.append('program', 'second-program');
+    const response = await middleware(new NextRequest(`https://www.workforceap.org/apply?${query}`));
+    const destination = new URL(response.headers.get('location')!);
+    expect(response.status).toBe(308);
+    expect(destination.origin).toBe('https://www.workforceap.org');
+    expect(destination.pathname).toBe(`/${lang === 'es' ? 'es' : 'en'}/apply`);
+    expect([...destination.searchParams]).toEqual([['program', hostileLookingProgram]]);
+  });
+
   it('keeps bare Spanish apply generic and drops unknown or navigation parameters', async () => {
     const response = await middleware(new NextRequest('https://www.workforceap.org/apply?lang=es&redirectTo=%2Fadmin&token=private'));
     expect(response.headers.get('location')).toBe('https://www.workforceap.org/es/apply');

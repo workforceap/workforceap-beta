@@ -298,16 +298,16 @@ export async function middleware(request: NextRequest) {
   if (!prefixLocale && !isLocaleBypassPath(pathname) && isLocaleableMarketingPath(pathname)) {
     const loc = inferredLocale;
     const target = new URL(withLocalePrefix(pathname, loc), request.url);
+    // Every unprefixed apply redirect carries only supported funnel inputs,
+    // including when an absent or unsupported lang falls back to another source.
+    if (pathname === '/apply') {
+      for (const key of ['program', 'ref', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
+        const value = request.nextUrl.searchParams.get(key);
+        if (value) target.searchParams.set(key, value);
+      }
+    }
     // Persist explicit ?lang= choice and strip it from the URL for cleanliness
     if (localeFromQuery) {
-      // Only the legacy apply landing redirect carries supported funnel inputs.
-      // Build the query explicitly so lang, tokens and navigation inputs stay out.
-      if (pathname === '/apply') {
-        for (const key of ['program', 'ref', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
-          const value = request.nextUrl.searchParams.get(key);
-          if (value) target.searchParams.set(key, value);
-        }
-      }
       target.searchParams.delete('lang');
       const redirectResponse = NextResponse.redirect(target, 308);
       redirectResponse.cookies.set(WAP_LOCALE_COOKIE, loc, {
@@ -317,7 +317,7 @@ export async function middleware(request: NextRequest) {
       });
       return redirectResponse;
     }
-    target.search = request.nextUrl.search;
+    if (pathname !== '/apply') target.search = request.nextUrl.search;
     return NextResponse.redirect(target, 308);
   }
 

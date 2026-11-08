@@ -297,10 +297,14 @@ See the [agent delivery contract](../AGENT-DELIVERY.md) for ownership and closeo
 The program catalog hero and metadata describe training and vendor-exam preparation;
 completion and separate certification exams remain distinct. Root and Astro locale
 catalogs keep the same qualified hero meaning in en/es/fr/pt. The legacy
-`/apply?lang=es&program=...` redirect retains the selected program, referral and
-existing UTM fields, removes `lang` and excludes other inputs. Only the exact apply
-landing redirect changes; locale cookies, other redirects and prefixed rewrites
-retain their contracts. [Middleware regression](../../tests/api/middleware-explicit-locale.spec.ts)
-checks all four locales, safe attribution and generic entry. The
+unprefixed `/apply` redirect retains only the selected program, referral and
+existing UTM fields, removing `lang`, tokens, navigation and unknown inputs even
+when an unsupported or absent `lang` falls back to a cookie, browser language or
+English default. Duplicate allowlisted keys use the first value and omit it if empty;
+URL-looking values stay encoded as query data. Only the exact apply landing
+redirect changes; locale cookies, other redirects and prefixed rewrites retain
+their contracts. [Middleware regression](../../tests/api/middleware-explicit-locale.spec.ts)
+checks all four explicit locales, inferred fallbacks, safe attribution, duplicate
+keys and generic entry. The
 [generated-page regression](../../marketing/tests/programs-journey.test.mjs) checks
 the rendered hero/description and both locale catalogs.
