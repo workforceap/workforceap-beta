@@ -12,7 +12,7 @@ const admin: Actor = { userId: adminId, organizationId: org, permissions: ['atte
 const instructor: Actor = { userId: other, organizationId: org, permissions: ['attendance:instructor'] };
 const row = { sourceKey: 'synthetic-register-1', date: '2026-11-09', kind: 'verified-duration', minutes: 240, reference: 'synthetic-only', reason: 'Reviewed synthetic daily total' };
 const hash = 'a'.repeat(64);
-const initial = (): SigningState => ({ scope, hash, revision: 0, status: 'draft', studentId: null, instructorId: null });
+const initial = (): SigningState => ({ scope, hash, revision: 0, status: 'draft', studentId: null, instructorId: null, satisfactoryProgress: null, completesOnTime: null });
 const command = (over = {}) => ({ method: 'POST', action: 'student-attest', expectedHash: hash, expectedRevision: 0, consent: true, ...over });
 const mapping = { ...scope, providerLearnerId: 'synthetic-learner', courseId: 'synthetic-course' };
 

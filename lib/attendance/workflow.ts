@@ -10,12 +10,26 @@ export type Scope = z.infer<typeof scopeSchema>;
 export type Actor = { userId: string; organizationId: string; permissions: readonly string[] };
 export function authorize(actor: Actor, scope: Scope, adminOnly = false): void {
   scopeSchema.parse(scope);
-  id.parse(actor.userId); id.parse(actor.organizationId);
+  id.parse(actor.userId);
+  id.parse(actor.organizationId);
   if (actor.organizationId !== scope.organizationId ||
     !(actor.permissions.includes('attendance:admin') || (!adminOnly && actor.userId === scope.memberId))) {
     throw new Error('ATTENDANCE_FORBIDDEN');
   }
 }
+const FORBIDDEN_ROW_KEYS = new Set(['verifiedBy', '__proto__', 'constructor', 'prototype']);
+function assertPlainImportRows(input: unknown): void {
+  const rows = z.array(z.unknown()).min(1).max(1000).parse(input);
+  for (const row of rows) {
+    if (typeof row !== 'object' || row === null || Array.isArray(row)) throw new Error('UNSUPPORTED_ROW_SHAPE');
+    if (Object.getPrototypeOf(row) !== Object.prototype) throw new Error('UNSUPPORTED_ROW_SHAPE');
+    for (const key of Reflect.ownKeys(row)) {
+      if (typeof key !== 'string') throw new Error('UNSUPPORTED_ROW_PROPERTY');
+      if (FORBIDDEN_ROW_KEYS.has(key)) throw new Error('UNSUPPORTED_ROW_PROPERTY');
+    }
+  }
+}
+
 const manualRow = z.object({
   sourceKey: z.string().trim().min(1).max(200), date: z.string(),
   kind: z.enum(['verified-duration', 'W', 'CR', 'A']),
@@ -25,6 +39,7 @@ const manualRow = z.object({
 /** Parse the entire batch before returning any entries. Actor/verifier is server-owned. */
 export function importDatedAdminEvidence(actor: Actor, scope: Scope, input: unknown): Evidence[] {
   authorize(actor, scope, true);
+  assertPlainImportRows(input);
   const rows = z.array(manualRow).min(1).max(1000).parse(input);
   const evidence = rows.map(row => ({ ...row, verifiedBy: actor.userId }));
   for (const row of evidence) validateEvidence(row);
@@ -72,7 +87,6 @@ export function createDraft(actor: Actor, scope: Scope, input: {
     provenance: { evidenceDigest: digest(input.evidence), evidenceRevision: digest(input.evidence), ruleVersion: DRAFT_RULE.version, pMinimumMinutes: DRAFT_RULE.pMinimumMinutes, ruleApproved: false, reportingTimezone: REPORTING_TIMEZONE, templateVersion: TEMPLATE_VERSION },
     academicLabel: `${dates[0]} to ${dates.at(-1)}`, profile: input.profile, enrollment: input.enrollment,
     days: summarize(dates, input.evidence) };
-  // JSON round-trip detaches the caller's mutable input. Digest binds source provenance and scope too.
   const detached = JSON.parse(JSON.stringify({ scope, snapshot, evidence: input.evidence })) as Omit<Draft, 'hash'>;
   return { ...detached, hash: digest(detached) };
 }
@@ -82,19 +96,44 @@ export async function renderAuthorizedDraft(actor: Actor, draft: Draft): Promise
   return renderAttendancePdf(draft.snapshot);
 }
 
-// Pure transition specification, NOT a signing operation: no signature/PDF/storage side effects.
-// Only the closed production facade below is intended for future route integration.
 export type SigningState = {
   scope: Scope; hash: string; revision: number; status: 'draft' | 'student-attested' | 'instructor-signed' | 'superseded';
   studentId: string | null; instructorId: string | null;
+  satisfactoryProgress: boolean | null;
+  completesOnTime: boolean | null;
 };
+/** Immutable record of one validated transition, retaining both instructor decisions verbatim. */
+export type SigningTransitionEvent = {
+  action: 'student-attest' | 'instructor-sign' | 'supersede';
+  actorId: string;
+  hash: string;
+  fromRevision: number;
+  toRevision: number;
+  fromStatus: SigningState['status'];
+  toStatus: SigningState['status'];
+  satisfactoryProgress: boolean | null;
+  completesOnTime: boolean | null;
+};
+/** Pure validation: returns next state plus the event a future repository would append. Performs no signing. */
+export function planSigningTransitionEvent(state: SigningState, actor: Actor, input: unknown, configuredInstructorId: string | null): { next: SigningState; event: SigningTransitionEvent } {
+  const next = planSigningTransition(state, actor, input, configuredInstructorId);
+  const action = (input as { action: SigningTransitionEvent['action'] }).action;
+  return { next, event: {
+    action, actorId: actor.userId, hash: state.hash,
+    fromRevision: state.revision, toRevision: next.revision,
+    fromStatus: state.status, toStatus: next.status,
+    satisfactoryProgress: next.satisfactoryProgress, completesOnTime: next.completesOnTime,
+  } };
+}
 export function planSigningTransition(state: SigningState, actor: Actor, input: unknown, configuredInstructorId: string | null): SigningState {
   const command = z.object({ method: z.literal('POST'), action: z.enum(['student-attest', 'instructor-sign', 'supersede']),
     expectedHash: z.string().regex(/^[a-f0-9]{64}$/), expectedRevision: z.number().int().nonnegative(),
     consent: z.literal(true), satisfactoryProgress: z.boolean().optional(), completesOnTime: z.boolean().optional(),
   }).strict().parse(input);
-  scopeSchema.parse(state.scope); id.parse(actor.userId);
+  scopeSchema.parse(state.scope);
+  id.parse(actor.userId);
   if (actor.organizationId !== state.scope.organizationId) throw new Error('ATTENDANCE_FORBIDDEN');
+  if (command.action !== 'instructor-sign' && (command.satisfactoryProgress !== undefined || command.completesOnTime !== undefined)) throw new Error('INSTRUCTOR_DECISIONS_ONLY_ON_INSTRUCTOR_SIGN');
   if (command.expectedHash !== state.hash || command.expectedRevision !== state.revision) throw new Error('STALE_SNAPSHOT');
   if (command.action === 'supersede') {
     authorize(actor, state.scope, true);
@@ -104,23 +143,28 @@ export function planSigningTransition(state: SigningState, actor: Actor, input: 
   if (command.action === 'student-attest') {
     if (actor.userId !== state.scope.memberId) throw new Error('STUDENT_ACT_REQUIRED');
     if (state.status !== 'draft') throw new Error('INVALID_TRANSITION');
-    return { ...state, studentId: actor.userId, status: 'student-attested', revision: state.revision + 1 };
+    return { ...state, studentId: actor.userId, status: 'student-attested', revision: state.revision + 1, satisfactoryProgress: null, completesOnTime: null };
   }
   if (!configuredInstructorId || !id.safeParse(configuredInstructorId).success ||
     actor.userId !== configuredInstructorId || !actor.permissions.includes('attendance:instructor') ||
     actor.userId === state.scope.memberId) throw new Error('CONFIGURED_INSTRUCTOR_REQUIRED');
   if (state.status !== 'student-attested' || state.studentId !== state.scope.memberId) throw new Error('STUDENT_ACT_REQUIRED');
   if (command.satisfactoryProgress === undefined || command.completesOnTime === undefined) throw new Error('INSTRUCTOR_DECISIONS_REQUIRED');
-  return { ...state, instructorId: actor.userId, status: 'instructor-signed', revision: state.revision + 1 };
+  return {
+    ...state,
+    instructorId: actor.userId,
+    status: 'instructor-signed',
+    revision: state.revision + 1,
+    satisfactoryProgress: command.satisfactoryProgress,
+    completesOnTime: command.completesOnTime,
+  };
 }
 
-/** No boolean/env/request-supplied capability can enable this boundary. */
 function archiveUnavailable(): never { throw new Error('ATTENDANCE_VERIFIED_ARCHIVE_UNAVAILABLE'); }
 export const attendanceProtectedOperations = Object.freeze({
   finalize: archiveUnavailable, studentAttest: archiveUnavailable,
   requestSignature: archiveUnavailable, sign: archiveUnavailable, downloadArchive: archiveUnavailable,
 });
-/** No provider import, link generation, address logging, token or PDF attachment. */
 export const disabledInvitationAdapter = Object.freeze({
   send(): { sent: false; reason: 'ATTENDANCE_SEND_DISABLED' } {
     return { sent: false, reason: 'ATTENDANCE_SEND_DISABLED' };

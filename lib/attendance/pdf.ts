@@ -27,36 +27,78 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
   const safe = (value: string) => [...value.replace(/\s+/g, ' ')].map(char => {
     try { font.encodeText(char); return char; } catch { return '?'; }
   }).join('');
+  const LEFT = 36;
+  const MAX_TEXT_WIDTH = 535;
   const text = (value: string, x: number, yy: number, size = 9, f: PDFFont = font) => page.drawText(safe(value), { x, y: yy, size, font: f });
+  function wrapMeasured(value: string, size: number, f: PDFFont): string[] {
+    const chars = [...safe(value)];
+    const lines: string[] = [];
+    let current = '';
+    for (const char of chars) {
+      if (current && f.widthOfTextAtSize(current + char, size) > MAX_TEXT_WIDTH) {
+        lines.push(current);
+        current = char;
+      } else current += char;
+    }
+    if (current) lines.push(current);
+    return lines.length ? lines : [''];
+  }
+  function drawWrapped(value: string, x: number, startY: number, size: number, f: PDFFont = font, lineGap = 11): number {
+    let yy = startY;
+    for (const row of wrapMeasured(value, size, f)) {
+      text(row, x, yy, size, f);
+      yy -= lineGap;
+    }
+    return yy;
+  }
+  function assertRightEdge(value: string, size: number, f: PDFFont) {
+    const width = f.widthOfTextAtSize(safe(value), size);
+    if (width > MAX_TEXT_WIDTH) throw new Error('PDF_LINE_OVERFLOW');
+  }
+  function drawFooter() {
+    const hashLines = wrapMeasured(`Snapshot SHA-256: ${digest(snapshot)}`, 6, font);
+    let footY = 28;
+    for (const row of hashLines) {
+      assertRightEdge(row, 6, font);
+      text(row, LEFT, footY, 6);
+      footY -= 8;
+    }
+    const pageLines = wrapMeasured(`Page ${pageNumber} | ${ESTIMATE_NOTICE}: never actual attendance`, 7, font);
+    let pageFootY = 16 + (pageLines.length - 1) * 9;
+    for (const row of pageLines) {
+      assertRightEdge(row, 7, font);
+      text(row, LEFT, pageFootY, 7);
+      pageFootY -= 9;
+    }
+  }
   function nextPage() {
     page = pdf.addPage([612, 792]); pageNumber++;
-    text(`ATTENDANCE / ${snapshot.kind.toUpperCase()} / DRAFT`, 36, 756, 15, bold);
-    text('Template fidelity unverified. Not WFS approved. No certification implied.', 36, 739, 8);
-    if (snapshot.kind === 'monthly') text('MONTHLY ADAPTED DRAFT - original monthly template unavailable', 36, 724, 8, bold);
-    text(`Reporting timezone: ${REPORTING_TIMEZONE} | Academic label: ${snapshot.academicLabel}`, 36, 708, 8);
-    text(`Snapshot SHA-256: ${digest(snapshot)}`, 36, 28, 6);
-    text(`Page ${pageNumber} | ${ESTIMATE_NOTICE}: never actual attendance`, 36, 16, 7);
-    text('PROPOSED DRAFT RULE: P >=4 verified hours/day; not institutionally approved.', 36, 692, 8);
-    y = 676;
+    assertRightEdge(`ATTENDANCE / ${snapshot.kind.toUpperCase()} / DRAFT`, 15, bold);
+    text(`ATTENDANCE / ${snapshot.kind.toUpperCase()} / DRAFT`, LEFT, 756, 15, bold);
+    let headerY = drawWrapped('Template fidelity unverified. Not WFS approved. No certification implied.', LEFT, 739, 8);
+    if (snapshot.kind === 'monthly') headerY = drawWrapped('MONTHLY ADAPTED DRAFT - original monthly template unavailable', LEFT, headerY - 2, 8, bold);
+    headerY = drawWrapped('PROPOSED DRAFT RULE: P >=4 verified hours/day; not institutionally approved.', LEFT, headerY - 2, 8);
+    headerY = drawWrapped(`Reporting timezone: ${REPORTING_TIMEZONE} | Academic label: ${snapshot.academicLabel}`, LEFT, headerY - 2, 8);
+    drawFooter();
+    y = Math.min(676, headerY - 8);
     if (pageNumber > 1) {
       line(`Participant (continued): ${snapshot.profile.name}`, true);
       line('Date          Actual hours     Estimated hours (not certified)     Codes', true);
     }
   }
   function line(value: string, strong = false) {
-    // Wrap by measured glyph widths, including unbroken long names.
     const chars = [...safe(value)];
     let current = '';
     const f = strong ? bold : font;
     for (const char of chars) {
-      if (f.widthOfTextAtSize(current + char, 9) > 535) {
+      if (f.widthOfTextAtSize(current + char, 9) > MAX_TEXT_WIDTH) {
         if (y < 65) nextPage();
-        text(current, 36, y, 9, f); y -= 13; current = '';
+        text(current, LEFT, y, 9, f); y -= 13; current = '';
       }
       current += char;
     }
     if (y < 65) nextPage();
-    text(current, 36, y, 9, f); y -= 13;
+    text(current, LEFT, y, 9, f); y -= 13;
   }
   nextPage();
   line(`Participant: ${snapshot.profile.name}`, true);

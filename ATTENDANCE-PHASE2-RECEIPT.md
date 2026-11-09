@@ -61,3 +61,15 @@ Initial non-strict stand-alone compile inferred Zod properties optional because 
 No HTTP controller, DB repository, persisted admin import, schema/migration, atomic idempotency/concurrency, archive adapter, real signature, email, signed artifact or authenticated download; no UI. Storage policy review and service-role photo/cert path consumer audit/hardening needed before archive enablement. Persistence/route auth/audit/origin/rate-limit integration remains independent unimplemented work, not implied complete by storage gate. Model/transaction designs are reviewable contracts only. Real DB/Storage isolation, upload cleanup/ambiguous outcome/checksum injection, live auth matrix, original templates, institutional rule/retention approval, actual-hours provider source, full repo Node/Vitest/typecheck/build and visual 390px/print checks unrun. No screen mounted (Works on Off). No live data/config/policy/DB operations, emails, marketing/harness work, #2893 edits, push/merge/deploy/spend.
 
 Undo: revert this continuation commit (no migration rollback required); external test logs/scripts/backups remain evidence. Do not drop proposed protection once any attendance object exists. Independent review of new head pending Rigel; Ada owns acceptance/recovery. No self-acceptance.
+
+## Increment 60a4ce2b — 2026-11-09 assignment continuation
+
+Parent head 2aeb0e2adfbc080c62a176f6a9b8290ba93aeaaa. NOT complete, accepted, deployed, or production-ready. LOCAL synthetic demo only; non-durable.
+
+Implemented: measured PDF header wrap (pdf.ts, pdf-layout.test.ts); instructor decisions retained in transition output (workflow.ts, signing-events.test.ts); repository + in-memory synthetic adapter + import/preview flow (synthetic-*); dev-only route/page gated by ATTENDANCE_SYNTHETIC_DEMO=local and non-production NODE_ENV/VERCEL_ENV; draft-only DDL in docs/attendance/draft-schema.sql (unapplied); trust-boundary tests in synthetic-flow.test.ts.
+
+Functioning (synthetic): admin import, preview PDF base64, demo page when flag set. Disabled: finalize, attest, request-signature, sign, download-archive (fail-closed / 503).
+
+Local preview startup: cd checkout; ATTENDANCE_SYNTHETIC_DEMO=local npx next dev --port 4180; open /dev/attendance-synthetic on 127.0.0.1:4180.
+
+Checks this increment: 68/68 attendance unit tests; scoped eslint; no project tsc errors in attendance/dev paths; verify-no-source-text-tests pass. Full-repo npm test/build not claimed. No push. Receipt head = commit containing this file.
