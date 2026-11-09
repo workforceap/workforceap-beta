@@ -62,3 +62,22 @@ test('frozen hash canonicalizes keys and rejects ambiguous JSON values', () => {
   assert.notEqual(digest({ a: 1 }), digest({ a: 2 }));
   for (const value of [undefined, NaN, new Date(), { a: undefined }]) assert.throws(() => canonical(value));
 });
+
+test('canonical digest rejects sparse arrays, extra keys, symbols and accessors', () => {
+  const sparse = Array(1);
+  const extra = Object.assign([], { extra: true });
+  const symbol = { [Symbol('hidden')]: 1 };
+  const hidden = Object.defineProperty({}, 'hidden', { value: 1 });
+  const getter = Object.defineProperty({}, 'getter', { get() { throw new Error('GETTER_RAN'); }, enumerable: true });
+  for (const value of [sparse, extra, symbol, hidden, getter]) assert.throws(() => digest(value), /NON_CANONICAL/);
+  assert.notEqual(digest([]), digest([null]));
+});
+test('timestamp calendar components cannot silently normalize and supported years cannot overflow', () => {
+  for (const value of ['2026-02-30T12:00:00Z', '2026-11-31T12:00:00Z', '2026-11-09T24:00:00Z',
+    '0000-01-01T12:00:00Z', '1900-01-01T00:00:00Z', '2101-01-01T12:00:00Z']) assert.throws(() => localEvidenceDate(value));
+  for (const args of [['yearly', '1900-01-01', 8], ['yearly', '2100-11-09', 8], ['monthly', '0000-01-01', null]] as const) {
+    assert.throws(() => periodDates(args[0], args[1], args[2]));
+  }
+  assert.equal(localEvidenceDate('2028-02-29T12:00:00Z'), '2028-02-29');
+  assert.equal(periodDates('monthly', '2100-12-01', null).at(-1), '2100-12-31');
+});

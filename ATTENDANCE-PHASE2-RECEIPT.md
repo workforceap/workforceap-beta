@@ -32,3 +32,32 @@ No live policy query performed: compatibility/verification gate, NOT proven live
 Persistence/schema/migrations; tenant/admin/member endpoint matrix; admin entry/import; immutable/supersession transactions; student attestation then configured-instructor signing; protected POST/idempotency/replay/concurrency; upload/digest/cleanup failure tests; send-disabled adapter; integrated UI/private delivery; Windows preview; visual mobile/print; original template comparison; full repo checks; independent review. Stand-alone modules are NOT substituted for integrated completion.
 
 No live config/schema changes, emails, student-data reads, merge/deploy, spending or private provider calls. Undo: revert isolated feature commit; synthetic PDFs/logs remain at external paths. No service started.
+
+## Continuation 36001f1e — 2026-11-09 10:42 Eastern
+
+This continuation supersedes the earlier Undone list only where explicitly stated below. Still NOT complete, operational, accepted or production-ready. Parent 8fb1182cdab4a2ee760302b7f065d0814864a278, unchanged base a6eebc575374c0bbd7ed19343a17a70cf9264d39; same sole writer/checkout/branch. Final head is the commit containing this receipt (resolve `git log -1 --format=%H -- ATTENDANCE-PHASE2-RECEIPT.md`). No push or PR created.
+
+### Implemented and executed
+- `workflow.ts`: scoped student/admin domain authorization; strict whole-batch dated admin input parser with server verifier; mapped cumulative/point-source DTO adapters which never invent daily hours; composed draft creation/hash/render. Detached snapshot binds scope/full evidence content and proposed rule/timezone/template versions.
+- Student-first/configured-instructor pure transition planner validates explicit POST/consent/hash/revision and instructor decisions; replay against new state rejected. This reducer is NOT an executed signing operation, not transaction concurrency proof, and creates no signature/archive. Real protected facade always refuses finalize/student-attest/request-sign/sign/archived-download. No caller-provided boolean/env capability exists. Invitation adapter always send-disabled.
+- Rigel-reported corrections: sparse arrays/unsupported extra/symbol/accessor/nonenumerable properties rejected in canonicalization; timestamp calendar components checked before Date normalization; supported years deliberately bounded 1900–2100, reporting/academic period overflow rejected; snapshot contains full evidence digest/revision and configuration versions; P240 visibly proposed/unapproved; academicLabel length <=64; whitespace normalized before glyph fallback; continued-page participant and column headers repeated.
+- PDF tests now extract text from actual rendered bytes across 12 original synthetic variants, asserting participant/program/dates/actual+estimated+unknowns/notices/counts/subtotal/coverage/full hash and continued-page headers. Original template/visual fidelity remains unverified.
+- `docs/attendance/storage-remedy-proposal.md`: exact unapplied attendance-only restrictive policy, complete source-discovered bucket consumer audit including privileged signing-path risk, synthetic SQL+Storage isolation test plan, prerequisite/readback and safe rollback conditions. Not in migration directories, never executed.
+- `docs/attendance/integration-contract.md`: proposed persistence model/transaction design, UI contract for future Pixel ownership, every unimplemented integration item explicitly bounded by concrete dependency. No Prisma/table schema change.
+
+### Actual checks and logs
+- `node --import tsx --test lib/attendance/*.test.ts`: 38 pass, 0 fail/skip. `/home/claw/attendance-continuation-tests.log`, final audit 9dd18d9e86d9.
+- `pnpm exec eslint lib/attendance/*.ts`: pass.
+- `pnpm exec tsc --strict --noEmit --skipLibCheck --target ES2022 --module commonjs --moduleResolution node --esModuleInterop lib/attendance/*.ts`: pass (audit be0045696e12).
+- `node scripts/verify-no-source-text-tests.mjs`: pass, zero new source-text tests.
+- Python byte comparison against parent: package.json, pnpm-lock.yaml, prisma/schema.prisma unchanged. Lock SHA-256 d03ef8e7abc09818fd78bab9d0ba53a676d512f7b2cb5fac2f2b70f5a96e537f.
+- Diff whitespace checked before and after staging; final check tied to committed tree in return report.
+- Automation readback: no attendance automation; both unrelated #2893 one-time follow-ups already disabled, nextRunAt=null; left unchanged.
+
+### Honest failure disclosures
+Initial non-strict stand-alone compile inferred Zod properties optional because strictNullChecks was absent; strict project-compatible scoped compile passes. Later added test used union-tuple spread rejected by compiler; corrected indexed args, strict rerun passes. One shell correction attempt failed before execution because relay interpolated backticks; replaced with literal external Python file and executed successfully. New-file write responses contained misleading pre-write ENOENT stderr; real files verified by tests/compiler/staging. No DB/provider/config side effects from these failures. External backed-up scripts at `/home/claw/attendance-rigel-fixes.py`, `/home/claw/attendance-add-review-tests.py`; backups `/home/claw/attendance-pre-rigel-fixes` and named before-test copies.
+
+### Not functioning / remaining gates
+No HTTP controller, DB repository, persisted admin import, schema/migration, atomic idempotency/concurrency, archive adapter, real signature, email, signed artifact or authenticated download; no UI. Storage policy review and service-role photo/cert path consumer audit/hardening needed before archive enablement. Persistence/route auth/audit/origin/rate-limit integration remains independent unimplemented work, not implied complete by storage gate. Model/transaction designs are reviewable contracts only. Real DB/Storage isolation, upload cleanup/ambiguous outcome/checksum injection, live auth matrix, original templates, institutional rule/retention approval, actual-hours provider source, full repo Node/Vitest/typecheck/build and visual 390px/print checks unrun. No screen mounted (Works on Off). No live data/config/policy/DB operations, emails, marketing/harness work, #2893 edits, push/merge/deploy/spend.
+
+Undo: revert this continuation commit (no migration rollback required); external test logs/scripts/backups remain evidence. Do not drop proposed protection once any attendance object exists. Independent review of new head pending Rigel; Ada owns acceptance/recovery. No self-acceptance.

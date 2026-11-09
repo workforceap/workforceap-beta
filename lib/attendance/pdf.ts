@@ -1,9 +1,10 @@
-import { PDFDocument, StandardFonts, rgb, type PDFPage, type PDFFont } from 'pdf-lib';
-import { digest, ESTIMATE_NOTICE, REPORTING_TIMEZONE, type Day, type SheetKind } from './evidence';
+import { PDFDocument, StandardFonts, type PDFPage, type PDFFont } from 'pdf-lib';
+import { digest, DRAFT_RULE, TEMPLATE_VERSION, ESTIMATE_NOTICE, REPORTING_TIMEZONE, type Day, type SheetKind } from './evidence';
 
 export type AttendanceSnapshot = {
   schemaVersion: 1;
   kind: SheetKind;
+  provenance: { evidenceDigest: string; evidenceRevision: string; ruleVersion: string; pMinimumMinutes: number; ruleApproved: false; reportingTimezone: string; templateVersion: string };
   academicLabel: string;
   profile: { name: string; email: string | null; phone: string | null };
   enrollment: { program: string; twistId: string | null; counselor: string | null; abbreviation: string | null; pathway: string | null; classStart: string | null; classEnd: string | null };
@@ -11,6 +12,9 @@ export type AttendanceSnapshot = {
 };
 /** Rendering only. A rendered PDF is NOT evidence of authorization or certification. */
 export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise<Uint8Array> {
+  if (snapshot.profile.name.length > 2000) throw new Error('PARTICIPANT_NAME_TOO_LONG');
+  if (!snapshot.academicLabel.trim() || snapshot.academicLabel.length > 64) throw new Error('INVALID_ACADEMIC_LABEL');
+  if (snapshot.provenance.ruleVersion !== DRAFT_RULE.version || snapshot.provenance.templateVersion !== TEMPLATE_VERSION || snapshot.provenance.reportingTimezone !== REPORTING_TIMEZONE || snapshot.provenance.pMinimumMinutes !== DRAFT_RULE.pMinimumMinutes || snapshot.provenance.ruleApproved !== false) throw new Error('UNSUPPORTED_DRAFT_CONFIGURATION');
   const pdf = await PDFDocument.create();
   pdf.setTitle(`Attendance ${snapshot.kind} - DRAFT`);
   pdf.setSubject('Attendance draft. Template fidelity unverified; not WFS approved.');
@@ -20,9 +24,9 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
   let page: PDFPage;
   let y = 0;
   let pageNumber = 0;
-  const safe = (value: string) => [...value].map(char => {
+  const safe = (value: string) => [...value.replace(/\s+/g, ' ')].map(char => {
     try { font.encodeText(char); return char; } catch { return '?'; }
-  }).join('').replace(/[\r\n\t]/g, ' ');
+  }).join('');
   const text = (value: string, x: number, yy: number, size = 9, f: PDFFont = font) => page.drawText(safe(value), { x, y: yy, size, font: f });
   function nextPage() {
     page = pdf.addPage([612, 792]); pageNumber++;
@@ -32,7 +36,12 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
     text(`Reporting timezone: ${REPORTING_TIMEZONE} | Academic label: ${snapshot.academicLabel}`, 36, 708, 8);
     text(`Snapshot SHA-256: ${digest(snapshot)}`, 36, 28, 6);
     text(`Page ${pageNumber} | ${ESTIMATE_NOTICE}: never actual attendance`, 36, 16, 7);
-    y = 686;
+    text('PROPOSED DRAFT RULE: P >=4 verified hours/day; not institutionally approved.', 36, 692, 8);
+    y = 676;
+    if (pageNumber > 1) {
+      line(`Participant (continued): ${snapshot.profile.name}`, true);
+      line('Date          Actual hours     Estimated hours (not certified)     Codes', true);
+    }
   }
   function line(value: string, strong = false) {
     // Wrap by measured glyph widths, including unbroken long names.
@@ -57,7 +66,8 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
   line(`Class abbreviation: ${snapshot.enrollment.abbreviation ?? ''} | Pathway: ${snapshot.enrollment.pathway ?? ''}`);
   line(`Class dates: ${snapshot.enrollment.classStart ?? ''} to ${snapshot.enrollment.classEnd ?? ''}`);
   line('Unknown values are blank/unknown, never inferred. Time In/Out unavailable.');
-  line('P: >=4 verified hours/day, one max. W/CR/A require independent dated evidence.');
+  line('Proposed draft rule: P >=4 verified hours/day, one max; not institutionally approved.');
+  line('W/CR/A require independent dated evidence.');
   line('P/W/CR/A counts are not actual hours. Missing telemetry is not absence.');
   line('Date          Actual hours     Estimated hours (not certified)     Codes', true);
   let total = 0; let known = 0;

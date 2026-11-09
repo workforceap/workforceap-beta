@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto';
 
 export const REPORTING_TIMEZONE = 'America/Chicago';
+export const DRAFT_RULE = Object.freeze({ version: 'proposed-p240-v1', pMinimumMinutes: 240, approved: false as const });
+export const TEMPLATE_VERSION = 'unapproved-adapted-draft-v1';
+export const SUPPORTED_MIN_YEAR = 1900;
+export const SUPPORTED_MAX_YEAR = 2100;
 export const ESTIMATE_NOTICE = 'estimated, not certified';
 export type SheetKind = 'weekly' | 'monthly' | 'yearly';
 export type Evidence = {
@@ -22,6 +26,8 @@ export type Day = {
 };
 export function validDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const year = Number(value.slice(0, 4));
+  if (year < SUPPORTED_MIN_YEAR || year > SUPPORTED_MAX_YEAR) return false;
   const date = new Date(`${value}T12:00:00Z`);
   return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
@@ -31,13 +37,17 @@ function requireDate(value: string): Date {
 }
 export function localEvidenceDate(timestamp: string): string {
   if (!/T.*(?:Z|[+-]\d{2}:\d{2})$/.test(timestamp)) throw new Error('TIMESTAMP_OFFSET_REQUIRED');
+  const match = timestamp.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?(Z|[+-](\d{2}):(\d{2}))$/);
+  if (!match || !validDate(match[1]) || Number(match[2]) > 23 || Number(match[3]) > 59 || Number(match[4]) > 59 || Number(match[6] ?? 0) > 23 || Number(match[7] ?? 0) > 59) throw new Error('INVALID_TIMESTAMP');
   const date = new Date(timestamp);
   if (!Number.isFinite(date.getTime())) throw new Error('INVALID_TIMESTAMP');
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: REPORTING_TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit',
   }).formatToParts(date);
   const get = (type: string) => parts.find(p => p.type === type)?.value;
-  return `${get('year')}-${get('month')}-${get('day')}`;
+  const local = `${get('year')}-${get('month')}-${get('day')}`;
+  if (!validDate(local)) throw new Error('INVALID_TIMESTAMP');
+  return local;
 }
 export function periodDates(kind: SheetKind, selected: string, startMonth: number | null): string[] {
   const start = requireDate(selected);
@@ -54,6 +64,8 @@ export function periodDates(kind: SheetKind, selected: string, startMonth: numbe
     start.setUTCFullYear(year, startMonth! - 1, 1);
     end = new Date(start); end.setUTCFullYear(end.getUTCFullYear() + 1);
   } else throw new Error('INVALID_SHEET_KIND');
+  const last = new Date(end); last.setUTCDate(last.getUTCDate() - 1);
+  if (!validDate(start.toISOString().slice(0, 10)) || !validDate(last.toISOString().slice(0, 10))) throw new Error('UNSUPPORTED_PERIOD_YEAR');
   const dates: string[] = [];
   for (const day = new Date(start); day < end; day.setUTCDate(day.getUTCDate() + 1)) dates.push(day.toISOString().slice(0, 10));
   return dates;
@@ -73,8 +85,17 @@ export function validateEvidence(row: Evidence): void {
 export function canonical(value: unknown): string {
   if (value === null || typeof value === 'string' || typeof value === 'boolean') return JSON.stringify(value);
   if (typeof value === 'number' && Number.isFinite(value)) return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonical).join(',')}]`;
+  if (Array.isArray(value)) {
+    const keys = Reflect.ownKeys(value);
+    if (keys.length !== value.length + 1 || !keys.includes('length')) throw new Error('NON_CANONICAL_ARRAY');
+    for (let i = 0; i < value.length; i++) {
+      const descriptor = Object.getOwnPropertyDescriptor(value, String(i));
+      if (!descriptor || !descriptor.enumerable || !('value' in descriptor)) throw new Error('NON_CANONICAL_ARRAY');
+    }
+    return `[${value.map(canonical).join(',')}]`;
+  }
   if (typeof value === 'object' && value !== null && Object.getPrototypeOf(value) === Object.prototype) {
+    if (Reflect.ownKeys(value).some(key => typeof key !== 'string' || !Object.getOwnPropertyDescriptor(value, key)?.enumerable || !('value' in Object.getOwnPropertyDescriptor(value, key)!))) throw new Error('NON_CANONICAL_PROPERTIES');
     return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonical((value as Record<string, unknown>)[key])}`).join(',')}}`;
   }
   throw new Error('NON_CANONICAL_VALUE');
@@ -98,7 +119,7 @@ export function summarize(dates: string[], input: Evidence[]): Day[] {
     if (verified.length > 1) throw new Error('AMBIGUOUS_DAILY_TOTAL');
     const actualMinutes = verified[0]?.minutes ?? null;
     const codes: Day['codes'] = [];
-    if (actualMinutes !== null && actualMinutes >= 240) codes.push('P');
+    if (actualMinutes !== null && actualMinutes >= DRAFT_RULE.pMinimumMinutes) codes.push('P');
     for (const code of ['W', 'CR', 'A'] as const) if (rows.some(row => row.kind === code)) codes.push(code);
     if (codes.includes('A') && (actualMinutes !== null || codes.length > 1)) throw new Error('CONFLICTING_ABSENCE_EVIDENCE');
     return { date, actualMinutes, estimatedMinutes: estimates.length ? Math.max(...estimates.map(row => row.minutes!)) : null, codes, evidenceKeys: rows.map(row => row.sourceKey).sort() };
