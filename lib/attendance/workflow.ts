@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { digest, DRAFT_RULE, TEMPLATE_VERSION, REPORTING_TIMEZONE, periodDates, summarize, validateEvidence, type Evidence, type SheetKind } from './evidence';
+import { digest, DRAFT_RULE, TEMPLATE_VERSION, REPORTING_TIMEZONE, periodDates, summarize, validateEvidence, validateLedger, type Evidence, type SheetKind } from './evidence';
 import { type AttendanceSnapshot, renderAttendancePdf } from './pdf';
 
 // These values must come from the existing server auth/enrollment repositories,
@@ -43,7 +43,8 @@ export function importDatedAdminEvidence(actor: Actor, scope: Scope, input: unkn
   const rows = z.array(manualRow).min(1).max(1000).parse(input);
   const evidence = rows.map(row => ({ ...row, verifiedBy: actor.userId }));
   for (const row of evidence) validateEvidence(row);
-  summarize([...new Set(evidence.map(row => row.date))], evidence);
+  // Batch-wide conflict check. A batch may span more dates than one report period.
+  validateLedger(evidence);
   return evidence;
 }
 

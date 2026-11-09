@@ -1,4 +1,4 @@
-import { canonical, digest, summarize, type Evidence } from './evidence';
+import { canonical, digest, validateLedger, type Evidence } from './evidence';
 import type { AttendanceEvidenceRepository, EvidenceAppendResult, EvidenceHistoryEntry, TrustedEnrollment } from './repository';
 import { importDatedAdminEvidence, type Actor, type Draft, type Scope } from './workflow';
 import { syntheticEnrollments } from './synthetic-fixtures';
@@ -43,7 +43,7 @@ export class InMemorySyntheticAttendanceRepository implements AttendanceEvidence
     const trusted = this.getTrustedEnrollment(scope);
     if (!trusted) throw new Error('ATTENDANCE_ENROLLMENT_NOT_FOUND');
     if (!trusted.active) throw new Error('ATTENDANCE_ENROLLMENT_INACTIVE');
-    // Validates permission, tenant scope, strict row shape and per-batch coverage; verifier comes from actor.
+    // Validates permission, tenant scope, strict row shape and per-batch conflicts; verifier comes from actor.
     const parsed = importDatedAdminEvidence(actor, scope, rows);
     const revision = this.currentRevision(scope);
     if (expectedRevision !== revision) throw new Error('ATTENDANCE_STALE_REVISION');
@@ -68,8 +68,8 @@ export class InMemorySyntheticAttendanceRepository implements AttendanceEvidence
     // Dry-run the resulting current set; any ambiguity rejects the whole batch with nothing written.
     const projected = new Map([...latest.entries()].map(([key, entry]) => [key, entry.evidence]));
     for (const entry of additions) projected.set(entry.evidence.sourceKey, entry.evidence);
-    const rowsAfter = [...projected.values()];
-    summarize([...new Set(rowsAfter.map(row => row.date))], rowsAfter);
+    // Whole-ledger conflict validation: the lifetime ledger is not limited to one report period of dates.
+    validateLedger([...projected.values()]);
     this.log.set(scope.enrollmentId, [...(this.log.get(scope.enrollmentId) ?? []), ...additions]);
     this.batches.set(scope.enrollmentId, revision + 1);
     return { revision: revision + 1, duplicate: false, appended: additions.length, superseded };

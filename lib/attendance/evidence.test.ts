@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { canonical, digest, localEvidenceDate, periodDates, summarize, validateEvidence, type Evidence } from './evidence';
+import { canonical, digest, localEvidenceDate, periodDates, summarize, validateEvidence, validateLedger, MAX_EVIDENCE_ROWS, MAX_REPORT_PERIOD_DATES, type Evidence } from './evidence';
 const date = '2026-11-09';
 const evidence = (over: Partial<Evidence> = {}): Evidence => ({ sourceKey: 'dated-admin-total', date, kind: 'verified-duration', minutes: 240, reference: 'synthetic-register-1', verifiedBy: 'synthetic-admin', reason: 'Synthetic reviewed daily total', ...over });
 
@@ -80,4 +80,40 @@ test('timestamp calendar components cannot silently normalize and supported year
   }
   assert.equal(localEvidenceDate('2028-02-29T12:00:00Z'), '2028-02-29');
   assert.equal(periodDates('monthly', '2100-12-01', null).at(-1), '2100-12-31');
+});
+
+const consecutiveDates = (start: string, count: number) => Array.from({ length: count }, (_, i) => {
+  const day = new Date(`${start}T12:00:00Z`); day.setUTCDate(day.getUTCDate() + i);
+  return day.toISOString().slice(0, 10);
+});
+test('a single report period is still bounded at 366 dates', () => {
+  assert.equal(MAX_REPORT_PERIOD_DATES, 366);
+  const dates = consecutiveDates('2024-01-01', 367);
+  assert.equal(new Set(dates).size, 367);
+  assert.equal(summarize(dates.slice(0, 366), []).length, 366);
+  assert.throws(() => summarize(dates, []), /^Error: INVALID_COVERAGE$/);
+  assert.throws(() => summarize(dates, [evidence({ date: dates[366] })]), /^Error: INVALID_COVERAGE$/);
+  assert.equal(periodDates('yearly', '2024-06-01', 1).length, 366, 'the longest real period is a leap year');
+});
+test('whole-ledger validation is not date-bounded but still detects every conflict', () => {
+  const dates = consecutiveDates('2024-01-01', 800);
+  const ledger = dates.map((day, i) => evidence({ sourceKey: `total-${i}`, date: day }));
+  assert.doesNotThrow(() => validateLedger(ledger));
+  assert.doesNotThrow(() => validateLedger([...ledger, { ...ledger[0] }]), 'a byte-identical duplicate is not a conflict');
+  // Conflicts are planted on the first and the 800th date, far outside any 366-date window of each other.
+  assert.throws(() => validateLedger([...ledger, evidence({ sourceKey: 'total-0', date: dates[0], minutes: 241 })]), /CONFLICTING_EVIDENCE_IDENTITY/);
+  assert.throws(() => validateLedger([...ledger, evidence({ sourceKey: 'total-0', date: dates[799] })]), /CONFLICTING_EVIDENCE_IDENTITY/);
+  assert.throws(() => validateLedger([...ledger, evidence({ sourceKey: 'second-total', date: dates[0] })]), /AMBIGUOUS_DAILY_TOTAL/);
+  assert.throws(() => validateLedger([...ledger, evidence({ sourceKey: 'second-total', date: dates[799] })]), /AMBIGUOUS_DAILY_TOTAL/);
+  assert.throws(() => validateLedger([...ledger, evidence({ sourceKey: 'absence', date: dates[799], kind: 'A', minutes: undefined })]), /CONFLICTING_ABSENCE/);
+  assert.throws(() => validateLedger([evidence({ kind: 'W', minutes: undefined }), evidence({ sourceKey: 'absence', kind: 'A', minutes: undefined })]), /CONFLICTING_ABSENCE/);
+  assert.throws(() => validateLedger([...ledger, evidence({ sourceKey: 'bad', date: '2026-02-30' })]), /INVALID_EVIDENCE/);
+});
+test('the 10000-row guard applies to the ledger and to a report period', () => {
+  assert.equal(MAX_EVIDENCE_ROWS, 10000);
+  const rows = Array.from({ length: 10001 }, (_, i) => evidence({ sourceKey: `w-${i}`, kind: 'W', minutes: undefined }));
+  assert.doesNotThrow(() => validateLedger(rows.slice(0, 10000)));
+  assert.throws(() => validateLedger(rows), /^Error: INVALID_COVERAGE$/);
+  assert.equal(summarize([date], rows.slice(0, 10000))[0].evidenceKeys.length, 10000);
+  assert.throws(() => summarize([date], rows), /^Error: INVALID_COVERAGE$/);
 });

@@ -4,6 +4,7 @@ import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { InMemorySyntheticAttendanceRepository } from './synthetic-repository';
 import { runSyntheticImport, runSyntheticPreview } from './synthetic-flow';
 import { handleSyntheticAttendance, resetSyntheticAttendanceRepo, syntheticDemoEnabled } from './synthetic-http';
+import { digest } from './evidence';
 import * as fixtures from './synthetic-fixtures';
 import { syntheticActor } from './synthetic-fixtures';
 
@@ -14,6 +15,25 @@ const admin = syntheticActor('admin');
 const student = syntheticActor('student');
 let repo = new InMemorySyntheticAttendanceRepository();
 beforeEach(() => { repo = new InMemorySyntheticAttendanceRepository(); });
+
+/** What pdf.ts prints in every page footer: the full, untruncated digest of the snapshot alone. */
+const footerLine = (snapshotDigest: string) => `Snapshot SHA-256: ${snapshotDigest}`;
+/**
+ * `preview.hash` (scope + snapshot + evidence) and the PDF footer digest (snapshot only)
+ * are intentionally different identifiers; each is checked against its own definition.
+ */
+function assertPreviewHashes(preview: { hash: string }, text: string, draft: { scope: unknown; snapshot: unknown; evidence: unknown } | null) {
+  assert.ok(draft, 'the saved draft must be loadable');
+  assert.match(preview.hash, /^[0-9a-f]{64}$/, 'preview.hash is exactly 64 lowercase hex characters');
+  assert.equal(preview.hash, digest({ scope: draft.scope, snapshot: draft.snapshot, evidence: draft.evidence }), 'preview.hash is the full draft hash');
+  const snapshotDigest = digest(draft.snapshot);
+  assert.match(snapshotDigest, /^[0-9a-f]{64}$/);
+  assert.notEqual(snapshotDigest, preview.hash, 'the footer digest and the draft hash are different identifiers');
+  assert.ok(text.includes(footerLine(snapshotDigest)), 'PDF footer prints the full snapshot digest');
+  const printed = [...text.matchAll(/Snapshot SHA-256: ([0-9a-f]+)/g)].map(match => match[1]);
+  assert.ok(printed.length >= 1, 'a footer digest is printed');
+  for (const value of printed) assert.equal(value, snapshotDigest, 'every page footer prints exactly the snapshot digest');
+}
 
 async function pdfText(base64: string) {
   const loaded = await getDocument({ data: new Uint8Array(Buffer.from(base64, 'base64')), useSystemFonts: true, disableFontFace: true }).promise;
@@ -31,7 +51,108 @@ test('entry/import -> selection -> inline preview shows entered data and the syn
   assert.equal(preview.durable, false); assert.match(preview.label, /LOCAL SYNTHETIC/);
   const text = await pdfText(preview.pdfBase64);
   for (const expected of ['Synthetic Student', 'Synthetic Workforce Program', '2026-11-09', 'Verified known-hours subtotal: 4.00; coverage 1/7', 'Code counts: P 1 / W 0 / CR 0 / A 0', 'not institutionally approved', 'Student attestation: pending']) assert.ok(text.includes(expected), expected);
-  assert.ok(text.includes(preview.hash.slice(0, 0)) || preview.hash.length === 64);
+  assertPreviewHashes(preview, text, repo.loadDraft(ids, preview.draftId));
+});
+
+test('hash assertions fail for a wrong, malformed or mismatched hash (negative cases)', async () => {
+  runSyntheticImport(repo, admin, { ...ids, expectedRevision: 0, rows: [row()] });
+  const preview = await runSyntheticPreview(repo, student, { ...ids, kind: 'weekly', selectedDate: '2026-11-11' });
+  const text = await pdfText(preview.pdfBase64);
+  const draft = repo.loadDraft(ids, preview.draftId)!;
+  const good = digest(draft.snapshot);
+  assert.doesNotThrow(() => assertPreviewHashes(preview, text, draft));
+  const flip = (hex: string) => (hex[0] === '0' ? '1' : '0') + hex.slice(1);
+  const fails = (label: string, run: () => void) => assert.throws(run, { name: 'AssertionError' }, label);
+  // preview.hash wrong: empty, truncated, too long, uppercase, non-hex, well-formed but different.
+  for (const hash of ['', preview.hash.slice(0, 63), `${preview.hash}0`, preview.hash.toUpperCase(), `g${preview.hash.slice(1)}`, flip(preview.hash), good]) {
+    fails(`hash ${JSON.stringify(hash)}`, () => assertPreviewHashes({ hash }, text, draft));
+  }
+  // PDF footer wrong: digest missing, altered by one character, truncated, or replaced by the draft hash.
+  assert.ok(text.includes(good));
+  for (const [label, wrongText] of [
+    ['missing', text.replaceAll(footerLine(good), '')],
+    ['one character changed', text.replaceAll(good, flip(good))],
+    ['truncated', text.replaceAll(good, good.slice(0, 16))],
+    ['draft hash printed instead', text.replaceAll(good, preview.hash)],
+    ['one page differs', `${text} ${footerLine(flip(good))}`],
+  ] as const) {
+    assert.notEqual(wrongText, text, label);
+    fails(`footer ${label}`, () => assertPreviewHashes(preview, wrongText, draft));
+  }
+  // Draft mismatch: a different snapshot, different evidence, or no draft at all.
+  fails('other snapshot', () => assertPreviewHashes(preview, text, { ...draft, snapshot: { ...draft.snapshot, academicLabel: 'tampered' } }));
+  fails('other evidence', () => assertPreviewHashes(preview, text, { ...draft, evidence: [] }));
+  fails('no draft', () => assertPreviewHashes(preview, text, null));
+  // A real evidence change moves both identifiers, so the old values stop matching the new PDF.
+  runSyntheticImport(repo, admin, { ...ids, expectedRevision: 1, rows: [row({ minutes: 300 })] });
+  const next = await runSyntheticPreview(repo, student, { ...ids, kind: 'weekly', selectedDate: '2026-11-11' });
+  const nextText = await pdfText(next.pdfBase64);
+  const nextDraft = repo.loadDraft(ids, next.draftId)!;
+  assert.doesNotThrow(() => assertPreviewHashes(next, nextText, nextDraft));
+  fails('stale hash against new draft', () => assertPreviewHashes(preview, nextText, nextDraft));
+  fails('stale draft against new PDF', () => assertPreviewHashes(preview, nextText, draft));
+});
+
+const ledgerDates = (start: string, count: number) => Array.from({ length: count }, (_, i) => {
+  const day = new Date(`${start}T12:00:00Z`); day.setUTCDate(day.getUTCDate() + i);
+  return day.toISOString().slice(0, 10);
+});
+
+test('a ledger spanning more than a year accepts its 367th distinct date and still previews a week', async () => {
+  const first = ledgerDates('2025-11-01', 366);
+  assert.deepEqual([first[0], first[365], new Set(first).size], ['2025-11-01', '2026-11-01', 366]);
+  const saved = runSyntheticImport(repo, admin, { ...ids, expectedRevision: 0, rows: first.map((date, i) => row({ sourceKey: `day-${i}`, date })) });
+  assert.deepEqual([saved.revision, saved.appended], [1, 366]);
+  const second = runSyntheticImport(repo, admin, { ...ids, expectedRevision: 1, rows: [row({ sourceKey: 'day-366', date: '2026-11-09', minutes: 300 })] });
+  assert.deepEqual([second.revision, second.duplicate, second.appended, second.superseded], [2, false, 1, 0]);
+  assert.equal(repo.currentRevision(ids), 2);
+  assert.equal(new Set(repo.listCurrentEvidence(ids).map(entry => entry.date)).size, 367);
+  // Keeps growing past the old limit, including a multi-date batch.
+  const third = runSyntheticImport(repo, admin, { ...ids, expectedRevision: 2, rows: ledgerDates('2026-11-10', 40).map((date, i) => row({ sourceKey: `later-${i}`, date })) });
+  assert.deepEqual([third.revision, third.appended], [3, 40]);
+  assert.equal(new Set(repo.listCurrentEvidence(ids).map(entry => entry.date)).size, 407);
+  const latest = await runSyntheticPreview(repo, student, { ...ids, kind: 'weekly', selectedDate: '2026-11-11' });
+  const latestText = await pdfText(latest.pdfBase64);
+  for (const expected of ['2026-11-09', 'Verified known-hours subtotal: 29.00; coverage 7/7', 'Code counts: P 7 / W 0 / CR 0 / A 0']) assert.ok(latestText.includes(expected), expected);
+  assertPreviewHashes(latest, latestText, repo.loadDraft(ids, latest.draftId));
+  const old = await runSyntheticPreview(repo, student, { ...ids, kind: 'weekly', selectedDate: '2026-03-04' });
+  const oldText = await pdfText(old.pdfBase64);
+  for (const expected of ['2026-03-02', '2026-03-08', 'Verified known-hours subtotal: 28.00; coverage 7/7']) assert.ok(oldText.includes(expected), expected);
+  assert.equal(old.evidenceRevision, 3);
+});
+
+test('one import batch may itself span more than 366 distinct dates', () => {
+  const dates = ledgerDates('2024-01-01', 800);
+  const saved = runSyntheticImport(repo, admin, { ...ids, expectedRevision: 0, rows: dates.map((date, i) => row({ sourceKey: `multi-year-${i}`, date })) });
+  assert.deepEqual([saved.revision, saved.appended], [1, 800]);
+  assert.throws(() => runSyntheticImport(repo, admin, { ...ids, expectedRevision: 1, rows: dates.concat(ledgerDates('2026-03-11', 201)).map((date, i) => row({ sourceKey: `too-many-${i}`, date })) }), 'the 1000-row batch limit is unchanged');
+  assert.equal(repo.currentRevision(ids), 1);
+});
+
+test('whole-ledger conflicts are still rejected once the ledger exceeds 366 dates', () => {
+  const dates = ledgerDates('2025-11-01', 400);
+  runSyntheticImport(repo, admin, { ...ids, expectedRevision: 0, rows: dates.map((date, i) => row({ sourceKey: `day-${i}`, date })) });
+  const before = repo.history(ids);
+  assert.equal(before.length, 400);
+  const fresh = row({ sourceKey: 'fresh', date: '2027-01-04' });
+  for (const [rows, expected] of [
+    // Same identity submitted twice with different contents.
+    [[fresh, row({ sourceKey: 'fresh', date: '2027-01-04', minutes: 241 })], /CONFLICTING_EVIDENCE_IDENTITY/],
+    [[fresh, row({ sourceKey: 'day-0', date: dates[0], minutes: 100 }), row({ sourceKey: 'day-0', date: dates[399], minutes: 100 })], /CONFLICTING_EVIDENCE_IDENTITY/],
+    // A second daily total, under a new identity, on the oldest and on the newest ledger date.
+    [[fresh, row({ sourceKey: 'second-total-old', date: dates[0], minutes: 100 })], /AMBIGUOUS_DAILY_TOTAL/],
+    [[fresh, row({ sourceKey: 'second-total-new', date: dates[399], minutes: 100 })], /AMBIGUOUS_DAILY_TOTAL/],
+    // An existing identity moved onto a date that already has a total.
+    [[fresh, row({ sourceKey: 'day-0', date: dates[399] })], /AMBIGUOUS_DAILY_TOTAL/],
+    // Absence recorded against a date that already has attendance.
+    [[fresh, row({ sourceKey: 'absent-old', date: dates[0], kind: 'A', minutes: undefined })], /CONFLICTING_ABSENCE/],
+    [[fresh, row({ sourceKey: 'absent-new', date: dates[399], kind: 'A', minutes: undefined })], /CONFLICTING_ABSENCE/],
+  ] as const) {
+    assert.throws(() => runSyntheticImport(repo, admin, { ...ids, expectedRevision: 1, rows: [...rows] }), expected);
+    assert.equal(repo.currentRevision(ids), 1);
+  }
+  assert.deepEqual(repo.history(ids), before, 'rejected batches wrote nothing, including their valid rows');
+  assert.equal(runSyntheticImport(repo, admin, { ...ids, expectedRevision: 1, rows: [fresh] }).revision, 2);
 });
 
 test('profile, enrollment and start month come from the adapter, never the request', async () => {

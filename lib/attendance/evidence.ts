@@ -101,8 +101,13 @@ export function canonical(value: unknown): string {
   throw new Error('NON_CANONICAL_VALUE');
 }
 export function digest(value: unknown): string { return createHash('sha256').update(canonical(value)).digest('hex'); }
-export function summarize(dates: string[], input: Evidence[]): Day[] {
-  if (input.length > 10000 || dates.length > 366 || new Set(dates).size !== dates.length || dates.some(d => !validDate(d))) throw new Error('INVALID_COVERAGE');
+/** Upper bound for ONE report period (a leap year). Never a bound on an enrollment's lifetime ledger. */
+export const MAX_REPORT_PERIOD_DATES = 366;
+/** Upper bound on evidence rows handled in one call, for a report period or a whole ledger. */
+export const MAX_EVIDENCE_ROWS = 10000;
+/** Validates every row, rejects conflicting duplicate identities, and groups the unique rows by date. */
+function uniqueRowsByDate(input: Evidence[]): Map<string, Evidence[]> {
+  if (input.length > MAX_EVIDENCE_ROWS) throw new Error('INVALID_COVERAGE');
   const unique = new Map<string, Evidence>();
   for (const row of input) {
     validateEvidence(row);
@@ -110,18 +115,38 @@ export function summarize(dates: string[], input: Evidence[]): Day[] {
     if (previous && canonical(previous) !== canonical(row)) throw new Error('CONFLICTING_EVIDENCE_IDENTITY');
     unique.set(row.sourceKey, row);
   }
-  return dates.map(date => {
-    const rows = [...unique.values()].filter(row => row.date === date);
-    const verified = rows.filter(row => row.kind === 'verified-duration');
-    const estimates = rows.filter(row => row.kind === 'estimated');
-    // One authoritative daily total avoids course/item/badge overlap.
-    // Corrections must supersede prior evidence before reaching this function.
-    if (verified.length > 1) throw new Error('AMBIGUOUS_DAILY_TOTAL');
-    const actualMinutes = verified[0]?.minutes ?? null;
-    const codes: Day['codes'] = [];
-    if (actualMinutes !== null && actualMinutes >= DRAFT_RULE.pMinimumMinutes) codes.push('P');
-    for (const code of ['W', 'CR', 'A'] as const) if (rows.some(row => row.kind === code)) codes.push(code);
-    if (codes.includes('A') && (actualMinutes !== null || codes.length > 1)) throw new Error('CONFLICTING_ABSENCE_EVIDENCE');
-    return { date, actualMinutes, estimatedMinutes: estimates.length ? Math.max(...estimates.map(row => row.minutes!)) : null, codes, evidenceKeys: rows.map(row => row.sourceKey).sort() };
-  });
+  const byDate = new Map<string, Evidence[]>();
+  for (const row of unique.values()) {
+    const rows = byDate.get(row.date);
+    if (rows) rows.push(row); else byDate.set(row.date, [row]);
+  }
+  return byDate;
+}
+function summarizeDay(date: string, rows: Evidence[]): Day {
+  const verified = rows.filter(row => row.kind === 'verified-duration');
+  const estimates = rows.filter(row => row.kind === 'estimated');
+  // One authoritative daily total avoids course/item/badge overlap.
+  // Corrections must supersede prior evidence before reaching this function.
+  if (verified.length > 1) throw new Error('AMBIGUOUS_DAILY_TOTAL');
+  const actualMinutes = verified[0]?.minutes ?? null;
+  const codes: Day['codes'] = [];
+  if (actualMinutes !== null && actualMinutes >= DRAFT_RULE.pMinimumMinutes) codes.push('P');
+  for (const code of ['W', 'CR', 'A'] as const) if (rows.some(row => row.kind === code)) codes.push(code);
+  if (codes.includes('A') && (actualMinutes !== null || codes.length > 1)) throw new Error('CONFLICTING_ABSENCE_EVIDENCE');
+  return { date, actualMinutes, estimatedMinutes: estimates.length ? Math.max(...estimates.map(row => row.minutes!)) : null, codes, evidenceKeys: rows.map(row => row.sourceKey).sort() };
+}
+/**
+ * Whole-ledger conflict validation. Deliberately NOT bounded by report-period length:
+ * an enrollment ledger may span any number of distinct dates. Rejects invalid rows,
+ * conflicting duplicate identities, more than one verified daily total on a date, and
+ * absence-vs-attendance conflicts on every date present. The row guard still applies.
+ */
+export function validateLedger(input: Evidence[]): void {
+  for (const [date, rows] of uniqueRowsByDate(input)) summarizeDay(date, rows);
+}
+/** Summarizes ONE report period; `dates` is bounded by MAX_REPORT_PERIOD_DATES. */
+export function summarize(dates: string[], input: Evidence[]): Day[] {
+  if (input.length > MAX_EVIDENCE_ROWS || dates.length > MAX_REPORT_PERIOD_DATES || new Set(dates).size !== dates.length || dates.some(d => !validDate(d))) throw new Error('INVALID_COVERAGE');
+  const byDate = uniqueRowsByDate(input);
+  return dates.map(date => summarizeDay(date, byDate.get(date) ?? []));
 }
