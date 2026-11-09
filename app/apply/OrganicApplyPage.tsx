@@ -512,7 +512,15 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
           }
 
           .apply-hero {
-            padding: calc(var(--nav-height-default, 80px) + var(--space-5)) var(--space-4) var(--space-5) !important;
+            /* This page's hero is itself .mdx-stage. Let the 2px focus ring
+               and 4px offset paint past the bottom edge without changing the
+               shared stage rule used by other heroes. */
+            overflow: visible !important;
+            padding: calc(var(--nav-height-default, 80px) + var(--space-5)) var(--space-4) calc(var(--space-5) + 12px) !important;
+          }
+          .apply-hero::after {
+            overflow: hidden;
+            border-radius: inherit;
           }
           /* Vague social proof repeats below the fold — keep hero scannable on small screens */
           .apply-hero-social {
