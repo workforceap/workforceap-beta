@@ -80,6 +80,8 @@ export type Draft = { scope: Scope; snapshot: AttendanceSnapshot; evidence: Evid
 export function createDraft(actor: Actor, scope: Scope, input: {
   kind: SheetKind; selectedDate: string; startMonth: number | null;
   profile: AttendanceSnapshot['profile']; enrollment: AttendanceSnapshot['enrollment']; evidence: Evidence[];
+  /** Stored Coursera progress, loaded by the caller. Absent means the sheet prints "not stored". */
+  coursera?: AttendanceSnapshot['coursera'];
 }): Draft {
   authorize(actor, scope);
   const dates = periodDates(input.kind, input.selectedDate, input.startMonth);
@@ -87,7 +89,7 @@ export function createDraft(actor: Actor, scope: Scope, input: {
   const snapshot: AttendanceSnapshot = { schemaVersion: 1, kind: input.kind,
     provenance: { evidenceDigest: digest(input.evidence), evidenceRevision: digest(input.evidence), ruleVersion: DRAFT_RULE.version, pMinimumMinutes: DRAFT_RULE.pMinimumMinutes, ruleApproved: false, reportingTimezone: REPORTING_TIMEZONE, templateVersion: TEMPLATE_VERSION },
     academicLabel: `${dates[0]} to ${dates.at(-1)}`, profile: input.profile, enrollment: input.enrollment,
-    days: summarize(dates, input.evidence) };
+    days: summarize(dates, input.evidence), coursera: input.coursera ?? null };
   const detached = JSON.parse(JSON.stringify({ scope, snapshot, evidence: input.evidence })) as Omit<Draft, 'hash'>;
   return { ...detached, hash: digest(detached) };
 }

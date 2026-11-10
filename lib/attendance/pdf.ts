@@ -1,5 +1,6 @@
-import { PDFDocument, StandardFonts, rgb, type PDFFont } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
 import { digest, DRAFT_RULE, TEMPLATE_VERSION, ESTIMATE_NOTICE, REPORTING_TIMEZONE, type Day, type SheetKind } from './evidence';
+import { programCourseEstimate } from './coursera-estimate';
 
 export type AttendanceSnapshot = {
   schemaVersion: 1;
@@ -7,13 +8,36 @@ export type AttendanceSnapshot = {
   provenance: { evidenceDigest: string; evidenceRevision: string; ruleVersion: string; pMinimumMinutes: number; ruleApproved: false; reportingTimezone: string; templateVersion: string };
   academicLabel: string;
   profile: { name: string; email: string | null; phone: string | null };
-  enrollment: { program: string; twistId: string | null; counselor: string | null; abbreviation: string | null; pathway: string | null; classStart: string | null; classEnd: string | null };
+  enrollment: { program: string; twistId: string | null; counselor: string | null; abbreviation: string | null; pathway: string | null; classStart: string | null; classEnd: string | null; programSlug?: string | null };
   days: Day[];
+  /** Stored Coursera progress. Cumulative estimates only: never daily attendance. */
+  coursera?: { coursesCompleted: number; coursesTotal: number | null; overallProgress: number | null; learningHours: number | null } | null;
 };
 
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
 const MARGIN = 36;
+
+/** WorkforceAP mark from public/images/logo.svg: dark badge, red mark, white wordmark. The WFS logo is never drawn; their name stays text. */
+function drawLogo(page: PDFPage, x: number, y: number, width: number, font: PDFFont) {
+  const height = 26;
+  page.drawRectangle({ x, y: y - height, width, height, color: rgb(17 / 255, 24 / 255, 39 / 255) });
+  page.drawCircle({ x: x + 13, y: y - 13, size: 7, color: rgb(220 / 255, 20 / 255, 60 / 255) });
+  page.drawText('WorkforceAP', { x: x + 24, y: y - 17, size: 9, font, color: rgb(1, 1, 1) });
+}
+
+/** Catalog course length plus stored progress. Labeled as an estimate, never as attendance. */
+function courseraLine(snapshot: AttendanceSnapshot): string {
+  const estimate = programCourseEstimate(snapshot.enrollment.programSlug ?? null);
+  const progress = snapshot.coursera ?? null;
+  if (!estimate && !progress) return 'Coursera estimate, not verified attendance: not stored';
+  const hours = estimate ? `${estimate.estimatedHours} estimated hours` : 'hours not stored';
+  const total = progress?.coursesTotal ?? estimate?.coursesTotal;
+  const courses = progress ? `${progress.coursesCompleted} of ${total ?? '?'} courses completed` : 'completion not stored';
+  const overall = progress?.overallProgress != null ? `${progress.overallProgress}% overall` : 'progress not stored';
+  const learning = progress?.learningHours != null ? `${progress.learningHours} learning hours` : 'learning hours not stored';
+  return `Coursera estimate, not verified attendance: ${hours}, ${courses}, ${overall}, ${learning}`;
+}
 
 /** Rendering only. A rendered PDF is NOT evidence of authorization or certification. */
 export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise<Uint8Array> {
@@ -92,6 +116,7 @@ function drawWeekly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
   const pen = penFor(pdf, font, bold, [792, 612]);
   const { page } = pen;
   const ink = rgb(0, 0, 0);
+  drawLogo(page, 560, 608, 120, bold);
   pen.text('DRAFT', 700, 584, 14, true);
   pen.text('Workforce Solutions Capital Area', MARGIN, 584, 9, true);
   pen.text('Weekly Training Attendance Sheet', MARGIN, 566, 16, true);
@@ -106,6 +131,7 @@ function drawWeekly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
   field("Participant's Name:", snapshot.profile.name, MARGIN, 540, 470);
   field('TWIST ID:', snapshot.enrollment.twistId ?? '', 520, 540, 236);
   field('Training or Educational Program:', snapshot.enrollment.program, MARGIN, 518, 720);
+  pen.text(pen.fit(courseraLine(snapshot), 720, 7), MARGIN, 504, 7);
 
   // Fixed column positions. Widths are measured, never padded with spaces.
   const columns = [
@@ -191,8 +217,9 @@ function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
   const pen = penFor(pdf, font, bold, [792, 612]);
   const { page } = pen;
   const ink = rgb(0, 0, 0);
+  drawLogo(page, 560, 608, 120, bold);
   pen.text('Workforce Advancement Project Student Attendance Record', MARGIN, 590, 11, true);
-  pen.text(pen.fit(snapshot.academicLabel, 90, 9, true), 470, 590, 9, true);
+  pen.text(pen.fit(snapshot.academicLabel, 80, 9, true), 380, 590, 9, true);
   pen.text('DRAFT', 700, 590, 12, true);
   pen.text('not WFS approved; not institutionally approved', MARGIN, 578, 7, true);
 
@@ -226,13 +253,14 @@ function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
   }
 
   pen.text('P = Present (4 hrs); W = Class by Webinar (4 hrs); CR = Watched Class Recordings (4 hrs); A = Absent', MARGIN, 516, 6);
-  pen.text('Admin-entered (unverified). Missing days are blank, never zero.', MARGIN, 507, 6);
+  pen.text(pen.fit(courseraLine(snapshot), 720, 6), MARGIN, 507, 6);
+  pen.text('Admin-entered (unverified). Missing days are blank, never zero.', MARGIN, 498, 6);
 
   const monthX = MARGIN;
   const monthWidth = 78;
   const gridX = monthX + monthWidth;
   const dayWidth = 20;
-  const headerY = 500;
+  const headerY = 486;
   pen.text('Month', monthX + 4, headerY, 6, true);
   for (let day = 1; day <= 31; day++) pen.text(String(day), gridX + (day - 1) * dayWidth + 3, headerY, 6, true);
 
@@ -242,7 +270,7 @@ function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
   const startMonth = first.getUTCMonth();
   const startYear = first.getUTCFullYear();
   for (let index = 0; index < 12; index++) {
-    const rowY = 478 - index * 23;
+    const rowY = 464 - index * 22;
     const month = (startMonth + index) % 12;
     const year = startYear + Math.floor((startMonth + index) / 12);
     pen.text(MONTHS[month], monthX + 2, rowY, 6, true);

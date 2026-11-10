@@ -29,12 +29,24 @@ async function _POST(request: Request) {
         select: { id: true, userId: true, programSlug: true, user: { select: { fullName: true, email: true, phone: true, deletedAt: true, organizationId: true } } },
       });
       if (!row || row.user.organizationId !== organizationId) return null;
+      // Cumulative stored progress only. It is never turned into daily attendance.
+      const progress = await db.courseraCourseProgress.findMany({
+        where: { organizationId, userId: row.userId, programSlug: row.programSlug, isRemovedFromProgram: false },
+        select: { isCompleted: true, overallProgress: true, learningHours: true },
+      });
+      const coursera = progress.length === 0 ? null : {
+        coursesCompleted: progress.filter(course => course.isCompleted).length,
+        coursesTotal: null,
+        overallProgress: null,
+        learningHours: progress.reduce((sum, course) => sum + Number(course.learningHours), 0),
+      };
       return {
         scope: { organizationId, memberId: row.userId, enrollmentId: row.id },
         active: !row.user.deletedAt,
         profile: { name: row.user.fullName, email: row.user.email, phone: row.user.phone },
         // Only stored fields; everything else stays blank, never inferred.
-        enrollment: { program: programDisplayTitle(row.programSlug), twistId: null, counselor: null, abbreviation: null, pathway: null, classStart: null, classEnd: null },
+        enrollment: { program: programDisplayTitle(row.programSlug), programSlug: row.programSlug, twistId: null, counselor: null, abbreviation: null, pathway: null, classStart: null, classEnd: null },
+        coursera,
         startMonth: null,
         configuredInstructorId: null,
         sourceMappings: [],

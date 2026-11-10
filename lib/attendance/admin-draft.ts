@@ -66,7 +66,7 @@ export async function handleAdminDraftPdf(method: string, rawBody: string, deps:
       reason: 'Entered by an attendance admin for an unsaved draft; not independently verified',
     })));
     const draft = createDraft(actor, scope, { kind: body.kind, selectedDate: body.selectedDate, startMonth: trusted.startMonth,
-      profile: trusted.profile, enrollment: trusted.enrollment, evidence });
+      profile: trusted.profile, enrollment: trusted.enrollment, evidence, coursera: trusted.coursera ?? null });
     return { status: 200, pdf: await renderAuthorizedDraft(actor, draft), headers: { ...DRAFT_PDF_HEADERS } };
   } catch (error) {
     if (error instanceof ZodError) return fail(400, 'INVALID_REQUEST');
