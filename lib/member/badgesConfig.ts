@@ -71,7 +71,7 @@ export const BADGES: readonly BadgeDefinition[] = [
   {
     key: 'certified',
     label: 'Certified',
-    description: 'Earn a certification your counselor approves.',
+    description: 'Earn a certification an admin approves.',
     event: 'certification_earned',
     need: 1,
     excludeNotePrefix: CELEBRATION_NOTE_PREFIX,
@@ -79,7 +79,7 @@ export const BADGES: readonly BadgeDefinition[] = [
   {
     key: 'streak_7',
     label: '7-day streak',
-    description: 'Reach a 7-day study streak.',
+    description: 'Reach a 7-day streak.',
     need: 7,
   },
 ];

@@ -6,8 +6,9 @@ import { WIRED_EVENTS as POINTS_WIRED_EVENTS } from '@/lib/member/pointsConfig';
 
 /**
  * A badge renders only when a member can earn it today. Event badges must
- * sit in the points page's WIRED_EVENTS set; the streak badge has no event
- * and rides `daily_study`, the one wired event that moves a streak.
+ * sit in the points page's WIRED_EVENTS set. The streak badge has no event
+ * of its own: awardPoints() calls updateStreak on every awarded event, and
+ * `daily_study` stays in this set so a study-only day still shows the badge.
  */
 export const WIRED_EVENTS = new Set<string>(
   BADGES.flatMap((badge) => (badge.event ? [badge.event] : [])).filter((event) => POINTS_WIRED_EVENTS.has(event)),
