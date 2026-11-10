@@ -13,7 +13,7 @@ for (const kind of ['weekly', 'monthly', 'yearly'] as SheetKind[]) {
       const rows = variant === 'missing' ? [] : [{ sourceKey: 'synthetic-reviewed-register', date: dates[0], kind: 'verified-duration' as const, minutes: 240, verifiedBy: 'synthetic-admin', reference: 'synthetic-only', reason: 'Synthetic dated attendance register reviewed' }];
       const snapshot: AttendanceSnapshot = {
         schemaVersion: 1, kind, provenance: { evidenceDigest: digest(rows), evidenceRevision: digest(rows), ruleVersion: DRAFT_RULE.version, pMinimumMinutes: 240, ruleApproved: false, reportingTimezone: REPORTING_TIMEZONE, templateVersion: TEMPLATE_VERSION }, academicLabel: '2026-2027',
-        profile: { name: variant === 'long-names' ? 'Synthetic Participant '.repeat(30) : 'Synthetic Participant', email: variant === 'missing' ? null : 'synthetic@example.invalid', phone: null },
+        profile: { name: variant === 'long-names' ? (kind === 'yearly' ? 'Synthetic Participant With A Rather Long Name' : 'Synthetic Participant '.repeat(30)) : 'Synthetic Participant', email: variant === 'missing' ? null : 'synthetic@example.invalid', phone: null },
         enrollment: { program: variant === 'long-names' ? 'Synthetic Program '.repeat(25) : 'Synthetic Program', twistId: null, counselor: null, abbreviation: null, pathway: null, classStart: null, classEnd: null },
         days: summarize(dates, rows),
       };

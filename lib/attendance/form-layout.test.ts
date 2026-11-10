@@ -112,6 +112,39 @@ test('yearly sheet matches the spreadsheet grid on one landscape page', async ()
   assert.ok(lowest >= MIN_FOOTER_Y - 0.5, `footer baseline ${lowest} is below 36pt`);
 });
 
+test('yearly long name prints fully and overlong names fail loudly', async () => {
+  const name = 'Synthetic Participant With A Rather Long Name';
+  const [page] = await boxes(await renderAttendancePdf(snapshot('yearly', { profile: { name, email: null, phone: null } })));
+  assert.ok(textOf(page).includes(name));
+  await assert.rejects(renderAttendancePdf(snapshot('yearly', { profile: { name: name.repeat(15), email: null, phone: null } })), /PARTICIPANT_NAME_DOES_NOT_FIT_YEARLY/);
+});
+
+test('weekly choice rows align and yearly catalog estimate and missing fields print honestly', async () => {
+  const [weekly] = await boxes(await renderAttendancePdf(snapshot('weekly')));
+  for (const choice of ['Yes', 'No']) {
+    const items = weekly.filter(item => item.str === choice);
+    assert.equal(items.length, 2);
+    assert.ok(Math.abs(items[0].x - items[1].x) < 0.5);
+  }
+  const base = snapshot('yearly');
+  const [yearly] = await boxes(await renderAttendancePdf({ ...base, profile: { name: 'Synthetic Participant', email: null, phone: null },
+    enrollment: { ...base.enrollment, abbreviation: null, pathway: null, classStart: null, classEnd: null, programSlug: 'data-analytics-professional-certificate-google' } }));
+  assert.ok(yearly.filter(item => item.str === '—').length >= 6);
+  assert.ok(yearly.some(item => item.str.includes('80 h (catalog estimate)')));
+});
+
+test('yearly invalid dates are marked in leap and common years', async () => {
+  for (const [year, expected] of [[2024, 2], [2026, 3]] as const) {
+    const base = snapshot('yearly');
+    const [page] = await boxes(await renderAttendancePdf({ ...base,
+      days: summarize(periodDates('yearly', String(year) + '-01-01', 1), []) }));
+    const february = page.find(item => item.str === 'FEBRUARY')!;
+    assert.equal(page.filter(item => item.str === '×' && Math.abs(item.y - february.y) < 1).length, expected);
+    const march = page.find(item => item.str === 'MARCH')!;
+    assert.equal(page.filter(item => item.str === '×' && Math.abs(item.y - march.y) < 1).length, 0);
+  }
+});
+
 test('monthly stays an adapted draft because no monthly form exists', async () => {
   const dates = periodDates('monthly', '2026-11-09', null);
   const rows: never[] = [];

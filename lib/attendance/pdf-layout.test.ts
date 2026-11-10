@@ -65,7 +65,7 @@ test('wrapped header lines never overlap each other or the body', async () => {
 
 test('footer hash and page notice stay inside the margins on a long-name sheet', async () => {
   const bytes = await renderAttendancePdf(snapshot('yearly', {
-    academicLabel: 'W'.repeat(64), profile: { name: 'Synthetic Participant '.repeat(30), email: null, phone: null } }));
+    academicLabel: 'W'.repeat(64), profile: { name: 'Synthetic Participant With A Rather Long Name', email: null, phone: null } }));
   const right = await pageWidth(bytes) - LEFT;
   const pages = await textBoxes(bytes);
   assert.ok(pages.length >= 1);

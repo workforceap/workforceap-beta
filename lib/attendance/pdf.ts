@@ -141,7 +141,7 @@ function drawWeekly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
     { label: 'Time Out', x: 470, width: 140 },
     { label: 'Total Hours', x: 630, width: 126 },
   ];
-  const headerY = 490;
+  const headerY = 480;
   page.drawRectangle({ x: MARGIN, y: headerY - 6, width: 720, height: 18, borderWidth: 0.6, color: rgb(0.93, 0.93, 0.93), borderColor: ink });
   for (const column of columns) pen.text(column.label, column.x + 4, headerY, 9, true);
 
@@ -152,7 +152,7 @@ function drawWeekly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
     const date = new Date(monday);
     date.setUTCDate(monday.getUTCDate() + index);
     const iso = date.toISOString().slice(0, 10);
-    const rowY = 464 - index * 26;
+    const rowY = 454 - index * 26;
     page.drawRectangle({ x: MARGIN, y: rowY - 8, width: 720, height: 26, borderWidth: 0.4, borderColor: ink });
     for (const column of columns.slice(1)) {
       page.drawLine({ start: { x: column.x - 4, y: rowY - 8 }, end: { x: column.x - 4, y: rowY + 18 }, thickness: 0.4, color: ink });
@@ -167,19 +167,18 @@ function drawWeekly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
     else if (day.codes.includes('A')) pen.text('A', columns[4].x + 4, rowY, 9);
   }
 
-  pen.text('PROPOSED DRAFT RULE: P >=4 verified hours/day; not institutionally approved. Time In/Out unavailable.', MARGIN, 292, 7);
-  pen.text('Is the participant making satisfactory progress as defined by the educational institution?', MARGIN, 272, 8);
-  pen.text('Yes', 620, 272, 9);
-  pen.text('No', 690, 272, 9);
-  box(page, 604, 270);
-  box(page, 674, 270);
-  pen.text('unanswered', 706, 272, 6);
-  pen.text('Will the course / training be completed on time?', MARGIN, 250, 8);
-  pen.text('Yes', 420, 250, 9);
-  pen.text('No', 490, 250, 9);
-  box(page, 404, 248);
-  box(page, 474, 248);
-  pen.text('unanswered', 524, 250, 7);
+  pen.text('PROPOSED DRAFT RULE: P >=4 verified hours/day; not institutionally approved. Time In/Out unavailable.', MARGIN, 282, 7);
+  const yesX = 610;
+  const noX = 681;
+  for (const y of [264, 244]) {
+    pen.text('Yes', yesX, y, 9);
+    pen.text('No', noX, y, 9);
+    box(page, yesX - 16, y - 2);
+    box(page, noX - 16, y - 2);
+    pen.text('unanswered', 708, y, 6);
+  }
+  pen.text('Is the participant making satisfactory progress as defined by the educational institution?', MARGIN, 264, 8);
+  pen.text('Will the course / training be completed on time?', MARGIN, 244, 8);
 
   pen.text('Instructor Signature:', MARGIN, 222, 9, true);
   page.drawLine({ start: { x: 150, y: 220 }, end: { x: 470, y: 220 }, thickness: 0.4, color: ink });
@@ -210,8 +209,8 @@ function utcDate(iso: string): Date {
 }
 
 /**
- * WorkforceAP yearly overview, landscape. Schedule, total class hours and instructor are not stored
- * on the enrollment, so those cells print "not stored" instead of a guessed value.
+ * WorkforceAP yearly overview, landscape. Only catalog-estimated class hours are known;
+ * missing enrollment fields use the same dash marker, never inferred values.
  */
 function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFont, bold: PDFFont) {
   const pen = penFor(pdf, font, bold, [792, 612]);
@@ -223,26 +222,34 @@ function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
   pen.text('DRAFT', 700, 590, 12, true);
   pen.text('not WFS approved; not institutionally approved', MARGIN, 578, 7, true);
 
+  const missing = '—';
+  const cellValue = (value: string | null | undefined) => value?.trim() || missing;
+  const estimate = programCourseEstimate(snapshot.enrollment.programSlug ?? null);
   const cells: Array<[string, string, number]> = [
     ['Name of Student', snapshot.profile.name, 150],
-    ['Class Abbrv.', snapshot.enrollment.abbreviation ?? '', 70],
-    ['Student Phone Number', snapshot.profile.phone ?? '', 110],
-    ['Student Email Address', snapshot.profile.email ?? '', 170],
-    ['Class Start Date', snapshot.enrollment.classStart ?? '', 80],
-    ['Class End Date', snapshot.enrollment.classEnd ?? '', 80],
+    ['Class Abbrv.', cellValue(snapshot.enrollment.abbreviation), 70],
+    ['Student Phone Number', cellValue(snapshot.profile.phone), 110],
+    ['Student Email Address', cellValue(snapshot.profile.email), 170],
+    ['Class Start Date', cellValue(snapshot.enrollment.classStart), 80],
+    ['Class End Date', cellValue(snapshot.enrollment.classEnd), 140],
   ];
   let x = MARGIN;
   for (const [label, value, width] of cells) {
     pen.text(label, x, 566, 6, true);
-    pen.text(pen.fit(value, width - 4, 7), x, 556, 7);
+    if (label === 'Name of Student') {
+      // Never use fit() here: it silently drops the participant's identity.
+      const fontSize = Math.min(7, 7 * (width - 4) / font.widthOfTextAtSize(pen.safe(value), 7));
+      if (fontSize < 4) throw new Error('PARTICIPANT_NAME_DOES_NOT_FIT_YEARLY');
+      pen.text(value, x + 2, 556, fontSize);
+    } else pen.text(pen.fit(value, width - 4, 7), x + 2, 556, 7);
     page.drawRectangle({ x, y: 552, width, height: 22, borderWidth: 0.3, borderColor: ink });
     x += width;
   }
   const second: Array<[string, string, number]> = [
-    ['Name of Class Pathway', snapshot.enrollment.pathway ?? '', 200],
-    ['Class Schedule', 'not stored', 180],
-    ['Total Class Hours', 'not stored', 120],
-    ['Name of Instructors', 'not stored', 220],
+    ['Name of Class Pathway', cellValue(snapshot.enrollment.pathway), 200],
+    ['Class Schedule', missing, 180],
+    ['Total Class Hours', estimate ? `${estimate.estimatedHours} h (catalog estimate)` : missing, 140],
+    ['Name of Instructors', missing, 200],
   ];
   x = MARGIN;
   for (const [label, value, width] of second) {
@@ -254,7 +261,7 @@ function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
 
   pen.text('P = Present (4 hrs); W = Class by Webinar (4 hrs); CR = Watched Class Recordings (4 hrs); A = Absent', MARGIN, 516, 6);
   pen.text(pen.fit(courseraLine(snapshot), 720, 6), MARGIN, 507, 6);
-  pen.text('Admin-entered (unverified). Missing days are blank, never zero.', MARGIN, 498, 6);
+  pen.text('Admin-entered (unverified). Missing days are blank; shaded × cells are invalid dates.', MARGIN, 498, 6);
 
   const monthX = MARGIN;
   const monthWidth = 78;
@@ -278,8 +285,14 @@ function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
     const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
     for (let day = 1; day <= 31; day++) {
       const cellX = gridX + (day - 1) * dayWidth;
+      if (day > daysInMonth) {
+        page.drawRectangle({ x: cellX, y: rowY - 6, width: dayWidth, height: 24, color: rgb(0.87, 0.87, 0.87) });
+      }
       page.drawLine({ start: { x: cellX, y: rowY - 6 }, end: { x: cellX, y: rowY + 18 }, thickness: 0.2, color: ink });
-      if (day > daysInMonth) continue;
+      if (day > daysInMonth) {
+        pen.text('×', cellX + 7, rowY, 7, true);
+        continue;
+      }
       const iso = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const record = byDate.get(iso);
       const code = record ? cellCode(record) : null;
@@ -290,7 +303,8 @@ function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
     }
   }
 
-  pen.text(`Totals (known days only): P ${counts.P}   W ${counts.W}   CR ${counts.CR}   A ${counts.A}`, MARGIN, 184, 8, true);
+  pen.text(`Totals (known days only): P ${counts.P}   W ${counts.W}   CR ${counts.CR}   A ${counts.A}`, MARGIN + 4, 184, 8, true);
+  page.drawRectangle({ x: MARGIN, y: 178, width: monthWidth + 31 * dayWidth, height: 16, borderWidth: 0.3, borderColor: ink });
   pen.text('Signature of WorkforceAP Student', MARGIN, 160, 8, true);
   page.drawLine({ start: { x: 200, y: 158 }, end: { x: 470, y: 158 }, thickness: 0.4, color: ink });
   pen.text('pending', 206, 162, 7);
