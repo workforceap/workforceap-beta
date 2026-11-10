@@ -41,7 +41,9 @@ import { deflateSync } from 'node:zlib';
 
 const MIGRATION_NAME = '20260927230000_billing_two_stage_j5_j6';
 const SIX_MONTH_MIGRATION = '20261006203708_billing_six_month_class_terms';
+const J6_RELAXED_MIGRATION = '20261110194500_billing_j6_signed_j5_and_review_notes';
 const sixMonthMigration = readFileSync(`prisma/migrations/${SIX_MONTH_MIGRATION}/migration.sql`, 'utf8');
+const j6RelaxedMigration = readFileSync(`prisma/migrations/${J6_RELAXED_MIGRATION}/migration.sql`, 'utf8');
 const LEGACY_MIGRATION = 'prisma/migrations/20260904020000_training_billing_packets/migration.sql';
 // #2701: runs before this migration on master and restricts the legacy table's browser grants.
 const LEGACY_GRANTS_MIGRATION_NAME = '20260927224500_restrict_legacy_training_billing_packets';
@@ -118,6 +120,16 @@ const rejects = (input, sqlstate, why) => {
 };
 const refusedBecause = (stmt, message) => sql(`DO $proof$ BEGIN ${stmt} RAISE EXCEPTION 'proof: statement unexpectedly succeeded';
       EXCEPTION WHEN check_violation THEN IF SQLERRM NOT LIKE '${message}' THEN RAISE; END IF; END $proof$;`);
+/**
+ * The review hold is not what stops this statement: it either passes the
+ * review-reason gate (failing later on an unrelated signing rule) or succeeds.
+ * Everything is rolled back.
+ */
+const notHeldByReview = (stmt) => sql(`DO $proof$ BEGIN ${stmt} RAISE EXCEPTION 'proof-rollback';
+      EXCEPTION
+        WHEN raise_exception THEN IF SQLERRM <> 'proof-rollback' THEN RAISE; END IF;
+        WHEN check_violation THEN IF SQLERRM LIKE 'the J6 is held%' THEN RAISE; END IF;
+      END $proof$;`);
 const ident = (value) => `"${String(value).replaceAll('"', '""')}"`;
 const pass = (message) => console.log(`PASS ${message}`);
 
@@ -357,6 +369,8 @@ try {
 
   // ------------------------------------------------------------ migrate
   sql(migration);
+  // Production applies the J6 rule relaxation on top; the assertions below prove the current rules.
+  sql(j6RelaxedMigration);
   TODAY_ISO = sql(`SELECT to_char(public.billing_today(), 'YYYY-MM-DD');`);
   const fingerprint = schemaFingerprint();
   pass('migration applies on the legacy billing state');
@@ -867,9 +881,10 @@ try {
   sql(recipientsInsert('j6-cls', 'j6', ['finance', 'counselor', 'student']));
   sql(artifactInsert({ id: 'art-j6-cls', kind: 'j6_signed_pdf', source: 'rendered', text: '%PDF-1.7 synthetic J6 v1', renders: { record: 'j6-cls', version: 1, contentSha256: HASH } }));
   sql(`UPDATE public.billing_stage_records SET ${set({ review_cleared_at: 'now()', review_cleared_by_subject_id: `'${STAFF}'`, review_note: `'Synthetic: looks fine'` })}, updated_at = now() WHERE id='j6-cls';`);
-  rejects(`UPDATE public.billing_stage_records SET status='signed', ${set(SIGNED('art-j6-cls'))} WHERE id='j6-cls';`, '23514', 'a class mismatch blocks signing whatever the review says');
+  // The class difference is recorded but no longer holds signing: the next gate is the receipt signature.
+  refusedBecause(`UPDATE public.billing_stage_records SET status='signed', ${set(SIGNED('art-j6-cls'))}, updated_at = now() WHERE id='j6-cls';`, 'VOUCHER_RECEIPT_SIGNATURE_UNATTESTED:%');
   sql(`UPDATE public.billing_stage_records SET status='voided', voided_at = now(), closed_by_subject_id = '${STAFF}', close_reason = 'Synthetic: wrong class', updated_at = now() WHERE id='j6-cls';`);
-  pass('J6 review reasons are derived by the database; a program/class mismatch against the quote or voucher (two 160h classes) blocks signing even with a cleared review');
+  pass('J6 review reasons are derived by the database; a program/class mismatch against the quote or voucher is recorded and never blocks signing');
 
   // --------------------- (3) supersede lineage stays in one case and stage
   assert.match(
@@ -899,9 +914,10 @@ try {
   sql(recipientsInsert('j6-v2', 'j6', ['finance', 'counselor', 'student']));
   sql(artifactInsert({ id: 'art-j6', kind: 'j6_signed_pdf', source: 'rendered', text: '%PDF-1.7 synthetic J6', renders: { record: 'j6-v2', version: 2, contentSha256: HASH } }));
   const signJ6 = (id, artifact = 'art-j6') => `UPDATE public.billing_stage_records SET status='signed', ${set(SIGNED(artifact))}, updated_at = now() WHERE id='${id}';`;
-  rejects(signJ6('j6-v2'), '23514', 'a held J6 cannot be signed');
+  // A recorded difference never blocks signing: the signer reviews it and signs anyway (here the receipt signature is still missing).
+  refusedBecause(signJ6('j6-v2'), 'VOUCHER_RECEIPT_SIGNATURE_UNATTESTED:%');
   sql(`UPDATE public.billing_stage_records SET ${set({ review_cleared_at: 'now()', review_cleared_by_subject_id: `'${STAFF}'`, review_note: `'Synthetic: board says $7,000 is fine'` })}, updated_at = now() WHERE id='j6-v2';`);
-  rejects(signJ6('j6-v2'), '23514', 'a $7,000 voucher cannot be signed with any review note');
+
   assert.equal(sql(`SELECT count(*) FROM pg_class WHERE relname = 'billing_amount_exceptions';`), '0', 'there is no amount-exception bypass');
   // Corrected authorization: a new voucher attestation for $7,500.00 clears the money reason.
   sql(voucherAttestation('att-voucher-fix', 'true', { amount: 750000 }));
@@ -961,7 +977,7 @@ try {
   assert.equal(j6Signed.code, 0, j6Signed.stderr);
   assert.equal(sql(`SELECT r.status || '|' || p.recipient_name FROM public.billing_stage_records r JOIN public.billing_stage_recipients p ON p.stage_record_id = r.id AND p.recipient_role = 'finance' WHERE r.id='j6-v2';`), 'signed| Synthetic   finance');
   rejects(`UPDATE public.billing_stage_records SET review_note = 'rewritten' WHERE id='j6-v2';`, '23514', 'the signed record is frozen');
-  pass('a voucher amount mismatch has no bypass (no review note, no exception table); a corrected $7,500.00 voucher attestation makes the J6 signable; v2 cannot reuse v1\'s PDF; a sign waits for an in-flight recipient edit');
+  pass('a voucher amount difference is recorded and never blocks signing; a corrected $7,500.00 voucher attestation clears the recorded difference; v2 cannot reuse v1\'s PDF; a sign waits for an in-flight recipient edit');
 
   // External prior quote: J6 allowed on a case with no system J5; class compared to the quote.
   rejects(
@@ -1127,14 +1143,15 @@ try {
   sql(artifactInsert({ id: 'art-j6-v3', kind: 'j6_signed_pdf', source: 'rendered', text: '%PDF-1.7 synthetic J6 v3', renders: { record: 'j6-v3', version: 3, contentSha256: HASH } }));
   const clearReview = `UPDATE public.billing_stage_records SET ${set({ review_cleared_at: 'now()', review_cleared_by_subject_id: `'${STAFF}'`, review_note: `'Synthetic: board OK by phone'` })}, updated_at = now() WHERE id='j6-v3';`;
   sql(clearReview);
-  rejects(signJ6('j6-v3', 'art-j6-v3'), '23514', 'a voucher-period conflict is never cleared by a review note');
+  // A recorded voucher-period difference never blocks signing.
+  notHeldByReview(signJ6('j6-v3', 'art-j6-v3'));
   sql(`UPDATE public.billing_stage_records SET ${set({ class_start_attestation_id: `'att-start-long'`, class_end_date: `'2027-03-10'`, voucher_attestation_id: `'att-voucher-fix'`, review_reasons: `ARRAY['end_date_not_contract']`,
     content: `'${JSON.stringify({ synthetic: true, totalCents: 750000, training: { programSlug: PROGRAM, className: CLASS, contactHours: 160, classStartDate: '2026-09-20', classEndDate: '2027-03-10' }, ...contentContacts('j6'), recipients: contentRecipients('j6'), letterhead: CONTENT_LETTERHEAD, issueDate: TODAY_ISO })}'::jsonb` })}, updated_at = now() WHERE id='j6-v3';`);
-  rejects(signJ6('j6-v3', 'art-j6-v3'), '23514', 'an end date that is not start + 5 months is never cleared by a review note');
+  notHeldByReview(signJ6('j6-v3', 'art-j6-v3'));
   // Corrected class evidence and voucher: both holds disappear.
   sql(`UPDATE public.billing_stage_records SET ${set({ class_start_attestation_id: `'att-start'`, class_end_date: `'2027-02-20'`, review_required: 'false', review_reasons: 'ARRAY[]::TEXT[]', review_cleared_at: 'NULL', review_cleared_by_subject_id: 'NULL', review_note: 'NULL',
     content: `'${JSON.stringify({ synthetic: true, totalCents: 750000, training: { programSlug: PROGRAM, className: CLASS, contactHours: 160, classStartDate: '2026-09-20', classEndDate: '2027-02-20' }, ...contentContacts('j6'), recipients: contentRecipients('j6'), letterhead: CONTENT_LETTERHEAD, issueDate: TODAY_ISO })}'::jsonb` })}, updated_at = now() WHERE id='j6-v3';`);
-  pass('voucher-period and contract-end holds are hard: a cleared review never unlocks signing; corrected voucher/class evidence clears them');
+  pass('voucher-period and contract-end differences are recorded and never block signing; corrected evidence clears the recorded difference');
   // A signed J6 that was never sent cannot acquire a sent proof by any other transition.
   const j6v3Hashes = () => sql(`SELECT array_to_string(public.billing_stage_expected_attachments('j6-v3'), ',');`).split(',');
   rejects(sendInsert({ id: 's-j6-v3-draft', record: 'j6-v3', stage: 'j6', version: 3, role: 'finance', attachments: j6Hashes }), '23514', 'no claim for a draft record');
@@ -1413,6 +1430,21 @@ try {
   assert.equal(sigRevoked.code, 0, sigRevoked.stderr);
   assert.ok(Date.now() - revokeStarted > 800, 'the revoke waited for the concurrent sign');
   assert.equal(sql(`SELECT status || '|' || (content #>> '{signature,assetSha256}') FROM public.billing_stage_records WHERE id = 'j5-sig-a';`), `signed|${sig1.sha}`);
+  // Hand delivery: a signed (never sent) J5 is a valid prior quote; a draft, a missing or another case's J5 is not.
+  {
+    const linkProbe = (priorId, caseId = 'case-sig-a') => stageInsert({ id: 'j6-link-probe', stage: 'j6', doc: 'WAP-I-LINK', caseId,
+      extra: { prior_j5_source: `'system'`, prior_j5_record_id: `'${priorId}'` } });
+    const linkGuard = (stmt) => sql(`DO $proof$ BEGIN ${stmt} RAISE EXCEPTION 'proof-rollback';
+      EXCEPTION
+        WHEN raise_exception THEN IF SQLERRM <> 'proof-rollback' THEN RAISE; END IF;
+        WHEN check_violation THEN IF SQLERRM LIKE 'prior_j5_record_id must%' THEN RAISE; END IF;
+      END $proof$;`);
+    linkGuard(linkProbe('j5-sig-a'));
+    refusedBecause(linkProbe('j5-sig-b', 'case-sig-b'), 'prior_j5_record_id must%');
+    refusedBecause(linkProbe('no-such-j5'), 'prior_j5_record_id must%');
+    refusedBecause(linkProbe('j5-sig-b'), 'prior_j5_record_id must%');
+    pass('a signed, never-sent J5 is accepted as the J6 prior quote (hand delivery); a draft, a missing or another case\'s J5 is refused');
+  }
   assert.equal(sql(`SELECT (revoked_at > '2020-01-01')::text || '|' || revoked_by_subject_id FROM public.billing_signer_signature_assets WHERE id = 'sig-1';`), 'true|ops-review', 'revoked_at is the DB clock');
   rejects(revokeSig('sig-1'), '23514', 'a revoke is one-time');
   // Replacement: a new asset for the same signer; every record signed earlier keeps its frozen sig-1 hash.
@@ -1472,6 +1504,7 @@ try {
   // ------------------------------------------------------- re-run
   const recordCount = sql(`SELECT count(*) FROM public.billing_stage_records;`);
   sql(migration);
+  sql(j6RelaxedMigration);
   assert.equal(schemaFingerprint(), fingerprint, 'Re-applying must not change constraints, triggers or indexes.');
   for (const role of ['anon', 'authenticated']) assert.ok(privilegeMatrix(role).every((v) => v === false));
   assert.equal(legacyAccess(), legacyGrantsBefore, 'a re-run leaves legacy access unchanged');
@@ -1483,6 +1516,7 @@ try {
   const snapshotsBefore = snapshots();
   sql(sixMonthMigration);
   sql(sixMonthMigration);
+  sql(j6RelaxedMigration);
   assert.equal(snapshots(), snapshotsBefore, 'the term migration never rewrites existing documents');
   assert.equal(frozenSigned('j5-sig-a'), signedBefore, 'all signed/sent records retain their original content and signatures');
   // Legacy drafts remain usable under v1, and rollback code may still write v1.

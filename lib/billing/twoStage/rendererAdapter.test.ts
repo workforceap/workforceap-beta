@@ -323,12 +323,12 @@ describe('two-stage renderer adapter: every printed field comes from frozen cont
     assert.throws(() => toRendererFacts(j5(), { logoPng: other, frozenAt: '2026-10-01T18:30:00.000Z' }), (e: unknown) => e instanceof RendererAdapterError && e.code === 'LOGO_CHANGED');
   });
 
-  it('renders a held J6 DRAFT for review with the on-hold badge (open holds never block a preview)', async () => {
+  it('renders a J6 DRAFT that records a difference with the signature badge, not an on-hold badge', async () => {
     const held = j6({ authorizedEndDate: '2027-01-31' });
     assert.deepEqual(held.reviewReasons, ['voucher_period_conflict']);
     const text = await pageText(await renderDraftFromContent(held, { logoPng, frozenAt: '2026-10-01T18:30:00.000Z', receiptSignatureId: 'rsig-0001' }));
-    assert.ok(text.startsWith('DRAFT - ON HOLD - NOT SIGNABLE'));
-    assert.doesNotMatch(text, /DRAFT - SIGNATURE REQUIRED/u);
+    assert.ok(text.startsWith('DRAFT - SIGNATURE REQUIRED'));
+    assert.doesNotMatch(text, /NOT SIGNABLE/u);
     assert.match(unsourcedRemainder(text, held), /^[\s|;,]*$/u);
   });
 
@@ -471,11 +471,11 @@ describe('two-stage renderer adapter: the signed page', () => {
     await assert.rejects(renderSignedFromContent({ ...j6(), signature: null }, { ...opts, signaturePng }), code);
   });
 
-  it('refuses a J6 that is on hold or lacks the designated signer receiving-signature attestation', async () => {
+  it('signs a J6 that records a voucher difference, and still refuses one without the receiving-signature attestation', async () => {
     const base = { logoPng, signaturePng, frozenAt: FROZEN_AT };
-    const held = j6({ authorizedEndDate: '2027-01-31' });
-    assert.deepEqual(held.reviewReasons, ['voucher_period_conflict']);
-    await assert.rejects(renderSignedFromContent(held, { ...base, receiptSignatureId: 'rsig-0001' }), (e: unknown) => e instanceof RendererAdapterError && e.code === 'CONTENT_NOT_RENDERABLE');
+    const differing = j6({ authorizedEndDate: '2027-03-15', voucherReference: 'PO-44871-A' });
+    assert.deepEqual(differing.reviewReasons, ['voucher_period_conflict']);
+    await assert.doesNotReject(renderSignedFromContent(differing, { ...base, receiptSignatureId: 'rsig-0001' }));
     for (const missing of [null, undefined, '', '  ']) {
       await assert.rejects(renderSignedFromContent(j6(), { ...base, receiptSignatureId: missing }), (e: unknown) => e instanceof RendererAdapterError && e.code === 'CONTENT_NOT_RENDERABLE', JSON.stringify(missing));
     }

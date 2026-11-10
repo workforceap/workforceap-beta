@@ -15,8 +15,8 @@ const EXACT: ReadonlyArray<readonly [BlockerCode, RegExp]> = [
   ['J5_STUDENT_NOT_READY', /^The readiness attestation must confirm the student is approved and ready\./u],
   ['J5_COUNSELOR_REQUEST_MISSING', /^The readiness attestation must record the counselor.s request/u],
   ['J6_ALREADY_OPEN', /^This case already has an open J6\./u],
-  ['J6_PRIOR_QUOTE_MISSING', /^J6 is on hold: send the J5 quote\/voucher request first/u],
-  ['J6_J5_NOT_SENT', /^The J5 quote\/voucher request has not been sent/u],
+  ['J6_PRIOR_QUOTE_MISSING', /^J6 is on hold: sign the J5 quote\/voucher request first/u],
+  ['J6_J5_NOT_SENT', /^The J5 quote\/voucher request has not been signed/u],
   ['J6_EXTERNAL_QUOTE_INCOMPLETE', /^Record the manually issued quote/u],
   ['J6_VOUCHER_MISSING', /^Upload the voucher signed by the board/u],
   ['J6_VOUCHER_ATTESTATION_INCOMPLETE', /^Confirm the uploaded board-signed voucher/u],
@@ -47,9 +47,9 @@ const HOLD_CODE: Readonly<Record<HoldReason, BlockerCode>> = {
   class_differs_from_quote: 'HOLD_CLASS_DIFFERS_FROM_QUOTE',
 };
 
-/** Hard holds use REVIEW_REASON_TEXT alone (canSignJ6 appends a sentence that repeats one of them). */
+/** Review notes: differences between the voucher and the quote, shown to staff and never a reason to refuse signing. */
 export function holdBlockers(holds: readonly HoldReason[]): Blocker[] {
-  return holds.map((hold) => ({ code: HOLD_CODE[hold], message: REVIEW_REASON_TEXT[hold], hardHold: true }));
+  return holds.map((hold) => ({ code: HOLD_CODE[hold], message: REVIEW_REASON_TEXT[hold], hardHold: false }));
 }
 
 /** J6_VOUCHER_ATTESTATION_INCOMPLETE once a voucher file exists: only the designated signer can record its details. */

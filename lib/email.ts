@@ -17,6 +17,7 @@ import { buildUnsubscribeUrl } from '@/lib/email/unsubscribeToken';
 import type { PlacementSurveyDeliveryPayload } from '@/lib/placement-survey/deliveryPayload';
 import { brandedEmailLayout } from '@/lib/email/template';
 import { escapeHtml, sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
+import { portalMessageForwardBcc } from '@/lib/messages/portalMessageOpsInbox';
 import { getOrganizationBranding } from '@/lib/tenant/organizationBranding';
 import type { EligibilityScreeningFields } from '@/lib/apply/eligibilityScreeningFields';
 import {
@@ -552,6 +553,7 @@ export async function sendPortalStaffMessageEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.portal_staff_message,
       to: params.to,
+      bcc: portalMessageForwardBcc(params.to),
       subject: sanitizeEmailSubjectLine(`${branding.name} — ${subjectTitle}`),
       html,
     });
@@ -610,6 +612,7 @@ export async function sendPortalMemberMessageEmail(params: {
       from: getFrom(),
       templateKey: EMAIL_TEMPLATE_KEYS.portal_member_message,
       to: params.to,
+      bcc: portalMessageForwardBcc(params.to),
       subject: sanitizeEmailSubjectLine(`${branding.name} — ${subjectTitle}`),
       html,
     });

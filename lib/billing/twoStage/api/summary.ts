@@ -433,7 +433,7 @@ function matchesFor(content: { training: J6Content['training']; priorJ5: J6Conte
     expected,
     actual,
     reasonCode,
-    hardHold: true,
+    hardHold: false,
   });
   return [
     row('amount', amount === 750_000, formatUsdCents(750_000), Number.isSafeInteger(amount) && amount >= 0 ? formatUsdCents(amount) : String(amount), 'voucher_amount_differs'),
@@ -642,7 +642,12 @@ export function buildCaseSummary(input: SummaryInput): CaseSummaryDto {
   const j5 = j5View(input);
   const j6 = j6View(input);
   const j6Active = priorQuote(snapshot) !== null;
+  const issuedJ5 = stageRecords(snapshot, 'j5').find((r) => r.status === 'signed' || r.status === 'sent');
+  const issuedJ5Content = issuedJ5 ? recordContent<J5Content>(issuedJ5) : null;
   return {
+    j5Quote: issuedJ5Content
+      ? { boardName: issuedJ5Content.boardName, classStartDate: issuedJ5Content.training.classStartDate, classEndDate: issuedJ5Content.training.classEndDate }
+      : null,
     case: {
       id: snapshot.billingCase.id,
       programSlug: snapshot.billingCase.programSlug,

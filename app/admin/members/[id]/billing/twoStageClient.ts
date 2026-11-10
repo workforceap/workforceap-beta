@@ -43,6 +43,7 @@ import type {
   VoucherReceiptStatementDto,
   VoucherUploadDto,
 } from '@/lib/billing/twoStage/dto';
+import { uploadVoucherFile } from '@/lib/billing/twoStage/voucherDirectUploadClient';
 
 export type ApiFailure = {
   ok: false;
@@ -194,8 +195,7 @@ export const twoStageApi = {
   saveDraft: <S extends BillingStage>(memberId: string, caseId: string, stage: S, body: DraftSaveRequest<S>) =>
     request<DraftSaveDto>(`${caseBase(memberId, caseId)}/${stage}/draft`, { method: 'PUT', json: body }),
 
-  uploadVoucher: (memberId: string, caseId: string, file: File) =>
-    request<VoucherUploadDto>(`${caseBase(memberId, caseId)}/voucher`, { method: 'POST', form: pdfForm(file) }),
+  uploadVoucher: (memberId: string, caseId: string, file: File) => uploadVoucherFile(memberId, caseId, file, request),
   attestVoucherData: (memberId: string, caseId: string, artifactId: string, body: VoucherAttestationPart) =>
     request<Omit<VoucherUploadDto, 'reused'>>(`${caseBase(memberId, caseId)}/voucher/${encodeURIComponent(artifactId)}/attestation`, { method: 'POST', json: body }),
   receiptStatement: (memberId: string, caseId: string, artifactId: string) =>

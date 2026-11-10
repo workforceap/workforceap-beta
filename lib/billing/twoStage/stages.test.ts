@@ -213,11 +213,13 @@ describe('J6: gated on the received signed voucher and class start', () => {
     assert.equal(refused.ok, false);
   });
 
-  it('is held without a prior quote; an unsent J5 does not count', () => {
+  it('is held without a prior quote; an unsigned J5 does not count', () => {
     const held = checkJ6Prerequisites(j6Input({ priorJ5: null }));
     assert.equal(held.ok, false);
     assert.match(!held.ok ? held.errors.join(' ') : '', /on hold/);
-    assert.equal(checkJ6Prerequisites(j6Input({ priorJ5: { source: 'system', j5: { ...sentJ5(), status: 'signed' } } })).ok, false);
+    assert.equal(checkJ6Prerequisites(j6Input({ priorJ5: { source: 'system', j5: { ...sentJ5(), status: 'draft' } } })).ok, false);
+    // The quote is delivered by hand, so a signed J5 counts the same as a sent one.
+    assert.ok(checkJ6Prerequisites(j6Input({ priorJ5: { source: 'system', j5: { ...sentJ5(), status: 'signed' } } })).ok);
   });
 
   it('accepts an attested external (manual) quote without any system J5', () => {
@@ -247,30 +249,26 @@ describe('J6: gated on the received signed voucher and class start', () => {
   const START = '2026-09-30';
   const sign = (reviewReasons: readonly string[], classStartDate = START, now = NOW) => canSignJ6({ reviewReasons, classStartDate, now, voucherReceiptSignature: { ok: true } });
 
-  it('a $7,000 voucher can never be signed; there is no review or exception bypass; a corrected voucher unlocks it', () => {
+  it('a voucher difference is recorded and never blocks signing; a corrected voucher clears the note', () => {
     const va = voucherAttestation({ authorizedAmountCents: 700_000 });
     const amount = checkJ6Prerequisites(j6Input({ voucherAttestation: va }));
     assert.ok(amount.ok);
     assert.deepEqual(amount.reviewReasons, ['voucher_amount_differs']);
-    const refused = sign(amount.reviewReasons);
-    assert.equal(refused.ok, false);
-    assert.match(!refused.ok ? refused.errors.join(' ') : '', /cannot clear/);
-    // canSignJ6 takes no review note or exception input at all.
+    assert.equal(sign(amount.reviewReasons).ok, true);
     const corrected = checkJ6Prerequisites(j6Input({ voucherAttestation: voucherAttestation() }));
     assert.ok(corrected.ok);
     assert.deepEqual(corrected.reviewReasons, []);
-    assert.equal(sign([]).ok, true);
   });
 
-  it('period and contract-end holds are hard: only corrected voucher or class evidence clears them', () => {
+  it('period and contract-end differences are recorded and never block signing', () => {
     const period = checkJ6Prerequisites(j6Input({ voucherAttestation: voucherAttestation({ authorizedStartDate: '2026-10-01', authorizedEndDate: '2027-03-30' }) }));
     assert.ok(period.ok);
     assert.deepEqual(period.reviewReasons, ['voucher_period_conflict']);
-    assert.equal(sign(period.reviewReasons).ok, false);
+    assert.equal(sign(period.reviewReasons).ok, true);
     const end = checkJ6Prerequisites(j6Input({ classStarted: { ...classStarted, classEndDate: '2027-03-15' } }));
     assert.ok(end.ok);
     assert.deepEqual(end.reviewReasons, ['end_date_not_contract']);
-    assert.equal(sign(end.reviewReasons).ok, false);
+    assert.equal(sign(end.reviewReasons).ok, true);
     const fixed = checkJ6Prerequisites(j6Input({ classStarted: { ...classStarted, classEndDate: '2027-03-30' }, voucherAttestation: voucherAttestation() }));
     assert.ok(fixed.ok);
     assert.deepEqual(fixed.reviewReasons, []);
@@ -323,14 +321,14 @@ describe('J6: gated on the received signed voucher and class start', () => {
     assert.ok(gate.ok);
     assert.equal(gate.training.contactHours, j5.content.training.contactHours);
     assert.deepEqual(gate.reviewReasons, ['class_differs_from_quote']);
-    assert.equal(sign(gate.reviewReasons).ok, false);
+    assert.equal(sign(gate.reviewReasons).ok, true);
   });
 
   it('blocks a J6 whose board voucher authorizes another program or class', () => {
     const gate = checkJ6Prerequisites(j6Input({ voucherAttestation: voucherAttestation({ authorizedProgramSlug: 'data-analytics-professional-certificate-google', authorizedClassName: 'Data Analytics Professional Certificate (Google)' }) }));
     assert.ok(gate.ok);
     assert.deepEqual(gate.reviewReasons, ['voucher_class_differs']);
-    assert.equal(sign(gate.reviewReasons).ok, false);
+    assert.equal(sign(gate.reviewReasons).ok, true);
     const alias = checkJ6Prerequisites(j6Input({ voucherAttestation: voucherAttestation({ authorizedClassName: 'IT Support (IBM)' }) }));
     assert.ok(alias.ok);
     assert.deepEqual(alias.reviewReasons, ['voucher_class_differs']);
