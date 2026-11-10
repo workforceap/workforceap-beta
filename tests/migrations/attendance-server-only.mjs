@@ -4,7 +4,8 @@
  * The caller supplies the repository's local SHADOW_DATABASE_URL. This script
  * creates its own empty database, refuses to replace an existing one, and drops
  * only the database (and roles) it created. Storage is a narrow SQL stub that
- * mirrors the Supabase table/column names; it does NOT prove the hosted Storage
+ * mirrors the Supabase table/column names and the stock SECURITY DEFINER helper
+ * signatures/owner (add_prefixes etc.); it does NOT prove the hosted Storage
  * API, SDK behaviour or the real search/list functions. Synthetic data only.
  */
 import assert from 'node:assert/strict';
@@ -65,12 +66,13 @@ assert.equal(sql(`SELECT count(*) FROM pg_database WHERE datname = '${database}'
   'Dedicated proof database already exists; refusing to replace it.');
 let created = false;
 const roles = ['att_anon', 'att_authenticated', 'att_extra', 'att_service'];
+const storageAdmin = 'supabase_storage_admin';
 try {
   sql(`CREATE DATABASE ${database};`, 'postgres');
   created = true;
   // The migration names the Supabase roles literally, so create them here
   // (cluster-level, so they are removed again in the finally block).
-  const clusterRoles = ['anon', 'authenticated', 'service_role', ...roles];
+  const clusterRoles = ['anon', 'authenticated', 'service_role', storageAdmin, ...roles];
   for (const r of clusterRoles) {
     assert.equal(sql(`SELECT count(*) FROM pg_roles WHERE rolname = '${r}';`, 'postgres'), '0',
       `Role ${r} already exists on this cluster; refusing to touch it.`);
@@ -81,6 +83,7 @@ try {
     CREATE ROLE authenticated NOLOGIN NOBYPASSRLS;
     CREATE ROLE service_role NOLOGIN BYPASSRLS;
     CREATE ROLE att_extra NOLOGIN NOBYPASSRLS;
+    CREATE ROLE supabase_storage_admin NOLOGIN;
     GRANT authenticated TO att_extra;
     CREATE SCHEMA storage;
     CREATE TABLE storage.buckets (id text PRIMARY KEY, name text NOT NULL UNIQUE, public boolean NOT NULL DEFAULT false);
@@ -101,6 +104,24 @@ try {
       ('member-files', 'Attendance/o/m/s/r.pdf'), ('other', 'attendance/x.pdf');
     INSERT INTO storage.prefixes (bucket_id, name) VALUES
       ('member-files', 'attendance'), ('member-files', 'attendance/o'), ('member-files', 'cert-files');
+    -- Real Supabase Storage (1.29.0 .. 1.88.0) ships these SECURITY DEFINER helpers,
+    -- owned by supabase_storage_admin. The stock add_prefixes() aborted the first
+    -- version of the preflight, so the stub must carry them (names, argument lists,
+    -- return types and owner copied from a real stack's pg_proc).
+    CREATE FUNCTION storage.add_prefixes(_bucket_id text, _name text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $f$ BEGIN NULL; END $f$;
+    CREATE FUNCTION storage.delete_prefix(_bucket_id text, _name text) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER AS $f$ BEGIN RETURN true; END $f$;
+    CREATE FUNCTION storage.delete_leaf_prefixes(bucket_ids text[], names text[]) RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $f$ BEGIN NULL; END $f$;
+    CREATE FUNCTION storage.lock_top_prefixes(bucket_ids text[], names text[]) RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $f$ BEGIN NULL; END $f$;
+    CREATE FUNCTION storage.prefixes_delete_cleanup() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER AS $f$ BEGIN RETURN NULL; END $f$;
+    CREATE FUNCTION storage.objects_delete_cleanup() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER AS $f$ BEGIN RETURN NULL; END $f$;
+    CREATE FUNCTION storage.objects_update_cleanup() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER AS $f$ BEGIN RETURN NULL; END $f$;
+    ALTER FUNCTION storage.add_prefixes(text, text) OWNER TO supabase_storage_admin;
+    ALTER FUNCTION storage.delete_prefix(text, text) OWNER TO supabase_storage_admin;
+    ALTER FUNCTION storage.delete_leaf_prefixes(text[], text[]) OWNER TO supabase_storage_admin;
+    ALTER FUNCTION storage.lock_top_prefixes(text[], text[]) OWNER TO supabase_storage_admin;
+    ALTER FUNCTION storage.prefixes_delete_cleanup() OWNER TO supabase_storage_admin;
+    ALTER FUNCTION storage.objects_delete_cleanup() OWNER TO supabase_storage_admin;
+    ALTER FUNCTION storage.objects_update_cleanup() OWNER TO supabase_storage_admin;
   `);
   baseline();
   // Probe: without the restriction a browser role can reach attendance (test must be able to fail).
@@ -126,13 +147,28 @@ try {
   expectMigrationFailure(/roles anon and authenticated are missing/); noPolicy();
   sql(`ALTER ROLE authenticated_gone RENAME TO authenticated;`);
   sql(`CREATE FUNCTION storage.search(p text) RETURNS SETOF storage.objects LANGUAGE sql SECURITY DEFINER AS $f$ SELECT * FROM storage.objects $f$;`);
-  expectMigrationFailure(/SECURITY DEFINER and can bypass the policy/); noPolicy();
+  expectMigrationFailure(/storage\.search\(p text\) owned by .* is SECURITY DEFINER, not a known Supabase Storage helper/); noPolicy();
   sql(`DROP FUNCTION storage.search(text);`);
-  pass('preflight fails closed (bypassrls, private bucket, RLS on objects/prefixes, roles, SECURITY DEFINER search) and creates nothing');
+  // Fail-closed beyond the allow-list: wrong owner, changed signature, same name
+  // in a different shape, and an unknown name are all still rejected.
+  sql(`ALTER FUNCTION storage.add_prefixes(text, text) OWNER TO service_role;`);
+  expectMigrationFailure(/storage\.add_prefixes\(.*\) owned by service_role is SECURITY DEFINER/); noPolicy();
+  sql(`ALTER FUNCTION storage.add_prefixes(text, text) OWNER TO supabase_storage_admin;`);
+  sql(`CREATE FUNCTION storage.add_prefixes(_bucket_id text, _name text, _extra text) RETURNS void LANGUAGE sql SECURITY DEFINER AS $f$ SELECT 1 $f$;`);
+  expectMigrationFailure(/storage\.add_prefixes\(_bucket_id text, _name text, _extra text\)/); noPolicy();
+  sql(`DROP FUNCTION storage.add_prefixes(text, text, text);`);
+  sql(`CREATE FUNCTION storage.list_everything() RETURNS SETOF storage.objects LANGUAGE sql SECURITY DEFINER AS $f$ SELECT * FROM storage.objects $f$;`);
+  expectMigrationFailure(/storage\.list_everything\(\)/); noPolicy();
+  sql(`DROP FUNCTION storage.list_everything();`);
+  // Same name and arguments as a stock helper but a different return type.
+  sql(`DROP FUNCTION storage.delete_prefix(text, text); CREATE FUNCTION storage.delete_prefix(_bucket_id text, _name text) RETURNS SETOF storage.objects LANGUAGE sql SECURITY DEFINER AS $f$ SELECT * FROM storage.objects $f$; ALTER FUNCTION storage.delete_prefix(text, text) OWNER TO supabase_storage_admin;`);
+  expectMigrationFailure(/storage\.delete_prefix\(_bucket_id text, _name text\) owned by supabase_storage_admin is SECURITY DEFINER/); noPolicy();
+  sql(`DROP FUNCTION storage.delete_prefix(text, text); CREATE FUNCTION storage.delete_prefix(_bucket_id text, _name text) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER AS $f$ BEGIN RETURN true; END $f$; ALTER FUNCTION storage.delete_prefix(text, text) OWNER TO supabase_storage_admin;`);
+  pass('preflight fails closed (bypassrls, private bucket, RLS on objects/prefixes, roles, unknown/altered SECURITY DEFINER) and creates nothing');
 
   const snapshot = () => sql(`SELECT json_agg(json_build_object('t', tablename, 'p', policyname) ORDER BY tablename, policyname) FROM pg_policies WHERE schemaname = 'storage';`);
   const before = snapshot();
-  sql(migration);
+  sql(migration); // applies with the stock Supabase SECURITY DEFINER helpers present
   assert.equal(sql(`SELECT count(*) FROM pg_policies WHERE schemaname = 'storage' AND policyname = 'attendance_server_only' AND permissive = 'RESTRICTIVE' AND roles = '{public}';`), '2');
   assert.notEqual(snapshot(), before);
   pass('migration applies: RESTRICTIVE policy for PUBLIC on storage.objects and storage.prefixes');
@@ -176,7 +212,7 @@ try {
   pass('rollback drops both policies and restores the baseline exposure');
 } finally {
   if (created) sql(`DROP DATABASE ${database} WITH (FORCE);`, 'postgres');
-  for (const r of ['att_extra', 'anon', 'authenticated', 'authenticated_gone', 'service_role']) {
+  for (const r of ['att_extra', 'supabase_storage_admin', 'anon', 'authenticated', 'authenticated_gone', 'service_role']) {
     spawnPass(r);
   }
 }

@@ -78,14 +78,37 @@ BEGIN
   END LOOP;
 
   -- A SECURITY DEFINER listing function runs as its owner and ignores the
-  -- policies, so it could list attendance names.
+  -- policies, so it could list attendance names. Supabase Storage itself ships
+  -- SECURITY DEFINER prefix-maintenance helpers and triggers (Storage API
+  -- 1.29.0 .. 1.88.0, verified on real stacks). They write storage.prefixes and
+  -- return void/boolean/trigger, never object names, so they are allowed, but
+  -- only by exact name + argument list + return type + owner. Any other match
+  -- (new name, changed signature, other owner) still aborts the migration.
   FOR rec IN
-    SELECT p.proname
+    SELECT p.proname,
+           pg_get_function_identity_arguments(p.oid) AS args,
+           pg_get_userbyid(p.proowner) AS owner
     FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'storage' AND p.prosecdef
       AND (p.proname LIKE 'search%' OR p.proname LIKE 'list\_%' OR p.proname LIKE '%prefix%')
+      AND NOT EXISTS (
+        SELECT 1
+        FROM (VALUES
+          ('add_prefixes',           '_bucket_id text, _name text',     'void'),
+          ('delete_prefix',          '_bucket_id text, _name text',     'boolean'),
+          ('delete_leaf_prefixes',   'bucket_ids text[], names text[]', 'void'),
+          ('lock_top_prefixes',      'bucket_ids text[], names text[]', 'void'),
+          ('prefixes_delete_cleanup', '',                               'trigger'),
+          ('objects_delete_cleanup',  '',                               'trigger'),
+          ('objects_update_cleanup',  '',                               'trigger')
+        ) AS ok(proname, args, rettype)
+        WHERE ok.proname = p.proname
+          AND ok.args = pg_get_function_identity_arguments(p.oid)
+          AND ok.rettype = p.prorettype::regtype::text
+          AND pg_get_userbyid(p.proowner) = 'supabase_storage_admin'
+      )
   LOOP
-    RAISE EXCEPTION 'attendance_server_only: storage.%() is SECURITY DEFINER and can bypass the policy; review before migrating', rec.proname;
+    RAISE EXCEPTION 'attendance_server_only: storage.%(%) owned by % is SECURITY DEFINER, not a known Supabase Storage helper, and can bypass the policy; review before migrating', rec.proname, rec.args, rec.owner;
   END LOOP;
 END $$;
 
