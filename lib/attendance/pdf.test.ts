@@ -17,6 +17,11 @@ for (const kind of ['weekly', 'monthly', 'yearly'] as SheetKind[]) {
         enrollment: { program: variant === 'long-names' ? 'Synthetic Program '.repeat(25) : 'Synthetic Program', twistId: null, counselor: null, abbreviation: null, pathway: null, classStart: null, classEnd: null },
         days: summarize(dates, rows),
       };
+      if (kind === 'weekly' && variant === 'long-names') {
+        // A 30-repeat name cannot fit the weekly field legibly: it must fail loudly, never clip.
+        await assert.rejects(renderAttendancePdf(snapshot), /PARTICIPANT_NAME_DOES_NOT_FIT_WEEKLY/);
+        return;
+      }
       if (variant === 'partial') snapshot.days[1].estimatedMinutes = 600;
       const before = structuredClone(snapshot);
       const bytes = await renderAttendancePdf(snapshot);

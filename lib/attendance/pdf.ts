@@ -17,6 +17,8 @@ export type AttendanceSnapshot = {
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'];
 const MARGIN = 36;
+/** Right edge shared by every landscape yearly block: metadata, day grid and totals. */
+const RIGHT_EDGE = 792 - MARGIN;
 
 /** WorkforceAP mark from public/images/logo.svg: dark badge, red mark, white wordmark. The WFS logo is never drawn; their name stays text. */
 function drawLogo(page: PDFPage, x: number, y: number, width: number, font: PDFFont) {
@@ -125,7 +127,13 @@ function drawWeekly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
   const field = (label: string, value: string, x: number, y: number, width: number) => {
     pen.text(label, x, y, 9, true);
     const labelWidth = bold.widthOfTextAtSize(label, 9);
-    pen.text(pen.fit(value, width - labelWidth - 8, 9), x + labelWidth + 6, y, 9);
+    if (label === "Participant's Name:") {
+      // Never use fit() here: it silently drops the participant's identity.
+      const room = width - labelWidth - 8;
+      const fontSize = Math.min(9, 9 * room / Math.max(1, font.widthOfTextAtSize(pen.safe(value), 9)));
+      if (fontSize < 5) throw new Error('PARTICIPANT_NAME_DOES_NOT_FIT_WEEKLY');
+      pen.text(value, x + labelWidth + 6, y, fontSize);
+    } else pen.text(pen.fit(value, width - labelWidth - 8, 9), x + labelWidth + 6, y, 9);
     page.drawLine({ start: { x: x + labelWidth + 4, y: y - 2 }, end: { x: x + width, y: y - 2 }, thickness: 0.4, color: ink });
   };
   field("Participant's Name:", snapshot.profile.name, MARGIN, 540, 470);
@@ -238,7 +246,7 @@ function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
     pen.text(label, x, 566, 6, true);
     if (label === 'Name of Student') {
       // Never use fit() here: it silently drops the participant's identity.
-      const fontSize = Math.min(7, 7 * (width - 4) / font.widthOfTextAtSize(pen.safe(value), 7));
+      const fontSize = Math.min(7, 7 * (width - 4) / Math.max(1, font.widthOfTextAtSize(pen.safe(value), 7)));
       if (fontSize < 4) throw new Error('PARTICIPANT_NAME_DOES_NOT_FIT_YEARLY');
       pen.text(value, x + 2, 556, fontSize);
     } else pen.text(pen.fit(value, width - 4, 7), x + 2, 556, 7);
@@ -266,7 +274,7 @@ function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
   const monthX = MARGIN;
   const monthWidth = 78;
   const gridX = monthX + monthWidth;
-  const dayWidth = 20;
+  const dayWidth = (RIGHT_EDGE - gridX) / 31;
   const headerY = 486;
   pen.text('Month', monthX + 4, headerY, 6, true);
   for (let day = 1; day <= 31; day++) pen.text(String(day), gridX + (day - 1) * dayWidth + 3, headerY, 6, true);
@@ -290,14 +298,14 @@ function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
       }
       page.drawLine({ start: { x: cellX, y: rowY - 6 }, end: { x: cellX, y: rowY + 18 }, thickness: 0.2, color: ink });
       if (day > daysInMonth) {
-        pen.text('×', cellX + 7, rowY, 7, true);
+        pen.text('×', cellX + dayWidth / 2 - 2, rowY, 7, true);
         continue;
       }
       const iso = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const record = byDate.get(iso);
       const code = record ? cellCode(record) : null;
       if (code) {
-        pen.text(code, cellX + 6, rowY, 7, true);
+        pen.text(code, cellX + dayWidth / 2 - 3.5, rowY, 7, true);
         counts[code]++;
       }
     }

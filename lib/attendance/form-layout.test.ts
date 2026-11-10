@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { PDFDocument } from 'pdf-lib';
+import { PDFArray, PDFDocument, PDFName, decodePDFRawStream, type PDFRawStream } from 'pdf-lib';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { digest, DRAFT_RULE, TEMPLATE_VERSION, REPORTING_TIMEZONE, periodDates, summarize } from './evidence';
 import { renderAttendancePdf, type AttendanceSnapshot } from './pdf';
@@ -163,4 +163,40 @@ test('monthly stays an adapted draft because no monthly form exists', async () =
   assert.match(text, /DRAFT/);
   assert.match(text, /Not WFS approved/);
   assert.equal(page.filter(box => box.str === '0.00' || box.str === '0').length, 0);
+});
+
+test('weekly long name is never silently clipped: shrinks and prints fully, or fails loudly', async () => {
+  const mid = 'Synthetic Participant '.repeat(3).trim();
+  const [page] = await boxes(await renderAttendancePdf(snapshot('weekly', { profile: { name: mid, email: null, phone: null } })));
+  assert.ok(textOf(page).includes(mid), 'a name that fits at a legible size prints in full');
+  const huge = 'Synthetic Participant '.repeat(30);
+  await assert.rejects(renderAttendancePdf(snapshot('weekly', { profile: { name: huge, email: null, phone: null } })), /PARTICIPANT_NAME_DOES_NOT_FIT_WEEKLY/);
+});
+
+test('yearly metadata rows, day grid and totals share one right edge', async () => {
+  const doc = await PDFDocument.load(await renderAttendancePdf(snapshot('yearly')));
+  const contents = doc.getPage(0).node.lookup(PDFName.of('Contents'));
+  const streams = contents instanceof PDFArray ? contents.asArray().map(ref => doc.context.lookup(ref)) : [contents];
+  const ops = streams.map(raw => Buffer.from(decodePDFRawStream(raw as PDFRawStream).decode()).toString('latin1')).join('\n');
+  // Drawn rectangles: pdf-lib emits `1 0 0 1 X Y cm`, two identity cms, then the path 0 0 m / 0 H l / W H l.
+  const rects = [...ops.matchAll(/1 0 0 1 (-?[\d.]+) (-?[\d.]+) cm\n1 0 0 1 0 0 cm\n1 0 0 1 0 0 cm\n0 0 m\n0 (-?[\d.]+) l\n(-?[\d.]+) (-?[\d.]+) l\n/g)]
+    .map(m => [Number(m[1]), Number(m[2]), Number(m[4]), Number(m[3])] as [number, number, number, number]);
+  const rowRights = (minY: number, maxY: number) => rects.filter(([, y, , h]) => y >= minY && y <= maxY && h >= 14 && h <= 26);
+  const header = rowRights(525, 560);       // both metadata rows
+  const grid = rowRights(190, 475);         // twelve month rows
+  const totals = rowRights(176, 180);       // totals box
+  assert.equal(header.length, 10, 'ten metadata cells');
+  assert.equal(grid.length, 12 + 31 * 0 + grid.length - 12, 'month rows present');
+  assert.ok(totals.length >= 1, 'totals box present');
+  const rightOf = ([x, , w]: number[]) => Math.round((x + w) * 100) / 100;
+  const lastHeaderCells = header.filter(r => rightOf(r) > 700).map(rightOf);
+  assert.equal(lastHeaderCells.length, 2, 'one last cell per metadata row');
+  const monthRows = grid.filter(([x, , w]) => x === 36 && w > 600).map(rightOf);
+  assert.equal(monthRows.length, 12);
+  const edge = lastHeaderCells[0];
+  for (const right of [...lastHeaderCells, ...monthRows, ...totals.map(rightOf)]) assert.equal(right, edge, `right edge ${right} matches ${edge}`);
+  assert.equal(edge, 756);
+  // The drawn day-grid cell lines also stop inside that edge.
+  const [page] = await boxes(await renderAttendancePdf(snapshot('yearly')));
+  assert.ok(page.find(box => box.str === '31')!.right <= edge);
 });
