@@ -40,31 +40,40 @@ export async function uploadVoucherFile(
   }
 
   const sha256 = await sha256Hex(file);
+  const descriptor = { sha256, byteLength: file.size, fileName: file.name };
   const prepare = await request<VoucherDirectPrepareDto>(voucherUrl(memberId, caseId), {
     method: 'POST',
-    json: { action: 'prepare', sha256, byteLength: file.size, fileName: file.name },
+    json: { action: 'prepare', ...descriptor },
   });
-  if (!prepare.ok) return prepare;
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anon) {
-    return { ok: false, status: 0, body: null, message: 'App configuration error.', uncertain: true };
+  // Content-addressed storage is insert-only. A retry after a completed PUT
+  // (or a prepare that finds the object already verified) must still call
+  // complete so the billing artifact row can be written.
+  let uploadError: string | null = null;
+  if (prepare.ok && prepare.data.token) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !anon) {
+      return { ok: false, status: 0, body: null, message: 'App configuration error.', uncertain: true };
+    }
+    const supabase = createBrowserClient(url, anon);
+    const { error: upErr } = await supabase.storage.from(prepare.data.bucket).uploadToSignedUrl(
+      prepare.data.path,
+      prepare.data.token,
+      file,
+      { contentType: 'application/pdf', upsert: false },
+    );
+    if (upErr) uploadError = upErr.message || 'Upload to storage failed.';
   }
 
-  const supabase = createBrowserClient(url, anon);
-  const { error: upErr } = await supabase.storage.from(prepare.data.bucket).uploadToSignedUrl(
-    prepare.data.path,
-    prepare.data.token,
-    file,
-    { contentType: 'application/pdf', upsert: false },
-  );
-  if (upErr) {
-    return { ok: false, status: 0, body: null, message: upErr.message || 'Upload to storage failed.', uncertain: true };
-  }
-
-  return request<VoucherUploadDto>(voucherUrl(memberId, caseId), {
+  const complete = await request<VoucherUploadDto>(voucherUrl(memberId, caseId), {
     method: 'POST',
-    json: { action: 'complete', sha256, byteLength: file.size, fileName: file.name },
+    json: { action: 'complete', ...descriptor },
   });
+  if (complete.ok) return complete;
+  if (uploadError) {
+    return { ok: false, status: complete.status || 0, body: complete.body, message: uploadError, uncertain: true };
+  }
+  if (!prepare.ok) return prepare;
+  return complete;
 }

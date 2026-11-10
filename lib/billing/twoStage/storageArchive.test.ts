@@ -6,6 +6,8 @@ import {
   archiveFinancePdf,
   FinanceArchiveError,
   FINANCE_ARCHIVE_MAX_BYTES,
+  prepareFinanceArchiveDirectUpload,
+  adoptFinanceArchiveDirectUpload,
   readFinanceArchivePdf,
   type FinanceArchiveRef,
 } from './storageArchive';
@@ -17,9 +19,14 @@ const hash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('h
 
 function fakeStorage() {
   const objects = new Map<string, { bytes: Uint8Array; contentType: string }>();
-  const calls = { buckets: 0, uploads: [] as Array<{ key: string; options: unknown; bytes: Uint8Array }> };
+  const calls = {
+    buckets: 0,
+    uploads: [] as Array<{ key: string; options: unknown; bytes: Uint8Array }>,
+    signedUploads: [] as Array<{ key: string; options: unknown }>,
+  };
   let publicBucket = false;
   let uploadFailure: 'before' | 'after' | null = null;
+  let signedUploadError: string | null = null;
   let infoOverride: Partial<{ name: string; bucketId: string; size: number; contentType: string }> = {};
 
   const bucket = {
@@ -29,6 +36,14 @@ function fakeStorage() {
       objects.set(key, { bytes: Uint8Array.from(bytes), contentType: options.contentType });
       if (uploadFailure === 'after') return { data: null, error: { message: 'response lost' } };
       return { data: { path: key }, error: null };
+    },
+    createSignedUploadUrl: async (key: string, options?: { upsert?: boolean }) => {
+      calls.signedUploads.push({ key, options });
+      if (signedUploadError) return { data: null, error: { message: signedUploadError } };
+      if (objects.has(key) && options?.upsert !== true) {
+        return { data: null, error: { message: 'The resource already exists' } };
+      }
+      return { data: { path: key, token: 'tok' }, error: null };
     },
     info: async (key: string) => {
       const object = objects.get(key);
@@ -63,6 +78,7 @@ function fakeStorage() {
     admin, objects, calls,
     setPublic: (value: boolean) => { publicBucket = value; },
     setUploadFailure: (value: 'before' | 'after' | null) => { uploadFailure = value; },
+    setSignedUploadError: (value: string | null) => { signedUploadError = value; },
     setInfoOverride: (value: typeof infoOverride) => { infoOverride = value; },
   };
 }
@@ -190,5 +206,48 @@ describe('billing finance Storage archive', () => {
       assertCode('STORAGE_UNAVAILABLE'),
     );
     assert.equal(storage.objects.size, 0);
+  });
+
+  it('prepares a signed insert-only upload, then adopts the verified bytes', async () => {
+    const storage = fakeStorage();
+    const prepared = await prepareFinanceArchiveDirectUpload(
+      { caseId: CASE_ID, kind: 'board_signed_voucher', sha256: hash(PDF), byteLength: PDF.byteLength },
+      { admin: storage.admin },
+    );
+    assert.equal(prepared.token, 'tok');
+    assert.deepEqual(storage.calls.signedUploads[0]?.options, { upsert: false });
+
+    storage.objects.set(prepared.ref.key, { bytes: PDF, contentType: 'application/pdf' });
+    const adopted = await adoptFinanceArchiveDirectUpload(prepared.ref, { admin: storage.admin });
+    assert.equal(adopted.ref.sha256, hash(PDF));
+    assert.equal(adopted.reused, false);
+  });
+
+  it('returns an empty token when the object is already stored so complete can adopt it', async () => {
+    const storage = fakeStorage();
+    const key = `cases/${CASE_ID}/voucher/${hash(PDF)}.pdf`;
+    storage.objects.set(key, { bytes: PDF, contentType: 'application/pdf' });
+    const prepared = await prepareFinanceArchiveDirectUpload(
+      { caseId: CASE_ID, kind: 'board_signed_voucher', sha256: hash(PDF), byteLength: PDF.byteLength },
+      { admin: storage.admin },
+    );
+    assert.equal(prepared.token, '');
+    assert.equal(prepared.path, key);
+    await assert.doesNotReject(adoptFinanceArchiveDirectUpload(prepared.ref, { admin: storage.admin }));
+  });
+
+  it('refuses a signed-upload retry when the existing object has different bytes', async () => {
+    const storage = fakeStorage();
+    const key = `cases/${CASE_ID}/voucher/${hash(PDF)}.pdf`;
+    const wrong = Uint8Array.from(PDF);
+    wrong[wrong.length - 1] ^= 1;
+    storage.objects.set(key, { bytes: wrong, contentType: 'application/pdf' });
+    await assert.rejects(
+      prepareFinanceArchiveDirectUpload(
+        { caseId: CASE_ID, kind: 'board_signed_voucher', sha256: hash(PDF), byteLength: PDF.byteLength },
+        { admin: storage.admin },
+      ),
+      assertCode('INTEGRITY_MISMATCH'),
+    );
   });
 });
