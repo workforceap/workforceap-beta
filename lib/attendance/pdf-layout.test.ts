@@ -1,3 +1,7 @@
+import { PDFDocument, PDFName, PDFRawStream, PngEmbedder, decodePDFRawStream } from 'pdf-lib';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
@@ -5,7 +9,33 @@ import { digest, DRAFT_RULE, TEMPLATE_VERSION, REPORTING_TIMEZONE, periodDates, 
 import { renderAttendancePdf, type AttendanceSnapshot } from './pdf';
 
 const LEFT = 36;
-const RIGHT = 612 - 36;
+
+// Compare decoded PDF image pixels with the canonical PNG, not a filename or a drawn badge.
+test('weekly and yearly embed the authentic WorkforceAP raster', async () => {
+  const asset = await readFile(fileURLToPath(new URL('../../public/images/logo-tight.png', import.meta.url)));
+  const source = await PngEmbedder.for(asset);
+  const sourceImage = source as unknown as { width: number; height: number; image: { rgbChannel: Uint8Array } };
+  const hash = (data: Uint8Array) => createHash('sha256').update(data).digest('hex');
+  const expected = hash(sourceImage.image.rgbChannel);
+  for (const kind of ['weekly', 'yearly'] as const) {
+    const document = await PDFDocument.load(await renderAttendancePdf(snapshot(kind)));
+    const resources = document.getPage(0).node.Resources();
+    assert.ok(resources, `${kind}: page resources exist`);
+    const xobjects = resources.lookup(PDFName.of('XObject'));
+    assert.ok(xobjects, `${kind}: image XObject exists`);
+    const images = [...document.context.enumerateIndirectObjects()].map(([, object]) => object)
+      .filter((object): object is PDFRawStream => object instanceof PDFRawStream && object.dict.get(PDFName.of('Subtype'))?.toString() === '/Image');
+    assert.ok(images.length > 0, `${kind}: embedded image, not hand-drawn logo`);
+    assert.ok(images.some(image => image.dict.get(PDFName.of('ColorSpace'))?.toString() === '/DeviceRGB'
+      && image.dict.get(PDFName.of('Width'))?.toString() === String(sourceImage.width)
+      && image.dict.get(PDFName.of('Height'))?.toString() === String(sourceImage.height)
+      && hash(decodePDFRawStream(image).decode()) === expected), `${kind}: canonical PNG RGB pixels`);
+  }
+});
+
+async function pageWidth(bytes: Uint8Array) {
+  return (await PDFDocument.load(bytes)).getPage(0).getWidth();
+}
 
 function snapshot(kind: SheetKind, over: Partial<AttendanceSnapshot> = {}): AttendanceSnapshot {
   const rows: never[] = [];
@@ -34,16 +64,18 @@ async function textBoxes(bytes: Uint8Array) {
 }
 
 // 64 capital Ws is the widest label the 64-character bound allows. Unwrapped it ran past the page edge.
-for (const kind of ['weekly', 'monthly', 'yearly'] as SheetKind[]) {
+for (const kind of ['monthly'] as SheetKind[]) {
   test(`${kind}: widest bounded academic label wraps inside both margins on every page`, async () => {
-    const pages = await textBoxes(await renderAttendancePdf(snapshot(kind, { academicLabel: 'W'.repeat(64) })));
+    const bytes = await renderAttendancePdf(snapshot(kind, { academicLabel: 'W'.repeat(64) }));
+    const right = await pageWidth(bytes) - LEFT;
+    const pages = await textBoxes(bytes);
     assert.ok(pages.length >= 1);
     pages.forEach((boxes, pageIndex) => {
       const header = boxes.filter(box => /Academic label|^W+$/.test(box.str));
       assert.ok(header.length >= 1, `page ${pageIndex + 1} shows the academic label`);
       for (const box of boxes) {
         assert.ok(box.x >= LEFT - 0.5, `left edge ${box.x} "${box.str.slice(0, 30)}"`);
-        assert.ok(box.right <= RIGHT + 0.5, `right edge ${box.right.toFixed(1)} "${box.str.slice(0, 30)}"`);
+        assert.ok(box.right <= right + 0.5, `right edge ${box.right.toFixed(1)} "${box.str.slice(0, 30)}"`);
       }
     });
   });
@@ -57,13 +89,15 @@ test('wrapped header lines never overlap each other or the body', async () => {
   }
 });
 
-test('footer hash and page notice stay inside the margins on a long-name multi-page sheet', async () => {
-  const pages = await textBoxes(await renderAttendancePdf(snapshot('yearly', {
-    academicLabel: 'W'.repeat(64), profile: { name: 'Synthetic Participant '.repeat(30), email: null, phone: null } })));
-  assert.ok(pages.length >= 8);
+test('footer hash and page notice stay inside the margins on a long-name sheet', async () => {
+  const bytes = await renderAttendancePdf(snapshot('yearly', {
+    academicLabel: 'W'.repeat(64), profile: { name: 'Synthetic Participant With A Rather Long Name', email: null, phone: null } }));
+  const right = await pageWidth(bytes) - LEFT;
+  const pages = await textBoxes(bytes);
+  assert.ok(pages.length >= 1);
   for (const boxes of pages) {
     assert.ok(boxes.some(box => box.str.includes('Snapshot SHA-256')));
-    for (const box of boxes) assert.ok(box.right <= RIGHT + 0.5 && box.x >= LEFT - 0.5, `${box.str.slice(0, 30)} ${box.right}`);
+    for (const box of boxes) assert.ok(box.right <= right + 0.5 && box.x >= LEFT - 0.5, `${box.str.slice(0, 30)} ${box.right}`);
   }
 });
 

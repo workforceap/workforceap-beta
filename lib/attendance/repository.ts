@@ -11,6 +11,8 @@ export type TrustedEnrollment = {
   /** Enrollment start month used for yearly sheets; null means yearly is unavailable. */
   startMonth: number | null;
   configuredInstructorId: string | null;
+  /** Stored Coursera progress for the member, loaded by the caller. Null means the sheet prints "not stored". */
+  coursera?: AttendanceSnapshot['coursera'];
   sourceMappings: SourceMapping[];
 };
 
