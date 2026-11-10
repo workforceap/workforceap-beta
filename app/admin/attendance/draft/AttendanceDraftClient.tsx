@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { buildDraftRows } from '@/lib/attendance/draft-rows';
 
 type Row = { date: string; minutes: string; code: '' | 'W' | 'CR' | 'A' };
 
@@ -19,7 +20,7 @@ export default function AttendanceDraftClient() {
   async function generate() {
     setMessage(null);
     try {
-      const body = { enrollmentId, kind, selectedDate, rows: rows.map(r => (r.code ? { date: r.date, code: r.code } : { date: r.date, minutes: Number(r.minutes) })) };
+      const body = { enrollmentId, kind, selectedDate, rows: buildDraftRows(rows) };
       const response = await fetch('/api/admin/attendance/draft-pdf', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
       if (!response.ok) { const json = await response.json().catch(() => ({})); throw new Error(`${response.status} ${json.error ?? 'error'}`); }
       setPdfUrl(URL.createObjectURL(await response.blob()));
@@ -31,7 +32,7 @@ export default function AttendanceDraftClient() {
       <h1>Attendance draft PDF</h1>
       <p>DRAFT, not WFS approved. Nothing is saved or sent. Days you do not enter print as unknown.</p>
       <label>Enrollment ID <input value={enrollmentId} onChange={e => setEnrollmentId(e.target.value)} /></label>
-      <label> Sheet <select value={kind} onChange={e => setKind(e.target.value as typeof kind)}><option value="weekly">weekly</option><option value="monthly">monthly</option><option value="yearly">yearly</option></select></label>
+      <label> Sheet <select value={kind} onChange={e => setKind(e.target.value as typeof kind)}><option value="weekly">weekly</option><option value="monthly">monthly</option><option value="yearly" disabled>yearly (unavailable: no enrollment start month)</option></select></label>
       <label> Date in period (YYYY-MM-DD) <input value={selectedDate} onChange={e => setSelectedDate(e.target.value)} /></label>
       {rows.map((r, i) => (
         <div key={i}>

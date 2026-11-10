@@ -38,14 +38,14 @@ for (const kind of ['weekly', 'monthly', 'yearly'] as SheetKind[]) {
           assert.match(text, /not institutionally approved/);
           if (pageIndex > 1) {
             assert.match(text, /Participant \(continued\): Synthetic Participant/);
-            assert.match(text, /Actual hours.*Estimated hours \(not certified\).*Codes/);
+            assert.match(text, /Admin-entered \(unverified\).*Estimated hours \(not certified\).*Codes/);
           }
         }
         const text = texts.join(' ');
         for (const required of ['Synthetic Participant', 'Synthetic Program', dates[0], dates.at(-1)!,
           'unknown', 'estimated, not certified', 'Unknown days excluded.', 'Missing telemetry is not absence.',
           'Time In/Out unavailable.', 'Student attestation: pending', 'Instructor signature: pending']) assert.ok(text.includes(required), required);
-        assert.match(text, variant === 'missing' ? /Verified known-hours subtotal: 0\.00; coverage 0\// : /Verified known-hours subtotal: 4\.00; coverage 1\//);
+        assert.match(text, variant === 'missing' ? /Admin-entered \(unverified\) subtotal: 0\.00; coverage 0\// : /Admin-entered \(unverified\) subtotal: 4\.00; coverage 1\//);
         assert.match(text, variant === 'missing' ? /Code counts: P 0 \/ W 0 \/ CR 0 \/ A 0/ : /Code counts: P 1 \/ W 0 \/ CR 0 \/ A 0/);
         if (variant === 'partial') assert.ok(text.includes('10.00'));
         if (kind === 'monthly') assert.match(text, /MONTHLY ADAPTED DRAFT/);

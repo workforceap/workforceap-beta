@@ -83,7 +83,7 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
     y = Math.min(676, headerY - 8);
     if (pageNumber > 1) {
       line(`Participant (continued): ${snapshot.profile.name}`, true);
-      line('Date          Actual hours     Estimated hours (not certified)     Codes', true);
+      line('Date          Admin-entered (unverified)     Estimated hours (not certified)     Codes', true);
     }
   }
   function line(value: string, strong = false) {
@@ -111,7 +111,7 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
   line('Proposed draft rule: P >=4 verified hours/day, one max; not institutionally approved.');
   line('W/CR/A require independent dated evidence.');
   line('P/W/CR/A counts are not actual hours. Missing telemetry is not absence.');
-  line('Date          Actual hours     Estimated hours (not certified)     Codes', true);
+  line('Date          Admin-entered (unverified)     Estimated hours (not certified)     Codes', true);
   let total = 0; let known = 0;
   const counts = { P: 0, W: 0, CR: 0, A: 0 };
   for (const day of snapshot.days) {
@@ -119,9 +119,9 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
     for (const code of day.codes) counts[code]++;
     const actual = day.actualMinutes === null ? 'unknown' : (day.actualMinutes / 60).toFixed(2);
     const estimated = day.estimatedMinutes === null ? 'unknown' : (day.estimatedMinutes / 60).toFixed(2);
-    line(`${day.date}       ${actual.padEnd(17)} ${estimated.padEnd(30)} ${day.codes.join(', ')}`);
+    line(`${day.date}       ${actual.padEnd(24)} ${estimated.padEnd(30)} ${day.codes.join(', ')}`);
   }
-  line(`Verified known-hours subtotal: ${(total / 60).toFixed(2)}; coverage ${known}/${snapshot.days.length} days. Unknown days excluded.`, true);
+  line(`Admin-entered (unverified) subtotal: ${(total / 60).toFixed(2)}; coverage ${known}/${snapshot.days.length} days. Unknown days excluded.`, true);
   line(`Code counts: P ${counts.P} / W ${counts.W} / CR ${counts.CR} / A ${counts.A}`);
   line('Student attestation: pending separate authenticated student act.');
   line('Instructor signature: pending authenticated review and explicit signing.');

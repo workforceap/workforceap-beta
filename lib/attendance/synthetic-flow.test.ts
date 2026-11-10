@@ -50,7 +50,7 @@ test('entry/import -> selection -> inline preview shows entered data and the syn
   const preview = await runSyntheticPreview(repo, student, { ...ids, kind: 'weekly', selectedDate: '2026-11-11' });
   assert.equal(preview.durable, false); assert.match(preview.label, /LOCAL SYNTHETIC/);
   const text = await pdfText(preview.pdfBase64);
-  for (const expected of ['Synthetic Student', 'Synthetic Workforce Program', '2026-11-09', 'Verified known-hours subtotal: 4.00; coverage 1/7', 'Code counts: P 1 / W 0 / CR 0 / A 0', 'not institutionally approved', 'Student attestation: pending']) assert.ok(text.includes(expected), expected);
+  for (const expected of ['Synthetic Student', 'Synthetic Workforce Program', '2026-11-09', 'Admin-entered (unverified) subtotal: 4.00; coverage 1/7', 'Code counts: P 1 / W 0 / CR 0 / A 0', 'not institutionally approved', 'Student attestation: pending']) assert.ok(text.includes(expected), expected);
   assertPreviewHashes(preview, text, repo.loadDraft(ids, preview.draftId));
 });
 
@@ -113,11 +113,11 @@ test('a ledger spanning more than a year accepts its 367th distinct date and sti
   assert.equal(new Set(repo.listCurrentEvidence(ids).map(entry => entry.date)).size, 407);
   const latest = await runSyntheticPreview(repo, student, { ...ids, kind: 'weekly', selectedDate: '2026-11-11' });
   const latestText = await pdfText(latest.pdfBase64);
-  for (const expected of ['2026-11-09', 'Verified known-hours subtotal: 29.00; coverage 7/7', 'Code counts: P 7 / W 0 / CR 0 / A 0']) assert.ok(latestText.includes(expected), expected);
+  for (const expected of ['2026-11-09', 'Admin-entered (unverified) subtotal: 29.00; coverage 7/7', 'Code counts: P 7 / W 0 / CR 0 / A 0']) assert.ok(latestText.includes(expected), expected);
   assertPreviewHashes(latest, latestText, repo.loadDraft(ids, latest.draftId));
   const old = await runSyntheticPreview(repo, student, { ...ids, kind: 'weekly', selectedDate: '2026-03-04' });
   const oldText = await pdfText(old.pdfBase64);
-  for (const expected of ['2026-03-02', '2026-03-08', 'Verified known-hours subtotal: 28.00; coverage 7/7']) assert.ok(oldText.includes(expected), expected);
+  for (const expected of ['2026-03-02', '2026-03-08', 'Admin-entered (unverified) subtotal: 28.00; coverage 7/7']) assert.ok(oldText.includes(expected), expected);
   assert.equal(old.evidenceRevision, 3);
 });
 
@@ -247,7 +247,7 @@ test('caller mutation of returned data cannot alter stored evidence or enrollmen
 test('cumulative estimates and point events cannot become daily actual hours through entry', async () => {
   assert.throws(() => runSyntheticImport(repo, admin, { ...ids, expectedRevision: 0, rows: [row({ kind: 'estimated' })] }));
   const text = await pdfText((await runSyntheticPreview(repo, student, { ...ids, kind: 'weekly', selectedDate: '2026-11-09' })).pdfBase64);
-  assert.ok(text.includes('Verified known-hours subtotal: 0.00; coverage 0/7'));
+  assert.ok(text.includes('Admin-entered (unverified) subtotal: 0.00; coverage 0/7'));
 });
 
 // ---- Actual HTTP-shaped boundary ----
@@ -270,7 +270,7 @@ test('HTTP: import then preview works; every response is labeled non-durable', a
   assert.equal(saved.status, 200); assert.equal(saved.body.durable, false); assert.match(String(saved.body.label), /LOCAL SYNTHETIC/);
   const preview = await post({ action: 'preview', ...ids, kind: 'weekly', selectedDate: '2026-11-09' });
   assert.equal(preview.status, 200);
-  assert.match(await pdfText(String(preview.body.pdfBase64)), /Verified known-hours subtotal: 4\.00/);
+  assert.match(await pdfText(String(preview.body.pdfBase64)), /Admin-entered \(unverified\) subtotal: 4\.00/);
 });
 
 test('HTTP: client-supplied actor, scope, draft, role and permissions are rejected, not honored', async () => {

@@ -18,12 +18,12 @@ const enrollment = (organizationId: string): TrustedEnrollment => ({
   enrollment: { program: 'Draft Program', twistId: null, counselor: null, abbreviation: null, pathway: null, classStart: null, classEnd: null },
   startMonth: null, configuredInstructorId: null, sourceMappings: [],
 });
-function deps(over: { userId?: string | null; actor?: 'admin' | 'other-org' | 'none'; writes?: string[] } = {}): AdminDraftDeps {
+function deps(over: { userId?: string | null; actor?: 'admin' | 'other-org' | 'none' | 'counselor'; writes?: string[] } = {}): AdminDraftDeps {
   const userId = over.userId === undefined ? ADMIN : over.userId;
   const actor = over.actor ?? 'admin';
   return {
     getUserId: async () => userId,
-    resolveAdminActor: async (id) => actor === 'none' ? null : { userId: id, organizationId: actor === 'admin' ? ORG : OTHER_ORG, permissions: ['attendance:admin'] },
+    resolveAdminActor: async (id) => actor === 'none' ? null : actor === 'counselor' ? { userId: id, organizationId: ORG, permissions: ['attendance:counselor'] } : { userId: id, organizationId: actor === 'admin' ? ORG : OTHER_ORG, permissions: ['attendance:admin'] },
     // Stored data lives in ORG only: an other-org admin cannot see the enrollment.
     loadEnrollment: async (orgId, enrollmentId) => orgId === ORG && enrollmentId === ENROLLMENT ? enrollment(ORG) : null,
   };
@@ -68,6 +68,15 @@ test('anonymous is 401, student/non-admin and other-org admin are denied', async
   const other = await handleAdminDraftPdf('POST', body(), deps({ actor: 'other-org' }));
   assert.equal(other.status, 404);
   assert.ok(!('pdf' in other));
+});
+
+test('counselor (same org, no attendance:admin) is denied 403 and never gets a PDF or an enrollment read', async () => {
+  let reads = 0;
+  const d = deps({ actor: 'counselor' });
+  const res = await handleAdminDraftPdf('POST', body(), { ...d, loadEnrollment: async (...a) => { reads++; return d.loadEnrollment(...a); } });
+  assert.equal(res.status, 403);
+  assert.ok(!('pdf' in res));
+  assert.equal(reads, 0);
 });
 
 test('non-POST is 405', async () => {
