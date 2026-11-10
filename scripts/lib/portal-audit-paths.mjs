@@ -71,6 +71,7 @@ export const STATIC_PATHS = {
     '/admin/ai-tools',
     '/admin/analytics/ai-efficacy',
     '/admin/assessments',
+    '/admin/attendance/draft',
     '/admin/blog',
     '/admin/blog/ai',
     '/admin/blog/new',
