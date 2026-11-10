@@ -55,20 +55,22 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
     const width = f.widthOfTextAtSize(safe(value), size);
     if (width > MAX_TEXT_WIDTH) throw new Error('PDF_LINE_OVERFLOW');
   }
+  const COL = { date: LEFT, admin: 150, estimated: 330, codes: 490 } as const;
   function drawFooter() {
     const hashLines = wrapMeasured(`Snapshot SHA-256: ${digest(snapshot)}`, 6, font);
-    let footY = 28;
+    const pageLines = wrapMeasured(`Page ${pageNumber} | ${ESTIMATE_NOTICE}: never actual attendance`, 7, font);
+    // Lowest page-notice baseline is 36pt (0.5in). Hash lines sit above it.
+    let footY = 36 + pageLines.length * 10 + (hashLines.length - 1) * 8;
     for (const row of hashLines) {
       assertRightEdge(row, 6, font);
       text(row, LEFT, footY, 6);
       footY -= 8;
     }
-    const pageLines = wrapMeasured(`Page ${pageNumber} | ${ESTIMATE_NOTICE}: never actual attendance`, 7, font);
-    let pageFootY = 16 + (pageLines.length - 1) * 9;
+    let pageFootY = 36 + (pageLines.length - 1) * 10;
     for (const row of pageLines) {
       assertRightEdge(row, 7, font);
       text(row, LEFT, pageFootY, 7);
-      pageFootY -= 9;
+      pageFootY -= 10;
     }
   }
   function nextPage() {
@@ -83,7 +85,7 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
     y = Math.min(676, headerY - 8);
     if (pageNumber > 1) {
       line(`Participant (continued): ${snapshot.profile.name}`, true);
-      line('Date          Admin-entered (unverified)     Estimated hours (not certified)     Codes', true);
+      drawDayHeader();
     }
   }
   function line(value: string, strong = false) {
@@ -92,13 +94,31 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
     const f = strong ? bold : font;
     for (const char of chars) {
       if (f.widthOfTextAtSize(current + char, 9) > MAX_TEXT_WIDTH) {
-        if (y < 65) nextPage();
+        if (y < 92) nextPage();
         text(current, LEFT, y, 9, f); y -= 13; current = '';
       }
       current += char;
     }
-    if (y < 65) nextPage();
+    if (y < 92) nextPage();
     text(current, LEFT, y, 9, f); y -= 13;
+  }
+  function drawDayHeader() {
+    if (y < 92) nextPage();
+    text('Date', COL.date, y, 9, bold);
+    text('Admin-entered (unverified)', COL.admin, y, 9, bold);
+    text('Estimated hours (not certified)', COL.estimated, y, 9, bold);
+    text('Codes', COL.codes, y, 9, bold);
+    y -= 13;
+  }
+  function drawDayRow(date: string, actual: string, estimated: string, codes: string) {
+    if (y < 92) nextPage();
+    for (const [value, x] of [[date, COL.date], [actual, COL.admin], [estimated, COL.estimated], [codes, COL.codes]] as const) {
+      assertRightEdge(value, 9, font);
+      const width = font.widthOfTextAtSize(safe(value), 9);
+      if (x + width > LEFT + MAX_TEXT_WIDTH + 0.5) throw new Error('PDF_LINE_OVERFLOW');
+      text(value, x, y, 9);
+    }
+    y -= 13;
   }
   nextPage();
   line(`Participant: ${snapshot.profile.name}`, true);
@@ -111,7 +131,7 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
   line('Proposed draft rule: P >=4 verified hours/day, one max; not institutionally approved.');
   line('W/CR/A require independent dated evidence.');
   line('P/W/CR/A counts are not actual hours. Missing telemetry is not absence.');
-  line('Date          Admin-entered (unverified)     Estimated hours (not certified)     Codes', true);
+  drawDayHeader();
   let total = 0; let known = 0;
   const counts = { P: 0, W: 0, CR: 0, A: 0 };
   for (const day of snapshot.days) {
@@ -119,7 +139,7 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
     for (const code of day.codes) counts[code]++;
     const actual = day.actualMinutes === null ? 'unknown' : (day.actualMinutes / 60).toFixed(2);
     const estimated = day.estimatedMinutes === null ? 'unknown' : (day.estimatedMinutes / 60).toFixed(2);
-    line(`${day.date}       ${actual.padEnd(24)} ${estimated.padEnd(30)} ${day.codes.join(', ')}`);
+    drawDayRow(day.date, actual, estimated, day.codes.join(', '));
   }
   line(`Admin-entered (unverified) subtotal: ${(total / 60).toFixed(2)}; coverage ${known}/${snapshot.days.length} days. Unknown days excluded.`, true);
   line(`Code counts: P ${counts.P} / W ${counts.W} / CR ${counts.CR} / A ${counts.A}`);
