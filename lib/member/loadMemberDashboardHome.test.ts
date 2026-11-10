@@ -94,9 +94,9 @@ function makeRow(overrides: Record<string, unknown> = {}) {
       },
     ],
     pointsTransactions: [
-      { event: 'course_completed', points: 75, createdAt: new Date() },
-      { event: 'daily_study', points: 5, createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) },
-      { event: 'job_application', points: 25, createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000) },
+      { event: 'course_completed', points: 75, entityId: 'intro', note: null, createdAt: new Date() },
+      { event: 'daily_study', points: 5, entityId: 'day', note: null, createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) },
+      { event: 'job_application', points: 25, entityId: 'job-1', note: null, createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000) },
     ],
     _count: { userCertifications: 1, jobApplications: 2 },
     ...overrides,
@@ -210,6 +210,39 @@ test('mapGoalSummaries prefers metric ratio then step ratio', () => {
   assert.equal(bySteps[0].percent, 50);
 });
 
+test('deriveNextBadge names the next unearned milestone, then falls back to the level ladder', () => {
+  const next = deriveNextBadge({
+    totalPoints: 250,
+    certCount: 0,
+    milestoneBadges: [
+      { key: 'ready_to_start', label: 'Ready to start', earned: true, have: 1, need: 1 },
+      { key: 'job_hunter', label: 'Job hunter', earned: false, have: 2, need: 3 },
+    ],
+  });
+  assert.equal(next.nextBadgeName, 'Job hunter');
+  assert.equal(next.nextBadgePercent, 67);
+  assert.equal(next.nextBadgeRemaining, '1 of 3');
+
+  const allEarned = deriveNextBadge({
+    totalPoints: 250,
+    certCount: 0,
+    milestoneBadges: [
+      { key: 'ready_to_start', label: 'Ready to start', earned: true, have: 1, need: 1 },
+    ],
+  });
+  assert.equal(allEarned.nextBadgeName, 'Achiever');
+  assert.match(allEarned.nextBadgeRemaining, /points?$/);
+
+  const champion = deriveNextBadge({
+    totalPoints: 1500,
+    certCount: 0,
+    milestoneBadges: [
+      { key: 'ready_to_start', label: 'Ready to start', earned: true, have: 1, need: 1 },
+    ],
+  });
+  assert.equal(champion.nextBadgeName, 'First certification');
+});
+
 test('deriveNextBadge uses the points ladder then cert fallback', () => {
   const builder = deriveNextBadge({ totalPoints: 250, certCount: 0 });
   assert.equal(builder.nextBadgeName, 'Achiever');
@@ -219,6 +252,38 @@ test('deriveNextBadge uses the points ladder then cert fallback', () => {
   const champion = deriveNextBadge({ totalPoints: 1500, certCount: 0 });
   assert.equal(champion.nextBadgeName, 'First certification');
   assert.equal(champion.nextBadgePercent, 0);
+});
+
+test('loadMemberDashboardHome names the next milestone badge from the same one-operation read', async () => {
+  const { db, counts, select } = mockDb({
+    row: makeRow({
+      memberPoints: { totalPoints: 250, currentStreak: 4, longestStreak: 9, lastActiveDate: new Date() },
+      pointsTransactions: [
+        { event: 'assessment_completed', points: 100, entityId: '', note: null, createdAt: new Date('2026-06-01') },
+        { event: 'resume_uploaded', points: 50, entityId: 'first-upload', note: null, createdAt: new Date('2026-06-01') },
+        { event: 'job_application', points: 25, entityId: 'a', note: null, createdAt: new Date('2026-06-02') },
+        { event: 'job_application', points: 25, entityId: 'a', note: null, createdAt: new Date('2026-06-03') },
+        { event: 'job_application', points: 25, entityId: 'b', note: null, createdAt: new Date('2026-06-04') },
+        { event: 'daily_study', points: 5, entityId: '2026-06-04', note: null, createdAt: new Date('2026-06-04') },
+      ],
+    }),
+  });
+  const view = await loadMemberDashboardHome(
+    { userId: 'member-1', fallbackDisplayName: 'member@example.com' },
+    db,
+  );
+  assert.equal(view.prismaOpCount, 1);
+  assert.deepEqual(counts(), { findUniqueCalls: 1, txCalls: 1 });
+  assert.ok(view.prismaOpCount <= MEMBER_DASHBOARD_HOME_PRISMA_BUDGET);
+  // Assessment and resume are earned; two distinct applications leave Job hunter next (2 of 3).
+  assert.equal(view.nextBadgeName, 'Job hunter');
+  assert.equal(view.nextBadgePercent, 67);
+  assert.equal(view.nextBadgeRemaining, '1 of 3');
+  // The best streak is 9, so the 7-day badge is earned and is not "next".
+  assert.notEqual(view.nextBadgeName, '7-day streak');
+  const asked = JSON.stringify(select());
+  assert.match(asked, /entityId/);
+  assert.match(asked, /"note":true/);
 });
 
 test('loadMemberDashboardHome issues ≤ 2 Prisma ops and skips progress count without a slug', async () => {
@@ -897,9 +962,9 @@ test('the Points tile gets a real weekly series whose last point is the "this we
     row: makeRow({
       // 45 this week, nothing last week, 60 the week before: a gap in the middle.
       pointsTransactions: [
-        { event: 'course_completed', points: 40, createdAt: new Date(Date.now() - 1 * DAY_MS) },
-        { event: 'daily_study', points: 5, createdAt: new Date(Date.now() - 3 * DAY_MS) },
-        { event: 'job_application', points: 60, createdAt: new Date(Date.now() - 17 * DAY_MS) },
+        { event: 'course_completed', points: 40, entityId: 'c1', note: null, createdAt: new Date(Date.now() - 1 * DAY_MS) },
+        { event: 'daily_study', points: 5, entityId: 'd1', note: null, createdAt: new Date(Date.now() - 3 * DAY_MS) },
+        { event: 'job_application', points: 60, entityId: 'j1', note: null, createdAt: new Date(Date.now() - 17 * DAY_MS) },
       ],
     }),
   });
@@ -953,8 +1018,8 @@ test('points older than the eight-week window do not inflate the first bucket', 
   const { db } = mockDb({
     row: makeRow({
       pointsTransactions: [
-        { event: 'program_enrolled', points: 500, createdAt: new Date(Date.now() - 200 * DAY_MS) },
-        { event: 'daily_study', points: 5, createdAt: new Date(Date.now() - 2 * DAY_MS) },
+        { event: 'program_enrolled', points: 500, entityId: 'prog', note: null, createdAt: new Date(Date.now() - 200 * DAY_MS) },
+        { event: 'daily_study', points: 5, entityId: 'd2', note: null, createdAt: new Date(Date.now() - 2 * DAY_MS) },
       ],
     }),
   });
@@ -977,6 +1042,8 @@ test('a member whose newest 400 rows are all recent loses the line, not the numb
   const dense = Array.from({ length: 400 }, (_, index) => ({
     event: 'daily_study',
     points: 5,
+    entityId: `day-${index}`,
+    note: null,
     createdAt: new Date(Date.now() - (index % 40) * 60 * 60 * 1000),
   }));
   const { db } = mockDb({ row: makeRow({ pointsTransactions: dense }) });
@@ -994,11 +1061,13 @@ test('a full page that reaches back past the window still draws the line', async
   const dense = Array.from({ length: 399 }, (_, index) => ({
     event: 'daily_study',
     points: 5,
+    entityId: `day-${index}`,
+    note: null,
     createdAt: new Date(Date.now() - (index % 40) * 60 * 60 * 1000),
   }));
   const withOldRow = [
     ...dense,
-    { event: 'program_enrolled', points: 150, createdAt: new Date(Date.now() - 100 * DAY_MS) },
+    { event: 'program_enrolled', points: 150, entityId: 'prog', note: null, createdAt: new Date(Date.now() - 100 * DAY_MS) },
   ];
   assert.equal(withOldRow.length, 400, 'the page must be full for the truncation guard to engage');
 
