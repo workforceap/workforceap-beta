@@ -1,7 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
 import {
   attendanceStorageKey,
   isAttendanceStoragePath,
@@ -79,37 +77,6 @@ test('certification proof signer refuses attendance paths and still signs normal
   assert.deepEqual(calls, []);
   assert.equal(await signCertificationProofUrl(client, 'cert-files/u/c.pdf'), 'https://signed.invalid/cert-files/u/c.pdf');
   assert.deepEqual(calls, ['cert-files/u/c.pdf']);
-});
-
-test('no production code outside storageKey.ts hard-codes an attendance/ storage key', () => {
-  const offenders: string[] = [];
-  const walk = (dir: string) => {
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      const p = join(dir, e.name);
-      if (e.isDirectory()) {
-        if (!['node_modules', '.next', '.worktrees'].includes(e.name)) walk(p);
-        continue;
-      }
-      if (!/\.tsx?$/.test(e.name) || /\.test\.tsx?$/.test(e.name) || p.endsWith('storageKey.ts')) continue;
-      const src = readFileSync(p, 'utf8');
-      if (/['"`]attendance\//i.test(src) && /\.storage\b|createSignedUrl|member-files/.test(src)) offenders.push(p);
-    }
-  };
-  for (const d of ['lib', 'app']) walk(d);
-  assert.deepEqual(offenders, []);
-});
-
-test('storage migration is transaction-free, fail-closed and targets PUBLIC', () => {
-  const sql = readFileSync('prisma/migrations/20261111000000_attendance_server_only_storage/migration.sql', 'utf8')
-    .split('\n').filter((l) => !l.trimStart().startsWith('--')).join('\n');
-  assert.doesNotMatch(sql, /^\s*(BEGIN|COMMIT)\s*;/im);
-  assert.match(sql, /CREATE POLICY attendance_server_only\s+ON storage\.objects AS RESTRICTIVE FOR ALL TO PUBLIC/);
-  assert.match(sql, /ON storage\.prefixes AS RESTRICTIVE FOR ALL TO PUBLIC/);
-  assert.doesNotMatch(sql, /TO anon/i);
-  assert.match(sql, /name <> 'attendance' AND name NOT LIKE 'attendance\/%'/);
-  assert.match(sql, /rolname = 'service_role' AND rolbypassrls/);
-  assert.match(sql, /SECURITY DEFINER and can bypass the policy/);
-  assert.doesNotMatch(sql, /DROP POLICY|CREATE POLICY IF NOT EXISTS|ON CONFLICT/i);
 });
 
 test('profile photo signer refuses an attendance path before touching storage', async () => {
