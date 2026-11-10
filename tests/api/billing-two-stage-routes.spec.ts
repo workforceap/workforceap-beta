@@ -225,6 +225,8 @@ beforeEach(() => {
   mocks.isSuperAdmin.mockResolvedValue(false);
   mocks.archive.mockReset();
   mocks.readArchive.mockReset();
+  mocks.prepareDirect.mockReset();
+  mocks.adoptDirect.mockReset();
   mocks.txCreate.mockReset();
   mocks.transaction.mockReset();
   mocks.receiptCreate.mockReset();
@@ -630,6 +632,34 @@ describe('two-stage routes: uploads', () => {
       mocks.adoptDirect.mockRejectedValueOnce(storageError('INTEGRITY_MISMATCH'));
       const res = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
       expect([res.status, await code(res)]).toEqual([502, 'ARCHIVE_INTEGRITY_MISMATCH']);
+    });
+
+    it('complete records the adopted artifact and refuses a file that still fits multipart', async () => {
+      mocks.artifactCreate.mockImplementation((data: Record<string, unknown>) => {
+        h.state.artifacts.push({ ...data, id: 'art-signed', createdAt: new Date('2026-09-29T18:00:00Z') });
+      });
+      mocks.adoptDirect.mockResolvedValueOnce({ ref, reused: false });
+      const ok = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
+      expect(ok.status).toBe(201);
+      expect(await ok.json()).toMatchObject({ reused: false, artifact: { id: 'art-signed' } });
+      expect(mocks.adoptDirect).toHaveBeenCalledWith(expect.objectContaining({ sha256: sha, byteLength: big, key: ref.key }));
+
+      const small = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: 1000, fileName: 'v.pdf' }), caseParams());
+      expect([small.status, await code(small)]).toEqual([422, 'VALIDATION_FAILED']);
+      expect(mocks.adoptDirect).toHaveBeenCalledTimes(1);
+    });
+
+    it('after Storage may have written, a missing object or unavailable archive does not claim a clean refusal', async () => {
+      mocks.adoptDirect.mockRejectedValueOnce(storageError('INVALID_INPUT'));
+      const notPdf = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
+      expect([notPdf.status, await code(notPdf)]).toEqual([415, 'VOUCHER_PDF_ONLY']);
+
+      mocks.adoptDirect.mockRejectedValueOnce(storageError('STORAGE_UNAVAILABLE'));
+      const down = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
+      expect(down.status).toBe(503);
+      const body = (await down.json()) as { code: string; error: string };
+      expect(body.code).toBe('FINANCE_ARCHIVE_UNAVAILABLE');
+      expect(body.error).toMatch(/may or may not have been stored/u);
     });
   });
 
