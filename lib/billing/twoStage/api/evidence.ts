@@ -19,7 +19,7 @@ import {
 } from '../attestations';
 import { classEndDate } from '../dates';
 import { getBillingProviderOrgId } from '../../providerOrg';
-import { AUTHORIZED_SIGNER } from '../constants';
+import { AUTHORIZED_SIGNER, MAX_UPLOAD_BYTES } from '../constants';
 import type {
   AttestationDto,
   BoardInvoiceUploadDto,
@@ -27,15 +27,21 @@ import type {
   ExternalQuoteDto,
   VoucherReceiptAttestationDto,
   VoucherReceiptStatementDto,
+  VoucherDirectPrepareDto,
   VoucherUploadDto,
 } from '../dto';
 import { authorizeSigner } from '../signing';
-import type { FinanceArchiveKind } from '../storageArchive';
-import { validateFinanceUpload, type ArtifactKind } from '../financeStorage';
+import {
+  adoptFinanceArchiveDirectUpload,
+  prepareFinanceArchiveDirectUpload,
+  type FinanceArchiveKind,
+  type FinanceArchiveRef,
+} from '../storageArchive';
+import { financeBucketName, financeObjectKey, validateFinanceUpload, type ArtifactKind } from '../financeStorage';
 import { resolveProgramTerms } from '../hours';
 import { VOUCHER_REFERENCE_MAX } from '../rendererAdapter';
 import type { TwoStageContext } from './access';
-import { archiveErrorCode, financeArchive, type FinanceArchiveRef } from './archive';
+import { archiveErrorCode, financeArchive } from './archive';
 import { currentVoucher, dateColumn, isDesignatedSigner, loadCaseSnapshot } from './caseData';
 import { apiError, MAX_UPLOAD_FILE_BYTES, type MultipartUpload } from './http';
 import { artifactView, buildCaseSummary, voucherAttestationView } from './summary';
@@ -163,7 +169,12 @@ export function requirePdfUpload(upload: MultipartUpload['file'], kind: Artifact
   if (!upload) throw apiError(422, 'UPLOAD_EMPTY', 'The file is empty.', { field: 'file' });
   if (upload.bytes.byteLength === 0) throw apiError(422, 'UPLOAD_EMPTY', 'The file is empty.', { field: 'file' });
   if (upload.bytes.byteLength > MAX_UPLOAD_FILE_BYTES) {
-    throw apiError(413, 'UPLOAD_TOO_LARGE', 'The file is larger than 4 MB. Upload a smaller PDF (scan at a lower resolution).', { field: 'file' });
+    throw apiError(
+      413,
+      'UPLOAD_TOO_LARGE',
+      `Files larger than 4 MB upload directly to storage (up to ${Math.round(MAX_UPLOAD_BYTES / (1024 * 1024))} MB). Choose the file again.`,
+      { field: 'file' },
+    );
   }
   const declaredPdf = upload.declaredType.trim().toLowerCase() === 'application/pdf';
   const magicPdf = PDF_MAGIC.every((byte, i) => upload.bytes[i] === byte);
@@ -269,6 +280,138 @@ function voucherAttestationInput<P>(ctx: TwoStageContext<P>, part: unknown, arti
   return result.attestation;
 }
 
+function parseVoucherDirectDescriptor(body: unknown): { sha256: string; byteLength: number; fileName: string } {
+  const b = asObj(body);
+  const sha256 = s(b.sha256).trim().toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(sha256)) {
+    throw apiError(422, 'VALIDATION_FAILED', 'The file hash is invalid.', { field: 'sha256' });
+  }
+  const byteLength = typeof b.byteLength === 'number' ? b.byteLength : Number.NaN;
+  if (!Number.isInteger(byteLength) || byteLength < 1) {
+    throw apiError(422, 'UPLOAD_EMPTY', 'The file is empty.', { field: 'file' });
+  }
+  if (byteLength > MAX_UPLOAD_BYTES) {
+    throw apiError(
+      413,
+      'UPLOAD_TOO_LARGE',
+      `The file is larger than ${Math.round(MAX_UPLOAD_BYTES / (1024 * 1024))} MB.`,
+      { field: 'file' },
+    );
+  }
+  const rawName = s(b.fileName).trim();
+  const baseName = rawName.split(/[\\/]/).pop()?.trim() ?? '';
+  const fileName = (baseName || 'voucher.pdf').replace(/[^\w.\- ]+/g, '_').slice(0, 120);
+  return { sha256, byteLength, fileName };
+}
+
+function rethrowFinanceArchiveError(error: unknown, afterWrite: boolean): never {
+  const code = archiveErrorCode(error);
+  if (code === 'INTEGRITY_MISMATCH') {
+    throw apiError(502, 'ARCHIVE_INTEGRITY_MISMATCH', 'An archived file failed its integrity check. Contact an administrator.');
+  }
+  if (code === 'INVALID_INPUT') {
+    throw apiError(415, 'VOUCHER_PDF_ONLY', VOUCHER_PDF_ONLY_MESSAGE, { field: 'file' });
+  }
+  if (code) {
+    throw apiError(
+      503,
+      'FINANCE_ARCHIVE_UNAVAILABLE',
+      afterWrite
+        ? 'The billing finance archive is not available. Reload the case before trying again; the file may or may not have been stored.'
+        : 'The billing finance archive is not available. Reload the case before trying again.',
+    );
+  }
+  throw error;
+}
+
+async function commitVoucherArtifact<P>(
+  ctx: TwoStageContext<P>,
+  ref: FinanceArchiveRef,
+  fileName: string,
+  attestationPart: unknown | undefined,
+  storageReused: boolean,
+): Promise<VoucherUploadDto> {
+  if (attestationPart !== undefined) {
+    await requireDesignatedSigner(ctx);
+    voucherAttestationInput(ctx, attestationPart, { id: 'pending-upload', kind: 'board_signed_voucher' });
+  }
+  const result = await prisma.$transaction(async (tx) => {
+    const { row, reused } = await upsertArtifact(ctx, tx, 'board_signed_voucher', ref, fileName);
+    if (attestationPart !== undefined) {
+      await insertAttestation(ctx, voucherAttestationInput(ctx, attestationPart, { id: row.id, kind: row.kind }), tx);
+    }
+    return { artifactId: row.id, reused: reused || storageReused };
+  });
+  return voucherResponse(ctx, result.artifactId, result.reused);
+}
+
+/** JSON `action: prepare` — signed URL for vouchers larger than the multipart cap. */
+export async function prepareVoucherDirectUpload<P>(ctx: TwoStageContext<P>, body: unknown): Promise<VoucherDirectPrepareDto> {
+  if (s(asObj(body).action) !== 'prepare') {
+    throw apiError(422, 'VALIDATION_FAILED', 'Unknown action.', { field: 'action' });
+  }
+  const { sha256, byteLength } = parseVoucherDirectDescriptor(body);
+  if (byteLength <= MAX_UPLOAD_FILE_BYTES) {
+    throw apiError(422, 'VALIDATION_FAILED', 'Use the file upload for vouchers up to 4 MB.', { field: 'byteLength' });
+  }
+  ctx.effects.mark();
+  try {
+    const prepared = await prepareFinanceArchiveDirectUpload({
+      caseId: ctx.billingCase!.id,
+      kind: 'board_signed_voucher',
+      sha256,
+      byteLength,
+    });
+    ctx.effects.committed();
+    return {
+      bucket: prepared.ref.bucket,
+      path: prepared.path,
+      token: prepared.token,
+      sha256: prepared.ref.sha256,
+      byteLength: prepared.ref.byteLength,
+      maxBytes: prepared.maxBytes,
+    };
+  } catch (error) {
+    rethrowFinanceArchiveError(error, false);
+  }
+}
+
+/** JSON `action: complete` — adopt verified storage bytes after a client upload. */
+export async function completeVoucherDirectUpload<P>(
+  ctx: TwoStageContext<P>,
+  body: unknown,
+  attestationPart?: unknown,
+): Promise<VoucherUploadDto> {
+  if (s(asObj(body).action) !== 'complete') {
+    throw apiError(422, 'VALIDATION_FAILED', 'Unknown action.', { field: 'action' });
+  }
+  const { sha256, byteLength, fileName } = parseVoucherDirectDescriptor(body);
+  if (byteLength <= MAX_UPLOAD_FILE_BYTES) {
+    throw apiError(422, 'VALIDATION_FAILED', 'Use the file upload for vouchers up to 4 MB.', { field: 'byteLength' });
+  }
+  const bucket = financeBucketName();
+  if (!bucket) {
+    throw apiError(503, 'FINANCE_ARCHIVE_UNAVAILABLE', 'The billing finance archive is not available. Reload the case before trying again.');
+  }
+  const ref: FinanceArchiveRef = {
+    caseId: ctx.billingCase!.id,
+    kind: 'board_signed_voucher',
+    bucket,
+    key: financeObjectKey(ctx.billingCase!.id, 'board_signed_voucher', sha256),
+    sha256,
+    byteLength,
+    mimeType: 'application/pdf',
+  };
+  ctx.effects.mark();
+  try {
+    const adopted = await adoptFinanceArchiveDirectUpload(ref);
+    ctx.effects.committed();
+    return commitVoucherArtifact(ctx, adopted.ref, fileName, attestationPart, adopted.reused);
+  } catch (error) {
+    rethrowFinanceArchiveError(error, true);
+  }
+}
+
 async function voucherResponse<P>(ctx: TwoStageContext<P>, artifactId: string, reused: boolean): Promise<VoucherUploadDto> {
   const snapshot = await loadCaseSnapshot(prisma, ctx.member.organizationId, ctx.billingCase!.id);
   if (!snapshot) throw new Error('case vanished');
@@ -308,19 +451,9 @@ async function voucherResponse<P>(ctx: TwoStageContext<P>, artifactId: string, r
  * (M1 rule); staff upload the file alone and Michael attests it.
  */
 export async function uploadVoucher<P>(ctx: TwoStageContext<P>, upload: MultipartUpload, attestationPart: unknown | undefined): Promise<VoucherUploadDto> {
-  // Validate everything before any storage write, so a bad form stores nothing.
-  if (attestationPart !== undefined) {
-    await requireDesignatedSigner(ctx);
-    voucherAttestationInput(ctx, attestationPart, { id: 'pending-upload', kind: 'board_signed_voucher' });
-  }
   const file = requirePdfUpload(upload.file, 'board_signed_voucher');
   const archived = await archive(ctx, 'board_signed_voucher', file);
-  const result = await prisma.$transaction(async (tx) => {
-    const { row, reused } = await upsertArtifact(ctx, tx, 'board_signed_voucher', archived.ref, archived.fileName);
-    if (attestationPart !== undefined) await insertAttestation(ctx, voucherAttestationInput(ctx, attestationPart, { id: row.id, kind: row.kind }), tx);
-    return { artifactId: row.id, reused: reused || archived.reused };
-  });
-  return voucherResponse(ctx, result.artifactId, result.reused);
+  return commitVoucherArtifact(ctx, archived.ref, archived.fileName, attestationPart, archived.reused);
 }
 
 /** POST …/voucher/[artifactId]/attestation (JSON, designated signer only): the voucher data entry for that exact file. */

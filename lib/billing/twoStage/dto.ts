@@ -322,7 +322,7 @@ export type ArtifactView = {
   downloadPath: string;
 };
 
-export type ContactSource = 'frozen_snapshot' | 'draft' | 'assigned_counselor' | 'member_profile' | 'none';
+export type ContactSource = 'frozen_snapshot' | 'draft' | 'assigned_counselor' | 'member_profile' | 'j5' | 'none';
 export type ContactField = { value: string | null; source: ContactSource };
 export type ContactView = { name: ContactField; email: ContactField };
 export type CounselorContactView = ContactView & { phone: ContactField };
@@ -421,7 +421,8 @@ export type VoucherMatch = {
   expected: string;
   actual: string;
   reasonCode: HoldReason;
-  hardHold: true;
+  /** A difference to review, not a block: the signer sees it and signs anyway. */
+  hardHold: boolean;
 };
 
 export type VoucherAttestationView = {
@@ -534,6 +535,11 @@ export type SignatureUploadAttestation = { statementConfirmed: boolean; statemen
 export type SignatureUploadDto = { signature: SignatureAssetDto; replaced: SignatureAssetDto | null };
 
 export type CaseSummaryDto = {
+  /**
+   * What the J6 forms start from instead of retyping: the signed or sent J5.
+   * Null until a J5 is signed. Every value is a starting point and stays editable.
+   */
+  j5Quote: null | { boardName: string; classStartDate: IsoDate; classEndDate: IsoDate };
   case: { id: string; programSlug: string; className: string | null; classDescription: string | null; contactHours: 160 | 200 | null; createdAt: IsoInstant; createdBy: Actor };
   progress: CaseProgress;
   gates: Record<GateName, GateState>;
@@ -652,6 +658,14 @@ export type VoucherAttestationPart = {
   receivingSignaturePresent: true;
   evidenceReference: string;
   confirmed: true;
+};
+export type VoucherDirectPrepareDto = {
+  bucket: string;
+  path: string;
+  token: string;
+  sha256: Sha256Hex;
+  byteLength: number;
+  maxBytes: number;
 };
 export type VoucherUploadDto = {
   artifact: ArtifactView;

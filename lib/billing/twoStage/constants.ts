@@ -58,6 +58,8 @@ export function authorizedSignerLine(): string {
 
 /** Upper bound for an uploaded signed voucher or board invoice. */
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+/** Vercel-safe multipart cap; larger vouchers use direct-to-storage upload. */
+export const FINANCE_MULTIPART_FILE_MAX_BYTES = 4 * 1024 * 1024 - 64 * 1024;
 export const ALLOWED_UPLOAD_MIME_TYPES: ReadonlySet<string> = new Set(['application/pdf']);
 
 /** V1 keeps the original five-month terms; new V2 snapshots use six months. */

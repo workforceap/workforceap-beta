@@ -201,7 +201,7 @@ export async function verifySignable<P>(
   const prereq = stagePrerequisiteBlockers(stage, snapshot, ctx.now, record, boardInvoiceId);
   const notReady = prereq.blockers.filter((b) => !b.hardHold);
   if (notReady.length > 0) throw apiError(409, 'NOT_READY', 'Complete the steps listed before signing.', { blockers: notReady });
-  if (prereq.holds.length > 0) throw apiError(409, 'J6_HELD', 'This J6 is on hold.', { holds: prereq.holds, blockers: holdBlockers(prereq.holds) });
+  // Differences between the voucher and the quote are recorded on the J6 and do not block signing.
   // The frozen content must still be what the latest evidence produces (a newer attestation or upload makes it stale).
   let receiptSignatureId: string | null = null;
   if (content.kind === 'j6_invoice_cover_letter') {
@@ -220,7 +220,6 @@ export async function verifySignable<P>(
       now: ctx.now,
       voucherReceiptSignature: receiptOk ? { ok: true } : receipt?.status,
     });
-    if (content.reviewReasons.length > 0) throw apiError(409, 'J6_HELD', 'This J6 is on hold.', { holds: content.reviewReasons, blockers: holdBlockers(content.reviewReasons) });
     if (!receiptOk) {
       if (snapshot.designatedSignerUserId === null) throw apiError(503, 'SIGNER_PRINCIPAL_UNSET', GATE_MESSAGES.SIGNER_PRINCIPAL_UNSET);
       throw apiError(409, 'RECEIVING_SIGNATURE_NOT_ATTESTED', RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE);

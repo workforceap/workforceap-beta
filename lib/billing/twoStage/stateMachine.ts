@@ -98,18 +98,12 @@ export type ReviewReason =
   | 'class_differs_from_quote';
 
 /**
- * Every reason is a hard hold with no bypass: no review note and no exception
- * clears it. Each clears only when corrected structured evidence (a corrected
- * voucher attestation or class_started attestation, or a corrected document)
- * makes it disappear. Mirrors billing_stage_record_rules() in the migration.
+ * Differences between the voucher, the class dates and the quote. Recorded on
+ * the J6 so staff see them, and never a reason to refuse signing: the
+ * designated signer reviews them and signs anyway. Mirrors
+ * billing_stage_record_rules() in the migration.
  */
-export const BLOCKING_REVIEW_REASONS: ReadonlySet<ReviewReason> = new Set([
-  'voucher_amount_differs',
-  'voucher_class_differs',
-  'voucher_period_conflict',
-  'end_date_not_contract',
-  'class_differs_from_quote',
-]);
+export const BLOCKING_REVIEW_REASONS: ReadonlySet<ReviewReason> = new Set();
 
 export const REVIEW_REASON_TEXT: Readonly<Record<ReviewReason, string>> = {
   voucher_amount_differs: 'The voucher authorizes a different amount than the $7,500.00 quote. Record a corrected voucher; a review note cannot clear this.',
@@ -142,9 +136,11 @@ export type J6Gate =
   | { ok: false; errors: string[] };
 
 /**
- * J6 only after (a) a prior quote exists (our sent J5, or an attested manual
- * one), (b) the board-signed, receipt-signed voucher is on file with its
- * attestation, and (c) the class has begun (actual start <= today).
+ * J6 only after (a) a prior quote exists (our signed or sent J5, or an
+ * attested manual one), (b) the board-signed, receipt-signed voucher is on
+ * file with its attestation, and (c) the class has begun (actual start <=
+ * today). A signed J5 counts because the quote is delivered by hand; the app
+ * does not send it.
  */
 export function checkJ6Prerequisites(input: J6Prerequisites): J6Gate {
   const errors: string[] = [];
@@ -153,9 +149,9 @@ export function checkJ6Prerequisites(input: J6Prerequisites): J6Gate {
   let priorJ5: PriorJ5Summary | null = null;
   const prior = input.priorJ5;
   if (!prior) {
-    errors.push('J6 is on hold: send the J5 quote/voucher request first, or record the manually issued quote it follows.');
+    errors.push('J6 is on hold: sign the J5 quote/voucher request first, or record the manually issued quote it follows.');
   } else if (prior.source === 'system') {
-    if (prior.j5.status !== 'sent') errors.push('The J5 quote/voucher request has not been sent to both recipients yet.');
+    if (prior.j5.status !== 'signed' && prior.j5.status !== 'sent') errors.push('The J5 quote/voucher request has not been signed yet.');
     else priorJ5 = { source: 'system', recordId: prior.j5.recordId, contentSha256: prior.j5.contentSha256, estimate: { ...prior.j5.content.training } };
   } else {
     const a = prior.attestation;
@@ -242,9 +238,10 @@ export function checkJ6Prerequisites(input: J6Prerequisites): J6Gate {
 }
 
 /**
- * Whether a J6 may be signed: only with no hold at all, and only once its class
- * has started (start <= today in America/Chicago). A review note never clears
- * a hold; there is no amount exception.
+ * Whether a J6 may be signed: only once its class has started (start <= today
+ * in America/Chicago) and the designated signer has attested his receiving
+ * signature on the voucher. Differences between the voucher and the quote are
+ * recorded for review and never block signing.
  */
 export function canSignJ6(input: {
   reviewReasons: readonly string[];
@@ -260,9 +257,6 @@ export function canSignJ6(input: {
     codes.push(VOUCHER_RECEIPT_SIGNATURE_UNATTESTED);
     if (receipt && !receipt.ok && receipt.code !== VOUCHER_RECEIPT_SIGNATURE_UNATTESTED) codes.push(receipt.code);
     errors.push(receipt && !receipt.ok ? receipt.error : 'The designated signer has not attested his receiving signature on this voucher.');
-  }
-  for (const reason of input.reviewReasons as readonly ReviewReason[]) {
-    errors.push(`${REVIEW_REASON_TEXT[reason] ?? reason} A review note cannot clear this.`);
   }
   if (compareIsoDates(input.classStartDate, billingToday(input.now)) > 0) {
     errors.push('The class has not started yet; a J6 is signed only after it starts.');

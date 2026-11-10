@@ -3,6 +3,7 @@
 import { useEffect, useId, useState, type ReactNode } from 'react';
 import { StatusTag, useAnnounce } from '@/components/portal/kit';
 import { classEndDate as calculateClassEndDate, isIsoDate } from '@/lib/billing/twoStage/dates';
+import { TUITION_AND_FEES_CENTS } from '@/lib/billing/twoStage/constants';
 import type {
   BillingStage,
   CaseSummaryDto,
@@ -237,9 +238,9 @@ export function J5ReadinessPanel({ ctx, attestation }: { ctx: PanelContext; atte
   );
 }
 
-export function ClassStartedPanel({ ctx, classStarted }: { ctx: PanelContext; classStarted: J6StageView['classStarted'] }) {
+export function ClassStartedPanel({ ctx, classStarted, plannedStart }: { ctx: PanelContext; classStarted: J6StageView['classStarted']; plannedStart: string | null }) {
   const action = useAction();
-  const [start, setStart] = useState('');
+  const [start, setStart] = useState(plannedStart ?? '');
   const end = isIsoDate(start) ? calculateClassEndDate(start) : '';
   const [evidence, setEvidence] = useState('');
   const [confirmed, setConfirmed] = useState(false);
@@ -353,16 +354,16 @@ function dollarsToCents(text: string): number {
   return Number(whole) * 100 + Number(frac.padEnd(2, '0'));
 }
 
-function VoucherDataForm({ ctx, task, caseInfo }: { ctx: PanelContext; task: DesignatedSignerTask; caseInfo: CaseSummaryDto['case'] }) {
+function VoucherDataForm({ ctx, task, caseInfo, quote }: { ctx: PanelContext; task: DesignatedSignerTask; caseInfo: CaseSummaryDto['case']; quote: CaseSummaryDto['j5Quote'] }) {
   const action = useAction();
-  const [boardName, setBoardName] = useState('');
+  const [boardName, setBoardName] = useState(quote?.boardName ?? '');
   const [reference, setReference] = useState('');
   const [receivedOn, setReceivedOn] = useState('');
-  const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState((TUITION_AND_FEES_CENTS / 100).toFixed(2));
   const [programSlug, setProgramSlug] = useState(caseInfo.programSlug);
   const [className, setClassName] = useState(caseInfo.className ?? '');
-  const [start, setStart] = useState('');
-  const [end, setEnd] = useState('');
+  const [start, setStart] = useState(quote?.classStartDate ?? '');
+  const [end, setEnd] = useState(quote?.classEndDate ?? '');
   const [evidence, setEvidence] = useState('');
   const [signaturePresent, setSignaturePresent] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -457,8 +458,8 @@ function ReceiptAttestationForm({ ctx, task }: { ctx: PanelContext; task: Design
   );
 }
 
-export function SignerTaskAction({ ctx, task, caseInfo }: { ctx: PanelContext; task: DesignatedSignerTask; caseInfo: CaseSummaryDto['case'] }) {
-  return task.step === 'voucher_data' ? <VoucherDataForm ctx={ctx} task={task} caseInfo={caseInfo} /> : <ReceiptAttestationForm ctx={ctx} task={task} />;
+export function SignerTaskAction({ ctx, task, caseInfo, quote }: { ctx: PanelContext; task: DesignatedSignerTask; caseInfo: CaseSummaryDto['case']; quote: CaseSummaryDto['j5Quote'] }) {
+  return task.step === 'voucher_data' ? <VoucherDataForm ctx={ctx} task={task} caseInfo={caseInfo} quote={quote} /> : <ReceiptAttestationForm ctx={ctx} task={task} />;
 }
 
 // ---------------------------------------------------------------------------

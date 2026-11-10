@@ -3,6 +3,7 @@ import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { getProgramSyllabus } from '@/shared/programSyllabi';
 import { CONTENT_VERSION, DOCUMENT_TITLES, J5_KIND, J6_KIND, TUITION_AND_FEES_CENTS, TUITION_AND_FEES_LABEL, type ContentVersion } from './constants';
 import { classEndDate } from './dates';
+import { BLOCKING_REVIEW_REASONS } from './stateMachine';
 
 /**
  * One-page, side-effect-free renderers for the two distinct WAP billing
@@ -254,8 +255,7 @@ function validateFacts(input: TwoStageDocumentFacts, signed: boolean): Date {
   isoDate(input.classStartDate, 'classStartDate');
   isoDate(input.classEndDate, 'classEndDate');
   const holds: readonly string[] = input.stage === 'j6' ? input.openHolds ?? [] : [];
-  // A held J6 can be previewed as a DRAFT but is never signable.
-  if (signed && holds.length > 0) throw new Error('A signed document cannot carry open holds');
+  // Recorded differences are shown to the signer and never stop the signed page.
   const contentVersion = input.contentVersion ?? CONTENT_VERSION;
   if (input.classEndDate !== classEndDate(input.classStartDate, contentVersion) && !holds.includes('end_date_not_contract')) {
     throw new Error(`Class end must be ${contentVersion === 1 ? 'five' : 'six'} calendar months after start`);
@@ -482,7 +482,7 @@ async function renderTwoStagePdf(input: TwoStageDocumentFacts, mode: RenderMode)
   const logo = await doc.embedPng(logoBytes);
   const signatureImage = signatureBytes ? await doc.embedPng(signatureBytes) : null;
   const page = doc.addPage([PAGE_W, PAGE_H]);
-  const held = facts.stage === 'j6' && (facts.openHolds?.length ?? 0) > 0;
+  const held = facts.stage === 'j6' && (facts.openHolds?.length ?? 0) > 0 && BLOCKING_REVIEW_REASONS.size > 0;
   drawLetterhead(page, fonts, logo.width, logo.height, logo, mode.kind === 'mock' ? MOCK_BADGE : signatureImage ? null : held ? DRAFT_ON_HOLD_BADGE : DRAFT_BADGE);
   drawFooter(page, fonts, facts);
 
@@ -647,7 +647,7 @@ export function renderJ5QuoteVoucherRequestSignedPdf(input: J5QuoteVoucherReques
   return renderTwoStagePdf(input, { kind: 'signed', signaturePng });
 }
 
-/** The final J6 page. Refuses a J6 with open holds or without the receiving-signature attestation. */
+/** The final J6 page. Refuses a J6 without the receiving-signature attestation. */
 export function renderJ6InvoiceVoucherCoverLetterSignedPdf(input: J6InvoiceVoucherCoverLetterFacts, signaturePng: Uint8Array): Promise<Uint8Array> {
   if (input.stage !== 'j6') throw new Error('J6 renderer requires J6 facts');
   return renderTwoStagePdf(input, { kind: 'signed', signaturePng });
