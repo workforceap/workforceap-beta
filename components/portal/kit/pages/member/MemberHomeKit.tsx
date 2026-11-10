@@ -768,7 +768,13 @@ export function MemberHomeKit({
                 </div>
                 <div style={{ minWidth: 0 }}>
                   <p className={styles.badgeName}>{nextBadgeName ?? t('home.nextBadge')}</p>
-                  {nextBadgeRemaining ? <p className={styles.badgeSub}>{t('home.badgeToGo', { remaining: nextBadgeRemaining })}</p> : null}
+                  {nextBadgeRemaining ? (
+                    <p className={styles.badgeSub}>
+                      {/\bof\b/i.test(nextBadgeRemaining)
+                        ? nextBadgeRemaining
+                        : t('home.badgeToGo', { remaining: nextBadgeRemaining })}
+                    </p>
+                  ) : null}
                 </div>
               </div>
               {/* Progress toward the next badge is neutral: there is no good or bad

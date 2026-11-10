@@ -9,6 +9,8 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import PageHeader from '@/components/portal/PageHeader';
 import { getMemberPoints } from '@/lib/member/points';
+import { getMemberBadges } from '@/lib/member/badges';
+import MilestoneBadges from '@/components/portal/MilestoneBadges';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import ReferralShareCard from './ReferralShareCard';
 import {
@@ -125,6 +127,7 @@ export default async function DashboardPointsPage() {
   const readOnlyAudit = isReadOnlyPortalAuditHeader(await headers());
 
   const memberPoints = await getMemberPoints(user.id);
+  const memberBadges = await getMemberBadges(user.id);
   const total = memberPoints.total;
   const levelMeta = getLevelForPoints(total);
   const nextLevel = getNextLevel(memberPoints.level);
@@ -273,6 +276,11 @@ export default async function DashboardPointsPage() {
                 You&apos;ve reached the top tier. Keep going to set the bar even higher.
               </p>
             )}
+          </section>
+
+          <section className="wa-kit-card" aria-label="Milestone badges">
+            <CardHead title="Milestone badges" />
+            <MilestoneBadges badges={memberBadges.badges} />
           </section>
 
           {/* ── Tier ladder ── */}
