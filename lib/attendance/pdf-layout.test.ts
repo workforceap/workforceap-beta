@@ -1,4 +1,7 @@
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, PDFName, PDFRawStream, PngEmbedder, decodePDFRawStream } from 'pdf-lib';
+import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
@@ -6,6 +9,29 @@ import { digest, DRAFT_RULE, TEMPLATE_VERSION, REPORTING_TIMEZONE, periodDates, 
 import { renderAttendancePdf, type AttendanceSnapshot } from './pdf';
 
 const LEFT = 36;
+
+// Compare decoded PDF image pixels with the canonical PNG, not a filename or a drawn badge.
+test('weekly and yearly embed the authentic WorkforceAP raster', async () => {
+  const asset = await readFile(fileURLToPath(new URL('../../public/images/logo-tight.png', import.meta.url)));
+  const source = await PngEmbedder.for(asset);
+  const sourceImage = source as unknown as { width: number; height: number; image: { rgbChannel: Uint8Array } };
+  const hash = (data: Uint8Array) => createHash('sha256').update(data).digest('hex');
+  const expected = hash(sourceImage.image.rgbChannel);
+  for (const kind of ['weekly', 'yearly'] as const) {
+    const document = await PDFDocument.load(await renderAttendancePdf(snapshot(kind)));
+    const resources = document.getPage(0).node.Resources();
+    assert.ok(resources, `${kind}: page resources exist`);
+    const xobjects = resources.lookup(PDFName.of('XObject'));
+    assert.ok(xobjects, `${kind}: image XObject exists`);
+    const images = [...document.context.enumerateIndirectObjects()].map(([, object]) => object)
+      .filter((object): object is PDFRawStream => object instanceof PDFRawStream && object.dict.get(PDFName.of('Subtype'))?.toString() === '/Image');
+    assert.ok(images.length > 0, `${kind}: embedded image, not hand-drawn logo`);
+    assert.ok(images.some(image => image.dict.get(PDFName.of('ColorSpace'))?.toString() === '/DeviceRGB'
+      && image.dict.get(PDFName.of('Width'))?.toString() === String(sourceImage.width)
+      && image.dict.get(PDFName.of('Height'))?.toString() === String(sourceImage.height)
+      && hash(decodePDFRawStream(image).decode()) === expected), `${kind}: canonical PNG RGB pixels`);
+  }
+});
 
 async function pageWidth(bytes: Uint8Array) {
   return (await PDFDocument.load(bytes)).getPage(0).getWidth();

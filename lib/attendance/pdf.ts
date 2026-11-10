@@ -1,4 +1,6 @@
-import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
+import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFImage, type PDFPage } from 'pdf-lib';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { digest, DRAFT_RULE, TEMPLATE_VERSION, ESTIMATE_NOTICE, REPORTING_TIMEZONE, type Day, type SheetKind } from './evidence';
 import { programCourseEstimate } from './coursera-estimate';
 
@@ -20,12 +22,11 @@ const MARGIN = 36;
 /** Right edge shared by every landscape yearly block: metadata, day grid and totals. */
 const RIGHT_EDGE = 792 - MARGIN;
 
-/** WorkforceAP mark from public/images/logo.svg: dark badge, red mark, white wordmark. The WFS logo is never drawn; their name stays text. */
-function drawLogo(page: PDFPage, x: number, y: number, width: number, font: PDFFont) {
-  const height = 26;
-  page.drawRectangle({ x, y: y - height, width, height, color: rgb(17 / 255, 24 / 255, 39 / 255) });
-  page.drawCircle({ x: x + 13, y: y - 13, size: 7, color: rgb(220 / 255, 20 / 255, 60 / 255) });
-  page.drawText('WorkforceAP', { x: x + 24, y: y - 17, size: 9, font, color: rgb(1, 1, 1) });
+/** Original globe, rising arrow, people and stacked wordmark; never substitute the synthetic SVG badge. */
+function drawLogo(page: PDFPage, logo: PDFImage, bottom: number) {
+  const width = 176;
+  const height = width * logo.height / logo.width;
+  page.drawImage(logo, { x: 792 - MARGIN - width, y: bottom, width, height });
 }
 
 /** Catalog course length plus stored progress. Labeled as an estimate, never as attendance. */
@@ -52,8 +53,10 @@ export async function renderAttendancePdf(snapshot: AttendanceSnapshot): Promise
   pdf.setCreator('WorkforceAP attendance');
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-  if (snapshot.kind === 'weekly') drawWeekly(pdf, snapshot, font, bold);
-  else if (snapshot.kind === 'yearly') drawYearly(pdf, snapshot, font, bold);
+  // Resolve from the app root, not the module path (which differs after Next.js bundling).
+  const logo = snapshot.kind === 'monthly' ? null : await pdf.embedPng(await readFile(join(process.cwd(), 'public', 'images', 'logo-tight.png')));
+  if (snapshot.kind === 'weekly') drawWeekly(pdf, snapshot, font, bold, logo!);
+  else if (snapshot.kind === 'yearly') drawYearly(pdf, snapshot, font, bold, logo!);
   else drawMonthly(pdf, snapshot, font, bold);
   return pdf.save();
 }
@@ -114,15 +117,15 @@ function hours(minutes: number | null): string | null {
 }
 
 /** WFS "Weekly Training Attendance Sheet" (10_Training Attendance Sheet.v10.20.20), landscape. */
-function drawWeekly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFont, bold: PDFFont) {
+function drawWeekly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFont, bold: PDFFont, logo: PDFImage) {
   const pen = penFor(pdf, font, bold, [792, 612]);
   const { page } = pen;
   const ink = rgb(0, 0, 0);
-  drawLogo(page, 560, 608, 120, bold);
+  drawLogo(page, logo, 102);
   pen.text('DRAFT', 700, 584, 14, true);
   pen.text('Workforce Solutions Capital Area', MARGIN, 584, 9, true);
   pen.text('Weekly Training Attendance Sheet', MARGIN, 566, 16, true);
-  pen.text('not WFS approved; not institutionally approved', 470, 566, 8, true);
+  pen.text('not WFS approved; not institutionally approved', MARGIN, 552, 8, true);
 
   const field = (label: string, value: string, x: number, y: number, width: number) => {
     pen.text(label, x, y, 9, true);
@@ -220,11 +223,11 @@ function utcDate(iso: string): Date {
  * WorkforceAP yearly overview, landscape. Only catalog-estimated class hours are known;
  * missing enrollment fields use the same dash marker, never inferred values.
  */
-function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFont, bold: PDFFont) {
+function drawYearly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFont, bold: PDFFont, logo: PDFImage) {
   const pen = penFor(pdf, font, bold, [792, 612]);
   const { page } = pen;
   const ink = rgb(0, 0, 0);
-  drawLogo(page, 560, 608, 120, bold);
+  drawLogo(page, logo, 65);
   pen.text('Workforce Advancement Project Student Attendance Record', MARGIN, 590, 11, true);
   pen.text(pen.fit(snapshot.academicLabel, 80, 9, true), 380, 590, 9, true);
   pen.text('DRAFT', 700, 590, 12, true);
