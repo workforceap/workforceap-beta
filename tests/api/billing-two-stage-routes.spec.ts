@@ -1545,7 +1545,7 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     };
   }
 
-  function seedSignableJ6(started: Attestation) {
+  function seedSignableJ6(started: Attestation, authorizedAmountCents = 750_000) {
     const quote = buildJ5Content({
       documentNumber: 'WAP-Q-2026-0001', logoSha256: logoSha, issueDate: '2026-09-20',
       student: { name: 'Jordan Example', email: 'jordan@example.test' },
@@ -1566,7 +1566,7 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     const voucherAttestation: Attestation = {
       id: 'att-voucher', kind: 'voucher_board_signed', statement: 'synthetic voucher', evidenceReference: 'synthetic voucher',
       classStartDate: null, classEndDate: null, artifactId: 'art-voucher', voucherReference: 'PO-44871-A',
-      authorizedAmountCents: 750_000, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30',
+      authorizedAmountCents, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30',
       receivedOn: '2026-09-29', receivingSignaturePresent: true, externalReference: null, externalQuoteDate: null,
       quotedProgramSlug: null, quotedClassName: null, authorizedProgramSlug: SLUG, authorizedClassName: CLASS_NAME,
       studentReadyConfirmed: null, counselorRequestedBy: null, counselorRequestedOn: null, counselorRequestReference: null,
@@ -1679,6 +1679,16 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     expect(mocks.archive).not.toHaveBeenCalled();
     expect(mocks.recordUpdate).not.toHaveBeenCalled();
     expect(JSON.stringify(h.state.records.find((r) => r.id === REC))).toBe(before);
+  });
+
+  it('records a voucher amount difference and still lets the designated signer freeze the J6', async () => {
+    const started = classStarted('att-start', '2026-09-30', '2027-03-30', '2026-10-01T15:00:00.000Z');
+    const { hash } = seedSignableJ6(started, 700_000);
+    const summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(summary.j6.holds).toEqual(['voucher_amount_differs']);
+    expect(summary.j6.canSign).toBe(true);
+    const checkpoint = await freeze(jsonReq(`${base}/${h.CASE}/j6/freeze`, { recordId: REC, versionHash: hash }), caseParams({ stage: 'j6' }));
+    expect(checkpoint.status).toBe(200);
   });
 });
 

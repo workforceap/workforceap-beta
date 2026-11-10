@@ -512,7 +512,7 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
     rolesThatReceivedEarlierVersions: rolesThatReceivedEarlierVersions(records.slice(1).map((r) => ({ version: r.version, acceptedRolesAtClose: r.acceptedRolesAtClose as RecipientRole[] }))),
     blockers: allBlockers,
     canSaveDraft: !current || current.status === 'draft' || current.status === 'superseded' || current.status === 'voided',
-    canSign: current?.status === 'draft' && gate.ok && holds.length === 0 && Boolean(receipt) && signBlockers.length === 0 && imageBlockers.length === 0 && input.viewerIsExecutiveSigner,
+    canSign: current?.status === 'draft' && gate.ok && Boolean(receipt) && signBlockers.length === 0 && imageBlockers.length === 0 && input.viewerIsExecutiveSigner,
     canSend: current?.status === 'signed' && sendBlockers.length === 0,
     priorQuote:
       prior?.source === 'system'
