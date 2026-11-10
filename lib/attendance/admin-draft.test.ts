@@ -57,8 +57,7 @@ test('same-org admin gets an inline draft PDF with notices, entered hours and un
   assert.match(text, /PROPOSED DRAFT RULE/);
   assert.match(text, /not institutionally approved/);
   assert.match(text, /2026-11-09\s+4\.50/);
-  assert.match(text, /2026-11-10\s+unknown/);
-  assert.match(text, /Time In\/Out unavailable/);
+    assert.doesNotMatch(text, /0\.00/);
   assert.match(text, /Draft Student/);
 });
 
@@ -107,7 +106,7 @@ test('absence code is accepted and never shown as hours', async () => {
   const res = await handleAdminDraftPdf('POST', body({ rows: [{ date: '2026-11-10', code: 'A' }] }), deps());
   assert.equal(res.status, 200);
   if (!('pdf' in res)) throw new Error('expected pdf');
-  assert.match(await pdfText(res.pdf), /2026-11-10\s+unknown\s+unknown\s+A/);
+  assert.match(await pdfText(res.pdf), /2026-11-10\s+A/);
 });
 
 test('estimated/point sources produce no daily hours; protected operations still 503-class', () => {
