@@ -225,6 +225,8 @@ beforeEach(() => {
   mocks.isSuperAdmin.mockResolvedValue(false);
   mocks.archive.mockReset();
   mocks.readArchive.mockReset();
+  mocks.prepareDirect.mockReset();
+  mocks.adoptDirect.mockReset();
   mocks.txCreate.mockReset();
   mocks.transaction.mockReset();
   mocks.receiptCreate.mockReset();
