@@ -16,6 +16,7 @@ It imports no database, storage, signing, send or logging code (a test enforces 
 ## Identity and scope
 Actor org -> enrollment (same org) -> user (not deleted). Identity via `CourseraIdentityMapping` (accountName + homePage, or email) or curated email.
 Zero matches = unmatched, several = ambiguous, user not in org = rejected, other user in org = excluded.
+The HTTP boundary fails the whole response with `404 ATTENDANCE_ENROLLMENT_NOT_FOUND` when the requested learner's own identity is ambiguous or not in the actor's organization, or when the enrollment/user crosses organizations. Rejected rows for identities that do not include the requested learner remain listed in the preview.
 Course must map through `CourseraCurriculumCourseMapping` for the enrollment's program and curriculumVersion.
 Dates use America/Chicago.
 

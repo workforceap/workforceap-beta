@@ -207,6 +207,62 @@ test('HTTP boundary: 401/403/404 tenant isolation/400 strict body/405/200', asyn
   assert.equal(ok.body.draft, true);
 });
 
+test('HTTP boundary rejects ambiguous requested learner rather than returning an empty preview', async () => {
+  const input = baseSyncInput({ points: [pt({ statementId: 'ambiguous', timestamp: '2026-09-08T15:00:00Z', actor: { email: 'dup@example.invalid' } })] });
+  input.identityMappings.push(
+    { userId: SYNTHETIC_MEMBER, courseraEmail: 'dup@example.invalid' },
+    { userId: SYNTHETIC_OTHER_MEMBER, courseraEmail: 'dup@example.invalid' });
+  const result = await handleAdminSyncPreview('POST', body, {
+    ...deps('admin'), loadSyncInput: async () => input,
+  });
+  assert.deepEqual(result, { status: 404, body: { error: 'ATTENDANCE_ENROLLMENT_NOT_FOUND' } });
+});
+
+test('HTTP boundary validates injected enrollment, actor, and blank valid days', async () => {
+  const loaded = baseSyncInput();
+  const injected = (input: typeof loaded | null, role: 'admin' | 'student' = 'admin') => ({
+    ...deps(role), loadSyncInput: async () => input,
+  });
+  const wrongId = baseSyncInput();
+  wrongId.enrollment.enrollmentId = '00000000-0000-4000-8000-000000000099';
+  assert.deepEqual(await handleAdminSyncPreview('POST', body, injected(wrongId)), { status: 404, body: { error: 'ATTENDANCE_ENROLLMENT_NOT_FOUND' } });
+  const wrongOrg = baseSyncInput();
+  wrongOrg.enrollment.userOrganizationId = SYNTHETIC_OTHER_ORG;
+  assert.deepEqual(await handleAdminSyncPreview('POST', body, injected(wrongOrg)), { status: 404, body: { error: 'ATTENDANCE_ENROLLMENT_NOT_FOUND' } });
+  const calls: string[] = [];
+  assert.deepEqual(await handleAdminSyncPreview('POST', body, {
+    ...deps('student'), loadSyncInput: async () => { calls.push('loaded'); return loaded; },
+  }), { status: 403, body: { error: 'ATTENDANCE_FORBIDDEN' } });
+  assert.deepEqual(calls, []);
+  const ok = await handleAdminSyncPreview('POST', body, injected(loaded));
+  assert.equal(ok.status, 200);
+  const preview = ok.body as unknown as SyncPreview;
+  assert.equal(preview.coverage.signalDays, 0);
+  assert.equal(preview.coverage.unknownDays, 7);
+  noAttendance(preview);
+});
+
+test('HTTP boundary fails closed for ambiguous learner CSV and roll-up identities', async () => {
+  const input = baseSyncInput({
+    snapshots: [{ snapshotId: 'csv-ambiguous', organizationId: SYNTHETIC_ORG, capturedAt: '2026-09-09T12:00:00Z', externalEmail: 'dup@example.invalid', courseId: 'course-a', lastActivityTime: null, completionTime: null, learningHours: null }],
+    rollups: [{ rollupId: 'rollup-ambiguous', organizationId: SYNTHETIC_ORG, externalEmail: 'dup@example.invalid', totalLearningHours: null, uniqueCourses: null, daysSinceLastActivity: null }],
+  });
+  input.identityMappings.push({ userId: SYNTHETIC_MEMBER, courseraEmail: 'dup@example.invalid' }, { userId: SYNTHETIC_OTHER_MEMBER, courseraEmail: 'dup@example.invalid' });
+  for (const source of ['snapshots', 'rollups'] as const) {
+    const one = baseSyncInput({ identityMappings: input.identityMappings, [source]: input[source] });
+    assert.deepEqual(await handleAdminSyncPreview('POST', body, { ...deps('admin'), loadSyncInput: async () => one }),
+      { status: 404, body: { error: 'ATTENDANCE_ENROLLMENT_NOT_FOUND' } });
+  }
+});
+
+test('HTTP boundary permits unrelated ambiguous rejected rows', async () => {
+  const input = baseSyncInput({ points: [pt({ statementId: 'unrelated', timestamp: '2026-09-08T15:00:00Z', actor: { email: 'others@example.invalid' } })] });
+  input.identityMappings.push({ userId: SYNTHETIC_OTHER_MEMBER, courseraEmail: 'others@example.invalid' }, { userId: SYNTHETIC_OTHER_ORG_MEMBER, courseraEmail: 'others@example.invalid' });
+  const result = await handleAdminSyncPreview('POST', body, { ...deps('admin'), loadSyncInput: async () => input });
+  assert.equal(result.status, 200);
+  assert.deepEqual((result.body as unknown as SyncPreview).rejections, [{ source: 'xapi', sourceId: 'unrelated', reason: 'AMBIGUOUS_IDENTITY' }]);
+});
+
 test('synthetic entry point is disabled by default and in production', async () => {
   const saved = { demo: process.env.ATTENDANCE_SYNC_PREVIEW_DEMO, vercel: process.env.VERCEL_ENV };
   try {

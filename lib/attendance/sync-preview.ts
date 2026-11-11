@@ -96,7 +96,7 @@ function checkUser(input: SyncInput, userIds: Set<string>): Resolution {
   if (user.deleted) return 'DELETED_USER';
   return userId === input.enrollment.userId ? 'mine' : 'other';
 }
-function resolveXapi(input: SyncInput, p: XapiPoint): Resolution {
+function xapiUserIds(input: SyncInput, p: XapiPoint): Set<string> {
   const ids = new Set<string>();
   if (p.actor.accountName && p.actor.homePage) {
     for (const m of input.identityMappings) if (m.actorIdentifier === p.actor.accountName && m.actorHomePage === p.actor.homePage) ids.add(m.userId);
@@ -106,13 +106,27 @@ function resolveXapi(input: SyncInput, p: XapiPoint): Resolution {
     for (const m of input.identityMappings) if (lc(m.courseraEmail) === e) ids.add(m.userId);
     if (input.curatedEmails[e]) ids.add(input.curatedEmails[e]);
   }
-  return checkUser(input, ids);
+  return ids;
 }
-function resolveCsv(input: SyncInput, s: CsvSnapshot): Resolution {
-  const e = lc(s.externalEmail); const ids = new Set<string>();
+function resolveXapi(input: SyncInput, p: XapiPoint): Resolution {
+  return checkUser(input, xapiUserIds(input, p));
+}
+function csvUserIds(input: SyncInput, email: string): Set<string> {
+  const e = lc(email); const ids = new Set<string>();
   if (input.curatedEmails[e]) ids.add(input.curatedEmails[e]);
   for (const m of input.identityMappings) if (lc(m.courseraEmail) === e) ids.add(m.userId);
-  return checkUser(input, ids);
+  return ids;
+}
+function resolveCsv(input: SyncInput, s: CsvSnapshot): Resolution {
+  return checkUser(input, csvUserIds(input, s.externalEmail));
+}
+/** An ambiguous or out-of-org provider identity involving this learner makes the HTTP preview unsafe. */
+export function hasUnsafeLearnerIdentity(input: SyncInput): boolean {
+  const learnerId = input.enrollment.userId;
+  const unsafe = (ids: Set<string>) => ids.has(learnerId) && (ids.size > 1 || !input.orgUsers[learnerId]);
+  return input.points.some(p => p.organizationId === input.enrollment.organizationId && unsafe(xapiUserIds(input, p)))
+    || input.snapshots.some(s => s.organizationId === input.enrollment.organizationId && unsafe(csvUserIds(input, s.externalEmail)))
+    || (input.rollups ?? []).some(r => r.organizationId === input.enrollment.organizationId && unsafe(csvUserIds(input, r.externalEmail)));
 }
 /** Course must be mapped for THIS enrollment's program and curriculum version. */
 function courseSlug(input: SyncInput, courseId: string | null): { slug: string } | { reason: RejectReason } {

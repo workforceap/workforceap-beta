@@ -5,7 +5,7 @@
  */
 import { ZodError, z } from 'zod';
 import type { Actor } from './workflow';
-import { buildSyncPreview, type SyncInput } from './sync-preview';
+import { buildSyncPreview, hasUnsafeLearnerIdentity, type SyncInput } from './sync-preview';
 
 export const syncPreviewRequestSchema = z.object({
   enrollmentId: z.string().uuid(),
@@ -34,7 +34,7 @@ export async function handleAdminSyncPreview(method: string, rawBody: string, de
   try {
     const request = syncPreviewRequestSchema.parse(json);
     const input = await deps.loadSyncInput(actor.organizationId, request);
-    if (!input || input.enrollment.organizationId !== actor.organizationId || input.enrollment.enrollmentId !== request.enrollmentId) return fail(404, 'ATTENDANCE_ENROLLMENT_NOT_FOUND');
+    if (!input || input.enrollment.organizationId !== actor.organizationId || input.enrollment.enrollmentId !== request.enrollmentId || input.enrollment.userOrganizationId !== actor.organizationId || hasUnsafeLearnerIdentity(input)) return fail(404, 'ATTENDANCE_ENROLLMENT_NOT_FOUND');
     return { status: 200, body: buildSyncPreview(input) as unknown as Record<string, unknown> };
   } catch (error) {
     if (error instanceof ZodError) return fail(400, 'INVALID_REQUEST');
