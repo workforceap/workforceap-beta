@@ -33,7 +33,7 @@ import { TWO_STAGE_TEXT_LIMITS } from '../documentPdf';
 import { checkJ5Prerequisites, checkJ6Prerequisites } from '../stateMachine';
 import type { TwoStageContext } from './access';
 import { isUniqueViolation } from './access';
-import { blockersFromMessages, holdBlockers } from './blockers';
+import { blockersFromMessages } from './blockers';
 import { dateColumn, j6Prerequisites, latestAttestation, loadCaseSnapshot, recordContent, stageRecords, toAttestation, toSignerAsset, type CaseSnapshot, type RecordWithRelations } from './caseData';
 import { apiError, NO_STORE_HEADERS, PDF_FRAME_HEADERS } from './http';
 import { readLetterheadLogo } from './logo';
@@ -214,7 +214,11 @@ export function stagePrerequisiteBlockers(stage: BillingStage, snapshot: CaseSna
     return { blockers: gate.ok ? [] : blockersFromMessages(gate.errors), holds: [] };
   }
   const gate = checkJ6Prerequisites(j6Prerequisites(snapshot, { now, boardInvoiceArtifactId, editingRecordId: editing?.id ?? null }));
-  return gate.ok ? { blockers: holdBlockers(gate.reviewReasons), holds: gate.reviewReasons } : { blockers: blockersFromMessages(gate.errors), holds: [] };
+  // Review notes stay on `holds` for the signer. They must not appear in
+  // `blockers`: save, review and freeze/sign all treat every non-hardHold
+  // blocker as incomplete, which would refuse a J6 whose voucher or class
+  // dates differ from the $7,500 quote.
+  return gate.ok ? { blockers: [], holds: gate.reviewReasons } : { blockers: blockersFromMessages(gate.errors), holds: [] };
 }
 
 function buildContent(stage: BillingStage, snapshot: CaseSnapshot, inputs: Inputs, args: { now: Date; documentNumber: string; logoSha256: string; editing: RecordWithRelations | null }): Built {
@@ -239,7 +243,6 @@ function buildContent(stage: BillingStage, snapshot: CaseSnapshot, inputs: Input
 async function printableBlockers(content: J5Content | J6Content, logo: Uint8Array, now: Date): Promise<{ field: string; code: 'TEXT_NOT_PRINTABLE' | 'VOUCHER_REFERENCE_TOO_LONG'; message: string } | null> {
   const issue = printableIssues(content)[0];
   if (issue) return issue;
-  if (content.kind === 'j6_invoice_cover_letter' && content.reviewReasons.length > 0) return null; // held: not rendered, cannot be signed
   try {
     await renderDraftFromContent(content, { logoPng: logo, frozenAt: now.toISOString() });
     return null;
