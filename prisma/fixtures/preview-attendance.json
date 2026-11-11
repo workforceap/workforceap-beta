@@ -1,0 +1,77 @@
+{
+  "_note": "Synthetic data for npm run preview:local. Fake names, example.test emails only. Entries are relative to the Monday of the current week so the weekly sheet always has data.",
+  "program": "software-developer-professional-certificate-ibm",
+  "admin": {
+    "id": "5eed0000-0000-4000-8000-0000000000a1",
+    "email": "preview-admin@example.test",
+    "fullName": "Preview Admin"
+  },
+  "students": [
+    {
+      "id": "5eed0000-0000-4000-8000-0000000000b1",
+      "email": "preview-student@example.test",
+      "fullName": "Pat Preview-Student",
+      "phone": "5550100001",
+      "login": true
+    },
+    {
+      "id": "5eed0000-0000-4000-8000-0000000000b2",
+      "email": "sample.learner.one@example.test",
+      "fullName": "Sample Learner One",
+      "phone": "5550100002",
+      "login": false
+    },
+    {
+      "id": "5eed0000-0000-4000-8000-0000000000b3",
+      "email": "sample.learner.two@example.test",
+      "fullName": "Sample Learner Two",
+      "phone": "5550100003",
+      "login": false
+    },
+    {
+      "id": "5eed0000-0000-4000-8000-0000000000b4",
+      "email": "sample.learner.three@example.test",
+      "fullName": "Sample Learner Three",
+      "phone": "5550100004",
+      "login": false
+    }
+  ],
+  "weeklyEntries": [
+    {
+      "dayOffset": 0,
+      "minutes": 240
+    },
+    {
+      "dayOffset": 1,
+      "minutes": 210
+    },
+    {
+      "dayOffset": 2,
+      "code": "W"
+    },
+    {
+      "dayOffset": 3,
+      "minutes": 180
+    },
+    {
+      "dayOffset": 4,
+      "code": "CR"
+    }
+  ],
+  "coursera": [
+    {
+      "courseId": "preview-course-1",
+      "name": "Preview Course: Intro",
+      "hours": 12.5,
+      "completed": true,
+      "progress": 100
+    },
+    {
+      "courseId": "preview-course-2",
+      "name": "Preview Course: Next Steps",
+      "hours": 6.25,
+      "completed": false,
+      "progress": 40
+    }
+  ]
+}
