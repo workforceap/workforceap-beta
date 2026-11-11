@@ -102,6 +102,43 @@ test('invalid input maps to 400/422 and never a PDF', async () => {
   assert.equal((await handleAdminDraftPdf('POST', body({ rows: [{ date: '2026-11-09', minutes: 60 }, { date: '2026-11-09', minutes: 120 }] }), deps())).status, 422);
 });
 
+test('inactive enrollment is 409 and never a PDF', async () => {
+  const d = deps();
+  const res = await handleAdminDraftPdf('POST', body(), {
+    ...d,
+    loadEnrollment: async (orgId, enrollmentId) => {
+      const row = await d.loadEnrollment(orgId, enrollmentId);
+      return row ? { ...row, active: false } : null;
+    },
+  });
+  assert.equal(res.status, 409);
+  assert.equal('body' in res ? res.body.error : '', 'ATTENDANCE_ENROLLMENT_INACTIVE');
+  assert.ok(!('pdf' in res));
+});
+
+test('oversized body is 413 before JSON parse or enrollment read', async () => {
+  let reads = 0;
+  const d = deps();
+  const res = await handleAdminDraftPdf('POST', 'x'.repeat(200_001), {
+    ...d,
+    loadEnrollment: async (...a) => { reads++; return d.loadEnrollment(...a); },
+  });
+  assert.equal(res.status, 413);
+  assert.equal('body' in res ? res.body.error : '', 'PAYLOAD_TOO_LARGE');
+  assert.equal(reads, 0);
+  assert.ok(!('pdf' in res));
+});
+
+test('enrollment returned for the wrong org is 404 even if the row exists', async () => {
+  const d = deps();
+  const res = await handleAdminDraftPdf('POST', body(), {
+    ...d,
+    loadEnrollment: async () => enrollment(OTHER_ORG),
+  });
+  assert.equal(res.status, 404);
+  assert.ok(!('pdf' in res));
+});
+
 test('absence code is accepted and never shown as hours', async () => {
   const res = await handleAdminDraftPdf('POST', body({ rows: [{ date: '2026-11-10', code: 'A' }] }), deps());
   assert.equal(res.status, 200);
