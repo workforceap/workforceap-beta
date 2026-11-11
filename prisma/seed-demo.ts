@@ -23,6 +23,9 @@ import { programSlugReadCandidates } from '../lib/content/programSlug';
 import { planDemoMemberProgress } from '../lib/demo/demoProgressPlan';
 import { upsertEquivalentCourseEnrollment } from '../lib/member/courseEnrollmentAssignment';
 import { persistEvent } from '../lib/events/track';
+const { assertForCurrentProcess } = require('../scripts/lib/local-only-guard.cjs') as { assertForCurrentProcess: (env?: NodeJS.ProcessEnv) => void };
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 const prisma = new PrismaClient();
 
@@ -659,22 +662,103 @@ async function seedDemoAdminUser(orgId: string) {
   console.log('Seeded demo admin user');
 }
 
+type PreviewAttendanceFixture = {
+  program: string;
+  admin: { id: string; email: string; fullName: string };
+  students: { id: string; email: string; fullName: string; phone: string; login: boolean }[];
+  coursera: { courseId: string; name: string; hours: number; completed: boolean; progress: number }[];
+};
+
+/**
+ * Local preview only (PREVIEW_ATTENDANCE_SEED=1, set by scripts/local-preview.mjs).
+ * Synthetic admin + students with fixed ids (so the local Supabase Auth users can share them),
+ * one CourseEnrollment each and a little Coursera progress. There is no attendance entries
+ * table in this schema; the dated entries live in the fixture and are typed into the draft form.
+ */
+async function seedPreviewAttendance(orgId: string) {
+  const fx = JSON.parse(readFileSync(join(__dirname, 'fixtures', 'preview-attendance.json'), 'utf8')) as PreviewAttendanceFixture;
+  const memberRole = await prisma.role.findUniqueOrThrow({ where: { name: 'member' } });
+  const adminRole = await prisma.role.findUniqueOrThrow({ where: { name: 'admin' } });
+
+  await prisma.user.upsert({
+    where: { email: fx.admin.email },
+    create: { id: fx.admin.id, organizationId: orgId, email: fx.admin.email, fullName: fx.admin.fullName },
+    update: { fullName: fx.admin.fullName },
+  });
+  await prisma.profile.upsert({
+    where: { userId: fx.admin.id },
+    create: { userId: fx.admin.id, zip: '00000', consentTerms: true, role: 'admin' },
+    update: { role: 'admin' },
+  });
+  await prisma.userRole.upsert({
+    where: { userId_roleId: { userId: fx.admin.id, roleId: adminRole.id } },
+    create: { userId: fx.admin.id, roleId: adminRole.id },
+    update: {},
+  });
+
+  for (const s of fx.students) {
+    await prisma.user.upsert({
+      where: { email: s.email },
+      create: { id: s.id, organizationId: orgId, email: s.email, fullName: s.fullName, phone: s.phone, enrolledProgram: fx.program, enrolledAt: new Date() },
+      update: { fullName: s.fullName },
+    });
+    await prisma.profile.upsert({
+      where: { userId: s.id },
+      create: { userId: s.id, zip: '00000', consentTerms: true, role: 'member' },
+      update: {},
+    });
+    await prisma.userRole.upsert({
+      where: { userId_roleId: { userId: s.id, roleId: memberRole.id } },
+      create: { userId: s.id, roleId: memberRole.id },
+      update: {},
+    });
+    // Same canonical writer the rest of the seed (and production) uses; the id is generated.
+    await upsertEquivalentCourseEnrollment(prisma, {
+      userId: s.id,
+      programSlug: fx.program,
+      create: { organizationId: orgId, curriculumVersion: LEGACY_CURRICULUM_VERSION, isPrimary: true },
+      update: { isPrimary: true },
+    });
+    for (const c of fx.coursera) {
+      await prisma.courseraCourseProgress.upsert({
+        where: { organizationId_externalEmail_courseraCourseId: { organizationId: orgId, externalEmail: s.email, courseraCourseId: c.courseId } },
+        create: {
+          userId: s.id, organizationId: orgId, externalEmail: s.email, externalName: s.fullName, courseraCourseId: c.courseId,
+          courseName: c.name, programSlug: fx.program, overallProgress: c.progress, learningHours: c.hours, isCompleted: c.completed, source: 'preview_fixture',
+        },
+        update: {},
+      });
+    }
+  }
+  console.log('Seeded preview attendance fixtures:', fx.students.length, 'synthetic students (example.test)');
+}
+
 async function main() {
   if (process.env.SEED_DEMO !== 'true') {
     console.error('Set SEED_DEMO=true to run the demo seed. Exiting.');
     process.exit(1);
   }
 
+  // Fail closed before ANY write: strict inside the local preview, deny-list (both blocked refs,
+  // production flags) everywhere else.
+  assertForCurrentProcess(process.env);
+
   console.log('🌱 Starting WorkforceAP demo seed...');
 
   const orgId = await getOrgId();
   await seedRoles();
   await seedOrganizationProgramCatalog(orgId);
-  const partnerIds = await seedDemoPartners(orgId);
-  const memberIds = await seedDemoMembers(orgId, partnerIds);
-  await seedDemoEmployerPortal(orgId, memberIds);
-  await seedDemoPartnerUser(orgId, partnerIds);
-  await seedDemoAdminUser(orgId);
+  if (process.env.PREVIEW_ATTENDANCE_SEED === '1') {
+    // Local preview: synthetic fixtures only. The legacy demo rows below use plausible personal
+    // names and workforceap.org addresses, so they are not seeded here.
+    await seedPreviewAttendance(orgId);
+  } else {
+    const partnerIds = await seedDemoPartners(orgId);
+    const memberIds = await seedDemoMembers(orgId, partnerIds);
+    await seedDemoEmployerPortal(orgId, memberIds);
+    await seedDemoPartnerUser(orgId, partnerIds);
+    await seedDemoAdminUser(orgId);
+  }
 
   console.log(`
 ✅ Demo seed complete!

@@ -5,7 +5,8 @@
 const fs = require('fs');
 const path = require('path');
 
-try {
+// The local preview builds its env in-process and must never import a developer's .env.
+if (process.env.LOCAL_PREVIEW !== '1') try {
   const envPath = path.join(process.cwd(), '.env');
   if (fs.existsSync(envPath)) {
     fs.readFileSync(envPath, 'utf8').split('\n').forEach((line) => {
