@@ -712,9 +712,11 @@ async function seedPreviewAttendance(orgId: string) {
       create: { userId: user.id, roleId: memberRole.id },
       update: {},
     });
-    await prisma.courseEnrollment.upsert({
-      where: { userId_programSlug: { userId: user.id, programSlug: PREVIEW_PROGRAM_SLUG } },
-      create: { id: learner.enrollmentId, organizationId: orgId, userId: user.id, programSlug: PREVIEW_PROGRAM_SLUG, curriculumVersion: LEGACY_CURRICULUM_VERSION, isPrimary: true },
+    // Same canonical writer as production; the fixed id lets the screenshot script address the enrollment.
+    await upsertEquivalentCourseEnrollment(prisma, {
+      userId: user.id,
+      programSlug: PREVIEW_PROGRAM_SLUG,
+      create: { id: learner.enrollmentId, organizationId: orgId, curriculumVersion: LEGACY_CURRICULUM_VERSION, isPrimary: true },
       update: {},
     });
     for (const course of PREVIEW_COURSES) {
