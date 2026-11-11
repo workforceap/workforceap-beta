@@ -11,8 +11,8 @@
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { existsSync, mkdirSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
@@ -179,7 +179,13 @@ async function up() {
   ].join('\n'));
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  if (process.argv[2] === 'down') await down({ purge: process.argv.includes('--purge') });
-  else await up();
+if (process.argv[1]) {
+  const invoked = resolve(process.argv[1]);
+  if (realpathSync(invoked) === realpathSync(fileURLToPath(import.meta.url))) {
+    if (process.argv[2] === 'down') await down({ purge: process.argv.includes('--purge') });
+    else await up();
+  } else if (basename(invoked) === 'local-preview.mjs') {
+    console.error('[preview] cannot verify local-preview.mjs entry point; refusing to silently skip');
+    process.exitCode = 1;
+  }
 }
