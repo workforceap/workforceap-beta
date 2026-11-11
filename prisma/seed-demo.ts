@@ -23,6 +23,12 @@ import { programSlugReadCandidates } from '../lib/content/programSlug';
 import { planDemoMemberProgress } from '../lib/demo/demoProgressPlan';
 import { upsertEquivalentCourseEnrollment } from '../lib/member/courseEnrollmentAssignment';
 import { persistEvent } from '../lib/events/track';
+import { assertLocalOnly } from '../scripts/lib/local-only-guard.cjs';
+import { PREVIEW_COURSES, PREVIEW_LEARNERS, PREVIEW_PROGRAM_SLUG } from './fixtures/preview-attendance';
+
+// Fail closed BEFORE any client exists or any write can happen: the demo seed only
+// ever targets a local throwaway database. The message names variables, never values.
+assertLocalOnly(process.env);
 
 const prisma = new PrismaClient();
 
@@ -659,6 +665,73 @@ async function seedDemoAdminUser(orgId: string) {
   console.log('Seeded demo admin user');
 }
 
+/**
+ * Local preview only (LOCAL_PREVIEW=1): fixed-id fake admin + student that the local auth shim
+ * signs in, plus synthetic attendance learners with enrollments and Coursera progress.
+ * example.test addresses only.
+ */
+async function seedPreviewAttendance(orgId: string) {
+  const env = process.env;
+  const admin = { id: env.PREVIEW_ADMIN_ID, email: env.PREVIEW_ADMIN_EMAIL };
+  if (!admin.id || !admin.email) throw new Error('PREVIEW_ADMIN_ID and PREVIEW_ADMIN_EMAIL are required for the local preview seed');
+  for (const value of [admin.email, ...PREVIEW_LEARNERS.map((l) => l.email)]) {
+    if (!value.endsWith('@example.test')) throw new Error('Preview seed accepts example.test addresses only');
+  }
+  const adminRole = await prisma.role.findUniqueOrThrow({ where: { name: 'admin' } });
+  const memberRole = await prisma.role.findUniqueOrThrow({ where: { name: 'member' } });
+  const adminUser = await prisma.user.upsert({
+    where: { email: admin.email },
+    create: { id: admin.id, organizationId: orgId, email: admin.email, fullName: 'Preview Admin', phone: '5550100000' },
+    update: { fullName: 'Preview Admin' },
+    select: { id: true },
+  });
+  await prisma.profile.upsert({
+    where: { userId: adminUser.id },
+    create: { userId: adminUser.id, zip: '00000', consentTerms: true, role: 'admin' },
+    update: { role: 'admin' },
+  });
+  await prisma.userRole.upsert({
+    where: { userId_roleId: { userId: adminUser.id, roleId: adminRole.id } },
+    create: { userId: adminUser.id, roleId: adminRole.id },
+    update: {},
+  });
+  for (const learner of PREVIEW_LEARNERS) {
+    const user = await prisma.user.upsert({
+      where: { email: learner.email },
+      create: { id: learner.id, organizationId: orgId, email: learner.email, fullName: learner.fullName, phone: learner.phone },
+      update: { fullName: learner.fullName },
+      select: { id: true },
+    });
+    await prisma.profile.upsert({
+      where: { userId: user.id },
+      create: { userId: user.id, zip: '00000', consentTerms: true, role: 'member' },
+      update: {},
+    });
+    await prisma.userRole.upsert({
+      where: { userId_roleId: { userId: user.id, roleId: memberRole.id } },
+      create: { userId: user.id, roleId: memberRole.id },
+      update: {},
+    });
+    await prisma.courseEnrollment.upsert({
+      where: { userId_programSlug: { userId: user.id, programSlug: PREVIEW_PROGRAM_SLUG } },
+      create: { id: learner.enrollmentId, organizationId: orgId, userId: user.id, programSlug: PREVIEW_PROGRAM_SLUG, curriculumVersion: LEGACY_CURRICULUM_VERSION, isPrimary: true },
+      update: {},
+    });
+    for (const course of PREVIEW_COURSES) {
+      await prisma.courseraCourseProgress.upsert({
+        where: { organizationId_externalEmail_courseraCourseId: { organizationId: orgId, externalEmail: learner.email, courseraCourseId: course.id } },
+        create: {
+          userId: user.id, organizationId: orgId, externalEmail: learner.email, externalName: learner.fullName,
+          courseraCourseId: course.id, courseName: course.name, programSlug: PREVIEW_PROGRAM_SLUG,
+          overallProgress: course.progress, learningHours: course.hours, isCompleted: course.completed, source: 'preview_synthetic',
+        },
+        update: {},
+      });
+    }
+  }
+  console.log(`Seeded local preview: 1 fake admin, ${PREVIEW_LEARNERS.length} fake learners with enrollments and Coursera progress`);
+}
+
 async function main() {
   if (process.env.SEED_DEMO !== 'true') {
     console.error('Set SEED_DEMO=true to run the demo seed. Exiting.');
@@ -670,6 +743,12 @@ async function main() {
   const orgId = await getOrgId();
   await seedRoles();
   await seedOrganizationProgramCatalog(orgId);
+  if (process.env.LOCAL_PREVIEW === '1') {
+    // Preview mode seeds ONLY the synthetic example.test rows: none of the legacy demo people or partners.
+    await seedPreviewAttendance(orgId);
+    console.log('Local preview seed complete (synthetic only).');
+    return;
+  }
   const partnerIds = await seedDemoPartners(orgId);
   const memberIds = await seedDemoMembers(orgId, partnerIds);
   await seedDemoEmployerPortal(orgId, memberIds);
