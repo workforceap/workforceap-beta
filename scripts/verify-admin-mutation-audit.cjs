@@ -52,6 +52,7 @@ const ALLOWLIST = {
   'app/api/admin/blog/ai/suggest-topics/route.ts': 'returns AI topic suggestions; no persistence',
   'app/api/admin/blog/generate/route.ts': 'returns generated copy for the editor; no persistence',
   'app/api/admin/reports/wioa/generate/route.ts': 'computes a WIOA report and returns it; nothing is stored (WAP-18)',
+  'app/api/admin/attendance/draft-pdf/route.ts': 'renders an unsaved DRAFT attendance PDF inline from request rows plus one scoped enrollment read; no database or storage write, no signing or delivery',
 };
 
 const AUDIT_CALL = /\b(auditLog|logAuditEvent)\s*\(/;
