@@ -28,3 +28,24 @@ test('invoking preview via a filesystem alias runs the entry point instead of si
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('invoking service-key check via a filesystem alias reports failure instead of silently exiting', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'wap-key-alias-'));
+  const aliasDir = join(dir, 'scripts');
+  try {
+    if (process.platform === 'win32') {
+      const link = spawnSync('cmd.exe', ['/d', '/c', 'mklink', '/J', aliasDir, __dirname], { encoding: 'utf8' });
+      assert.equal(link.status, 0, link.stderr);
+    } else {
+      symlinkSync(__dirname, aliasDir, 'dir');
+    }
+    // Missing required arguments fail before any network or credential access.
+    const result = spawnSync(process.execPath, [join(aliasDir, 'check-preview-service-key.mjs')], {
+      encoding: 'utf8', timeout: 10000,
+    });
+    assert.equal(result.status, 1, `stdout=${result.stdout} stderr=${result.stderr}`);
+    assert.match(result.stdout, /usage: check-preview-service-key\.mjs/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
