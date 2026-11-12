@@ -1720,6 +1720,75 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     const checkpoint = await freeze(jsonReq(`${base}/${h.CASE}/j6/freeze`, { recordId: REC, versionHash: hash }), caseParams({ stage: 'j6' }));
     expect(checkpoint.status).toBe(200);
   });
+
+  it('refuses freeze and sign when a signed J5 supersedes the frozen external quote, without writing', async () => {
+    const started = classStarted('att-start', '2026-09-30', '2027-03-30', '2026-10-01T15:00:00.000Z');
+    seedSignableJ6(started);
+    const j6 = h.state.records.find((r) => r.id === REC);
+    if (!j6) throw new Error('missing J6 draft');
+    const externalAttestation: Attestation = {
+      id: 'att-ext', kind: 'external_j5_reference', statement: 'manual quote', evidenceReference: 'email',
+      classStartDate: null, classEndDate: null, artifactId: null, voucherReference: null, authorizedAmountCents: null,
+      authorizedStartDate: null, authorizedEndDate: null, receivedOn: null, receivingSignaturePresent: null,
+      externalReference: 'MANUAL-Q-17', externalQuoteDate: '2026-08-01', quotedProgramSlug: SLUG, quotedClassName: CLASS_NAME,
+      authorizedProgramSlug: null, authorizedClassName: null, studentReadyConfirmed: null, counselorRequestedBy: null,
+      counselorRequestedOn: null, counselorRequestReference: null, attestedBySubjectId: h.ADMIN, attestedAt: '2026-08-02T12:00:00.000Z',
+    };
+    const rebuilt = buildJ6Content({
+      now: new Date(NOW_ISO), hasOpenJ6: false, programSlug: SLUG,
+      priorJ5: { source: 'external', attestation: externalAttestation },
+      classStarted: started,
+      voucher: { id: 'art-voucher', kind: 'board_signed_voucher', fileName: 'voucher.pdf', mimeType: 'application/pdf', byteLength: 1234, sha256: VOUCHER_SHA },
+      voucherAttestation: {
+        id: 'att-voucher', kind: 'voucher_board_signed', statement: 'synthetic voucher', evidenceReference: 'synthetic voucher',
+        classStartDate: null, classEndDate: null, artifactId: 'art-voucher', voucherReference: 'PO-44871-A',
+        authorizedAmountCents: 750_000, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30',
+        receivedOn: '2026-09-29', receivingSignaturePresent: true, externalReference: null, externalQuoteDate: null,
+        quotedProgramSlug: null, quotedClassName: null, authorizedProgramSlug: SLUG, authorizedClassName: CLASS_NAME,
+        studentReadyConfirmed: null, counselorRequestedBy: null, counselorRequestedOn: null, counselorRequestReference: null,
+        attestedBySubjectId: h.ADMIN, attestedAt: '2026-09-29T16:00:00.000Z',
+      },
+      boardInvoice: null, documentNumber: 'WAP-I-2026-0001', logoSha256: logoSha,
+      signatureAsset: { assetId: 'sig-1', assetSha256: PNG_SHA }, issueDate: '2026-10-20',
+      student: { name: 'Jordan Example', email: 'jordan@example.test' },
+      counselor: { name: 'Casey Counselor', email: 'casey@example.test', phone: '(555) 010-0201' },
+      boardName: 'Workforce Solutions Capital Area', finance: { name: 'Morgan Finance', email: 'finance@example.test' },
+    });
+    if (!rebuilt.ok) throw new Error(rebuilt.errors.join('; '));
+    j6.content = rebuilt.content;
+    j6.contentSha256 = rebuilt.contentSha256;
+    h.state.attestations.push({
+      ...externalAttestation, caseId: h.CASE, organizationId: h.ORG,
+      classStartDate: null, classEndDate: null, attestedAt: new Date(externalAttestation.attestedAt),
+      counselorRequestedOn: null, authorizedStartDate: null, authorizedEndDate: null, receivedOn: null,
+      externalQuoteDate: new Date('2026-08-01T00:00:00.000Z'),
+    });
+    const sentJ5 = h.state.records.find((r) => r.id === J5_REC);
+    if (!sentJ5) throw new Error('missing seeded J5');
+    sentJ5.status = 'draft';
+    sentJ5.signedAt = null;
+    sentJ5.sentAt = null;
+    const stillBound = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(stillBound.j6.canSign).toBe(true);
+
+    sentJ5.status = 'signed';
+    sentJ5.signedAt = new Date('2026-09-20T18:00:00Z');
+    const before = JSON.stringify(h.state.records.find((r) => r.id === REC));
+    const summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(summary.j6.canSign).toBe(false);
+    expect(summary.j6.blockers).toContainEqual(expect.objectContaining({ code: 'DRAFT_STALE', message: expect.stringContaining('Save the draft again') }));
+
+    const staleFreeze = await freeze(jsonReq(`${base}/${h.CASE}/j6/freeze`, { recordId: REC, versionHash: rebuilt.contentSha256 }), caseParams({ stage: 'j6' }));
+    expect([staleFreeze.status, await code(staleFreeze)]).toEqual([409, 'DRAFT_STALE']);
+    const signed = await sign(jsonReq(`${base}/${h.CASE}/j6/sign`, {
+      recordId: REC, version: 1, contentSha256: rebuilt.contentSha256, intentConfirmed: true,
+      intentText: signerIntentStatement({ documentTitle: rebuilt.content.title, documentNumber: rebuilt.content.documentNumber, contentSha256: rebuilt.contentSha256 }),
+    }), caseParams({ stage: 'j6' }));
+    expect([signed.status, await code(signed)]).toEqual([409, 'DRAFT_STALE']);
+    expect(mocks.archive).not.toHaveBeenCalled();
+    expect(mocks.recordUpdate).not.toHaveBeenCalled();
+    expect(JSON.stringify(h.state.records.find((r) => r.id === REC))).toBe(before);
+  });
 });
 
 describe('two-stage routes: renderer refusals keep their own codes', () => {

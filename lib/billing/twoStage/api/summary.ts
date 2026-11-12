@@ -61,6 +61,7 @@ import {
   currentVoucher,
   isoDate,
   j6DraftBindsLatestClassStarted,
+  j6DraftBindsLatestPriorQuote,
   j6Prerequisites,
   latestAttestation,
   latestRecord,
@@ -477,6 +478,9 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
   }
   const signBlockers = current?.status === 'draft' ? [...gateBlockers(input.gates, ['signing', 'signedRenderer', 'receiptSignaturePrincipal']), ...draftVersionBlockers(current)] : [];
   if (current?.status === 'draft' && currentContent && !j6DraftBindsLatestClassStarted(currentContent, snapshot)) {
+    signBlockers.push({ code: 'DRAFT_STALE', message: DRAFT_STALE_MESSAGE, hardHold: false });
+  }
+  if (current?.status === 'draft' && currentContent && !j6DraftBindsLatestPriorQuote(currentContent, snapshot)) {
     signBlockers.push({ code: 'DRAFT_STALE', message: DRAFT_STALE_MESSAGE, hardHold: false });
   }
   const imageBlockers = signatureImageBlockers(snapshot, current);
