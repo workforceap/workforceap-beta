@@ -80,13 +80,23 @@ export default async function AssessmentPage({
             You can still message your counselor, get help, or update your profile from the menu.
           </div>
         ) : null}
-        <div style={{ maxWidth: 720 }}>
+        <div style={{ maxWidth: 720 }} className="wa-space-y-6">
           {retakePending ? <AssessmentRetakeNotice showLink={false} /> : null}
+          {!canSubmit && dbUser.assessmentCompleted ? <AssessmentCompletedCard
+            wapat={wapatFromAnswers(dbUser.assessmentAnswers)}
+            completedAt={dbUser.assessmentCompletedAt}
+            programInterest={dbUser.programInterest}
+          /> : null}
           <p>{Math.min(dbUser.assessmentAttemptCount, 2)} of 2 attempts completed.</p>
           <AssessmentResultHistory history={dbUser.assessmentHistory} />
           {!canSubmit ? (
             <>
-              {dbUser.assessmentAttemptCount >= 2 ? <p role="status">Both preassessment chances have been used. No further retakes are available.</p> : null}
+              {dbUser.assessmentAttemptCount >= 2 ? (
+                <p role="status">
+                  Both preassessment chances have been used. No further retakes are available from this page.
+                  {' '}To ask about another chance, <Link href="/dashboard/messages">message your counselor about a retake</Link>.
+                </p>
+              ) : null}
               {dbUser.assessmentAttemptCount === 1 ? (
                 <p role="status">
                   You have one final attempt available. Ask your counselor or administrator to authorize it.
@@ -94,11 +104,6 @@ export default async function AssessmentPage({
                   {' '}<Link href="/dashboard/messages">Message your counselor about a retake</Link>.
                 </p>
               ) : null}
-              {dbUser.assessmentCompleted ? <AssessmentCompletedCard
-                wapat={wapatFromAnswers(dbUser.assessmentAnswers)}
-                completedAt={dbUser.assessmentCompletedAt}
-                programInterest={dbUser.programInterest}
-              /> : null}
               {dbUser.assessmentCompleted ? <InterviewSteps
                 copy={{
                   preScreeningTitle: t('interviewSteps.preScreeningTitle'),

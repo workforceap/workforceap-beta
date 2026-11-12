@@ -10,6 +10,19 @@ const rows = (correctIds: number[]) =>
   Array.from({ length: 35 }, (_, i) => ({ id: i + 1, answer: 'A', correct: correctIds.includes(i + 1) }));
 
 describe('WapatReport', () => {
+  it('gives each section a bar, a question range and a one-line meaning, and never claims an outside equivalence', () => {
+    const ids = [...Array.from({ length: 10 }, (_, i) => i + 1), 25];
+    render(<WapatReport result={computeWapat(rows(ids))} />);
+    const vocab = within(screen.getByTestId('wapat-vocabulary'));
+    expect(vocab.getByRole('progressbar', { name: 'Vocabulary score' })).toHaveAttribute('aria-valuenow', '100');
+    expect(vocab.getByText(/Word meaning across the first 10 questions/)).toBeInTheDocument();
+    const math = within(screen.getByTestId('wapat-math'));
+    expect(math.getByRole('progressbar', { name: 'Math and Reasoning score' })).toHaveAttribute('aria-valuenow', '9.1');
+    expect(math.getByText(/Numbers and reasoning across questions 25 to 35/)).toBeInTheDocument();
+    expect(screen.queryByRole('progressbar', { name: 'WAPAT Total Score score' })).toBeNull();
+    expect(screen.getByTestId('wapat-report').textContent).not.toMatch(/AMCAT|Workforce Solutions/);
+  });
+
   it('shows the four scores with their question ranges and counts', () => {
     const ids = [...Array.from({ length: 10 }, (_, i) => i + 1), 24, 25];
     render(<WapatReport result={computeWapat(rows(ids))} />);
@@ -36,9 +49,14 @@ describe('WapatReport', () => {
     }
   });
 
-  it('carries no inline font-size or style attributes (kit rule)', () => {
+  it('keeps the report text free of inline font sizes; the kit bar sets only its own width', () => {
     const { container } = render(<WapatReport result={computeWapat(rows([1]))} />);
-    expect(container.querySelectorAll('[style]')).toHaveLength(0);
+    const styled = [...container.querySelectorAll('[style]')];
+    expect(styled.length).toBeGreaterThan(0);
+    for (const node of styled) {
+      expect(node.closest('[role="progressbar"]')).not.toBeNull();
+      expect(node.getAttribute('style')).not.toMatch(/font-size/i);
+    }
   });
 });
 

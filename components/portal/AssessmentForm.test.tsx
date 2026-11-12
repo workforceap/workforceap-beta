@@ -58,8 +58,9 @@ describe('AssessmentForm readiness wording vs WAPAT score', () => {
       />,
     );
     expect(screen.getByTestId('wapat-total')).toHaveTextContent('74.3%');
-    const copy = screen.getByText(/points score of 69%/);
-    expect(copy).toHaveTextContent('legacy, weighted; not the WAPAT total');
+    const copy = screen.getByText(/older weighted points score/);
+    expect(copy).toHaveTextContent('not the WAPAT total above');
+    expect(copy).not.toHaveTextContent('69%');
     expect(copy).not.toHaveTextContent('74.3');
   });
 });

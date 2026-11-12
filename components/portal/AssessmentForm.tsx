@@ -264,6 +264,9 @@ export default function AssessmentForm({
       setContinueHref(
         intended && intended.startsWith('/') && !intended.startsWith('//') ? intended : '/dashboard',
       );
+      // The header counter and the retake banner are server-rendered from the
+      // saved attempt. Reload them so they match what was just stored.
+      router.refresh();
     } catch {
       setError('Submission failed. Please try again.');
     } finally {
