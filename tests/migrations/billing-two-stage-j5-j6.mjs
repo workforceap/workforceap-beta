@@ -42,6 +42,8 @@ import { deflateSync } from 'node:zlib';
 const MIGRATION_NAME = '20260927230000_billing_two_stage_j5_j6';
 const SIX_MONTH_MIGRATION = '20261006203708_billing_six_month_class_terms';
 const J6_RELAXED_MIGRATION = '20261110194500_billing_j6_signed_j5_and_review_notes';
+const J6_REVIEW_MIGRATION = '20261112044500_billing_j6_review_notes_do_not_block_signing';
+const j6ReviewMigration = readFileSync(`prisma/migrations/${J6_REVIEW_MIGRATION}/migration.sql`, 'utf8');
 const sixMonthMigration = readFileSync(`prisma/migrations/${SIX_MONTH_MIGRATION}/migration.sql`, 'utf8');
 const j6RelaxedMigration = readFileSync(`prisma/migrations/${J6_RELAXED_MIGRATION}/migration.sql`, 'utf8');
 const LEGACY_MIGRATION = 'prisma/migrations/20260904020000_training_billing_packets/migration.sql';
@@ -130,6 +132,18 @@ const notHeldByReview = (stmt) => sql(`DO $proof$ BEGIN ${stmt} RAISE EXCEPTION 
         WHEN raise_exception THEN IF SQLERRM <> 'proof-rollback' THEN RAISE; END IF;
         WHEN check_violation THEN IF SQLERRM LIKE 'the J6 is held%' THEN RAISE; END IF;
       END $proof$;`);
+// Strict: the sign must succeed (rolled back inside the DO block). Any error, including a check violation, fails the proof.
+const signsOutright = (stmt) => {
+  const result = spawnSync('psql', ['-X', '-qAt', '-v', 'ON_ERROR_STOP=1', '-d', proofDatabase], {
+    env,
+    input: `\\set VERBOSITY default\nSET client_min_messages = warning;\nDO $proof$ BEGIN ${stmt} RAISE EXCEPTION 'proof-rollback';
+      EXCEPTION WHEN raise_exception THEN IF SQLERRM <> 'proof-rollback' THEN RAISE; END IF;
+      END $proof$;`,
+    encoding: 'utf8',
+    timeout: 30_000,
+  });
+  assert.equal(result.status, 0, `the sign must not be refused, got: ${(result.stderr ?? '').trim()}`);
+};
 const ident = (value) => `"${String(value).replaceAll('"', '""')}"`;
 const pass = (message) => console.log(`PASS ${message}`);
 
@@ -371,6 +385,7 @@ try {
   sql(migration);
   // Production applies the J6 rule relaxation on top; the assertions below prove the current rules.
   sql(j6RelaxedMigration);
+  sql(j6ReviewMigration);
   TODAY_ISO = sql(`SELECT to_char(public.billing_today(), 'YYYY-MM-DD');`);
   const fingerprint = schemaFingerprint();
   pass('migration applies on the legacy billing state');
@@ -1142,6 +1157,9 @@ try {
   sql(recipientsInsert('j6-v3', 'j6', ['finance', 'counselor', 'student']));
   sql(artifactInsert({ id: 'art-j6-v3', kind: 'j6_signed_pdf', source: 'rendered', text: '%PDF-1.7 synthetic J6 v3', renders: { record: 'j6-v3', version: 3, contentSha256: HASH } }));
   const clearReview = `UPDATE public.billing_stage_records SET ${set({ review_cleared_at: 'now()', review_cleared_by_subject_id: `'${STAFF}'`, review_note: `'Synthetic: board OK by phone'` })}, updated_at = now() WHERE id='j6-v3';`;
+  // The app never writes the clearance fields: a recorded difference must sign with them empty.
+  assert.equal(sql(`SELECT (review_required AND review_cleared_at IS NULL AND review_cleared_by_subject_id IS NULL AND review_note IS NULL)::text FROM public.billing_stage_records WHERE id='j6-v3';`), 'true');
+  signsOutright(signJ6('j6-v3', 'art-j6-v3'));
   sql(clearReview);
   // A recorded voucher-period difference never blocks signing.
   notHeldByReview(signJ6('j6-v3', 'art-j6-v3'));
@@ -1505,6 +1523,7 @@ try {
   const recordCount = sql(`SELECT count(*) FROM public.billing_stage_records;`);
   sql(migration);
   sql(j6RelaxedMigration);
+  sql(j6ReviewMigration);
   assert.equal(schemaFingerprint(), fingerprint, 'Re-applying must not change constraints, triggers or indexes.');
   for (const role of ['anon', 'authenticated']) assert.ok(privilegeMatrix(role).every((v) => v === false));
   assert.equal(legacyAccess(), legacyGrantsBefore, 'a re-run leaves legacy access unchanged');
@@ -1517,6 +1536,7 @@ try {
   sql(sixMonthMigration);
   sql(sixMonthMigration);
   sql(j6RelaxedMigration);
+  sql(j6ReviewMigration);
   assert.equal(snapshots(), snapshotsBefore, 'the term migration never rewrites existing documents');
   assert.equal(frozenSigned('j5-sig-a'), signedBefore, 'all signed/sent records retain their original content and signatures');
   // Legacy drafts remain usable under v1, and rollback code may still write v1.
