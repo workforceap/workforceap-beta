@@ -84,7 +84,7 @@ async function _GET(req: NextRequest) {
     'Coursera Access',
     'Coursera Activated',
     'Assessment Done',
-    'Assessment Points Score % (legacy, not WAPAT)',
+    'Assessment Points Score % (legacy not WAPAT)',
     'WIOA Signal',
     'WIOA Review Status',
     'Certifications',

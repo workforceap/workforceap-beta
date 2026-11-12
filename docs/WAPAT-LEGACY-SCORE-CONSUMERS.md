@@ -21,7 +21,7 @@ Thresholds, sorting, matching and eligibility are not changed; only visible labe
 | `lib/admin/fitScore.ts`, `lib/ai/matchWeights.ts` | fit score, student/job matching (>=70, >=50) | not displayed as a percent |
 | Admin members list, recent signups, assessments table (header, filter, sort, CSV), interview-ready table | score column and 70/50 colour bands | "Points score % (legacy)" |
 | Admin member page stat | stored score | "Points score (legacy)" |
-| Admin exports: cohort, members, bulk members | stored score | "Assessment Points Score % (legacy, not WAPAT)" |
+| Admin exports: cohort, members, bulk members | stored score | "Assessment Points Score % (legacy not WAPAT)" |
 | Admin member summary facts | stored score | "Assessment points score (legacy, not WAPAT)" |
 | Staff job-match reason (`staffAssessmentReason`) | stored score | "Assessment points score N% (legacy, not WAPAT)" |
 | Career brief tile (`skillsScore` message, 4 locales) | stored score | "Points score (legacy)" |

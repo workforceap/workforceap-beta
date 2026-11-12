@@ -125,7 +125,7 @@ export const GET = withApiGuc(async (req: NextRequest) => {
     'Total Courses',
     'Completion %',
     'Assessment Completed',
-    'Assessment Points Score % (legacy, not WAPAT)',
+    'Assessment Points Score % (legacy not WAPAT)',
     'Employer',
     'Job Title',
     'Start Date',
