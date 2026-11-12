@@ -1519,6 +1519,48 @@ try {
   );
   pass('DB-stamped columns (attested_at x2, created_at upload, designated_at, uploaded_at/approved_at/revoked_at signature asset, signed_at, sent_at, superseded_at, voided_at, send_cancelled_at, claimed_at, last_claimed_at, accepted_at, reconciled_at, recorded_at x2, member_merged_at) are omittable in Prisma-shaped inserts and hold the DB clock');
 
+  // -------------------------------- bounded lock on the real migration file
+  // The suite applied the file once already, so the weaker check is in force.
+  // Production runs the file once, against the strict check. Put that check
+  // back, then race the real file: a second session holds the table, the file
+  // must refuse inside lock_timeout and leave the strict check, and after the
+  // holder commits the same file must install the weaker check again.
+  const reviewDef = () => sql(`SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname = 'billing_stage_records_review_check';`);
+  const newDef = reviewDef();
+  assert.doesNotMatch(newDef, /signed/, 'the earlier apply already installed the weaker check');
+  sql(`ALTER TABLE public.billing_stage_records DROP CONSTRAINT "billing_stage_records_review_check";
+       ALTER TABLE public.billing_stage_records ADD CONSTRAINT "billing_stage_records_review_check" CHECK (coalesce((
+         (("review_cleared_at" IS NULL AND "review_cleared_by_subject_id" IS NULL AND "review_note" IS NULL)
+           OR ("review_required" AND "review_cleared_at" IS NOT NULL AND "review_cleared_by_subject_id" IS NOT NULL
+             AND btrim(coalesce("review_note", '')) <> ''))
+         AND ("review_required" = (cardinality(coalesce("review_reasons", ARRAY[]::TEXT[])) > 0))
+         AND ("status" NOT IN ('signed', 'sent') OR NOT "review_required" OR "review_cleared_at" IS NOT NULL)
+       ), false));`);
+  const oldDef = reviewDef();
+  assert.match(oldDef, /signed/, 'the restored check is the strict signed/sent clause');
+  assert.notEqual(oldDef, newDef);
+  const sessionSettings = () => sql(`SELECT current_setting('lock_timeout') || '|' || current_setting('statement_timeout');`);
+  assert.equal(sessionSettings(), '0|0', 'the proof session starts with no lock or statement timeout');
+  const holder = sqlAsync(`BEGIN; LOCK TABLE public.billing_stage_records IN ACCESS EXCLUSIVE MODE; SELECT pg_sleep(8); COMMIT;`);
+  await pause(500);
+  const blockedAt = Date.now();
+  const blocked = await sqlAsync(j6ReviewMigration);
+  const blockedMs = Date.now() - blockedAt;
+  assert.notEqual(blocked.code, 0, 'a held ACCESS EXCLUSIVE lock must refuse the migration');
+  assert.match(blocked.stderr, /55P03/, `expected lock_not_available (55P03), got ${blocked.stderr}`);
+  assert.ok(blockedMs < 7000, `the refusal must stay inside the 3s lock bound, took ${blockedMs}ms`);
+  assert.equal(reviewDef(), oldDef, 'a refused migration leaves the strict constraint');
+  const holderResult = await holder;
+  assert.equal(holderResult.code, 0, `the holder must finish on its own, not be killed: ${holderResult.stderr}`);
+  assert.equal(sessionSettings(), '0|0', 'SET LOCAL must not leak into the next statement on this session');
+  const releasedAt = Date.now();
+  sql(j6ReviewMigration);
+  const releasedMs = Date.now() - releasedAt;
+  assert.ok(releasedMs < 7000, `the unblocked migration must finish inside the bound, took ${releasedMs}ms`);
+  assert.equal(sessionSettings(), '0|0', 'the committed migration must not leave a session timeout');
+  assert.equal(reviewDef(), newDef, 'after the holder releases, the same file installs the weaker check');
+  pass('bounded lock: a holder of billing_stage_records makes the migration refuse with 55P03 inside 3s, the holder survives and the strict constraint stays; after release the same file applies and SET LOCAL does not leak');
+
   // ------------------------------------------------------- re-run
   const recordCount = sql(`SELECT count(*) FROM public.billing_stage_records;`);
   sql(migration);

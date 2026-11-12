@@ -1298,6 +1298,7 @@ again carries the current image.
 `end_date_not_contract`, `class_differs_from_quote` are recorded notes
 (`HOLD_<REASON>` codes, message `REVIEW_REASON_TEXT`); they never block signing, and the
 table check `billing_stage_records_review_check` (since 20261112044500) no longer requires a clearance.
+The release steps for that migration are `docs/runbooks/j6-review-check-release.md`.
 
 #### 6.2 Prerequisite blockers
 
