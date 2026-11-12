@@ -145,3 +145,11 @@ test('history: each retained attempt gets its own WAPAT; entries without answers
   assert.equal(out[1].total.available, false);
   assert.deepEqual(wapatForHistory('nope'), []);
 });
+
+test('Q1-26 correct: legacy points score is 69% while WAPAT total is 74.3% (different metrics)', () => {
+  const key = allCorrect();
+  const answers = allWrong();
+  for (let id = 1; id <= 26; id++) answers[id] = key[id];
+  assert.equal(scoreAssessment(answers).pct, 69);
+  assert.equal(wapatFromAnswers(answers).total.pct, 74.3);
+});

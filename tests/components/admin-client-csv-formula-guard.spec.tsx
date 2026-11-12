@@ -97,7 +97,7 @@ describe('admin assessments CSV download', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
     const [header, row] = await lastCsv();
-    expect(header).toBe('Name,Email,Phone,Program Interest,Score %,Date Completed');
+    expect(header).toBe('Name,Email,Phone,Program Interest,Points Score % (legacy),Date Completed');
     expect(row).toBe(
       `"'=HYPERLINK(""http://evil/"",""x"")",ana@example.test,'+1 512 555 0100,"IT, Support",80,2026-09-01T12:00:00.000Z`,
     );

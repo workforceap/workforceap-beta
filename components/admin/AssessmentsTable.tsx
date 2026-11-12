@@ -97,7 +97,7 @@ export default function AssessmentsTable({
   };
 
   const exportCsv = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Program Interest', 'Score %', 'Date Completed'];
+    const headers = ['Name', 'Email', 'Phone', 'Program Interest', 'Points Score % (legacy)', 'Date Completed'];
     const rows = sorted.map((u) => [
       u.fullName,
       u.email,
@@ -153,7 +153,7 @@ export default function AssessmentsTable({
           />
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <label htmlFor="min-score" style={{ fontSize: '0.9rem' }}>Score %:</label>
+          <label htmlFor="min-score" style={{ fontSize: '0.9rem' }}>Points score % (legacy):</label>
           <input
             id="min-score"
             type="number"
@@ -355,7 +355,7 @@ export default function AssessmentsTable({
             { key: 'program', header: 'Program Interest', cell: (u) => u.programInterest ?? '—' },
             {
               key: 'score',
-              cellDataLabel: 'Score %',
+              cellDataLabel: 'Points Score % (legacy)',
               header: (
                 <span
                   role="button"
@@ -375,7 +375,7 @@ export default function AssessmentsTable({
                     }
                   }}
                 >
-                  Score % {sortBy === 'score' && (sortDir === 'asc' ? '↑' : '↓')}
+                  Points score % (legacy) {sortBy === 'score' && (sortDir === 'asc' ? '↑' : '↓')}
                 </span>
               ),
               cell: (u) => (

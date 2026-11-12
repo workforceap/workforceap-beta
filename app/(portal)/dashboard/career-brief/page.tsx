@@ -183,7 +183,7 @@ export default async function CareerBriefPage() {
     {
       href: '/dashboard/ai-tools/skill-mapper',
       icon: Radar,
-      label: t('skillsScore') ?? 'Skills Score',
+      label: t('skillsScore') ?? 'Points score (legacy)',
       value: assessmentScorePct !== null ? `${assessmentScorePct}%` : '—',
       caption: t('skillMapperLink') ?? 'Skill Mapper',
     },

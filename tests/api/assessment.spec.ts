@@ -317,6 +317,24 @@ describe('POST /api/member/assessment/submit', () => {
     expect(resendSend.mock.calls[0]?.[0]?.subject).toContain('Unavailable');
   });
 
+  it('WAPAT: Q1-26 correct gives legacy 69% (stored/returned) and WAPAT 74.3%, and the staff email labels both', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getCounselorStarterProfileReview).mockReturnValue({ required: false, missing: [] });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+    const wrong: Record<string, string> = { A: 'B', B: 'C', C: 'D', D: 'A' };
+    const answers = Object.fromEntries(ASSESSMENT_QUESTIONS.map((q) => [String(q.id), q.id <= 26 ? q.correct : wrong[q.correct]]));
+    const res = await submitAssessment(makeRequest({ ...validBody, answers }));
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.scorePct).toBe(69);
+    expect(body.wapat.total).toMatchObject({ correct: 26, total: 35, pct: 74.3 });
+    const staff = resendSend.mock.calls[0]?.[0];
+    expect(staff.text).toContain('WAPAT Total Score (Q1–35): 26/35 = 74.3%');
+    expect(staff.text).toContain('Points score (legacy, weighted):');
+    expect(staff.text).toContain('(69%)');
+  });
+
   it('requires the exact authorization from the rendered final-attempt form', async () => {
     const authorizedAt = new Date('2026-10-15T12:00:00Z');
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as never);

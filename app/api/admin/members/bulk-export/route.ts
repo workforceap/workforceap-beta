@@ -161,7 +161,7 @@ async function _POST(request: NextRequest) {
       'Courses Completed',
       'Partner',
       'Counselor',
-      'Assessment Score %',
+      'Assessment Points Score % (legacy, not WAPAT)',
       'Assessment Completed',
       'Employment Status',
       'Education Level',
