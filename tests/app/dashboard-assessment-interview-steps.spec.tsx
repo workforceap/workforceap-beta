@@ -266,7 +266,7 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
       interviewCompletedAt: new Date('2026-09-12T15:00:00Z'),
     });
     expect(screen.queryByRole('region', { name: 'Interview' })).toBeNull();
-    expect(screen.getByText('Preassessment complete')).toBeInTheDocument();
+    expect(screen.getByText('WAPAT complete')).toBeInTheDocument();
   });
 });
 

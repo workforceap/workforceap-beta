@@ -25,7 +25,7 @@ describe('AssessmentForm completion delivery status', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'Preassessment complete' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'WAPAT complete' })).toBeVisible();
     expect(screen.getByRole('alert')).toHaveTextContent(/results were saved/i);
     expect(screen.getByRole('alert')).toHaveTextContent(/email delivery could not be confirmed/i);
   });

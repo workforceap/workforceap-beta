@@ -275,6 +275,48 @@ describe('POST /api/member/assessment/submit', () => {
     ]);
   });
 
+  it('WAPAT: returns four section scores, shows them in both emails, and keeps the stored points score', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getCounselorStarterProfileReview).mockReturnValue({ required: false, missing: [] });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+    // Vocabulary all right (10/10), Reading Q11-24 wrong (0/14), Math Q25-30 right (6/11).
+    const wrong: Record<string, string> = { A: 'B', B: 'C', C: 'D', D: 'A' };
+    const answers = Object.fromEntries(ASSESSMENT_QUESTIONS.map((q) => [
+      String(q.id), q.id <= 10 || (q.id >= 25 && q.id <= 30) ? q.correct : wrong[q.correct],
+    ]));
+    const res = await submitAssessment(makeRequest({ ...validBody, answers }));
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.wapat.sections.map((x: { pct: number }) => x.pct)).toEqual([100, 0, 54.5]);
+    expect(body.wapat.total).toMatchObject({ correct: 16, total: 35, pct: 45.7 });
+    expect(body.scorePct).toBe(Math.round((body.rawScore / TOTAL_POINTS) * 100)); // legacy points score unchanged
+
+    const staff = resendSend.mock.calls[0]?.[0];
+    expect(staff.subject).toContain('WAPAT submitted');
+    expect(staff.subject).toContain('45.7%');
+    expect(staff.text).toContain('Vocabulary (Q1–10): 10/10 = 100%');
+    expect(staff.text).toContain('Reading Comprehension (Q11–24): 0/14 = 0%');
+    expect(staff.text).toContain('Math and Reasoning (Q25–35): 6/11 = 54.5%');
+    expect(staff.text).toContain('WAPAT Total Score (Q1–35): 16/35 = 45.7%');
+    expect(staff.text).toContain('Points score (legacy, weighted)');
+    expect(resendSend.mock.calls[1]?.[0]?.subject).toContain('WAPAT Complete');
+  });
+
+  it('WAPAT: an incomplete answer sheet reports unavailable sections, not zeroes', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as any);
+    vi.mocked(getCounselorStarterProfileReview).mockReturnValue({ required: false, missing: [] });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(mockUser as any);
+    const res = await submitAssessment(makeRequest(validBody)); // only Q1-5 answered
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.wapat.sections.every((x: { pct: number | null; available: boolean }) => x.pct === null && !x.available)).toBe(true);
+    expect(body.wapat.total.pct).toBeNull();
+    expect(resendSend.mock.calls[0]?.[0]?.text).toContain('Vocabulary (Q1–10): unavailable');
+    expect(resendSend.mock.calls[0]?.[0]?.subject).toContain('Unavailable');
+  });
+
   it('requires the exact authorization from the rendered final-attempt form', async () => {
     const authorizedAt = new Date('2026-10-15T12:00:00Z');
     vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user } as never);

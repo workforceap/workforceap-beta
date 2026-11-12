@@ -15,8 +15,11 @@ import Link from 'next/link';
 import { ClipboardCheck } from 'lucide-react';
 import { getCounselorStarterProfileReview, getStarterProfileFieldLabels } from '@/lib/member/starterProfileReview';
 import { formatPortalDate, formatPortalDateTime } from '@/lib/formatDate';
+import WapatReport from '@/components/assessment/WapatReport';
+import { wapatFromAnswers } from '@/lib/assessment/reviewRows';
+import { formatWapatPct } from '@/lib/assessment/wapat';
 
-const PAGE_TITLE = 'Skills check';
+const PAGE_TITLE = 'WAPAT';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
@@ -92,7 +95,7 @@ export default async function AssessmentPage({
                 </p>
               ) : null}
               {dbUser.assessmentCompleted ? <AssessmentCompletedCard
-                scorePct={dbUser.assessmentScorePct}
+                wapat={wapatFromAnswers(dbUser.assessmentAnswers)}
                 completedAt={dbUser.assessmentCompletedAt}
                 programInterest={dbUser.programInterest}
               /> : null}
@@ -208,14 +211,15 @@ function InterviewSteps({
 }
 
 function AssessmentCompletedCard({
-  scorePct,
+  wapat,
   completedAt,
   programInterest,
 }: {
-  scorePct: number | null;
+  wapat: ReturnType<typeof wapatFromAnswers>;
   completedAt: Date | null;
   programInterest: string | null;
 }) {
+  const scorePct = wapat.total.pct;
   return (
     <div className="wa-kit-card">
       {scorePct != null ? (
@@ -251,8 +255,9 @@ function AssessmentCompletedCard({
           letterSpacing: '-0.02em',
         }}
       >
-        Preassessment complete
+        WAPAT complete
       </h2>
+      <WapatReport result={wapat} />
       <p style={{ color: 'var(--wa-muted)', lineHeight: 1.5, margin: '0 0 1.25rem', fontSize: 'var(--wa-type-body)' }}>
         {[
           completedAt ? `Finished ${formatPortalDate(completedAt)}` : null,

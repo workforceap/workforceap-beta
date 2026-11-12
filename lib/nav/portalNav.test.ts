@@ -144,10 +144,10 @@ test('labeled preassessment CTAs use the assessment page', () => {
   assert.doesNotMatch(learningHub, /href="\/dashboard\/skills-assessment"/);
 });
 
-test('completed Skills check stays on the page instead of dumping home', () => {
+test('completed WAPAT page stays on the page instead of dumping home', () => {
   const page = source('app/(portal)/dashboard/assessment/page.tsx');
-  assert.match(page, /Skills check/);
-  assert.match(page, /Preassessment complete/);
+  assert.match(page, /WAPAT/);
+  assert.match(page, /WAPAT complete/);
   assert.doesNotMatch(page, /if \(dbUser\.assessmentCompleted\) \{\s*redirect\('\/dashboard'\)/);
   assert.doesNotMatch(page, /Skills snapshot/);
 });
