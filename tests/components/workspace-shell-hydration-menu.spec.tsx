@@ -94,6 +94,8 @@ describe('mobile menu during shell hydration', () => {
     host.innerHTML = renderToString(workspace(false, locale));
     const menu = within(host).getByRole('button', { name: navMessages[locale].openMenu });
     expect(menu).toBeEnabled();
+    expect(menu).toHaveTextContent(navMessages[locale].menu);
+    expect(menu).toHaveAttribute('aria-controls', 'workspace-sidebar');
     expect(menu).toHaveAttribute('data-early-tap', 'menu');
     expect(menu).not.toHaveAttribute('aria-busy', 'true');
     menu.click();
