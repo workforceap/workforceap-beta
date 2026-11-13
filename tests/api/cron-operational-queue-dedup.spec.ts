@@ -219,6 +219,19 @@ describe('employer pending-applicant reminders', () => {
     expect(sendAdminStaleApplicantsDigestEmail).toHaveBeenCalledTimes(2);
     expect(vi.mocked(sendAdminStaleApplicantsDigestEmail).mock.calls[1][0].employers).toEqual([{ companyName: 'Real Employer', candidateCount: 10 }]);
   });
+
+  it('counts a thrown employer send as a failed email and answers 500', async () => {
+    applications = [application('a-1')];
+    vi.mocked(sendEmployerPendingApplicantsEmail).mockRejectedValueOnce(new Error('provider threw'));
+    const response = await employerDigest(request());
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toMatchObject({
+      ok: false,
+      emailsFailed: 1,
+      employerEmailsSent: 0,
+      employersNotified: 1,
+    });
+  });
 });
 
 describe('digest key semantics', () => {

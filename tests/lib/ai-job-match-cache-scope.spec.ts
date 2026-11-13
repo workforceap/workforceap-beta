@@ -39,4 +39,34 @@ describe('AI job-match computation cache tenant scope', () => {
     expect(matchStudentsForJob).toHaveBeenCalledWith('org-b', job);
     clearAiJobMatchEmptyCooldown('job-1', 'org-a');
   });
+
+  it('reuses one in-flight promise for the same organization and job', async () => {
+    let release!: () => void;
+    vi.mocked(matchStudentsForJob).mockImplementationOnce(
+      () => new Promise((resolve) => { release = () => resolve([{ studentId: 'member-a' }] as never); }),
+    );
+
+    const first = getOrComputeAiJobMatches('job-1', 'org-a', job);
+    const second = getOrComputeAiJobMatches('job-1', 'org-a', job);
+    expect(matchStudentsForJob).toHaveBeenCalledTimes(1);
+    release();
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      [{ studentId: 'member-a' }],
+      [{ studentId: 'member-a' }],
+    ]);
+  });
+
+  it('softens a compute throw to an empty list so the handler can still answer', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.mocked(matchStudentsForJob).mockRejectedValueOnce(new Error('model unavailable'));
+
+    await expect(getOrComputeAiJobMatches('job-1', 'org-a', job)).resolves.toEqual([]);
+    expect(consoleError).toHaveBeenCalled();
+    consoleError.mockRestore();
+
+    vi.mocked(matchStudentsForJob).mockResolvedValueOnce([{ studentId: 'member-b' }] as never);
+    await expect(getOrComputeAiJobMatches('job-1', 'org-a', job)).resolves.toEqual([{ studentId: 'member-b' }]);
+    expect(matchStudentsForJob).toHaveBeenCalledTimes(2);
+  });
 });
+

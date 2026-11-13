@@ -14,6 +14,7 @@ import { prisma } from '@/lib/db/prisma';
 import { sendCourseAccountabilityEmail } from '@/lib/email';
 import { createNotification } from '@/lib/notifications/create';
 import { filterNudgeEligibleUserIds, recordNudgeSent } from '@/lib/cron/nudgeThrottle';
+import { captureApiError } from '@/lib/observability/captureApiError';
 
 const candidate = (id: string) => ({ id, userId: id, programSlug: 'it-support', isPrimary: true, fundingSource: null, user: { email: `${id}@example.org`, fullName: 'Jordan Example', deletedAt: null, courseraEnrollmentApproved: false } });
 const request = () => new Request('http://localhost/api/cron/course-accountability');
@@ -67,5 +68,22 @@ describe('reserved-seat funding-update cron', () => {
     vi.mocked(prisma.courseEnrollment.findMany).mockResolvedValue([]);
     expect(await (await GET(request())).json()).toEqual({ sent: 0, scanned: 0, counselorFollowups: 0 });
     expect(sendCourseAccountabilityEmail).not.toHaveBeenCalled();
+  });
+
+  it('captures a thrown send, continues, and does not mark the enrollment sent', async () => {
+    vi.mocked(prisma.courseEnrollment.findMany).mockResolvedValue([candidate('pending')] as never);
+    vi.mocked(sendCourseAccountabilityEmail).mockRejectedValue(new Error('provider threw'));
+
+    expect(await (await GET(request())).json()).toMatchObject({ sent: 0, counselorFollowups: 0, scanned: 1 });
+    expect(captureApiError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({
+        route: 'cron/course-accountability',
+        extra: expect.objectContaining({ userId: 'pending' }),
+      }),
+    );
+    expect(prisma.memberEvent.create).not.toHaveBeenCalled();
+    expect(recordNudgeSent).not.toHaveBeenCalled();
+    expect(createNotification).not.toHaveBeenCalled();
   });
 });
