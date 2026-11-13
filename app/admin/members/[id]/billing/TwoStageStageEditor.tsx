@@ -513,7 +513,7 @@ export default function TwoStageStageEditor({ memberId, caseId, stage, classFact
               <FieldBlockers blockers={saveBlockers.length > 0 ? saveBlockers : reviewBlockers} />
             </div>
           ) : null}
-          {review.holds.length > 0 ? <p className={styles.holdNote}>This J6 would be saved on hold. A held J6 cannot be previewed or signed until the evidence is corrected.</p> : null}
+          {review.holds.length > 0 ? <p className={styles.holdNote}>This J6 records voucher or quote differences for the signer. They do not block preview or signing.</p> : null}
 
           {saveError ? (
             <div className={styles.alert} role="alert" data-code={saveError.body?.code}>

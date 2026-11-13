@@ -174,8 +174,9 @@ export async function draftPreview<P>(ctx: TwoStageContext<P>, stage: BillingSta
  * The checks shared by freeze and sign, run on the saved version: exact hash,
  * the content rebuilt from the latest evidence gives the same hash, the
  * recipient rows equal the printed contacts, every readiness blocker is
- * clear, and for a J6 no hold, class started, voucher receipt not in the
- * future and the signer principal's receipt attestation on the voucher hash.
+ * clear, and for a J6 class started, voucher receipt not in the future and
+ * the signer principal's receipt attestation on the voucher hash. Voucher or
+ * quote differences are recorded on the J6 and do not block signing.
  */
 export async function verifySignable<P>(
   ctx: TwoStageContext<P>,
