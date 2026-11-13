@@ -1170,6 +1170,11 @@ async function exerciseReadOnlyNavigation(
       timeout: remainingTimeout(),
     });
     await waitForPortalReady(page, remainingTimeout(5_000));
+    // The shell passes generic readiness while the source route can still be
+    // its loading skeleton (no record links, no empty-state copy). Wait a
+    // bounded interval for route content; the inspection below still
+    // classifies a timeout, so this does not hide a broken source page.
+    await waitForPortalRouteContent(page, remainingTimeout(5_000)).catch(() => {});
     await dataRequests.waitForSettlement(remainingTimeout(5_000));
     const sourceInspection = await inspectPortalPage(page, allDynamicPatterns);
     // Keep this in memory only. Comparing headings prevents a client-side URL
