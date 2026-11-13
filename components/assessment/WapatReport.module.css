@@ -64,3 +64,13 @@
     grid-column: 1 / -1;
   }
 }
+
+/*
+ * The kit bar track is a 5% tint (about 1.1:1 on the white card), so the bar's
+ * extent was invisible. WCAG 1.4.11 asks 3:1 for the part of a control that
+ * identifies it: a 1px inset edge in the muted text color (5.3:1 on white) does that
+ * without changing the fill color or the scores.
+ */
+.row :global(.astryx-progressbar-track) {
+  box-shadow: inset 0 0 0 1px var(--wa-muted);
+}
