@@ -242,7 +242,7 @@ export default function PortalReviewClient({ inventory, revision }: { inventory:
     <DesignSurface surface="dense">
       <section className={styles.page} aria-labelledby="portal-review-title">
         <div id="portal-review-title"><PageOpener kicker="WorkforceAP" title="Screen review" lede={`${PORTAL_REVIEW_FIXTURES.length} sample screens · ${scenarioCount} scenarios`} /></div>
-        <p className={styles.boundary}>Sample data. Live actions need an approved test account.</p>
+        <p className={styles.boundary}>Sample screens use fixture data. Linked portals stay login-gated. Live actions need an approved DEMO test account. A sign-in form is not a completed review.</p>
         <div className={styles.reviewToolbar}>
           <details className={`${styles.details} ${styles.reviewOptions}`}>
             <summary>Review options{resultFilter !== 'all' ? ` · ${STATUS_OPTIONS.find((option) => option.value === resultFilter)?.label}` : ''}<span aria-hidden="true">+</span></summary>
@@ -279,7 +279,7 @@ export default function PortalReviewClient({ inventory, revision }: { inventory:
           </section>)}
           {!visible.length && <p className={styles.empty}>No screens match. Choose another portal or clear your search.</p>}
         </div> : <>
-        <p className={styles.acceptanceNote}>These {mode === 'focused' ? inventory.focusCases.length + ' workflows' : inventory.routes.length + ' routes'} retain normal access checks. Use approved preview accounts and records. Dynamic routes open their starting list; issued links must be supplied. Rendering a sample screen does not pass these checks.</p>
+        <p className={styles.acceptanceNote}>These {mode === 'focused' ? inventory.focusCases.length + ' workflows' : inventory.routes.length + ' routes'} retain normal access checks. Use approved preview DEMO accounts and records. Dynamic routes open their starting list; issued links must be supplied. Rendering a sample screen does not pass these checks. A login form is not a completed signed-in review.</p>
         <DataTable className={styles.table} columns={columns} rows={visible} rowKey={(item) => item.id} aria-label="Portal screen acceptance checklist" mobile="cards" minWidth={850}
           cardRender={(item) => <section className={styles.mobileRow}>{screenCell(item)}{coverageCell(item)}{resultCell(item)}</section>}
           empty={{ kind: 'filtered', title: 'No screens match these filters', description: 'Choose another portal or clear your search.' }} /></>}

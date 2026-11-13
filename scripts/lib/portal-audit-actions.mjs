@@ -19,6 +19,20 @@ function parsePath(value) {
   }
 }
 
+/** List/workspace query keys that do not change which record or page was opened. */
+const WORKSPACE_OVERLAY_QUERY_KEYS = new Set(['returnTo', 'search', 'sort', 'page']);
+
+function navigationIdentity(value) {
+  const parsed = parsePath(value);
+  if (!parsed) return null;
+  const url = new URL(parsed.pathWithSearch, 'https://portal-audit.invalid');
+  for (const key of WORKSPACE_OVERLAY_QUERY_KEYS) url.searchParams.delete(key);
+  return {
+    pathname: parsed.pathname,
+    search: JSON.stringify(sortedSearchEntries(url)),
+  };
+}
+
 function routeSegments(value) {
   const parsed = parsePath(value);
   return parsed ? parsed.pathname.split('/').filter(Boolean) : [];
@@ -125,17 +139,18 @@ export function resolveDynamicRouteCandidates({
  * @param {string | null} [resolvedDynamicPath]
  */
 export function navigationTargetMatches(actualPath, contract, resolvedDynamicPath = null) {
-  const actual = parsePath(actualPath);
+  const actual = navigationIdentity(actualPath);
   if (!actual) return false;
   if (contract.targetPath) {
-    const target = parsePath(contract.targetPath);
-    return Boolean(target && actual.pathWithSearch === target.pathWithSearch);
+    const target = navigationIdentity(contract.targetPath);
+    return Boolean(target && actual.pathname === target.pathname && actual.search === target.search);
   }
   if (!contract.targetPattern || !resolvedDynamicPath) return false;
-  const resolved = parsePath(resolvedDynamicPath);
+  const resolved = navigationIdentity(resolvedDynamicPath);
   return Boolean(
     resolved &&
-      actual.pathWithSearch === resolved.pathWithSearch &&
+      actual.pathname === resolved.pathname &&
+      actual.search === resolved.search &&
       dynamicRoutePatternMatches(contract.targetPattern, actual.pathname)
   );
 }
@@ -237,6 +252,7 @@ export function redirectDestinationFailureReasons({
   pageErrorCount = 0,
   dataErrorCount = 0,
   abortedDataRequestCount = 0,
+  pendingDataRequestCount = 0,
   blockedWriteRequestCount = 0,
 }) {
   const failures = [];
@@ -293,9 +309,9 @@ export function redirectDestinationFailureReasons({
     pageErrorCount,
     otherFailureCount: failures.length,
   });
-  // Canceled read fetches are navigation diagnostics only after the target is
+  // Canceled or still-in-flight reads are diagnostics only after the target is
   // independently verified. A failed target must not hide behind cancellation.
-  if (abortedDataRequestCount > 0 && !destinationVerified) {
+  if ((abortedDataRequestCount > 0 || pendingDataRequestCount > 0) && !destinationVerified) {
     failures.push('same_origin_data_request_failed');
   }
   return [...new Set(failures)];

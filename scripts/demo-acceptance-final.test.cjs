@@ -12,7 +12,9 @@ test('finalizer writes explicit failed evidence when local exists but hosted is 
     writeFileSync(paths.PORTAL_LOCAL_FIXTURE_OUTPUT, '{}');
     for (const malformed of [false, true]) {
       if (malformed) writeFileSync(paths.PORTAL_BROWSER_OUTPUT, '{invalid');
-      const result = spawnSync(process.execPath, [require.resolve('tsx/cli'), 'scripts/complete-portal-acceptance.ts'], { env, encoding: 'utf8', windowsHide: true, timeout: 30_000 });
+      // Run the real TypeScript entrypoint without the CLI's unrelated IPC
+      // listener, which is unavailable in some isolated test environments.
+      const result = spawnSync(process.execPath, ['--import', 'tsx', 'scripts/complete-portal-acceptance.ts'], { env, encoding: 'utf8', windowsHide: true, timeout: 30_000 });
       assert.equal(result.status, 1, result.stderr);
       const final = JSON.parse(readFileSync(paths.FIVE_ROLE_QA_FINAL_OUTPUT, 'utf8'));
       assert.equal(final.status, 'error');

@@ -109,14 +109,42 @@ export function snapshotPendingDataRequests(inFlight, trustedOrigin) {
   return { count: inFlight.size, requests };
 }
 
-/** Preserve the existing failure message while attaching a bounded diagnostic snapshot. */
+/** Recognize only timeouts that were safe to reconsider at the original snapshot. */
+export function isPendingSettlementDiagnostic(value) {
+  return /^Same-origin data requests did not settle within \d+ms \(\d+ pending\)$/.test(String(value ?? ''));
+}
+
+/** Foreground reads are required content. Only a complete navigation-prefetch snapshot is optional. */
+export function hasOnlyPendingNavigationPrefetches({ pendingDataRequestCount, pendingDataRequests } = {}) {
+  return Number.isSafeInteger(pendingDataRequestCount) && pendingDataRequestCount > 0 &&
+    Array.isArray(pendingDataRequests) && pendingDataRequests.length === pendingDataRequestCount &&
+    pendingDataRequests.every((request) =>
+      request && (request.method === 'GET' || request.method === 'HEAD') &&
+      request.resourceType === 'fetch' && request.prefetch === true && request.rsc === true &&
+      typeof request.path === 'string' &&
+      /^\/(?:dashboard|admin|counselor|employer|partner)(?:\/|$)/.test(request.path));
+}
+
+/** Foreground reads, mutations and incomplete evidence remain failures. */
+export function independentDataRequestErrors(errors = [], pending = {}) {
+  if (!hasOnlyPendingNavigationPrefetches(pending)) return errors;
+  return errors.filter((value) => !isPendingSettlementDiagnostic(value));
+}
+
+/** Preserve a foreground timeout even when a later snapshot contains only prefetches. */
 export function recordPendingDataRequestTimeout(inFlight, errors, timeoutMs, trustedOrigin) {
   if (inFlight.size === 0) return null;
-  errors.push(`Same-origin data requests did not settle within ${timeoutMs}ms (${inFlight.size} pending)`);
+  let snapshot;
   try {
-    return snapshotPendingDataRequests(inFlight, trustedOrigin);
+    snapshot = snapshotPendingDataRequests(inFlight, trustedOrigin);
   } catch {
     // Diagnostic collection must not replace the existing timeout verdict.
-    return { count: inFlight.size, requests: [] };
+    snapshot = { count: inFlight.size, requests: [] };
   }
+  const optionalPrefetches = hasOnlyPendingNavigationPrefetches({
+    pendingDataRequestCount: snapshot.count, pendingDataRequests: snapshot.requests,
+  });
+  errors.push(`Same-origin data requests did not settle within ${timeoutMs}ms (${inFlight.size} pending)` +
+    (optionalPrefetches ? '' : ' [foreground or unverified pending request]'));
+  return snapshot;
 }

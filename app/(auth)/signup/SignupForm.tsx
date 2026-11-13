@@ -30,15 +30,13 @@ const Turnstile = dynamic(() => import('@marsidev/react-turnstile').then((m) => 
 const CAPTCHA_ENABLED = process.env.NEXT_PUBLIC_CAPTCHA_ENABLED === 'true';
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
 
-/* ─── constants (preserved from MemberSignupForm) ───
-   Values are the canonical strings stored via the API — unchanged. Only the
-   displayed label is localized (see EMPLOYMENT_OPTION_KEYS / VETERAN_OPTION_KEYS
-   below), so translating the label can't drift from what's persisted. */
+/* Values are the canonical strings sent to the API. Only the displayed label
+   is localized, so translations cannot change what is persisted. */
 const EMPLOYMENT_OPTIONS = [
   'Employed full-time',
   'Employed part-time',
   'Unemployed',
-  'Member',
+  'Student',
   'Self-employed',
   'Other',
 ];
@@ -46,7 +44,7 @@ const EMPLOYMENT_OPTION_KEYS: Record<string, string> = {
   'Employed full-time': 'employedFullTime',
   'Employed part-time': 'employedPartTime',
   'Unemployed': 'unemployed',
-  'Member': 'member',
+  'Student': 'student',
   'Self-employed': 'selfEmployed',
   'Other': 'other',
 };

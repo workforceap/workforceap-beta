@@ -5,6 +5,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getMemberResumePlainText } from '@/lib/member/getMemberResumePlainText';
+import { RESUME_PLAIN_TEXT_MAX_CHARS } from '@/lib/resume/extractionQuality';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 import { isResumeObjectPathOwnedByUser } from '@/lib/resume/atomicResumeObjectSwap';
 import { inspectStoredEnhancedResume } from '@/lib/resume/inspectStoredEnhancedResume';
@@ -133,8 +134,8 @@ export const GET = withApiGuc(async (req: NextRequest) => {
       let resumePlainText: string | null = null;
       if (includePlain) {
         resumePlainText = (await (originalOnly
-          ? getMemberResumePlainText(targetUserId, 12000, { originalOnly: true })
-          : getMemberResumePlainText(targetUserId, 12000))) || null;
+          ? getMemberResumePlainText(targetUserId, RESUME_PLAIN_TEXT_MAX_CHARS, { originalOnly: true })
+          : getMemberResumePlainText(targetUserId, RESUME_PLAIN_TEXT_MAX_CHARS))) || null;
       }
   
       return NextResponse.json({
@@ -144,7 +145,7 @@ export const GET = withApiGuc(async (req: NextRequest) => {
         originalUrl,
         enhancedUrl,
         enhancedText,
-        /** Plain text extracted from stored resume (PDF/DOCX/TXT). Use for tools; omit unless `includePlainText`. */
+        /** Plain text extracted from stored resume (PDF/DOCX/TXT). Loaded at the save max so editors cannot crop a stored draft. Omit unless `includePlainText`. */
         resumePlainText,
         originalExt: extOf(originalPath),
         enhancedExt: enhancedReadable ? extOf(enhancedPath) : null,

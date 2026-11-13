@@ -157,6 +157,48 @@ describe('portal audit gated two-stage billing responses', () => {
     }
   });
 
+  it('fails an unfinished foreground read even when the destination shell is healthy', async () => {
+    const page = new AuditPage();
+    const dataRequests = trackSameOriginDataRequests(page, { trustedOrigin: ORIGIN });
+    const hung = requestFor(`${ORIGIN}/api/member/pathway-steps/progress`);
+    page.emit('request', hung);
+    await dataRequests.waitForSettlement(20);
+
+    expect(dataRequests.pendingDataRequestCount).toBe(1);
+    expect(dataRequests.errors.some((value) => /did not settle/.test(value))).toBe(true);
+    const row = classifyBillingRoute(dataRequests);
+    expect(row.ok).toBe(false);
+    expect(row.pageErrors[0]).toMatch(/did not settle/);
+    expect(row.pendingDataRequestCount).toBe(1);
+    expect(row.pendingDataRequests[0]).toMatchObject({
+      method: 'GET',
+      path: '/api/member/pathway-steps/progress',
+    });
+    const unhealthy = classifyCollectedPortalAuditRow(
+      { ...billingRouteInput(), appReady: false },
+      dataRequests,
+    );
+    expect(unhealthy.failureReasons).toContain('page_errors');
+    expect(unhealthy.pageErrors[0]).toMatch(/did not settle/);
+  });
+
+  it('keeps only a verified pending navigation prefetch diagnostic on a healthy destination', async () => {
+    const page = new AuditPage();
+    const dataRequests = trackSameOriginDataRequests(page, { trustedOrigin: ORIGIN });
+    page.emit('request', requestFor(`${ORIGIN}/admin/members?_rsc=fixture`, 'fetch', {
+      rsc: '1', 'next-router-prefetch': '1',
+    }));
+    await dataRequests.waitForSettlement(20);
+    const row = classifyBillingRoute(dataRequests);
+    expect(row.ok).toBe(true);
+    expect(row.pageErrors).toEqual([]);
+    expect(row.pendingDataRequests[0]).toMatchObject({ prefetch: true, rsc: true });
+    expect(classifyCollectedPortalAuditRow(
+      { ...billingRouteInput(), appReady: false }, dataRequests,
+    ).failureReasons).toContain('page_errors');
+    dataRequests.detach();
+  });
+
   it('keeps the actual verified destination and aborted RSC prefetch diagnostic', async () => {
     const { page, dataRequests } = await collect([
       { status: 503, url: GATED_API, body: gateBody('MIGRATION_NOT_APPLIED') },
