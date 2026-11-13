@@ -227,7 +227,8 @@ describe('fixture screen catalog', () => {
     expect(ui.getByRole('heading', { name: 'Home and next step' })).toBeInTheDocument();
     expect(ui.queryByRole('heading', { name: 'Resume files' })).toBeNull();
     expect(ui.getAllByRole('article')).toHaveLength(10);
-    expect(ui.getByText('Sample data. Live actions need an approved test account.')).toBeInTheDocument();
+    expect(ui.getByText(/Linked portals stay login-gated/)).toBeInTheDocument();
+    expect(ui.getByText(/A sign-in form is not a completed review/)).toBeInTheDocument();
     fireEvent.change(ui.getByRole('combobox', { name: 'Checklist' }), { target: { value: 'focused' } });
     expect(ui.getByRole('heading', { name: 'Resume files' })).toBeInTheDocument();
     expect(ui.getByText(/Rendering a sample screen does not pass these checks/)).toBeInTheDocument();

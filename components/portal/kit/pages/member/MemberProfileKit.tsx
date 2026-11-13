@@ -389,7 +389,7 @@ export function MemberProfileKit({
           {/* Compact preferences column; DOM order stays account → notifications → language. */}
           <VStack gap={5} className="wa-self-start wa-min-w-0 wa-w-full">
             {/* Notifications */}
-            <div className="wa-kit-card">
+            <div id="settings" className="wa-kit-card">
               <h3 className="wa-kit-card-title" style={{ marginBottom: 16 }}>Notifications</h3>
               {prefError ? (
                 <p

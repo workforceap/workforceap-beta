@@ -471,7 +471,7 @@ export const REDIRECT_ONLY_PATHS = {
     },
     {
       path: '/dashboard/settings',
-      target: '/dashboard/profile#settings',
+      target: '/dashboard/profile?section=settings',
       reason: 'consolidated_experience',
     },
     {
@@ -526,12 +526,12 @@ export const REDIRECT_ONLY_PATHS = {
       // tab; the pre-kit view of each stays behind `?ui=legacy` only.
     {
       path: '/admin/analytics',
-      target: '/admin/reporting',
+      target: '/admin/reporting?tab=overview',
       reason: 'consolidated_experience',
     },
     {
       path: '/admin/metrics',
-      target: '/admin/reporting',
+      target: '/admin/reporting?tab=overview',
       reason: 'consolidated_experience',
     },
     {
