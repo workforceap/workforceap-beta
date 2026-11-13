@@ -168,6 +168,17 @@ test('plain-text save route rejects poisoned resume data before storage', async 
   assert.ok(uploadIndex > rejectionIndex);
   assert.match(route, /body\.resumeRevision !== currentRevision/);
   assert.match(route, /resumeOriginalPath:\s*profile\?\.resumeOriginalPath \?\? null/);
+  assert.match(route, /RESUME_PLAIN_TEXT_MAX_CHARS/);
+  assert.doesNotMatch(route, /const MAX_CHARS = 120_000/);
+});
+
+test('member resume GET loads editor plain text at the shared save max, not the 12k tool budget', async () => {
+  const route = await readFile(
+    join(process.cwd(), 'app', 'api', 'member', 'resume', 'route.ts'),
+    'utf-8',
+  );
+  assert.match(route, /RESUME_PLAIN_TEXT_MAX_CHARS/);
+  assert.doesNotMatch(route, /getMemberResumePlainText\([^)]*12_?000/);
 });
 
 test('extractTextFromResumeBuffer: reads a PDF from a current-generation producer', async () => {
