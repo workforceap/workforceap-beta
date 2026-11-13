@@ -119,7 +119,7 @@ describe('GET /api/cron/at-risk-check', () => {
     expect(persistAtRiskAlert).toHaveBeenCalledTimes(2);
   });
 
-  it('resolves stale alerts for members no longer at risk', async () => {
+  it('resolves stale alerts only for members this run scored below medium', async () => {
     const scores = [{ userId: 'user-1', score: 20, factors: [], recommendedAction: '' }];
     vi.mocked(calculateAllAtRiskScores).mockResolvedValue(scores as any);
     vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([
@@ -132,6 +132,13 @@ describe('GET /api/cron/at-risk-check', () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.alertsResolved).toBe(2);
+    expect(prisma.atRiskAlert.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: { in: ['user-1'] },
+        }),
+      }),
+    );
     expect(prisma.atRiskAlert.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ status: 'resolved' }),
@@ -139,8 +146,37 @@ describe('GET /api/cron/at-risk-check', () => {
     );
   });
 
-  it('excludes member-reported escalations in the query so they cannot starve the take:100 batch', async () => {
+  it('does not treat unscored members as no longer at risk', async () => {
+    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([
+      { userId: 'scored-high', score: 85, factors: [{ description: 'No login' }], recommendedAction: 'Call' },
+      { userId: 'scored-low', score: 10, factors: [], recommendedAction: '' },
+    ] as any);
+    vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([] as any);
+
+    const res = await atRiskGET(makeAuthorizedCronRequest());
+    expect(res.status).toBe(200);
+    expect((await res.json()).alertsResolved).toBe(0);
+    const args = vi.mocked(prisma.atRiskAlert.findMany).mock.calls[0]?.[0] as { where: { userId: { in: string[] } } };
+    expect(args.where.userId.in).toEqual(['scored-low']);
+    expect(args.where.userId.in).not.toContain('scored-high');
+    expect(args.where.userId.in).not.toContain('never-scored');
+    expect(persistAtRiskAlert).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps every open alert when the scorer returns no members', async () => {
     vi.mocked(calculateAllAtRiskScores).mockResolvedValue([] as any);
+
+    const res = await atRiskGET(makeAuthorizedCronRequest());
+    expect(res.status).toBe(200);
+    expect((await res.json()).alertsResolved).toBe(0);
+    expect(prisma.atRiskAlert.findMany).not.toHaveBeenCalled();
+    expect(prisma.atRiskAlert.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('excludes member-reported escalations in the query so they cannot starve the take:100 batch', async () => {
+    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([
+      { userId: 'user-low', score: 10, factors: [], recommendedAction: '' },
+    ] as any);
     vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([] as any);
 
     const res = await atRiskGET(makeAuthorizedCronRequest());
@@ -148,6 +184,7 @@ describe('GET /api/cron/at-risk-check', () => {
     const args = vi.mocked(prisma.atRiskAlert.findMany).mock.calls[0]?.[0] as any;
     expect(args.take).toBe(100);
     expect(args.where.status).toEqual({ in: ['open', 'acknowledged'] });
+    expect(args.where.userId).toEqual({ in: ['user-low'] });
     expect(args.where.NOT).toEqual({
       OR: [
         { factors: { array_contains: [{ name: 'first90_trouble_reported' }] } },
@@ -192,7 +229,9 @@ describe('GET /api/cron/at-risk-check', () => {
   });
 
   it('does not call updateMany when every returned row is member-reported', async () => {
-    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([] as any);
+    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([
+      { userId: 'user-low', score: 10, factors: [], recommendedAction: '' },
+    ] as any);
     vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([
       { id: 'alert-member-reported', factors: [{ name: 'first90_trouble_reported' }] },
     ] as any);
