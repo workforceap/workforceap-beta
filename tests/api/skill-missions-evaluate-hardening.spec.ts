@@ -28,7 +28,7 @@ vi.mock('@/lib/db/prisma', () => ({
     $executeRaw: vi.fn(async () => 0),
     user: { findUnique: vi.fn() },
     courseProgress: { findFirst: vi.fn() },
-    memberEvent: { count: vi.fn(), create: vi.fn(), findFirst: vi.fn() },
+    memberEvent: { count: vi.fn(), create: vi.fn(), findFirst: vi.fn(), deleteMany: vi.fn() },
   },
 }));
 
@@ -117,7 +117,8 @@ describe('POST /api/skill-missions/[courseSlug]/evaluate hardening', () => {
     vi.mocked(prisma.courseProgress.findFirst).mockResolvedValue({ id: 'progress-1' } as any);
     vi.mocked(prisma.memberEvent.count).mockResolvedValue(0);
     vi.mocked(prisma.memberEvent.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.memberEvent.create).mockResolvedValue({} as any);
+    vi.mocked(prisma.memberEvent.create).mockResolvedValue({ id: 'submission-1' } as any);
+    vi.mocked(prisma.memberEvent.deleteMany).mockResolvedValue({ count: 1 });
     vi.mocked(evaluateSkillMission).mockResolvedValue(PASS);
     vi.mocked(saveMissionArtifact).mockResolvedValue('artifact-1');
     vi.mocked(discardMissionArtifact).mockResolvedValue(undefined);
@@ -229,6 +230,7 @@ describe('POST /api/skill-missions/[courseSlug]/evaluate hardening', () => {
       expect(createdEventNames()).toEqual(['skill_mission_submitted', 'skill_mission_passed']);
       expect(prisma.$executeRaw).toHaveBeenCalledTimes(2);
       expect(saveMissionArtifact).toHaveBeenCalledTimes(1);
+      expect(prisma.memberEvent.deleteMany).not.toHaveBeenCalled();
       expect(saveMissionArtifact).toHaveBeenCalledWith(expect.objectContaining({ userId: USER_ID, starStory: PASS.starStory }));
       const passed = vi.mocked(prisma.memberEvent.create).mock.calls[1]![0] as any;
       expect(passed.data.userId).toBe(USER_ID);
@@ -255,6 +257,7 @@ describe('POST /api/skill-missions/[courseSlug]/evaluate hardening', () => {
       expect(evaluateSkillMission).toHaveBeenCalledTimes(1);
       expect(saveMissionArtifact).not.toHaveBeenCalled();
       expect(createdEventNames()).toEqual(['skill_mission_submitted']);
+      expect(prisma.memberEvent.deleteMany).not.toHaveBeenCalled();
     });
 
     it('does not let a practice attempt that fails undo an earlier pass', async () => {
@@ -324,28 +327,60 @@ describe('POST /api/skill-missions/[courseSlug]/evaluate hardening', () => {
   });
 
   describe('safe failure and truthful pass state', () => {
-    it('returns a retryable 503 and never marks the mission passed when the model is unavailable', async () => {
-      vi.mocked(evaluateSkillMission).mockRejectedValue(new MissionEvalUnavailableError());
+    it.each([
+      ['unavailable', () => new MissionEvalUnavailableError(), 503, 'coach_unavailable'],
+      ['timeout', () => new DOMException('Provider timed out', 'TimeoutError'), 500, 'server_error'],
+      ['unexpected provider error', () => new Error('Provider connection reset'), 500, 'server_error'],
+    ])('releases an ungraded attempt after %s', async (_label, error, status, code) => {
+      vi.mocked(evaluateSkillMission).mockRejectedValue(error());
       const res = await evaluate(evaluateRequest());
       const body = await res.json();
-      expect(res.status).toBe(503);
+      expect(res.status).toBe(status);
       expect(body.ok).toBe(false);
       expect(body.error).toMatch(/not graded/i);
-      expect(body.code).toBe('coach_unavailable');
+      expect(body.code).toBe(code);
       expect(body.error).not.toContain('—');
       expect(createdEventNames()).toEqual(['skill_mission_submitted']);
+      expect(prisma.memberEvent.deleteMany).toHaveBeenCalledWith({
+        where: {
+          id: 'submission-1', userId: USER_ID, entityType: 'skill_checkpoint',
+          entityId: MISSION_KEY, eventName: 'skill_mission_submitted',
+        },
+      });
       expect(saveMissionArtifact).not.toHaveBeenCalled();
+    });
+
+    it('keeps the original retryable error when reservation cleanup is unavailable', async () => {
+      vi.mocked(evaluateSkillMission).mockRejectedValue(new MissionEvalUnavailableError());
+      vi.mocked(prisma.memberEvent.deleteMany).mockRejectedValue(new Error('db unavailable'));
+      const res = await evaluate(evaluateRequest());
+      expect(res.status).toBe(503);
+      expect(await res.json()).toMatchObject({ ok: false, code: 'coach_unavailable' });
+      expect(prisma.memberEvent.deleteMany).toHaveBeenCalledTimes(1);
+      expect(saveMissionArtifact).not.toHaveBeenCalled();
+    });
+
+    it('charges the hourly AI limiter again on a retry after provider failure', async () => {
+      vi.mocked(evaluateSkillMission)
+        .mockRejectedValueOnce(new MissionEvalUnavailableError())
+        .mockResolvedValueOnce(PASS);
+      expect((await evaluate(evaluateRequest())).status).toBe(503);
+      expect((await evaluate(evaluateRequest())).status).toBe(200);
+      expect(checkAIToolRateLimit).toHaveBeenCalledTimes(2);
+      expect(evaluateSkillMission).toHaveBeenCalledTimes(2);
+      expect(prisma.memberEvent.deleteMany).toHaveBeenCalledTimes(1);
     });
 
     it('does not report a pass that could not be stored, and removes the artifact it saved', async () => {
       vi.mocked(prisma.memberEvent.create)
-        .mockResolvedValueOnce({} as any)
+        .mockResolvedValueOnce({ id: 'submission-1' } as any)
         .mockRejectedValueOnce(new Error('db down'));
       const res = await evaluate(evaluateRequest());
       const body = await res.json();
       expect(res.status).toBe(503);
       expect(body).toEqual({ ok: false, error: expect.stringMatching(/not marked passed/i), code: 'save_failed' });
       expect(discardMissionArtifact).toHaveBeenCalledWith(USER_ID, 'artifact-1');
+      expect(prisma.memberEvent.deleteMany).toHaveBeenCalledTimes(1);
     });
 
     it('still returns coaching for a non-pass that could not be stored', async () => {
@@ -358,6 +393,7 @@ describe('POST /api/skill-missions/[courseSlug]/evaluate hardening', () => {
       expect(res.status).toBe(200);
       expect(body).toMatchObject({ ok: true, verdict: 'needs_retry', starStory: '', resumeBullet: '' });
       expect(saveMissionArtifact).not.toHaveBeenCalled();
+      expect(prisma.memberEvent.deleteMany).not.toHaveBeenCalled();
     });
 
     it('stores a non-pass as needs-retry and never as a pass', async () => {
@@ -366,6 +402,7 @@ describe('POST /api/skill-missions/[courseSlug]/evaluate hardening', () => {
       expect(res.status).toBe(200);
       expect(createdEventNames()).toEqual(['skill_mission_submitted', 'skill_mission_needs_retry']);
       expect(saveMissionArtifact).not.toHaveBeenCalled();
+      expect(prisma.memberEvent.deleteMany).not.toHaveBeenCalled();
     });
 
     it('answers a database failure while claiming the attempt with a friendly 500 and no AI call', async () => {
