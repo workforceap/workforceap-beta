@@ -43,6 +43,7 @@ import {
   PORTAL_AUDIT_NAVIGATION_TIMEOUT_MS,
   PORTAL_AUDIT_VIEWPORTS,
   inspectPortalPage,
+  observeRedirectTargetCommit,
   observeAdminDashboardMetrics,
   READ_ONLY_AUDIT_ROOT_SUPPRESSION_MARKER,
   sanitizeAuditDiagnostic,
@@ -55,6 +56,7 @@ import {
 import {
   applyBlockedWriteFailure,
   classifyReadOnlyAuditRequest,
+  consumedNoticeAuditUrl,
   redirectDestinationFailureReasons,
   evaluateAccessProbe,
   failedAccessProbeDiagnostics,
@@ -966,17 +968,14 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
       if (traceHydration) await page.addInitScript(installPortalHydrationTrace).catch(() => {});
       const dataRequests = trackSameOriginDataRequests(page, { trustedOrigin, dynamicPatterns: allDynamicPatterns });
       const pageErrors = [];
-      const documentResponses = [];
       const handleConsole = (message) => recordConsoleError(message, dataRequests);
       const handlePageError = (error) => pageErrors.push(error?.message ?? String(error));
-      const handleResponse = (response) => {
-        if (response.request().resourceType() === 'document') {
-          documentResponses.push({ status: response.status(), url: response.url() });
-        }
-      };
       page.on('console', handleConsole);
       page.on('pageerror', handlePageError);
-      page.on('response', handleResponse);
+      const redirectCommit = observeRedirectTargetCommit(
+        page,
+        (url) => redirectTargetMatches(url.toString(), resolved.targetPath, trustedOrigin)
+      );
       try {
         try {
           await page.goto(routeURL(resolved.sourcePath), {
@@ -996,8 +995,10 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
           // Wait for the final navigation to commit, then inspect its document,
           // readiness, and read-only health below instead of treating the
           // intermediate load cancellation as a failed destination.
-          remainingTimeout(7_000)
+          remainingTimeout(7_000),
+          redirectCommit
         );
+        const inspectedDocument = redirectCommit.currentDocument();
         await waitForPortalReady(page, remainingTimeout(5_000));
         if (programExpectation?.behavior === 'render') {
           await waitForPortalRouteContent(page, remainingTimeout(5_000)).catch(() => {});
@@ -1010,16 +1011,26 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
             timeout: remainingTimeout(5_000),
           }).catch(() => {});
         }
+        let consumedNoticeVisible = false;
+        if (entry.consumedNotice) {
+          consumedNoticeVisible = await page.locator(entry.consumedNotice.selector).first()
+            .waitFor({ state: 'visible', timeout: remainingTimeout(5_000) })
+            .then(() => true, () => false);
+          if (!consumedNoticeVisible) result.failureReasons.push('consumed_notice_missing');
+        }
         await dataRequests.waitForSettlement(remainingTimeout(5_000));
+        const inspection = await inspectPortalPage(page, allDynamicPatterns);
+        const finalDocument = redirectCommit.currentDocument();
+        if (!inspectedDocument?.matchesTarget || finalDocument !== inspectedDocument) {
+          result.failureReasons.push('redirect_document_changed');
+        }
         const finalUrl = page.url();
         result.finalUrl = sanitizeAuditUrl(finalUrl, allDynamicPatterns);
-        const inspection = await inspectPortalPage(page, allDynamicPatterns);
-        const finalDocument =
-          [...documentResponses].reverse().find((response) => response.url === finalUrl) ??
-          documentResponses.at(-1) ??
-          null;
+        const auditedUrl = consumedNoticeAuditUrl(
+          finalUrl, resolved.targetPath, entry.consumedNotice, consumedNoticeVisible
+        );
         result.failureReasons.push(...redirectDestinationFailureReasons({
-          finalUrl,
+          finalUrl: auditedUrl,
           expectedTarget: resolved.targetPath,
           trustedOrigin,
           documentStatus: finalDocument?.status ?? null,
@@ -1053,9 +1064,9 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
           ? 'program_page_probe_failed'
           : 'redirect_probe_failed';
       } finally {
+        redirectCommit.detach();
         page.off('console', handleConsole);
         page.off('pageerror', handlePageError);
-        page.off('response', handleResponse);
         result.consoleErrors = uniqueDiagnostics(dataRequests.consoleErrors);
         result.pageErrors = uniqueDiagnostics(pageErrors);
         result.blockedWriteRequestCount = readOnlyGuard.blockedWriteCount(page);

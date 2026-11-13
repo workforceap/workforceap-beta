@@ -212,6 +212,24 @@ export function redirectTargetMatches(finalUrl, expectedTarget, trustedOrigin) {
   }
 }
 
+/**
+ * Some destinations show a one-time notice for a query value and then remove
+ * that value from the address bar. Restore only the declared value, and only
+ * after the matching notice was seen, so the exact target check still applies.
+ */
+export function consumedNoticeAuditUrl(finalUrl, expectedTarget, consumedNotice, noticeVisible) {
+  if (!consumedNotice || noticeVisible !== true) return finalUrl;
+  try {
+    const final = new URL(finalUrl);
+    const expectedValue = new URL(expectedTarget, final.origin).searchParams.get(consumedNotice.param);
+    if (expectedValue == null || final.searchParams.has(consumedNotice.param)) return finalUrl;
+    final.searchParams.set(consumedNotice.param, expectedValue);
+    return final.toString();
+  } catch {
+    return finalUrl;
+  }
+}
+
 /** The checked-in redirect gate must match the identity used by this audit. */
 export function fixtureConditionMatches(condition, role, claims) {
   if (!condition) return true;

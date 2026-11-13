@@ -2,6 +2,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { EventEmitter } from 'node:events';
 import { describe, expect, it } from 'vitest';
 import {
   resolvePortalRoleCredentials,
@@ -10,6 +11,7 @@ import {
 import {
   evaluatePortalPageAfterNavigation,
   isReadOnlyAuditCapabilityActive,
+  observeRedirectTargetCommit,
   redactDynamicHrefPath,
   sanitizeAuditDiagnostic,
   sanitizeAuditUrl,
@@ -21,6 +23,7 @@ import { isVerifiedReadOnlyDestination } from '../scripts/lib/portal-audit-envir
 import {
   applyBlockedWriteFailure,
   classifyReadOnlyAuditRequest,
+  consumedNoticeAuditUrl,
   redirectDestinationFailureReasons,
   dataRequestQuietWindowSatisfied,
   dynamicRoutePatternMatches,
@@ -63,6 +66,174 @@ import {
 } from '../scripts/lib/portal-audit-target.mjs';
 
 const roles = ['member', 'admin', 'employer', 'partner', 'counselor'];
+
+describe('original redirect document commit evidence', () => {
+  const origin = 'https://portal.test';
+  const target = '/dashboard/program?error=course_not_assigned';
+  const exactUrl = `${origin}${target}`;
+  const matches = (url: URL) => redirectTargetMatches(url.toString(), target, origin);
+  const fixture = () => {
+    let currentUrl = 'about:blank';
+    const mainFrame = { url: () => currentUrl };
+    const page = Object.assign(new EventEmitter(), { mainFrame: () => mainFrame });
+    const response = (url: string, frame = mainFrame, status = 200) => page.emit('response', {
+      url: () => url,
+      status: () => status,
+      request: () => ({ resourceType: () => 'document', frame: () => frame }),
+    });
+    const navigate = (url: string) => {
+      currentUrl = url;
+      page.emit('framenavigated', mainFrame);
+    };
+    return { page, response, navigate };
+  };
+
+  it('retains the original exact query when it is consumed before the audit waits', async () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    try {
+      response(exactUrl);
+      navigate(exactUrl);
+      navigate(`${origin}/dashboard/program`);
+      await expect(waitForRedirectTargetCommit(page, matches, 50, observation)).resolves.toBe(exactUrl);
+    } finally {
+      observation.detach();
+    }
+    expect(page.listenerCount('response')).toBe(0);
+    expect(page.listenerCount('framenavigated')).toBe(0);
+  });
+
+  it('accepts an exact document commit whose query is still present', async () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    try {
+      const waiting = waitForRedirectTargetCommit(page, matches, 50, observation);
+      response(exactUrl);
+      navigate(exactUrl);
+      await expect(waiting).resolves.toBe(exactUrl);
+    } finally {
+      observation.detach();
+    }
+  });
+
+  it('rejects earlier exact-query evidence after a second queryless document commits before the wait', async () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    const querylessUrl = `${origin}/dashboard/program`;
+    try {
+      response(exactUrl);
+      navigate(exactUrl);
+      response(querylessUrl);
+      navigate(querylessUrl);
+
+      expect(observation.currentDocument()).toEqual({
+        url: querylessUrl, status: 200, matchesTarget: false,
+      });
+      await expect(waitForRedirectTargetCommit(page, matches, 5, observation))
+        .rejects.toThrow('Exact redirect target did not commit before timeout');
+    } finally {
+      observation.detach();
+    }
+  });
+
+  it('changes document identity when a queryless document replaces an already resolved exact target', async () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    const querylessUrl = `${origin}/dashboard/program`;
+    try {
+      response(exactUrl);
+      navigate(exactUrl);
+      await expect(waitForRedirectTargetCommit(page, matches, 50, observation)).resolves.toBe(exactUrl);
+      const verifiedDocument = observation.currentDocument();
+
+      response(querylessUrl);
+      navigate(querylessUrl);
+
+      expect(observation.currentDocument()).not.toBe(verifiedDocument);
+      expect(observation.currentDocument()).toEqual({
+        url: querylessUrl, status: 200, matchesTarget: false,
+      });
+      expect(verifiedDocument).toEqual({ url: exactUrl, status: 200, matchesTarget: true });
+    } finally {
+      observation.detach();
+    }
+  });
+
+  it('retains document identity for replaceState but creates a new identity for a same-URL reload', () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    const querylessUrl = `${origin}/dashboard/program`;
+    try {
+      response(exactUrl);
+      navigate(exactUrl);
+      const originalDocument = observation.currentDocument();
+      navigate(querylessUrl);
+      expect(observation.currentDocument()).toBe(originalDocument);
+
+      response(exactUrl);
+      navigate(exactUrl);
+      const reloadedDocument = observation.currentDocument();
+      expect(reloadedDocument).not.toBe(originalDocument);
+      expect(reloadedDocument).toEqual({ url: exactUrl, status: 200, matchesTarget: true });
+      navigate(querylessUrl);
+      expect(observation.currentDocument()).toBe(reloadedDocument);
+    } finally {
+      observation.detach();
+    }
+  });
+
+  it('reports the latest document status when the same target reloads with an error response', () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    try {
+      response(exactUrl);
+      navigate(exactUrl);
+      const healthyDocument = observation.currentDocument();
+      response(exactUrl, page.mainFrame(), 500);
+      navigate(exactUrl);
+
+      expect(observation.currentDocument()).not.toBe(healthyDocument);
+      expect(observation.currentDocument()).toEqual({ url: exactUrl, status: 500, matchesTarget: true });
+      expect(healthyDocument).toEqual({ url: exactUrl, status: 200, matchesTarget: true });
+    } finally {
+      observation.detach();
+    }
+  });
+
+  it.each([
+    '?error=unexpected',
+    '?error=course_not_assigned&error=unexpected',
+    '?error=unexpected&error=course_not_assigned',
+  ])('rejects original query %s even when replaceState later synthesizes the exact target', async (query) => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    try {
+      const originalUrl = `${origin}/dashboard/program${query}`;
+      response(originalUrl);
+      navigate(originalUrl);
+      navigate(exactUrl);
+      await expect(waitForRedirectTargetCommit(page, matches, 5, observation))
+        .rejects.toThrow('Exact redirect target did not commit before timeout');
+    } finally {
+      observation.detach();
+    }
+  });
+
+  it('does not use an iframe document response or navigation as main-frame evidence', async () => {
+    const { page, response, navigate } = fixture();
+    const observation = observeRedirectTargetCommit(page, matches);
+    try {
+      const iframe = { url: () => exactUrl };
+      response(exactUrl, iframe);
+      page.emit('framenavigated', iframe);
+      navigate(exactUrl);
+      await expect(waitForRedirectTargetCommit(page, matches, 5, observation))
+        .rejects.toThrow('Exact redirect target did not commit before timeout');
+    } finally {
+      observation.detach();
+    }
+  });
+});
 
 describe('portal navigation readiness', () => {
   it('retries a canceled intermediate redirect until the exact target commits', async () => {
@@ -469,11 +640,55 @@ describe('portal route inventory gate', () => {
       path,
       target: '/dashboard/program?error=course_not_assigned',
       reason: 'course_selection_required',
+      consumedNotice: {
+        param: 'error',
+        selector: '[data-coursera-launch-error="course_not_assigned"]',
+      },
     });
     const resolved = resolveRedirectAuditEntry(entry);
     expect(resolved).toEqual({ sourcePath: path, targetPath: '/dashboard/program?error=course_not_assigned' });
     expect(redirectTargetMatches('https://portal.test/dashboard/program?error=course_not_assigned', resolved!.targetPath, 'https://portal.test')).toBe(true);
     expect(redirectTargetMatches('https://portal.test/dashboard/program', resolved!.targetPath, 'https://portal.test')).toBe(false);
+  });
+
+  describe('consumed notice query', () => {
+    const origin = 'https://portal.test';
+    const target = '/dashboard/program?error=course_not_assigned';
+    const notice = { param: 'error', selector: '[data-coursera-launch-error="course_not_assigned"]' };
+    const healthy = {
+      expectedTarget: target,
+      trustedOrigin: origin,
+      documentStatus: 200,
+      inspection: { appReady: true, h1Count: 1, readOnlyCapabilityActive: true, bodyText: 'My Program' },
+      abortedDataRequestCount: 4,
+    };
+    const audit = (finalUrl: string, visible: boolean) => redirectDestinationFailureReasons({
+      ...healthy,
+      finalUrl: consumedNoticeAuditUrl(finalUrl, target, notice, visible),
+    });
+
+    // Run 42381007697: the notice dropped ?error before the audit read the URL.
+    it('accepts the stripped target once the matching notice is visible', () => {
+      expect(audit(`${origin}/dashboard/program`, true)).toEqual([]);
+    });
+
+    it('still accepts the unstripped target', () => {
+      expect(audit(`${origin}${target}`, true)).toEqual([]);
+    });
+
+    it('rejects the stripped target when the notice never rendered', () => {
+      expect(audit(`${origin}/dashboard/program`, false))
+        .toEqual(expect.arrayContaining(['redirect_target_mismatch', 'same_origin_data_request_failed']));
+    });
+
+    it('does not repair another path, another error value, or an entry without a notice', () => {
+      expect(audit(`${origin}/dashboard`, true)).toContain('redirect_target_mismatch');
+      expect(audit(`${origin}/dashboard/program?error=launch_failed`, true)).toContain('redirect_target_mismatch');
+      expect(consumedNoticeAuditUrl(`${origin}/dashboard/program`, target, undefined, true))
+        .toBe(`${origin}/dashboard/program`);
+      expect(consumedNoticeAuditUrl(`${origin}/dashboard/program`, '/dashboard/program', notice, true))
+        .toBe(`${origin}/dashboard/program`);
+    });
   });
 
   it('counts redirect-only pages as discovered inventory coverage and rejects overlap', () => {
