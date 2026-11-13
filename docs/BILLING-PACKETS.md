@@ -992,7 +992,11 @@ receipt signature) stops applying: the response (`current: true`) and the
 summary show `attestation: null`, `receiptAttestation: null` and the
 blockers `J6_VOUCHER_ATTESTATION_INCOMPLETE` and
 `RECEIVING_SIGNATURE_NOT_ATTESTED`. Re-uploading the bytes of an older file
-reuses its row; attesting it makes it current again.
+reuses its row and does not replace the current voucher. Data-entry and
+receipt attestation of a superseded file are refused
+(`409 VOUCHER_NOT_CURRENT`); attest the current voucher. A designated-signer
+upload that includes the data-entry `attestation` part still records details
+on the reused row and makes that file current again.
 
 PDF only in this release (#2700 and `storageArchive` accept only
 `application/pdf`): the file part must declare `application/pdf` and start
@@ -1021,7 +1025,10 @@ Errors: `422 UPLOAD_EMPTY`, `413 UPLOAD_TOO_LARGE`, `413 PAYLOAD_TOO_LARGE`,
 
 Voucher data entry for an uploaded file (designated signer only):
 `POST /cases/[caseId]/voucher/[artifactId]/attestation` (JSON) appends a new
-attestation for that exact artifact.
+attestation for that exact artifact. The artifact must be the case's current
+voucher (`409 VOUCHER_NOT_CURRENT`); otherwise a later attestation timestamp
+would rewind `currentVoucher()` onto the superseded PDF and its authorized
+amount, dates and reference.
 
 Both responses carry `waitingOnDesignatedSigner` for the current voucher
 (§5.3), so a staff upload immediately shows what now waits on Michael.

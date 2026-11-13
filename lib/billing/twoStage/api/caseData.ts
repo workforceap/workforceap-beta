@@ -194,7 +194,9 @@ export function recordContent<T extends J5Content | J6Content>(record: BillingSt
  * event, an upload (artifact created) or a data-entry attestation naming a
  * file. A new upload therefore replaces the previous voucher at once, and
  * every attestation made for the older file (data entry and Michael's
- * receipt signature) stops applying to the case. `attestation` is the newest
+ * receipt signature) stops applying to the case. Data-entry POST of a
+ * superseded file is refused (`VOUCHER_NOT_CURRENT`) so a stale tab cannot
+ * rewind the case onto the older PDF. `attestation` is the newest
  * voucher_board_signed attestation of that exact file, or null.
  */
 export function currentVoucher(
