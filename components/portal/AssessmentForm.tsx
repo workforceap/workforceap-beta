@@ -8,6 +8,8 @@ import { PROGRAM_TITLES } from '@/lib/content/programs';
 // server-side in /api/member/assessment/submit which is the source of
 // truth for raw/pct (it re-derives the score from answers, ignoring any
 // client-supplied score).
+import WapatReport from '@/components/assessment/WapatReport';
+import type { WapatResult } from '@/lib/assessment/wapat';
 import {
   ASSESSMENT_QUESTIONS_PUBLIC as ASSESSMENT_QUESTIONS,
   type QuestionChoice,
@@ -37,6 +39,8 @@ const STEP_CONFIG = [
 type AssessmentOutcome = {
   message: string;
   pct: number;
+  /** WAPAT sections from the server; the headline number is its Total when present. */
+  wapat?: WapatResult;
   staffNotificationSent?: boolean;
 };
 
@@ -233,6 +237,7 @@ export default function AssessmentForm({
       const data = (await res.json()) as {
         error?: string;
         scorePct?: number;
+        wapat?: WapatResult;
         adminEmailSent?: boolean;
       };
       if (!res.ok) {
@@ -247,6 +252,7 @@ export default function AssessmentForm({
       setOutcome({
         message: assessmentConfirmMessage(pct),
         pct,
+        wapat: data.wapat,
         staffNotificationSent: data.adminEmailSent === true,
       });
       setStep('confirm');
@@ -258,6 +264,9 @@ export default function AssessmentForm({
       setContinueHref(
         intended && intended.startsWith('/') && !intended.startsWith('//') ? intended : '/dashboard',
       );
+      // The header counter and the retake banner are server-rendered from the
+      // saved attempt. Reload them so they match what was just stored.
+      router.refresh();
     } catch {
       setError('Submission failed. Please try again.');
     } finally {
@@ -269,13 +278,14 @@ export default function AssessmentForm({
     return (
       <div className={`wa-kit-card ${styles.confirm}`}>
         <p className={styles.score}>
-          {outcome.pct}
-          <span className={styles.scoreUnit}>%</span>
+          {outcome.wapat ? (outcome.wapat.total.pct ?? '—') : outcome.pct}
+          {outcome.wapat && outcome.wapat.total.pct === null ? null : <span className={styles.scoreUnit}>%</span>}
         </p>
         <h2 ref={confirmHeadingRef} tabIndex={-1} className={styles.confirmTitle}>
-          Preassessment complete
+          WAPAT complete
         </h2>
         <p className={styles.confirmCopy}>{outcome.message}</p>
+        {outcome.wapat ? <WapatReport result={outcome.wapat} /> : null}
         {outcome.staffNotificationSent === true ? (
           <p role="status" className={styles.notificationSent}>
             Your results were saved and the WorkforceAP team was notified.

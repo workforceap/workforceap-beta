@@ -6,6 +6,7 @@ import 'server-only';
 
 import { ASSESSMENT_QUESTIONS, TOTAL_POINTS, type QuestionChoice } from '@/lib/assessment/answer-key';
 import { mostRepeatedAnswerCount, STRAIGHT_LINE_MIN_SAME } from '@/lib/assessment/answerPattern';
+import { computeWapat, type WapatResult } from '@/lib/assessment/wapat';
 
 export type AssessmentReviewRow = {
   id: number;
@@ -65,4 +66,18 @@ export function formatAssessmentReviewText(rows: AssessmentReviewRow[]): string[
       } [${r.correct ? 'correct' : 'incorrect'}, ${r.points} pt${r.points === 1 ? '' : 's'}]`,
     ),
   ];
+}
+
+/** WAPAT section scores from stored answers; unavailable (never zero) when answers are incomplete. */
+export function wapatFromAnswers(rawAnswers: unknown): WapatResult {
+  return computeWapat(buildAssessmentReviewRows(rawAnswers));
+}
+
+/** One WAPAT result per retained history entry, aligned with previousAssessmentResults. */
+export function wapatForHistory(history: unknown): WapatResult[] {
+  if (!Array.isArray(history)) return [];
+  return history.flatMap((item: unknown) => {
+    if (!item || typeof item !== 'object') return [];
+    return [wapatFromAnswers((item as Record<string, unknown>).answers)];
+  });
 }

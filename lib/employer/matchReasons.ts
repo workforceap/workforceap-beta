@@ -24,5 +24,5 @@ export function employerVisibleMatchReasons(reasons: readonly string[] | null | 
 
 /** Staff-only reason line for a member's current assessment score, or null when there is none. */
 export function staffAssessmentReason(assessmentScorePct: number | null | undefined): string | null {
-  return assessmentScorePct == null ? null : `Assessment score ${assessmentScorePct}%`;
+  return assessmentScorePct == null ? null : `Assessment points score ${assessmentScorePct}% (legacy, not WAPAT)`;
 }

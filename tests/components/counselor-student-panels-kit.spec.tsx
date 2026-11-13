@@ -83,7 +83,7 @@ describe('AssessmentAnswersReadonly', () => {
     const { container } = render(<AssessmentAnswersReadonly rows={rows} score={1} scorePct={50} completedAt="2026-09-19T12:00:00Z" programInterest="Cloud & IT" />);
     const root = container.firstElementChild as HTMLElement;
     expectKitPanel(root);
-    expect(within(root).getByRole('heading', { level: 2, name: 'Training preassessment (skills check)' })).toBeInTheDocument();
+    expect(within(root).getByRole('heading', { level: 2, name: 'WAPAT (Workforce Advancement Project Assessment Score)' })).toBeInTheDocument();
     expect(within(root).getByLabelText('correct').classList.contains('wa-kit-tone--ok')).toBe(true);
     expect(within(root).getByLabelText('incorrect').classList.contains('wa-kit-tone--danger')).toBe(true);
     expect(root.querySelector('p')!.classList.contains('wa-kit-meta')).toBe(true);

@@ -131,7 +131,7 @@ export const POST = withApiGuc(
         member.enrolledAt ? `Enrolled at: ${member.enrolledAt.toISOString().slice(0, 10)}` : null,
         `Intake assessment completed: ${member.assessmentCompleted ? 'Yes' : 'No'}`,
         member.assessmentScorePct != null
-          ? `Assessment score: ${member.assessmentScorePct}%`
+          ? `Assessment points score (legacy, not WAPAT): ${member.assessmentScorePct}%`
           : null,
         trainingView
           ? `Program progress: ${trainingView.completedCount} of ${trainingView.totalCourses} courses complete (${trainingView.progressPercentDisplay}% overall)`

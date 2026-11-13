@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import AssessmentForm from './AssessmentForm';
+import { assessmentConfirmMessage } from '@/lib/member/assessmentConfirmMessage';
+import { computeWapat } from '@/lib/assessment/wapat';
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -25,7 +27,7 @@ describe('AssessmentForm completion delivery status', () => {
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'Preassessment complete' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'WAPAT complete' })).toBeVisible();
     expect(screen.getByRole('alert')).toHaveTextContent(/results were saved/i);
     expect(screen.getByRole('alert')).toHaveTextContent(/email delivery could not be confirmed/i);
   });
@@ -43,5 +45,22 @@ describe('AssessmentForm completion delivery status', () => {
     );
 
     expect(screen.getByRole('status')).toHaveTextContent(/team was notified/i);
+  });
+});
+
+describe('AssessmentForm readiness wording vs WAPAT score', () => {
+  it('headline shows the WAPAT total (74.3%) and the readiness line names the legacy 69% points score', () => {
+    const rows = Array.from({ length: 35 }, (_, i) => ({ id: i + 1, answer: 'A', correct: i < 26 }));
+    render(
+      <AssessmentForm
+        {...baseProps}
+        previewOutcome={{ pct: 69, message: assessmentConfirmMessage(69), wapat: computeWapat(rows) }}
+      />,
+    );
+    expect(screen.getByTestId('wapat-total')).toHaveTextContent('74.3%');
+    const copy = screen.getByText(/older weighted points score/);
+    expect(copy).toHaveTextContent('not the WAPAT total above');
+    expect(copy).not.toHaveTextContent('69%');
+    expect(copy).not.toHaveTextContent('74.3');
   });
 });

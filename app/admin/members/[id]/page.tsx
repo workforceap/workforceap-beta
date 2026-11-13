@@ -891,7 +891,7 @@ export default async function AdminMemberDetailPage({
                   </p>
                 </div>
                 <div className={styles.stat}>
-                  <p className={styles.statLabel}>Assessment</p>
+                  <p className={styles.statLabel}>Points score (legacy)</p>
                   <p className={styles.statValue}>{member.assessmentScorePct != null ? `${member.assessmentScorePct}%` : '—'}</p>
                   <p className={styles.statNote}>{member.assessmentCompleted ? 'completed' : 'not completed'}</p>
                   {member.assessmentAttemptCount === 1 ? (
