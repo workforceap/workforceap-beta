@@ -1,3 +1,5 @@
+import { programSlugsEquivalent } from '@/lib/content/programSlug';
+
 /**
  * Invite-accept org choice. Inviter tenant wins, then the request
  * host / x-wap-org-id resolver, then the default org as last resort.
@@ -39,4 +41,23 @@ export function buildInviteAcceptExistingUserUpdate(fields: {
     ...(fields.enrolledProgram ? { enrolledProgram: fields.enrolledProgram } : {}),
     ...(fields.enrolledAt ? { enrolledAt: fields.enrolledAt } : {}),
   };
+}
+
+export type InviteAcceptExistingProgramDecision = 'assign' | 'keep' | 'refuse';
+
+/**
+ * Existing members already have an assignment. Invite-accept may create their
+ * first CourseEnrollment; it must not restamp enrolledAt or switch programs.
+ * Member self-enroll uses the same keep/refuse split (ALREADY_ENROLLED).
+ */
+export function decideInviteAcceptExistingProgram(args: {
+  invitationRole: string;
+  invitationProgramSlug: string | null;
+  enrolledProgram: string | null;
+  primaryProgramSlug: string | null;
+}): InviteAcceptExistingProgramDecision {
+  if (args.invitationRole !== 'member' || !args.invitationProgramSlug) return 'keep';
+  const assigned = args.primaryProgramSlug ?? args.enrolledProgram;
+  if (!assigned) return 'assign';
+  return programSlugsEquivalent(assigned, args.invitationProgramSlug) ? 'keep' : 'refuse';
 }
