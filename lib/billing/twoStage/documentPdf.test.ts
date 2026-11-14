@@ -371,13 +371,11 @@ describe('two-stage WAP billing PDFs: the signed renderers (module-level guards)
     }
   });
 
-  it('refuse a J6 that carries a hold, even if the caller skips the adapter', async () => {
-    await assert.rejects(
-      renderJ6InvoiceVoucherCoverLetterSignedPdf(j6({ openHolds: ['voucher_period_conflict'] }), signaturePng),
-      /cannot carry open holds/u,
-    );
-    // The same facts remain previewable as a DRAFT for review.
-    await assert.doesNotReject(renderJ6InvoiceVoucherCoverLetterDraftPdf(j6({ openHolds: ['voucher_period_conflict'] })));
+  it('signs a J6 that records a difference, and still previews it as a draft', async () => {
+    const differing = j6({ openHolds: ['voucher_period_conflict'] });
+    const bytes = await renderJ6InvoiceVoucherCoverLetterSignedPdf(differing, signaturePng);
+    assert.equal(Buffer.from(bytes).subarray(0, 5).toString('latin1'), '%PDF-');
+    await assert.doesNotReject(renderJ6InvoiceVoucherCoverLetterDraftPdf(differing));
   });
 
   it('refuse a J6 without the designated signer receiving-signature attestation', async () => {

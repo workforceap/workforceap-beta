@@ -33,7 +33,7 @@ import { TWO_STAGE_TEXT_LIMITS } from '../documentPdf';
 import { checkJ5Prerequisites, checkJ6Prerequisites } from '../stateMachine';
 import type { TwoStageContext } from './access';
 import { isUniqueViolation } from './access';
-import { blockersFromMessages, holdBlockers } from './blockers';
+import { blockersFromMessages } from './blockers';
 import { dateColumn, j6Prerequisites, latestAttestation, loadCaseSnapshot, recordContent, stageRecords, toAttestation, toSignerAsset, type CaseSnapshot, type RecordWithRelations } from './caseData';
 import { apiError, NO_STORE_HEADERS, PDF_FRAME_HEADERS } from './http';
 import { readLetterheadLogo } from './logo';
@@ -74,7 +74,23 @@ export function parseDraftPatch(stage: BillingStage, body: unknown): DraftPatch<
 
 type Base = { values: Record<DraftField, Sourced> };
 
-function baseInputs(record: RecordWithRelations | null, member: { fullName: string; email: string }, counselor: { name: string; email: string } | null): Base {
+/**
+ * Facts a J6 draft can start from instead of retyping them: the signed or
+ * sent J5's printed board and counselor. An unsigned draft is not yet a
+ * quote, so it contributes nothing. The editor pre-fills empty fields only,
+ * and every value stays editable.
+ */
+function issuedJ5Seed(snapshot: CaseSnapshot): { boardName: string; counselor: { name: string; email: string; phone: string } } | null {
+  const issued = stageRecords(snapshot, 'j5').find((r) => r.status === 'signed' || r.status === 'sent');
+  if (!issued) return null;
+  const c = recordContent<J5Content>(issued);
+  const boardName = c.boardName?.trim() ?? '';
+  const counselor = c.counselor;
+  if (!boardName || !counselor?.name?.trim() || !counselor.email?.trim() || !counselor.phone?.trim()) return null;
+  return { boardName, counselor: { name: counselor.name, email: counselor.email, phone: counselor.phone } };
+}
+
+function baseInputs(record: RecordWithRelations | null, member: { fullName: string; email: string }, counselor: { name: string; email: string } | null, j5: ReturnType<typeof issuedJ5Seed> = null): Base {
   if (record && record.status === 'draft') {
     const c = recordContent<J5Content | J6Content>(record);
     const d = (v: string | null | undefined): Sourced => ({ value: v ?? null, source: 'draft' });
@@ -95,13 +111,14 @@ function baseInputs(record: RecordWithRelations | null, member: { fullName: stri
   const none: Sourced = { value: null, source: 'none' };
   return {
     values: {
-      boardName: none,
+      boardName: j5 ? { value: j5.boardName, source: 'j5' } : none,
       'student.name': { value: member.fullName || null, source: member.fullName ? 'member_profile' : 'none' },
       'student.email': { value: member.email || null, source: member.email ? 'member_profile' : 'none' },
-      'counselor.name': counselor ? { value: counselor.name, source: 'assigned_counselor' } : none,
-      'counselor.email': counselor ? { value: counselor.email, source: 'assigned_counselor' } : none,
-      // Always staff-entered: no counselor phone is on file anywhere.
-      'counselor.phone': none,
+      // The counselor phone is never stored on the assigned counselor; it
+      // comes from the signed J5 when there is one, otherwise staff type it.
+      'counselor.name': j5 ? { value: j5.counselor.name, source: 'j5' } : counselor ? { value: counselor.name, source: 'assigned_counselor' } : none,
+      'counselor.email': j5 ? { value: j5.counselor.email, source: 'j5' } : counselor ? { value: counselor.email, source: 'assigned_counselor' } : none,
+      'counselor.phone': j5 ? { value: j5.counselor.phone, source: 'j5' } : none,
       'finance.name': none,
       'finance.email': none,
       boardInvoiceArtifactId: none,
@@ -197,7 +214,11 @@ export function stagePrerequisiteBlockers(stage: BillingStage, snapshot: CaseSna
     return { blockers: gate.ok ? [] : blockersFromMessages(gate.errors), holds: [] };
   }
   const gate = checkJ6Prerequisites(j6Prerequisites(snapshot, { now, boardInvoiceArtifactId, editingRecordId: editing?.id ?? null }));
-  return gate.ok ? { blockers: holdBlockers(gate.reviewReasons), holds: gate.reviewReasons } : { blockers: blockersFromMessages(gate.errors), holds: [] };
+  // Review notes stay on `holds` for the signer. They must not appear in
+  // `blockers`: save, review and freeze/sign all treat every non-hardHold
+  // blocker as incomplete, which would refuse a J6 whose voucher or class
+  // dates differ from the $7,500 quote.
+  return gate.ok ? { blockers: [], holds: gate.reviewReasons } : { blockers: blockersFromMessages(gate.errors), holds: [] };
 }
 
 function buildContent(stage: BillingStage, snapshot: CaseSnapshot, inputs: Inputs, args: { now: Date; documentNumber: string; logoSha256: string; editing: RecordWithRelations | null }): Built {
@@ -222,7 +243,6 @@ function buildContent(stage: BillingStage, snapshot: CaseSnapshot, inputs: Input
 async function printableBlockers(content: J5Content | J6Content, logo: Uint8Array, now: Date): Promise<{ field: string; code: 'TEXT_NOT_PRINTABLE' | 'VOUCHER_REFERENCE_TOO_LONG'; message: string } | null> {
   const issue = printableIssues(content)[0];
   if (issue) return issue;
-  if (content.kind === 'j6_invoice_cover_letter' && content.reviewReasons.length > 0) return null; // held: not rendered, cannot be signed
   try {
     await renderDraftFromContent(content, { logoPng: logo, frozenAt: now.toISOString() });
     return null;
@@ -252,7 +272,7 @@ async function loadForDraft<P>(ctx: TwoStageContext<P>) {
 export async function reviewDraft<P>(ctx: TwoStageContext<P>, stage: BillingStage, patch: DraftPatch<'j6'>): Promise<DraftReviewDto> {
   const { snapshot, counselor } = await loadForDraft(ctx);
   const editing = currentDraft(snapshot, stage);
-  const values = applyPatch(baseInputs(editing, ctx.member, counselor), patch);
+  const values = applyPatch(baseInputs(editing, ctx.member, counselor, issuedJ5Seed(snapshot)), patch);
   const fieldErrors = validateFields(stage, values, snapshot);
   const inputs = toInputs(values);
   const prereq = stagePrerequisiteBlockers(stage, snapshot, ctx.now, editing, inputs.boardInvoiceArtifactId);
@@ -291,7 +311,7 @@ export async function reviewMockJ5<P>(ctx: TwoStageContext<P>, stage: BillingSta
   if (patch.expectedVersionHash !== undefined && patch.expectedVersionHash !== (editing?.contentSha256 ?? null)) {
     throw apiError(409, 'DRAFT_CONFLICT', 'The saved draft changed. Reload it before creating another mock.');
   }
-  const values = applyPatch(baseInputs(editing, ctx.member, counselor), patch);
+  const values = applyPatch(baseInputs(editing, ctx.member, counselor, issuedJ5Seed(snapshot)), patch);
   const fields = validateFields(stage, values, snapshot);
   const inputs = toInputs(values);
   const prereq = stagePrerequisiteBlockers(stage, snapshot, ctx.now, editing, null);
@@ -375,7 +395,7 @@ export async function saveDraft<P>(
   if (editing && patch.expectedVersionHash !== editing.contentSha256) {
     throw apiError(409, 'DRAFT_CONFLICT', 'Someone else saved this draft. Reload it before saving again.');
   }
-  const values = applyPatch(baseInputs(editing, ctx.member, counselor), patch);
+  const values = applyPatch(baseInputs(editing, ctx.member, counselor, issuedJ5Seed(snapshot)), patch);
   const fieldErrors = validateFields(stage, values, snapshot);
   const inputs = toInputs(values);
   const prereq = stagePrerequisiteBlockers(stage, snapshot, ctx.now, editing, inputs.boardInvoiceArtifactId);
