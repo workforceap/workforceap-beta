@@ -354,7 +354,7 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
         j6={summary.j6}
         onPrepareJ5={() => setEditing('j5')}
         onPrepareJ6={() => setEditing('j6')}
-        renderSignerTaskAction={(task) => <SignerTaskAction ctx={ctx} task={task} caseInfo={summary.case} />}
+        renderSignerTaskAction={(task) => <SignerTaskAction ctx={ctx} task={task} caseInfo={summary.case} quote={summary.j5Quote} />}
         stageContent={{
           j5: (
             <>
@@ -367,7 +367,7 @@ function TwoStageBillingCaseDetails({ memberId, memberName, memberEmail, counsel
             <>
               {editor('j6')}
               <VoucherPanel ctx={ctx} voucher={summary.j6.voucher} />
-              <ClassStartedPanel ctx={ctx} classStarted={summary.j6.classStarted} />
+              <ClassStartedPanel ctx={ctx} classStarted={summary.j6.classStarted} plannedStart={summary.j5Quote?.classStartDate ?? null} />
               <StageLifecycle ctx={ctx} stage="j6" view={summary.j6} viewer={summary.viewer} signature={summary.signature} showSignatureSlot={signatureStage === 'j6'} onRefreshDraftDate={() => setEditing('j6')} />
               <PaymentPanel ctx={ctx} payment={summary.payment} />
             </>

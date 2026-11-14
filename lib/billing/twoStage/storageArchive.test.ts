@@ -3,9 +3,11 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import {
+  adoptFinanceArchiveDirectUpload,
   archiveFinancePdf,
   FinanceArchiveError,
   FINANCE_ARCHIVE_MAX_BYTES,
+  prepareFinanceArchiveDirectUpload,
   readFinanceArchivePdf,
   type FinanceArchiveRef,
 } from './storageArchive';
@@ -17,12 +19,22 @@ const hash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('h
 
 function fakeStorage() {
   const objects = new Map<string, { bytes: Uint8Array; contentType: string }>();
-  const calls = { buckets: 0, uploads: [] as Array<{ key: string; options: unknown; bytes: Uint8Array }> };
+  const calls = {
+    buckets: 0,
+    uploads: [] as Array<{ key: string; options: unknown; bytes: Uint8Array }>,
+    signedUploads: [] as string[],
+  };
   let publicBucket = false;
   let uploadFailure: 'before' | 'after' | null = null;
   let infoOverride: Partial<{ name: string; bucketId: string; size: number; contentType: string }> = {};
+  let signedUpload: { token?: string; path?: string; error?: { message: string } | null } = {};
 
   const bucket = {
+    createSignedUploadUrl: async (key: string) => {
+      calls.signedUploads.push(key);
+      if (signedUpload.error) return { data: null, error: signedUpload.error };
+      return { data: { path: signedUpload.path ?? key, token: signedUpload.token ?? 'tok' }, error: null };
+    },
     upload: async (key: string, bytes: Uint8Array, options: { upsert: boolean; contentType: string }) => {
       calls.uploads.push({ key, options, bytes: Uint8Array.from(bytes) });
       if (uploadFailure === 'before' || objects.has(key)) return { data: null, error: { message: 'upload failed' } };
@@ -64,6 +76,7 @@ function fakeStorage() {
     setPublic: (value: boolean) => { publicBucket = value; },
     setUploadFailure: (value: 'before' | 'after' | null) => { uploadFailure = value; },
     setInfoOverride: (value: typeof infoOverride) => { infoOverride = value; },
+    setSignedUpload: (value: typeof signedUpload) => { signedUpload = value; },
   };
 }
 
@@ -190,5 +203,103 @@ describe('billing finance Storage archive', () => {
       assertCode('STORAGE_UNAVAILABLE'),
     );
     assert.equal(storage.objects.size, 0);
+  });
+});
+
+describe('billing finance direct-to-storage voucher upload', () => {
+  const sha = hash(PDF);
+  const key = `cases/${CASE_ID}/voucher/${sha}.pdf`;
+  const byteLength = 6 * 1024 * 1024;
+
+  it('issues a signed upload URL for a content-addressed voucher key and refuses unsafe input first', async () => {
+    const storage = fakeStorage();
+    const prepared = await prepareFinanceArchiveDirectUpload(
+      { caseId: CASE_ID, kind: 'board_signed_voucher', sha256: sha, byteLength },
+      { admin: storage.admin },
+    );
+    assert.deepEqual(prepared.ref, {
+      caseId: CASE_ID,
+      kind: 'board_signed_voucher',
+      bucket: 'billing-finance',
+      key,
+      sha256: sha,
+      byteLength,
+      mimeType: 'application/pdf',
+    });
+    assert.equal(prepared.token, 'tok');
+    assert.equal(prepared.path, key);
+    assert.equal(prepared.maxBytes, FINANCE_ARCHIVE_MAX_BYTES);
+    assert.deepEqual(storage.calls.signedUploads, [key]);
+    assert.equal(storage.calls.uploads.length, 0);
+
+    await assert.rejects(
+      prepareFinanceArchiveDirectUpload(
+        { caseId: CASE_ID, kind: 'board_signed_voucher', sha256: 'zz', byteLength },
+        { admin: storage.admin },
+      ),
+      assertCode('INVALID_INPUT'),
+    );
+    await assert.rejects(
+      prepareFinanceArchiveDirectUpload(
+        { caseId: CASE_ID, kind: 'board_signed_voucher', sha256: sha, byteLength: FINANCE_ARCHIVE_MAX_BYTES + 1 },
+        { admin: storage.admin },
+      ),
+      assertCode('INVALID_INPUT'),
+    );
+    await assert.rejects(
+      prepareFinanceArchiveDirectUpload(
+        { caseId: '../escape', kind: 'board_signed_voucher', sha256: sha, byteLength },
+        { admin: storage.admin },
+      ),
+      assertCode('INVALID_INPUT'),
+    );
+    assert.equal(storage.calls.signedUploads.length, 1);
+  });
+
+  it('fails closed before minting a URL when the bucket is public or Storage returns no token', async () => {
+    const publicBucket = fakeStorage();
+    publicBucket.setPublic(true);
+    await assert.rejects(
+      prepareFinanceArchiveDirectUpload(
+        { caseId: CASE_ID, kind: 'board_signed_voucher', sha256: sha, byteLength },
+        { admin: publicBucket.admin },
+      ),
+      assertCode('STORAGE_UNAVAILABLE'),
+    );
+    assert.equal(publicBucket.calls.signedUploads.length, 0);
+
+    const missingToken = fakeStorage();
+    missingToken.setSignedUpload({ token: undefined, error: { message: 'no token' } });
+    await assert.rejects(
+      prepareFinanceArchiveDirectUpload(
+        { caseId: CASE_ID, kind: 'board_signed_voucher', sha256: sha, byteLength },
+        { admin: missingToken.admin },
+      ),
+      assertCode('STORAGE_UNAVAILABLE'),
+    );
+  });
+
+  it('adopts only after Storage metadata and downloaded bytes match the claimed hash', async () => {
+    const storage = fakeStorage();
+    const ref: FinanceArchiveRef = {
+      caseId: CASE_ID,
+      kind: 'board_signed_voucher',
+      bucket: 'billing-finance',
+      key,
+      sha256: sha,
+      byteLength: PDF.byteLength,
+      mimeType: 'application/pdf',
+    };
+    await assert.rejects(adoptFinanceArchiveDirectUpload(ref, { admin: storage.admin }), assertCode('INVALID_INPUT'));
+
+    storage.objects.set(key, { bytes: PDF, contentType: 'application/pdf' });
+    const adopted = await adoptFinanceArchiveDirectUpload(ref, { admin: storage.admin });
+    assert.equal(adopted.reused, false);
+    assert.deepEqual(adopted.ref, ref);
+
+    const wrong = Uint8Array.from(PDF);
+    wrong[wrong.length - 1] ^= 1;
+    storage.objects.set(key, { bytes: wrong, contentType: 'application/pdf' });
+    await assert.rejects(adoptFinanceArchiveDirectUpload(ref, { admin: storage.admin }), assertCode('INTEGRITY_MISMATCH'));
   });
 });

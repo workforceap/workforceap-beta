@@ -125,15 +125,15 @@ describe('two-stage billing workbench states (M4)', () => {
       ...summary.j6,
       holds: ['voucher_amount_differs'],
       matches: [
-        { check: 'amount', result: 'mismatch', expected: '$7,500.00', actual: '$7,000.00', reasonCode: 'voucher_amount_differs', hardHold: true },
-        { check: 'program', result: 'ok', expected: 'x', actual: 'x', reasonCode: 'voucher_class_differs', hardHold: true },
+        { check: 'amount', result: 'mismatch', expected: '$7,500.00', actual: '$7,000.00', reasonCode: 'voucher_amount_differs', hardHold: false },
+        { check: 'program', result: 'ok', expected: 'x', actual: 'x', reasonCode: 'voucher_class_differs', hardHold: false },
       ],
-      blockers: [{ code: 'HOLD_VOUCHER_AMOUNT_DIFFERS', message: 'The voucher amount is not $7,500.00.', hardHold: true }, ...summary.j6.blockers],
+      blockers: [{ code: 'HOLD_VOUCHER_AMOUNT_DIFFERS', message: 'The voucher amount is not $7,500.00.', hardHold: false }, ...summary.j6.blockers],
     };
     renderSummary(summary);
-    const hold = within(card('j6')).getByText('The voucher amount is not $7,500.00.').closest('li') as HTMLElement;
-    expect(hold).toHaveAttribute('data-hard-hold', 'true');
-    expect(within(hold).getByText('Hold')).toBeInTheDocument();
+    const note = within(card('j6')).getByText('The voucher amount is not $7,500.00.').closest('li') as HTMLElement;
+    expect(note).not.toHaveAttribute('data-hard-hold');
+    expect(within(note).queryByText('Hold')).toBeNull();
     const holds = screen.getByRole('group', { name: 'J6 holds' });
     expect(within(holds).getByText('Expected $7,500.00; voucher shows $7,000.00')).toBeInTheDocument();
     expect(within(holds).queryByText('Program')).toBeNull();
