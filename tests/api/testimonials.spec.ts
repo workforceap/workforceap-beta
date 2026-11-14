@@ -97,6 +97,44 @@ describe('GET /api/admin/testimonials', () => {
     expect(prisma.testimonial.count).not.toHaveBeenCalled();
   });
 
+  it('scopes list and stats to the actor org via the member organization', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'admin-1' } as any);
+    vi.mocked(isAdmin).mockResolvedValue(true);
+    vi.mocked(prisma.testimonial.findMany).mockResolvedValue([] as any);
+    vi.mocked(prisma.testimonial.count).mockResolvedValue(0);
+
+    const res = await listTestimonials(new Request('http://localhost:3000/api/admin/testimonials'));
+    expect(res.status).toBe(200);
+    const orgWhere = { deletedAt: null, member: { organizationId: 'org-1' } };
+    expect(prisma.testimonial.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: orgWhere,
+      }),
+    );
+    expect(prisma.testimonial.count).toHaveBeenCalledWith({ where: orgWhere });
+    expect(prisma.testimonial.count).toHaveBeenCalledWith({
+      where: { ...orgWhere, status: TestimonialStatus.PENDING },
+    });
+  });
+
+  it('keeps an empty org filter for a super-admin', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'admin-1' } as any);
+    vi.mocked(isAdmin).mockResolvedValue(true);
+    vi.mocked(isSuperAdmin).mockResolvedValue(true);
+    vi.mocked(getActorOrganizationId).mockRejectedValue(new Error('must not be needed'));
+    vi.mocked(prisma.testimonial.findMany).mockResolvedValue([] as any);
+    vi.mocked(prisma.testimonial.count).mockResolvedValue(0);
+
+    const res = await listTestimonials(new Request('http://localhost:3000/api/admin/testimonials'));
+    expect(res.status).toBe(200);
+    expect(getActorOrganizationId).not.toHaveBeenCalled();
+    expect(prisma.testimonial.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { deletedAt: null },
+      }),
+    );
+  });
+
   it('returns testimonials with stats for admin', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: 'admin-1' } as any);
     vi.mocked(isAdmin).mockResolvedValue(true);
