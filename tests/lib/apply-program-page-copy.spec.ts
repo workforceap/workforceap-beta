@@ -31,6 +31,6 @@ describe('apply page metadata description', () => {
     expect(metadata.description).toContain(`${catalogs[locale].apply.applicationTimeEstimate} to apply.`);
     expect(metadata.description).not.toContain('10 minutes');
     expect(metadata.openGraph?.description).toBe(metadata.description);
-    expect(metadata.alternates?.canonical).toContain('?program=it-support-professional-certificate-ibm');
+    expect(String(metadata.alternates?.canonical)).toMatch(new RegExp(`/${locale}/apply$`));
   });
 });

@@ -31,6 +31,14 @@ beforeEach(() => { vi.clearAllMocks(); mocks.locale = 'en'; });
 afterEach(cleanup);
 
 describe('organic apply presentation preserves the application path', () => {
+  it.each(['en', 'es', 'fr', 'pt'] as const)('keeps selected-program wording and intro in %s', async (locale) => {
+    mocks.locale = locale;
+    const { container } = render(await OrganicApplyPage({ program: 'it-support-professional-certificate-ibm' }));
+    expect(container.querySelector('.apply-hero-desc-full')).toHaveTextContent(catalogs[locale].apply.heroDescSelected);
+    expect(container.querySelector('.apply-hero-desc-full')).not.toHaveTextContent(catalogs[locale].apply.heroDesc);
+    expect(mocks.programIntro).toHaveBeenCalledWith(expect.objectContaining({ programSlug: 'it-support-professional-certificate-ibm' }));
+  });
+
   it.each(['en', 'es', 'fr', 'pt'] as const)('renders one hero start action, real form target, and secondary support in %s', async (locale) => {
     mocks.locale = locale;
     const { container } = render(await OrganicApplyPage({}));

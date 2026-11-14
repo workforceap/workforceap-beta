@@ -373,6 +373,7 @@ describe('WAP-272 jobs pagination through the actual route and member page', () 
   });
 
   it('reports unavailable for a crowded legitimate-candidate set instead of inspecting it without a bound', async () => {
+    // Exercise the complete 5,001-row bound with NBSP-padded legitimate candidates.
     state.jobs = Array.from({ length: 5001 }, (_, index) => job(index + 1, {
       employer: { companyName: '\u00a0Contest Labs\u00a0', logoUrl: null, status: 'active' },
     }));

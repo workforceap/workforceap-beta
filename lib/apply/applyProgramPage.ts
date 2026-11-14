@@ -72,12 +72,14 @@ export async function buildApplyPageMetadata(programParam: string | undefined): 
   };
   if (!program) return branded;
 
+  // The program query only preselects the form; every variant is the same
+  // application page, so all of them canonicalize to the clean apply URL.
   const localizedApply = withLocalePrefix('/apply', locale);
   return {
     ...branded,
     alternates: {
       ...base.alternates,
-      canonical: `${SITE_URL}${localizedApply}?program=${encodeURIComponent(program.slug)}`,
+      canonical: `${SITE_URL}${localizedApply}`,
     },
   };
 }

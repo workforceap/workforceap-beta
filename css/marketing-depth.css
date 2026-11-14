@@ -13,7 +13,7 @@
 }
 
 /* depth stage hero (compact, for inner Next pages) */
-.mdx-stage{position:relative;background:var(--mdx-grad);border-radius:24px;overflow:hidden;color:#fff;
+.mdx-stage{position:relative;background:var(--mdx-grad);border-radius:24px;overflow-x:hidden;overflow-y:visible;color:#fff;
   padding:48px 32px;margin:8px 0 28px;box-shadow:0 24px 70px -24px rgba(109,20,55,.3)}
 /* Decorative photo wash only: it must never swallow clicks or focus on the
    stage's links (the no-JS "Continue to partner sign-up" anchor, WAP-118). */

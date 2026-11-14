@@ -50,8 +50,8 @@ export default async function ApplyResultsPage({ searchParams }: {
       <section className="page-hero apply-funnel-step-page__hero afd-hero-wrap">
         <div className="page-hero-content mdx-stage">
           <span className="mdx-pill">{isSchool ? t('schoolHeroLabel') : t('heroLabel')}</span>
-          <h1><span className="mdx-grad-accent">{t('resultsHeroTitle')}</span></h1>
-          <p>{t('resultsHeroBody')}</p>
+          <h1><span className="mdx-grad-accent">{program && !isSchool ? t('resultsHeroTitleSelected', { title: program.title }) : t('resultsHeroTitle')}</span></h1>
+          <p>{program && !isSchool ? t('resultsHeroBodySelected') : t('resultsHeroBody')}</p>
         </div>
       </section>
           )}

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { PROGRAMS as APP_PROGRAMS } from './programs';
 import { PROGRAMS as MARKETING_PROGRAMS } from '../../marketing/src/data/programs';
 import { getProgramSyllabus } from '../../shared/programSyllabi';
-import { publicProgramFundingCopy, publicProgramFundingLabel } from '../../marketing/src/data/programFunding';
+import { programFundingRequiresConfirmation, publicProgramFundingCopy, publicProgramFundingLabel } from '../../marketing/src/data/programFunding';
 
 /**
  * Locks marketing/src/data/programs.ts (the public site — and the source
@@ -36,14 +36,33 @@ test('October catalog funding exclusions change public claims without changing e
   for (const slug of ['certified-production-technician-cpt', 'certified-logistics-technician-clt']) {
     const program = marketingBySlug.get(slug)!;
     assert.equal(publicProgramFundingLabel(program), 'Funding confirmation required');
-    assert.equal(publicProgramFundingCopy(program), 'Ask an advisor to confirm available funding and any costs before enrollment.');
+    assert.equal(publicProgramFundingCopy(program), 'Program details, costs and available funding are still being confirmed. Ask an advisor about this program before starting an application.');
     assert.equal(program.fundingSource, 'WIOA');
     assert.equal(appBySlug.get(slug)!.fundingSource, 'WIOA');
   }
   for (const slug of ['digital-literacy-empowerment-class', 'it-support-professional-certificate-ibm', 'core-construction-training-certificate']) {
     const program = marketingBySlug.get(slug)!;
-    assert.equal(publicProgramFundingLabel(program), program.fundingSource === 'WIOA' ? 'WIOA/Grant' : program.fundingSource);
+    assert.equal(publicProgramFundingLabel(program), program.fundingSource === 'WIOA' ? 'WIOA/Grant if eligible' : program.fundingSource);
   }
+});
+
+test('public funding copy never guarantees WIOA approval for any listed program', () => {
+  for (const program of MARKETING_PROGRAMS) {
+    const copy = publicProgramFundingCopy(program);
+    assert.doesNotMatch(copy, /^Available at no cost through/);
+    if (programFundingRequiresConfirmation(program)) {
+      assert.equal(copy, 'Program details, costs and available funding are still being confirmed. Ask an advisor about this program before starting an application.');
+      assert.doesNotMatch(copy, /never billed|no cost|Apply Now/i);
+    } else if (program.fundingSource === 'WIOA') {
+      assert.match(copy, /local workforce board/);
+      assert.match(copy, /if you qualify/);
+      assert.doesNotMatch(copy, /will cover|guaranteed/i);
+    } else if (program.fundingSource === 'Grant') {
+      assert.doesNotMatch(copy, /workforce board/i);
+      assert.match(copy, /eligibility requirements/);
+    }
+  }
+  assert.equal(MARKETING_PROGRAMS.length, APP_PROGRAMS.length);
 });
 
 test('marketing and app program catalogs expose the same program slugs', () => {

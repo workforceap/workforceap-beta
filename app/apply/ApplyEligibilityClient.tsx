@@ -23,6 +23,7 @@ import {
   type YesNo,
 } from '@/lib/apply/eligibilityExtendedFields';
 import type { SchoolApplyContext } from '@/lib/apply/resolveSchoolApply';
+import { getProgramBySlug } from '@/lib/content/programs';
 import { emailIssue, formatUsPhoneInput, usPhoneDigits, usPhoneIssue } from '@/lib/apply/contactValidation';
 import {
   PUBLIC_ASSISTANCE_PROGRAM_VALUES,
@@ -68,6 +69,7 @@ export default function ApplyEligibilityClient({
   const searchParams = useSearchParams();
   const locale = useLocaleFromPath();
   const programParam = searchParams?.get('program');
+  const selectedProgram = !schoolApply && programParam ? getProgramBySlug(programParam) : undefined;
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -590,7 +592,7 @@ export default function ApplyEligibilityClient({
             </p>
             <p className="apply-step-kicker">{t('step1Kicker')}</p>
             <h2 className="apply-step-title">{t('step1Title')}</h2>
-            <p className="apply-step-desc">{t('step1Lead')}</p>
+            <p className="apply-step-desc">{selectedProgram ? t('step1LeadSelected') : t('step1Lead')}</p>
             <p className="apply-step-desc apply-eligibility-exception-note">
               {t('eligibilityExceptionLead')}{' '}
               <LocalizedLink href="/faq" style={{ color: 'var(--wa-accent-text)', fontWeight: 600 }}>
@@ -601,7 +603,7 @@ export default function ApplyEligibilityClient({
 
             <div className="apply-transition-card" role="note" aria-label={t('transitionCardAriaWhatNext')}>
               <strong>{t('step1WhatNextStrong')}</strong>
-              <span> {t('step1WhatNextBody')}</span>
+              <span> {selectedProgram ? t('step1WhatNextBodySelected') : t('step1WhatNextBody')}</span>
             </div>
           </>
         ) : (
@@ -1106,7 +1108,7 @@ export default function ApplyEligibilityClient({
             className={marketingButtonPresets.formSubmitPrimary('apply-step1-actions__primary')}
             aria-describedby={attemptedContinue && !panelComplete ? 'apply-eligibility-summary-error apply-eligibility-continue-hint' : !panelComplete ? 'apply-eligibility-continue-hint' : undefined}
           >
-            {t(panelIndex === panels.length - 1 ? 'continueToPrograms' : 'eligibilityPanelNext')}
+            {t(panelIndex === panels.length - 1 ? (selectedProgram ? 'continueToProgramSelected' : 'continueToPrograms') : 'eligibilityPanelNext')}
           </button>
           {panelIndex > 0 && <button type="button" className={marketingButtonPresets.formOutlineSecondary('apply-step1-actions__secondary')} onClick={() => changePanel(panels[panelIndex - 1])}>{t('eligibilityPanelBack')}</button>}
           {!isPaid ? (
