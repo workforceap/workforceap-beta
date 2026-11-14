@@ -149,6 +149,16 @@ describe('eligibilityScreeningConfirmationHtml', () => {
     const html = eligibilityScreeningConfirmationHtml({ firstName: 'Sam', eligibility: { q1: 'yes' } });
     assert.match(html, /We saved 1 answer\./);
   });
+
+  it('escapes the applicant first name and still withholds answers', () => {
+    const html = eligibilityScreeningConfirmationHtml({
+      firstName: 'Sam <script>alert(1)</script>',
+      eligibility: SAMPLE,
+    });
+    assert.equal(html.includes('<script>'), false);
+    assert.ok(html.includes('Hi Sam &lt;script&gt;alert(1)&lt;/script&gt;,'));
+    assertNoAnswers(html);
+  });
 });
 
 describe('eligibilityScreeningAdminAlertHtml', () => {
@@ -174,6 +184,22 @@ describe('eligibilityScreeningAdminAlertHtml', () => {
     });
     assert.match(tok, /tokenized questionnaire/);
     assertNoAnswers(tok);
+  });
+
+  it('escapes member name, email, and review-link id without embedding answers', () => {
+    const html = eligibilityScreeningAdminAlertHtml({
+      memberName: 'Sam <script>alert(1)</script>',
+      memberEmail: 'sam+"<img src=x>"@example.test',
+      memberId: 'u1"><script>',
+      source: 'dashboard',
+      eligibility: SAMPLE,
+    });
+    assert.equal(html.includes('<script>'), false);
+    assert.equal(html.includes('<img src=x>'), false);
+    assert.ok(html.includes('Sam &lt;script&gt;alert(1)&lt;/script&gt;'));
+    assert.ok(html.includes('sam+&quot;&lt;img src=x&gt;&quot;@example.test'));
+    assert.ok(html.includes('/admin/members/u1%22%3E%3Cscript%3E'));
+    assertNoAnswers(html);
   });
 
   it('points a no-account lead at its purgeable store record instead of embedding answers', () => {
