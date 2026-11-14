@@ -27,6 +27,7 @@ import { createNotification } from '@/lib/notifications/create';
 import { sendOnboardingStallsDigestEmail, sendEmployerPendingApplicantsEmail, sendAdminStaleApplicantsDigestEmail } from '@/lib/email';
 import { queueDigest, loadQueueDigestHistory } from '@/lib/cron/queueDigest';
 import { employerPendingApplicantsHtml } from '@/emails/employer-pending-applicants';
+import { adminStaleApplicantsDigestHtml } from '@/emails/admin-stale-applicants-digest';
 import { onboardingStallsDigestHtml } from '@/emails/onboarding-stalls-digest';
 
 const NOW = new Date('2026-10-11T12:00:00Z');
@@ -218,6 +219,15 @@ describe('employer pending-applicant reminders', () => {
     expect(sendEmployerPendingApplicantsEmail).toHaveBeenCalledTimes(1);
     expect(sendAdminStaleApplicantsDigestEmail).toHaveBeenCalledTimes(2);
     expect(vi.mocked(sendAdminStaleApplicantsDigestEmail).mock.calls[1][0].employers).toEqual([{ companyName: 'Real Employer', candidateCount: 10 }]);
+  });
+
+  it('escapes hostile employer names in the staff digest', () => {
+    const html = adminStaleApplicantsDigestHtml({
+      employers: [{ companyName: '<img src=x onerror=alert(1)>', candidateCount: 12 }],
+    });
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(html).not.toContain('<img src=x onerror=alert(1)>');
+    expect(html).toContain('12 candidates waiting 5+ days');
   });
 });
 

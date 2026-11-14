@@ -58,6 +58,7 @@ import { logCronRun } from '@/lib/admin/logCronRun';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 import { CRON_NUDGE_CANDIDATE_CAP } from '@/lib/cron/cronCaps';
 import { createNotification } from '@/lib/notifications/create';
+import { captureApiError } from '@/lib/observability/captureApiError';
 
 describe('GET /api/cron/inactive-nudge', () => {
   beforeEach(() => {
@@ -215,5 +216,59 @@ describe('inactivity email acceptance', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ ok: true, sent: 1, failed: 0, total: 1 });
     expect(prisma.memberNudgeLog.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('selects enrolled members inactive for 14 calendar days, oldest enrollment first', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-20T12:00:00Z'));
+    try {
+      vi.mocked(prisma.user.findMany).mockResolvedValue([] as never);
+
+      await inactivityGet(new Request('http://localhost/api/cron/inactivity-nudge') as never);
+
+      expect(prisma.user.findMany).toHaveBeenCalledWith({
+        where: {
+          deletedAt: null,
+          OR: [
+            { courseEnrollments: { some: {} } },
+            { enrolledProgram: { not: null } },
+          ],
+          notificationsReminders: true,
+          memberEvents: { none: { createdAt: { gte: new Date('2026-09-06T12:00:00.000Z') } } },
+        },
+        select: { id: true, email: true, fullName: true, enrolledProgram: true, enrolledAt: true },
+        take: CRON_NUDGE_CANDIDATE_CAP,
+        orderBy: { enrolledAt: 'asc' },
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('captures a thrown send, continues the rest of the run, and answers 503 when any send failed', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([
+      { id: 'boom', email: 'boom@example.com', fullName: 'Boom' },
+      { id: 'ok', email: 'ok@example.com', fullName: 'Ok' },
+    ] as never);
+    vi.mocked(sendInactiveNudgeEmail)
+      .mockRejectedValueOnce(new Error('provider exploded'))
+      .mockResolvedValueOnce({ ok: true });
+
+    const response = await inactivityGet(new Request('http://localhost/api/cron/inactivity-nudge') as never);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ ok: false, sent: 1, failed: 1, skipped: 0, total: 2 });
+    expect(captureApiError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'provider exploded' }),
+      expect.objectContaining({ route: 'cron/inactivity-nudge', extra: { userId: 'boom' } }),
+    );
+    expect(prisma.memberNudgeLog.create).toHaveBeenCalledExactlyOnceWith({
+      data: { userId: 'ok', tier: 'yellow', kind: 'inactivity' },
+    });
+    expect(createNotification).toHaveBeenCalledTimes(1);
+    expect(logCronRun).toHaveBeenCalledWith(
+      'cron_inactivity_nudge',
+      expect.objectContaining({ ok: false, sent: 1, failed: 1 }),
+      'error',
+    );
   });
 });

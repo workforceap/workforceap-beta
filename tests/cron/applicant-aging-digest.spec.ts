@@ -26,6 +26,7 @@ import { GET } from '@/app/api/cron/applicant-aging-digest/route';
 import { prisma } from '@/lib/db/prisma';
 import { sendApplicantAgingDigestEmail } from '@/lib/email';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
+import { captureApiError } from '@/lib/observability/captureApiError';
 import { APPLICANT_AGE_BUCKETS, APPLICANT_AGING_SCAN_CAP, summarizeApplicationAging } from '@/lib/cron/applicantAging';
 import { applicantAgingDigestHtml } from '@/emails/applicant-aging-digest';
 
@@ -142,6 +143,18 @@ describe('GET /api/cron/applicant-aging-digest', () => {
     vi.mocked(sendApplicantAgingDigestEmail).mockResolvedValue({ ok: false, error: 'Send failed' });
     const body = await (await GET(request())).json();
     expect(body).toMatchObject({ emailSent: false, emailSkipped: 'send_failed' });
+  });
+
+  it('keeps the cron at 200 and reports send_threw when the provider call throws', async () => {
+    vi.mocked(prisma.application.findMany).mockResolvedValue([app('one', 40)] as never);
+    vi.mocked(sendApplicantAgingDigestEmail).mockRejectedValue(new Error('provider exploded'));
+    const response = await GET(request());
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ ok: true, emailSent: false, emailSkipped: 'send_threw', total: 1 });
+    expect(captureApiError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'provider exploded' }),
+      expect.objectContaining({ route: 'cron/applicant-aging-digest/email' }),
+    );
   });
 });
 

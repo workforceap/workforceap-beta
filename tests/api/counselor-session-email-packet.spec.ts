@@ -92,6 +92,39 @@ describe('session packet portal link', () => {
     expect(html).toContain('href="https://www.workforceap.org/dashboard/ai-tools/history"');
   });
 
+  it('escapes member, counselor and packet fields so resume text cannot break the email', () => {
+    const html = sessionPacketHtml({
+      firstName: '<b>Sam</b>',
+      counselorName: '<img src=x onerror=alert(1)>',
+      sessionDate: '<script>alert(1)</script>',
+      portalUrl: 'https://example.org/dashboard/ai-tools/history" onclick="alert(1)',
+      sections: [
+        {
+          title: '<h1>Resume</h1>',
+          contextLine: 'Tailored to: <script>steal()</script>',
+          body: '<img src=x onerror=alert(1)>Summary',
+        },
+        {
+          title: 'Interview questions',
+          body: '',
+          asList: {
+            items: [{ heading: '<iframe src=evil>', tip: '<b>tip</b>', exampleAnswer: '<script>x</script>' }],
+          },
+        },
+      ],
+    });
+    expect(html).toContain('Hi &lt;b&gt;Sam&lt;/b&gt;,');
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(html).toContain('&lt;h1&gt;Resume&lt;/h1&gt;');
+    expect(html).toContain('&lt;iframe src=evil&gt;');
+    expect(html).toContain('href="https://example.org/dashboard/ai-tools/history&quot; onclick=&quot;alert(1)"');
+    expect(html).not.toContain('<b>Sam</b>');
+    expect(html).not.toContain('<img src=x onerror=alert(1)>');
+    expect(html).not.toContain('<script>alert(1)</script>');
+    expect(html).not.toContain('<iframe src=evil>');
+  });
+
   it('sends the member to their AI tool history, not the member home', async () => {
     const res = await POST(request());
     expect(res.status).toBe(200);

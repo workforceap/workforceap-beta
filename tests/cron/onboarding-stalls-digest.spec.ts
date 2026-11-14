@@ -147,4 +147,20 @@ describe('digest email body', () => {
     expect(oldestPendingLine(1)).toContain('1 day<');
     expect(oldestPendingLine(3)).not.toContain('threshold');
   });
+
+  it('escapes member names, emails and ids in the named lists', () => {
+    const hostileId = '"><script>x</script>';
+    const html = onboardingStallsDigestHtml({
+      ...base,
+      interviewMembers: [{ id: hostileId, fullName: '<img src=x onerror=alert(1)>', email: 'safe@example.org' }],
+      wioaMembers: [{ id: 'wioa-1', fullName: '   ', email: '<b>hostile@example.org</b>' }],
+      noProgramMembers: [{ id: 'none-1', fullName: null, email: null }],
+    });
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(html).not.toContain('<img src=x onerror=alert(1)>');
+    expect(html).toContain(encodeURIComponent(hostileId));
+    expect(html).not.toContain(`href="https://example.org/admin/members/${hostileId}"`);
+    expect(html).toContain('&lt;b&gt;hostile@example.org&lt;/b&gt;');
+    expect(html).toContain('Unknown member');
+  });
 });
