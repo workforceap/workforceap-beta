@@ -360,10 +360,11 @@ export type SignedRenderOptions = RenderOptions & {
 /**
  * Render the FINAL page for frozen content: the approved layout with the
  * frozen signature image and no DRAFT markers. Refuses, before rendering, a
- * content that froze no signature, an image that is not the frozen one, a
- * held J6, and a J6 without the designated signer's receiving-signature
- * attestation (`receiptSignatureId`). Sign-time authorization is not decided
- * here; the sign route has already applied it.
+ * content that froze no signature, an image that is not the frozen one, and
+ * a J6 without the designated signer's receiving-signature attestation
+ * (`receiptSignatureId`). Differences between the voucher and the quote are
+ * recorded on the J6 and do not stop it. Sign-time authorization is not
+ * decided here; the sign route has already applied it.
  */
 export async function renderSignedFromContent(content: TwoStageContent, opts: SignedRenderOptions): Promise<Uint8Array> {
   const frozen = content.signature;
@@ -371,9 +372,6 @@ export async function renderSignedFromContent(content: TwoStageContent, opts: Si
     throw new RendererAdapterError('SIGNATURE_IMAGE_MISMATCH', 'The signature image is not the one this draft was prepared with. Save the draft again and review it.');
   }
   if (content.kind === 'j6_invoice_cover_letter') {
-    if (content.reviewReasons.length > 0) {
-      throw new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'A J6 on hold cannot be signed.', { holds: content.reviewReasons });
-    }
     if (!opts.receiptSignatureId?.trim()) {
       throw new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'A signed J6 needs the designated signer receiving-signature attestation.', { field: 'voucher' });
     }
