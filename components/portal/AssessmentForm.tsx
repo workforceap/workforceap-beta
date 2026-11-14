@@ -273,7 +273,7 @@ export default function AssessmentForm({
           <span className={styles.scoreUnit}>%</span>
         </p>
         <h2 ref={confirmHeadingRef} tabIndex={-1} className={styles.confirmTitle}>
-          Preassessment complete
+          WAPAT complete
         </h2>
         <p className={styles.confirmCopy}>{outcome.message}</p>
         {outcome.staffNotificationSent === true ? (
