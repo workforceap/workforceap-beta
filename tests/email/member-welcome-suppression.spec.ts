@@ -43,4 +43,24 @@ describe('welcome resend provider suppression', () => {
     expect(mocks.providerSend).toHaveBeenCalledOnce();
     expect(mocks.providerSend.mock.calls[0][0]).toMatchObject({ to: deliverable, html: expect.stringContaining('Complete the WorkforceAP Pre assessment') });
   });
+
+  it('fails closed when the email provider is unconfigured', async () => {
+    vi.stubEnv('RESEND_API_KEY', '');
+    expect(await sendMemberWelcomeLetterEmail({ to: deliverable, fullName: 'Member Name', memberId: 'member-1' })).toEqual({ ok: false });
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+    expect(mocks.providerSend).not.toHaveBeenCalled();
+  });
+
+  it('greets a blank name as there and escapes a hostile first token', async () => {
+    expect(await sendMemberWelcomeLetterEmail({ to: deliverable, fullName: '   ', memberId: 'member-1' })).toEqual({ ok: true });
+    expect(String(mocks.providerSend.mock.calls[0][0].html)).toContain('Hi there,');
+    mocks.providerSend.mockClear();
+    expect(await sendMemberWelcomeLetterEmail({
+      to: deliverable, fullName: '<script>alert(1)</script> José', memberId: 'member-1',
+    })).toEqual({ ok: true });
+    const html = String(mocks.providerSend.mock.calls[0][0].html);
+    expect(html).toContain('Hi &lt;script&gt;alert(1)&lt;/script&gt;,');
+    expect(html).not.toContain('<script>alert(1)</script>');
+    expect(html).not.toContain('José');
+  });
 });
