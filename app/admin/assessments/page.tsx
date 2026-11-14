@@ -17,6 +17,7 @@ import {
 // Server-only: holds the answer key. Used here to pre-compute per-question
 // correctness so AssessmentsTable (client) doesn't need to ship the key.
 import { ASSESSMENT_QUESTIONS, type QuestionChoice } from '@/lib/assessment/answer-key';
+import { scoreWapatFromStoredAnswers, wapatToRow, type WapatScoresRow } from '@/lib/assessment/wapat-scores';
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadataAsync({
@@ -92,7 +93,7 @@ async function renderKit(scope: import("@/lib/tenant/adminPageScope").AdminPageT
   const assessments: AssessmentRow[] = [
     {
       id: 'skills-readiness',
-      assessment: 'Skills & Readiness Assessment',
+      assessment: 'WAPAT (Skills & Readiness)',
       type: 'Knowledge',
       completions,
       avgScore,
@@ -182,6 +183,7 @@ async function renderLegacy({
   // Pre-compute per-question correctness on the server so the client
   // bundle never receives the answer key (AUDIT §C-B3 defense-in-depth).
   const correctnessByUserId: Record<string, Record<number, boolean>> = {};
+  const wapatByUserId: Record<string, WapatScoresRow> = {};
   for (const u of users) {
     const map: Record<number, boolean> = {};
     const raw = u.assessmentAnswers;
@@ -191,6 +193,8 @@ async function renderLegacy({
         const ans = recorded[q.id] ?? recorded[String(q.id)];
         map[q.id] = ans === (q.correct as QuestionChoice);
       }
+      const wapat = scoreWapatFromStoredAnswers(raw);
+      if (wapat) wapatByUserId[u.id] = wapatToRow(wapat);
     }
     correctnessByUserId[u.id] = map;
   }
@@ -204,6 +208,7 @@ async function renderLegacy({
             <AssessmentsTable
               users={users}
               correctnessByUserId={correctnessByUserId}
+              wapatByUserId={wapatByUserId}
               highlightUserId={highlightUserId}
               programFilter={programFilter}
               minScore={minScore}

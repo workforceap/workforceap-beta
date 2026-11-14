@@ -11,6 +11,7 @@ import DataTable from '@/components/portal/ui/DataTable';
 import PortalPagination from '@/components/portal/PortalPagination';
 import { csvCell } from '@/lib/csv/cells';
 import AllowAssessmentRetakeButton from './AllowAssessmentRetakeButton';
+import type { WapatScoresRow } from '@/lib/assessment/wapat-scores';
 
 type AssessmentUser = {
   id: string;
@@ -34,6 +35,8 @@ type AssessmentsTableProps = {
    * pass/fail boolean per question so the client doesn't need the answer key.
    */
   correctnessByUserId: Record<string, Record<number, boolean>>;
+  /** Server-computed WAPAT section scores (no answer key in the browser). */
+  wapatByUserId?: Record<string, WapatScoresRow>;
   highlightUserId?: string;
   programFilter?: string;
   minScore?: number;
@@ -46,6 +49,7 @@ type AssessmentsTableProps = {
 export default function AssessmentsTable({
   users,
   correctnessByUserId,
+  wapatByUserId,
   highlightUserId,
   programFilter,
   minScore,
@@ -97,15 +101,31 @@ export default function AssessmentsTable({
   };
 
   const exportCsv = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Program Interest', 'Score %', 'Date Completed'];
-    const rows = sorted.map((u) => [
-      u.fullName,
-      u.email,
-      u.phone ?? '',
-      u.programInterest ?? '',
-      u.assessmentScorePct ?? '',
-      u.assessmentCompletedAt?.toISOString() ?? '',
-    ]);
+    const headers = [
+      'Name',
+      'Email',
+      'Phone',
+      'Program Interest',
+      'WAPAT Total %',
+      'Vocabulary %',
+      'Reading %',
+      'Math %',
+      'Date Completed',
+    ];
+    const rows = sorted.map((u) => {
+      const w = wapatByUserId?.[u.id];
+      return [
+        u.fullName,
+        u.email,
+        u.phone ?? '',
+        u.programInterest ?? '',
+        w?.totalPct ?? u.assessmentScorePct ?? '',
+        w?.vocabularyPct ?? '',
+        w?.readingPct ?? '',
+        w?.mathPct ?? '',
+        u.assessmentCompletedAt?.toISOString() ?? '',
+      ];
+    });
     const csv = [headers.join(','), ...rows.map((r) => r.map(csvCell).join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
