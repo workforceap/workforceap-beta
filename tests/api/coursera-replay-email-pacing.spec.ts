@@ -32,6 +32,9 @@ import { GET as autoHeal } from '@/app/api/cron/coursera-auto-heal/route';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 import { captureApiError } from '@/lib/observability/captureApiError';
+import { loadB4BContentsChecked } from '@/lib/coursera/programContentsCache';
+import { seedCanonicalMappingsFromB4B } from '@/lib/coursera/seedCanonicalMappingsFromB4B';
+import { COURSERA_HEAL_IGNORED_CAP, COURSERA_HEAL_UNMATCHED_CAP } from '@/lib/cron/cronCaps';
 import type { ReplayPendingXapiResult } from '@/lib/coursera/replayPendingXapi';
 import schedules from '@/vercel.json';
 
@@ -154,5 +157,88 @@ describe('scheduled Coursera replay email pacing', () => {
       const cron = schedules.crons.find((entry) => entry.path === path);
       expect(cron?.schedule.split(/\s+/)[0]).not.toBe('0');
     }
+  });
+});
+
+describe('GET /api/cron/coursera-auto-heal leftover queue paths', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.createPacer.mockReturnValue(mocks.pacer);
+    mocks.withPacer.mockImplementation((_pacer, operation) => operation());
+    mocks.heal.mockResolvedValue({ processed: 1, matched: 1, errors: 0 });
+    mocks.ignored.mockResolvedValue({ processed: 2, matched: 2, errors: 0 });
+    vi.mocked(loadB4BContentsChecked).mockResolvedValue({ ok: true, value: [{ id: 'course-1' }] as never });
+    vi.mocked(seedCanonicalMappingsFromB4B).mockResolvedValue({
+      coursesMatched: 1,
+      coursesUnmatched: 0,
+      totalCreated: 1,
+      totalUpdated: 0,
+      totalConflicts: 0,
+    } as never);
+  });
+
+  it('skips heal, B4B seed and ignored replay when the queue is empty', async () => {
+    mocks.queue.mockResolvedValue({ unmatched: 0, ignoredWithSlug: 0 });
+
+    const res = await autoHeal(new Request('http://test/api/cron/coursera-auto-heal'));
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body).toMatchObject({
+      ok: true,
+      skipped: 'no_pending_heal',
+      processed: 0,
+      matched: 0,
+      errors: 0,
+      unmatchedQueued: 0,
+      ignoredQueued: 0,
+    });
+    expect(mocks.heal).not.toHaveBeenCalled();
+    expect(loadB4BContentsChecked).not.toHaveBeenCalled();
+    expect(seedCanonicalMappingsFromB4B).not.toHaveBeenCalled();
+    expect(mocks.ignored).not.toHaveBeenCalled();
+    expect(setCronRecordsProcessed).toHaveBeenCalledWith(0);
+    expect(logCronRun).toHaveBeenCalledWith('cron_coursera_auto_heal', expect.objectContaining({ skipped: 'no_pending_heal' }));
+  });
+
+  it('does not seed canonical mappings from an empty B4B failure, and still replays ignored events', async () => {
+    mocks.queue.mockResolvedValue({ unmatched: 0, ignoredWithSlug: 4 });
+    vi.mocked(loadB4BContentsChecked).mockResolvedValue({ ok: false, error: 'timeout' });
+
+    const res = await autoHeal(new Request('http://test/api/cron/coursera-auto-heal'));
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(seedCanonicalMappingsFromB4B).not.toHaveBeenCalled();
+    expect(mocks.ignored).toHaveBeenCalledExactlyOnceWith(COURSERA_HEAL_IGNORED_CAP);
+    expect(body).toMatchObject({
+      ok: true,
+      unmatchedQueued: 0,
+      ignoredQueued: 4,
+      canonicalSeed: { error: 'B4B contents unavailable: timeout' },
+      ignoredReplay: { processed: 2, matched: 2, errors: 0 },
+    });
+    expect(captureApiError).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ message: 'B4B contents unavailable: timeout' }),
+      { route: 'cron/coursera-auto-heal', extra: { step: 'canonical-seed' } },
+    );
+  });
+
+  it('caps unmatched heal and skips B4B when there are no ignored rows', async () => {
+    mocks.queue.mockResolvedValue({ unmatched: 9, ignoredWithSlug: 0 });
+
+    const body = await (await autoHeal(new Request('http://test/api/cron/coursera-auto-heal'))).json();
+
+    expect(mocks.heal).toHaveBeenCalledExactlyOnceWith(COURSERA_HEAL_UNMATCHED_CAP);
+    expect(loadB4BContentsChecked).not.toHaveBeenCalled();
+    expect(mocks.ignored).not.toHaveBeenCalled();
+    expect(body).toMatchObject({
+      processed: 1,
+      matched: 1,
+      unmatchedQueued: 9,
+      ignoredQueued: 0,
+      canonicalSeed: { skipped: 'no_ignored_events' },
+      ignoredReplay: { skipped: 'no_ignored_events' },
+    });
   });
 });

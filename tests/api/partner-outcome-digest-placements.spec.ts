@@ -37,10 +37,17 @@ vi.mock('@/lib/admin/logCronRun', () => ({ logCronRun: vi.fn() }));
 vi.mock('@/lib/observability/captureApiError', () => ({ captureApiError: vi.fn(), captureApiResponseError: vi.fn() }));
 
 import { GET as partnerDigest } from '@/app/api/cron/partner-outcome-digest/route';
+import { captureApiError } from '@/lib/observability/captureApiError';
+import { logCronRun } from '@/lib/admin/logCronRun';
+import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
 
 const thisWeek = () => new Date(Date.now() - 2 * 86400000);
 
-function referral(fullName: string, placementRecord: Record<string, unknown> | null) {
+function referral(
+  fullName: string,
+  placementRecord: Record<string, unknown> | null,
+  profile: { isMinor?: boolean; dob?: Date | null; ferpaConsentGiven?: boolean } = {},
+) {
   return {
     partnerId: 'partner-1',
     member: {
@@ -53,7 +60,11 @@ function referral(fullName: string, placementRecord: Record<string, unknown> | n
       assessmentCompleted: true,
       deletedAt: null,
       placementRecord,
-      profile: { isMinor: false, dob: null, ferpaConsentGiven: false },
+      profile: {
+        isMinor: profile.isMinor ?? false,
+        dob: profile.dob ?? null,
+        ferpaConsentGiven: profile.ferpaConsentGiven ?? false,
+      },
       userCertifications: [],
       applications: [],
       memberProgramProgress: [],
@@ -119,5 +130,85 @@ describe('partner outcome digest placements', () => {
     const email = await runDigest('community', [referral('Sam', { ...verified(), placedAt: new Date('2026-01-05') })]);
     expect(email.successLines).toEqual([]);
     expect(email.stageLines).toEqual(['1 in Placed']);
+  });
+});
+
+describe('partner outcome digest contact, minors and send failures', () => {
+  it('does not load referrals or send when no partner has a contact email', async () => {
+    mocks.partnerFindMany.mockResolvedValue([
+      { id: 'partner-1', name: 'Blank', contactEmail: '   ', partnerType: 'community' },
+      { id: 'partner-2', name: 'Missing', contactEmail: null, partnerType: 'community' },
+    ]);
+
+    const res = await partnerDigest(new Request('http://test/api/cron/partner-outcome-digest'));
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body).toMatchObject({ ok: true, results: [] });
+    expect(mocks.referralFindMany).not.toHaveBeenCalled();
+    expect(mocks.digestEmail).not.toHaveBeenCalled();
+    expect(setCronRecordsProcessed).toHaveBeenCalledWith(0);
+    expect(logCronRun).toHaveBeenCalledWith(
+      'cron_partner_digest',
+      expect.objectContaining({ skippedReason: 'no_contactable_partners', sent: 0 }),
+    );
+  });
+
+  it('hides a minor from a community partner and skips the email when that is the only referral', async () => {
+    mocks.partnerFindMany.mockResolvedValue([
+      { id: 'partner-1', name: 'Community', contactEmail: 'partner@workforceap.org', partnerType: 'community' },
+    ]);
+    mocks.referralFindMany.mockResolvedValue([referral('Sam', null, { isMinor: true })]);
+
+    const body = await (await partnerDigest(new Request('http://test/api/cron/partner-outcome-digest'))).json();
+
+    expect(mocks.digestEmail).not.toHaveBeenCalled();
+    expect(body).toMatchObject({
+      ok: true,
+      results: [{ partnerId: 'partner-1', emailSent: false, error: 'no_referrals' }],
+    });
+  });
+
+  it('still emails a high-school partner about a referred minor', async () => {
+    await runDigest('high_school', [referral('Sam', null, { isMinor: true })]);
+    expect(mocks.digestEmail).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        partnerName: 'Partner',
+        stageLines: ['1 in Enrolled'],
+      }),
+    );
+  });
+
+  it('includes a minor when a community partner has FERPA consent', async () => {
+    await runDigest('community', [referral('Sam', null, { isMinor: true, ferpaConsentGiven: true })]);
+    expect(mocks.digestEmail).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ stageLines: ['1 in Enrolled'] }),
+    );
+  });
+
+  it('captures a thrown send, keeps other accounting, and logs the run as error', async () => {
+    mocks.partnerFindMany.mockResolvedValue([
+      { id: 'partner-1', name: 'Partner', contactEmail: 'partner@workforceap.org', partnerType: 'community' },
+    ]);
+    mocks.referralFindMany.mockResolvedValue([referral('Pat', null)]);
+    mocks.digestEmail.mockRejectedValue(new Error('SMTP down'));
+
+    const res = await partnerDigest(new Request('http://test/api/cron/partner-outcome-digest'));
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body).toMatchObject({
+      ok: false,
+      results: [{ partnerId: 'partner-1', emailSent: false, error: 'SMTP down' }],
+    });
+    expect(captureApiError).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ message: 'SMTP down' }),
+      expect.objectContaining({ route: 'cron/partner-outcome-digest', extra: { partnerId: 'partner-1' } }),
+    );
+    expect(logCronRun).toHaveBeenCalledWith(
+      'cron_partner_digest',
+      expect.objectContaining({ ok: false, sent: 0, failed: 1 }),
+      'error',
+    );
   });
 });
