@@ -248,11 +248,11 @@ export function receiptSignatureState(snapshot: Pick<CaseSnapshot, 'attestations
   return { status, valid };
 }
 
-/** The prior quote a J6 follows: the case's sent system J5 wins over an attested external quote. */
+/** The prior quote a J6 follows: the case's signed or sent system J5 wins over an attested external quote. A signed J5 counts because the quote is delivered by hand. */
 export function priorQuote(snapshot: Pick<CaseSnapshot, 'records' | 'attestations'>): J6Prerequisites['priorJ5'] {
-  const sent = stageRecords(snapshot, 'j5').find((r) => r.status === 'sent');
-  if (sent) {
-    const j5: SystemJ5 = { recordId: sent.id, status: sent.status as StageStatus, content: recordContent<J5Content>(sent), contentSha256: sent.contentSha256 };
+  const issued = stageRecords(snapshot, 'j5').find((r) => r.status === 'signed' || r.status === 'sent');
+  if (issued) {
+    const j5: SystemJ5 = { recordId: issued.id, status: issued.status as StageStatus, content: recordContent<J5Content>(issued), contentSha256: issued.contentSha256 };
     return { source: 'system', j5 };
   }
   const external = latestAttestation(snapshot, 'external_j5_reference');

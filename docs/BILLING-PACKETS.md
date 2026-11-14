@@ -231,7 +231,7 @@ The database enforces these rules itself, not just the app:
   - the voucher and its attestation
   - a prior quote: our sent J5, or an attested external quote. No system J5 is ever fabricated.
 - **Hours.** `contact_hours` must equal `billing_contract_hours(case program)`: 200 for `software-developer-professional-certificate-ibm` and 160 for every other program. The PG16 proof checks this matches `hours.ts` for every approved syllabus.
-- **Derived holds.** `billing_stage_record_rules()` computes the J6 review reasons and refuses any other value. Every reason is a hard hold with no bypass: no review note clears it, and there is no amount-exception path. A reason clears only when corrected structured evidence makes it disappear:
+- **Derived holds.** `billing_stage_record_rules()` computes the J6 review reasons and refuses any other value. Every reason is a recorded note for the signer and never blocks signing: the designated signer reviews it and signs anyway. There is no review-clearance step and no amount-exception path. A reason disappears only when corrected structured evidence removes it:
   - `voucher_amount_differs`: the voucher amount is not 750000 cents.
   - `voucher_class_differs`: the voucher authorizes another program or class.
   - `voucher_period_conflict`: the class dates fall outside the voucher period.
@@ -1295,8 +1295,10 @@ again carries the current image.
 #### 6.1 J6 holds
 
 `voucher_amount_differs`, `voucher_class_differs`, `voucher_period_conflict`,
-`end_date_not_contract`, `class_differs_from_quote` are hard holds
-(`HOLD_<REASON>` codes, message `REVIEW_REASON_TEXT`); no route clears one.
+`end_date_not_contract`, `class_differs_from_quote` are recorded notes
+(`HOLD_<REASON>` codes, message `REVIEW_REASON_TEXT`); they never block signing, and the
+table check `billing_stage_records_review_check` (since 20261112044500) no longer requires a clearance.
+The release steps for that migration are `docs/runbooks/j6-review-check-release.md`.
 
 #### 6.2 Prerequisite blockers
 
