@@ -211,3 +211,75 @@ export async function archiveFinancePdf(
   }
   return { ref, reused: Boolean(uploadError) };
 }
+
+export type FinanceArchiveDirectPrepare = Readonly<{
+  ref: FinanceArchiveRef;
+  path: string;
+  token: string;
+  maxBytes: number;
+}>;
+
+/** Signed URL for a client upload that must hash to `sha256`. */
+export async function prepareFinanceArchiveDirectUpload(
+  input: { caseId: string; kind: FinanceArchiveKind; sha256: string; byteLength: number },
+  options: Options = {},
+): Promise<FinanceArchiveDirectPrepare> {
+  assertCaseId(input.caseId);
+  assertKind(input.kind);
+  if (!SHA256_HEX.test(input.sha256)) throw new FinanceArchiveError('INVALID_INPUT');
+  if (!Number.isInteger(input.byteLength) || input.byteLength < 1 || input.byteLength > FINANCE_ARCHIVE_MAX_BYTES) {
+    throw new FinanceArchiveError('INVALID_INPUT');
+  }
+  const bucket = configuredBucket(options.env ?? process.env);
+  const ref: FinanceArchiveRef = Object.freeze({
+    caseId: input.caseId,
+    kind: input.kind,
+    bucket,
+    key: objectKey(input.caseId, input.kind, input.sha256),
+    sha256: input.sha256,
+    byteLength: input.byteLength,
+    mimeType: FINANCE_ARCHIVE_MIME,
+  });
+  assertReference(ref, bucket);
+  const admin = options.admin ?? getSupabaseAdmin();
+  await requirePrivateBucket(admin, bucket);
+  let signed: Awaited<ReturnType<ReturnType<typeof admin.storage.from>['createSignedUploadUrl']>>;
+  try {
+    signed = await admin.storage.from(bucket).createSignedUploadUrl(ref.key);
+  } catch {
+    throw new FinanceArchiveError('STORAGE_UNAVAILABLE');
+  }
+  if (signed.error || !signed.data?.token) throw new FinanceArchiveError('STORAGE_UNAVAILABLE');
+  return Object.freeze({
+    ref,
+    path: signed.data.path ?? ref.key,
+    token: signed.data.token,
+    maxBytes: FINANCE_ARCHIVE_MAX_BYTES,
+  });
+}
+
+/** Trust only verified storage bytes after a client-side upload. */
+export async function adoptFinanceArchiveDirectUpload(
+  ref: FinanceArchiveRef,
+  options: Options = {},
+): Promise<{ ref: FinanceArchiveRef; reused: boolean }> {
+  const bucket = configuredBucket(options.env ?? process.env);
+  assertReference(ref, bucket);
+  const admin = options.admin ?? getSupabaseAdmin();
+  await requirePrivateBucket(admin, bucket);
+  const api = admin.storage.from(bucket);
+  let info: Awaited<ReturnType<typeof api.info>>;
+  try {
+    info = await api.info(ref.key);
+  } catch {
+    throw new FinanceArchiveError('STORAGE_UNAVAILABLE');
+  }
+  if (info.error || !info.data) throw new FinanceArchiveError('INVALID_INPUT');
+  try {
+    await readFinanceArchivePdf(ref, options);
+  } catch (error) {
+    if (error instanceof FinanceArchiveError && error.code === 'INTEGRITY_MISMATCH') throw error;
+    throw new FinanceArchiveError('INVALID_INPUT');
+  }
+  return { ref, reused: false };
+}

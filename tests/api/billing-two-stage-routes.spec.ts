@@ -39,6 +39,8 @@ const mocks = vi.hoisted(() => ({
   auditLog: vi.fn(async () => undefined),
   archive: vi.fn(),
   readArchive: vi.fn(),
+  prepareDirect: vi.fn(),
+  adoptDirect: vi.fn(),
   txCreate: vi.fn(),
   transaction: vi.fn(),
   receiptCreate: vi.fn(),
@@ -76,6 +78,8 @@ vi.mock('@/lib/billing/twoStage/storageArchive', () => ({
   FINANCE_ARCHIVE_KEY_SEGMENTS: { j5_signed_pdf: 'j5', j6_signed_pdf: 'j6', board_signed_voucher: 'voucher', board_invoice: 'board-invoice', external_j5_copy: 'external-j5' },
   archiveFinancePdf: mocks.archive,
   readFinanceArchivePdf: mocks.readArchive,
+  prepareFinanceArchiveDirectUpload: mocks.prepareDirect,
+  adoptFinanceArchiveDirectUpload: mocks.adoptDirect,
 }));
 vi.mock('@/lib/billing/twoStage/signatureStorage', () => ({
   storeSignaturePng: mocks.storeSignature,
@@ -221,6 +225,8 @@ beforeEach(() => {
   mocks.isSuperAdmin.mockResolvedValue(false);
   mocks.archive.mockReset();
   mocks.readArchive.mockReset();
+  mocks.prepareDirect.mockReset();
+  mocks.adoptDirect.mockReset();
   mocks.txCreate.mockReset();
   mocks.transaction.mockReset();
   mocks.receiptCreate.mockReset();
@@ -598,6 +604,63 @@ describe('two-stage routes: uploads', () => {
     const res = await uploadVoucher(req, caseParams());
     expect(res.status).toBe(413);
     expect(chunks).toBeLessThanOrEqual(6);
+  });
+
+  describe('direct-to-storage vouchers above the multipart cap', () => {
+    const big = 6 * 1024 * 1024;
+    const sha = 'a'.repeat(64);
+    const dreq = (body: unknown) => jsonReq(`${base}/${h.CASE}/voucher`, body);
+    const ref = { caseId: h.CASE, kind: 'board_signed_voucher', bucket: 'billing-finance', key: `cases/${h.CASE}/voucher/${sha}.pdf`, sha256: sha, byteLength: big, mimeType: 'application/pdf' };
+
+    it('prepare returns a signed upload for a 6 MB file and refuses files over 10 MB or under the multipart cap', async () => {
+      mocks.prepareDirect.mockResolvedValueOnce({ ref, path: ref.key, token: 'tok', maxBytes: 10 * 1024 * 1024 });
+      const ok = await uploadVoucher(dreq({ action: 'prepare', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
+      expect(ok.status).toBe(200);
+      expect(await ok.json()).toMatchObject({ bucket: 'billing-finance', token: 'tok', byteLength: big });
+      const tooBig = await uploadVoucher(dreq({ action: 'prepare', sha256: sha, byteLength: 10 * 1024 * 1024 + 1, fileName: 'v.pdf' }), caseParams());
+      expect([tooBig.status, await code(tooBig)]).toEqual([413, 'UPLOAD_TOO_LARGE']);
+      const small = await uploadVoucher(dreq({ action: 'prepare', sha256: sha, byteLength: 1000, fileName: 'v.pdf' }), caseParams());
+      expect(small.status).toBe(422);
+      const badHash = await uploadVoucher(dreq({ action: 'prepare', sha256: 'zz', byteLength: big, fileName: 'v.pdf' }), caseParams());
+      expect(badHash.status).toBe(422);
+      expect(mocks.prepareDirect).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects unknown JSON actions and a storage integrity failure on complete', async () => {
+      const unknown = await uploadVoucher(dreq({ action: 'nope' }), caseParams());
+      expect([unknown.status, await code(unknown)]).toEqual([422, 'VALIDATION_FAILED']);
+      mocks.adoptDirect.mockRejectedValueOnce(storageError('INTEGRITY_MISMATCH'));
+      const res = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
+      expect([res.status, await code(res)]).toEqual([502, 'ARCHIVE_INTEGRITY_MISMATCH']);
+    });
+
+    it('complete records the adopted artifact and refuses a file that still fits multipart', async () => {
+      mocks.artifactCreate.mockImplementation((data: Record<string, unknown>) => {
+        h.state.artifacts.push({ ...data, id: 'art-signed', createdAt: new Date('2026-09-29T18:00:00Z') });
+      });
+      mocks.adoptDirect.mockResolvedValueOnce({ ref, reused: false });
+      const ok = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
+      expect(ok.status).toBe(201);
+      expect(await ok.json()).toMatchObject({ reused: false, artifact: { id: 'art-signed' } });
+      expect(mocks.adoptDirect).toHaveBeenCalledWith(expect.objectContaining({ sha256: sha, byteLength: big, key: ref.key }));
+
+      const small = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: 1000, fileName: 'v.pdf' }), caseParams());
+      expect([small.status, await code(small)]).toEqual([422, 'VALIDATION_FAILED']);
+      expect(mocks.adoptDirect).toHaveBeenCalledTimes(1);
+    });
+
+    it('after Storage may have written, a missing object or unavailable archive does not claim a clean refusal', async () => {
+      mocks.adoptDirect.mockRejectedValueOnce(storageError('INVALID_INPUT'));
+      const notPdf = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
+      expect([notPdf.status, await code(notPdf)]).toEqual([415, 'VOUCHER_PDF_ONLY']);
+
+      mocks.adoptDirect.mockRejectedValueOnce(storageError('STORAGE_UNAVAILABLE'));
+      const down = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
+      expect(down.status).toBe(503);
+      const body = (await down.json()) as { code: string; error: string };
+      expect(body.code).toBe('FINANCE_ARCHIVE_UNAVAILABLE');
+      expect(body.error).toMatch(/may or may not have been stored/u);
+    });
   });
 
   function form(file: Blob, name: string) {
@@ -1512,7 +1575,7 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     };
   }
 
-  function seedSignableJ6(started: Attestation) {
+  function seedSignableJ6(started: Attestation, authorizedAmountCents = 750_000) {
     const quote = buildJ5Content({
       documentNumber: 'WAP-Q-2026-0001', logoSha256: logoSha, issueDate: '2026-09-20',
       student: { name: 'Jordan Example', email: 'jordan@example.test' },
@@ -1533,7 +1596,7 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     const voucherAttestation: Attestation = {
       id: 'att-voucher', kind: 'voucher_board_signed', statement: 'synthetic voucher', evidenceReference: 'synthetic voucher',
       classStartDate: null, classEndDate: null, artifactId: 'art-voucher', voucherReference: 'PO-44871-A',
-      authorizedAmountCents: 750_000, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30',
+      authorizedAmountCents, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30',
       receivedOn: '2026-09-29', receivingSignaturePresent: true, externalReference: null, externalQuoteDate: null,
       quotedProgramSlug: null, quotedClassName: null, authorizedProgramSlug: SLUG, authorizedClassName: CLASS_NAME,
       studentReadyConfirmed: null, counselorRequestedBy: null, counselorRequestedOn: null, counselorRequestReference: null,
@@ -1647,6 +1710,16 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     expect(mocks.recordUpdate).not.toHaveBeenCalled();
     expect(JSON.stringify(h.state.records.find((r) => r.id === REC))).toBe(before);
   });
+
+  it('records a voucher amount difference and still lets the designated signer freeze the J6', async () => {
+    const started = classStarted('att-start', '2026-09-30', '2027-03-30', '2026-10-01T15:00:00.000Z');
+    const { hash } = seedSignableJ6(started, 700_000);
+    const summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(summary.j6.holds).toEqual(['voucher_amount_differs']);
+    expect(summary.j6.canSign).toBe(true);
+    const checkpoint = await freeze(jsonReq(`${base}/${h.CASE}/j6/freeze`, { recordId: REC, versionHash: hash }), caseParams({ stage: 'j6' }));
+    expect(checkpoint.status).toBe(200);
+  });
 });
 
 describe('two-stage routes: renderer refusals keep their own codes', () => {
@@ -1663,7 +1736,7 @@ describe('two-stage routes: renderer refusals keep their own codes', () => {
   it('a held J6 refused by the signed renderer is J6_HELD with its holds, not TEXT_NOT_PRINTABLE', () => {
     const e = mapped(new RendererAdapterError('CONTENT_NOT_RENDERABLE', 'A J6 on hold cannot be signed.', { holds: ['voucher_amount_differs'] }));
     expect(e.status).toBe(409);
-    expect(e.body).toMatchObject({ code: 'J6_HELD', holds: ['voucher_amount_differs'], blockers: [{ code: 'HOLD_VOUCHER_AMOUNT_DIFFERS', hardHold: true }] });
+    expect(e.body).toMatchObject({ code: 'J6_HELD', holds: ['voucher_amount_differs'], blockers: [{ code: 'HOLD_VOUCHER_AMOUNT_DIFFERS', hardHold: false }] });
   });
 
   it('a J6 without the receiving-signature attestation is RECEIVING_SIGNATURE_NOT_ATTESTED', () => {
