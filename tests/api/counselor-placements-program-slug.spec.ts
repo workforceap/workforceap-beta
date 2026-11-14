@@ -102,6 +102,11 @@ describe('counselor placement program attribution', () => {
       expected: PRIMARY,
     },
     {
+      name: 'non-primary enrollment over leftover enrolledProgram',
+      member: { enrolledProgram: 'legacy-track', courseEnrollments: [enrollment(PRIMARY, false)] },
+      expected: PRIMARY,
+    },
+    {
       name: 'unknown catalog key kept as a canonicalized server value',
       member: { enrolledProgram: ' Org-Specific-Track ', courseEnrollments: [] },
       expected: 'org-specific-track',
