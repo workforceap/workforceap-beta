@@ -12,6 +12,7 @@ import { withTenantScope, crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { trackEvent } from '@/lib/events/track';
 import { findSupabaseAuthUserByEmail } from '@/lib/auth/supabaseAdminUsers';
 import { stampCreatedAuthUserProvisionIntent } from '@/lib/auth/provisionIntent';
+import { EXACT_EMAIL_CANDIDATE_LIMIT, normalizeEmail } from '@/lib/db/exactEmailMatch';
 import { auditLog } from '@/lib/audit';
 import { logAuditEvent } from '@/lib/audit/log';
 
@@ -91,7 +92,7 @@ const walkInSchema = z.object({
     }
   
     const { firstName, lastName, email: emailRaw, phone, targetRole } = parsed.data;
-    const email = emailRaw.toLowerCase().trim();
+    const email = normalizeEmail(emailRaw);
     const fullName = `${firstName} ${lastName}`.trim() || firstName;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
   
@@ -107,29 +108,42 @@ const walkInSchema = z.object({
     // the intentional bypass. The follow-up `update` below is also
     // unscoped because the soft-deleted row could legitimately live in
     // any tenant; we just want to free the email slot regardless.
-    const existingPrisma = await crossTenantOK(() =>
-      prisma.user.findUnique({
-        where: { email },
-        select: { id: true, deletedAt: true },
+    //
+    // The unique index is case-sensitive. Apply signup already matches with
+    // ILIKE + exact equality because mixed-case rows exist (legacy writes,
+    // `ensureAppUserProvisioned`). A case-sensitive miss here would treat an
+    // active member as an auth orphan and delete their login.
+    // `mode: 'insensitive'` compiles to ILIKE, so `_`/`%` in the counselor's
+    // address are wildcards — keep only genuine case-insensitive equality.
+    const existingCandidates = await crossTenantOK(() =>
+      prisma.user.findMany({
+        where: { email: { equals: email, mode: 'insensitive' } },
+        select: { id: true, email: true, deletedAt: true },
+        take: EXACT_EMAIL_CANDIDATE_LIMIT,
       }),
     );
-    if (existingPrisma?.deletedAt) {
-      const freedEmail = `deleted_${existingPrisma.id}_${Date.now()}_${email}@deleted.invalid`.slice(0, 255);
-      await crossTenantOK(() =>
-        prisma.user.update({
-          where: { id: existingPrisma.id },
-          data: { email: freedEmail },
-        }),
-      );
-    } else if (existingPrisma) {
+    const existingMatches = existingCandidates.filter(
+      (candidate) => candidate.email != null && normalizeEmail(candidate.email) === email,
+    );
+    const existingActive = existingMatches.find((candidate) => candidate.deletedAt == null) ?? null;
+    if (existingActive) {
       // Active Prisma row — existing member. Return their ID so the client can
       // offer a one-click "start session with them" path.
       return NextResponse.json(
         {
           error: 'A member with this email already exists.',
-          existingMemberId: existingPrisma.id,
+          existingMemberId: existingActive.id,
         },
         { status: 409 }
+      );
+    }
+    for (const existingDeleted of existingMatches) {
+      const freedEmail = `deleted_${existingDeleted.id}_${Date.now()}_${email}@deleted.invalid`.slice(0, 255);
+      await crossTenantOK(() =>
+        prisma.user.update({
+          where: { id: existingDeleted.id },
+          data: { email: freedEmail },
+        }),
       );
     }
   
@@ -143,12 +157,9 @@ const walkInSchema = z.object({
     // Second self-heal: orphan Supabase auth user from a prior failed delete.
     // If the Prisma row was already soft-deleted (or never existed) and only
     // a stale auth row remains, deleting and re-inviting clears the ghost.
-    // We only attempt this when there's no active Prisma user with that email
-    // (checked above) — so removing the auth row is safe.
-    if (
-      (inviteError?.message?.includes('already') || inviteError?.code === 'user_already_exists') &&
-      !existingPrisma // no active Prisma user — auth row is an orphan
-    ) {
+    // Active mixed-case matches already 409'd above, so removing the auth
+    // row cannot take an existing member's login.
+    if (inviteError?.message?.includes('already') || inviteError?.code === 'user_already_exists') {
       try {
         const orphan = await findSupabaseAuthUserByEmail(supabase, email);
         if (orphan) {
@@ -224,7 +235,7 @@ const walkInSchema = z.object({
           data: {
             id: authUser.id,
             organizationId,
-            email: authUser.email!,
+            email,
             fullName,
             phone: phone || null,
           },
