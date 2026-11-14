@@ -57,6 +57,23 @@ const base = {
   },
 };
 
+describe('MemberHomeKit next-badge rail', () => {
+  it('shows the next milestone name and its remaining count without adding "to go"', () => {
+    renderKit(
+      <MemberHomeKit
+        {...base}
+        nextBadgeName="Job hunter"
+        nextBadgePercent={67}
+        nextBadgeRemaining="1 of 3"
+      />,
+    );
+    const rail = screen.getByRole('region', { name: 'Next badge' });
+    expect(within(rail).getByText('Job hunter')).toBeTruthy();
+    expect(within(rail).getByText('1 of 3')).toBeTruthy();
+    expect(within(rail).queryByText(/to go/)).toBeNull();
+  });
+});
+
 describe('MemberHomeKit certification-path card', () => {
   it('links the next module title when the loader supplies a module href', () => {
     renderKit(

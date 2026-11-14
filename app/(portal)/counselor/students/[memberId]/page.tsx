@@ -58,8 +58,10 @@ import {
 } from '@/lib/employer/aiMatchPipelineLabels';
 import { matchScoreAsPercent } from '@/lib/employer/matchScoreDisplay';
 import PointsWidget from '@/components/portal/PointsWidget';
+import MilestoneBadges from '@/components/portal/MilestoneBadges';
 import AwardPointsButton from '@/components/portal/AwardPointsButton';
 import { getMemberPoints } from '@/lib/member/points';
+import { getMemberBadges } from '@/lib/member/badges';
 import SkillsetProgressList from '@/components/portal/SkillsetProgressList';
 import { loadMemberSkillsetProgress } from '@/lib/coursera/memberSkillsetProgress';
 import MemberProgressTimeline from '@/components/portal/counselor/MemberProgressTimeline';
@@ -297,7 +299,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
     console.error('[counselor/students] 360 panel load failed', error);
     return fallback;
   };
-  const [applications, aiMatches, memberPts, recentTx, pitchDeployments, latestAtRiskAlert, pendingNextBestActions] = await Promise.all([
+  const [applications, aiMatches, memberPts, memberBadges, recentTx, pitchDeployments, latestAtRiskAlert, pendingNextBestActions] = await Promise.all([
     prisma.jobPostingApplication.findMany({
       take: MEMBER_HISTORY_CAP,
       where: { studentId: memberId },
@@ -315,6 +317,7 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
       },
     }),
     getMemberPoints(memberId).catch(markCounselor360LoadFailure(null)),
+    getMemberBadges(memberId).catch(markCounselor360LoadFailure(null)),
     prisma.pointsTransaction.findMany({
       where: { userId: memberId },
       orderBy: { createdAt: 'desc' },
@@ -683,6 +686,16 @@ export default async function CounselorStudentDetailPage({ params, searchParams 
               <section className={styles.narrower} aria-labelledby="counselor-member-points-title">
                 <h2 id="counselor-member-points-title" className={styles.sectionTitle}>Member Points</h2>
                 <PointsWidget total={memberPts.total} level={memberPts.level} recent={recentTx} />
+                {memberBadges ? (
+                  <div className="wa-mt-3">
+                    <MilestoneBadges
+                      variant="compact"
+                      badges={memberBadges.badges}
+                      currentStreak={memberBadges.currentStreak}
+                      longestStreak={memberBadges.longestStreak}
+                    />
+                  </div>
+                ) : null}
                 <div className="wa-mt-3">
                   <AwardPointsButton
                     memberId={member.id}
