@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Packet Quest 3D (WAP Practice prototype)</title>
+<link rel="icon" href="data:,">
+<style>
+:root{color-scheme:dark;--ink:#f8fafc;--bg:#0b1020;--panel:#111a33;--line:#5b6b94;--red:#ff8a8a;--green:#5eeaa5;--amber:#fbbf24;--cyan:#5fe3ff;font-family:system-ui,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);max-width:100%}
+body{padding:6px 10px 20px;overflow-x:hidden;line-height:1.32;font-size:15px}
+button{min-height:44px;min-width:44px;border:2px solid var(--ink);border-radius:8px;background:#1e2a4d;color:inherit;font:600 14px/1.15 system-ui,sans-serif;padding:5px 9px;cursor:pointer;max-width:100%}
+button:hover:not(:disabled){background:#2a3a6c}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,[tabindex]:focus-visible{outline:4px solid var(--amber);outline-offset:3px}
+button[aria-pressed=true],button[aria-pressed=true]:hover:not(:disabled){background:var(--amber);color:#090d16;font-weight:800;border-color:#fff}
+header,main{max-width:1220px;margin:0 auto}
+.top{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;margin-bottom:4px}
+h1{font-size:18px;margin:0}
+.hud{display:flex;flex-wrap:wrap;gap:4px 12px;font-weight:700;font-size:14px}
+.controls{display:flex;flex-wrap:wrap;gap:6px}
+.banner{border:2px solid var(--amber);background:#2a1f05;padding:5px 10px;margin:4px 0;font-size:13px;border-radius:6px}
+.mission{border:2px solid var(--cyan);background:#082a36;padding:6px 10px;margin:4px 0;border-radius:8px;font-size:14px}
+.mission p{margin:1px 0}
+#goals{margin:3px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:2px 14px}
+#goals li{padding:1px 0}
+.layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:8px;align-items:start}
+.stagebox{position:relative;border:3px solid var(--line);border-radius:8px;overflow:hidden;background:#1e2536}
+canvas{display:block;width:100%;aspect-ratio:16/10;min-height:220px}
+.stagebox .tag{display:block;background:#0d152b;border-top:1px solid var(--line);padding:3px 8px;font-size:12px;font-weight:600}
+.side{display:flex;flex-direction:column;gap:6px;min-width:0}
+.card{border:2px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 9px;min-width:0}
+.card h2{font-size:14px;margin:0 0 4px}
+.devs{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.dev{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border-color:var(--green);padding:4px 8px}
+.dev .st{font-size:12px;font-weight:600}
+.dev[data-state=fault]{border:3px dashed var(--red);background:#3b0d0d}
+.dev.onroute{box-shadow:0 0 0 3px var(--cyan)}
+.row{display:flex;flex-wrap:wrap;gap:5px}
+#route{min-height:1.3em;font-weight:700;margin:4px 0 0;font-size:13px}
+#learned{font-weight:700;color:var(--green);margin:2px 0;font-size:13px}
+#log{margin:0;padding:0 0 2px 20px;font-size:13px;overflow-wrap:anywhere}
+#log li{padding:1px 0}
+#log li:last-child{font-weight:700}
+.quality{display:inline-flex;gap:3px;align-items:center;border:2px solid var(--line);border-radius:8px;padding:1px 4px}
+.quality span{font-size:12px;font-weight:700;padding:0 3px}
+.quality button{min-width:44px;padding:3px 7px}
+.legend{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;margin:0;font-size:12.5px;align-items:center}
+.legend i{display:inline-flex;align-items:center;justify-content:center;width:44px;height:16px;border-radius:5px;border:1px solid #fff;color:#08101f;font:900 10px/1 system-ui,sans-serif;letter-spacing:1px;font-style:normal}
+.scene-key{margin:4px 0 0;font-size:12px;color:#dbeafe;border-top:1px solid #2e3b5e;padding-top:3px}
+#qnote{font-size:11.5px;color:#b9c6ee;margin:2px 0 0}
+.hidden,[hidden]{display:none!important}
+.screen{position:fixed;inset:0;background:#020617ee;display:grid;place-items:center;padding:12px;text-align:center;z-index:10;overflow:auto}
+.dialog{width:min(620px,100%);background:var(--panel);border:3px solid var(--ink);border-radius:12px;padding:16px}
+.dialog .list{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.stars{font-size:30px;letter-spacing:4px;color:var(--amber)}
+body.textmode canvas,body.textmode .stagebox{display:none}
+body.textmode .layout{grid-template-columns:minmax(0,1fr)}
+@media(max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:480px){.devs{grid-template-columns:1fr 1fr}canvas{min-height:200px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+ <h1>PACKET QUEST 3D <small id="stageName"></small></h1>
+ <div class="hud" role="group" aria-label="Game status"><span id="lives"></span><span id="xp"></span><span id="stars"></span></div>
+ <div class="controls" role="group" aria-label="Game controls">
+  <button id="pause" aria-pressed="false">Pause (P)</button>
+  <button id="mute" aria-pressed="false">Sound: off (M)</button>
+  <span class="quality" role="group" aria-label="Graphics quality"><span>Quality</span><button data-q="low" aria-pressed="false">Low</button><button data-q="medium" aria-pressed="true">Medium</button><button data-q="high" aria-pressed="false">High</button></span>
+  <button id="textMode" aria-pressed="false">Text mode (T)</button>
+  <button id="retry">Retry stage</button>
+  <button id="menu">Stages</button>
+ </div>
+</header>
+<main>
+ <p class="banner" role="note"><strong>Prototype, not course credit.</strong> Original practice lesson, not reviewed, fictional data only, nothing is sent anywhere.</p>
+ <div id="glNotice" class="banner" role="alert" hidden></div>
+ <section class="mission" aria-label="Mission">
+  <p id="brief"></p><p id="target"></p>
+  <ul id="goals" aria-label="Objective checklist"></ul>
+ </section>
+ <div class="layout">
+  <div class="stagebox" id="stagebox">
+   <canvas id="gl" role="img" aria-label="3D server room. Use the control panel or keyboard to play; every action is also available as a button."></canvas>
+   <span class="tag" id="tool">Active tool: ROUTE (W switches to Repair)</span>
+  </div>
+  <div class="side">
+   <section class="card" aria-label="Devices">
+    <h2>Devices (arrow keys move, Enter selects)</h2>
+    <div class="devs" id="devs"></div>
+   </section>
+   <section class="card" aria-label="Actions">
+    <h2>Actions</h2>
+    <div class="row">
+     <button id="repair" aria-pressed="false">Switch to Repair tool (W)</button>
+     <button id="launch">Launch packet (L)</button>
+     <button id="clear">Clear route</button>
+    </div>
+    <div class="row" role="group" aria-label="Packet purpose" style="margin-top:6px">
+     <button data-purpose="dns" aria-pressed="false">Purpose: DNS lookup</button>
+     <button data-purpose="page" aria-pressed="true">Purpose: page request</button>
+     <button data-purpose="ping" aria-pressed="false">Purpose: ping</button>
+    </div>
+    <p id="route">Route: (empty)</p>
+   </section>
+   <section class="card" aria-label="Cable key"><h2>Cable &amp; scene key (only the active route glows)</h2>
+    <dl class="legend" id="legend"></dl>
+    <p class="scene-key"><strong>Yellow floor ring</strong> = focused device &middot; <strong>Yellow badges &#9312; &#9313;</strong> = hop order on your route &middot; <strong>Leader stem</strong> = links each label to its device</p>
+    <p id="qnote"></p></section>
+   <section class="card" aria-label="What you learned"><p id="learned" hidden></p><p id="tip" style="margin:0;font-size:13px"></p></section>
+  </div>
+ </div>
+ <section class="card" style="margin-top:6px" aria-label="Action log"><h2>Log</h2>
+  <ol id="log" aria-live="polite" aria-relevant="additions"></ol>
+ </section>
+</main>
+
+<div class="screen" id="title" role="dialog" aria-modal="true" aria-labelledby="tTitle">
+ <div class="dialog">
+  <h2 id="tTitle">PACKET QUEST 3D</h2>
+  <p>Fix the broken gear in a tiny server room, then send a glowing packet along the cables. 3 stages, 3 lives each, free retry.</p>
+  <p>Keys: arrows pick a device, Enter selects, W repair tool, L launch, P pause, T text mode.</p>
+  <div class="list" id="stageList"></div>
+  <p class="stars" id="tStars" aria-label="Saved best stars"></p>
+  <p style="font-size:13px">Sound defaults to off. Progress saves only in this browser (localStorage).</p>
+ </div>
+</div>
+<div class="screen hidden" id="end" role="dialog" aria-modal="true" aria-labelledby="eTitle">
+ <div class="dialog">
+  <h2 id="eTitle"></h2>
+  <p class="stars" id="eStars"></p>
+  <p id="eText"></p>
+  <div class="row" style="justify-content:center">
+   <button id="eNext">Next stage</button><button id="eRetry">Retry (free)</button><button id="eMenu">Stages</button>
+  </div>
+ </div>
+</div>
+<div class="screen hidden" id="pauseScreen" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+ <div class="dialog"><h2 id="pTitle">Paused</h2><p>The 3D view has stopped rendering.</p><button id="resume">Resume (P)</button></div>
+</div>
+<script type="module" src="game.mjs"></script>
+</body>
+</html>

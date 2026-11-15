@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WAP Practice: Follow a request through the local network</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to practice</a>
+  <header class="banner">
+    <p><strong>Original WAP Practice</strong> · not a course lesson · not assigned</p>
+    <p>Provider lesson ID: none. No course credit. Review status stays not-reviewed.</p>
+  </header>
+  <div class="wrap">
+    <header>
+      <p class="meta">Mock My program · Challenge, simulation, and hands-on · about 15–25 minutes · untimed</p>
+      <h1>Follow a request through the local network</h1>
+      <p>Resolve a fictional office connection problem. Every address, person, and command result is made up for this practice. Do not run these checks on a real network, ask anyone for a password, or change a real setting.</p>
+    </header>
+    <main id="main">
+      <section class="panel" aria-labelledby="map-title">
+        <h2 id="map-title">The office, in words</h2>
+        <p>One wired LAN. Empty caches. No proxy, VPN, or IPv6. A successful ping only shows that ICMP replies. It does not prove a web page opened.</p>
+        <ul class="clean">
+          <li><strong>Client A</strong> 10.24.8.47/24 starts the request.</li>
+          <li><strong>Client B</strong> 10.24.8.48/24 is the healthy comparison.</li>
+          <li><strong>Switch S1</strong> connects the local devices.</li>
+          <li><strong>Router R1</strong> 10.24.8.1 is the approved gateway. Upstream is a separate labeled hop, not a drawing of the whole Internet.</li>
+          <li><strong>DNS D1</strong> 10.24.8.10 is the approved resolver. 10.24.8.99 does not answer.</li>
+          <li><strong>portal.cedar.example</strong> is 203.0.113.20. The task is to open the landing page, not to sign in.</li>
+        </ul>
+        <p id="variant-blurb"></p>
+      </section>
+
+      <section class="panel" aria-labelledby="path-title">
+        <h2 id="path-title">1. Build both paths</h2>
+        <p>Add devices in order. You can undo a step at any time. Correcting a path does not cost points.</p>
+        <div class="grid two">
+          <div>
+            <h3>Name lookup</h3>
+            <div class="row" id="dns-adders"></div>
+            <div class="path" id="dns-path" aria-live="polite"></div>
+            <div class="row">
+              <button type="button" id="dns-undo">Undo last DNS step</button>
+              <button type="button" id="dns-clear">Clear DNS path</button>
+            </div>
+          </div>
+          <div>
+            <h3>Page request after the name is known</h3>
+            <div class="row" id="app-adders"></div>
+            <div class="path" id="app-path" aria-live="polite"></div>
+            <div class="row">
+              <button type="button" id="app-undo">Undo last page-request step</button>
+              <button type="button" id="app-clear">Clear page-request path</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="role-title">
+        <h2 id="role-title">2. Match the jobs</h2>
+        <div id="roles"></div>
+        <label class="choice" for="dns-separate">
+          <input id="dns-separate" type="checkbox">
+          <span>The name lookup is its own request. DNS is not a hop that forwards the page.</span>
+        </label>
+      </section>
+
+      <section class="panel" aria-labelledby="ticket-title">
+        <h2 id="ticket-title">3. Investigate the ticket</h2>
+        <p id="ticket-text"></p>
+        <div class="row">
+          <button type="button" id="ask-scope">Ask who is affected</button>
+          <button type="button" id="ask-change">Ask what changed</button>
+        </div>
+        <p id="ask-result" class="note" hidden></p>
+        <h3>Run a check</h3>
+        <div class="row" id="evidence-buttons"></div>
+        <div id="evidence-live" class="status" role="status" aria-live="polite" hidden></div>
+        <h3>Evidence log</h3>
+        <ol id="evidence-log"></ol>
+        <label for="diagnosis">Most likely cause</label>
+        <select id="diagnosis">
+          <option value="">Choose a cause</option>
+        </select>
+      </section>
+
+      <section class="panel" aria-labelledby="action-title">
+        <h2 id="action-title">4. Choose a safe next action</h2>
+        <p>Approval is only simulated, and only after you request it. Apply stays blocked before that.</p>
+        <div class="row" id="action-buttons"></div>
+        <div id="action-live" class="status" role="status" aria-live="polite" hidden></div>
+      </section>
+
+      <section class="panel" aria-labelledby="verify-title">
+        <h2 id="verify-title">5. What would you check before you close the ticket?</h2>
+        <div id="verifications" class="choices"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="write-title">
+        <h2 id="write-title">6. Write for a person to review</h2>
+        <p>The app checks that each box has 1 to 1000 characters. It does not grade the writing. A person still has to review it.</p>
+        <label for="prose-rationale">Why this is the cause</label>
+        <textarea id="prose-rationale" maxlength="1000"></textarea>
+        <p class="error" id="err-rationale" role="alert" hidden></p>
+        <label for="prose-limits">What is still unknown</label>
+        <textarea id="prose-limits" maxlength="1000"></textarea>
+        <p class="error" id="err-limits" role="alert" hidden></p>
+        <label for="prose-customer">Update for the person who reported it</label>
+        <textarea id="prose-customer" maxlength="1000"></textarea>
+        <p class="error" id="err-customer" role="alert" hidden></p>
+      </section>
+
+      <section class="panel" aria-labelledby="result-title">
+        <h2 id="result-title">Check your work</h2>
+        <div class="row noprint">
+          <button type="button" class="primary" id="submit">Submit this attempt</button>
+          <button type="button" id="changed-case">Try the changed case</button>
+          <button type="button" id="download-json">Download JSON packet</button>
+          <button type="button" id="download-text">Download text packet</button>
+          <button type="button" id="print">Printable review</button>
+          <button type="button" id="reset">Reset this practice</button>
+        </div>
+        <div id="score" aria-live="polite"></div>
+        <div id="save-status" class="note" role="status"></div>
+        <div id="attempts"></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="reset-dialog">
+    <h2>Reset this practice only?</h2>
+    <p>This clears paths, checks, writing, and saved attempts for this practice on this device. Other site data stays.</p>
+    <div class="row">
+      <button type="button" id="reset-confirm" class="primary">Reset this practice</button>
+      <button type="button" id="reset-cancel">Cancel</button>
+    </div>
+  </dialog>
+
+  <script src="lesson.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

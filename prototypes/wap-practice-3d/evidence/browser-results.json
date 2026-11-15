@@ -1,0 +1,385 @@
+{
+  "url": "http://127.0.0.1:61243",
+  "checks": [
+    {
+      "name": "pilot-boundary-and-button-targets",
+      "ok": true,
+      "META": {
+        "id": "packet-quest-3d-v1",
+        "providerLessonId": null,
+        "credit": false,
+        "reviewed": false
+      },
+      "mutePressed": "false",
+      "smallBtns": []
+    },
+    {
+      "name": "semi-real-default-settings",
+      "ok": true,
+      "quality": "medium",
+      "shadows": true,
+      "shadowMapSize": 1024,
+      "pixelRatio": 1,
+      "glow": true,
+      "toneMapping": "ACESFilmic",
+      "colorSpace": "srgb",
+      "environment": true,
+      "materialType": "MeshStandardMaterial",
+      "note": "",
+      "gpu": {
+        "name": "ANGLE (Intel, Intel(R) Arc(TM) B570 Graphics (0x0000E20C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "name": "quality-toggle-and-real-budget-downgrade",
+      "ok": true,
+      "low": "low",
+      "high": 2048,
+      "realBudgetDrop": {
+        "after": {
+          "quality": "low",
+          "shadows": false,
+          "shadowMapSize": 512,
+          "pixelRatio": 1,
+          "glow": false,
+          "toneMapping": "ACESFilmic",
+          "colorSpace": "srgb",
+          "environment": true,
+          "materialType": "MeshStandardMaterial",
+          "note": "auto: median frame 55 ms over budget",
+          "gpu": {
+            "name": "ANGLE (Intel, Intel(R) Arc(TM) B570 Graphics (0x0000E20C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+            "maxTexture": 16384
+          }
+        },
+        "uiNote": "Graphics: low (auto: median frame 55 ms over budget). No shadows, no glow."
+      }
+    },
+    {
+      "name": "pause-and-visibility-stop-render-loop",
+      "ok": true,
+      "f0": 192,
+      "f1": 192,
+      "f2": 200,
+      "vf0": 200,
+      "vf1": 200,
+      "vf2": 209
+    },
+    {
+      "name": "attached-labels-tool-copy-and-legend-fold",
+      "ok": true,
+      "toolText": "Active tool: ROUTE (W switches to Repair) · Yellow ring = focused device · ① ② = hop order",
+      "repText": "Switch to Repair tool (W)",
+      "legBottom": 793.09375,
+      "leaders": 5,
+      "dnsSignHasLeader": true
+    },
+    {
+      "name": "distinct-link-lanes-and-active-only-glow",
+      "ok": true,
+      "before": {
+        "client|switch": {
+          "hex": 3526911,
+          "pat": "chevron",
+          "activeGlow": 0
+        },
+        "switch|router": {
+          "hex": 6220453,
+          "pat": "dots",
+          "activeGlow": 0
+        },
+        "router|server": {
+          "hex": 16753229,
+          "pat": "stripes",
+          "activeGlow": 0
+        },
+        "switch|server": {
+          "hex": 16740277,
+          "pat": "diamond",
+          "activeGlow": 0
+        },
+        "switch|dns": {
+          "hex": 12616956,
+          "pat": "dash",
+          "activeGlow": 0
+        }
+      },
+      "afterClientSwitch": {
+        "client|switch": {
+          "hex": 3526911,
+          "pat": "chevron",
+          "activeGlow": 0.825365662449064
+        },
+        "switch|router": {
+          "hex": 6220453,
+          "pat": "dots",
+          "activeGlow": 0
+        },
+        "router|server": {
+          "hex": 16753229,
+          "pat": "stripes",
+          "activeGlow": 0
+        },
+        "switch|server": {
+          "hex": 16740277,
+          "pat": "diamond",
+          "activeGlow": 0
+        },
+        "switch|dns": {
+          "hex": 12616956,
+          "pat": "dash",
+          "activeGlow": 0
+        }
+      }
+    },
+    {
+      "name": "canvas-non-blank-and-non-flat",
+      "ok": true,
+      "mean": 160.45924732639037,
+      "variance": 3012.9386431026833,
+      "std": 54.89024178396998,
+      "lumRange": 236.26079999999996,
+      "nonBgRatio": 0.9947916666666666
+    },
+    {
+      "name": "no-resource-growth-across-3-retries",
+      "ok": true,
+      "baselineMem": {
+        "geometries": 156,
+        "textures": 36,
+        "materials": 86,
+        "programs": 16,
+        "renderTargets": 1
+      },
+      "afterRetriesMem": {
+        "geometries": 156,
+        "textures": 36,
+        "materials": 86,
+        "programs": 16,
+        "renderTargets": 1
+      }
+    },
+    {
+      "name": "wrong-call-3d-impact-marker-and-lose-recovery",
+      "ok": true,
+      "wrongHop": {
+        "impacts": 1,
+        "hp": 2,
+        "fbText": "Stage 1: Cross the LAN. Same subnet: the switch carries it, no router. The switch-to-server cable is unplugged. Plug it in, then route the page.Retry: fresh stage, 3 lives.Selected Client PC. Route length 1.Wrong hop. Expected switch. Route reset."
+      },
+      "loseState": {
+        "status": "lose",
+        "hp": 0,
+        "title": "Out of lives"
+      }
+    },
+    {
+      "name": "ping-succeeds-without-winning-stage",
+      "ok": true,
+      "status": "play",
+      "endHidden": true,
+      "logText": "Stage 1: Cross the LAN. Same subnet: the switch carries it, no router. The switch-to-server cable is unplugged. Plug it in, then route the page.Retry: fresh stage, 3 lives.Tool: repair.Cable plugged into the switch port. Link is up.Tool: route.Purpose: ping. Route cleared.Selected Client PC. Route length 1.Selected Switch. Route length 2.Selected Web server. Route length 3.Packet launched along Client PC, Switch, Web server.ICMP echo reply. Host reachable. HTTP has NOT been tested."
+    },
+    {
+      "name": "keyboard-only-stage1-win",
+      "ok": true,
+      "status": "win"
+    },
+    {
+      "name": "real-canvas-click-picking-and-hop-badges",
+      "ok": true,
+      "route": [
+        "client",
+        "switch",
+        "server"
+      ],
+      "hops": 2
+    },
+    {
+      "name": "boss-glitch-active",
+      "ok": true,
+      "glitchActive": true,
+      "routerDown": true,
+      "serverDown": true
+    },
+    {
+      "name": "three-stages-cleared-and-persisted",
+      "ok": true,
+      "version": 1,
+      "best": [
+        3,
+        3,
+        3
+      ],
+      "evidence": [
+        [
+          "Cable plugged into the switch port. Link is up.",
+          "HTTP 200. Page delivered to client."
+        ],
+        [
+          "DNS ONLINE. Ready for a lookup.",
+          "DNS response: arcade.test = 198.51.100.80. Response returns to client; now send a separate page request.",
+          "HTTP 200. Page delivered to client."
+        ],
+        [
+          "Gateway corrected: 192.0.2.1 (same /24 as client).",
+          "HTTP service restarted on port 80.",
+          "HTTP 200. Page delivered to client."
+        ]
+      ]
+    },
+    {
+      "name": "real-startup-low-end-gpu-detection",
+      "ok": true,
+      "startupLowTex": {
+        "quality": "low",
+        "shadows": false,
+        "shadowMapSize": 512,
+        "pixelRatio": 1,
+        "glow": false,
+        "toneMapping": "ACESFilmic",
+        "colorSpace": "srgb",
+        "environment": true,
+        "materialType": "MeshStandardMaterial",
+        "note": "auto: small max texture (4096)",
+        "gpu": {
+          "name": "ANGLE (Intel, Intel(R) Arc(TM) B570 Graphics (0x0000E20C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "maxTexture": 4096
+        }
+      },
+      "startupSoft": {
+        "quality": "low",
+        "shadows": false,
+        "shadowMapSize": 512,
+        "pixelRatio": 1,
+        "glow": false,
+        "toneMapping": "ACESFilmic",
+        "colorSpace": "srgb",
+        "environment": true,
+        "materialType": "MeshStandardMaterial",
+        "note": "auto: software renderer",
+        "gpu": {
+          "name": "Google SwiftShader",
+          "maxTexture": 16384
+        }
+      }
+    },
+    {
+      "name": "viewport-1280x900-labels-and-overflow",
+      "ok": true,
+      "over": -15,
+      "minPx": 15.583890410156249,
+      "allInside": true,
+      "overlaps": [],
+      "logCut": false,
+      "smallBtns": [],
+      "dnsTube": {
+        "projectedDiameterPx": 13.926359284994678,
+        "visibleSamples": [
+          1,
+          81,
+          54,
+          41,
+          27,
+          13,
+          36,
+          59,
+          33,
+          69,
+          3,
+          45,
+          80,
+          26
+        ]
+      }
+    },
+    {
+      "name": "viewport-390x844-labels-and-overflow",
+      "ok": true,
+      "over": -15,
+      "minPx": 12,
+      "allInside": true,
+      "overlaps": [],
+      "logCut": false,
+      "smallBtns": [],
+      "dnsTube": {
+        "projectedDiameterPx": 6.494504374946246,
+        "visibleSamples": [
+          28,
+          56,
+          46,
+          28,
+          25,
+          32,
+          22,
+          24,
+          25,
+          38,
+          28,
+          31,
+          34,
+          30
+        ]
+      }
+    },
+    {
+      "name": "viewport-320x640-labels-and-overflow",
+      "ok": true,
+      "over": -15,
+      "minPx": 12,
+      "allInside": true,
+      "overlaps": [],
+      "logCut": false,
+      "smallBtns": [],
+      "dnsTube": {
+        "projectedDiameterPx": 5.957679937189009,
+        "visibleSamples": [
+          18,
+          3,
+          11,
+          11,
+          15,
+          12,
+          1,
+          0,
+          27,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "name": "reduced-motion-stationary-instant-launch-and-text-mode",
+      "ok": true,
+      "sparks": false,
+      "trail": false,
+      "animating": false,
+      "best": [
+        3,
+        0,
+        0
+      ],
+      "camDelta": 0
+    },
+    {
+      "name": "webgl-disabled-fallback-all-3-stages-playable",
+      "ok": true,
+      "glOk": false,
+      "textMode": true,
+      "notice": true,
+      "best": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "name": "zero-console-page-network-errors",
+      "ok": true
+    }
+  ]
+}

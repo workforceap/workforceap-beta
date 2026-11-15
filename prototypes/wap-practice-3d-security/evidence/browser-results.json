@@ -1,0 +1,388 @@
+{
+  "url": "http://127.0.0.1:62422",
+  "checks": [
+    {
+      "name": "pilot-boundary-and-button-targets",
+      "ok": true,
+      "META": {
+        "id": "firewall-defender-3d-v1",
+        "providerLessonId": null,
+        "credit": false,
+        "reviewed": false
+      },
+      "mutePressed": "false",
+      "smallBtns": []
+    },
+    {
+      "name": "semi-real-default-settings",
+      "ok": true,
+      "quality": "medium",
+      "shadows": true,
+      "shadowMapSize": 1024,
+      "pixelRatio": 1,
+      "glow": true,
+      "toneMapping": "ACESFilmic",
+      "colorSpace": "srgb",
+      "environment": true,
+      "materialType": "MeshStandardMaterial",
+      "note": "",
+      "gpu": {
+        "name": "ANGLE (Intel, Intel(R) Arc(TM) B570 Graphics (0x0000E20C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "maxTexture": 16384
+      }
+    },
+    {
+      "name": "quality-toggle-and-real-budget-downgrade",
+      "ok": true,
+      "low": "low",
+      "high": 2048,
+      "realBudgetDrop": {
+        "after": {
+          "quality": "low",
+          "shadows": false,
+          "shadowMapSize": 512,
+          "pixelRatio": 1,
+          "glow": false,
+          "toneMapping": "ACESFilmic",
+          "colorSpace": "srgb",
+          "environment": true,
+          "materialType": "MeshStandardMaterial",
+          "note": "auto: median frame 55 ms over budget",
+          "gpu": {
+            "name": "ANGLE (Intel, Intel(R) Arc(TM) B570 Graphics (0x0000E20C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+            "maxTexture": 16384
+          }
+        },
+        "uiNote": "Graphics: low (auto: median frame 55 ms over budget). No shadows, no glow."
+      }
+    },
+    {
+      "name": "pause-and-visibility-stop-render-loop",
+      "ok": true,
+      "f0": 206,
+      "f1": 206,
+      "f2": 216,
+      "vf0": 216,
+      "vf1": 216,
+      "vf2": 225
+    },
+    {
+      "name": "canvas-non-blank-and-non-flat",
+      "ok": true,
+      "mean": 157.09975131944358,
+      "variance": 4394.294889122102,
+      "std": 66.28947796688477,
+      "lumRange": 245.20859999999996,
+      "nonBgRatio": 0.9336805555555555
+    },
+    {
+      "name": "selected-ring-and-prompt-and-wording",
+      "ok": true,
+      "ringHex": "#ffe066",
+      "fb": "Selected: TCP 443 • 198.51.100.20 — check the highlighted policy rule, then choose Allow (A) or Block (B).",
+      "goalsText": "☐ To do: Make a call on all 6 traffic items (0/6)☐ To do: Let no bad traffic into the network☐ To do: Keep legitimate traffic flowing",
+      "fbVisibleWithoutScroll": true
+    },
+    {
+      "name": "no-resource-growth-across-3-live-retries",
+      "ok": true,
+      "baselineMem": {
+        "geometries": 50,
+        "textures": 20,
+        "materials": 60,
+        "programs": 20,
+        "renderTargets": 1
+      },
+      "afterRetriesMem": {
+        "geometries": 50,
+        "textures": 20,
+        "materials": 60,
+        "programs": 20,
+        "renderTargets": 1
+      }
+    },
+    {
+      "name": "wrong-call-3d-marker-and-previous-packet-tag",
+      "ok": true,
+      "wrongMarkers": 2,
+      "fbClass": "bad",
+      "prevTag": "Previous packet (TCP 443 • 198.51.100.20)"
+    },
+    {
+      "name": "real-canvas-click-picking-item-and-floor-pad",
+      "ok": true,
+      "handled": 1,
+      "rightMarkers": 1,
+      "fbClass": "good"
+    },
+    {
+      "name": "timeout-and-lose-and-retry",
+      "ok": true,
+      "timeoutLose": {
+        "afterFirstTimeout": {
+          "hp": 2,
+          "missed": 1,
+          "fb": "Previous packet (TCP 443 • 198.51.100.20) Too slow: TCP 443 (198.51.100.20) reached the network with no decision. TCP 443 from 198.51.100.20 matches rule 1 (ALLOW TCP port 443 from anywhere), so it is allowed.",
+          "fbClass": "bad"
+        },
+        "status": "lose",
+        "hp": 0,
+        "endOpen": true,
+        "endTitle": "Out of lives"
+      },
+      "afterLoseRetry": {
+        "status": "play",
+        "hp": 3
+      }
+    },
+    {
+      "name": "keyboard-only-stage1-win",
+      "ok": true,
+      "status": "win"
+    },
+    {
+      "name": "four-stages-cleared-boss-policy-verified-and-persisted",
+      "ok": true,
+      "version": 1,
+      "best": [
+        3,
+        3,
+        3,
+        3
+      ],
+      "evidence": [
+        [
+          "Correct: TCP 443 from 198.51.100.20 matches rule 1 (ALLOW TCP port 443 from anywhere), so it is allowed.",
+          "Correct: TCP 23 from 198.51.100.9 matches no allow rule, so the default deny blocks it.",
+          "Correct: TCP 587 from 198.51.100.44 matches rule 2 (ALLOW TCP port 587 from anywhere), so it is allowed.",
+          "Correct: TCP 3389 from 198.51.100.61 matches no allow rule, so the default deny blocks it.",
+          "Correct: UDP 443 from 198.51.100.12 matches no allow rule, so the default deny blocks it.",
+          "Correct: TCP 80 from 198.51.100.30 matches no allow rule, so the default deny blocks it."
+        ],
+        [
+          "Correct: TCP 443 from 198.51.100.20 matches rule 3 (ALLOW TCP port 443 from anywhere), so it is allowed.",
+          "Correct: TCP 443 from 203.0.113.50 hits rule 1 first (DENY any protocol any port from 203.0.113.0/24). The first matching rule wins, so it is blocked.",
+          "Correct: TCP 22 from 192.0.2.15 matches rule 2 (ALLOW TCP port 22 from 192.0.2.0/24), so it is allowed.",
+          "Correct: TCP 22 from 198.51.100.77 matches no allow rule, so the default deny blocks it.",
+          "Correct: TCP 22 from 203.0.113.9 hits rule 1 first (DENY any protocol any port from 203.0.113.0/24). The first matching rule wins, so it is blocked.",
+          "Correct: TCP 443 from 192.0.2.200 matches rule 3 (ALLOW TCP port 443 from anywhere), so it is allowed.",
+          "Correct: UDP 53 from 198.51.100.5 matches no allow rule, so the default deny blocks it."
+        ],
+        [
+          "Correct: It sounds urgent, but the sender domain and the link both check out. Urgency alone is not proof, so it is delivered.",
+          "Correct: The sender domain acme-pay.test is not acme.test, the real domain of AcmeCorp Payroll. A lookalike domain is evidence of phishing.",
+          "Correct: The link text says acme.test/hr but it really goes to evil.test. A link that goes elsewhere than it shows is evidence of phishing.",
+          "Correct: Sender domain and link both match AcmeCorp IT, so it is delivered.",
+          "Correct: The sender domain acrne.test is not acme.test, the real domain of AcmeCorp IT. A lookalike domain is evidence of phishing.",
+          "Correct: Sender domain and link both match Parcel Co, so it is delivered."
+        ],
+        [
+          "Correct: The sender domain acrne.test is not acme.test, the real domain of AcmeCorp IT. A lookalike domain is evidence of phishing.",
+          "Correct: TCP 443 from 198.51.100.31 matches rule 3 (ALLOW TCP port 443 from anywhere), so it is allowed.",
+          "Correct: jlee's login looks normal (usual country, first try). Allow it; resetting would lock out a real user.",
+          "Correct: TCP 3389 from 203.0.113.77 hits rule 1 first (DENY any protocol any port from 203.0.113.0/24). The first matching rule wins, so it is blocked.",
+          "Correct: jlee's login succeeded with valid credentials but looks stolen (valid password, new country 3 minutes after a normal login). The firewall allows web logins, and blocking the port would not remove the attacker's access. Reset the password and end the sessions.",
+          "Correct: It sounds urgent, but the sender domain and the link both check out. Urgency alone is not proof, so it is delivered.",
+          "Correct: TCP 22 from 192.0.2.15 matches rule 2 (ALLOW TCP port 22 from 192.0.2.0/24), so it is allowed.",
+          "Correct: The link text says acme.test/hr but it really goes to evil.test. A link that goes elsewhere than it shows is evidence of phishing.",
+          "Correct: mpatel's login succeeded with valid credentials but looks stolen (succeeded after 40 failed tries from one address). The firewall allows web logins, and blocking the port would not remove the attacker's access. Reset the password and end the sessions.",
+          "Correct: UDP 53 from 198.51.100.5 matches no allow rule, so the default deny blocks it."
+        ]
+      ]
+    },
+    {
+      "name": "real-startup-low-end-gpu-detection",
+      "ok": true,
+      "startupLowTex": {
+        "quality": "low",
+        "shadows": false,
+        "shadowMapSize": 512,
+        "pixelRatio": 1,
+        "glow": false,
+        "toneMapping": "ACESFilmic",
+        "colorSpace": "srgb",
+        "environment": true,
+        "materialType": "MeshStandardMaterial",
+        "note": "auto: small max texture (4096)",
+        "gpu": {
+          "name": "ANGLE (Intel, Intel(R) Arc(TM) B570 Graphics (0x0000E20C) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "maxTexture": 4096
+        }
+      },
+      "startupSoft": {
+        "quality": "low",
+        "shadows": false,
+        "shadowMapSize": 512,
+        "pixelRatio": 1,
+        "glow": false,
+        "toneMapping": "ACESFilmic",
+        "colorSpace": "srgb",
+        "environment": true,
+        "materialType": "MeshStandardMaterial",
+        "note": "auto: software renderer",
+        "gpu": {
+          "name": "Google SwiftShader",
+          "maxTexture": 16384
+        }
+      }
+    },
+    {
+      "name": "viewport-1280x900-email-login-pads-and-fold",
+      "ok": true,
+      "emailCheck": {
+        "domain": "acme.test",
+        "l2px": 20.53259033203125,
+        "clearancePx": 12.000000000000057,
+        "meshH": 55.75422531700559,
+        "minPlateH": 52.54936416735575,
+        "minKeyPx": 27.095765898792806,
+        "minPadGapPx": 31.742645568217426,
+        "over": 0
+      },
+      "emailFold": {
+        "fbBottom": 660.921875,
+        "selBottom": 398.078125,
+        "maxActBottom": 391.078125
+      },
+      "bossCheck": {
+        "loginLabel": "LOGIN / user jlee",
+        "l1px": 21.1547900390625,
+        "l2px": 20.53259033203125,
+        "clearancePx": 12,
+        "meshH": 51.830629866238326,
+        "minPlateH": 52.54936416735575,
+        "minKeyPx": 27.095765898792806,
+        "minPadGapPx": 31.742645568217426,
+        "minGatewayGapPx": 20.328372735638993,
+        "padGap1": 25.695946454543275,
+        "padGap2": 25.69594645454322,
+        "allFloorPlates": true,
+        "fbBottom": 661.625,
+        "selBottom": 343.609375,
+        "logTop": 669.625,
+        "smallBtns": [],
+        "over": -15,
+        "logCut": false
+      }
+    },
+    {
+      "name": "viewport-390x844-email-login-pads-and-fold",
+      "ok": true,
+      "emailCheck": {
+        "domain": "acme.test",
+        "l2px": 13.612499999999999,
+        "clearancePx": 5.95273113516518,
+        "meshH": 32.33660791670275,
+        "minPlateH": 26.705952031707625,
+        "minKeyPx": 13.770256516349244,
+        "minPadGapPx": 14.452703236869525,
+        "over": -15
+      },
+      "emailFold": {
+        "fbBottom": 385.265625,
+        "selBottom": 502.34375,
+        "maxActBottom": 497.34375
+      },
+      "bossCheck": {
+        "loginLabel": "LOGIN / user jlee",
+        "l1px": 14.025,
+        "l2px": 13.612499999999999,
+        "clearancePx": 5.954362978055485,
+        "meshH": 30.52626059704977,
+        "minPlateH": 26.705952031707625,
+        "minKeyPx": 13.770256516349244,
+        "minPadGapPx": 14.452703236869525,
+        "minGatewayGapPx": 4.529992772648427,
+        "padGap1": 11.129765584371825,
+        "padGap2": 11.129765584371796,
+        "allFloorPlates": true,
+        "fbBottom": 387.265625,
+        "selBottom": 490.703125,
+        "logTop": 967.296875,
+        "smallBtns": [],
+        "over": -15,
+        "logCut": false
+      }
+    },
+    {
+      "name": "viewport-320x640-email-login-pads-and-fold",
+      "ok": true,
+      "emailCheck": {
+        "domain": "acme.test",
+        "l2px": 13.612499999999999,
+        "clearancePx": 6,
+        "meshH": 30.729436101760257,
+        "minPlateH": 25.39000656927567,
+        "minKeyPx": 13.091722137282767,
+        "minPadGapPx": 13.740541048386149,
+        "over": -15
+      },
+      "emailFold": {
+        "fbBottom": 423.765625,
+        "selBottom": 540.84375,
+        "maxActBottom": 535.84375
+      },
+      "bossCheck": {
+        "loginLabel": "LOGIN / user jlee",
+        "l1px": 14.025,
+        "l2px": 13.612499999999999,
+        "clearancePx": 6.000000000000028,
+        "meshH": 28.825356271959066,
+        "minPlateH": 25.39000656927567,
+        "minKeyPx": 13.091722137282767,
+        "minPadGapPx": 13.740541048386149,
+        "minGatewayGapPx": 4.306775737474368,
+        "padGap1": 10.619665518759021,
+        "padGap2": 10.619665518759035,
+        "allFloorPlates": true,
+        "fbBottom": 440.15625,
+        "selBottom": 543.59375,
+        "logTop": 1076.65625,
+        "smallBtns": [],
+        "over": -15,
+        "logCut": false
+      }
+    },
+    {
+      "name": "reduced-motion-outcomes-and-text-mode",
+      "ok": true,
+      "reduced": true,
+      "sceneReduced": true,
+      "best": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "afterWrong": {
+        "shake": 0,
+        "particles": 0,
+        "wrongMarkers": 2,
+        "fbClass": "bad"
+      },
+      "afterRight": {
+        "shake": 0,
+        "particles": 0,
+        "fbClass": "good"
+      },
+      "noSecondItem": true
+    },
+    {
+      "name": "webgl-disabled-fallback-all-4-stages-playable",
+      "ok": true,
+      "glOk": false,
+      "textMode": true,
+      "notice": true,
+      "best": [
+        3,
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "name": "zero-console-page-network-errors",
+      "ok": true
+    }
+  ]
+}
