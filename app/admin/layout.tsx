@@ -23,6 +23,7 @@ import '@/css/language-toggle.css';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { getTourOffer } from '@/lib/tours/getTourOffer';
 import { getHomeTourForRole } from '@/lib/tours/registry';
+import { canUseGameLab } from '@/lib/game-lab/access';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,7 +57,7 @@ export default async function AdminLayout({
     const chromelessPrint = pathname === '/admin/board/print' || pathname.startsWith('/admin/board/print?');
 
     const adminTour = getHomeTourForRole('admin');
-    const [branding, portalRoles, tour, effectiveRole] = await Promise.all([
+    const [branding, portalRoles, tour, effectiveRole, gameLabEnabled] = await Promise.all([
       getDefaultOrgBranding({ readOnlyAudit }),
       getPortalSwitcherRoles(user.id, {
         superAdmin: scope.superAdmin,
@@ -65,6 +66,7 @@ export default async function AdminLayout({
       // Guided tour gate (flag `guided_tours_v2` + this user's tour state). Never throws.
       adminTour ? getTourOffer(user.id, adminTour.key) : Promise.resolve(null),
       getProfileRole(user.id),
+      canUseGameLab(user.id),
     ]);
 
     return (
@@ -102,6 +104,7 @@ export default async function AdminLayout({
             <AdminPortalShell
               superAdmin={scope.superAdmin}
               knownIsAdmin={effectiveRole === 'admin'}
+              gameLabEnabled={gameLabEnabled}
               portalRoles={portalRoles}
               readOnlyAudit={readOnlyAudit}
               tour={tour}

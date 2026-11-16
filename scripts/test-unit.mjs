@@ -74,6 +74,10 @@ async function listTestFiles() {
   for await (const entry of glob('scripts/**/*.test.cjs', { cwd: ROOT })) {
     out.add(entry);
   }
+  // Game Lab prototypes' pure-rules suites (node:test, no imports outside the folder).
+  for await (const entry of glob('assets/game-lab/*/rules.test.mjs', { cwd: ROOT })) {
+    out.add(entry);
+  }
   return [...out].map((file) => file.replace(/\\/g, '/'));
 }
 

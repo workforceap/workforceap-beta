@@ -30,6 +30,18 @@ function sectionForRoute(route) {
   return Object.entries(PORTAL_ROLE_PREFIXES).find(([, prefix]) => prefix === firstSegment)?.[0] ?? null;
 }
 
+/**
+ * Pre-release pages gated by a server flag that is OFF everywhere by default.
+ * They answer 404 by design until the flag row exists, so the nightly audit's
+ * "every page returns 2xx" rule cannot cover them. Their gate, assets and nav
+ * are covered by tests/game-lab and the local-preview matrix instead.
+ */
+const FLAG_GATED_PRERELEASE_PREFIXES = ['/admin/game-lab'];
+
+function isFlagGatedPrerelease(route) {
+  return FLAG_GATED_PRERELEASE_PREFIXES.some((prefix) => route === prefix || route.startsWith(`${prefix}/`));
+}
+
 function isDynamicRoute(route) {
   return normalizedRoute(route)
     .split('/')
@@ -72,7 +84,7 @@ export function discoverPortalPageRoutes(appRoot) {
   for (const pageFile of pageFiles) {
     const route = routeFromPageFile(appRoot, pageFile);
     const role = route ? sectionForRoute(route) : null;
-    if (!role) continue;
+    if (!role || isFlagGatedPrerelease(route)) continue;
     discovered[role][isDynamicRoute(route) ? 'dynamic' : 'static'].add(route);
   }
 
