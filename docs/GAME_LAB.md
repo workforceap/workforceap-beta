@@ -25,4 +25,4 @@ The flag row is not created by code or migration.
 3. Rollback: delete the row, then revert the merge commit. Nothing else depends on this feature.
 
 ## Local verification
-`npm run preview:local`, then `node scripts/game-lab/preview-matrix.mjs`, `scripts/game-lab/preview-pages.mjs`. `scripts/game-lab/original/` holds the unmodified prototype browser checks used against the authenticated route. Guarded preview only (`localhost:3100`); they refuse other hosts.
+`npm run preview:local`, then `node scripts/game-lab/preview-matrix.mjs`, `scripts/game-lab/preview-pages.mjs`. The prototypes' own `browser-check.mjs` (source SHA `ebcbe6d5e`, `prototypes/wap-practice-3d*/`) was run unmodified apart from pointing its base URL at the authenticated route with a logged-in admin storage state; it is not vendored here. `preview-flows.mjs` prepares that state. Guarded preview only (`localhost:3100`); they refuse other hosts.
