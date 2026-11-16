@@ -83,7 +83,7 @@ describe('certificate identity survives display-label corrections', () => {
         action: 'system_certification_pending_from_completion', targetType: 'user_certification',
         AND: expect.arrayContaining([
           { metadata: { path: ['userId'], equals: completion.userId } },
-          { metadata: { path: ['programSlug'], equals: PROGRAM } },
+          { OR: [{ metadata: { path: ['programSlug'], equals: PROGRAM } }] },
           { metadata: { path: ['courseSlug'], equals: LEGACY_COURSE } },
         ]),
       }),
@@ -168,6 +168,76 @@ describe('certificate identity survives display-label corrections', () => {
     expect(mocks.findUnique).toHaveBeenCalledWith(expect.objectContaining({
       where: { id: 'stale-or-other-member', userId: completion.userId },
     }));
+  });
+});
+
+describe('legacy labels from before the course-identity audit', () => {
+  const IBM_PROGRAM = 'software-developer-professional-certificate-ibm';
+  const IBM_ALIAS = 'ai-and-software-development-professional-certificate-ibm';
+  const IBM_COURSE = `${IBM_PROGRAM}-course-16`;
+  const IBM_LEGACY_LABEL = 'Software Developer Professional Certificate Ibm';
+  const ibmCompletion = {
+    userId: 'synthetic-learner', programSlug: IBM_PROGRAM, courseSlug: IBM_COURSE,
+    courseraCourseId: 'gQ_b82HOEeyipgpI5l_HwQ', source: 'coursera-progress-merge' as const,
+  };
+  const ibmName = () => resolveCertificationNameForCourse(ibmCompletion);
+
+  function rowsByName(rows: Record<string, { id: string; status: string }>) {
+    mocks.findUnique.mockImplementation(async ({ where }) => {
+      if (where.id) {
+        const hit = Object.entries(rows).find(([, row]) => row.id === where.id);
+        return hit ? { ...hit[1], certName: hit[0] } : null;
+      }
+      const row = rows[where.userId_certName.certName];
+      return row ? { ...row, certName: where.userId_certName.certName } : null;
+    });
+  }
+
+  it('finds provenance an older audit recorded under a program alias', async () => {
+    rowsByName({ [IBM_LEGACY_LABEL]: { id: 'legacy-row', status: 'approved' } });
+    mocks.provenance.mockImplementation(async ({ where }) => {
+      if (where.targetId === 'legacy-row') return [];
+      const slugs = where.AND
+        .flatMap((clause: { OR?: Array<{ metadata: { equals: string } }> }) => clause.OR ?? [])
+        .map((clause: { metadata: { equals: string } }) => clause.metadata.equals);
+      return slugs.includes(IBM_ALIAS) ? [{ targetId: 'legacy-row' }] : [];
+    });
+    await expect(ensurePendingCertificationForCompletion(ibmCompletion)).resolves.toEqual({
+      created: false, id: 'legacy-row', status: 'approved', certName: IBM_LEGACY_LABEL,
+    });
+    expect(mocks.createMany).not.toHaveBeenCalled();
+  });
+
+  it('issues this course its own certificate when the legacy row is bound to another course', async () => {
+    rowsByName({
+      [IBM_LEGACY_LABEL]: { id: 'legacy-row', status: 'approved' },
+      [ibmName()]: { id: 'new-certificate', status: 'pending' },
+    });
+    mocks.provenance.mockImplementation(async ({ where }) => where.targetId === 'legacy-row'
+      ? [{ metadata: { userId: 'synthetic-learner', programSlug: IBM_ALIAS, courseSlug: `${IBM_PROGRAM}-course-3` } }]
+      : []);
+    const result = await ensurePendingCertificationForCompletion(ibmCompletion);
+    expect(result).toMatchObject({ created: true, id: 'new-certificate', certName: ibmName() });
+    expect(ibmName()).not.toBe(IBM_LEGACY_LABEL);
+    expect(mocks.audit).toHaveBeenCalledWith(expect.objectContaining({
+      metadata: expect.objectContaining({ programSlug: IBM_PROGRAM, courseSlug: IBM_COURSE, certificateCreated: true }),
+    }), expect.anything());
+  });
+
+  it('still fails closed when the legacy row carries no course identity at all', async () => {
+    rowsByName({ [IBM_LEGACY_LABEL]: { id: 'legacy-row', status: 'approved' } });
+    mocks.provenance.mockResolvedValue([]);
+    await expect(ensurePendingCertificationForCompletion(ibmCompletion)).rejects.toThrow(/provenance/i);
+    expect(mocks.createMany).not.toHaveBeenCalled();
+  });
+
+  it('does not treat a binding to this same course as another course', async () => {
+    rowsByName({ [IBM_LEGACY_LABEL]: { id: 'legacy-row', status: 'approved' } });
+    mocks.provenance.mockImplementation(async ({ where }) => where.targetId === 'legacy-row'
+      ? [{ metadata: { userId: 'synthetic-learner', programSlug: IBM_PROGRAM, courseSlug: IBM_COURSE } }]
+      : []);
+    await expect(ensurePendingCertificationForCompletion(ibmCompletion)).rejects.toThrow(/provenance/i);
+    expect(mocks.createMany).not.toHaveBeenCalled();
   });
 });
 
