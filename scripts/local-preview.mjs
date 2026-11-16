@@ -94,7 +94,7 @@ function killListener(port) {
 function killByCommandLine() {
   if (!isWin) return;
   const root = ROOT.replace(/'/g, "''");
-  const ps = "Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Where-Object { $_.CommandLine -like '*" + root + "*' -and ($_.CommandLine -like '*next*' -or $_.CommandLine -like '*preview-auth-shim*') -and $_.ProcessId -ne " + process.pid + " } | ForEach-Object { $_.ProcessId }";
+  const ps = "Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Where-Object { $_.CommandLine -like '*" + root + "*' -and ($_.CommandLine -like '*next*' -or $_.CommandLine -like '*preview-auth-shim*' -or $_.CommandLine -like '*preview-mail-sink*') -and $_.ProcessId -ne " + process.pid + " } | ForEach-Object { $_.ProcessId }";
   const r = spawnSync('powershell', ['-NoProfile', '-Command', ps], { encoding: 'utf8' });
   for (const line of (r.stdout || '').split(String.fromCharCode(10))) { const pid = Number(line.trim()); if (pid) killTree(pid); }
 }
@@ -104,7 +104,7 @@ async function down({ purge } = {}) {
   for (const [name, pid] of Object.entries(state.pids || {})) { log('stopping ' + name + ' (pid ' + pid + ')'); killTree(pid); }
   const env = buildPreviewEnv();
   // Leave nothing behind: anything still listening on the preview's own ports is ours.
-  for (const port of [Number(env.PREVIEW_WEB_PORT), Number(env.PREVIEW_AUTH_PORT)]) killListener(port);
+  for (const port of [Number(env.PREVIEW_WEB_PORT), Number(env.PREVIEW_AUTH_PORT), Number(env.PREVIEW_MAIL_PORT)]) killListener(port);
   killByCommandLine();
   run('docker', ['rm', '-f', CONTAINER], process.env, { stdio: 'ignore' });
   if (purge) run('docker', ['volume', 'rm', '-f', VOLUME], process.env, { stdio: 'ignore' });
@@ -116,7 +116,7 @@ async function up() {
   const t0 = Date.now();
   // 1. Guard FIRST, on the environment we are about to hand to children.
   const env = buildPreviewEnv();
-  const ports = { db: Number(env.PREVIEW_DB_PORT), auth: Number(env.PREVIEW_AUTH_PORT) };
+  const ports = { db: Number(env.PREVIEW_DB_PORT), auth: Number(env.PREVIEW_AUTH_PORT), mail: Number(env.PREVIEW_MAIL_PORT) };
   const verdict = checkLocalOnly(env, { ports });
   if (!verdict.ok) { console.error(new LocalOnlyGuardError(verdict).message); process.exit(2); }
   const shellVars = ['DATABASE_URL', 'POSTGRES_PRISMA_URL', 'POSTGRES_URL_NON_POOLING', 'NEXT_PUBLIC_SUPABASE_URL', 'VERCEL', 'VERCEL_ENV'].filter((k) => process.env[k]);
@@ -153,7 +153,10 @@ async function up() {
   const tsx = join(ROOT, 'node_modules', 'tsx', 'dist', 'cli.mjs');
   must('seed', run(process.execPath, [tsx, 'prisma/seed-demo.ts'], env));
 
-  // 6. Auth shim, then next dev, both on loopback only.
+  // 6. Mail sink, auth shim, then next dev, all on loopback only.
+  state.pids.mailSink = startDetached('mail-sink', process.execPath, ['scripts/lib/preview-mail-sink.cjs'], env);
+  writeState(state);
+  await waitFor('mail sink', async () => (await fetch('http://127.0.0.1:' + ports.mail + '/__sink/health')).ok, 20000);
   state.pids.authShim = startDetached('auth-shim', process.execPath, ['scripts/lib/preview-auth-shim.cjs'], env);
   writeState(state);
   await waitFor('auth shim', async () => (await fetch('http://127.0.0.1:' + ports.auth + '/auth/v1/health')).ok, 20000);
@@ -174,6 +177,7 @@ async function up() {
     '   student  ' + env.PREVIEW_STUDENT_EMAIL + '  /  ' + env.PREVIEW_STUDENT_PASSWORD,
     ' Admin attendance: ' + web + '/admin/attendance/draft',
     ' Enrollment ids to paste: see prisma/fixtures/preview-attendance.ts',
+    ' Mail sink: http://127.0.0.1:' + ports.mail + '/__sink/messages',
     ' Stop: npm run preview:local:down',
     '=========================================================',
   ].join('\n'));

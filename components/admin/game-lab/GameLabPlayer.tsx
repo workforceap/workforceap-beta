@@ -2,10 +2,18 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Dialog, DialogHeader } from '@astryxdesign/core/Dialog';
+import { Button } from '@astryxdesign/core/Button';
+import { Layout, LayoutContent } from '@astryxdesign/core/Layout';
+import styles from './GameLabPlayer.module.css';
 
 /**
  * The iframe (and with it the WebGL context and render loop) exists only after
  * an explicit Launch, and is removed again on Exit.
+ *
+ * A launched game runs in a fullscreen native modal dialog (browser top layer),
+ * so the fixed WAP header and mobile bottom nav can never cover game controls
+ * and there is no outer scroll trap. Exit and Escape both unmount the frame.
  */
 export default function GameLabPlayer({ slug, title }: { slug: string; title: string }) {
   const router = useRouter();
@@ -17,28 +25,40 @@ export default function GameLabPlayer({ slug, title }: { slug: string; title: st
   }
 
   return (
-    <div className="game-lab-player">
-      <div style={{ marginBottom: '0.75rem' }}>
-        {launched ? (
-          <button type="button" className="btn btn-outline btn-sm" onClick={exit} data-testid="game-lab-exit">
-            Exit
-          </button>
-        ) : (
-          <button type="button" className="btn btn-primary btn-sm" onClick={() => setLaunched(true)} data-testid="game-lab-launch">
-            Launch {title}
-          </button>
-        )}
-      </div>
+    <>
+      <Button label={`Launch ${title}`} variant="primary" onClick={() => setLaunched(true)} data-testid="game-lab-launch" />
       {launched ? (
-        <iframe
-          title={title}
-          src={`/api/admin/game-lab/${slug}/index.html`}
-          data-testid="game-lab-frame"
-          style={{ width: '100%', height: 'min(80vh, 760px)', minHeight: 520, border: '1px solid #d0d5dd', borderRadius: 8, background: '#000' }}
-        />
-      ) : (
-        <p data-testid="game-lab-idle">Nothing is loaded until you press Launch.</p>
-      )}
-    </div>
+        <Dialog
+          isOpen
+          variant="fullscreen"
+          purpose="form"
+          onOpenChange={(open) => {
+            if (!open) exit();
+          }}
+          className={styles.dialog}
+          data-testid="game-lab-dialog"
+        >
+          <Layout
+            header={
+              <DialogHeader
+                title={title}
+                hasDivider
+                endContent={<Button label="Exit" onClick={exit} data-testid="game-lab-exit" />}
+              />
+            }
+            content={
+              <LayoutContent padding={0}>
+                <iframe
+                  title={title}
+                  src={`/api/admin/game-lab/${slug}/index.html`}
+                  data-testid="game-lab-frame"
+                  className={styles.frame}
+                />
+              </LayoutContent>
+            }
+          />
+        </Dialog>
+      ) : null}
+    </>
   );
 }

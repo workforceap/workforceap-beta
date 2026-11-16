@@ -17,6 +17,7 @@ import {
   PRODUCTION_CANARY_PATHS,
   PRODUCTION_CANARY_ROLES,
   REDIRECT_ONLY_PATHS,
+  FLAG_GATED_PATHS,
   REQUIRED_DYNAMIC_PATHS,
   ROLE_ACCESS_ROOTS,
   ROLE_ACCESS_MATRIX,
@@ -1628,6 +1629,7 @@ async function run() {
       staticPaths: STATIC_PATHS,
       dynamicPaths: DYNAMIC_PATHS,
       redirectOnlyPaths: REDIRECT_ONLY_PATHS,
+      flagGatedPaths: FLAG_GATED_PATHS,
     });
     artifact.inventory = { ...inventory, status: inventory.ok ? 'passed' : 'failed' };
     checkpoint();

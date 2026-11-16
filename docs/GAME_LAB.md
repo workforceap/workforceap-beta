@@ -25,4 +25,17 @@ The flag row is not created by code or migration.
 3. Rollback: delete the row, then revert the merge commit. Nothing else depends on this feature.
 
 ## Local verification
-`npm run preview:local`, then `node scripts/game-lab/preview-matrix.mjs`, `scripts/game-lab/preview-pages.mjs`. The prototypes' own `browser-check.mjs` (source SHA `ebcbe6d5e`, `prototypes/wap-practice-3d*/`) was run unmodified apart from pointing its base URL at the authenticated route with a logged-in admin storage state; it is not vendored here. `preview-flows.mjs` prepares that state. Guarded preview only (`localhost:3100`); they refuse other hosts.
+```bash
+npm run preview:local      # guarded: local Postgres, auth shim, mail sink, next dev on :3100
+npm run game-lab:verify    # exits 1 on any violation; evidence in GAME_LAB_EVIDENCE (default .local-preview/game-lab-evidence)
+npm run preview:local:down
+```
+
+`scripts/game-lab/verify-preview.mjs` refuses any non-local environment. It runs the auth/flag matrix for anonymous, student, every other role fixture (each checked against `/api/auth/me`) and admin with no row, an OFF row and an ON row. It then plays both games through the real page and iframe at 1280, 390 and 320 wide with ordinary clicks (pause/resume, retry, every stage, keyboard-only, reduced motion, WebGL off). It removes the flag in `finally`.
+
+Pass/fail lives in `scripts/game-lab/verdicts.mjs`. `tests/game-lab/verdicts.test.mjs` (unit lane) proves that a wrong status, leaked content, an external request, a console error, a DB write and a missing or unwired mail sink each fail.
+
+Mail and analytics in the preview:
+- The preview points Resend at a loopback capture sink (`scripts/lib/preview-mail-sink.cjs`, `RESEND_BASE_URL`); the guard refuses any other mail URL. A contact-form control send must be captured before the gameplay window opens.
+- Third-party tags (GTM, Vercel analytics, Sentry user) are off when `LOCAL_PREVIEW=1` outside Vercel (`lib/runtime/localPreview.ts`), so the run demands zero external requests and zero console errors with no filtering.
+- The gameplay window must change no row in any public table (row count plus xmin watermark) and send no mail.

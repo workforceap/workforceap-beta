@@ -27,7 +27,7 @@ export const GAME_LAB_GAMES: readonly GameLabGame[] = [
   {
     slug: 'firewall-defender-3d',
     title: 'Firewall Defender 3D',
-    summary: 'Write firewall rules to let good traffic in and keep bad traffic out across three escalating stages.',
+    summary: 'Judge incoming traffic against a firewall policy: allow, block or reset across three stages and a boss.',
     saveKey: 'wap-practice-3d-security-save-v1',
   },
 ];
