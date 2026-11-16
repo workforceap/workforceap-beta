@@ -11,7 +11,7 @@ const NODE_TEST_GLOBS = [
   'shared/**/*.test.ts',
   'scripts/**/*.test.ts',
   'scripts/**/*.test.cjs',
-  'assets/game-lab/*/rules.test.mjs',
+  'tests/game-lab/*.rules.test.mjs',
 ] as const;
 
 const NODE_REAL_DB_SKIP = new Set(['lib/auth/roles.test.ts']);

@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {act,fresh,loadSave,record,score,validateSave} from './rules.mjs';
+import {act,fresh,loadSave,record,score,validateSave} from '../../assets/game-lab/packet-quest-3d/rules.mjs';
 const run=(stage,steps)=>steps.reduce(act,fresh(stage));
 const win=(stage,purpose='page',repair=null)=>{let steps=repair?[{type:'repair',node:repair}]:stage===0?[{type:'repair',node:'switch'}]:[];if(purpose==='dns')steps.push({type:'hop',node:'client'},{type:'hop',node:'switch'},{type:'hop',node:'dns'},{type:'launch'},{type:'hop',node:'client'},{type:'hop',node:'switch'},{type:'hop',node:'router'},{type:'hop',node:'server'},{type:'launch'});else if(stage===0)steps.push({type:'hop',node:'client'},{type:'hop',node:'switch'},{type:'hop',node:'server'},{type:'launch'});else steps.push({type:'purpose',value:purpose},{type:'hop',node:'client'},{type:'hop',node:'switch'},{type:'hop',node:'router'},{type:'hop',node:'server'},{type:'launch'});return run(stage,steps);};
 test('stage 1 reaches local server without a gateway',()=>{const s=win(0);assert.equal(s.status,'win');assert.equal(s.hp,3);});

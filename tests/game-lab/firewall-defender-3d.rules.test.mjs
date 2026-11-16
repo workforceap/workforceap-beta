@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as R from './rules.mjs';
+import * as R from '../../assets/game-lab/firewall-defender-3d/rules.mjs';
 
 const {parseIPv4, inCidr, ruleMatches, evaluatePolicy, judgeEmail, judgeLogin, correctAction, explain, fresh, tick, decide, STAGES} = R;
 const clean = (stage) => fresh(stage);
