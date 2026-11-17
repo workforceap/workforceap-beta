@@ -13,7 +13,9 @@ import styles from './GameLabPlayer.module.css';
  *
  * A launched game runs in a fullscreen native modal dialog (browser top layer),
  * so the fixed WAP header and mobile bottom nav can never cover game controls
- * and there is no outer scroll trap. Exit and Escape both unmount the frame.
+ * and there is no outer scroll trap. The Exit button always unmounts the frame.
+ * Escape exits only while focus is in the WAP page: once focus moves into the
+ * game iframe, its key events stay inside the frame and never reach this page.
  */
 export default function GameLabPlayer({ slug, title }: { slug: string; title: string }) {
   const router = useRouter();

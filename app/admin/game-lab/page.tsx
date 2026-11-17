@@ -6,6 +6,7 @@ import { canUseGameLab } from '@/lib/game-lab/access';
 import { GAME_LAB_GAMES } from '@/lib/game-lab/manifest';
 import PortalPageFrame from '@/components/portal/PortalPageFrame';
 import GameLabResetProgress from '@/components/admin/game-lab/GameLabResetProgress';
+import { StatusTag } from '@/components/portal/kit';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,9 @@ export default async function GameLabPage() {
       subtitle="Admin-only practice sandbox. Nothing here is saved to WorkforceAP."
     >
       <p>
-        <strong data-testid="game-lab-prerelease-badge">Pre-release</strong>
+        <StatusTag tone="warn" data-testid="game-lab-prerelease-badge">
+          Pre-release
+        </StatusTag>
       </p>
       <p data-testid="game-lab-disclaimer">
         Original WAP Practice lessons. Not course or Coursera credit, not teaching-reviewed, and no student records, XP, attendance or grades are created.

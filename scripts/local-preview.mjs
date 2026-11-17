@@ -80,14 +80,21 @@ async function waitFor(label, probe, timeoutMs) {
   process.exit(1);
 }
 
+// Returns the pids it stopped so `down` can name each one.
 function killListener(port) {
-  if (!isWin) { spawnSync('sh', ['-c', 'fuser -k ' + port + '/tcp'], { stdio: 'ignore' }); return; }
+  if (!isWin) {
+    const r = spawnSync('sh', ['-c', 'fuser -k ' + port + '/tcp'], { encoding: 'utf8' });
+    return (r.stdout || '').trim().split(/\s+/).filter(Boolean).map(Number);
+  }
   const r = spawnSync('netstat', ['-ano', '-p', 'TCP'], { encoding: 'utf8' });
   const re = new RegExp('\\s(?:127\\.0\\.0\\.1|\\[::1\\]|\\[::\\]|0\\.0\\.0\\.0):' + port + '\\s+\\S+\\s+LISTENING\\s+(\\d+)');
+  const pids = new Set();
   for (const line of (r.stdout || '').split(/\r?\n/)) {
     const m = line.match(re);
-    if (m) killTree(Number(m[1]));
+    if (m) pids.add(Number(m[1]));
   }
+  for (const pid of pids) killTree(pid);
+  return [...pids];
 }
 
 // Belt and braces: next dev spawns workers, so also stop any node process whose command line points into this checkout's preview.
@@ -101,10 +108,17 @@ function killByCommandLine() {
 
 async function down({ purge } = {}) {
   const state = readState();
-  for (const [name, pid] of Object.entries(state.pids || {})) { log('stopping ' + name + ' (pid ' + pid + ')'); killTree(pid); }
   const env = buildPreviewEnv();
+  const portOf = { web: Number(env.PREVIEW_WEB_PORT), authShim: Number(env.PREVIEW_AUTH_PORT), mailSink: Number(env.PREVIEW_MAIL_PORT) };
+  for (const [name, pid] of Object.entries(state.pids || {})) {
+    log('stopping ' + name + ' (pid ' + pid + (portOf[name] ? ', port ' + portOf[name] : '') + ')');
+    killTree(pid);
+  }
   // Leave nothing behind: anything still listening on the preview's own ports is ours.
-  for (const port of [Number(env.PREVIEW_WEB_PORT), Number(env.PREVIEW_AUTH_PORT), Number(env.PREVIEW_MAIL_PORT)]) killListener(port);
+  for (const [name, port] of Object.entries(portOf)) {
+    const pids = killListener(port);
+    log(pids.length ? 'stopped ' + name + ' listener on port ' + port + ' (pid ' + pids.join(', ') + ')' : name + ' port ' + port + ' free');
+  }
   killByCommandLine();
   run('docker', ['rm', '-f', CONTAINER], process.env, { stdio: 'ignore' });
   if (purge) run('docker', ['volume', 'rm', '-f', VOLUME], process.env, { stdio: 'ignore' });
