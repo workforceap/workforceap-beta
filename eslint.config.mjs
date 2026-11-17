@@ -135,7 +135,7 @@ const config = [
   {
     // Astro's compiled assets are also staged into public before the Next build.
     // Keep handwritten public scripts in lint; ignore only generated chunks.
-    ignores: [".next/**", "marketing/dist/**", "public/_astro/**", "node_modules/**", ".claude/**"],
+    ignores: [".next/**", "marketing/dist/**", "public/_astro/**", "node_modules/**", ".claude/**", "assets/game-lab/vendor/**"],
   },
   ...nextVitals,
   tseslint.configs.base,

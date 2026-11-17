@@ -1,0 +1,18 @@
+.frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--wa-bg);
+}
+
+/* The app's unlayered global `h2` size outranks Astryx's layered heading size, so the
+   dialog title would render at the page-heading size, wrap at 320px and lose its top
+   line. Restore the Astryx dialog-title scale and keep it on one line. */
+.dialog h2 {
+  font-size: var(--text-heading-2-size);
+  line-height: var(--text-heading-2-leading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
