@@ -16,6 +16,39 @@ export function chooseInviteAcceptOrganizationId(
   return defaultOrganizationId;
 }
 
+export type InviteAcceptExistingAffiliationDecision = 'assign' | 'keep' | 'refuse';
+
+/**
+ * PartnerUser.userId is unique: one person is one partner. Admin partner-invite
+ * already refuses a cross-tenant relink; public invite-accept must not silently
+ * rewrite that exclusive row onto another partner at all.
+ */
+export function decideInviteAcceptExistingPartnerLink(args: {
+  invitationRole: string;
+  targetPartnerId: string | null;
+  existingPartnerId: string | null;
+}): InviteAcceptExistingAffiliationDecision {
+  if (args.invitationRole !== 'partner' || !args.targetPartnerId) return 'keep';
+  if (!args.existingPartnerId) return 'assign';
+  return args.existingPartnerId === args.targetPartnerId ? 'keep' : 'refuse';
+}
+
+/**
+ * Counselor.userId is unique. Accepting a counselor invite must not move an
+ * existing counselor onto another partner (or off a partner) the way
+ * `ensureCounselorRow` used to rewrite `partnerId`.
+ */
+export function decideInviteAcceptExistingCounselorLink(args: {
+  invitationRole: string;
+  targetPartnerId: string | null;
+  existingCounselor: boolean;
+  existingPartnerId: string | null;
+}): InviteAcceptExistingAffiliationDecision {
+  if (args.invitationRole !== 'counselor') return 'keep';
+  if (!args.existingCounselor) return 'assign';
+  return (args.existingPartnerId ?? null) === (args.targetPartnerId ?? null) ? 'keep' : 'refuse';
+}
+
 /** Fields written onto an existing invitee. Must never include organizationId. */
 export function buildInviteAcceptExistingUserUpdate(fields: {
   fullName: string;

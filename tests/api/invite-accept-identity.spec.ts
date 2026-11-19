@@ -20,6 +20,10 @@ vi.mock('@/lib/db/prisma', () => {
     profile: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
     role: { findFirst: vi.fn() },
     userRole: { upsert: vi.fn() },
+    subgroup: { findUnique: vi.fn() },
+    partnerUser: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
+    counselor: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
+    memberSubgroup: { findFirst: vi.fn(), create: vi.fn() },
   };
   return { prisma: { ...tx, $transaction: vi.fn(async (callback: (client: typeof tx) => unknown) => callback(tx)) } };
 });
@@ -75,6 +79,10 @@ describe('public invitation acceptance identity boundary', () => {
     vi.mocked(prisma.profile.create).mockResolvedValue({ id: 'profile-1' } as never);
     vi.mocked(prisma.user.create).mockResolvedValue({ id: otherAuthId } as never);
     vi.mocked(prisma.role.findFirst).mockResolvedValue({ id: 'member-role' } as never);
+    vi.mocked(prisma.subgroup.findUnique).mockResolvedValue(null);
+    vi.mocked(prisma.partnerUser.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.counselor.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.memberSubgroup.findFirst).mockResolvedValue(null);
   });
 
   it('does not reset a duplicate Auth identity or claim its invite on an anonymous retry', async () => {
@@ -152,5 +160,78 @@ describe('public invitation acceptance identity boundary', () => {
       data: expect.objectContaining({ acceptedById: otherAuthId }),
     }));
     expect(authAdmin.updateUserById).not.toHaveBeenCalled();
+  });
+
+  it('does not move an existing partner user onto another partner', async () => {
+    const subgroupId = '550e8400-e29b-41d4-a716-446655440010';
+    vi.mocked(prisma.invitation.findFirst).mockResolvedValue({
+      id: 'inv-1', email, role: 'partner', invitedById: 'inviter-1',
+      subgroupId, partnerId: null, counselorAffiliation: null,
+      programSlug: null, status: 'pending', expiresAt: new Date('2999-01-01'),
+    } as never);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+      id: appUserId, fullName: 'Invitee', email, enrolledProgram: null,
+    } as never);
+    authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
+    vi.mocked(prisma.subgroup.findUnique).mockResolvedValue({ partnerId: 'partner-b' } as never);
+    vi.mocked(prisma.partnerUser.findFirst).mockResolvedValue({
+      id: 'pu-1', partnerId: 'partner-a',
+    } as never);
+
+    const response = await POST(inviteRequest());
+    const body = await response.json() as { code?: string };
+
+    expect(response.status).toBe(409);
+    expect(body.code).toBe('ALREADY_AFFILIATED');
+    expect(prisma.invitation.updateMany).not.toHaveBeenCalled();
+    expect(prisma.partnerUser.update).not.toHaveBeenCalled();
+    expect(prisma.partnerUser.create).not.toHaveBeenCalled();
+  });
+
+  it('keeps a same-partner invite from rewriting the exclusive partner link', async () => {
+    const subgroupId = '550e8400-e29b-41d4-a716-446655440010';
+    vi.mocked(prisma.invitation.findFirst).mockResolvedValue({
+      id: 'inv-1', email, role: 'partner', invitedById: 'inviter-1',
+      subgroupId, partnerId: null, counselorAffiliation: null,
+      programSlug: null, status: 'pending', expiresAt: new Date('2999-01-01'),
+    } as never);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+      id: appUserId, fullName: 'Invitee', email, enrolledProgram: null,
+    } as never);
+    authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
+    vi.mocked(prisma.subgroup.findUnique).mockResolvedValue({ partnerId: 'partner-a' } as never);
+    vi.mocked(prisma.partnerUser.findFirst).mockResolvedValue({
+      id: 'pu-1', partnerId: 'partner-a',
+    } as never);
+
+    const response = await POST(inviteRequest());
+
+    expect(response.status).toBe(200);
+    expect(prisma.invitation.updateMany).toHaveBeenCalled();
+    expect(prisma.partnerUser.update).not.toHaveBeenCalled();
+    expect(prisma.partnerUser.create).not.toHaveBeenCalled();
+  });
+
+  it('does not move an existing counselor onto another partner', async () => {
+    vi.mocked(prisma.invitation.findFirst).mockResolvedValue({
+      id: 'inv-1', email, role: 'counselor', invitedById: 'inviter-1',
+      subgroupId: null, partnerId: 'partner-b', counselorAffiliation: 'partner',
+      programSlug: null, status: 'pending', expiresAt: new Date('2999-01-01'),
+    } as never);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+      id: appUserId, fullName: 'Invitee', email, enrolledProgram: null,
+    } as never);
+    authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
+    vi.mocked(prisma.counselor.findFirst).mockResolvedValue({
+      id: 'c-1', partnerId: 'partner-a', active: true, affiliation: 'partner',
+    } as never);
+
+    const response = await POST(inviteRequest());
+    const body = await response.json() as { code?: string };
+
+    expect(response.status).toBe(409);
+    expect(body.code).toBe('ALREADY_AFFILIATED');
+    expect(prisma.invitation.updateMany).not.toHaveBeenCalled();
+    expect(prisma.counselor.update).not.toHaveBeenCalled();
   });
 });
