@@ -8,6 +8,9 @@ import { tryResolveOrgFromRequest } from '@/lib/tenant/resolveOrgFromRequest';
 import {
   buildInviteAcceptExistingUserUpdate,
   chooseInviteAcceptOrganizationId,
+  decideInviteAcceptExistingProfileRole,
+  InviteAcceptExistingProfileError,
+  profileRoleForInvitation,
 } from '@/lib/invitations/resolveInviteAcceptOrg';
 import { invitationRoleLabel, inviteAcceptLoginRedirect } from '@/lib/invitations/inviteRoleLabels';
 import { checkInviteAcceptRateLimit } from '@/lib/rate-limit';
@@ -45,8 +48,29 @@ type AcceptInvitation = {
   expiresAt: Date;
 };
 
-function profileRoleForInvitation(role: string): string {
-  return role === 'member' ? 'member' : role === 'counselor' ? 'counselor' : role;
+function refuseExistingProfileRole() {
+  return NextResponse.json(
+    {
+      error:
+        'This account already has a staff role. An administrator has to change it; this invitation cannot replace it.',
+      code: 'ALREADY_PRIVILEGED',
+    },
+    { status: 409 },
+  );
+}
+
+async function assertInviteAcceptProfileRole(
+  tx: InviteTx,
+  userId: string,
+  invitationRole: InvitationRole,
+): Promise<'write' | 'keep'> {
+  const profile = await tx.profile.findFirst({
+    where: { userId },
+    select: { role: true },
+  });
+  const decision = decideInviteAcceptExistingProfileRole(profile?.role, invitationRole);
+  if (decision === 'refuse') throw new InviteAcceptExistingProfileError();
+  return decision;
 }
 
 async function ensureProfileRow(
@@ -54,6 +78,7 @@ async function ensureProfileRow(
   userId: string,
   data: {
     role: string;
+    preserveExistingRole?: boolean;
     profilePhone?: string | null;
     consentTerms?: boolean;
     consentCommunications?: boolean;
@@ -63,14 +88,17 @@ async function ensureProfileRow(
   // profiles.user_id), so avoid upsert({ where: { userId } }) here.
   const existing = await tx.profile.findFirst({
     where: { userId },
-    select: { id: true },
+    select: { id: true, role: true },
   });
 
   if (existing) {
+    if (decideInviteAcceptExistingProfileRole(existing.role, data.role) === 'refuse') {
+      throw new InviteAcceptExistingProfileError();
+    }
     return tx.profile.update({
       where: { id: existing.id },
       data: {
-        role: data.role,
+        ...(data.preserveExistingRole ? {} : { role: data.role }),
         profilePhone: data.profilePhone ?? undefined,
       },
     });
@@ -472,6 +500,9 @@ async function acceptExistingUser(
   let txStep = 'start';
   try {
     await prisma.$transaction(async (tx) => {
+      txStep = 'assert_existing_profile_role';
+      const profileDecision = await assertInviteAcceptProfileRole(tx, user.id, invitation.role);
+
       txStep = 'claim_invitation_existing';
       await claimPendingInvitationForAccept(tx, invitation.id, user.id);
 
@@ -488,6 +519,7 @@ async function acceptExistingUser(
       txStep = 'ensure_existing_profile';
       await ensureProfileRow(tx, user.id, {
         role: profileRoleForInvitation(invitation.role),
+        preserveExistingRole: profileDecision === 'keep',
         consentTerms: false,
         consentCommunications: false,
       });
@@ -569,6 +601,9 @@ async function acceptExistingUser(
   } catch (dbError) {
     if (dbError instanceof InvitationClaimError) {
       return NextResponse.json({ error: 'Invitation no longer valid' }, { status: 400 });
+    }
+    if (dbError instanceof InviteAcceptExistingProfileError) {
+      return refuseExistingProfileRole();
     }
     console.error('[acceptExistingUser] transaction failed:', dbError);
     return NextResponse.json(
@@ -729,6 +764,9 @@ async function finishNewUserDbSetup(
     await prisma.$transaction(async (tx) => {
       inviteAcceptLog('tx:start', { invitationId });
 
+      txStep = 'assert_existing_profile_role';
+      const profileDecision = await assertInviteAcceptProfileRole(tx, authUserId, invitation.role);
+
       txStep = 'claim_invitation';
       await claimPendingInvitationForAccept(tx, invitation.id, authUserId);
 
@@ -776,6 +814,7 @@ async function finishNewUserDbSetup(
       inviteAcceptLog('tx:ensure_profile', { invitationId });
       await ensureProfileRow(tx, authUserId, {
         role: profileRoleForInvitation(invitation.role),
+        preserveExistingRole: profileDecision === 'keep',
         profilePhone: phone,
       });
 
@@ -829,6 +868,9 @@ async function finishNewUserDbSetup(
   } catch (dbError) {
     if (dbError instanceof InvitationClaimError) {
       return NextResponse.json({ error: 'Invitation no longer valid' }, { status: 400 });
+    }
+    if (dbError instanceof InviteAcceptExistingProfileError) {
+      return refuseExistingProfileRole();
     }
     inviteAcceptLog('tx:failed', { invitationId, err: dbError });
     console.error('[finishNewUserDbSetup] transaction failed:', dbError);
