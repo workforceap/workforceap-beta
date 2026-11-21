@@ -57,3 +57,41 @@ export const EVENT_LABELS: Record<string, string> = {
   referral_referee_reward:  'Joined through a friend’s referral',
   daily_study:              'Studied today',
 };
+
+/**
+ * Events production code actually awards through `awardPoints()`. Keep this in
+ * sync with those call sites — grep for `awardPoints(` before adding one.
+ * Anything outside this set must not be promised to a member.
+ *
+ *   - assessment_completed   → app/api/member/assessment/submit/route.ts
+ *   - program_enrolled       → app/api/member/enroll/route.ts
+ *   - course_completed       → lib/member/courseCompletion.ts
+ *   - counselor_session      → app/api/counselor/feedback/route.ts
+ *   - placement_recorded     → app/api/admin/placements/route.ts
+ *   - certification_earned   → lib/certifications/certificationApproved.ts
+ *   - interview_requested    → app/api/member/interview-request/route.ts
+ *   - resume_uploaded        → app/api/member/resume/upload/route.ts
+ *   - job_application        → app/api/(portal)/dashboard/jobs/[id]/apply/route.ts
+ *                              + app/api/member/job-applications/route.ts
+ *                              + app/api/member/job-applications/log-external/route.ts
+ *                              + app/api/member/applications/route.ts
+ *                              + app/api/member/applications/[id]/route.ts
+ *   - pathway_step_completed → app/api/member/pathway-steps/[pathwayId]/[stepIndex]/complete/route.ts
+ *   - daily_study            → lib/xapi/inboundStatementPipeline.ts
+ *
+ * `counselor_bonus` is staff-awarded with a custom amount, and the referral
+ * rewards go through `createMany`, so neither is member-earnable here.
+ */
+export const WIRED_EVENTS = new Set<string>([
+  'assessment_completed',
+  'program_enrolled',
+  'course_completed',
+  'counselor_session',
+  'placement_recorded',
+  'certification_earned',
+  'interview_requested',
+  'resume_uploaded',
+  'job_application',
+  'pathway_step_completed',
+  'daily_study',
+]);
