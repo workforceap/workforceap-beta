@@ -1,5 +1,7 @@
 import type { AssessmentReviewRow } from '@/lib/assessment/reviewRows';
 import { mostRepeatedAnswerCount, STRAIGHT_LINE_MIN_SAME } from '@/lib/assessment/answerPattern';
+import WapatReport from '@/components/assessment/WapatReport';
+import { computeWapat } from '@/lib/assessment/wapat';
 import styles from './staffReadonly.module.css';
 
 type Props = {
@@ -25,7 +27,7 @@ export default function AssessmentAnswersReadonly({
   scorePct,
   completedAt,
   programInterest,
-  title = 'Training preassessment (skills check)',
+  title = 'WAPAT (Workforce Advancement Project Assessment Score)',
 }: Props) {
   const completed = completedAt ? new Date(completedAt) : null;
   const correctCount = rows.filter((r) => r.correct).length;
@@ -39,7 +41,7 @@ export default function AssessmentAnswersReadonly({
       <h2 className={styles.title}>{title}</h2>
       <p className={`wa-kit-meta ${styles.lede}`}>
         {completed ? `Submitted ${completed.toLocaleString()}` : 'Submitted'}
-        {score != null ? ` · Score ${score} (${scorePct ?? 0}%)` : ''}
+        {score != null ? ` · Points score (legacy, weighted) ${score} (${scorePct ?? 0}%)` : ''}
         {` · ${correctCount}/${rows.length} correct`}
         {programInterest ? ` · Interest: ${programInterest}` : ''}
       </p>
@@ -49,6 +51,7 @@ export default function AssessmentAnswersReadonly({
           member clicked through. Ask them to retake it before using this score for WIOA review.
         </p>
       ) : null}
+      <WapatReport result={computeWapat(rows)} heading="WAPAT scores" />
       <details className={styles.body}>
         <summary className={styles.summary}>
           Full answer sheet ({rows.length} questions)

@@ -58,7 +58,7 @@ export default function RecentSignupsTable({ users }: RecentSignupsTableProps) {
           },
           {
             key: 'score',
-            header: 'Score %',
+            header: 'Points score % (legacy)',
             cell: (u) => (
               <span
                 className={

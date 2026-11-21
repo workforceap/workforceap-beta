@@ -70,6 +70,7 @@ type Intake = {
   assessmentCompleted?: boolean;
   assessmentAttemptCount?: number;
   assessmentRetakeRequestedAt?: Date | null;
+  assessmentAnswers?: unknown;
   preScreeningResponse?: { id: string } | null;
   interviewEligible?: boolean;
   interviewRequestedAt?: Date | null;
@@ -85,6 +86,7 @@ function member(over: Intake = {}) {
     assessmentAttemptCount: over.assessmentCompleted === false ? 0 : 1,
     assessmentRetakeRequestedAt: null,
     assessmentHistory: [],
+    assessmentAnswers: null,
     assessmentScorePct: 80,
     assessmentCompletedAt: new Date('2026-09-01T15:00:00Z'),
     programInterest: null,
@@ -128,7 +130,7 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
     await renderPage({ assessmentRetakeRequestedAt: new Date('2026-10-15T00:00:00Z') });
     expect(screen.getByText('Your final preassessment attempt is ready')).toBeInTheDocument();
     expect(screen.getByTestId('assessment-form')).toBeInTheDocument();
-    expect(screen.getByText('1 of 2 attempts completed.')).toBeInTheDocument();
+    expect(screen.getByText(/1 of 2 attempts completed/)).toBeInTheDocument();
   });
 
   it('scopes the first unused attempt separately from any later authorized retake', async () => {
@@ -171,10 +173,16 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
   });
 
   it('does not render a form after both chances even with a stale pending flag', async () => {
-    await renderPage({ assessmentAttemptCount: 2, assessmentRetakeRequestedAt: new Date() });
+    const answers = Object.fromEntries(Array.from({ length: 35 }, (_, i) => [String(i + 1), 'A']));
+    await renderPage({ assessmentAttemptCount: 2, assessmentRetakeRequestedAt: new Date(), assessmentAnswers: answers });
     expect(screen.queryByTestId('assessment-form')).toBeNull();
     expect(screen.getByText(/Both preassessment chances/)).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Message your counselor about a retake' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'message your counselor about a retake' })).toHaveAttribute('href', '/dashboard/messages');
+    const result = screen.getByRole('heading', { name: 'WAPAT complete' });
+    const history = screen.queryByRole('heading', { name: 'Previous results' });
+    if (history) {
+      expect(result.compareDocumentPosition(history) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
   });
 
   it('loads the pre-screening draft query from the member row', async () => {
@@ -266,7 +274,7 @@ describe('/dashboard/assessment interview steps (WAP-197)', () => {
       interviewCompletedAt: new Date('2026-09-12T15:00:00Z'),
     });
     expect(screen.queryByRole('region', { name: 'Interview' })).toBeNull();
-    expect(screen.getByText('Preassessment complete')).toBeInTheDocument();
+    expect(screen.getByText('WAPAT complete')).toBeInTheDocument();
   });
 });
 

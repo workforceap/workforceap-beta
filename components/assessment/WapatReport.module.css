@@ -1,0 +1,76 @@
+.heading {
+  margin: 0 0 0.5rem;
+  font-size: var(--wa-type-body);
+  font-weight: 800;
+  color: var(--wa-text);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--wa-type-body);
+  color: var(--wa-text);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(4rem, 7rem) 4.5rem 5.5rem;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.45rem 0;
+}
+
+.label {
+  min-width: 0;
+}
+
+.range {
+  color: var(--wa-muted);
+}
+
+.meaning {
+  display: block;
+  color: var(--wa-muted);
+  font-weight: 400;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.barGap {
+  display: block;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.total {
+  font-weight: 800;
+  border-top: 1px solid var(--wa-border);
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+}
+
+/* 390px: the four columns do not fit, so the bar and the counts drop under the name. */
+@media (max-width: 480px) {
+  .row {
+    grid-template-columns: 1fr auto auto;
+  }
+
+  .label {
+    grid-column: 1 / -1;
+  }
+}
+
+/*
+ * The kit bar track is a 5% tint (about 1.1:1 on the white card), so the bar's
+ * extent was invisible. WCAG 1.4.11 asks 3:1 for the part of a control that
+ * identifies it: a 1px inset edge in the muted text color (5.3:1 on white) does that
+ * without changing the fill color or the scores.
+ */
+.row :global(.astryx-progressbar-track) {
+  box-shadow: inset 0 0 0 1px var(--wa-muted);
+}

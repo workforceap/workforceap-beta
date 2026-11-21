@@ -173,7 +173,7 @@ describe('admin payload keeps the score as a staff-only field', () => {
       },
     });
 
-    expect(row.staffReasons).toEqual(['Assessment score 85%']);
+    expect(row.staffReasons).toEqual(['Assessment points score 85% (legacy, not WAPAT)']);
     expect(row.matchReasons).not.toContain('Assessment score 85%');
   });
 
