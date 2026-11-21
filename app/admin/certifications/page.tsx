@@ -12,6 +12,7 @@ import {
   CertificationsQueueKit,
   type CertSubmission,
 } from '@/components/portal/kit/pages/admin-subviews/CertificationsQueueKit';
+import { signCertificationProofUrl } from '@/lib/certifications/signProofUrl';
 import { isReadOnlyPortalAuditHeader } from '@/lib/audit/readOnlyPortalAudit';
 import { CONFIRMED_PROGRAM_ENROLLMENTS_SELECT, resolveConfirmedProgramAssignment } from '@/lib/member/confirmedProgramAssignment';
 
@@ -68,10 +69,7 @@ export default async function AdminCertificationsAnalyticsPage({
         let proofHref: string | undefined;
         if (c.proofUrl && supabase) {
           try {
-            const { data } = await supabase.storage
-              .from('member-files')
-              .createSignedUrl(c.proofUrl, 3600);
-            proofHref = data?.signedUrl ?? undefined;
+            proofHref = await signCertificationProofUrl(supabase, c.proofUrl);
           } catch (err) {
             console.error('[admin/certifications] sign proof url failed:', err);
           }
