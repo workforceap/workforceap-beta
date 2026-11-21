@@ -340,8 +340,9 @@ export default function MainNav() {
         </LocalizedLink>
 
         {/* Mobile toggle */}
-        <button ref={toggleRef} type="button" className="mobile-nav-toggle" aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={mobileOpen} aria-controls={navMenuId} onClick={toggleMobile}>
+        <button ref={toggleRef} type="button" className="mobile-nav-toggle" aria-expanded={mobileOpen} aria-controls={navMenuId} onClick={toggleMobile}>
           {mobileOpen ? <X size={26} strokeWidth={2} aria-hidden /> : <Menu size={26} strokeWidth={2} aria-hidden />}
+          <span className="mobile-nav-toggle__label">{tNav('menu')}</span>
         </button>
 
         {/* Mobile backdrop */}
