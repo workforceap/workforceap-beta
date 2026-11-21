@@ -8,6 +8,7 @@ import { tryResolveOrgFromRequest } from '@/lib/tenant/resolveOrgFromRequest';
 import {
   buildInviteAcceptExistingUserUpdate,
   chooseInviteAcceptOrganizationId,
+  decideInviteAcceptExistingProgram,
 } from '@/lib/invitations/resolveInviteAcceptOrg';
 import { invitationRoleLabel, inviteAcceptLoginRedirect } from '@/lib/invitations/inviteRoleLabels';
 import { checkInviteAcceptRateLimit } from '@/lib/rate-limit';
@@ -25,7 +26,7 @@ import {
   isCurriculumMigrationPending,
 } from '@/lib/content/programs';
 import { activeCurriculumVersion } from '@/lib/member/curriculumAssignment';
-import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
+import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
@@ -44,6 +45,10 @@ type AcceptInvitation = {
   status: string;
   expiresAt: Date;
 };
+
+class InviteAcceptAlreadyEnrolledError extends Error {
+  readonly code = 'ALREADY_ENROLLED' as const;
+}
 
 function profileRoleForInvitation(role: string): string {
   return role === 'member' ? 'member' : role === 'counselor' ? 'counselor' : role;
@@ -390,7 +395,13 @@ async function ensureCounselorRow(
       const inviteEmail = String(invitation.email).trim().toLowerCase();
       const existingUser = await prisma.$transaction((tx) => tx.user.findFirst({
         where: { email: inviteEmail },
-        select: { id: true, fullName: true, email: true, enrolledProgram: true },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          enrolledProgram: true,
+          courseEnrollments: { where: { isPrimary: true }, take: 1, select: { programSlug: true } },
+        },
       }));
   
       if (existingUser) {
@@ -436,7 +447,13 @@ async function ensureCounselorRow(
 });
 
 async function acceptExistingUser(
-  user: { id: string; fullName: string; email: string; enrolledProgram: string | null },
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+    enrolledProgram: string | null;
+    courseEnrollments: Array<{ programSlug: string }>;
+  },
   invitation: AcceptInvitation,
   fullName: string,
   _request: NextRequest
@@ -472,6 +489,17 @@ async function acceptExistingUser(
   let txStep = 'start';
   try {
     await prisma.$transaction(async (tx) => {
+      txStep = 'resolve_existing_program';
+      const programDecision = decideInviteAcceptExistingProgram({
+        invitationRole: invitation.role,
+        invitationProgramSlug: invitation.programSlug,
+        enrolledProgram: user.enrolledProgram,
+        primaryProgramSlug: user.courseEnrollments?.[0]?.programSlug ?? null,
+      });
+      if (programDecision === 'refuse') {
+        throw new InviteAcceptAlreadyEnrolledError();
+      }
+
       txStep = 'claim_invitation_existing';
       await claimPendingInvitationForAccept(tx, invitation.id, user.id);
 
@@ -519,34 +547,42 @@ async function acceptExistingUser(
         await ensureMemberSubgroupLink(tx, user.id, invitation.subgroupId, invitation.invitedById);
       }
 
-      if (invitation.role === 'member' && invitation.programSlug) {
-        txStep = 'update_member_program_existing';
-        await tx.user.update({
-          where: { id: user.id },
-          data: {
-            enrolledProgram: canonicalizeProgramSlug(invitation.programSlug),
-            enrolledAt: new Date(),
-            programChangedAt: new Date(),
-          },
-          select: { id: true },
-        });
-        txStep = 'sync_course_enrollment_existing';
-        const existingUserOrg = await tx.user.findUnique({
-          where: { id: user.id },
-          select: { organizationId: true },
-        });
-        if (existingUserOrg) {
-          await ensureCourseEnrollmentForInvite(
-            tx,
-            user.id,
-            existingUserOrg.organizationId,
-            invitation.programSlug,
-            invitation.invitedById,
-            Boolean(
-              user.enrolledProgram
-              && programSlugsEquivalent(user.enrolledProgram, invitation.programSlug),
-            ),
-          );
+      switch (programDecision) {
+        case 'keep':
+          break;
+        case 'assign': {
+          if (!invitation.programSlug) {
+            throw new Error('invite-accept assign requires a program slug');
+          }
+          txStep = 'update_member_program_existing';
+          await tx.user.update({
+            where: { id: user.id },
+            data: {
+              enrolledProgram: canonicalizeProgramSlug(invitation.programSlug),
+              enrolledAt: new Date(),
+              programChangedAt: new Date(),
+            },
+            select: { id: true },
+          });
+          txStep = 'sync_course_enrollment_existing';
+          const existingUserOrg = await tx.user.findUnique({
+            where: { id: user.id },
+            select: { organizationId: true },
+          });
+          if (existingUserOrg) {
+            await ensureCourseEnrollmentForInvite(
+              tx,
+              user.id,
+              existingUserOrg.organizationId,
+              invitation.programSlug,
+              invitation.invitedById,
+            );
+          }
+          break;
+        }
+        default: {
+          const _exhaustive: never = programDecision;
+          throw new Error(`Unhandled invite program decision: ${_exhaustive}`);
         }
       }
 
@@ -569,6 +605,12 @@ async function acceptExistingUser(
   } catch (dbError) {
     if (dbError instanceof InvitationClaimError) {
       return NextResponse.json({ error: 'Invitation no longer valid' }, { status: 400 });
+    }
+    if (dbError instanceof InviteAcceptAlreadyEnrolledError) {
+      return NextResponse.json(
+        { error: 'Already enrolled in a program. Changes require admin.', code: 'ALREADY_ENROLLED' },
+        { status: 400 },
+      );
     }
     console.error('[acceptExistingUser] transaction failed:', dbError);
     return NextResponse.json(
@@ -648,7 +690,13 @@ async function createNewUserAndAccept(
       // Check if a DB record exists for this email
       const existing = await prisma.$transaction((tx) => tx.user.findFirst({
         where: { email: inviteEmail },
-        select: { id: true, fullName: true, email: true, enrolledProgram: true },
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          enrolledProgram: true,
+          courseEnrollments: { where: { isPrimary: true }, take: 1, select: { programSlug: true } },
+        },
       }));
       if (existing) {
         return acceptExistingUser(existing, invitation, fullName, request);
