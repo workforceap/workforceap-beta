@@ -149,6 +149,10 @@ function prismaFake() {
         return row;
       },
     },
+    billingStageRecipient: {
+      deleteMany: async () => ({ count: 0 }),
+      createMany: async () => ({ count: 0 }),
+    },
     billingDesignatedSigner: { findFirst: async () => h.state.designated },
     $transaction: async (fn: (tx: unknown) => Promise<unknown>) => { mocks.transaction(); return fn(db); },
   };
@@ -164,6 +168,7 @@ import { GET as listCases, POST as openCase } from '@/app/api/admin/members/[id]
 import { GET as caseSummary } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/route';
 import { GET as downloadFile } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/files/[artifactId]/route';
 import { GET as previewDraft } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/draft/preview/route';
+import { PUT as saveDraftRoute } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/draft/route';
 import { POST as reviewDraftRoute } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/draft/review/route';
 import { GET as memberPreviewGet, POST as memberPreviewPost } from '@/app/api/admin/members/[id]/billing/two-stage/[stage]/preview/route';
 import { POST as uploadVoucher } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/voucher/route';
@@ -194,6 +199,9 @@ const base = `${ORIGIN}/api/admin/members/${h.MEMBER}/billing/two-stage/cases`;
 
 function jsonReq(url: string, body: unknown, headers: Record<string, string> = { origin: ORIGIN }) {
   return new Request(url, { method: 'POST', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
+}
+function putJson(url: string, body: unknown, headers: Record<string, string> = { origin: ORIGIN }) {
+  return new Request(url, { method: 'PUT', headers: { 'content-type': 'application/json', ...headers }, body: JSON.stringify(body) });
 }
 const memberParams = () => ({ params: Promise.resolve({ id: h.MEMBER }) });
 const caseParams = <T extends object>(extra: T = {} as T) => ({ params: Promise.resolve({ id: h.MEMBER, caseId: h.CASE, ...extra }) });
@@ -1575,7 +1583,16 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     };
   }
 
-  function seedSignableJ6(started: Attestation, authorizedAmountCents = 750_000) {
+  function seedSignableJ6(
+    started: Attestation,
+    authorizedAmountCents = 750_000,
+    voucherOver: {
+      authorizedProgramSlug?: string;
+      authorizedClassName?: string;
+      authorizedStartDate?: string;
+      authorizedEndDate?: string;
+    } = {},
+  ) {
     const quote = buildJ5Content({
       documentNumber: 'WAP-Q-2026-0001', logoSha256: logoSha, issueDate: '2026-09-20',
       student: { name: 'Jordan Example', email: 'jordan@example.test' },
@@ -1596,9 +1613,13 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     const voucherAttestation: Attestation = {
       id: 'att-voucher', kind: 'voucher_board_signed', statement: 'synthetic voucher', evidenceReference: 'synthetic voucher',
       classStartDate: null, classEndDate: null, artifactId: 'art-voucher', voucherReference: 'PO-44871-A',
-      authorizedAmountCents, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30',
+      authorizedAmountCents,
+      authorizedStartDate: voucherOver.authorizedStartDate ?? '2026-09-01',
+      authorizedEndDate: voucherOver.authorizedEndDate ?? '2027-04-30',
       receivedOn: '2026-09-29', receivingSignaturePresent: true, externalReference: null, externalQuoteDate: null,
-      quotedProgramSlug: null, quotedClassName: null, authorizedProgramSlug: SLUG, authorizedClassName: CLASS_NAME,
+      quotedProgramSlug: null, quotedClassName: null,
+      authorizedProgramSlug: voucherOver.authorizedProgramSlug ?? SLUG,
+      authorizedClassName: voucherOver.authorizedClassName ?? CLASS_NAME,
       studentReadyConfirmed: null, counselorRequestedBy: null, counselorRequestedOn: null, counselorRequestReference: null,
       attestedBySubjectId: h.ADMIN, attestedAt: '2026-09-29T16:00:00.000Z',
     };
@@ -1669,11 +1690,39 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     return { content, hash: built.contentSha256 };
   }
 
+  function persistDraftWrites() {
+    mocks.readSignature.mockResolvedValue(PNG);
+    mocks.archive.mockImplementation(async ({ caseId, kind, bytes }: { caseId: string; kind: string; bytes: Uint8Array }) => {
+      const sha = sha256Hex(bytes);
+      return { ref: { caseId, kind, bucket: 'billing-finance', key: `cases/${caseId}/j6/${sha}.pdf`, sha256: sha, byteLength: bytes.length, mimeType: 'application/pdf' }, reused: false };
+    });
+    mocks.artifactCreate.mockImplementation((data: Record<string, unknown>) => {
+      h.state.artifacts.push({ ...data, id: 'art-signed', createdAt: new Date(NOW_ISO) });
+    });
+    mocks.recordUpdate.mockImplementation(async (args: unknown) => {
+      const { where, data } = args as { where: { id: string; contentSha256?: string; status?: string }; data: Record<string, unknown> };
+      const row = h.state.records.find((r) => r.id === where.id);
+      if (!row) return { count: 0 };
+      if (where.status && row.status !== where.status) return { count: 0 };
+      if (where.contentSha256 && row.contentSha256 !== where.contentSha256) return { count: 0 };
+      Object.assign(row, data, data.status === 'signed' ? { signedAt: new Date(NOW_ISO) } : {});
+      return { count: 1 };
+    });
+  }
+
+  function j6SignReq(hash: string, content: { title: string; documentNumber: string }) {
+    return jsonReq(`${base}/${h.CASE}/j6/sign`, {
+      recordId: REC, version: 1, contentSha256: hash, intentConfirmed: true,
+      intentText: signerIntentStatement({ documentTitle: content.title, documentNumber: content.documentNumber, contentSha256: hash }),
+    });
+  }
+
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date(NOW_ISO));
     asDesignatedSigner();
     h.state.signatureAssets = [assetRow()];
+    persistDraftWrites();
   });
 
   afterEach(() => {
@@ -1711,14 +1760,55 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     expect(JSON.stringify(h.state.records.find((r) => r.id === REC))).toBe(before);
   });
 
-  it('records a voucher amount difference and still lets the designated signer freeze the J6', async () => {
+  it('records a voucher amount difference and still lets the designated signer save, review, freeze and sign the J6', async () => {
     const started = classStarted('att-start', '2026-09-30', '2027-03-30', '2026-10-01T15:00:00.000Z');
-    const { hash } = seedSignableJ6(started, 700_000);
+    const { content, hash } = seedSignableJ6(started, 700_000);
     const summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
     expect(summary.j6.holds).toEqual(['voucher_amount_differs']);
     expect(summary.j6.canSign).toBe(true);
-    const checkpoint = await freeze(jsonReq(`${base}/${h.CASE}/j6/freeze`, { recordId: REC, versionHash: hash }), caseParams({ stage: 'j6' }));
+    expect(summary.j6.canSaveDraft).toBe(true);
+
+    const review = await reviewDraftRoute(jsonReq(`${base}/${h.CASE}/j6/draft/review`, {}), caseParams({ stage: 'j6' }));
+    expect(review.status).toBe(200);
+    const reviewed = await review.json() as { complete: boolean; holds: string[]; blockers: Array<{ code: string; hardHold: boolean }> };
+    expect(reviewed.complete).toBe(true);
+    expect(reviewed.holds).toEqual(['voucher_amount_differs']);
+    expect(reviewed.blockers.filter((b) => !b.hardHold)).toEqual([]);
+
+    const saved = await saveDraftRoute(putJson(`${base}/${h.CASE}/j6/draft`, { expectedVersionHash: hash }), caseParams({ stage: 'j6' }));
+    expect(saved.status).toBe(200);
+    const savedBody = await saved.json() as { versionHash: string; holds: string[] };
+    expect(savedBody.holds).toEqual(['voucher_amount_differs']);
+    expect(savedBody.versionHash).toMatch(/^[0-9a-f]{64}$/u);
+
+    const checkpoint = await freeze(jsonReq(`${base}/${h.CASE}/j6/freeze`, { recordId: REC, versionHash: savedBody.versionHash }), caseParams({ stage: 'j6' }));
     expect(checkpoint.status).toBe(200);
+    const signed = await sign(j6SignReq(savedBody.versionHash, content), caseParams({ stage: 'j6' }));
+    expect(signed.status).toBe(200);
+    expect((await signed.json()).record.status).toBe('signed');
+    expect(mocks.archive).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps class and period voucher holds as review notes, not save/sign blockers', async () => {
+    const started = classStarted('att-start', '2026-09-30', '2027-03-30', '2026-10-01T15:00:00.000Z');
+    const { content, hash } = seedSignableJ6(started, 750_000, {
+      authorizedProgramSlug: 'it-support-and-entry-level-cyber-security-certificate',
+      authorizedClassName: 'A different class on the voucher',
+      authorizedEndDate: '2027-01-01',
+    });
+    const summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(summary.j6.holds).toEqual(expect.arrayContaining(['voucher_class_differs', 'voucher_period_conflict']));
+    expect(summary.j6.canSign).toBe(true);
+
+    const saved = await saveDraftRoute(putJson(`${base}/${h.CASE}/j6/draft`, { expectedVersionHash: hash }), caseParams({ stage: 'j6' }));
+    expect(saved.status).toBe(200);
+    const savedBody = await saved.json() as { versionHash: string; holds: string[] };
+    expect(savedBody.holds).toEqual(expect.arrayContaining(['voucher_class_differs', 'voucher_period_conflict']));
+    expect(savedBody.holds).not.toContain('voucher_amount_differs');
+
+    const signed = await sign(j6SignReq(savedBody.versionHash, content), caseParams({ stage: 'j6' }));
+    expect(signed.status).toBe(200);
+    expect((await signed.json()).record.status).toBe('signed');
   });
 });
 
