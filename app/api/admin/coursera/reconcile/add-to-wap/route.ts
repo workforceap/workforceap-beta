@@ -29,6 +29,8 @@ import {
 } from '@/lib/content/programs';
 import { LEGACY_CURRICULUM_VERSION } from '@/lib/content/programCurriculumManifest';
 import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
+import { deleteOrphanAuthUserAfterFailedProvision } from '@/lib/admin/deleteOrphanAuthUser';
+import { EXACT_EMAIL_CANDIDATE_LIMIT, pickExactEmailMatch } from '@/lib/db/exactEmailMatch';
 
 /**
  * POST /api/admin/coursera/reconcile/add-to-wap
@@ -163,6 +165,27 @@ const bodySchema = z.object({
         { status: 400 },
       );
     }
+
+    // Email is globally unique across tenants. Reconcile is org-scoped, so a
+    // learner who already has a WAP row (including mixed-case stored email)
+    // can still appear coursera-only here. Inviting then rolling back Auth
+    // on the unique collision would delete their real login.
+    const existingCandidates = await crossTenantOK(() =>
+      prisma.user.findMany({
+        where: { email: { equals: email, mode: 'insensitive' } },
+        select: { id: true, email: true },
+        take: EXACT_EMAIL_CANDIDATE_LIMIT,
+      }),
+    );
+    if (pickExactEmailMatch(existingCandidates, email)) {
+      return NextResponse.json(
+        {
+          error:
+            'A WorkforceAP account with this email already exists. Use the existing account or contact support.',
+        },
+        { status: 400 },
+      );
+    }
   
     // Defensive: if the request's externalId disagrees with what Coursera
     // sees today, prefer Coursera's value but flag it for the caller.
@@ -246,6 +269,22 @@ const bodySchema = z.object({
       return NextResponse.json(
         { error: err instanceof Error ? err.message : 'Supabase auth user creation failed' },
         { status: 500 },
+      );
+    }
+
+    const existingAppUser = await crossTenantOK(() =>
+      prisma.user.findUnique({
+        where: { id: supabaseUserId },
+        select: { id: true },
+      }),
+    );
+    if (existingAppUser) {
+      return NextResponse.json(
+        {
+          error:
+            'A WorkforceAP account with this email already exists. Use the existing account or contact support.',
+        },
+        { status: 400 },
       );
     }
   
@@ -366,12 +405,13 @@ const bodySchema = z.object({
     } catch (err) {
       captureApiError(err, { route: 'admin/coursera/reconcile/add-to-wap' });
   
-      // Best-effort rollback of the Supabase auth user so we don't leak
-      // an orphaned auth account on partial failure.
+      // Best-effort rollback of an Auth user minted in this request. Invite
+      // success is not proof of creation — only delete when no app User row
+      // claims this id.
       if (createdSupabaseUser) {
         try {
           const supabase = getSupabaseAdmin();
-          await supabase.auth.admin.deleteUser(supabaseUserId);
+          await deleteOrphanAuthUserAfterFailedProvision(supabase, supabaseUserId);
         } catch (rollbackErr) {
           captureApiError(rollbackErr, {
             route: 'admin/coursera/reconcile/add-to-wap',

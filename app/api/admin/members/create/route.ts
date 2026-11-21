@@ -20,6 +20,9 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 import { activeCurriculumVersion } from '@/lib/member/curriculumAssignment';
 import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
 import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
+import { EXACT_EMAIL_CANDIDATE_LIMIT, normalizeEmail, pickExactEmailMatch } from '@/lib/db/exactEmailMatch';
+import { deleteOrphanAuthUserAfterFailedProvision } from '@/lib/admin/deleteOrphanAuthUser';
+import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -126,6 +129,20 @@ const ETHNICITY_OPTIONS = [
   
     const fullName = `${firstName} ${lastName}`.trim() || firstName;
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.workforceap.org';
+
+    // Email is globally unique. Invite can return an existing unconfirmed Auth
+    // user on success; colliding with an app row and then rolling back Auth
+    // would delete that member's login. Refuse before inviting.
+    const existingCandidates = await crossTenantOK(() =>
+      prisma.user.findMany({
+        where: { email: { equals: normalizeEmail(email), mode: 'insensitive' } },
+        select: { id: true, email: true },
+        take: EXACT_EMAIL_CANDIDATE_LIMIT,
+      }),
+    );
+    if (pickExactEmailMatch(existingCandidates, email)) {
+      return NextResponse.json({ error: 'An account with this email already exists.' }, { status: 400 });
+    }
   
     const supabase = getSupabaseAdmin();
   
@@ -177,6 +194,16 @@ const ETHNICITY_OPTIONS = [
   
     if (!authUser) {
       return NextResponse.json({ error: 'Account creation failed' }, { status: 500 });
+    }
+
+    const existingAppUser = await crossTenantOK(() =>
+      prisma.user.findUnique({
+        where: { id: authUser.id },
+        select: { id: true },
+      }),
+    );
+    if (existingAppUser) {
+      return NextResponse.json({ error: 'An account with this email already exists.' }, { status: 400 });
     }
 
     let createdEnrollmentId: string | null = null;
@@ -277,10 +304,16 @@ const ETHNICITY_OPTIONS = [
       });
     } catch (dbError) {
       console.error('Admin create member DB error:', dbError);
-      await supabase.auth.admin.deleteUser(authUser.id).catch((cleanupError) => {
-        console.error('Failed to clean up auth user after member DB error:', cleanupError);
-      });
-      return NextResponse.json({ error: 'Failed to create member. Please try again.' }, { status: 500 });
+      await deleteOrphanAuthUserAfterFailedProvision(supabase, authUser.id);
+      const uniqueCollision = (dbError as { code?: string })?.code === 'P2002';
+      return NextResponse.json(
+        {
+          error: uniqueCollision
+            ? 'An account with this email already exists.'
+            : 'Failed to create member. Please try again.',
+        },
+        { status: uniqueCollision ? 400 : 500 },
+      );
     }
   
     after(() =>
