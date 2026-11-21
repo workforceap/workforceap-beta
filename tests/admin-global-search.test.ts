@@ -27,6 +27,19 @@ beforeEach(() => {
 const request = (query = 'Mike Brown', limit = '8') => new NextRequest(`https://www.workforceap.org/api/admin/search?q=${encodeURIComponent(query)}&limit=${limit}`);
 
 describe('admin search tenant and navigation boundaries', () => {
+  it('returns 401 before reading directory records when unsigned', async () => {
+    mocks.getUser.mockResolvedValue(null);
+    expect((await GET(request())).status).toBe(401);
+    expect(mocks.isAdmin).not.toHaveBeenCalled();
+    expect(mocks.getActorOrganizationId).not.toHaveBeenCalled();
+    for (const fn of [mocks.user, mocks.employer, mocks.partner, mocks.job]) expect(fn).not.toHaveBeenCalled();
+  });
+  it('returns 403 before reading directory records when the caller is not an admin', async () => {
+    mocks.isAdmin.mockResolvedValue(false);
+    expect((await GET(request())).status).toBe(403);
+    expect(mocks.getActorOrganizationId).not.toHaveBeenCalled();
+    for (const fn of [mocks.user, mocks.employer, mocks.partner, mocks.job]) expect(fn).not.toHaveBeenCalled();
+  });
   it('never reads directory records when organization resolution fails', async () => {
     mocks.getActorOrganizationId.mockRejectedValue(new Error('missing actor organization'));
     expect((await GET(request())).status).toBe(403);
