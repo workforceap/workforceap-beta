@@ -5,11 +5,11 @@ import { recordAssessmentSubmission } from '@/lib/assessment/recordSubmission';
 import { canSubmitAssessment, ASSESSMENT_LIMIT_MESSAGE, MAX_ASSESSMENT_ATTEMPTS } from '@/lib/assessment/attempts';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
-import { scoreAssessment, TOTAL_POINTS } from '@/lib/assessment/answer-key';
+import type { QuestionChoice } from '@/lib/assessment/answer-key';
+import { formatWapatScoreBlock, scoreWapat } from '@/lib/assessment/wapat-scores';
 import { isStraightLined, STRAIGHT_LINE_MESSAGE } from '@/lib/assessment/answerPattern';
 import { displayLettersForAnswers, isValidAttemptSeed, MISSING_ATTEMPT_SEED_MESSAGE } from '@/lib/assessment/layout';
 import { ASSESSMENT_QUESTIONS_PUBLIC } from '@/lib/assessment/questions';
-import type { QuestionChoice } from '@/lib/assessment/answer-key';
 import { brandedEmailLayout } from '@/lib/email/template';
 import { escapeHtml, sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
 import { plainTextEmailHtml } from '@/lib/email/plainTextEmail';
@@ -67,7 +67,9 @@ export const POST = withApiGuc(async (request: Request) => {
       return NextResponse.json({ error: STRAIGHT_LINE_MESSAGE, code: 'ANSWERS_ALL_SAME' }, { status: 422 });
     }
 
-    const { raw, pct } = scoreAssessment(answersTyped);
+    const wapat = scoreWapat(answersTyped);
+    const raw = wapat.total.correct;
+    const pct = wapat.total.pct;
   
     const orgId = await getActorOrganizationId(user.id);
     const dbUser = await prisma.$transaction((tx) => withTenantScope(orgId, (db) => db.user.findFirst({
@@ -144,7 +146,14 @@ export const POST = withApiGuc(async (request: Request) => {
       userId: user.id,
       eventName: 'apply_signup_completed',
       entityType: 'assessment',
-      metadata: { rawScore: raw, scorePct: pct, programInterest },
+      metadata: {
+        rawScore: raw,
+        scorePct: pct,
+        programInterest,
+        wapatVocabularyPct: wapat.vocabulary.pct,
+        wapatReadingPct: wapat.reading.pct,
+        wapatMathPct: wapat.math.pct,
+      },
       sourcePage: '/dashboard/assessment',
     });
   
@@ -168,7 +177,7 @@ export const POST = withApiGuc(async (request: Request) => {
             `Email: ${dbUser.email}`,
             `Phone: ${phone}`,
             `Program Interest: ${programInterest}`,
-            `Score: ${raw}/${TOTAL_POINTS} (${pct}%)`,
+            formatWapatScoreBlock(wapat),
             `Submitted: ${new Date().toISOString()}`,
             '',
             `Member account (WIOA assessment): ${siteUrl}/admin/members/${user.id}`,
@@ -179,7 +188,7 @@ export const POST = withApiGuc(async (request: Request) => {
         const result = await sendBrandedEmailOrThrowOnSkip(resend, {
           from: emailFrom,
           to: getAssessmentResultRecipients(),
-          subject: sanitizeEmailSubjectLine(`Training preassessment submitted — ${firstName} ${lastName} (${pct}%)`),
+          subject: sanitizeEmailSubjectLine(`WAPAT submitted — ${firstName} ${lastName} (${pct}% total)`),
           html: plainTextEmailHtml(adminText),
           text: adminText,
         });
@@ -196,10 +205,12 @@ export const POST = withApiGuc(async (request: Request) => {
   
       try {
         const memberHtml = brandedEmailLayout({
-          title: 'Assessment Complete',
+          title: 'WAPAT complete',
           bodyHtml: `
             <p>Hi ${escapeHtml(firstName)},</p>
-            <p>You've completed your readiness assessment. Your score: <strong>${raw}/${TOTAL_POINTS} (${pct}%)</strong>.</p>
+            <p>You've completed the Workforce Advancement Project Assessment Score (WAPAT).</p>
+            <p><strong>WAPAT total: ${raw}/35 (${pct}%)</strong></p>
+            <p>Vocabulary ${wapat.vocabulary.pct}% · Reading ${wapat.reading.pct}% · Math ${wapat.math.pct}%</p>
             <p>You're all set to continue to your training. Log in to your dashboard to access your Coursera courses.</p>
           `,
           ctaText: 'Go to Dashboard',
