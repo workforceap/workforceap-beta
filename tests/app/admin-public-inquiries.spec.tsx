@@ -57,4 +57,14 @@ describe('public inquiry admin inbox', () => {
     await PublicInquiriesPage({ searchParams: Promise.resolve({ page: '-100' }) });
     expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({ skip: 0, take: 25 }));
   });
+
+  it('renders a load error after auth instead of crashing the server component', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mocks.findMany.mockRejectedValue(new Error('relation "public_inquiries" does not exist'));
+    render(await PublicInquiriesPage({}));
+    expect(screen.getByRole('heading', { name: 'Could not load public inquiries' })).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveAttribute('data-portal-error-state', 'admin-data-load');
+    expect(mocks.findMany).toHaveBeenCalled();
+    log.mockRestore();
+  });
 });
