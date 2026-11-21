@@ -11,8 +11,8 @@ vi.mock('@/lib/db/prisma', () => ({ prisma: {} }));
 vi.mock('@/lib/tenant/withTenantScope', () => ({ withTenantScope: vi.fn() }));
 
 import type { BillingAttestation } from '@prisma/client';
-import { priorQuote, type RecordWithRelations } from '@/lib/billing/twoStage/api/caseData';
-import type { J5Content } from '@/lib/billing/twoStage/content';
+import { j6DraftBindsLatestPriorQuote, priorQuote, type RecordWithRelations } from '@/lib/billing/twoStage/api/caseData';
+import type { J5Content, J6Content } from '@/lib/billing/twoStage/content';
 
 const CONTENT = { training: { classStartDate: '2026-09-30' } } as unknown as J5Content;
 
@@ -102,5 +102,44 @@ describe('priorQuote from the case snapshot', () => {
       source: 'external',
       attestation: { id: 'att-new', externalReference: 'MANUAL-Q-22' },
     });
+  });
+});
+
+const frozenSystem = (recordId: string, contentSha256 = 'a'.repeat(64)) =>
+  ({ priorJ5: { source: 'system', recordId, contentSha256 } }) as J6Content;
+const frozenExternal = (attestationId: string) =>
+  ({ priorJ5: { source: 'external', attestationId } }) as J6Content;
+
+describe('j6DraftBindsLatestPriorQuote', () => {
+  it('is true while the frozen system J5 is still the issued prior quote', () => {
+    const snapshot = { records: [j5({ id: 'j5-sent', status: 'sent', version: 1 })], attestations: [external()] };
+    expect(j6DraftBindsLatestPriorQuote(frozenSystem('j5-sent'), snapshot)).toBe(true);
+    expect(j6DraftBindsLatestPriorQuote(frozenSystem('j5-other'), snapshot)).toBe(false);
+    expect(j6DraftBindsLatestPriorQuote(frozenSystem('j5-sent', 'b'.repeat(64)), snapshot)).toBe(false);
+  });
+
+  it('is false when a signed J5 supersedes the frozen external quote', () => {
+    const before = { records: [j5({ id: 'j5-draft', status: 'draft', version: 1 })], attestations: [external()] };
+    expect(j6DraftBindsLatestPriorQuote(frozenExternal('att-ext'), before)).toBe(true);
+
+    const after = { records: [j5({ id: 'j5-signed', status: 'signed', version: 1 })], attestations: [external()] };
+    expect(priorQuote(after)).toMatchObject({ source: 'system', j5: { recordId: 'j5-signed' } });
+    expect(j6DraftBindsLatestPriorQuote(frozenExternal('att-ext'), after)).toBe(false);
+  });
+
+  it('is false when a newer external attestation supersedes the frozen one', () => {
+    const snapshot = {
+      records: [],
+      attestations: [
+        external({ id: 'att-old', attestedAt: new Date('2026-07-01T00:00:00.000Z') }),
+        external({ id: 'att-new', attestedAt: new Date('2026-08-15T00:00:00.000Z') }),
+      ],
+    };
+    expect(j6DraftBindsLatestPriorQuote(frozenExternal('att-new'), snapshot)).toBe(true);
+    expect(j6DraftBindsLatestPriorQuote(frozenExternal('att-old'), snapshot)).toBe(false);
+  });
+
+  it('is false when the case has no prior quote left', () => {
+    expect(j6DraftBindsLatestPriorQuote(frozenExternal('att-ext'), { records: [], attestations: [] })).toBe(false);
   });
 });
