@@ -136,8 +136,10 @@
   .navtoggle{display:none}
   .skiplink{position:absolute;left:-9999px;top:0;z-index:100;background:var(--crimson);color:#fff;font-weight:700;padding:12px 20px;border-radius:0 0 10px 0}
   .skiplink:focus{left:0}
-  .hamburger{display:none;position:fixed;right:24px;top:14px;z-index:51;width:44px;height:44px;border:1px solid var(--border);border-radius:11px;background:var(--surface);cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:5px}
-  .hamburger span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px;transition:transform .2s,opacity .2s}
+  .hamburger{display:none;position:fixed;right:24px;top:14px;z-index:51;min-width:44px;height:44px;padding:0 12px;border:1px solid var(--border);border-radius:11px;background:var(--surface);color:var(--text);cursor:pointer;align-items:center;justify-content:center;gap:8px}
+  .hamburger__bars{display:flex;flex-direction:column;gap:5px}
+  .hamburger__bars span{display:block;width:20px;height:2px;background:var(--text);border-radius:2px;transition:transform .2s,opacity .2s}
+  .hamburger__label{font-size:14px;font-weight:600;white-space:nowrap}
   .mobilemenu{display:none;position:fixed;inset:72px 0 0;background:var(--bg);z-index:49;padding:24px 24px 40px;flex-direction:column;gap:4px;overflow-y:auto}
   .mobilemenu>a{padding:15px 6px;font-size:18px;font-weight:600;color:var(--text);border-bottom:1px solid var(--border)}
   .mobilemenu>a:last-of-type{border-bottom:0}
@@ -165,9 +167,9 @@
     .hamburger{display:flex}
     .navtoggle{display:block;position:fixed;right:24px;top:14px;width:44px;height:44px;margin:0;opacity:0;z-index:50;pointer-events:none}
     .navtoggle:focus-visible ~ .hamburger{outline:2px solid var(--crimson);outline-offset:3px}
-    .navtoggle:checked ~ .hamburger span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-    .navtoggle:checked ~ .hamburger span:nth-child(2){opacity:0}
-    .navtoggle:checked ~ .hamburger span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+    .navtoggle:checked ~ .hamburger .hamburger__bars span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+    .navtoggle:checked ~ .hamburger .hamburger__bars span:nth-child(2){opacity:0}
+    .navtoggle:checked ~ .hamburger .hamburger__bars span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
     .navtoggle:checked ~ .mobilemenu{display:flex}
     body:has(.navtoggle:checked){overflow:hidden}
   }

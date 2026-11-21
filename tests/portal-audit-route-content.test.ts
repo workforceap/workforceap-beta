@@ -66,6 +66,35 @@ describe('portal audit streamed route readiness', () => {
     document.querySelector('main')?.insertAdjacentHTML('beforeend', '<h1>Eligibility details</h1>');
     expect(hasPortalRouteContent()).toBe(true);
   });
+
+  it.each(['aria-busy="true"', 'data-portal-loading-state="archive"'])(
+    'rejects a foreground loading region marked %s even after the heading renders',
+    async (marker) => {
+      document.body.innerHTML = `<main id="main-content">
+        <h1>Enrollment agreement archive</h1>
+        <section ${marker}>Loading agreement archive…</section>
+      </main>`;
+      document.body.innerText = 'Enrollment agreement archive Loading agreement archive…';
+      const page = pageWithLiveDom();
+      expect(hasPortalRouteContent()).toBe(false);
+      expect((await inspectPortalPage(page)).appReady).toBe(false);
+      await expect(waitForPortalRouteContent(page, 30)).rejects.toThrow('route content timeout');
+      document.querySelector('section')?.remove();
+      expect(hasPortalRouteContent()).toBe(true);
+      expect((await inspectPortalPage(page)).appReady).toBe(true);
+    },
+  );
+
+  it('ignores hidden stale busy content once the actual table has loaded', async () => {
+    document.body.innerHTML = `<main id="main-content">
+      <h1>Enrollment agreement archive</h1>
+      <section aria-busy="true" hidden>Loading agreement archive…</section>
+      <p>No agreements match your filters.</p>
+    </main>`;
+    document.body.innerText = 'Enrollment agreement archive No agreements match your filters.';
+    expect(hasPortalRouteContent()).toBe(true);
+    expect((await inspectPortalPage(pageWithLiveDom())).appReady).toBe(true);
+  });
 });
 
 describe('admin dashboard audit data readiness', () => {
