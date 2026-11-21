@@ -74,7 +74,10 @@ const nextConfig: NextConfig = {
     '/api/admin/billing/preview/*': ['./public/images/wap_logo.png'],
     // Admin Game Lab (pre-release): files live outside public/ and are read at
     // runtime from a fixed manifest, so the tracer cannot see them.
-    '/api/admin/game-lab/[game]/[...asset]': ['./assets/game-lab/**/*'],
+    // Keys are picomatch globs, so write dynamic segments as `*`: a literal
+    // `[game]` is a character class and never matches the route (the files
+    // were silently left out of the production bundle and every asset 404ed).
+    '/api/admin/game-lab/*/*': ['./assets/game-lab/**/*'],
     // The PDF parser is resolved at runtime inside a worker thread (webpack
     // rewrites require.resolve into a numeric module id, so the path cannot be
     // computed at module scope). That hides the dependency from the file
