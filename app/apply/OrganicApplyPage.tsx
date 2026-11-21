@@ -227,9 +227,13 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
           <PreLaunchTag compact />
         </div>
         <p className="apply-hero-desc-full" style={sPage.heroDesc}>
-          {isSchool ? t('schoolHeroDesc') : t('heroDesc')}
-          <strong> {isSchool ? t('schoolHeroDescHighlight') : t('heroDescHighlight')}</strong>
-          <span> {isSchool ? t('schoolHeroDescSuffix') : t('heroDescSuffix')}</span>
+          {program && !isSchool ? t('heroDescSelected') : (
+            <>
+              {isSchool ? t('schoolHeroDesc') : t('heroDesc')}
+              <strong> {isSchool ? t('schoolHeroDescHighlight') : t('heroDescHighlight')}</strong>
+              <span> {isSchool ? t('schoolHeroDescSuffix') : t('heroDescSuffix')}</span>
+            </>
+          )}
         </p>
         <p className="apply-hero-help-compact">
           {t('questionsCall')}{' '}
@@ -508,7 +512,15 @@ export default async function OrganicApplyPage({ program: programParam, schoolAp
           }
 
           .apply-hero {
-            padding: calc(var(--nav-height-default, 80px) + var(--space-5)) var(--space-4) var(--space-5) !important;
+            /* This page's hero is itself .mdx-stage. Let the 2px focus ring
+               and 4px offset paint past the bottom edge without changing the
+               shared stage rule used by other heroes. */
+            overflow: visible !important;
+            padding: calc(var(--nav-height-default, 80px) + var(--space-5)) var(--space-4) calc(var(--space-5) + 12px) !important;
+          }
+          .apply-hero::after {
+            overflow: hidden;
+            border-radius: inherit;
           }
           /* Vague social proof repeats below the fold — keep hero scannable on small screens */
           .apply-hero-social {

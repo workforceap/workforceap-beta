@@ -25,6 +25,17 @@ beforeEach(() => { vi.clearAllMocks(); localStorage.clear(); sessionStorage.clea
 afterEach(cleanup);
 
 describe('trusted school apply recovery', () => {
+ it('shows selected-program results only for an ordinary resolved program', async () => {
+  h.school.mockResolvedValueOnce(null);
+  render(await ResultsPage({ searchParams: Promise.resolve({ program: slug }) }));
+  render(h.results.mock.calls[0][0].readyHeader);
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('resultsHeroTitleSelected');
+  cleanup(); h.results.mockClear();
+  render(await ResultsPage({ searchParams: Promise.resolve({ program: slug }) }));
+  render(h.results.mock.calls[0][0].readyHeader);
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('resultsHeroTitle');
+  expect(screen.getByRole('heading', { level: 1 })).not.toHaveTextContent('resultsHeroTitleSelected');
+ });
  it.each(['results', 'account'])('passes the server-resolved referral and permitted program from the %s wrapper', async kind => {
   render(await (kind === 'results' ? ResultsPage : AccountPage)({ searchParams: Promise.resolve({ program: slug }) }));
   expect(h.school).toHaveBeenCalledWith('server-ref-cookie');

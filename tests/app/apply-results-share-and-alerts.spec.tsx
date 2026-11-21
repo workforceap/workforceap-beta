@@ -1,11 +1,11 @@
 import type { ComponentProps, ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '@/messages/en.json';
 import ApplyResultsClient from '@/app/apply/results/ApplyResultsClient';
 import { APPLY_STORAGE_KEY } from '@/lib/apply/applyBrowserState';
-import { getProgramBySlug } from '@/lib/content/programs';
+import { getProgramBySlug, PROGRAMS } from '@/lib/content/programs';
 
 // WAP-241: the results step must not announce an error before the applicant
 // acts, must announce the three-pick limit, and its Share link must open a
@@ -17,16 +17,68 @@ vi.mock('@/components/LocalizedLink', () => ({ default: ({ href, children, ...re
 vi.mock('@/lib/analytics/events', () => ({ trackApplyFunnel: mocks.track }));
 
 const wrap = (children: ReactNode) => <NextIntlClientProvider locale="en" messages={en} timeZone="UTC">{children}</NextIntlClientProvider>;
-const saveEligibility = (qualifies = true) =>
+const saveEligibility = (qualifies = true, fields: Record<string, unknown> = {}) =>
   localStorage.setItem(APPLY_STORAGE_KEY, JSON.stringify({
     firstName: 'Example', lastName: 'Applicant', email: 'example@example.org', phone: '5125550100',
-    q1: 'yes', q2: 'no', q3: 'yes', primaryBarriers: ['seeking_skills_training'], qualifies,
+    q1: 'yes', q2: 'no', q3: 'yes', primaryBarriers: ['seeking_skills_training'], qualifies, ...fields,
   }));
 const cards = () => screen.getAllByRole('button').filter((node) => node.classList.contains('apply-results-program-card'));
 const continueButton = () => screen.getByRole('button', { name: en.apply.resultsContinueAccount });
 
 beforeEach(() => { vi.clearAllMocks(); localStorage.clear(); sessionStorage.clear(); mocks.params = new URLSearchParams(); });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
+
+describe('apply results: starting program presentation', () => {
+  it.each([true, false])('preselects the URL program and keeps the copy truthful after ranking changes (qualifies=%s)', async (qualifies) => {
+    const startingProgram = PROGRAMS[2];
+    mocks.params = new URLSearchParams({ program: startingProgram.slug });
+    saveEligibility(qualifies);
+    render(wrap(<ApplyResultsClient />));
+    await screen.findByRole('button', { name: en.apply.resultsContinueAccount });
+
+    const [startingCard, otherCard] = cards();
+    expect(startingCard).toHaveTextContent(startingProgram.title);
+    expect(startingCard).toHaveAttribute('aria-pressed', 'true');
+    expect(cards().filter((card) => card.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: 'Review your choices' })).toBeVisible();
+    const hint = 'We preselected the program you started with. You can remove it or rank up to three choices.';
+    expect(screen.getByText(hint)).toBeVisible();
+    const review = screen.getByRole('link', { name: 'Review or change programs' });
+    expect(review).toHaveAttribute('href', '#apply-results-programs');
+    expect(document.getElementById('apply-results-programs')).toContainElement(startingCard);
+
+    fireEvent.click(startingCard);
+    expect(startingCard).toHaveAttribute('aria-pressed', 'false');
+    expect(cards().every((card) => card.getAttribute('aria-pressed') === 'false')).toBe(true);
+    expect(screen.getByText(hint)).toBeVisible();
+
+    fireEvent.click(otherCard);
+    expect(otherCard).toHaveAttribute('aria-pressed', 'true');
+    expect(within(otherCard).getByText(en.apply.resultsRankFirst)).toBeVisible();
+    expect(startingCard).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText(hint)).toBeVisible();
+
+    fireEvent.keyDown(startingCard, { key: 'Enter' });
+    expect(startingCard).toHaveAttribute('aria-pressed', 'true');
+    expect(within(startingCard).getByText(en.apply.resultsRankSecond)).toBeVisible();
+    expect(within(otherCard).getByText(en.apply.resultsRankFirst)).toBeVisible();
+    expect(screen.getByText(hint)).toBeVisible();
+  });
+
+  it('keeps the school presentation when school eligibility is restored without server referral context', async () => {
+    mocks.params = new URLSearchParams({ program: PROGRAMS[2].slug });
+    saveEligibility(true, { schoolApply: true, schoolName: 'Example School' });
+    render(wrap(<ApplyResultsClient />));
+    await screen.findByRole('button', { name: en.apply.resultsContinueAccount });
+
+    expect(screen.getByText(en.apply.schoolResultsProgressLabel)).toBeVisible();
+    expect(screen.queryByText(en.apply.resultsProgressLabelSelected)).toBeNull();
+    expect(screen.queryByText(en.apply.resultsHintSelected)).toBeNull();
+    expect(screen.queryByRole('link', { name: en.apply.resultsChangeProgram })).toBeNull();
+    expect(cards()[0]).toHaveTextContent(PROGRAMS[2].title);
+    expect(cards()[0]).toHaveAttribute('aria-pressed', 'true');
+  });
+});
 
 describe('apply results: errors only after the applicant acts', () => {
   it('announces nothing as an error on first render and keeps the hint as plain text', async () => {
