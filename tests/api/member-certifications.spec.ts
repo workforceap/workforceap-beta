@@ -216,28 +216,87 @@ describe('POST /api/member/certifications', () => {
     expect(logAuditEvent).not.toHaveBeenCalled();
   });
 
-  it('deletes certification when earned=false', async () => {
-    vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
-    vi.mocked(prisma.userCertification.deleteMany).mockResolvedValue({ count: 1 } as any);
+  it.each(['pending', 'rejected'] as const)(
+    'deletes a %s certification when earned=false',
+    async (status) => {
+      vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
+      vi.mocked(prisma.userCertification.findUnique).mockResolvedValue({
+        id: 'cert-1', certName: 'AWS', status,
+      } as any);
+      vi.mocked(prisma.userCertification.deleteMany).mockResolvedValue({ count: 1 } as any);
 
-    const res = await POST(postReq({ certName: 'AWS', earned: false }));
-    expect(res.status).toBe(200);
-    expect(prisma.userCertification.deleteMany).toHaveBeenCalledWith({
-      where: { userId: 'u1', certName: 'AWS' },
+      const res = await POST(postReq({ certName: 'AWS', earned: false }));
+      expect(res.status).toBe(200);
+      expect(prisma.userCertification.deleteMany).toHaveBeenCalledWith({
+        where: { id: 'cert-1', userId: 'u1', status: { not: 'approved' } },
+      });
+      expect(auditLog).toHaveBeenCalledWith({
+        actorUserId: 'u1',
+        action: 'member.certification.deleted',
+        targetType: 'user_certification',
+        metadata: { certName: 'AWS' },
+      });
+    },
+  );
+
+  it('unchecking a verified certification changes nothing and is audited', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
+    vi.mocked(prisma.userCertification.findUnique).mockResolvedValue({
+      id: 'cert-1', certName: 'OSHA 10', status: 'approved',
+    } as any);
+
+    const res = await POST(postReq({ certName: 'OSHA 10', earned: false }));
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error: 'Verified certificates cannot be removed.',
+      status: 'approved',
+      verifiedUnchanged: true,
     });
+    expect(prisma.userCertification.deleteMany).not.toHaveBeenCalled();
     expect(auditLog).toHaveBeenCalledWith({
       actorUserId: 'u1',
-      action: 'member.certification.deleted',
+      action: 'member.certification.delete_blocked_verified',
       targetType: 'user_certification',
-      metadata: { certName: 'AWS' },
+      targetId: 'cert-1',
+      metadata: { certName: 'OSHA 10', status: 'approved' },
     });
+    expect(logAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user: { id: 'u1', role: 'member' },
+        verb: 'delete',
+        object: { type: 'UserCertification', id: 'cert-1' },
+        result: expect.objectContaining({
+          success: false,
+          extensions: expect.objectContaining({ status: 'approved', statusKept: true }),
+        }),
+      }),
+    );
+  });
+
+  it('unchecking a pending row that staff approved in the meantime is refused', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
+    vi.mocked(prisma.userCertification.findUnique).mockResolvedValue({
+      id: 'cert-1', certName: 'CompTIA A+', status: 'pending',
+    } as any);
+    vi.mocked(prisma.userCertification.deleteMany).mockResolvedValue({ count: 0 } as any);
+
+    const res = await POST(postReq({ certName: 'CompTIA A+', earned: false }));
+    expect(res.status).toBe(409);
+    expect(prisma.userCertification.deleteMany).toHaveBeenCalledWith({
+      where: { id: 'cert-1', userId: 'u1', status: { not: 'approved' } },
+    });
+    expect(await res.json()).toMatchObject({ status: 'approved', verifiedUnchanged: true });
+    expect(auditLog).toHaveBeenCalledWith(expect.objectContaining({
+      action: 'member.certification.delete_blocked_verified',
+    }));
   });
 
   it('deleting a certification the member does not have writes no audit row', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: 'u1', email: 'a@b.com' } as any);
-    vi.mocked(prisma.userCertification.deleteMany).mockResolvedValue({ count: 0 } as any);
+    vi.mocked(prisma.userCertification.findUnique).mockResolvedValue(null);
     const res = await POST(postReq({ certName: 'AWS', earned: false }));
     expect(res.status).toBe(200);
+    expect(prisma.userCertification.deleteMany).not.toHaveBeenCalled();
     expect(auditLog).not.toHaveBeenCalled();
   });
 
