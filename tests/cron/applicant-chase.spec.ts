@@ -285,4 +285,23 @@ describe('applicantChaseHtml', () => {
   it('escapes the first name', () => {
     expect(applicantChaseHtml({ firstName: '<b>x</b>', stage: 'day10', programUrl })).not.toContain('<b>x</b>');
   });
+
+  it('escapes quotes in programUrl so a hostile href cannot break out of the attribute', () => {
+    const html = applicantChaseHtml({
+      firstName: 'Taylor',
+      stage: 'day10',
+      programUrl: 'https://example.test/program" onclick="alert(1)',
+    });
+    expect(html).toContain('href="https://example.test/program&quot; onclick=&quot;alert(1)"');
+    expect(html).not.toContain('href="https://example.test/program" onclick=');
+  });
+
+  it('currently lets a javascript: programUrl through escapeHtml (pinned)', () => {
+    const html = applicantChaseHtml({
+      firstName: 'Taylor',
+      stage: 'day10',
+      programUrl: 'javascript:alert(1)',
+    });
+    expect(html).toContain('href="javascript:alert(1)"');
+  });
 });
