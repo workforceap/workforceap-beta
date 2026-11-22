@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Firewall Defender 3D (WAP Practice prototype)</title>
+<link rel="icon" href="data:,">
+<style>
+:root{color-scheme:dark;--ink:#f8fafc;--bg:#0b1020;--panel:#111a33;--line:#5b6b94;--red:#ff8a8a;--green:#5eeaa5;--amber:#fbbf24;--cyan:#5fe3ff;font-family:system-ui,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);max-width:100%}
+body{padding:6px 10px 10px;overflow-x:hidden;line-height:1.32;font-size:15px}
+button{min-height:44px;min-width:44px;border:2px solid var(--ink);border-radius:8px;background:#1e2a4d;color:inherit;font:600 15px/1.2 system-ui,sans-serif;padding:5px 10px;cursor:pointer;max-width:100%}
+button:hover:not(:disabled){background:#2a3a6c}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,[tabindex]:focus-visible{outline:4px solid var(--amber);outline-offset:3px}
+button[aria-pressed=true],button[aria-pressed=true]:hover:not(:disabled){background:var(--amber);color:#090d16;font-weight:800;border-color:#fff}
+header,main{max-width:1200px;margin:0 auto}
+.top{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;justify-content:space-between;margin-bottom:3px}
+h1{font-size:19px;margin:0}
+h1 small{display:block;font-size:13px;font-weight:600;color:var(--cyan)}
+.hud{display:flex;flex-wrap:wrap;gap:4px 14px;font-weight:700}
+.controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.quality{display:inline-flex;gap:4px;align-items:center;border:2px solid var(--line);border-radius:8px;padding:2px 4px}
+.quality span{font-size:13px;font-weight:700;padding:0 4px}
+.quality button{min-width:44px;padding:4px 8px}
+.banner{border:3px solid var(--amber);background:#2a1f05;padding:4px 10px;margin:4px 0;font-size:13.5px}
+.mission{border:2px solid var(--cyan);background:#082a36;padding:5px 10px;margin:4px 0;border-radius:8px}
+.mission p{margin:1px 0;font-size:13.5px}
+#goals{margin:2px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:2px 14px;font-size:13.5px}
+#goals li{padding:0}
+#goals li.failed{color:var(--red)}
+.layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:6px;align-items:start}
+.stagebox{position:relative;border:3px solid var(--line);border-radius:8px;overflow:hidden;background:#0a1022}
+canvas{display:block;width:100%;aspect-ratio:16/9.4;min-height:240px;max-height:395px;touch-action:manipulation}
+.stagebox .tag{position:absolute;left:8px;top:8px;background:#000c;padding:2px 8px;border-radius:6px;font-size:13px;pointer-events:none}
+.stagebox .prog{position:absolute;right:8px;top:8px;background:#000c;padding:2px 8px;border-radius:6px;font-size:13px;pointer-events:none}
+#feedback{margin:5px 0 0;min-height:2.4em;border:3px solid var(--line);border-radius:8px;padding:5px 9px;background:var(--panel);font-weight:600;font-size:14.5px}
+#feedback.good{border-color:var(--green)}
+#feedback.bad{border-color:var(--red);background:#2a0d0d}
+.prevtag{display:inline-block;background:#32426e;color:#fff;border-radius:4px;padding:1px 6px;font-size:12px;font-weight:700;margin-right:6px;text-transform:uppercase;letter-spacing:.03em}
+#feedback.good .prevtag{background:#156947}
+#feedback.bad .prevtag{background:#9e1e26}
+.side{display:flex;flex-direction:column;gap:5px;min-width:0}
+.card{border:2px solid var(--line);background:var(--panel);border-radius:8px;padding:5px 9px;min-width:0}
+.card h2{font-size:14px;margin:0 0 3px}
+dl.ev{display:grid;grid-template-columns:auto 1fr;gap:1px 8px;margin:0;font-size:13px}
+dl.ev dt{color:#b9c6ee}
+dl.ev dd{margin:0;font-weight:700;overflow-wrap:anywhere}
+.actions{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.actions button{flex:1 1 88px;font-size:15px}
+#act-allow{border-color:var(--green)}
+#act-block{border-color:var(--red)}
+#act-reset{border-color:var(--amber)}
+.threats{display:flex;flex-direction:column;gap:4px}
+.threat{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left}
+.threat[aria-pressed=true]{background:#ffe066;color:#111}
+.meter{display:inline-block;width:64px;height:8px;background:#27325f;border-radius:4px;vertical-align:middle;overflow:hidden}
+.meter i{display:block;height:100%;background:var(--cyan)}
+.meter i.hot{background:var(--red)}
+.policy{margin:0;padding:0 0 0 18px;font-size:13px}
+.policy li{padding:1px 3px;border-radius:4px;overflow-wrap:anywhere}
+.policy li.hit{background:#3a3000;outline:2px solid var(--amber);font-weight:700}
+.policy code{font:700 12.5px ui-monospace,Consolas,monospace}
+.content-checks{margin-top:6px;padding-top:5px;border-top:1px dashed var(--line)}
+.content-checks h3{font-size:13px;margin:0 0 3px;color:var(--cyan)}
+.checklist{margin:0;padding:0 0 0 18px;font-size:12.5px}
+.checklist li{padding:1px 3px;border-radius:4px;overflow-wrap:anywhere}
+.checklist li.hit{background:#3a3000;outline:2px solid var(--amber);font-weight:700}
+#learned{font-weight:700;color:var(--green);margin:2px 0}
+#log{margin:0;padding:0 0 2px 18px;font-size:13px;overflow-wrap:anywhere}
+#log li{padding:0}
+#log li:last-child{font-weight:700}
+.help{margin:2px 0 0;font-size:12.5px;color:#cbd5f5}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+.hidden,[hidden]{display:none!important}
+.screen{position:fixed;inset:0;background:#020617ee;display:grid;place-items:center;padding:12px;text-align:center;z-index:10;overflow:auto}
+.dialog{width:min(620px,100%);background:var(--panel);border:3px solid var(--ink);border-radius:12px;padding:16px}
+.dialog .list{display:flex;flex-direction:column;gap:8px;margin:12px 0}
+.stars{font-size:30px;letter-spacing:4px;color:var(--amber)}
+body.textmode canvas,body.textmode .stagebox .tag{display:none}
+body.textmode .stagebox{border-style:dashed}
+body.textmode .stagebox .prog{position:static;display:block;background:none;font-size:15px}
+body.textmode canvas{display:none}
+@media(max-width:900px){
+  main{display:flex;flex-direction:column;gap:4px}
+  .layout{order:1;display:flex;flex-direction:column;gap:4px}
+  .layout>.stage-col,.layout>.side{display:contents}
+  .stagebox{order:1}
+  #feedback{order:2;margin-top:0}
+  #selectedCard{order:3}
+  #rulesCard{order:4}
+  #flightCard{order:5}
+  #learnCard{order:6}
+  #logCard{order:7;margin-top:0!important}
+  .mission{order:2;margin:2px 0}
+  .banner{order:3;margin:2px 0}
+  #glNotice{order:0}
+}
+@media(max-width:600px){
+  body{padding:2px 5px 6px;line-height:1.18}
+  h1{font-size:14px}
+  h1 small{display:inline;font-size:11.5px}
+  .hud{font-size:11.5px;gap:2px 6px}
+  .banner{padding:2px 6px;margin:1px 0;font-size:11px}
+  .mission{padding:3px 6px;margin:1px 0}
+  .mission p,#goals{font-size:11.5px}
+  canvas{aspect-ratio:16/9.2;min-height:164px;max-height:184px}
+  .stagebox .tag{display:none}
+  .stagebox .prog{top:auto;bottom:3px;right:5px;font-size:10.5px;padding:1px 5px}
+  .top{gap:2px 4px;margin-bottom:2px}
+  .controls{gap:3px}
+  .controls button{min-height:44px;min-width:44px;padding:2px 5px;font-size:11px}
+  .quality{padding:0;gap:2px;border-width:1px}
+  .quality span{display:none}
+  #feedback{padding:3px 6px;font-size:12px;min-height:1.6em;line-height:1.2}
+  .card{padding:3px 6px}
+  .card h2{font-size:12px;margin:0 0 2px}
+  dl.ev{grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr);gap:1px 4px;font-size:11px;line-height:1.15}
+  dl.ev dt,dl.ev dd{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .actions{margin-top:3px;gap:4px;flex-wrap:nowrap}
+  .actions button{flex:1 1 0;min-width:44px;padding:2px 4px;font-size:11.5px}
+  .policy,.checklist{font-size:11.5px;padding-left:15px}
+  .policy code{font-size:11px}
+  .content-checks{margin-top:3px;padding-top:3px}
+  .content-checks h3{font-size:11.5px;margin:0 0 2px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+ <h1>FIREWALL DEFENDER 3D <small id="stageName"></small></h1>
+ <div class="hud" role="group" aria-label="Game status"><span id="lives"></span><span id="xp" title="+10 XP for each right Allow/Block/Reset call."></span><span id="stars" title="Highest 1–3 star rating saved per stage (Stage 1 / Stage 2 / Stage 3 / Boss). 3 stars = 0 mistakes, 2 stars = 1 mistake, 1 star = 2 mistakes."></span></div>
+ <div class="controls" role="group" aria-label="Game controls">
+  <button id="pause" aria-pressed="false">Pause (P)</button>
+  <button id="mute" aria-pressed="false">Sound: off (M)</button>
+  <span class="quality" role="group" aria-label="Graphics quality"><span>Quality</span><button data-q="low" aria-pressed="false">Low</button><button data-q="medium" aria-pressed="true">Medium</button><button data-q="high" aria-pressed="false">High</button></span>
+  <button id="textMode" aria-pressed="false">Text mode (T)</button>
+  <button id="retry">Retry stage</button>
+  <button id="menu">Stages</button>
+ </div>
+</header>
+<main>
+ <p class="banner" role="note"><strong>Prototype, not course credit.</strong> Original practice lesson, not reviewed, fictional data only, nothing is sent anywhere.</p>
+ <div id="glNotice" class="banner" role="alert" hidden></div>
+ <section class="mission" aria-label="Mission">
+  <p id="brief"></p>
+  <ul id="goals" aria-label="Objective checklist"></ul>
+ </section>
+ <div class="layout">
+  <div class="stage-col">
+   <div class="stagebox" id="stagebox">
+    <canvas id="gl" role="img" aria-label="3D view of incoming traffic flying toward a firewall gateway. Click a traffic item to select it, then click Allow, Block or Reset. Every action is also a button and a key."></canvas>
+    <span class="tag" id="modeTag">Click a traffic item, then a pad</span>
+    <span class="prog" id="prog"></span>
+   </div>
+   <p id="feedback" role="status" aria-live="assertive">Pick an incoming traffic item, check the highlighted policy rule, then decide.</p>
+   <section class="card" id="logCard" style="margin-top:8px" aria-label="Action log"><h2>Log</h2>
+    <ol id="log" aria-live="polite" aria-relevant="additions"></ol>
+   </section>
+  </div>
+  <div class="side">
+   <section class="card" id="selectedCard" aria-label="Selected traffic item">
+    <h2>Selected traffic item (arrows or N / Shift+N)</h2>
+    <dl class="ev" id="ev"><dt>None</dt><dd>Waiting for incoming traffic</dd></dl>
+    <div class="actions" role="group" aria-label="Decision">
+     <button id="act-allow">Allow (A)</button>
+     <button id="act-block">Block (B)</button>
+     <button id="act-reset" hidden>Reset account (R)</button>
+    </div>
+   </section>
+   <section class="card" id="flightCard" aria-label="Incoming traffic in flight">
+    <h2>In flight (bar = time to firewall; timeout costs 1 life)</h2>
+    <div class="threats" id="threats"></div>
+   </section>
+   <section class="card" id="rulesCard" aria-label="Rules">
+    <h2 id="rulesTitle">Firewall policy</h2>
+    <ol class="policy" id="policy"></ol>
+    <div class="content-checks" id="contentChecksBox" aria-label="Content and identity checks" hidden>
+     <h3 id="contentChecksTitle">Content and identity checks (evaluated on evidence, separate from packet rules)</h3>
+     <ul class="checklist" id="contentChecks"></ul>
+    </div>
+    <ul class="checklist" id="how" hidden></ul>
+   </section>
+   <section class="card" id="learnCard" aria-label="What you learned and scoring">
+    <p id="learned" hidden></p>
+    <p id="tip" style="margin:0;font-size:13px"></p>
+    <p class="help"><strong>Time to firewall (bar):</strong> 100% = timeout (costs 1&#9829; of 3). <strong>XP &amp; Best stars:</strong> +10 XP per right call; Best stars saves your top 1–3&#9733; score per stage (3&#9733; 0 mistakes, 2&#9733; 1 mistake, 1&#9733; clear).</p>
+    <p class="help" id="qnote"></p>
+   </section>
+  </div>
+ </div>
+</main>
+
+<div class="screen" id="title" role="dialog" aria-modal="true" aria-labelledby="tTitle">
+ <div class="dialog">
+  <h2 id="tTitle">FIREWALL DEFENDER 3D</h2>
+  <p>Incoming traffic flies toward your network. Allow legitimate traffic, block threats, and reset stolen accounts before they reach the firewall. 3 stages and a boss, 3 lives each, free retry.</p>
+  <p>Click a traffic item, then a pad. Keys: arrows pick an item, A allow, B block, R reset, P pause, T text mode (no timer).</p>
+  <div class="list" id="stageList"></div>
+  <p class="stars" id="tStars" aria-label="Saved best stars"></p>
+  <p style="font-size:13px">Sound defaults to off. Progress saves only in this browser (localStorage). Slows down automatically if your system asks for reduced motion.</p>
+ </div>
+</div>
+<div class="screen hidden" id="end" role="dialog" aria-modal="true" aria-labelledby="eTitle">
+ <div class="dialog">
+  <h2 id="eTitle"></h2>
+  <p class="stars" id="eStars"></p>
+  <p id="eText"></p>
+  <div class="row" style="justify-content:center">
+   <button id="eNext">Next stage</button><button id="eRetry">Retry (free)</button><button id="eMenu">Stages</button>
+  </div>
+ </div>
+</div>
+<div class="screen hidden" id="pauseScreen" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+ <div class="dialog"><h2 id="pTitle">Paused</h2><p>Incoming traffic is frozen. Nothing arrives while paused.</p><button id="resume">Resume (P)</button></div>
+</div>
+<script type="module" src="game.mjs"></script>
+</body>
+</html>
