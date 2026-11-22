@@ -27,7 +27,7 @@ export type AdminDraftDeps = {
   /** Actor with organization and permissions resolved server-side; null when the user is not an attendance admin. */
   resolveAdminActor(userId: string): Promise<Actor | null>;
   /** Must look the enrollment up inside the actor's organization only. */
-  loadEnrollment(organizationId: string, enrollmentId: string): Promise<TrustedEnrollment | null>;
+    loadEnrollment(organizationId: string, enrollmentId: string, selectedDate: string): Promise<TrustedEnrollment | null>;
 };
 export type AdminDraftResult =
   | { status: 200; pdf: Uint8Array; headers: Record<string, string> }
@@ -53,7 +53,7 @@ export async function handleAdminDraftPdf(method: string, rawBody: string, deps:
   try { json = JSON.parse(rawBody); } catch { return fail(400, 'INVALID_JSON'); }
   try {
     const body = adminDraftRequestSchema.parse(json);
-    const trusted = await deps.loadEnrollment(actor.organizationId, body.enrollmentId);
+    const trusted = await deps.loadEnrollment(actor.organizationId, body.enrollmentId, body.selectedDate);
     if (!trusted || trusted.scope.organizationId !== actor.organizationId || trusted.scope.enrollmentId !== body.enrollmentId) return fail(404, 'ATTENDANCE_ENROLLMENT_NOT_FOUND');
     if (!trusted.active) return fail(409, 'ATTENDANCE_ENROLLMENT_INACTIVE');
     const scope: Scope = trusted.scope;
@@ -66,7 +66,8 @@ export async function handleAdminDraftPdf(method: string, rawBody: string, deps:
       reason: 'Entered by an attendance admin for an unsaved draft; not independently verified',
     })));
     const draft = createDraft(actor, scope, { kind: body.kind, selectedDate: body.selectedDate, startMonth: trusted.startMonth,
-      profile: trusted.profile, enrollment: trusted.enrollment, evidence, coursera: trusted.coursera ?? null });
+      profile: trusted.profile, enrollment: trusted.enrollment, evidence, coursera: trusted.coursera ?? null,
+      assistive: body.kind === 'monthly' ? trusted.assistive ?? null : null });
     return { status: 200, pdf: await renderAuthorizedDraft(actor, draft), headers: { ...DRAFT_PDF_HEADERS } };
   } catch (error) {
     if (error instanceof ZodError) return fail(400, 'INVALID_REQUEST');

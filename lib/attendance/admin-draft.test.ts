@@ -106,8 +106,8 @@ test('inactive enrollment is 409 and never a PDF', async () => {
   const d = deps();
   const res = await handleAdminDraftPdf('POST', body(), {
     ...d,
-    loadEnrollment: async (orgId, enrollmentId) => {
-      const row = await d.loadEnrollment(orgId, enrollmentId);
+    loadEnrollment: async (orgId, enrollmentId, selectedDate) => {
+          const row = await d.loadEnrollment(orgId, enrollmentId, selectedDate);
       return row ? { ...row, active: false } : null;
     },
   });

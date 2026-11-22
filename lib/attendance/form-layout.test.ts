@@ -145,24 +145,34 @@ test('yearly invalid dates are marked in leap and common years', async () => {
   }
 });
 
-test('monthly stays an adapted draft because no monthly form exists', async () => {
+test('monthly sheet matches the WFS training grid on one landscape page', async () => {
   const dates = periodDates('monthly', '2026-11-09', null);
-  const rows: never[] = [];
+  const rows = [{ sourceKey: 'synthetic-reviewed-register', date: dates[8], kind: 'verified-duration' as const, minutes: 270, verifiedBy: 'synthetic-admin', reference: 'synthetic-only', reason: 'Synthetic dated attendance register reviewed' }];
   const bytes = await renderAttendancePdf({
-    schemaVersion: 1, kind: 'monthly', academicLabel: '2026-2027',
+    schemaVersion: 1, kind: 'monthly', academicLabel: '2026-11-01 to 2026-11-30',
     provenance: { evidenceDigest: digest(rows), evidenceRevision: digest(rows), ruleVersion: DRAFT_RULE.version, pMinimumMinutes: 240,
       ruleApproved: false, reportingTimezone: REPORTING_TIMEZONE, templateVersion: TEMPLATE_VERSION },
     profile: { name: 'Synthetic Participant', email: null, phone: null },
     enrollment: { program: 'Synthetic Program', twistId: null, counselor: null, abbreviation: null, pathway: null, classStart: null, classEnd: null },
     days: summarize(dates, rows),
+    assistive: { activityLabel: 'Activity observed — not verified attendance', cumulativeLabel: 'Cumulative estimate — not verified attendance', timezone: REPORTING_TIMEZONE,
+      days: [{ date: '2026-11-09', courseraPoints: 2, sitePoints: 1 }], coursera: null, catalogHours: null },
   });
+  const doc = await PDFDocument.load(bytes);
+  assert.equal(doc.getPageCount(), 1);
+  assert.deepEqual(doc.getPage(0).getSize(), { width: 792, height: 612 });
   const [page] = await boxes(bytes);
   const text = textOf(page);
-  assert.match(text, /MONTHLY ADAPTED DRAFT/);
-  assert.match(text, /original monthly template unavailable/);
-  assert.match(text, /DRAFT/);
-  assert.match(text, /Not WFS approved/);
+  for (const required of [
+    'Monthly Training Attendance Sheet', 'Class Hrs', 'Lab Hrs', 'Running Total Hrs',
+    'Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Course 1 Name', 'Course 4 Name',
+    'Instructor Signature', 'acceptable progress', 'completed on time',
+    'Activity observed', 'Cumulative estimate', '4.50', 'DRAFT', 'not WFS approved',
+    'Sign, send and archive are disabled',
+  ]) assert.ok(text.includes(required), required);
   assert.equal(page.filter(box => box.str === '0.00' || box.str === '0').length, 0);
+  const lowest = Math.min(...page.map(box => box.y));
+  assert.ok(lowest >= MIN_FOOTER_Y - 0.5, `footer baseline ${lowest} is below 36pt`);
 });
 
 test('weekly long name is never silently clipped: shrinks and prints fully, or fails loudly', async () => {

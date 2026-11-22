@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { digest, DRAFT_RULE, TEMPLATE_VERSION, REPORTING_TIMEZONE, periodDates, summarize, validateEvidence, validateLedger, type Evidence, type SheetKind } from './evidence';
 import { type AttendanceSnapshot, renderAttendancePdf } from './pdf';
+import type { AssistiveSignals } from './assistive-signals';
 
 // These values must come from the existing server auth/enrollment repositories,
 // never request JSON. No HTTP routes or production repository are wired yet.
@@ -82,6 +83,8 @@ export function createDraft(actor: Actor, scope: Scope, input: {
   profile: AttendanceSnapshot['profile']; enrollment: AttendanceSnapshot['enrollment']; evidence: Evidence[];
   /** Stored Coursera progress, loaded by the caller. Absent means the sheet prints "not stored". */
   coursera?: AttendanceSnapshot['coursera'];
+  /** Point counts shown beside a monthly draft. They are not attendance evidence. */
+  assistive?: AssistiveSignals | null;
 }): Draft {
   authorize(actor, scope);
   const dates = periodDates(input.kind, input.selectedDate, input.startMonth);
@@ -89,7 +92,8 @@ export function createDraft(actor: Actor, scope: Scope, input: {
   const snapshot: AttendanceSnapshot = { schemaVersion: 1, kind: input.kind,
     provenance: { evidenceDigest: digest(input.evidence), evidenceRevision: digest(input.evidence), ruleVersion: DRAFT_RULE.version, pMinimumMinutes: DRAFT_RULE.pMinimumMinutes, ruleApproved: false, reportingTimezone: REPORTING_TIMEZONE, templateVersion: TEMPLATE_VERSION },
     academicLabel: `${dates[0]} to ${dates.at(-1)}`, profile: input.profile, enrollment: input.enrollment,
-    days: summarize(dates, input.evidence), coursera: input.coursera ?? null };
+    days: summarize(dates, input.evidence), coursera: input.coursera ?? null,
+    assistive: input.kind === 'monthly' ? input.assistive ?? null : null };
   const detached = JSON.parse(JSON.stringify({ scope, snapshot, evidence: input.evidence })) as Omit<Draft, 'hash'>;
   return { ...detached, hash: digest(detached) };
 }
