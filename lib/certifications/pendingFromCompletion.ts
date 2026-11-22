@@ -3,7 +3,7 @@ import { Prisma, type CertStatus, type PrismaClient } from '@prisma/client';
 import { auditLog } from '@/lib/audit';
 import { DISCOVERED_COURSERA_PROGRAMS } from '@/lib/content/courseraDiscoveredCatalog';
 import { PROGRAMS, getProgramBySlug, getProgramDisplayTitle } from '@/lib/content/programs';
-import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
+import { canonicalizeProgramSlug, programSlugReadCandidates } from '@/lib/content/programSlug';
 import { catalogCourseDisplayName } from '@/lib/coursera/courseDisplayName';
 import { prisma } from '@/lib/db/prisma';
 
@@ -60,7 +60,9 @@ export type CompletionCertificationSource =
   | 'coursera-webhook'
   | 'coursera-enterprise-sync'
   | 'coursera-progress-merge'
-  | 'backfill-script';
+  | 'backfill-script'
+  /** scripts/bind-legacy-completion-certificate.ts, after staff review. */
+  | 'reviewed-repair';
 
 export type EnsurePendingCertificationInput = {
   userId: string;
@@ -168,13 +170,28 @@ export function resolveCertificationNameForCourse(input: {
 }
 
 /** Previous fallback, used only to detect a label transition, never to issue a row. */
-function previousCertificationName(input: EnsurePendingCertificationInput): string {
+export function previousCertificationName(input: Pick<EnsurePendingCertificationInput, 'programSlug' | 'courseSlug'>): string {
   const programSlug = canonicalizeProgramSlug(input.programSlug);
   const baseName = catalogCourseDisplayName({ programSlug, courseSlug: input.courseSlug })
     ?? humaniseCourseSlug(input.courseSlug.replace(/-course-\d+$/i, ''));
   return programsCarryingCourseName(baseName).size > 1
     ? `${baseName} — ${programTitleForSlug(programSlug)}`
     : baseName;
+}
+
+/**
+ * Audits written before #2862 stored the caller's raw program slug, which
+ * can be a legacy alias of the canonical key (the IBM software developer
+ * program was reported under `ai-and-software-development-...` before the
+ * alias landed). Matching only the canonical slug made those rows look
+ * unattributed, so the exact-provenance check refused them forever.
+ */
+function programSlugProvenanceFilter(programSlug: string) {
+  return {
+    OR: programSlugReadCandidates(programSlug).map((slug) => ({
+      metadata: { path: ['programSlug'], equals: slug },
+    })),
+  };
 }
 
 async function certificateBeforeLabelCorrection(
@@ -189,7 +206,7 @@ async function certificateBeforeLabelCorrection(
       targetId: { not: null },
       AND: [
         { metadata: { path: ['userId'], equals: input.userId } },
-        { metadata: { path: ['programSlug'], equals: canonicalizeProgramSlug(input.programSlug) } },
+        programSlugProvenanceFilter(input.programSlug),
         { metadata: { path: ['courseSlug'], equals: input.courseSlug } },
       ],
     },
@@ -210,12 +227,38 @@ async function certificateBeforeLabelCorrection(
   // Historical audit writes were best-effort. An old label alone cannot
   // prove which course a row represents; require reviewed repair instead of
   // guessing or creating a second row alongside it.
-  const unattributed = await db.userCertification.findUnique({
+  const legacy = await db.userCertification.findUnique({
     where: { userId_certName: { userId: input.userId, certName: previousName } },
     select: { id: true },
   });
-  if (unattributed) throw new Error('Legacy certificate label requires exact course provenance before correction');
-  return null;
+  if (!legacy) return null;
+
+  // The old fallback dropped the `-course-N` ordinal, so every synthetic
+  // course in a program shared one label. A legacy row whose own audit
+  // binds it to another course of this member is that course's
+  // certificate, not this one's: this course never got a row, and issuing
+  // its corrected label is not a guess. Only a row with no identity at all
+  // still needs the reviewed repair.
+  const bindings = await db.auditLog.findMany({
+    where: {
+      action: PENDING_CERTIFICATION_FROM_COMPLETION_ACTION,
+      targetType: 'user_certification',
+      targetId: legacy.id,
+      metadata: { path: ['userId'], equals: input.userId },
+    },
+    take: 5,
+    select: { metadata: true },
+  });
+  const boundElsewhere = bindings.some(({ metadata }) => {
+    const bound = metadata && typeof metadata === 'object' && !Array.isArray(metadata)
+      ? metadata as Record<string, unknown>
+      : {};
+    if (typeof bound.programSlug !== 'string' || typeof bound.courseSlug !== 'string' || !bound.courseSlug) return false;
+    return bound.courseSlug !== input.courseSlug
+      || !programSlugReadCandidates(input.programSlug).includes(bound.programSlug.trim().toLowerCase());
+  });
+  if (boundElsewhere) return null;
+  throw new Error('Legacy certificate label requires exact course provenance before correction');
 }
 
 export async function ensurePendingCertificationForCompletion(

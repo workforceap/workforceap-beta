@@ -10,7 +10,7 @@ import { installReadOnlyAuditCookie } from '../../scripts/lib/portal-audit-cooki
 import { classifyReadOnlyAuditRequest, redirectTargetMatches } from '../../scripts/lib/portal-audit-actions.mjs';
 import { inspectPortalPage } from '../../scripts/lib/portal-audit-browser.mjs';
 import { auditPortalRouteInventory } from '../../scripts/lib/portal-audit-inventory.mjs';
-import { STATIC_PATHS, DYNAMIC_PATHS, REDIRECT_ONLY_PATHS } from '../../scripts/lib/portal-audit-paths.mjs';
+import { STATIC_PATHS, DYNAMIC_PATHS, REDIRECT_ONLY_PATHS, FLAG_GATED_PATHS } from '../../scripts/lib/portal-audit-paths.mjs';
 import { beginStaffDataReadiness, navigateMemberInventoryRoute } from '../../scripts/lib/portal-c-browser-readiness.mjs';
 import { verifyLocalOwnershipEnvironment } from '../../scripts/lib/portal-local-ownership.mjs';
 import { isLocalFixtureGtmBootstrap, isLocalFixtureHmrSocket, localFixtureVercelBootstrap } from '../../scripts/lib/portal-local-network.mjs';
@@ -269,7 +269,7 @@ test('current portal browser acceptance records every required case', async ({ b
       if (item.missing) { results.set(item.id, { id: item.id, status: 'incomplete', reason: item.missing }); checkpoint(); continue; }
       try {
         if (item.lane === 'inventory-readiness') {
-          const inventory = auditPortalRouteInventory({ appRoot: 'app', staticPaths: STATIC_PATHS, dynamicPaths: DYNAMIC_PATHS, redirectOnlyPaths: REDIRECT_ONLY_PATHS });
+          const inventory = auditPortalRouteInventory({ appRoot: 'app', staticPaths: STATIC_PATHS, dynamicPaths: DYNAMIC_PATHS, redirectOnlyPaths: REDIRECT_ONLY_PATHS, flagGatedPaths: FLAG_GATED_PATHS });
           if (!inventory.ok) throw new Error('Current route inventory drift');
         } else {
           const role = item.lane === 'logged-out-routes' ? 'anonymous' : item.role;

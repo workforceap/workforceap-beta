@@ -50,6 +50,7 @@ import '@/css/wa-brand-tokens.css';
 import '@/css/astryx-brand-bridge.css';
 import DeferredRootChrome from '@/components/DeferredRootChrome';
 import SentrySetUser from '@/components/observability/SentrySetUser';
+import { isGuardedLocalPreview } from '@/lib/runtime/localPreview';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -93,6 +94,8 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const h = await headers();
   const readOnlyAudit = isReadOnlyPortalAuditHeader(h);
+  // Third-party tags and the service worker also stay off in the guarded local preview (never on Vercel).
+  const localPreview = isGuardedLocalPreview();
 
   // Build GUC context from the user ID forwarded by middleware.
   // Middleware strips any client-supplied x-wap-user-id and only re-adds it
@@ -215,6 +218,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       suppressHydrationWarning
       className={`${inter.variable}${htmlClassName ? ' ' + htmlClassName : ''}`}
       data-portal-read-only-audit={readOnlyAudit ? '1' : undefined}
+      data-scroll-behavior="smooth"
     >
       <head>
         <ThemeInitScript nonce={cspNonce} />
@@ -243,7 +247,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
         {/* Apple requires 180x180 for the home-screen icon (WAP-40); the PWA manifest keeps 192/512. */}
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        {!readOnlyAudit ? (
+        {!readOnlyAudit && !localPreview ? (
           <>
             <link rel="preconnect" href="https://www.googletagmanager.com" />
             <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
@@ -256,7 +260,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             Lucide SVGs; the self-hosted @font-face stays in main.css for legacy
             portal pages and is preloaded from the (portal) and admin layouts. */}
         {/* Register service worker — updateViaCache:'none' ensures browser always fetches fresh sw.js */}
-        {!readOnlyAudit ? (
+        {!readOnlyAudit && !localPreview ? (
           <Script id="sw-register" strategy="lazyOnload" nonce={cspNonce}>
             {`if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).then(function(r){r.update()}).catch(function(){})}`}
           </Script>
@@ -292,7 +296,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             {skipCopy('skipToNavigation', 'Skip to navigation')}
           </a>
         ) : null}
-        {GTM_ID && !readOnlyAudit && (
+        {GTM_ID && !readOnlyAudit && !localPreview && (
           <>
             <noscript>
               <iframe
@@ -346,9 +350,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <NextIntlClientProvider messages={messages}>
         <ConditionalMarketingNav forceHidden={hidePaidApplyMarketingNav} />
         <main id="main-content">{children}</main>
-        <DeferredRootChrome suppressAnalytics={readOnlyAudit} />
+        <DeferredRootChrome suppressAnalytics={readOnlyAudit || localPreview} />
         </NextIntlClientProvider>
-        {!readOnlyAudit ? <SentrySetUser userId={resolvedUserId} /> : null}
+        {!readOnlyAudit && !localPreview ? <SentrySetUser userId={resolvedUserId} /> : null}
       </body>
     </html>
   ));

@@ -101,6 +101,30 @@ function intersection(left, right) {
   return left.filter((value) => rightSet.has(value));
 }
 
+/**
+ * Flag-gated entries are pages that are OFF by default and answer not-found
+ * until a server flag is on. They stay in the inventory (drift still fails)
+ * but are classified separately: each names its flag, the expected result
+ * while the flag is off, and the enforcing test that covers the denial.
+ */
+function normalizeFlagGatedEntries(entries, expectedDynamic) {
+  const routes = [];
+  const invalid = [];
+  for (const entry of entries ?? []) {
+    const path = normalizedRoute(entry?.path);
+    const flag = typeof entry?.flag === 'string' ? entry.flag.trim() : '';
+    const whenOff = typeof entry?.whenOff === 'string' ? entry.whenOff.trim() : '';
+    const coveredBy = typeof entry?.coveredBy === 'string' ? entry.coveredBy.trim() : '';
+    if (!entry || typeof entry !== 'object' || !flag || whenOff !== 'not_found' || !coveredBy) {
+      invalid.push(path);
+      continue;
+    }
+    if (isDynamicRoute(path) !== expectedDynamic) continue;
+    routes.push(path);
+  }
+  return { routes: [...new Set(routes)].sort(), invalid: [...new Set(invalid)].sort() };
+}
+
 function normalizeRedirectOnlyEntries(entries, expectedDynamic) {
   const routes = [];
   const invalid = [];
@@ -129,6 +153,7 @@ export function comparePortalRouteInventory({
   staticPaths,
   dynamicPaths,
   redirectOnlyPaths = {},
+  flagGatedPaths = {},
 }) {
   const roles = Object.keys(PORTAL_ROLE_PREFIXES);
   const sections = {};
@@ -141,15 +166,24 @@ export function comparePortalRouteInventory({
     const auditedDynamic = canonicalManifestRoutes(dynamicPaths?.[role]);
     const redirectStatic = normalizeRedirectOnlyEntries(redirectOnlyPaths?.[role], false);
     const redirectDynamic = normalizeRedirectOnlyEntries(redirectOnlyPaths?.[role], true);
-    const manifestStatic = [...new Set([...auditedStatic, ...redirectStatic.routes])].sort();
-    const manifestDynamic = [...new Set([...auditedDynamic, ...redirectDynamic.routes])].sort();
+    const gatedStatic = normalizeFlagGatedEntries(flagGatedPaths?.[role], false);
+    const gatedDynamic = normalizeFlagGatedEntries(flagGatedPaths?.[role], true);
+    const manifestStatic = [...new Set([...auditedStatic, ...redirectStatic.routes, ...gatedStatic.routes])].sort();
+    const manifestDynamic = [...new Set([...auditedDynamic, ...redirectDynamic.routes, ...gatedDynamic.routes])].sort();
     const missingStatic = difference(discoveredStatic, manifestStatic);
     const staleStatic = difference(manifestStatic, discoveredStatic);
     const missingDynamic = difference(discoveredDynamic, manifestDynamic);
     const staleDynamic = difference(manifestDynamic, discoveredDynamic);
-    const overlappingStatic = intersection(auditedStatic, redirectStatic.routes);
-    const overlappingDynamic = intersection(auditedDynamic, redirectDynamic.routes);
+    const overlappingStatic = [
+      ...intersection(auditedStatic, redirectStatic.routes),
+      ...intersection([...auditedStatic, ...redirectStatic.routes], gatedStatic.routes),
+    ].sort();
+    const overlappingDynamic = [
+      ...intersection(auditedDynamic, redirectDynamic.routes),
+      ...intersection([...auditedDynamic, ...redirectDynamic.routes], gatedDynamic.routes),
+    ].sort();
     const invalidRedirectOnly = [...redirectStatic.invalid, ...redirectDynamic.invalid].sort();
+    const invalidFlagGated = [...new Set([...gatedStatic.invalid, ...gatedDynamic.invalid])].sort();
     const sectionOk =
       missingStatic.length === 0 &&
       staleStatic.length === 0 &&
@@ -157,7 +191,8 @@ export function comparePortalRouteInventory({
       staleDynamic.length === 0 &&
       overlappingStatic.length === 0 &&
       overlappingDynamic.length === 0 &&
-      invalidRedirectOnly.length === 0;
+      invalidRedirectOnly.length === 0 &&
+      invalidFlagGated.length === 0;
 
     if (!sectionOk) ok = false;
     sections[role] = {
@@ -170,6 +205,8 @@ export function comparePortalRouteInventory({
       manifestDynamicCount: manifestDynamic.length,
       auditedDynamicCount: auditedDynamic.length,
       redirectOnlyDynamicCount: redirectDynamic.routes.length,
+      flagGatedStaticCount: gatedStatic.routes.length,
+      flagGatedDynamicCount: gatedDynamic.routes.length,
       missingStatic,
       staleStatic,
       missingDynamic,
@@ -177,6 +214,7 @@ export function comparePortalRouteInventory({
       overlappingStatic,
       overlappingDynamic,
       invalidRedirectOnly,
+      invalidFlagGated,
     };
   }
 
@@ -185,6 +223,7 @@ export function comparePortalRouteInventory({
     ...Object.keys(staticPaths ?? {}),
     ...Object.keys(dynamicPaths ?? {}),
     ...Object.keys(redirectOnlyPaths ?? {}),
+    ...Object.keys(flagGatedPaths ?? {}),
   ]
     .filter((role) => !expectedRoles.has(role))
     .filter((role, index, all) => all.indexOf(role) === index)
@@ -212,6 +251,7 @@ export function formatPortalRouteInventoryDrift(report) {
       overlappingStatic: section.overlappingStatic,
       overlappingDynamic: section.overlappingDynamic,
       invalidRedirectOnly: section.invalidRedirectOnly,
+      invalidFlagGated: section.invalidFlagGated,
     })) {
       if (values?.length) lines.push(`- ${role}.${key}: ${values.join(', ')}`);
     }
@@ -227,11 +267,13 @@ export function auditPortalRouteInventory({
   staticPaths,
   dynamicPaths,
   redirectOnlyPaths = {},
+  flagGatedPaths = {},
 }) {
   return comparePortalRouteInventory({
     discovered: discoverPortalPageRoutes(appRoot),
     staticPaths,
     dynamicPaths,
     redirectOnlyPaths,
+    flagGatedPaths,
   });
 }

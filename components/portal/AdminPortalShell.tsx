@@ -17,6 +17,7 @@ export default function AdminPortalShell({
   children,
   superAdmin = false,
   knownIsAdmin,
+  gameLabEnabled = false,
   portalRoles,
   readOnlyAudit = false,
   tour = null,
@@ -25,6 +26,8 @@ export default function AdminPortalShell({
   superAdmin?: boolean;
   /** Server-resolved effective role is exactly admin; separate from access to this portal. */
   knownIsAdmin?: boolean;
+  /** Server-computed Game Lab gate (admin role + flag). Hides the nav row only; pages and assets re-check. */
+  gameLabEnabled?: boolean;
   portalRoles?: PortalSwitcherRole[];
   readOnlyAudit?: boolean;
   /**
@@ -36,8 +39,10 @@ export default function AdminPortalShell({
   tour?: TourOffer | null;
 }) {
   const navItems = useMemo(
-    () => ADMIN_PORTAL_NAV_ITEMS.filter((item) => !item.requiresSuperAdminContext || superAdmin),
-    [superAdmin]
+    () => ADMIN_PORTAL_NAV_ITEMS.filter(
+      (item) => (!item.requiresSuperAdminContext || superAdmin) && (!item.requiresGameLab || gameLabEnabled),
+    ),
+    [superAdmin, gameLabEnabled]
   );
   const helpTourKey = tour?.enabled ? tour.key : null;
 
