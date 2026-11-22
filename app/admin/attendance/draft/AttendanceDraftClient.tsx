@@ -5,6 +5,7 @@ import { buildDraftRows } from '@/lib/attendance/draft-rows';
 import { ACTIVITY_OBSERVED_LABEL, CUMULATIVE_ESTIMATE_LABEL, type AssistiveSignals } from '@/lib/attendance/assistive-signals';
 import { WEEK_LABELS, buildMonthlyGrid } from '@/lib/attendance/monthly-grid';
 import type { Day } from '@/lib/attendance/evidence';
+import { DataTable } from '@/components/portal/kit/DataTable';
 
 type Row = { date: string; minutes: string; code: '' | 'W' | 'CR' | 'A' };
 
@@ -70,21 +71,24 @@ export default function AttendanceDraftClient() {
               <section aria-label="Monthly draft calendar">
                 <h2>Monthly draft calendar</h2>
                 <p>Class Hrs are the minutes you entered. Lab Hrs stay blank. Unknown days stay blank.</p>
-                <table>
-                  <thead>
-                    <tr>{WEEK_LABELS.map(label => <th key={label}>{label}</th>)}<th>Class</th><th>Lab</th><th>Total</th></tr>
-                  </thead>
-                  <tbody>
-                    {grid.weeks.map((week, index) => (
-                      <tr key={index}>
-                        {week.map((cell, day) => <td key={day}>{cell.date ? `${cell.date.slice(8)} ${cell.classHours ?? ''}` : ''}</td>)}
-                        <td>{grid.weekTotals[index].classHours ?? ''}</td>
-                        <td>{grid.weekTotals[index].labHours ?? ''}</td>
-                        <td>{grid.weekTotals[index].totalHours ?? ''}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                                <DataTable
+                                  caption="Monthly draft calendar"
+                                  mobile="scroll"
+                                  rowKey={row => row.key}
+                                  columns={[
+                                    ...WEEK_LABELS.map((label, index) => ({ key: label, header: label, render: (row: { days: string[] }) => row.days[index] })),
+                                    { key: 'classHours', header: 'Class', render: (row: { classHours: string }) => row.classHours },
+                                    { key: 'labHours', header: 'Lab', render: (row: { labHours: string }) => row.labHours },
+                                    { key: 'totalHours', header: 'Total', render: (row: { totalHours: string }) => row.totalHours },
+                                  ]}
+                                  rows={grid.weeks.map((week, index) => ({
+                                    key: `week-${index + 1}`,
+                                    days: week.map(cell => cell.date ? `${cell.date.slice(8)} ${cell.classHours ?? ''}` : ''),
+                                    classHours: grid.weekTotals[index].classHours ?? '',
+                                    labHours: grid.weekTotals[index].labHours ?? '',
+                                    totalHours: grid.weekTotals[index].totalHours ?? '',
+                                  }))}
+                                />
                 <p>Running Total Hrs: Class {grid.running.classHours ?? 'blank'}, Lab {grid.running.labHours ?? 'blank'}, Total {grid.running.totalHours ?? 'blank'}.</p>
               </section>
             ) : null}
