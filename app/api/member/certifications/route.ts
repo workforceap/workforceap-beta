@@ -129,10 +129,51 @@ export const GET = withApiGuc(_GET);async function _POST(request: Request) {
     }
     return NextResponse.json({ success: true, status: outcome.status });
   } else {
-    const { count } = await prisma.$transaction((tx) => tx.userCertification.deleteMany({
-      where: { userId: user.id, certName },
-    }));
-    if (count > 0) {
+    // Same Mike rule as the earned=true path (2026-09-23): a staff-verified
+    // row stays verified. The certificate roadmap posts earned=false when a
+    // member unchecks a track, and that used to deleteMany with only
+    // userId+certName — including approved Coursera/self-report rows and
+    // their review evidence.
+    const outcome = await prisma.$transaction(async (tx) => {
+      const existing = await tx.userCertification.findUnique({
+        where: { userId_certName: { userId: user.id, certName } },
+        select: { id: true, certName: true, status: true },
+      });
+      if (!existing) return { kind: 'missing' as const };
+      if (existing.status === 'approved') return { kind: 'verified' as const, cert: existing };
+      const { count } = await tx.userCertification.deleteMany({
+        where: { id: existing.id, userId: user.id, status: { not: 'approved' } },
+      });
+      return count > 0
+        ? { kind: 'deleted' as const, cert: existing }
+        : { kind: 'verified' as const, cert: existing };
+    });
+
+    if (outcome.kind === 'verified') {
+      const { cert } = outcome;
+      void auditLog({
+        actorUserId: user.id,
+        action: 'member.certification.delete_blocked_verified',
+        targetType: 'user_certification',
+        targetId: cert.id,
+        metadata: { certName: cert.certName, status: 'approved' },
+      }).catch(() => {});
+      void logAuditEvent({
+        user: { id: user.id, role: 'member' },
+        verb: 'delete',
+        object: { type: 'UserCertification', id: cert.id },
+        result: {
+          success: false,
+          extensions: { status: 'approved', statusKept: true },
+        },
+      }).catch(() => {});
+      return NextResponse.json(
+        { error: 'Verified certificates cannot be removed.', status: 'approved', verifiedUnchanged: true },
+        { status: 409 },
+      );
+    }
+
+    if (outcome.kind === 'deleted') {
       void auditLog({ actorUserId: user.id, action: 'member.certification.deleted', targetType: 'user_certification', metadata: { certName } }).catch(() => {});
     }
   }
