@@ -159,10 +159,14 @@ describe('walk-in email identity matching', () => {
     });
   });
 
-  it('frees a deleted mixed-case row and may clear the leftover auth user', async () => {
+  it('frees a deleted mixed-case row and re-invites when that Auth id is still the User primary key', async () => {
     mocks.findMany.mockResolvedValueOnce([
-      { id: 'deleted-member', email: MIXED_CASE_EMAIL, deletedAt: new Date('2026-01-01') },
+      { id: EXISTING_AUTH_ID, email: MIXED_CASE_EMAIL, deletedAt: new Date('2026-01-01') },
     ]);
+    mocks.findUnique.mockResolvedValueOnce({
+      id: EXISTING_AUTH_ID,
+      deletedAt: new Date('2026-01-01'),
+    });
     mocks.invite
       .mockResolvedValueOnce({
         data: { user: null },
@@ -173,13 +177,37 @@ describe('walk-in email identity matching', () => {
     const response = await POST(request());
     expect(response.status).toBe(200);
     expect(mocks.update).toHaveBeenCalledExactlyOnceWith({
-      where: { id: 'deleted-member' },
-      data: { email: expect.stringMatching(/^deleted_deleted-member_\d+_member@school\.org@deleted\.invalid$/) },
+      where: { id: EXISTING_AUTH_ID },
+      data: { email: expect.stringMatching(/^deleted_existing-auth-id_\d+_member@school\.org@deleted\.invalid$/) },
     });
     expect(mocks.findAuthByEmail).toHaveBeenCalledExactlyOnceWith(expect.anything(), NORMALIZED_EMAIL);
     expect(mocks.deleteUser).toHaveBeenCalledExactlyOnceWith(EXISTING_AUTH_ID);
     expect(mocks.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ id: 'walk-in-new', email: NORMALIZED_EMAIL }),
+    });
+  });
+
+  it('adopts leftover Auth when invite collides and no User row claims that id yet', async () => {
+    mocks.invite.mockResolvedValue({
+      data: { user: null },
+      error: { message: 'already registered', code: 'user_already_exists' },
+    });
+
+    const response = await POST(request());
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      memberId: EXISTING_AUTH_ID,
+      email: MIXED_CASE_EMAIL,
+    });
+    expect(mocks.findAuthByEmail).toHaveBeenCalledExactlyOnceWith(expect.anything(), NORMALIZED_EMAIL);
+    expect(mocks.findUnique).toHaveBeenCalledExactlyOnceWith({
+      where: { id: EXISTING_AUTH_ID },
+      select: { id: true, deletedAt: true },
+    });
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+    expect(mocks.invite).toHaveBeenCalledTimes(1);
+    expect(mocks.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ id: EXISTING_AUTH_ID, email: NORMALIZED_EMAIL }),
     });
   });
 
