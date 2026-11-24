@@ -171,6 +171,7 @@ export default function WorkspaceSidebarSections({
           </span>
         ) : null}
         <span className="workspace-sidebar-link-label">{translateLabel(item.label)}</span>
+        {item.tag ? <span className="workspace-nav-badge" data-testid="nav-tag">{item.tag}</span> : null}
         {badge > 0 ? <span className="workspace-nav-badge">{badge > 99 ? '99+' : badge}</span> : null}
         <NavigationPending />
       </Link>

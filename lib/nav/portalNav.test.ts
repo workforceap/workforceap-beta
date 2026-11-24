@@ -332,3 +332,12 @@ test('consolidated destinations own their legacy routes while daily queues keep 
   assert.equal(getBestActiveHref('/admin/members/member-1', navItemsForActiveRoute(ADMIN_PORTAL_NAV_ITEMS)), '/admin/students');
   assert.equal(getBestActiveHref('/admin/members/duplicates', navItemsForActiveRoute(ADMIN_PORTAL_NAV_ITEMS)), '/admin/members/duplicates');
 });
+
+test('Game Lab nav row is gated by the server flag, not by super-admin context', () => {
+  const rows = ADMIN_PORTAL_NAV_ITEMS.filter((item) => item.href === '/admin/game-lab');
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].requiresGameLab, true);
+  assert.equal(rows[0].tag, 'Pre-release');
+  assert.equal(rows[0].requiresSuperAdminContext, undefined);
+  assert.equal(ADMIN_PORTAL_NAV_ITEMS.filter((item) => item.requiresGameLab).length, 1);
+});
