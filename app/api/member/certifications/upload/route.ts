@@ -67,22 +67,19 @@ function storageErrorMessage(error: { message?: string } | null): string {
   
     try {
       const uploadBytes = new Uint8Array(await file.arrayBuffer());
-      const verified = cert.status === 'approved';
-      // A verified certificate's file is the evidence staff checked, so a new
-      // file never overwrites it (WAP-220): it gets its own path, and the old
-      // path stays in the audit entry. Unverified certificates keep the stable
-      // path, since review starts over anyway. Both sit under
-      // cert-files/{userId}/, the prefix GDPR erasure removes.
-      const storagePath = verified
-        ? `cert-files/${user.id}/${cert.id}-${Date.now()}.${ext}`
-        : `cert-files/${user.id}/${cert.id}.${ext}`;
+      // Never reuse the stable object: an in-flight attach that read
+      // `pending` can finish after staff approved, and upsert on
+      // cert-files/{user}/{id}.ext would replace the file they verified
+      // (WAP-220). Unique paths keep that object; GDPR still deletes the
+      // cert-files/{userId}/ prefix.
+      const storagePath = `cert-files/${user.id}/${cert.id}-${Date.now()}.${ext}`;
       const supabase = getSupabaseAdmin();
-  
+
       const { error } = await supabase.storage.from(BUCKET).upload(storagePath, uploadBytes, {
-        upsert: !verified,
+        upsert: false,
         contentType,
       });
-  
+
       if (error) {
         console.error('[cert-upload] storage upload failed', error);
         return NextResponse.json({ error: storageErrorMessage(error) }, { status: 500 });
@@ -92,19 +89,18 @@ function storageErrorMessage(error: { message?: string } | null): string {
       // WAP-197): the file is saved as its proof, the review state and dates
       // are left alone, and the change is recorded in the audit log so staff
       // can see a new file arrived after verification.
-      // The status condition closes the read-then-write window (WAP-220): if
-      // staff changed the review between the read above and this write, no
-      // row matches and the file goes through the review path below instead.
-      const keptVerified = verified
-        ? (
-            await prisma.$transaction((tx) =>
-              tx.userCertification.updateMany({
-                where: { id: cert.id, status: 'approved' },
-                data: { proofUrl: storagePath },
-              }),
-            )
-          ).count > 0
-        : false;
+      // Match on current status, not the pre-upload read (WAP-220): staff
+      // approval during the upload must not be written back to `pending`,
+      // and a later un-approve still sends the new file to review.
+      const keptVerified =
+        (
+          await prisma.$transaction((tx) =>
+            tx.userCertification.updateMany({
+              where: { id: cert.id, userId: user.id, status: 'approved' },
+              data: { proofUrl: storagePath },
+            }),
+          )
+        ).count > 0;
       if (keptVerified) {
         const hadProof = !!cert.proofUrl;
         const previousProofUrl = cert.proofUrl ?? null;
@@ -127,22 +123,28 @@ function storageErrorMessage(error: { message?: string } | null): string {
         return NextResponse.json({ success: true, storagePath, status: 'approved' });
       }
 
-      // Otherwise proof submitted → enter the admin review queue. We persist the
-      // stable storage path (the `member-files` bucket is private) as
-      // `proofUrl`; the admin queue mints a short-lived signed URL from it at
-      // render time (same pattern as `/api/admin/members/[id]/resume-urls`).
-      // Flip status to `pending` and stamp `submittedAt` so the row surfaces
-      // for review.
-      await prisma.$transaction((tx) =>
-        tx.userCertification.update({
-          where: { id: cert.id },
-          data: {
-            status: 'pending',
-            proofUrl: storagePath,
-            submittedAt: new Date(),
-          },
-        }),
-      );
+      // Otherwise proof submitted → enter the admin review queue. We persist
+      // the private `member-files` path as `proofUrl`; the admin queue mints a
+      // short-lived signed URL from it at render time (same pattern as
+      // `/api/admin/members/[id]/resume-urls`). Flip status to `pending` and
+      // stamp `submittedAt` so the row surfaces for review — but never if
+      // staff approved between the failed keep-verified write and this one.
+      const queued =
+        (
+          await prisma.$transaction((tx) =>
+            tx.userCertification.updateMany({
+              where: { id: cert.id, userId: user.id, status: { not: 'approved' } },
+              data: {
+                status: 'pending',
+                proofUrl: storagePath,
+                submittedAt: new Date(),
+              },
+            }),
+          )
+        ).count > 0;
+      if (!queued) {
+        return NextResponse.json({ error: 'Certificate not found — add it first' }, { status: 404 });
+      }
 
       return NextResponse.json({ success: true, storagePath, status: 'pending' });
     } catch (e) {

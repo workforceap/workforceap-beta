@@ -4,7 +4,10 @@
  * attaching a file to an already verified (`approved`) certificate saves the
  * file but keeps the certificate verified, and records the change in the
  * audit log. Unverified certificates keep the existing behaviour: the file
- * sends them (back) to `pending` staff review.
+ * sends them (back) to `pending` staff review. An in-flight attach that
+ * read `pending` still keeps staff approval if the row is `approved` by
+ * the time the write lands, and never upserts the stable object staff
+ * already verified.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -65,6 +68,10 @@ function cert(status: 'pending' | 'approved' | 'rejected', proofUrl: string | nu
   };
 }
 
+function expectUniqueProofPath(path: string) {
+  expect(path).toMatch(/^cert-files\/user-1\/cert-1-\d+\.pdf$/);
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -80,7 +87,7 @@ describe('POST /api/member/certifications/upload review status (WAP-197)', () =>
     expect(h.upload).toHaveBeenCalledTimes(1);
     expect(h.prisma.userCertification.update).not.toHaveBeenCalled();
     expect(h.prisma.userCertification.updateMany).toHaveBeenCalledWith({
-      where: { id: 'cert-1', status: 'approved' },
+      where: { id: 'cert-1', userId: 'user-1', status: 'approved' },
       data: { proofUrl: body.storagePath },
     });
   });
@@ -91,7 +98,7 @@ describe('POST /api/member/certifications/upload review status (WAP-197)', () =>
     const { storagePath } = await res.json();
 
     // Same extension as the verified file, yet a different object, written without upsert.
-    expect(storagePath).toMatch(/^cert-files\/user-1\/cert-1-\d+\.pdf$/);
+    expectUniqueProofPath(storagePath);
     expect(storagePath).not.toBe('cert-files/user-1/cert-1.pdf');
     const [[path, , opts]] = h.upload.mock.calls as unknown as [[string, unknown, { upsert: boolean }]];
     expect(path).toBe(storagePath);
@@ -100,13 +107,21 @@ describe('POST /api/member/certifications/upload review status (WAP-197)', () =>
 
   it('a review change between read and write sends the file to pending review instead (WAP-220)', async () => {
     h.prisma.userCertification.findUnique.mockResolvedValue(cert('approved', 'cert-files/user-1/cert-1.pdf'));
-    h.prisma.userCertification.updateMany.mockResolvedValueOnce({ count: 0 });
+    h.prisma.userCertification.updateMany
+      .mockResolvedValueOnce({ count: 0 })
+      .mockResolvedValueOnce({ count: 1 });
     const res = await POST(uploadRequest() as never);
     const body = await res.json();
     expect(body.status).toBe('pending');
-    const [[args]] = h.prisma.userCertification.update.mock.calls as unknown as [[{ data: Record<string, unknown> }]];
-    expect(args.data.status).toBe('pending');
-    expect(args.data.proofUrl).toBe(body.storagePath);
+    expect(h.prisma.userCertification.update).not.toHaveBeenCalled();
+    expect(h.prisma.userCertification.updateMany).toHaveBeenNthCalledWith(2, {
+      where: { id: 'cert-1', userId: 'user-1', status: { not: 'approved' } },
+      data: {
+        status: 'pending',
+        proofUrl: body.storagePath,
+        submittedAt: expect.any(Date),
+      },
+    });
     expect(h.auditLog).not.toHaveBeenCalled();
   });
 
@@ -136,16 +151,53 @@ describe('POST /api/member/certifications/upload review status (WAP-197)', () =>
 
   it.each(['pending', 'rejected'] as const)('a %s certificate goes (back) to pending review, as before', async (status) => {
     h.prisma.userCertification.findUnique.mockResolvedValue(cert(status));
+    h.prisma.userCertification.updateMany
+      .mockResolvedValueOnce({ count: 0 })
+      .mockResolvedValueOnce({ count: 1 });
     const res = await POST(uploadRequest() as never);
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ success: true, storagePath: 'cert-files/user-1/cert-1.pdf', status: 'pending' });
+    const body = await res.json();
+    expect(body.success).toBe(true);
+    expect(body.status).toBe('pending');
+    expectUniqueProofPath(body.storagePath);
 
-    const [[args]] = h.prisma.userCertification.update.mock.calls as unknown as [[{ where: unknown; data: Record<string, unknown> }]];
-    expect(args.where).toEqual({ id: 'cert-1' });
-    expect(args.data.status).toBe('pending');
-    expect(args.data.proofUrl).toBe('cert-files/user-1/cert-1.pdf');
-    expect(args.data.submittedAt).toBeInstanceOf(Date);
+    expect(h.prisma.userCertification.update).not.toHaveBeenCalled();
+    expect(h.prisma.userCertification.updateMany).toHaveBeenNthCalledWith(2, {
+      where: { id: 'cert-1', userId: 'user-1', status: { not: 'approved' } },
+      data: {
+        status: 'pending',
+        proofUrl: body.storagePath,
+        submittedAt: expect.any(Date),
+      },
+    });
+    const [[, , opts]] = h.upload.mock.calls as unknown as [[string, unknown, { upsert: boolean }]];
+    expect(opts.upsert).toBe(false);
     expect(h.auditLog).not.toHaveBeenCalled();
+  });
+
+  it('staff approval during an unverified upload keeps the certificate verified', async () => {
+    h.prisma.userCertification.findUnique.mockResolvedValue(cert('pending'));
+    h.prisma.userCertification.updateMany.mockResolvedValueOnce({ count: 1 });
+    const res = await POST(uploadRequest() as never);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe('approved');
+    expectUniqueProofPath(body.storagePath);
+
+    expect(h.prisma.userCertification.update).not.toHaveBeenCalled();
+    expect(h.prisma.userCertification.updateMany).toHaveBeenCalledTimes(1);
+    expect(h.prisma.userCertification.updateMany).toHaveBeenCalledWith({
+      where: { id: 'cert-1', userId: 'user-1', status: 'approved' },
+      data: { proofUrl: body.storagePath },
+    });
+    const [[, , opts]] = h.upload.mock.calls as unknown as [[string, unknown, { upsert: boolean }]];
+    expect(opts.upsert).toBe(false);
+    expect(h.auditLog).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'member.certification.proof_attached_verified',
+        metadata: expect.objectContaining({ status: 'approved' }),
+      }),
+    );
   });
 
   it("a certificate name the caller doesn't own is a 404 and touches nothing", async () => {
