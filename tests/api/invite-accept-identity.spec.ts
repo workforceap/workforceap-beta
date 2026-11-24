@@ -16,7 +16,7 @@ vi.mock('@/lib/db/withRequestGuc', () => ({
 vi.mock('@/lib/db/prisma', () => {
   const tx = {
     invitation: { findFirst: vi.fn(), updateMany: vi.fn() },
-    user: { findFirst: vi.fn(), findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
+    user: { findFirst: vi.fn(), findMany: vi.fn(), findUnique: vi.fn(), update: vi.fn(), create: vi.fn() },
     profile: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
     role: { findFirst: vi.fn() },
     userRole: { upsert: vi.fn() },
@@ -53,6 +53,17 @@ function inviteRequest(password = 'NewPassword123!') {
   });
 }
 
+function mockExistingInvitee(user: {
+  id: string;
+  fullName: string;
+  email: string;
+  enrolledProgram: string | null;
+  courseEnrollments: Array<{ programSlug: string }>;
+}) {
+  vi.mocked(prisma.user.findMany).mockResolvedValue([user] as never);
+  vi.mocked(prisma.user.findFirst).mockResolvedValue(user as never);
+}
+
 const authAdmin = {
   createUser: vi.fn(),
   getUserById: vi.fn(),
@@ -71,6 +82,7 @@ describe('public invitation acceptance identity boundary', () => {
     } as never);
     vi.mocked(prisma.invitation.updateMany).mockResolvedValue({ count: 1 } as never);
     vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.user.findMany).mockResolvedValue([]);
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ organizationId: 'org-1' } as never);
     vi.mocked(prisma.profile.findFirst).mockResolvedValue(null);
     vi.mocked(prisma.profile.create).mockResolvedValue({ id: 'profile-1' } as never);
@@ -90,9 +102,9 @@ describe('public invitation acceptance identity boundary', () => {
   });
 
   it('does not claim an app User whose Auth ID has a different email', async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+    mockExistingInvitee({
       id: appUserId, fullName: 'Invitee', email, enrolledProgram: null, courseEnrollments: [],
-    } as never);
+    });
     authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email: 'someone-else@example.test' } }, error: null });
 
     const response = await POST(inviteRequest());
@@ -103,9 +115,9 @@ describe('public invitation acceptance identity boundary', () => {
   });
 
   it('does not claim an app User when its Auth identity is missing', async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+    mockExistingInvitee({
       id: appUserId, fullName: 'Invitee', email, enrolledProgram: null, courseEnrollments: [],
-    } as never);
+    });
     authAdmin.getUserById.mockResolvedValue({ data: null, error: { status: 404, code: 'user_not_found' } });
 
     const response = await POST(inviteRequest());
@@ -128,9 +140,9 @@ describe('public invitation acceptance identity boundary', () => {
   });
 
   it('keeps a matching existing app and Auth identity eligible to accept', async () => {
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+    mockExistingInvitee({
       id: appUserId, fullName: 'Invitee', email, enrolledProgram: null, courseEnrollments: [],
-    } as never);
+    });
     authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
 
     const response = await POST(inviteRequest());
@@ -163,10 +175,10 @@ describe('public invitation acceptance identity boundary', () => {
       subgroupId: null, partnerId: null, counselorAffiliation: null,
       programSlug, status: 'pending', expiresAt: new Date('2999-01-01'),
     } as never);
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+    mockExistingInvitee({
       id: appUserId, fullName: 'Invitee', email, enrolledProgram: programSlug,
       courseEnrollments: [{ programSlug }],
-    } as never);
+    });
     authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
 
     const response = await POST(inviteRequest());
@@ -186,11 +198,11 @@ describe('public invitation acceptance identity boundary', () => {
       programSlug: 'comptia-a-professional-certificate', status: 'pending',
       expiresAt: new Date('2999-01-01'),
     } as never);
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+    mockExistingInvitee({
       id: appUserId, fullName: 'Invitee', email,
       enrolledProgram: 'it-support-professional-certificate-google',
       courseEnrollments: [{ programSlug: 'it-support-professional-certificate-google' }],
-    } as never);
+    });
     authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
 
     const response = await POST(inviteRequest());
@@ -209,9 +221,9 @@ describe('public invitation acceptance identity boundary', () => {
       subgroupId: null, partnerId: null, counselorAffiliation: null,
       programSlug, status: 'pending', expiresAt: new Date('2999-01-01'),
     } as never);
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+    mockExistingInvitee({
       id: appUserId, fullName: 'Invitee', email, enrolledProgram: null, courseEnrollments: [],
-    } as never);
+    });
     authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
     vi.mocked(prisma.user.findUnique).mockResolvedValue({ organizationId: 'org-1' } as never);
 
@@ -225,5 +237,83 @@ describe('public invitation acceptance identity boundary', () => {
       expect.anything(),
       expect.objectContaining({ userId: appUserId, programSlug }),
     );
+  });
+
+  it('keeps a mixed-case existing member on the same program instead of restamping enrolledAt', async () => {
+    const programSlug = 'it-support-professional-certificate-google';
+    const mixedCaseEmail = 'Invitee@Example.TEST';
+    vi.mocked(prisma.invitation.findFirst).mockResolvedValue({
+      id: 'inv-1', email, role: 'member', invitedById: 'inviter-1',
+      subgroupId: null, partnerId: null, counselorAffiliation: null,
+      programSlug, status: 'pending', expiresAt: new Date('2999-01-01'),
+    } as never);
+    mockExistingInvitee({
+      id: appUserId, fullName: 'Invitee', email: mixedCaseEmail, enrolledProgram: programSlug,
+      courseEnrollments: [{ programSlug }],
+    });
+    authAdmin.getUserById.mockResolvedValue({
+      data: { user: { id: appUserId, email: mixedCaseEmail } }, error: null,
+    });
+
+    const response = await POST(inviteRequest());
+
+    expect(response.status).toBe(200);
+    expect(prisma.user.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { email: { equals: email, mode: 'insensitive' } },
+    }));
+    expect(upsertEquivalentCourseEnrollment).not.toHaveBeenCalled();
+    expect(prisma.user.update).not.toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ enrolledProgram: programSlug }),
+    }));
+    expect(prisma.invitation.updateMany).toHaveBeenCalled();
+  });
+
+  it('refuses a mixed-case existing member invite that would switch programs', async () => {
+    const mixedCaseEmail = 'Invitee@Example.TEST';
+    vi.mocked(prisma.invitation.findFirst).mockResolvedValue({
+      id: 'inv-1', email, role: 'member', invitedById: 'inviter-1',
+      subgroupId: null, partnerId: null, counselorAffiliation: null,
+      programSlug: 'comptia-a-professional-certificate', status: 'pending',
+      expiresAt: new Date('2999-01-01'),
+    } as never);
+    mockExistingInvitee({
+      id: appUserId, fullName: 'Invitee', email: mixedCaseEmail,
+      enrolledProgram: 'it-support-professional-certificate-google',
+      courseEnrollments: [{ programSlug: 'it-support-professional-certificate-google' }],
+    });
+    authAdmin.getUserById.mockResolvedValue({
+      data: { user: { id: appUserId, email: mixedCaseEmail } }, error: null,
+    });
+
+    const response = await POST(inviteRequest());
+    const body = await response.json() as { code?: string };
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('ALREADY_ENROLLED');
+    expect(prisma.invitation.updateMany).not.toHaveBeenCalled();
+    expect(upsertEquivalentCourseEnrollment).not.toHaveBeenCalled();
+  });
+
+  it('does not switch programs when a signed-in member is found by Auth id after an email miss', async () => {
+    const programSlug = 'it-support-professional-certificate-google';
+    vi.mocked(prisma.invitation.findFirst).mockResolvedValue({
+      id: 'inv-1', email, role: 'member', invitedById: 'inviter-1',
+      subgroupId: null, partnerId: null, counselorAffiliation: null,
+      programSlug: 'comptia-a-professional-certificate', status: 'pending',
+      expiresAt: new Date('2999-01-01'),
+    } as never);
+    vi.mocked(getUser).mockResolvedValue({ id: appUserId, email } as never);
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+      enrolledProgram: programSlug,
+      courseEnrollments: [{ programSlug }],
+    } as never);
+
+    const response = await POST(inviteRequest(''));
+    const body = await response.json() as { code?: string };
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('ALREADY_ENROLLED');
+    expect(prisma.invitation.updateMany).not.toHaveBeenCalled();
+    expect(upsertEquivalentCourseEnrollment).not.toHaveBeenCalled();
   });
 });
