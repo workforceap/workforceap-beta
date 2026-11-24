@@ -72,6 +72,12 @@ const nextConfig: NextConfig = {
     '/api/admin/members/*/billing/two-stage/*/preview': ['./public/images/wap_logo.png'],
     // Admin mock previews use the same letterhead.
     '/api/admin/billing/preview/*': ['./public/images/wap_logo.png'],
+    // Admin Game Lab (pre-release): files live outside public/ and are read at
+    // runtime from a fixed manifest, so the tracer cannot see them.
+    // Keys are picomatch globs, so write dynamic segments as `*`: a literal
+    // `[game]` is a character class and never matches the route (the files
+    // were silently left out of the production bundle and every asset 404ed).
+    '/api/admin/game-lab/*/*': ['./assets/game-lab/**/*'],
     // The PDF parser is resolved at runtime inside a worker thread (webpack
     // rewrites require.resolve into a numeric module id, so the path cannot be
     // computed at module scope). That hides the dependency from the file
@@ -165,6 +171,15 @@ const nextConfig: NextConfig = {
           { key: 'Content-Security-Policy', value: previewContentSecurityPolicy },
         ],
       })),
+      // Admin Game Lab: only the game document may embed in its own admin page.
+      // The scripts it imports are fetched as modules, not framed.
+      {
+        source: '/api/admin/game-lab/:game/index.html',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Content-Security-Policy', value: previewContentSecurityPolicy },
+        ],
+      },
       // Authenticated HTML routes should never be cached by browsers or
       // intermediate caches. Without this, hitting back-button after sign-
       // out (or shared CDN edge in front of Vercel) can surface a previous

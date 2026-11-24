@@ -51,6 +51,7 @@ import {
   PRODUCTION_CANARY_PATHS,
   PRODUCTION_CANARY_ROLES,
   REDIRECT_ONLY_PATHS,
+  FLAG_GATED_PATHS,
   REQUIRED_DYNAMIC_PATHS,
   ROLE_ACCESS_ROOTS,
   ROLE_ACCESS_MATRIX,
@@ -305,11 +306,53 @@ describe('portal route inventory gate', () => {
       staticPaths: STATIC_PATHS,
       dynamicPaths: DYNAMIC_PATHS,
       redirectOnlyPaths: REDIRECT_ONLY_PATHS,
+      flagGatedPaths: FLAG_GATED_PATHS,
     });
     expect(result.ok).toBe(true);
     expect(result.sections).toMatchObject({
       member: { discoveredStaticCount: expect.any(Number) },
       admin: { discoveredDynamicCount: expect.any(Number) },
+    });
+  });
+
+  it('keeps flag-gated pages in the inventory: omitted, malformed or overlapping entries fail', () => {
+    const discovered = { admin: { static: ['/admin', '/admin/game-lab'], dynamic: ['/admin/game-lab/[game]'] } };
+    const gated = {
+      admin: [
+        { path: '/admin/game-lab', flag: 'admin_game_lab', whenOff: 'not_found', coveredBy: 'tests/x.spec.tsx' },
+        { path: '/admin/game-lab/[game]', flag: 'admin_game_lab', whenOff: 'not_found', coveredBy: 'tests/x.spec.tsx' },
+      ],
+    };
+    const base = { discovered, staticPaths: { admin: ['/admin'] }, dynamicPaths: { admin: [] }, redirectOnlyPaths: {} };
+    const covered = comparePortalRouteInventory({ ...base, flagGatedPaths: gated });
+    expect(covered.ok).toBe(true);
+    expect((covered.sections as Record<string, any>).admin).toMatchObject({ flagGatedStaticCount: 1, flagGatedDynamicCount: 1 });
+
+    const omitted = comparePortalRouteInventory(base);
+    expect(omitted.ok).toBe(false);
+    expect((omitted.sections as Record<string, any>).admin).toMatchObject({
+      missingStatic: ['/admin/game-lab'],
+      missingDynamic: ['/admin/game-lab/[game]'],
+    });
+
+    const malformed = comparePortalRouteInventory({
+      ...base,
+      flagGatedPaths: { admin: [{ path: '/admin/game-lab', flag: 'admin_game_lab', whenOff: 'ok' }, gated.admin[1]] },
+    });
+    expect(malformed.ok).toBe(false);
+    expect((malformed.sections as Record<string, any>).admin.invalidFlagGated).toEqual(['/admin/game-lab']);
+
+    const overlapped = comparePortalRouteInventory({ ...base, staticPaths: { admin: ['/admin', '/admin/game-lab'] }, flagGatedPaths: gated });
+    expect(overlapped.ok).toBe(false);
+    expect((overlapped.sections as Record<string, any>).admin.overlappingStatic).toEqual(['/admin/game-lab']);
+  });
+
+  it('classifies only the Game Lab pages as flag-gated, each naming its enforcing test', () => {
+    expect(FLAG_GATED_PATHS).toEqual({
+      admin: [
+        { path: '/admin/game-lab', flag: 'admin_game_lab', whenOff: 'not_found', coveredBy: 'tests/game-lab/game-lab-pages.spec.tsx' },
+        { path: '/admin/game-lab/[game]', flag: 'admin_game_lab', whenOff: 'not_found', coveredBy: 'tests/game-lab/game-lab-pages.spec.tsx' },
+      ],
     });
   });
 
@@ -910,7 +953,7 @@ describe('read-only portal action contracts', () => {
     expect(layoutSource).toContain('GTM_ID && !readOnlyAudit');
     expect(layoutSource).toContain('root-gtm-sentry-utm-and-provider-metrics');
     expect(layoutSource).toContain('root-service-worker-registration');
-    expect(layoutSource).toContain('<DeferredRootChrome suppressAnalytics={readOnlyAudit} />');
+    expect(layoutSource).toContain('<DeferredRootChrome suppressAnalytics={readOnlyAudit || localPreview} />');
     expect(chromeSource).toContain('!suppressAnalytics ? <DeferredAnalytics /> : null');
     expect(sentrySource).toContain('isReadOnlyPortalAuditDocument()');
     expect(sentrySource).toContain('beforeSendTransaction(event)');
