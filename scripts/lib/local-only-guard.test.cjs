@@ -120,3 +120,38 @@ test('auth shim host gate answers only loopback Host headers on its own port', (
   assert.equal(isLocalHostHeader('127.0.0.1:80', 54331), false);
   assert.equal(isLocalHostHeader(undefined, 54331), false);
 });
+
+test('a provider key in the preview may only reach the local mail sink port', () => {
+  const key = { RESEND_API_KEY: 're_preview_local_only_not_a_key' };
+  assert.equal(checkLocalOnly({ ...good(), ...key, RESEND_BASE_URL: 'http://127.0.0.1:54332' }).ok, true);
+  refused({ ...good(), ...key }, 'RESEND_BASE_URL');
+  refused({ ...good(), ...key, RESEND_BASE_URL: 'https://api.resend.com' }, 'RESEND_BASE_URL');
+  refused({ ...good(), ...key, RESEND_BASE_URL: 'http://127.0.0.1:8025' }, 'RESEND_BASE_URL');
+  assert.equal(checkLocalOnly(good()).ok, true, 'no key, no sink requirement');
+});
+
+test('mail sink captures sends on loopback only and refuses a non-local environment', async () => {
+  const { createMailSink } = require('./preview-mail-sink.cjs');
+  assert.throws(() => createMailSink({ ...good(), VERCEL_ENV: 'production' }, 54332), LocalOnlyGuardError);
+  const server = createMailSink(good(), 0);
+  await new Promise((r) => server.listen(0, '127.0.0.1', r));
+  const { port } = server.address();
+  server.close();
+  const sink = createMailSink(good(), port);
+  await new Promise((r) => sink.listen(port, '127.0.0.1', r));
+  try {
+    const base = `http://127.0.0.1:${port}`;
+    const sent = await fetch(`${base}/emails`, { method: 'POST', body: JSON.stringify({ to: 'a@example.test', subject: 'hi' }) });
+    assert.equal(sent.status, 200);
+    assert.ok((await sent.json()).id);
+    const list = await (await fetch(`${base}/__sink/messages`)).json();
+    assert.equal(list.total, 1);
+    assert.deepEqual(list.messages[0].to, ['a@example.test']);
+    const foreign = await new Promise((resolve, reject) => {
+      require('node:http').get({ host: '127.0.0.1', port, path: '/__sink/messages', headers: { host: 'example.com' } }, (res) => { res.resume(); resolve(res.statusCode); }).on('error', reject);
+    });
+    assert.equal(foreign, 404);
+  } finally {
+    sink.close();
+  }
+});

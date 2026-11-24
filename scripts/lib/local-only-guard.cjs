@@ -11,7 +11,7 @@ const URL_VARS = ['DATABASE_URL', 'POSTGRES_PRISMA_URL', 'POSTGRES_URL_NON_POOLI
 const JWT_VARS = ['NEXT_PUBLIC_SUPABASE_ANON_KEY', 'SUPABASE_SERVICE_ROLE_KEY'];
 const FORBIDDEN_REFS = ['jqddnyuszufndwwezdwp', 'esbdrgaonplpvzmtrdhw'];
 const LOOPBACK = new Set(['127.0.0.1', 'localhost', '::1']);
-const DEFAULT_PORTS = { db: 54329, auth: 54331 };
+const DEFAULT_PORTS = { db: 54329, auth: 54331, mail: 54332 };
 
 function decodeLayers(value) {
   const out = [value];
@@ -69,6 +69,8 @@ function checkLocalOnly(env, opts = {}) {
   }
   if (String(env.NODE_ENV || '').toLowerCase() === 'production') problems.push({ variable: 'NODE_ENV', rule: 'is production' });
   for (const name of URL_VARS) checkUrlVar(name, env[name], name === 'NEXT_PUBLIC_SUPABASE_URL' ? ports.auth : ports.db, problems);
+  // A provider key in the preview may only ever reach the local mail sink.
+  if (env.RESEND_API_KEY !== undefined && env.RESEND_API_KEY !== '') checkUrlVar('RESEND_BASE_URL', env.RESEND_BASE_URL, ports.mail, problems);
   for (const name of JWT_VARS) {
     const raw = env[name];
     if (typeof raw === 'string' && raw && containsForbiddenRef(raw)) problems.push({ variable: name, rule: 'contains a blocked Supabase project reference' });

@@ -111,6 +111,10 @@ export type PortalNavItem = {
   /** Sum multiple keys (e.g. draft + pending on Jobs) */
   badgeKeys?: NavBadgeKey[];
   requiresSuperAdminContext?: boolean;
+  /** Shown only when the server-side Game Lab gate (admin role + `admin_game_lab` flag) is true. Cosmetic; the pages and assets enforce the gate themselves. */
+  requiresGameLab?: boolean;
+  /** Small text tag rendered beside the label (e.g. "Pre-release"). */
+  tag?: string;
   /**
    * Admin rail only: nests this row under the top-level row with that href
    * (same `group`). The rail shows it when its parent is opened or when it or
@@ -540,6 +544,7 @@ export const ADMIN_PORTAL_NAV_ITEMS: PortalNavItem[] = [
   { href: '/admin/users', label: 'Users', group: 'system', Icon: UserCog, requiresSuperAdminContext: true },
   { href: '/admin/audit-logs', label: 'Audit logs', group: 'system', Icon: Shield, requiresSuperAdminContext: true },
   { href: '/admin/csp-report', label: 'CSP reports', group: 'system', Icon: Shield, requiresSuperAdminContext: true, parentHref: '/admin/audit-logs' },
+  { href: '/admin/game-lab', label: 'Game Lab', group: 'runTheOrg', Icon: Zap, requiresGameLab: true, parentHref: '/admin/overview', tag: 'Pre-release' },
   { href: '/admin/exports', label: 'Exports', group: 'system', Icon: Download, requiresSuperAdminContext: true },
   { href: '/admin/health', label: 'System Health', group: 'system', Icon: HeartPulse, requiresSuperAdminContext: true },
   { href: '/admin/diagnostics', label: 'Diagnostics', group: 'system', Icon: Activity, requiresSuperAdminContext: true, parentHref: '/admin/health' },
