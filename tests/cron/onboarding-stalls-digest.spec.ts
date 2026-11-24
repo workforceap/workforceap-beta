@@ -148,6 +148,18 @@ describe('digest email body', () => {
     expect(oldestPendingLine(3)).not.toContain('threshold');
   });
 
+  it('currently lets a javascript: queue href through escapeHtml (pinned)', () => {
+    const html = onboardingStallsDigestHtml({
+      ...base,
+      interviewQueueLink: 'javascript:alert(1)',
+      wioaQueueLink: 'javascript:alert(2)',
+      membersQueueLink: 'javascript:alert(3)',
+    });
+    expect(html).toContain('href="javascript:alert(1)"');
+    expect(html).toContain('href="javascript:alert(2)"');
+    expect(html).toContain('href="javascript:alert(3)"');
+  });
+
   it('escapes member names, emails and ids in the named lists', () => {
     const hostileId = '"><script>x</script>';
     const html = onboardingStallsDigestHtml({

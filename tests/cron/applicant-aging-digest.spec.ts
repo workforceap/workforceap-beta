@@ -188,6 +188,14 @@ describe('applicantAgingDigestHtml', () => {
     expect(html).toContain('href="https://www.workforceap.org/admin/command-center?queue=applications"');
   });
 
+  it('currently lets a javascript: queue href through escapeHtml (pinned)', () => {
+    const html = applicantAgingDigestHtml({
+      ...params,
+      queueLink: 'javascript:alert(1)',
+    });
+    expect(html).toContain('href="javascript:alert(1)"');
+  });
+
   it('omits the enrolled note when nobody is double-counted and escapes names', () => {
     const html = applicantAgingDigestHtml({
       ...params,
