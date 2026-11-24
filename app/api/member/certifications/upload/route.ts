@@ -11,6 +11,15 @@ import { fileMatchesContentType } from '@/lib/uploads/imageSignature';
 const BUCKET = 'member-files';
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
+function attachProofToApprovedCert(certId: string, storagePath: string) {
+  return prisma.$transaction((tx) =>
+    tx.userCertification.updateMany({
+      where: { id: certId, status: 'approved' },
+      data: { proofUrl: storagePath },
+    }),
+  );
+}
+
 function storageErrorMessage(error: { message?: string } | null): string {
   const message = error?.message ?? '';
   if (/not found|does not exist|Bucket/i.test(message)) {
@@ -67,19 +76,15 @@ function storageErrorMessage(error: { message?: string } | null): string {
   
     try {
       const uploadBytes = new Uint8Array(await file.arrayBuffer());
-      const verified = cert.status === 'approved';
-      // A verified certificate's file is the evidence staff checked, so a new
-      // file never overwrites it (WAP-220): it gets its own path, and the old
-      // path stays in the audit entry. Unverified certificates keep the stable
-      // path, since review starts over anyway. Both sit under
+      // Every proof gets its own object (WAP-220). The reviewed bytes stay at
+      // their path even if staff approve while this upload is in flight; the
+      // old path is kept in the audit entry. Both sit under
       // cert-files/{userId}/, the prefix GDPR erasure removes.
-      const storagePath = verified
-        ? `cert-files/${user.id}/${cert.id}-${Date.now()}.${ext}`
-        : `cert-files/${user.id}/${cert.id}.${ext}`;
+      const storagePath = `cert-files/${user.id}/${cert.id}-${Date.now()}.${ext}`;
       const supabase = getSupabaseAdmin();
   
       const { error } = await supabase.storage.from(BUCKET).upload(storagePath, uploadBytes, {
-        upsert: !verified,
+        upsert: false,
         contentType,
       });
   
@@ -92,59 +97,54 @@ function storageErrorMessage(error: { message?: string } | null): string {
       // WAP-197): the file is saved as its proof, the review state and dates
       // are left alone, and the change is recorded in the audit log so staff
       // can see a new file arrived after verification.
-      // The status condition closes the read-then-write window (WAP-220): if
-      // staff changed the review between the read above and this write, no
-      // row matches and the file goes through the review path below instead.
-      const keptVerified = verified
-        ? (
-            await prisma.$transaction((tx) =>
-              tx.userCertification.updateMany({
-                where: { id: cert.id, status: 'approved' },
-                data: { proofUrl: storagePath },
-              }),
-            )
-          ).count > 0
-        : false;
-      if (keptVerified) {
-        const hadProof = !!cert.proofUrl;
-        const previousProofUrl = cert.proofUrl ?? null;
-        void auditLog({
-          actorUserId: user.id,
-          action: 'member.certification.proof_attached_verified',
-          targetType: 'user_certification',
-          targetId: cert.id,
-          metadata: { certName: cert.certName, status: 'approved', replacedProof: hadProof, previousProofUrl },
-        }).catch(() => {});
-        void logAuditEvent({
-          user: { id: user.id, role: 'member' },
-          verb: 'update',
-          object: { type: 'UserCertification', id: cert.id },
-          result: {
-            success: true,
-            extensions: { field: 'proofUrl', status: 'approved', statusKept: true, replacedProof: hadProof, previousProofUrl },
-          },
-        }).catch(() => {});
-        return NextResponse.json({ success: true, storagePath, status: 'approved' });
+      // Status is decided at write time, not from the read above: a pending
+      // upload whose row is approved during the storage PUT must not fall
+      // through to `status: 'pending'` and undo the review.
+      let keptVerified = (await attachProofToApprovedCert(cert.id, storagePath)).count > 0;
+      if (!keptVerified) {
+        const queued = (
+          await prisma.$transaction((tx) =>
+            tx.userCertification.updateMany({
+              where: { id: cert.id, status: { not: 'approved' } },
+              data: {
+                status: 'pending',
+                proofUrl: storagePath,
+                submittedAt: new Date(),
+              },
+            }),
+          )
+        ).count > 0;
+        if (queued) {
+          return NextResponse.json({ success: true, storagePath, status: 'pending' });
+        }
+        keptVerified = (await attachProofToApprovedCert(cert.id, storagePath)).count > 0;
+        if (!keptVerified) {
+          return NextResponse.json(
+            { error: 'Certificate changed. Reload and try again.', status: 'conflict' },
+            { status: 409 },
+          );
+        }
       }
 
-      // Otherwise proof submitted → enter the admin review queue. We persist the
-      // stable storage path (the `member-files` bucket is private) as
-      // `proofUrl`; the admin queue mints a short-lived signed URL from it at
-      // render time (same pattern as `/api/admin/members/[id]/resume-urls`).
-      // Flip status to `pending` and stamp `submittedAt` so the row surfaces
-      // for review.
-      await prisma.$transaction((tx) =>
-        tx.userCertification.update({
-          where: { id: cert.id },
-          data: {
-            status: 'pending',
-            proofUrl: storagePath,
-            submittedAt: new Date(),
-          },
-        }),
-      );
-
-      return NextResponse.json({ success: true, storagePath, status: 'pending' });
+      const hadProof = !!cert.proofUrl;
+      const previousProofUrl = cert.proofUrl ?? null;
+      void auditLog({
+        actorUserId: user.id,
+        action: 'member.certification.proof_attached_verified',
+        targetType: 'user_certification',
+        targetId: cert.id,
+        metadata: { certName: cert.certName, status: 'approved', replacedProof: hadProof, previousProofUrl },
+      }).catch(() => {});
+      void logAuditEvent({
+        user: { id: user.id, role: 'member' },
+        verb: 'update',
+        object: { type: 'UserCertification', id: cert.id },
+        result: {
+          success: true,
+          extensions: { field: 'proofUrl', status: 'approved', statusKept: true, replacedProof: hadProof, previousProofUrl },
+        },
+      }).catch(() => {});
+      return NextResponse.json({ success: true, storagePath, status: 'approved' });
     } catch (e) {
       console.error('[cert-upload] storage upload failed', e);
       const error =

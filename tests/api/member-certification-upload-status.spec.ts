@@ -67,6 +67,7 @@ function cert(status: 'pending' | 'approved' | 'rejected', proofUrl: string | nu
 
 beforeEach(() => {
   vi.clearAllMocks();
+  h.prisma.userCertification.updateMany.mockResolvedValue({ count: 1 });
 });
 
 describe('POST /api/member/certifications/upload review status (WAP-197)', () => {
@@ -104,9 +105,50 @@ describe('POST /api/member/certifications/upload review status (WAP-197)', () =>
     const res = await POST(uploadRequest() as never);
     const body = await res.json();
     expect(body.status).toBe('pending');
-    const [[args]] = h.prisma.userCertification.update.mock.calls as unknown as [[{ data: Record<string, unknown> }]];
-    expect(args.data.status).toBe('pending');
-    expect(args.data.proofUrl).toBe(body.storagePath);
+    expect(h.prisma.userCertification.update).not.toHaveBeenCalled();
+    expect(h.prisma.userCertification.updateMany).toHaveBeenNthCalledWith(2, {
+      where: { id: 'cert-1', status: { not: 'approved' } },
+      data: {
+        status: 'pending',
+        proofUrl: body.storagePath,
+        submittedAt: expect.any(Date),
+      },
+    });
+    expect(h.auditLog).not.toHaveBeenCalled();
+  });
+
+  it('an approval during a pending upload cannot revert the verified certificate', async () => {
+    h.prisma.userCertification.findUnique.mockResolvedValue(cert('pending', 'cert-files/user-1/cert-1.pdf'));
+    const res = await POST(uploadRequest() as never);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe('approved');
+    expect(body.storagePath).toMatch(/^cert-files\/user-1\/cert-1-\d+\.pdf$/);
+    expect(body.storagePath).not.toBe('cert-files/user-1/cert-1.pdf');
+    expect(h.prisma.userCertification.update).not.toHaveBeenCalled();
+    expect(h.prisma.userCertification.updateMany).toHaveBeenCalledTimes(1);
+    expect(h.prisma.userCertification.updateMany).toHaveBeenCalledWith({
+      where: { id: 'cert-1', status: 'approved' },
+      data: { proofUrl: body.storagePath },
+    });
+    const [[, , opts]] = h.upload.mock.calls as unknown as [[string, unknown, { upsert: boolean }]];
+    expect(opts.upsert).toBe(false);
+    expect(h.auditLog).toHaveBeenCalledWith(expect.objectContaining({
+      action: 'member.certification.proof_attached_verified',
+      metadata: expect.objectContaining({ status: 'approved', previousProofUrl: 'cert-files/user-1/cert-1.pdf' }),
+    }));
+  });
+
+  it('returns 409 when the row is gone before either write can land', async () => {
+    h.prisma.userCertification.findUnique.mockResolvedValue(cert('pending'));
+    h.prisma.userCertification.updateMany.mockResolvedValue({ count: 0 } as never);
+    const res = await POST(uploadRequest() as never);
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error: 'Certificate changed. Reload and try again.',
+      status: 'conflict',
+    });
+    expect(h.prisma.userCertification.updateMany).toHaveBeenCalledTimes(3);
     expect(h.auditLog).not.toHaveBeenCalled();
   });
 
@@ -136,15 +178,33 @@ describe('POST /api/member/certifications/upload review status (WAP-197)', () =>
 
   it.each(['pending', 'rejected'] as const)('a %s certificate goes (back) to pending review, as before', async (status) => {
     h.prisma.userCertification.findUnique.mockResolvedValue(cert(status));
+    h.prisma.userCertification.updateMany
+      .mockResolvedValueOnce({ count: 0 })
+      .mockResolvedValueOnce({ count: 1 });
     const res = await POST(uploadRequest() as never);
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ success: true, storagePath: 'cert-files/user-1/cert-1.pdf', status: 'pending' });
-
-    const [[args]] = h.prisma.userCertification.update.mock.calls as unknown as [[{ where: unknown; data: Record<string, unknown> }]];
-    expect(args.where).toEqual({ id: 'cert-1' });
-    expect(args.data.status).toBe('pending');
-    expect(args.data.proofUrl).toBe('cert-files/user-1/cert-1.pdf');
-    expect(args.data.submittedAt).toBeInstanceOf(Date);
+    const body = await res.json();
+    expect(body).toEqual({
+      success: true,
+      storagePath: expect.stringMatching(/^cert-files\/user-1\/cert-1-\d+\.pdf$/),
+      status: 'pending',
+    });
+    expect(body.storagePath).not.toBe('cert-files/user-1/cert-1.pdf');
+    expect(h.prisma.userCertification.update).not.toHaveBeenCalled();
+    expect(h.prisma.userCertification.updateMany).toHaveBeenNthCalledWith(1, {
+      where: { id: 'cert-1', status: 'approved' },
+      data: { proofUrl: body.storagePath },
+    });
+    expect(h.prisma.userCertification.updateMany).toHaveBeenNthCalledWith(2, {
+      where: { id: 'cert-1', status: { not: 'approved' } },
+      data: {
+        status: 'pending',
+        proofUrl: body.storagePath,
+        submittedAt: expect.any(Date),
+      },
+    });
+    const [[, , opts]] = h.upload.mock.calls as unknown as [[string, unknown, { upsert: boolean }]];
+    expect(opts.upsert).toBe(false);
     expect(h.auditLog).not.toHaveBeenCalled();
   });
 
