@@ -60,7 +60,55 @@ const walkInSchema = z.object({
   email: z.string().email().max(254),
   phone: z.string().max(40).optional().default(''),
   targetRole: z.string().max(200).optional().default(''),
-});export const POST = withApiGuc(async (request: Request) => {
+});
+
+const EXISTING_MEMBER_MESSAGE = 'A member with this email already exists.';
+
+function uniqueConstraintTargets(error: Prisma.PrismaClientKnownRequestError): string[] {
+  const target = error.meta?.target;
+  if (Array.isArray(target)) return target.filter((value): value is string => typeof value === 'string');
+  return typeof target === 'string' ? [target] : [];
+}
+
+function uniqueConstraintClaimsAuthId(targets: readonly string[]): boolean {
+  return targets.includes('id') || targets.includes('users_pkey');
+}
+
+/**
+ * `User.id` is the Supabase Auth id. Mixed-case email matching cannot see a
+ * live member whose app email diverged from Auth (failed admin email change)
+ * or whose row the concurrent walk-in already inserted.
+ */
+async function findAppUserClaimingAuthId(authId: string) {
+  return crossTenantOK(() =>
+    prisma.user.findUnique({
+      where: { id: authId },
+      select: { id: true, deletedAt: true },
+    }),
+  );
+}
+
+async function claimedActiveAppUser(authId: string): Promise<{ id: string } | 'lookup_failed' | null> {
+  try {
+    const row = await findAppUserClaimingAuthId(authId);
+    if (row && row.deletedAt == null) return { id: row.id };
+    return null;
+  } catch (err) {
+    console.error('[walk-in] auth-id claim lookup failed', err);
+    return 'lookup_failed';
+  }
+}
+
+function existingMemberResponse(existingMemberId?: string) {
+  return NextResponse.json(
+    existingMemberId
+      ? { error: EXISTING_MEMBER_MESSAGE, existingMemberId }
+      : { error: EXISTING_MEMBER_MESSAGE },
+    { status: 409 },
+  );
+}
+
+export const POST = withApiGuc(async (request: Request) => {
   try {
     const user = await getUser();
     if (!user) {
@@ -129,13 +177,7 @@ const walkInSchema = z.object({
     if (existingActive) {
       // Active Prisma row — existing member. Return their ID so the client can
       // offer a one-click "start session with them" path.
-      return NextResponse.json(
-        {
-          error: 'A member with this email already exists.',
-          existingMemberId: existingActive.id,
-        },
-        { status: 409 }
-      );
+      return existingMemberResponse(existingActive.id);
     }
     for (const existingDeleted of existingMatches) {
       const freedEmail = `deleted_${existingDeleted.id}_${Date.now()}_${email}@deleted.invalid`.slice(0, 255);
@@ -157,12 +199,20 @@ const walkInSchema = z.object({
     // Second self-heal: orphan Supabase auth user from a prior failed delete.
     // If the Prisma row was already soft-deleted (or never existed) and only
     // a stale auth row remains, deleting and re-inviting clears the ghost.
-    // Active mixed-case matches already 409'd above, so removing the auth
-    // row cannot take an existing member's login.
+    // Email ILIKE cannot see a live member whose app email diverged from Auth,
+    // and a concurrent walk-in can commit the User row after this preflight —
+    // never delete Auth when that id still has an active app user.
     if (inviteError?.message?.includes('already') || inviteError?.code === 'user_already_exists') {
       try {
         const orphan = await findSupabaseAuthUserByEmail(supabase, email);
         if (orphan) {
+          const claimed = await claimedActiveAppUser(orphan.id);
+          if (claimed === 'lookup_failed') {
+            return NextResponse.json({ error: 'Failed to provision member account' }, { status: 500 });
+          }
+          if (claimed) {
+            return existingMemberResponse(claimed.id);
+          }
           await supabase.auth.admin.deleteUser(orphan.id);
           const retry = await supabase.auth.admin.inviteUserByEmail(email, {
             redirectTo: `${siteUrl}/dashboard`,
@@ -199,10 +249,7 @@ const walkInSchema = z.object({
       const { data: createData, error: createError } = createResult;
       if (createError) {
         if (createError.message.includes('already')) {
-          return NextResponse.json(
-            { error: 'A member with this email already exists.' },
-            { status: 409 }
-          );
+          return existingMemberResponse();
         }
         console.error('[walk-in] supabase create error', createError);
         return NextResponse.json({ error: createError.message }, { status: 400 });
@@ -276,13 +323,20 @@ const walkInSchema = z.object({
       // half-provisioned. Belt-and-braces P2002 catch on email also
       // returns the duplicate-account 409 response.
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-        const target = (err.meta?.target as string[] | undefined) ?? [];
-        if (target.includes('email') || target.includes('users_email_key')) {
+        const targets = uniqueConstraintTargets(err);
+        const claimed = await claimedActiveAppUser(authUser.id);
+        if (claimed === 'lookup_failed') {
+          return NextResponse.json({ error: 'Failed to provision member account' }, { status: 500 });
+        }
+        // Duplicate primary key: the other request already owns this Auth id.
+        // Duplicate email on an unclaimed Auth id is this invite colliding with
+        // a different member — drop only the unused Auth user.
+        if (claimed || uniqueConstraintClaimsAuthId(targets)) {
+          return existingMemberResponse(claimed?.id ?? authUser.id);
+        }
+        if (targets.includes('email') || targets.includes('users_email_key')) {
           try { await supabase.auth.admin.deleteUser(authUser.id); } catch { /* ignore */ }
-          return NextResponse.json(
-            { error: 'A member with this email already exists.' },
-            { status: 409 }
-          );
+          return existingMemberResponse();
         }
       }
       try {
