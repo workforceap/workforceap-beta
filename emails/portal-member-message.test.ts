@@ -30,6 +30,16 @@ test('escapes untrusted names and preview text', () => {
   assert.match(html, /&lt;script&gt;/);
 });
 
+test('currently lets a javascript: threadUrl through escapeHtml (pinned)', () => {
+  const html = portalMemberMessageHtml({
+    firstName: 'Alex',
+    memberName: 'Member',
+    bodyPreview: 'Hello',
+    threadUrl: 'javascript:alert(1)',
+  });
+  assert.match(html, /href="javascript:alert\(1\)"/);
+});
+
 test('uses org primary color for the CTA accent when branding is supplied', () => {
   const html = portalMemberMessageHtml({
     firstName: 'Alex',
