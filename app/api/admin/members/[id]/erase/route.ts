@@ -14,6 +14,7 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { retainEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
+import { ANONYMIZED_PROFILE_DATA } from '@/lib/member/anonymizeMember';
 import {
   deleteSupabaseAuthUser,
   isSupabaseAuthUserMissing,
@@ -117,7 +118,9 @@ export const POST = withApiGuc(async (
       // Retire Auth before rewriting the application row so a failed ban
       // leaves the member intact and retryable. Login only blocks
       // deletedAt; a surviving Auth identity still holds the real email.
-      const disabled = await disableAuthUserForSoftDelete(supabaseAdmin, id, existing.email);
+      const disabled = await disableAuthUserForSoftDelete(supabaseAdmin, id, existing.email, {
+        scrubMetadata: true,
+      });
       if (!disabled.ok) {
         console.error(`[gdpr-erase] Supabase auth disable error for ${id}:`, disabled.message);
         return NextResponse.json(
@@ -129,22 +132,38 @@ export const POST = withApiGuc(async (
         );
       }
 
-      // Anonymize: scramble PII but keep enrollment records for reporting
+      // Anonymize: scramble PII but keep enrollment records for reporting.
+      // The profile row holds the address, date of birth and special-category
+      // answers (disability, income, ethnicity, guardian contacts); clear it
+      // with the same field list as the shared anonymiser. One transaction, so
+      // a failed profile scrub cannot leave deletedAt set — a retry would then
+      // fall through to hard delete and drop the enrollment records.
       const hash = `anon_${Buffer.from(id).toString('base64url').slice(0, 12)}`;
-      await withTenantScope(orgId, (db) =>
-        db.user.update({
-          where: { id },
-          data: {
-            email: `${hash}@anonymized.invalid`,
-            fullName: 'Anonymized User',
-            phone: null,
-            assessmentAnswers: Prisma.JsonNull,
-            careerRecommendationJson: Prisma.JsonNull,
-            wioaQualificationJson: Prisma.JsonNull,
-            wioaReviewNotes: null,
-            deletedAt: new Date(),
+      await prisma.$transaction((tx) =>
+        withTenantScope(
+          orgId,
+          async (db) => {
+            await db.user.update({
+              where: { id },
+              data: {
+                email: `${hash}@anonymized.invalid`,
+                fullName: 'Anonymized User',
+                phone: null,
+                workspaceEmail: null,
+                assessmentAnswers: Prisma.JsonNull,
+                careerRecommendationJson: Prisma.JsonNull,
+                wioaQualificationJson: Prisma.JsonNull,
+                wioaReviewNotes: null,
+                deletedAt: new Date(),
+              },
+            });
+            await db.profile.updateMany({
+              where: { userId: id },
+              data: ANONYMIZED_PROFILE_DATA,
+            });
           },
-        }),
+          tx,
+        ),
       );
 
       await logCronRun('gdpr_erase', {

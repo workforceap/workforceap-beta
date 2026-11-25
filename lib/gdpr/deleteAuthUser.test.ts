@@ -43,7 +43,17 @@ test('isSupabaseAuthUserMissing treats only confirmed missing identities as alre
   assert.equal(isSupabaseAuthUserMissing({ status: 500, message: 'Auth unavailable' }), false);
   assert.equal(isSupabaseAuthUserMissing({ status: 404, message: 'User not found' }), true);
   assert.equal(isSupabaseAuthUserMissing({ code: 'user_not_found', message: 'User not found' }), true);
-  assert.equal(isSupabaseAuthUserMissing(new Error('User not found')), true);
+  assert.equal(isSupabaseAuthUserMissing({ status: 404, code: 'user_not_found' }), true);
+});
+
+test('isSupabaseAuthUserMissing does not read an unconfirmed 404 or "not found" as a deleted login', () => {
+  // A misrouted request (wrong base URL, proxy) answers 404 with no user code.
+  assert.equal(isSupabaseAuthUserMissing({ status: 404, message: 'Not Found' }), false);
+  assert.equal(isSupabaseAuthUserMissing({ status: 404, message: 'Project not found' }), false);
+  assert.equal(isSupabaseAuthUserMissing({ status: 500, message: 'Route not found' }), false);
+  // A thrown client error carries no status: the login may still exist.
+  assert.equal(isSupabaseAuthUserMissing(new Error('User not found')), false);
+  assert.equal(isSupabaseAuthUserMissing({ code: 'unexpected_failure', message: 'User not found' }), false);
 });
 
 test('deleteSupabaseAuthUser returns thrown admin delete failures to caller', async () => {

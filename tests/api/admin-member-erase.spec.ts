@@ -31,7 +31,11 @@ vi.mock('@/lib/auth/roles', () => ({
   isSuperAdmin: vi.fn(),
 }));
 
-vi.mock('@/lib/db/prisma', () => ({ prisma: {} }));
+const transactionClient = { __tx: true };
+const transaction = vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(transactionClient));
+vi.mock('@/lib/db/prisma', () => ({
+  prisma: { $transaction: (fn: (tx: unknown) => Promise<unknown>) => transaction(fn) },
+}));
 
 vi.mock('@/lib/tenant/organization', () => ({
   getActorOrganizationId: vi.fn(),
@@ -42,11 +46,13 @@ const update = vi.fn();
 const remove = vi.fn();
 const agreementUpdateMany = vi.fn();
 const queryRaw = vi.fn();
+const profileUpdateMany = vi.fn();
 
 vi.mock('@/lib/tenant/withTenantScope', () => ({
   withTenantScope: vi.fn((_orgId: string, fn: (db: unknown) => Promise<unknown>) =>
     fn({
       user: { findFirst, update, delete: remove },
+      profile: { updateMany: profileUpdateMany },
       $queryRaw: queryRaw,
       enrollmentAgreementSubmission: { updateMany: agreementUpdateMany },
     }),
@@ -99,6 +105,8 @@ import { getUser } from '@/lib/auth/server';
 import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
+import { withTenantScope } from '@/lib/tenant/withTenantScope';
+import { ANONYMIZED_PROFILE_DATA } from '@/lib/member/anonymizeMember';
 
 const MEMBER_ID = 'member-1';
 
@@ -132,6 +140,7 @@ describe('POST /api/admin/members/[id]/erase', () => {
     vi.mocked(getActorOrganizationId).mockResolvedValue('org-1');
     findFirst.mockResolvedValue(member());
     update.mockResolvedValue({ id: MEMBER_ID });
+    profileUpdateMany.mockResolvedValue({ count: 1 });
     remove.mockResolvedValue({ id: MEMBER_ID });
     queryRaw.mockResolvedValue([{ present: false }]);
     agreementUpdateMany.mockResolvedValue({ count: 2 });
@@ -172,13 +181,48 @@ describe('POST /api/admin/members/[id]/erase', () => {
       expect.objectContaining({ where: { id: MEMBER_ID }, data: expect.objectContaining({ deletedAt: expect.any(Date) }) }),
     );
     expect(remove).not.toHaveBeenCalled();
-    expect(disableAuthUserForSoftDelete).toHaveBeenCalledWith(supabaseAdmin, MEMBER_ID, 'member@example.com');
+    expect(disableAuthUserForSoftDelete).toHaveBeenCalledWith(supabaseAdmin, MEMBER_ID, 'member@example.com', {
+      scrubMetadata: true,
+    });
     expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
     const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
     const [authOrder] = disableAuthUserForSoftDelete.mock.invocationCallOrder;
     const [updateOrder] = update.mock.invocationCallOrder;
     expect(storageOrder).toBeLessThan(authOrder);
     expect(authOrder).toBeLessThan(updateOrder);
+  });
+
+  it('clears profile PII and the workspace email in the same transaction as the anonymize', async () => {
+    findFirst.mockResolvedValue(member({ courseEnrollments: [{ id: 'enr-1' }] }));
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(200);
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ workspaceEmail: null, phone: null }) }),
+    );
+    expect(profileUpdateMany).toHaveBeenCalledExactlyOnceWith({
+      where: { userId: MEMBER_ID },
+      data: ANONYMIZED_PROFILE_DATA,
+    });
+    expect(ANONYMIZED_PROFILE_DATA).toMatchObject({ dob: null, address: null, hasDisability: null, householdIncome: null, ethnicity: null, parentGuardianEmail: null });
+    expect(transaction).toHaveBeenCalledTimes(1);
+    const scopedInTransaction = vi.mocked(withTenantScope).mock.calls.filter(([, , client]) => (client as unknown) === transactionClient);
+    expect(scopedInTransaction).toHaveLength(1);
+  });
+
+  it('reports failure and leaves the row retryable when the profile scrub fails', async () => {
+    findFirst.mockResolvedValue(member({ courseEnrollments: [{ id: 'enr-1' }] }));
+    profileUpdateMany.mockRejectedValue(new Error('profile write failed'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+      expect(res.status).toBe(500);
+      expect(remove).not.toHaveBeenCalled();
+      expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 
   it('fails closed with 502 and does not anonymize when Auth retirement fails', async () => {
@@ -234,6 +278,18 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true, action: 'hard_delete', memberId: MEMBER_ID });
     expect(remove).toHaveBeenCalledWith({ where: { id: MEMBER_ID } });
+  });
+
+  it.each([
+    { status: 404, message: 'Not Found' },
+    { status: 404, message: 'Project not found' },
+  ])('keeps the application row when a 404 does not confirm the login is gone: %j', async (authError) => {
+    deleteSupabaseAuthUser.mockResolvedValue({ error: authError });
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(502);
+    expect(remove).not.toHaveBeenCalled();
   });
 
   it.each([true, false])('retains every agreement before account removal (enrolled: %s)', async (enrolled) => {
