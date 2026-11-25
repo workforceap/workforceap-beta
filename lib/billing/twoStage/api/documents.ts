@@ -24,7 +24,7 @@ import { canSignJ6 } from '../stateMachine';
 import type { TwoStageContext } from './access';
 import { readArchived } from './archive';
 import { DRAFT_STALE_MESSAGE, holdBlockers, J5_ISSUE_DATE_NOT_TODAY_MESSAGE, J6_ISSUE_DATE_NOT_TODAY_MESSAGE, RECEIVING_SIGNATURE_NOT_ATTESTED_MESSAGE, VOUCHER_RECEIPT_FUTURE_MESSAGE } from './blockers';
-import { currentVoucher, dateColumn, isDesignatedSigner, isoDate, j6DraftBindsLatestClassStarted, loadCaseSnapshot, receiptSignatureState, recordContent, toSignerAsset, type CaseSnapshot } from './caseData';
+import { currentVoucher, dateColumn, isDesignatedSigner, isoDate, j6DraftBindsLatestClassStarted, j6DraftBindsLatestPriorQuote, loadCaseSnapshot, receiptSignatureState, recordContent, toSignerAsset, type CaseSnapshot } from './caseData';
 import { allGates, GATE_MESSAGES } from './gates';
 import { apiError, json, NO_STORE_HEADERS, PDF_FRAME_HEADERS } from './http';
 import { readLetterheadLogo } from './logo';
@@ -176,7 +176,9 @@ export async function draftPreview<P>(ctx: TwoStageContext<P>, stage: BillingSta
  * recipient rows equal the printed contacts, every readiness blocker is
  * clear, and for a J6 class started, voucher receipt not in the future and
  * the signer principal's receipt attestation on the voucher hash. Voucher or
- * quote differences are recorded on the J6 and do not block signing.
+ * quote differences are recorded on the J6 and do not block signing. A newer
+ * prior quote (signed J5 replacing an external quote, or a new attestation)
+ * still makes the frozen draft stale.
  */
 export async function verifySignable<P>(
   ctx: TwoStageContext<P>,
@@ -211,6 +213,9 @@ export async function verifySignable<P>(
       throw apiError(409, 'DRAFT_STALE', DRAFT_STALE_MESSAGE);
     }
     if (!j6DraftBindsLatestClassStarted(content, snapshot)) {
+      throw apiError(409, 'DRAFT_STALE', DRAFT_STALE_MESSAGE);
+    }
+    if (!j6DraftBindsLatestPriorQuote(content, snapshot)) {
       throw apiError(409, 'DRAFT_STALE', DRAFT_STALE_MESSAGE);
     }
     const receipt = receiptSignatureState(snapshot);

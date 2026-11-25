@@ -10,6 +10,10 @@ import {
   chooseInviteAcceptOrganizationId,
   decideInviteAcceptExistingCounselorLink,
   decideInviteAcceptExistingPartnerLink,
+  decideInviteAcceptExistingProfileRole,
+  InviteAcceptExistingProfileError,
+  profileRoleForInvitation,
+  decideInviteAcceptExistingProgram,
 } from '@/lib/invitations/resolveInviteAcceptOrg';
 import { invitationRoleLabel, inviteAcceptLoginRedirect } from '@/lib/invitations/inviteRoleLabels';
 import { checkInviteAcceptRateLimit } from '@/lib/rate-limit';
@@ -27,8 +31,12 @@ import {
   isCurriculumMigrationPending,
 } from '@/lib/content/programs';
 import { activeCurriculumVersion } from '@/lib/member/curriculumAssignment';
-import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
+import { canonicalizeProgramSlug } from '@/lib/content/programSlug';
 import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
+import {
+  EXACT_EMAIL_CANDIDATE_LIMIT,
+  pickExactEmailMatch,
+} from '@/lib/db/exactEmailMatch';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
@@ -47,8 +55,55 @@ type AcceptInvitation = {
   expiresAt: Date;
 };
 
-function profileRoleForInvitation(role: string): string {
-  return role === 'member' ? 'member' : role === 'counselor' ? 'counselor' : role;
+function refuseExistingProfileRole() {
+  return NextResponse.json(
+    {
+      error:
+        'This account already has a staff role. An administrator has to change it; this invitation cannot replace it.',
+      code: 'ALREADY_PRIVILEGED',
+    },
+    { status: 409 },
+  );
+}
+
+async function assertInviteAcceptProfileRole(
+  tx: InviteTx,
+  userId: string,
+  invitationRole: InvitationRole,
+): Promise<'write' | 'keep'> {
+  const profile = await tx.profile.findFirst({
+    where: { userId },
+    select: { role: true },
+  });
+  const decision = decideInviteAcceptExistingProfileRole(profile?.role, invitationRole);
+  if (decision === 'refuse') throw new InviteAcceptExistingProfileError();
+  return decision;
+}
+
+class InviteAcceptAlreadyEnrolledError extends Error {
+  readonly code = 'ALREADY_ENROLLED' as const;
+}
+
+const inviteAcceptExistingUserSelect = {
+  id: true,
+  fullName: true,
+  email: true,
+  enrolledProgram: true,
+  courseEnrollments: { where: { isPrimary: true }, take: 1, select: { programSlug: true } },
+} as const;
+
+/**
+ * Admin invite storage lowercases the address; `users.email` still has mixed-case
+ * rows (`ensureAppUserProvisioned` copies Auth email as-is). Exact equality misses
+ * those members and sends them through the new-user setup path.
+ */
+async function findExistingUserByInviteEmail(tx: InviteTx, inviteEmail: string) {
+  const candidates = await tx.user.findMany({
+    where: { email: { equals: inviteEmail, mode: 'insensitive' } },
+    select: inviteAcceptExistingUserSelect,
+    take: EXACT_EMAIL_CANDIDATE_LIMIT,
+  });
+  return pickExactEmailMatch(candidates, inviteEmail);
 }
 
 async function ensureProfileRow(
@@ -56,6 +111,7 @@ async function ensureProfileRow(
   userId: string,
   data: {
     role: string;
+    preserveExistingRole?: boolean;
     profilePhone?: string | null;
     consentTerms?: boolean;
     consentCommunications?: boolean;
@@ -65,14 +121,17 @@ async function ensureProfileRow(
   // profiles.user_id), so avoid upsert({ where: { userId } }) here.
   const existing = await tx.profile.findFirst({
     where: { userId },
-    select: { id: true },
+    select: { id: true, role: true },
   });
 
   if (existing) {
+    if (decideInviteAcceptExistingProfileRole(existing.role, data.role) === 'refuse') {
+      throw new InviteAcceptExistingProfileError();
+    }
     return tx.profile.update({
       where: { id: existing.id },
       data: {
-        role: data.role,
+        ...(data.preserveExistingRole ? {} : { role: data.role }),
         profilePhone: data.profilePhone ?? undefined,
       },
     });
@@ -209,10 +268,7 @@ async function ensureAppUserForInvite(
     return byId.organizationId;
   }
 
-  const byEmail = await tx.user.findFirst({
-    where: { email: data.email },
-    select: { id: true },
-  });
+  const byEmail = await findExistingUserByInviteEmail(tx, data.email);
   if (byEmail) {
     throw new Error(
       'INVITE_ACCEPT_EMAIL_USER_ID_MISMATCH: public.users has this email on a different id than Supabase auth'
@@ -411,10 +467,9 @@ async function ensureCounselorRow(
       // Match admin invite storage (lowercased) and avoid an unnecessary user_roles/roles join:
       // accept flow does not read userRoles; a broken roles join would 500 both branches here.
       const inviteEmail = String(invitation.email).trim().toLowerCase();
-      const existingUser = await prisma.$transaction((tx) => tx.user.findFirst({
-        where: { email: inviteEmail },
-        select: { id: true, fullName: true, email: true, enrolledProgram: true },
-      }));
+      const existingUser = await prisma.$transaction((tx) =>
+        findExistingUserByInviteEmail(tx, inviteEmail),
+      );
   
       if (existingUser) {
         if (!fullName) {
@@ -459,7 +514,13 @@ async function ensureCounselorRow(
 });
 
 async function acceptExistingUser(
-  user: { id: string; fullName: string; email: string; enrolledProgram: string | null },
+  user: {
+    id: string;
+    fullName: string;
+    email: string;
+    enrolledProgram: string | null;
+    courseEnrollments: Array<{ programSlug: string }>;
+  },
   invitation: AcceptInvitation,
   fullName: string,
   _request: NextRequest
@@ -495,6 +556,20 @@ async function acceptExistingUser(
   let txStep = 'start';
   try {
     await prisma.$transaction(async (tx) => {
+      txStep = 'assert_existing_profile_role';
+      const profileDecision = await assertInviteAcceptProfileRole(tx, user.id, invitation.role);
+
+      txStep = 'resolve_existing_program';
+      const programDecision = decideInviteAcceptExistingProgram({
+        invitationRole: invitation.role,
+        invitationProgramSlug: invitation.programSlug,
+        enrolledProgram: user.enrolledProgram,
+        primaryProgramSlug: user.courseEnrollments?.[0]?.programSlug ?? null,
+      });
+      if (programDecision === 'refuse') {
+        throw new InviteAcceptAlreadyEnrolledError();
+      }
+
       txStep = 'resolve_existing_affiliation';
       if (invitation.role === 'partner' && invitation.subgroupId) {
         const partner = await tx.subgroup.findUnique({
@@ -550,6 +625,7 @@ async function acceptExistingUser(
       txStep = 'ensure_existing_profile';
       await ensureProfileRow(tx, user.id, {
         role: profileRoleForInvitation(invitation.role),
+        preserveExistingRole: profileDecision === 'keep',
         consentTerms: false,
         consentCommunications: false,
       });
@@ -581,34 +657,42 @@ async function acceptExistingUser(
         await ensureMemberSubgroupLink(tx, user.id, invitation.subgroupId, invitation.invitedById);
       }
 
-      if (invitation.role === 'member' && invitation.programSlug) {
-        txStep = 'update_member_program_existing';
-        await tx.user.update({
-          where: { id: user.id },
-          data: {
-            enrolledProgram: canonicalizeProgramSlug(invitation.programSlug),
-            enrolledAt: new Date(),
-            programChangedAt: new Date(),
-          },
-          select: { id: true },
-        });
-        txStep = 'sync_course_enrollment_existing';
-        const existingUserOrg = await tx.user.findUnique({
-          where: { id: user.id },
-          select: { organizationId: true },
-        });
-        if (existingUserOrg) {
-          await ensureCourseEnrollmentForInvite(
-            tx,
-            user.id,
-            existingUserOrg.organizationId,
-            invitation.programSlug,
-            invitation.invitedById,
-            Boolean(
-              user.enrolledProgram
-              && programSlugsEquivalent(user.enrolledProgram, invitation.programSlug),
-            ),
-          );
+      switch (programDecision) {
+        case 'keep':
+          break;
+        case 'assign': {
+          if (!invitation.programSlug) {
+            throw new Error('invite-accept assign requires a program slug');
+          }
+          txStep = 'update_member_program_existing';
+          await tx.user.update({
+            where: { id: user.id },
+            data: {
+              enrolledProgram: canonicalizeProgramSlug(invitation.programSlug),
+              enrolledAt: new Date(),
+              programChangedAt: new Date(),
+            },
+            select: { id: true },
+          });
+          txStep = 'sync_course_enrollment_existing';
+          const existingUserOrg = await tx.user.findUnique({
+            where: { id: user.id },
+            select: { organizationId: true },
+          });
+          if (existingUserOrg) {
+            await ensureCourseEnrollmentForInvite(
+              tx,
+              user.id,
+              existingUserOrg.organizationId,
+              invitation.programSlug,
+              invitation.invitedById,
+            );
+          }
+          break;
+        }
+        default: {
+          const _exhaustive: never = programDecision;
+          throw new Error(`Unhandled invite program decision: ${_exhaustive}`);
         }
       }
 
@@ -636,6 +720,15 @@ async function acceptExistingUser(
       return NextResponse.json(
         { error: 'Already linked to another partner. Changes require admin.', code: 'ALREADY_AFFILIATED' },
         { status: 409 },
+      );
+    }
+    if (dbError instanceof InviteAcceptExistingProfileError) {
+      return refuseExistingProfileRole();
+    }
+    if (dbError instanceof InviteAcceptAlreadyEnrolledError) {
+      return NextResponse.json(
+        { error: 'Already enrolled in a program. Changes require admin.', code: 'ALREADY_ENROLLED' },
+        { status: 400 },
       );
     }
     console.error('[acceptExistingUser] transaction failed:', dbError);
@@ -714,10 +807,9 @@ async function createNewUserAndAccept(
   if (authError) {
     if (authError.message.includes('already') || authError.code === 'user_already_exists') {
       // Check if a DB record exists for this email
-      const existing = await prisma.$transaction((tx) => tx.user.findFirst({
-        where: { email: inviteEmail },
-        select: { id: true, fullName: true, email: true, enrolledProgram: true },
-      }));
+      const existing = await prisma.$transaction((tx) =>
+        findExistingUserByInviteEmail(tx, inviteEmail),
+      );
       if (existing) {
         return acceptExistingUser(existing, invitation, fullName, request);
       }
@@ -797,6 +889,28 @@ async function finishNewUserDbSetup(
     await prisma.$transaction(async (tx) => {
       inviteAcceptLog('tx:start', { invitationId });
 
+      txStep = 'assert_existing_profile_role';
+      const profileDecision = await assertInviteAcceptProfileRole(tx, authUserId, invitation.role);
+
+      txStep = 'resolve_existing_program';
+      const existingById = await tx.user.findFirst({
+        where: { id: authUserId },
+        select: {
+          enrolledProgram: true,
+          courseEnrollments: { where: { isPrimary: true }, take: 1, select: { programSlug: true } },
+        },
+      });
+      const programDecision = decideInviteAcceptExistingProgram({
+        invitationRole: invitation.role,
+        invitationProgramSlug: invitation.programSlug,
+        enrolledProgram: existingById?.enrolledProgram ?? null,
+        primaryProgramSlug: existingById?.courseEnrollments?.[0]?.programSlug ?? null,
+      });
+      if (programDecision === 'refuse') {
+        throw new InviteAcceptAlreadyEnrolledError();
+      }
+      const assignProgram = programDecision === 'assign' && Boolean(invitation.programSlug);
+
       txStep = 'claim_invitation';
       await claimPendingInvitationForAccept(tx, invitation.id, authUserId);
 
@@ -816,14 +930,13 @@ async function finishNewUserDbSetup(
         email: inviteEmailNorm,
         fullName,
         phone,
-        enrolledProgram:
-          invitation.role === 'member' && invitation.programSlug
-            ? canonicalizeProgramSlug(invitation.programSlug)
-            : null,
-        enrolledAt: invitation.role === 'member' ? new Date() : null,
+        enrolledProgram: assignProgram && invitation.programSlug
+          ? canonicalizeProgramSlug(invitation.programSlug)
+          : null,
+        enrolledAt: assignProgram ? new Date() : null,
       });
 
-      if (invitation.role === 'member' && invitation.programSlug) {
+      if (assignProgram && invitation.programSlug) {
         txStep = 'sync_course_enrollment_new';
         await ensureCourseEnrollmentForInvite(
           tx, authUserId, stampedOrganizationId, invitation.programSlug, invitation.invitedById
@@ -844,6 +957,7 @@ async function finishNewUserDbSetup(
       inviteAcceptLog('tx:ensure_profile', { invitationId });
       await ensureProfileRow(tx, authUserId, {
         role: profileRoleForInvitation(invitation.role),
+        preserveExistingRole: profileDecision === 'keep',
         profilePhone: phone,
       });
 
@@ -902,6 +1016,15 @@ async function finishNewUserDbSetup(
       return NextResponse.json(
         { error: 'Already linked to another partner. Changes require admin.', code: 'ALREADY_AFFILIATED' },
         { status: 409 },
+      );
+    }
+    if (dbError instanceof InviteAcceptExistingProfileError) {
+      return refuseExistingProfileRole();
+    }
+    if (dbError instanceof InviteAcceptAlreadyEnrolledError) {
+      return NextResponse.json(
+        { error: 'Already enrolled in a program. Changes require admin.', code: 'ALREADY_ENROLLED' },
+        { status: 400 },
       );
     }
     inviteAcceptLog('tx:failed', { invitationId, err: dbError });

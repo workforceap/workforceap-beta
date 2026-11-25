@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { deleteSupabaseAuthUser } from './deleteAuthUser';
+import { deleteSupabaseAuthUser, isSupabaseAuthUserMissing } from './deleteAuthUser';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 
 test('deleteSupabaseAuthUser deletes through a Supabase admin client', async () => {
@@ -36,6 +36,14 @@ test('deleteSupabaseAuthUser returns admin delete failures to caller', async () 
   const result = await deleteSupabaseAuthUser('user-123', supabaseAdmin);
 
   assert.equal(result.error, deleteError);
+});
+
+test('isSupabaseAuthUserMissing treats only confirmed missing identities as already gone', () => {
+  assert.equal(isSupabaseAuthUserMissing(null), false);
+  assert.equal(isSupabaseAuthUserMissing({ status: 500, message: 'Auth unavailable' }), false);
+  assert.equal(isSupabaseAuthUserMissing({ status: 404, message: 'User not found' }), true);
+  assert.equal(isSupabaseAuthUserMissing({ code: 'user_not_found', message: 'User not found' }), true);
+  assert.equal(isSupabaseAuthUserMissing(new Error('User not found')), true);
 });
 
 test('deleteSupabaseAuthUser returns thrown admin delete failures to caller', async () => {
