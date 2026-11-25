@@ -16,6 +16,7 @@ import { buildB4BPort, CourseraRosterIncompleteError, writeEnrollAudit } from '@
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { getProgramBySlug } from '@/lib/content/programs';
+import { isMemberWioaVerified, type WioaGateResult } from '@/lib/platform/trainingEnrollmentGate';
 import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
 import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
@@ -23,6 +24,15 @@ import {
   getProgramCurriculumManifest,
   normalizeCourseraCourseId,
 } from '@/lib/content/programCurriculumManifest';
+
+const WIOA_SEAT_MESSAGES: Record<Extract<WioaGateResult, { ok: false }>['code'], string> = {
+  WIOA_NOT_STARTED:
+    'Before you can start this course, complete your eligibility screening from your dashboard.',
+  WIOA_PENDING:
+    "Your eligibility review isn't finished yet. Your counselor will let you know when you can start this course.",
+  WIOA_NOT_ELIGIBLE:
+    "This course isn't available under your current eligibility review. Contact your counselor about other options.",
+};
 
 /**
  * POST /api/member/coursera/enroll-in-course
@@ -34,6 +44,10 @@ import {
  *   1. `User.courseraEnrollmentApproved` must be `true` → otherwise 403.
  *      The flag is set by the counselor approval / admin toggle paths
  *      documented in `docs/COURSERA-ENROLLMENT-FLOW.md`.
+ *   1b. For WIOA-funded programs, `User.wioaReviewStatus` must be
+ *      `verified` (or an admin assigned the program) → otherwise 403 with
+ *      a WIOA_* code. WAP-165: this is where WIOA is enforced, not at
+ *      program assignment.
  *   2. `User.enrolledProgram` must be set (member has chosen a program) →
  *      otherwise 400.
  *   3. The requested `courseraCourseId` must belong to the user's enrolled
@@ -99,6 +113,7 @@ async function _POST(request: Request) {
           fullName: true,
           enrolledProgram: true,
           courseraEnrollmentApproved: true,
+          wioaReviewStatus: true,
           courseEnrollments: {
             select: {
               id: true,
@@ -106,6 +121,7 @@ async function _POST(request: Request) {
               curriculumVersion: true,
               isPrimary: true,
               enrolledAt: true,
+              enrolledByAdminId: true,
             },
             orderBy: [{ isPrimary: 'desc' }, { enrolledAt: 'desc' }],
           },
@@ -183,6 +199,22 @@ async function _POST(request: Request) {
       );
     }
   
+    // Gate 4 (WAP-165): WIOA is checked here, where the paid seat is spent,
+    // not when the program is assigned. WIOA-funded programs need a
+    // counselor-verified review, or an admin who assigned the program.
+    if ((program.fundingSource ?? 'WIOA') === 'WIOA') {
+      const wioa = isMemberWioaVerified({
+        wioaReviewStatus: dbUser.wioaReviewStatus,
+        enrolledByAdminId: enrollment?.enrolledByAdminId,
+      });
+      if (!wioa.ok) {
+        return NextResponse.json(
+          { error: WIOA_SEAT_MESSAGES[wioa.code], code: wioa.code },
+          { status: 403 },
+        );
+      }
+    }
+
     // Shared B4B port (lib/coursera/enrollPort.ts): roster lookup with a
     // short-TTL cache, plus the invite/membership/enroll write bindings —
     // identical machinery to the admin one-click route.
