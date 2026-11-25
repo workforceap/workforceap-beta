@@ -269,27 +269,29 @@ describe('member Coursera enrollment and independent progress refresh', () => {
   });
 
   describe('WIOA check at the seat (WAP-165)', () => {
-    it('blocks an unverified member on a WIOA-funded program before any provider operation', async () => {
-      mocks.findUser.mockResolvedValue({ ...member, wioaReviewStatus: 'pending' });
-      const response = await POST(request());
-      expect(response.status).toBe(403);
-      expect(await response.json()).toMatchObject({ code: 'WIOA_PENDING' });
+    it('blocks an approved member whose WIOA review was recorded as not eligible, before any provider operation', async () => {
+      for (const wioaReviewStatus of ['not_eligible', 'needs_info']) {
+        mocks.findUser.mockResolvedValue({ ...member, wioaReviewStatus });
+        const response = await POST(request());
+        expect(response.status).toBe(403);
+        expect(await response.json()).toMatchObject({ code: 'WIOA_NOT_ELIGIBLE' });
+      }
       expect(mocks.listUsersByEmail).not.toHaveBeenCalled();
       expect(mocks.enroll).not.toHaveBeenCalled();
     });
 
-    it('blocks a member with no review and a recorded negative review', async () => {
-      mocks.findUser.mockResolvedValue({ ...member, wioaReviewStatus: null });
-      expect(await (await POST(request())).json()).toMatchObject({ code: 'WIOA_NOT_STARTED' });
-      mocks.findUser.mockResolvedValue({ ...member, wioaReviewStatus: 'not_eligible' });
-      expect(await (await POST(request())).json()).toMatchObject({ code: 'WIOA_NOT_ELIGIBLE' });
-      expect(mocks.enroll).not.toHaveBeenCalled();
+    it('does not strand an approved member whose review is pending or missing', async () => {
+      for (const wioaReviewStatus of ['pending', 'in_review', null]) {
+        mocks.findUser.mockResolvedValue({ ...member, wioaReviewStatus });
+        expect((await POST(request())).status).toBe(200);
+      }
+      expect(mocks.enroll).toHaveBeenCalledTimes(3);
     });
 
     it('lets an admin-assigned program through as an override', async () => {
       mocks.findUser.mockResolvedValue({
         ...member,
-        wioaReviewStatus: 'pending',
+        wioaReviewStatus: 'not_eligible',
         courseEnrollments: [{ ...member.courseEnrollments[0], enrolledByAdminId: 'admin-one' }],
       });
       const response = await POST(request());
@@ -299,7 +301,7 @@ describe('member Coursera enrollment and independent progress refresh', () => {
 
     it('does not apply to a program funded by something other than WIOA', async () => {
       mocks.programFunding.mockReturnValue('Grant');
-      mocks.findUser.mockResolvedValue({ ...member, wioaReviewStatus: null });
+      mocks.findUser.mockResolvedValue({ ...member, wioaReviewStatus: 'not_eligible' });
       const response = await POST(request());
       expect(response.status).toBe(200);
       expect(mocks.enroll).toHaveBeenCalledTimes(1);

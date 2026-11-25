@@ -16,7 +16,7 @@ import { buildB4BPort, CourseraRosterIncompleteError, writeEnrollAudit } from '@
 import { captureApiError } from '@/lib/observability/captureApiError';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { getProgramBySlug } from '@/lib/content/programs';
-import { isMemberWioaVerified, type WioaGateResult } from '@/lib/platform/trainingEnrollmentGate';
+import { isMemberWioaVerified } from '@/lib/platform/trainingEnrollmentGate';
 import { resolveActiveDashboardProgram } from '@/lib/member/resolveActiveDashboardProgram';
 import { canonicalizeProgramSlug, programSlugsEquivalent } from '@/lib/content/programSlug';
 import { getProgramCoursesForCurriculumVersion } from '@/lib/member/curriculumAssignment';
@@ -25,14 +25,8 @@ import {
   normalizeCourseraCourseId,
 } from '@/lib/content/programCurriculumManifest';
 
-const WIOA_SEAT_MESSAGES: Record<Extract<WioaGateResult, { ok: false }>['code'], string> = {
-  WIOA_NOT_STARTED:
-    'Before you can start this course, complete your eligibility screening from your dashboard.',
-  WIOA_PENDING:
-    "Your eligibility review isn't finished yet. Your counselor will let you know when you can start this course.",
-  WIOA_NOT_ELIGIBLE:
-    "This course isn't available under your current eligibility review. Contact your counselor about other options.",
-};
+const WIOA_NOT_ELIGIBLE_MESSAGE =
+  "This course isn't available under your current eligibility review. Contact your counselor about other options.";
 
 /**
  * POST /api/member/coursera/enroll-in-course
@@ -44,10 +38,12 @@ const WIOA_SEAT_MESSAGES: Record<Extract<WioaGateResult, { ok: false }>['code'],
  *   1. `User.courseraEnrollmentApproved` must be `true` → otherwise 403.
  *      The flag is set by the counselor approval / admin toggle paths
  *      documented in `docs/COURSERA-ENROLLMENT-FLOW.md`.
- *   1b. For WIOA-funded programs, `User.wioaReviewStatus` must be
- *      `verified` (or an admin assigned the program) → otherwise 403 with
- *      a WIOA_* code. WAP-165: this is where WIOA is enforced, not at
- *      program assignment.
+ *   1b. For WIOA-funded programs, a recorded negative WIOA review
+ *      (`not_eligible` / `needs_info`) overrides the approval → 403
+ *      WIOA_NOT_ELIGIBLE, unless an admin assigned the program. A pending
+ *      or missing review does not block: the counselor approval above is
+ *      the funding confirmation. WAP-165: WIOA is enforced here, at the
+ *      seat, not at program assignment.
  *   2. `User.enrolledProgram` must be set (member has chosen a program) →
  *      otherwise 400.
  *   3. The requested `courseraCourseId` must belong to the user's enrolled
@@ -199,17 +195,18 @@ async function _POST(request: Request) {
       );
     }
   
-    // Gate 4 (WAP-165): WIOA is checked here, where the paid seat is spent,
-    // not when the program is assigned. WIOA-funded programs need a
-    // counselor-verified review, or an admin who assigned the program.
+    // Gate 4 (WAP-165): WIOA is enforced at the seat, not at program
+    // assignment. The counselor approval (Gate 1) is the funding
+    // confirmation, so a pending or missing review does not strand an
+    // approved learner; a recorded negative review still stops the seat.
     if ((program.fundingSource ?? 'WIOA') === 'WIOA') {
       const wioa = isMemberWioaVerified({
         wioaReviewStatus: dbUser.wioaReviewStatus,
         enrolledByAdminId: enrollment?.enrolledByAdminId,
       });
-      if (!wioa.ok) {
+      if (!wioa.ok && wioa.code === 'WIOA_NOT_ELIGIBLE') {
         return NextResponse.json(
-          { error: WIOA_SEAT_MESSAGES[wioa.code], code: wioa.code },
+          { error: WIOA_NOT_ELIGIBLE_MESSAGE, code: wioa.code },
           { status: 403 },
         );
       }
