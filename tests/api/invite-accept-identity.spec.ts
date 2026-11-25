@@ -115,6 +115,19 @@ describe('public invitation acceptance identity boundary', () => {
     expect(prisma.invitation.updateMany).not.toHaveBeenCalled();
   });
 
+  it('does not demote a signed-in super_admin whose app email missed the invite lookup', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: otherAuthId, email } as never);
+    vi.mocked(prisma.profile.findFirst).mockResolvedValue({ id: 'profile-1', role: 'super_admin' } as never);
+
+    const response = await POST(inviteRequest(''));
+    const body = await response.json() as { code?: string };
+
+    expect(response.status).toBe(409);
+    expect(body.code).toBe('ALREADY_PRIVILEGED');
+    expect(prisma.invitation.updateMany).not.toHaveBeenCalled();
+    expect(authAdmin.createUser).not.toHaveBeenCalled();
+  });
+
   it('lets the matching signed-in Auth identity resume an orphaned invite without changing its password', async () => {
     vi.mocked(getUser).mockResolvedValue({ id: otherAuthId, email } as never);
 
@@ -126,6 +139,46 @@ describe('public invitation acceptance identity boundary', () => {
       data: expect.objectContaining({ acceptedById: otherAuthId }),
     }));
     expect(authAdmin.updateUserById).not.toHaveBeenCalled();
+  });
+
+  it('does not replace a super_admin profile or claim the invite', async () => {
+    vi.mocked(prisma.user.findMany).mockResolvedValue([{
+      id: appUserId, fullName: 'Invitee', email, enrolledProgram: null, courseEnrollments: [],
+    }] as never);
+    vi.mocked(prisma.profile.findFirst).mockResolvedValue({ id: 'profile-1', role: 'super_admin' } as never);
+    authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
+
+    const response = await POST(inviteRequest());
+    const body = await response.json() as { code?: string };
+
+    expect(response.status).toBe(409);
+    expect(body.code).toBe('ALREADY_PRIVILEGED');
+    expect(prisma.invitation.updateMany).not.toHaveBeenCalled();
+    expect(prisma.profile.update).not.toHaveBeenCalled();
+  });
+
+  it('accepts a same-role staff retry without rewriting profiles.role', async () => {
+    vi.mocked(prisma.invitation.findFirst).mockResolvedValue({
+      id: 'inv-1', email, role: 'admin', invitedById: 'inviter-1',
+      subgroupId: null, partnerId: null, counselorAffiliation: null,
+      programSlug: null, status: 'pending', expiresAt: new Date('2999-01-01'),
+    } as never);
+    vi.mocked(prisma.user.findMany).mockResolvedValue([{
+      id: appUserId, fullName: 'Invitee', email, enrolledProgram: null, courseEnrollments: [],
+    }] as never);
+    vi.mocked(prisma.profile.findFirst).mockResolvedValue({ id: 'profile-1', role: 'admin' } as never);
+    vi.mocked(prisma.role.findFirst).mockResolvedValue({ id: 'admin-role' } as never);
+    authAdmin.getUserById.mockResolvedValue({ data: { user: { id: appUserId, email } }, error: null });
+
+    const response = await POST(inviteRequest());
+
+    expect(response.status).toBe(200);
+    expect(prisma.invitation.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ acceptedById: appUserId }),
+    }));
+    expect(prisma.profile.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.not.objectContaining({ role: expect.anything() }),
+    }));
   });
 
   it('keeps a matching existing app and Auth identity eligible to accept', async () => {
