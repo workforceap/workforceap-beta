@@ -4,6 +4,7 @@ import {
   buildInviteAcceptExistingUserUpdate,
   chooseInviteAcceptOrganizationId,
   decideInviteAcceptExistingProfileRole,
+  decideInviteAcceptExistingProgram,
 } from './resolveInviteAcceptOrg';
 
 const INVITER_ORG = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
@@ -69,4 +70,61 @@ test('invite-accept keeps a matching staff profile and refuses demotion', () => 
   assert.equal(decideInviteAcceptExistingProfileRole('admin', 'member'), 'refuse');
   assert.equal(decideInviteAcceptExistingProfileRole('counselor', 'member'), 'refuse');
   assert.equal(decideInviteAcceptExistingProfileRole('case_manager', 'partner'), 'refuse');
+});
+
+test('invite-accept assigns a program only when the existing member has none', () => {
+  assert.equal(
+    decideInviteAcceptExistingProgram({
+      invitationRole: 'member',
+      invitationProgramSlug: 'it-support-professional-certificate-google',
+      enrolledProgram: null,
+      primaryProgramSlug: null,
+    }),
+    'assign',
+  );
+});
+
+test('invite-accept keeps an existing equivalent assignment instead of restamping enrolledAt', () => {
+  assert.equal(
+    decideInviteAcceptExistingProgram({
+      invitationRole: 'member',
+      invitationProgramSlug: 'comptia-a-professional-certificate',
+      enrolledProgram: 'comptia-a-plus',
+      primaryProgramSlug: 'comptia-a-plus',
+    }),
+    'keep',
+  );
+  assert.equal(
+    decideInviteAcceptExistingProgram({
+      invitationRole: 'member',
+      invitationProgramSlug: 'it-support-professional-certificate-google',
+      enrolledProgram: 'it-support-professional-certificate-google',
+      primaryProgramSlug: null,
+    }),
+    'keep',
+  );
+});
+
+test('invite-accept refuses to switch an existing member onto another program', () => {
+  assert.equal(
+    decideInviteAcceptExistingProgram({
+      invitationRole: 'member',
+      invitationProgramSlug: 'comptia-a-professional-certificate',
+      enrolledProgram: 'it-support-professional-certificate-google',
+      primaryProgramSlug: 'it-support-professional-certificate-google',
+    }),
+    'refuse',
+  );
+});
+
+test('invite-accept ignores program writes for non-member invites', () => {
+  assert.equal(
+    decideInviteAcceptExistingProgram({
+      invitationRole: 'counselor',
+      invitationProgramSlug: 'it-support-professional-certificate-google',
+      enrolledProgram: null,
+      primaryProgramSlug: null,
+    }),
+    'keep',
+  );
 });

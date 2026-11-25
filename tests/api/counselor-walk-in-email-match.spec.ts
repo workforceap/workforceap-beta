@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { Prisma } from '@prisma/client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
@@ -8,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   superAdmin: vi.fn(),
   org: vi.fn(),
   findMany: vi.fn(),
+  findUnique: vi.fn(),
   update: vi.fn(),
   create: vi.fn(),
   profileCreate: vi.fn(),
@@ -38,7 +40,7 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({
 }));
 vi.mock('@/lib/db/prisma', () => ({
   prisma: {
-    user: { findMany: mocks.findMany, update: mocks.update },
+    user: { findMany: mocks.findMany, findUnique: mocks.findUnique, update: mocks.update },
     $transaction: async (fn: (tx: unknown) => unknown) => fn({
       profile: { create: mocks.profileCreate },
       counselor: { findUnique: mocks.counselorFind },
@@ -85,6 +87,7 @@ beforeEach(() => {
   mocks.superAdmin.mockResolvedValue(false);
   mocks.org.mockResolvedValue('org-a');
   mocks.findMany.mockResolvedValue([]);
+  mocks.findUnique.mockResolvedValue(null);
   mocks.update.mockResolvedValue({});
   mocks.create.mockResolvedValue({ id: 'walk-in-new' });
   mocks.profileCreate.mockResolvedValue({});
@@ -178,5 +181,77 @@ describe('walk-in email identity matching', () => {
     expect(mocks.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ id: 'walk-in-new', email: NORMALIZED_EMAIL }),
     });
+  });
+
+  it('does not delete auth when invite collides with an active member under a different app email', async () => {
+    mocks.invite.mockResolvedValue({
+      data: { user: null },
+      error: { message: 'already registered', code: 'user_already_exists' },
+    });
+    mocks.findUnique.mockResolvedValueOnce({ id: EXISTING_AUTH_ID, deletedAt: null });
+
+    const response = await POST(request('alice.new@school.org'));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: 'A member with this email already exists.',
+      existingMemberId: EXISTING_AUTH_ID,
+    });
+    expect(mocks.findAuthByEmail).toHaveBeenCalledExactlyOnceWith(expect.anything(), 'alice.new@school.org');
+    expect(mocks.findUnique).toHaveBeenCalledExactlyOnceWith({
+      where: { id: EXISTING_AUTH_ID },
+      select: { id: true, deletedAt: true },
+    });
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when the auth-id claim lookup cannot run', async () => {
+    mocks.invite.mockResolvedValue({
+      data: { user: null },
+      error: { message: 'already registered', code: 'user_already_exists' },
+    });
+    mocks.findUnique.mockRejectedValueOnce(new Error('db unavailable'));
+
+    const response = await POST(request('alice.new@school.org'));
+    expect(response.status).toBe(500);
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+  it('does not delete auth when a concurrent walk-in already claimed the Auth id', async () => {
+    mocks.create.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+        code: 'P2002',
+        clientVersion: 'test',
+        meta: { target: ['id'] },
+      }),
+    );
+    mocks.findUnique.mockResolvedValueOnce({ id: 'walk-in-new', deletedAt: null });
+
+    const response = await POST(request());
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: 'A member with this email already exists.',
+      existingMemberId: 'walk-in-new',
+    });
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('refuses Auth cleanup on a primary-key collision even when the claim lookup is empty', async () => {
+    mocks.create.mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+        code: 'P2002',
+        clientVersion: 'test',
+        meta: { target: ['users_pkey'] },
+      }),
+    );
+
+    const response = await POST(request());
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: 'A member with this email already exists.',
+      existingMemberId: 'walk-in-new',
+    });
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
   });
 });

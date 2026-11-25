@@ -325,13 +325,19 @@ export function StudentsRosterKit({
   // context without fetching the same server roster again on every keystroke.
   useEffect(() => {
     if (urlState === undefined) return;
+    // Write only state that differs from the defaults. Rewriting `?sort=...&chip=All`
+    // on mount changed the URL of a plain /admin/students visit (portal smoke row
+    // admin-open-student-roster requires the exact path).
+    const defaultKey = isTraining ? DEFAULT_TRAINING_SORT_KEY : DEFAULT_STUDENT_SORT_KEY;
+    const defaultDirection = isTraining ? DEFAULT_TRAINING_SORT_DIRECTION : DEFAULT_STUDENT_SORT_DIRECTION;
+    const isDefaultSort = sortKey === defaultKey && sortDirection === defaultDirection;
     const params = writeKitTableUrlState(window.location.search, {
-      search, sort: { key: sortKey, direction: sortDirection }, page: currentPage,
-      filters: { chip: active },
+      search, sort: isDefaultSort ? null : { key: sortKey, direction: sortDirection }, page: currentPage,
+      filters: { chip: active === 'All' ? null : active },
     });
     const next = `${window.location.pathname}${params.size ? `?${params.toString()}` : ''}${window.location.hash}`;
     window.history.replaceState(null, '', next);
-  }, [urlState, search, sortKey, sortDirection, currentPage, active]);
+  }, [urlState, search, sortKey, sortDirection, currentPage, active, isTraining]);
 
   const openStudent = (row: StudentRow) => {
     const params = writeKitTableUrlState(window.location.search, {

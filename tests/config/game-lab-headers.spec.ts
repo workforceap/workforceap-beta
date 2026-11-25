@@ -18,6 +18,7 @@ describe('Admin Game Lab framing', () => {
     expect(header(rule, 'Content-Security-Policy')!.replace("frame-ancestors 'self'", "frame-ancestors 'none'")).toBe(globalCsp);
     // The page that hosts the iframe keeps the global deny.
     expect(rules.filter((r) => r.source === '/admin/game-lab')).toHaveLength(0);
-    expect(nextConfig.outputFileTracingIncludes?.['/api/admin/game-lab/[game]/[...asset]']).toContain('./assets/game-lab/**/*');
+    // Bundling of these files is proven against Next's matcher in tests/next-tracing-includes.test.ts.
+    expect(nextConfig.outputFileTracingIncludes?.['/api/admin/game-lab/*/*']).toContain('./assets/game-lab/**/*');
   });
 });

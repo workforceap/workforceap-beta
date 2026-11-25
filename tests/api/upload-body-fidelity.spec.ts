@@ -33,6 +33,7 @@ const h = vi.hoisted(() => {
     userCertification: {
       findUnique: vi.fn(async () => ({ id: 'cert-1' })),
       update: vi.fn(async () => ({ id: 'cert-1' })),
+      updateMany: vi.fn(async () => ({ count: 1 })),
     },
     organization: { update: vi.fn(async () => ({ id: 'org-1' })) },
     employer: { update: vi.fn(async () => ({ id: 'employer-1' })) },
@@ -125,7 +126,8 @@ type RouteCase = {
   bucket: string;
   filename: string;
   type: string;
-  expectedPath: string;
+  expectedPath: string | RegExp;
+  upsert: boolean;
   /** The real leading bytes of `type`, so the route's signature check passes. */
   header: Buffer;
   post: (request: Request) => Promise<Response>;
@@ -138,7 +140,8 @@ const ROUTES: RouteCase[] = [
     bucket: 'member-files',
     filename: 'certificate.pdf',
     type: 'application/pdf',
-    expectedPath: 'cert-files/user-1/cert-1.pdf',
+    expectedPath: /^cert-files\/user-1\/cert-1-\d+\.pdf$/,
+    upsert: false,
     header: Buffer.from('%PDF-1.7\n', 'latin1'),
     post: (request) => uploadCertification(request as never),
     extraFields: [{ name: 'certName', value: 'CompTIA A+' }],
@@ -149,6 +152,7 @@ const ROUTES: RouteCase[] = [
     filename: 'logo.png',
     type: 'image/png',
     expectedPath: 'org-1/logo.png',
+    upsert: true,
     header: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     post: (request) => uploadOrgLogo(request as never),
     extraFields: [],
@@ -159,6 +163,7 @@ const ROUTES: RouteCase[] = [
     filename: 'logo.jpg',
     type: 'image/jpeg',
     expectedPath: 'employer-1/logo.jpg',
+    upsert: true,
     header: Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]),
     post: (request) => uploadEmployerLogo(request as never),
     extraFields: [],
@@ -185,8 +190,12 @@ describe.each(ROUTES)('$label body fidelity', (route) => {
     expect(h.uploads).toHaveLength(1);
     const staged = h.uploads[0];
     expect(staged.bucket).toBe(route.bucket);
-    expect(staged.path).toBe(route.expectedPath);
-    expect(staged.options).toMatchObject({ upsert: true, contentType: route.type });
+    if (typeof route.expectedPath === 'string') {
+      expect(staged.path).toBe(route.expectedPath);
+    } else {
+      expect(staged.path).toMatch(route.expectedPath);
+    }
+    expect(staged.options).toMatchObject({ upsert: route.upsert, contentType: route.type });
 
     const body = staged.body;
     expect(body).toBeInstanceOf(Uint8Array);

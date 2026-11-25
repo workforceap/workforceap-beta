@@ -17,7 +17,10 @@ const h = vi.hoisted(() => {
     userCertification: {
       findUnique: vi.fn(),
       update: vi.fn(async () => ({ id: 'cert-1' })),
-      updateMany: vi.fn(async () => ({ count: 1 })),
+      updateMany: vi.fn(async (args: { where?: { status?: unknown } }) => {
+        if (args.where?.status === 'approved') return { count: 0 };
+        return { count: 1 };
+      }),
     },
     organization: { update: vi.fn(async () => ({ id: 'org-1' })) },
     employer: { update: vi.fn(async () => ({ id: 'employer-1' })) },

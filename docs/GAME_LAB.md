@@ -15,6 +15,8 @@ Sandbox for two original WAP Practice 3D games (Packet Quest 3D, Firewall Defend
 ## Assets
 `assets/game-lab/` (outside `public/`) is served only by `app/api/admin/game-lab/[game]/[...asset]` from the fixed manifest in `lib/game-lab/manifest.ts`. Unknown or traversal paths are 404. Responses are `private, no-store` with `Vary: Cookie`. `next.config.ts` adds one `SAMEORIGIN` framing exception for `/api/admin/game-lab/:game/index.html` only.
 
+The route reads these files from disk at runtime, so `next.config.ts` adds them to its serverless bundle with the `outputFileTracingIncludes` key `/api/admin/game-lab/*/*`. Keys are globs: a literal `[game]` is a character class and matches nothing, which shipped production without the files (every asset 404ed for admins). `next dev` and the local preview read the repo directly and cannot catch this; `tests/next-tracing-includes.test.ts` runs Next's own matcher against every key and checks that every served file is bundled.
+
 ## Sandbox
 Original WAP Practice lessons, `providerLessonId: null`, no credit, not teaching-reviewed. Progress is browser `localStorage` only (`wap-practice-3d-save-v1`, `wap-practice-3d-security-save-v1`). No database writes, email, analytics or learning records. Vendored three.js 0.187.0 with its license; no CDN.
 

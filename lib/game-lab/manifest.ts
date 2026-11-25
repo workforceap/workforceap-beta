@@ -47,6 +47,9 @@ const GAME_FILES: Record<string, string> = {
 
 const VENDOR_FILE = 'vendor/three.module.min.js';
 
+/** Every asset path the route serves for a game (input to `resolveGameLabAsset`). */
+export const GAME_LAB_ASSET_PATHS: readonly string[] = [...Object.keys(GAME_FILES), VENDOR_FILE];
+
 export function getGameLabGame(slug: string): GameLabGame | undefined {
   return GAME_LAB_GAMES.find((game) => game.slug === slug);
 }

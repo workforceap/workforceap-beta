@@ -173,9 +173,13 @@ function drawWeekly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFon
     if (!day) continue;
     pen.text(iso, columns[1].x + 4, rowY, 9);
     // No time-in or time-out is stored, so those cells stay blank.
+    // Codes without minutes belong in Total Hours: A already did; W/CR were dropped, so those days looked unentered.
     const total = hours(day.actualMinutes);
     if (total !== null) pen.text(total, columns[4].x + 4, rowY, 9);
-    else if (day.codes.includes('A')) pen.text('A', columns[4].x + 4, rowY, 9);
+    else {
+      const code = cellCode(day);
+      if (code) pen.text(code, columns[4].x + 4, rowY, 9);
+    }
   }
 
   pen.text('PROPOSED DRAFT RULE: P >=4 verified hours/day; not institutionally approved. Time In/Out unavailable.', MARGIN, 282, 7);

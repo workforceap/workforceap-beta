@@ -49,6 +49,7 @@ function CertificationRoadmapSkeleton() {
 
 export default function CertificationRoadmap() {
   const [earned, setEarned] = useState<Set<string>>(new Set());
+  const [verified, setVerified] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,7 +57,9 @@ export default function CertificationRoadmap() {
       .then((res) => res.json())
       .then((data) => {
         if (data.certifications) {
-          setEarned(new Set(data.certifications.map((c: { certName: string }) => c.certName)));
+          const rows = data.certifications as Array<{ certName: string; status?: string }>;
+          setEarned(new Set(rows.map((c) => c.certName)));
+          setVerified(new Set(rows.filter((c) => c.status === 'approved').map((c) => c.certName)));
         }
         setLoading(false);
       })
@@ -64,6 +67,7 @@ export default function CertificationRoadmap() {
   }, []);
 
   const handleToggle = async (certName: string, currentlyEarned: boolean) => {
+    if (currentlyEarned && verified.has(certName)) return;
     const newEarned = !currentlyEarned;
     setEarned((prev) => {
       const next = new Set(prev);
@@ -99,6 +103,7 @@ export default function CertificationRoadmap() {
             key={track.id}
             track={track}
             earned={earned}
+            verified={verified}
             onToggle={handleToggle}
           />
         ))}
@@ -110,10 +115,12 @@ export default function CertificationRoadmap() {
 function CertTrackCard({
   track,
   earned,
+  verified,
   onToggle,
 }: {
   track: CertTrack;
   earned: Set<string>;
+  verified: Set<string>;
   onToggle: (certName: string, currentlyEarned: boolean) => void;
 }) {
   return (
@@ -125,6 +132,7 @@ function CertTrackCard({
       <ul className="cert-track-list">
         {track.certs.map((cert) => {
           const isEarned = earned.has(cert.name);
+          const isVerified = verified.has(cert.name);
           return (
             <li
               key={cert.name}
@@ -138,6 +146,8 @@ function CertTrackCard({
                 <input
                   type="checkbox"
                   checked={isEarned}
+                  disabled={isVerified}
+                  title={isVerified ? 'Verified by staff' : undefined}
                   onChange={() => onToggle(cert.name, isEarned)}
                   className="cert-checkbox"
                 />
