@@ -88,14 +88,38 @@ async function findAppUserClaimingAuthId(authId: string) {
   );
 }
 
-async function claimedActiveAppUser(authId: string): Promise<{ id: string } | 'lookup_failed' | null> {
+type AuthIdClaim =
+  | { kind: 'active'; id: string }
+  | { kind: 'soft_deleted'; id: string }
+  | { kind: 'none' }
+  | { kind: 'lookup_failed' };
+
+async function authIdClaim(authId: string): Promise<AuthIdClaim> {
   try {
     const row = await findAppUserClaimingAuthId(authId);
-    if (row && row.deletedAt == null) return { id: row.id };
-    return null;
+    if (!row) return { kind: 'none' };
+    if (row.deletedAt == null) return { kind: 'active', id: row.id };
+    return { kind: 'soft_deleted', id: row.id };
   } catch (err) {
     console.error('[walk-in] auth-id claim lookup failed', err);
-    return 'lookup_failed';
+    return { kind: 'lookup_failed' };
+  }
+}
+
+async function claimedActiveAppUser(authId: string): Promise<{ id: string } | 'lookup_failed' | null> {
+  const claim = await authIdClaim(authId);
+  switch (claim.kind) {
+    case 'active':
+      return { id: claim.id };
+    case 'soft_deleted':
+    case 'none':
+      return null;
+    case 'lookup_failed':
+      return 'lookup_failed';
+    default: {
+      const _exhaustive: never = claim;
+      return _exhaustive;
+    }
   }
 }
 
@@ -196,30 +220,45 @@ export const POST = withApiGuc(async (request: Request) => {
       data: { full_name: fullName, phone, walked_in_by: user.id },
     });
   
-    // Second self-heal: orphan Supabase auth user from a prior failed delete.
-    // If the Prisma row was already soft-deleted (or never existed) and only
-    // a stale auth row remains, deleting and re-inviting clears the ghost.
+    // Second self-heal: leftover Auth after a prior failed provision.
     // Email ILIKE cannot see a live member whose app email diverged from Auth,
     // and a concurrent walk-in can commit the User row after this preflight —
     // never delete Auth when that id still has an active app user.
+    //
+    // If no User row claims the id yet, another request may be between
+    // inviteUserByEmail and user.create. Deleting that Auth strands a
+    // half-provisioned login. Adopt the existing Auth user instead.
+    // Soft-deleted User rows still occupy the primary key (User.id is the
+    // Auth id), so only that case deletes Auth and re-invites.
     if (inviteError?.message?.includes('already') || inviteError?.code === 'user_already_exists') {
       try {
         const orphan = await findSupabaseAuthUserByEmail(supabase, email);
         if (orphan) {
-          const claimed = await claimedActiveAppUser(orphan.id);
-          if (claimed === 'lookup_failed') {
-            return NextResponse.json({ error: 'Failed to provision member account' }, { status: 500 });
+          const claim = await authIdClaim(orphan.id);
+          switch (claim.kind) {
+            case 'lookup_failed':
+              return NextResponse.json({ error: 'Failed to provision member account' }, { status: 500 });
+            case 'active':
+              return existingMemberResponse(claim.id);
+            case 'soft_deleted': {
+              await supabase.auth.admin.deleteUser(orphan.id);
+              const retry = await supabase.auth.admin.inviteUserByEmail(email, {
+                redirectTo: `${siteUrl}/dashboard`,
+                data: { full_name: fullName, phone, walked_in_by: user.id },
+              });
+              inviteData = retry.data;
+              inviteError = retry.error;
+              break;
+            }
+            case 'none':
+              inviteData = { user: orphan };
+              inviteError = null;
+              break;
+            default: {
+              const _exhaustive: never = claim;
+              return _exhaustive;
+            }
           }
-          if (claimed) {
-            return existingMemberResponse(claimed.id);
-          }
-          await supabase.auth.admin.deleteUser(orphan.id);
-          const retry = await supabase.auth.admin.inviteUserByEmail(email, {
-            redirectTo: `${siteUrl}/dashboard`,
-            data: { full_name: fullName, phone, walked_in_by: user.id },
-          });
-          inviteData = retry.data;
-          inviteError = retry.error;
         }
       } catch (err) {
         console.error('[walk-in] orphan auth cleanup failed', err);
