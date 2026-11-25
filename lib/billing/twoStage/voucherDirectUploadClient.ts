@@ -14,6 +14,11 @@ function voucherUrl(memberId: string, caseId: string): string {
   return `/api/admin/members/${encodeURIComponent(memberId)}/billing/two-stage/cases/${encodeURIComponent(caseId)}/voucher`;
 }
 
+function isAlreadyStoredError(error: { message?: string; statusCode?: string | number }): boolean {
+  if (String(error.statusCode ?? '') === '409') return true;
+  return /already exists|duplicate/i.test(error.message ?? '');
+}
+
 export async function uploadVoucherFile(
   memberId: string,
   caseId: string,
@@ -63,7 +68,18 @@ export async function uploadVoucherFile(
       file,
       { contentType: 'application/pdf', upsert: false },
     );
-    if (upErr) uploadError = upErr.message || 'Upload to storage failed.';
+    if (upErr) {
+      const message = upErr.message || 'Upload to storage failed.';
+      // Only an insert-only duplicate means the bytes may already be stored;
+      // any other Storage error leaves nothing for complete to adopt.
+      if (!isAlreadyStoredError(upErr)) {
+        return { ok: false, status: 0, body: null, message, uncertain: true };
+      }
+      uploadError = message;
+    }
+  } else if (!prepare.ok && prepare.status >= 400 && prepare.status < 500) {
+    // A definite refusal (too large, forbidden, stale case) stays a refusal.
+    return prepare;
   }
 
   const complete = await request<VoucherUploadDto>(voucherUrl(memberId, caseId), {
