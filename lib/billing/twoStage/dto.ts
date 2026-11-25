@@ -662,6 +662,7 @@ export type VoucherAttestationPart = {
 export type VoucherDirectPrepareDto = {
   bucket: string;
   path: string;
+  /** Empty when the content-addressed object is already stored and verified. */
   token: string;
   sha256: Sha256Hex;
   byteLength: number;

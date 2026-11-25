@@ -14,6 +14,11 @@ function voucherUrl(memberId: string, caseId: string): string {
   return `/api/admin/members/${encodeURIComponent(memberId)}/billing/two-stage/cases/${encodeURIComponent(caseId)}/voucher`;
 }
 
+function isAlreadyStoredError(error: { message?: string; statusCode?: string | number }): boolean {
+  if (String(error.statusCode ?? '') === '409') return true;
+  return /already exists|duplicate/i.test(error.message ?? '');
+}
+
 export async function uploadVoucherFile(
   memberId: string,
   caseId: string,
@@ -40,31 +45,51 @@ export async function uploadVoucherFile(
   }
 
   const sha256 = await sha256Hex(file);
+  const descriptor = { sha256, byteLength: file.size, fileName: file.name };
   const prepare = await request<VoucherDirectPrepareDto>(voucherUrl(memberId, caseId), {
     method: 'POST',
-    json: { action: 'prepare', sha256, byteLength: file.size, fileName: file.name },
+    json: { action: 'prepare', ...descriptor },
   });
-  if (!prepare.ok) return prepare;
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anon) {
-    return { ok: false, status: 0, body: null, message: 'App configuration error.', uncertain: true };
+  // Content-addressed storage is insert-only. A retry after a completed PUT
+  // (or a prepare that finds the object already verified) must still call
+  // complete so the billing artifact row can be written.
+  let uploadError: string | null = null;
+  if (prepare.ok && prepare.data.token) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !anon) {
+      return { ok: false, status: 0, body: null, message: 'App configuration error.', uncertain: true };
+    }
+    const supabase = createBrowserClient(url, anon);
+    const { error: upErr } = await supabase.storage.from(prepare.data.bucket).uploadToSignedUrl(
+      prepare.data.path,
+      prepare.data.token,
+      file,
+      { contentType: 'application/pdf', upsert: false },
+    );
+    if (upErr) {
+      const message = upErr.message || 'Upload to storage failed.';
+      // Only an insert-only duplicate means the bytes may already be stored;
+      // any other Storage error leaves nothing for complete to adopt.
+      if (!isAlreadyStoredError(upErr)) {
+        return { ok: false, status: 0, body: null, message, uncertain: true };
+      }
+      uploadError = message;
+    }
+  } else if (!prepare.ok && prepare.status >= 400 && prepare.status < 500) {
+    // A definite refusal (too large, forbidden, stale case) stays a refusal.
+    return prepare;
   }
 
-  const supabase = createBrowserClient(url, anon);
-  const { error: upErr } = await supabase.storage.from(prepare.data.bucket).uploadToSignedUrl(
-    prepare.data.path,
-    prepare.data.token,
-    file,
-    { contentType: 'application/pdf', upsert: false },
-  );
-  if (upErr) {
-    return { ok: false, status: 0, body: null, message: upErr.message || 'Upload to storage failed.', uncertain: true };
-  }
-
-  return request<VoucherUploadDto>(voucherUrl(memberId, caseId), {
+  const complete = await request<VoucherUploadDto>(voucherUrl(memberId, caseId), {
     method: 'POST',
-    json: { action: 'complete', sha256, byteLength: file.size, fileName: file.name },
+    json: { action: 'complete', ...descriptor },
   });
+  if (complete.ok) return complete;
+  if (uploadError) {
+    return { ok: false, status: complete.status || 0, body: complete.body, message: uploadError, uncertain: true };
+  }
+  if (!prepare.ok) return prepare;
+  return complete;
 }

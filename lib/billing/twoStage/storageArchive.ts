@@ -245,15 +245,30 @@ export async function prepareFinanceArchiveDirectUpload(
   await requirePrivateBucket(admin, bucket);
   let signed: Awaited<ReturnType<ReturnType<typeof admin.storage.from>['createSignedUploadUrl']>>;
   try {
-    signed = await admin.storage.from(bucket).createSignedUploadUrl(ref.key);
+    signed = await admin.storage.from(bucket).createSignedUploadUrl(ref.key, { upsert: false });
   } catch {
     throw new FinanceArchiveError('STORAGE_UNAVAILABLE');
   }
-  if (signed.error || !signed.data?.token) throw new FinanceArchiveError('STORAGE_UNAVAILABLE');
+  if (!signed.error && signed.data?.token) {
+    return Object.freeze({
+      ref,
+      path: signed.data.path ?? ref.key,
+      token: signed.data.token,
+      maxBytes: FINANCE_ARCHIVE_MAX_BYTES,
+    });
+  }
+  // A previous attempt may already have stored these exact bytes (the signed
+  // PUT is insert-only). If they verify, the client skips the PUT and completes.
+  try {
+    await readFinanceArchivePdf(ref, options);
+  } catch (error) {
+    if (error instanceof FinanceArchiveError && error.code === 'INTEGRITY_MISMATCH') throw error;
+    throw new FinanceArchiveError('STORAGE_UNAVAILABLE');
+  }
   return Object.freeze({
     ref,
-    path: signed.data.path ?? ref.key,
-    token: signed.data.token,
+    path: ref.key,
+    token: '',
     maxBytes: FINANCE_ARCHIVE_MAX_BYTES,
   });
 }
