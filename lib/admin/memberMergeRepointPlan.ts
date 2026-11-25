@@ -274,6 +274,9 @@ export const USER_FK_NOT_REPOINTED: Record<string, string> = {
   'pushSubscription.userId': 'a push subscription is bound to a device and login, not worth moving',
   'savedJob.userId': 'saved jobs are not moved today',
   'userTourState.userId': 'product-tour state is per account and not worth moving',
+  'courseraLearningHoursSnapshot.userId':
+    'daily Coursera hours readings are keyed by Coursera email, not by user; the duplicate account keeps its readings. ' +
+    'Not moved today, like the other Coursera rows (see MEMBER_MERGE_PREVIEW_ONLY)',
 };
 
 /**
