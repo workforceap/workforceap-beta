@@ -1054,7 +1054,9 @@ try {
   // Ambiguous finance: held (no fresh key), stage not sent.
   // Stale sweep: a pending claim with no provider outcome is marked ambiguous only after 15 min (DB wall clock).
   rejects(setStatus('s-j6-finance', 'ambiguous'), '23514', 'a fresh pending claim with no provider outcome may still be in flight');
-  sql(`SET session_replication_role = replica; UPDATE public.billing_stage_sends SET last_claimed_at = public.billing_utc_now() - interval '14 minutes 58 seconds' WHERE id = 's-j6-finance'; SET session_replication_role = DEFAULT;`);
+  // 10 s short of the threshold: the setup call, a fresh psql spawn and the held second must not cross it on
+  // a slow runner (a 2 s margin flaked in CI on PR #2949).
+  sql(`SET session_replication_role = replica; UPDATE public.billing_stage_sends SET last_claimed_at = public.billing_utc_now() - interval '14 minutes 50 seconds' WHERE id = 's-j6-finance'; SET session_replication_role = DEFAULT;`);
   rejects(`BEGIN; SELECT pg_sleep(1); ${setStatus('s-j6-finance', 'ambiguous')} COMMIT;`, '23514', 'still under 15 min (the held second does not cross it)');
   sql(`SET session_replication_role = replica; UPDATE public.billing_stage_sends SET last_claimed_at = public.billing_utc_now() - interval '15 minutes 1 second' WHERE id = 's-j6-finance'; SET session_replication_role = DEFAULT;`);
   sql(setStatus('s-j6-finance', 'ambiguous'));
