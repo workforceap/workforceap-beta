@@ -231,7 +231,7 @@ The database enforces these rules itself, not just the app:
   - the voucher and its attestation
   - a prior quote: our sent J5, or an attested external quote. No system J5 is ever fabricated.
 - **Hours.** `contact_hours` must equal `billing_contract_hours(case program)`: 200 for `software-developer-professional-certificate-ibm` and 160 for every other program. The PG16 proof checks this matches `hours.ts` for every approved syllabus.
-- **Derived holds.** `billing_stage_record_rules()` computes the J6 review reasons and refuses any other value. Every reason is a hard hold with no bypass: no review note clears it, and there is no amount-exception path. A reason clears only when corrected structured evidence makes it disappear:
+- **Derived holds.** `billing_stage_record_rules()` computes the J6 review reasons and refuses any other value. Every reason is a recorded note for the signer and never blocks signing: the designated signer reviews it and signs anyway. There is no review-clearance step and no amount-exception path. A reason disappears only when corrected structured evidence removes it:
   - `voucher_amount_differs`: the voucher amount is not 750000 cents.
   - `voucher_class_differs`: the voucher authorizes another program or class.
   - `voucher_period_conflict`: the class dates fall outside the voucher period.
@@ -992,7 +992,11 @@ receipt signature) stops applying: the response (`current: true`) and the
 summary show `attestation: null`, `receiptAttestation: null` and the
 blockers `J6_VOUCHER_ATTESTATION_INCOMPLETE` and
 `RECEIVING_SIGNATURE_NOT_ATTESTED`. Re-uploading the bytes of an older file
-reuses its row; attesting it makes it current again.
+reuses its row and does not replace the current voucher. Data-entry and
+receipt attestation of a superseded file are refused
+(`409 VOUCHER_NOT_CURRENT`); attest the current voucher. A designated-signer
+upload that includes the data-entry `attestation` part still records details
+on the reused row and makes that file current again.
 
 PDF only in this release (#2700 and `storageArchive` accept only
 `application/pdf`): the file part must declare `application/pdf` and start
@@ -1021,7 +1025,10 @@ Errors: `422 UPLOAD_EMPTY`, `413 UPLOAD_TOO_LARGE`, `413 PAYLOAD_TOO_LARGE`,
 
 Voucher data entry for an uploaded file (designated signer only):
 `POST /cases/[caseId]/voucher/[artifactId]/attestation` (JSON) appends a new
-attestation for that exact artifact.
+attestation for that exact artifact. The artifact must be the case's current
+voucher (`409 VOUCHER_NOT_CURRENT`); otherwise a later attestation timestamp
+would rewind `currentVoucher()` onto the superseded PDF and its authorized
+amount, dates and reference.
 
 Both responses carry `waitingOnDesignatedSigner` for the current voucher
 (§5.3), so a staff upload immediately shows what now waits on Michael.
@@ -1295,8 +1302,10 @@ again carries the current image.
 #### 6.1 J6 holds
 
 `voucher_amount_differs`, `voucher_class_differs`, `voucher_period_conflict`,
-`end_date_not_contract`, `class_differs_from_quote` are hard holds
-(`HOLD_<REASON>` codes, message `REVIEW_REASON_TEXT`); no route clears one.
+`end_date_not_contract`, `class_differs_from_quote` are recorded notes
+(`HOLD_<REASON>` codes, message `REVIEW_REASON_TEXT`); they never block signing, and the
+table check `billing_stage_records_review_check` (since 20261112044500) no longer requires a clearance.
+The release steps for that migration are `docs/runbooks/j6-review-check-release.md`.
 
 #### 6.2 Prerequisite blockers
 

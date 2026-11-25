@@ -456,11 +456,36 @@ export async function uploadVoucher<P>(ctx: TwoStageContext<P>, upload: Multipar
   return commitVoucherArtifact(ctx, archived.ref, archived.fileName, attestationPart, archived.reused);
 }
 
+/** Load a board-signed voucher on this case, or 404. */
+async function loadVoucherArtifact<P>(ctx: TwoStageContext<P>, artifactId: string) {
+  const snapshot = await loadCaseSnapshot(prisma, ctx.member.organizationId, ctx.billingCase!.id);
+  if (!snapshot) throw apiError(404, 'CASE_NOT_FOUND', 'This item was not found.');
+  const artifact = snapshot.artifacts.find((f) => f.id === artifactId && f.kind === 'board_signed_voucher');
+  if (!artifact) throw apiError(404, 'FILE_NOT_FOUND', 'This item was not found.');
+  return { snapshot, artifact };
+}
+
+/**
+ * Data-entry and receipt attestation both bind to the current voucher. A later
+ * `voucher_board_signed` row is a current-voucher event, so attesting a
+ * superseded file would rewind the case onto the older PDF and its terms.
+ */
+function requireCurrentVoucherArtifact(
+  snapshot: Parameters<typeof currentVoucher>[0],
+  artifact: { id: string },
+): NonNullable<ReturnType<typeof currentVoucher>> {
+  const current = currentVoucher(snapshot);
+  if (current?.artifact.id !== artifact.id) {
+    throw apiError(409, 'VOUCHER_NOT_CURRENT', 'A newer voucher was uploaded for this case. Attest the current voucher.');
+  }
+  return current;
+}
+
 /** POST …/voucher/[artifactId]/attestation (JSON, designated signer only): the voucher data entry for that exact file. */
 export async function attestVoucher<P>(ctx: TwoStageContext<P>, artifactId: string, body: unknown): Promise<Omit<VoucherUploadDto, 'reused'>> {
   await requireDesignatedSigner(ctx);
-  const artifact = await prisma.billingArtifact.findFirst({ where: { id: artifactId, caseId: ctx.billingCase!.id, organizationId: ctx.member.organizationId, kind: 'board_signed_voucher' } });
-  if (!artifact) throw apiError(404, 'FILE_NOT_FOUND', 'This item was not found.');
+  const { snapshot, artifact } = await loadVoucherArtifact(ctx, artifactId);
+  requireCurrentVoucherArtifact(snapshot, artifact);
   const draft = voucherAttestationInput(ctx, body, { id: artifact.id, kind: artifact.kind });
   ctx.effects.mark();
   await prisma.$transaction((tx) => insertAttestation(ctx, draft, tx));
@@ -474,12 +499,8 @@ export function receiptStatement(args: { signerName: string; voucherReference: s
 }
 
 async function receiptTarget<P>(ctx: TwoStageContext<P>, artifactId: string) {
-  const snapshot = await loadCaseSnapshot(prisma, ctx.member.organizationId, ctx.billingCase!.id);
-  if (!snapshot) throw apiError(404, 'CASE_NOT_FOUND', 'This item was not found.');
-  const artifact = snapshot.artifacts.find((f) => f.id === artifactId && f.kind === 'board_signed_voucher');
-  if (!artifact) throw apiError(404, 'FILE_NOT_FOUND', 'This item was not found.');
-  const current = currentVoucher(snapshot);
-  if (current?.artifact.id !== artifact.id) throw apiError(409, 'VOUCHER_NOT_CURRENT', 'A newer voucher was uploaded for this case. Attest the current voucher.');
+  const { snapshot, artifact } = await loadVoucherArtifact(ctx, artifactId);
+  const current = requireCurrentVoucherArtifact(snapshot, artifact);
   if (!current.attestation) {
     throw apiError(409, 'NOT_READY', 'Record the voucher details (reference, dates, amount) before attesting the receiving signature.', {
       blockers: [{ code: 'J6_VOUCHER_ATTESTATION_INCOMPLETE', message: VOUCHER_DATA_WAITING_MESSAGE, hardHold: false, waitingOn: 'designated_signer' }],

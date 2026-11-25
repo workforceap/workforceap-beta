@@ -11,7 +11,9 @@
  * the client headers must be fixed together with the probe first.
  */
 import { createRequire } from 'node:module';
-import { pathToFileURL } from 'node:url';
+import { realpathSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const require = createRequire(import.meta.url);
 const { diagnoseDemoServiceKeyHeaders } = require('./lib/demo-service-key-probe.cjs');
@@ -32,7 +34,7 @@ export async function run(argv, env, fetchImpl = globalThis.fetch) {
   return note ? { ok, line: JSON.stringify(result), note } : { ok, line: JSON.stringify(result) };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && realpathSync(resolve(process.argv[1])) === realpathSync(fileURLToPath(import.meta.url))) {
   const { ok, line, note } = await run(process.argv.slice(2), process.env);
   process.stdout.write(`${line}\n`);
   if (note) process.stdout.write(`${note}\n`);

@@ -194,7 +194,9 @@ export function recordContent<T extends J5Content | J6Content>(record: BillingSt
  * event, an upload (artifact created) or a data-entry attestation naming a
  * file. A new upload therefore replaces the previous voucher at once, and
  * every attestation made for the older file (data entry and Michael's
- * receipt signature) stops applying to the case. `attestation` is the newest
+ * receipt signature) stops applying to the case. Data-entry POST of a
+ * superseded file is refused (`VOUCHER_NOT_CURRENT`) so a stale tab cannot
+ * rewind the case onto the older PDF. `attestation` is the newest
  * voucher_board_signed attestation of that exact file, or null.
  */
 export function currentVoucher(
@@ -257,6 +259,30 @@ export function priorQuote(snapshot: Pick<CaseSnapshot, 'records' | 'attestation
   }
   const external = latestAttestation(snapshot, 'external_j5_reference');
   return external ? { source: 'external', attestation: toAttestation(external) } : null;
+}
+
+/**
+ * True when the frozen J6 still names the prior quote `priorQuote()` would
+ * choose now. A signed/sent system J5 supersedes an external quote (#2901);
+ * signing without re-saving would otherwise print the old quote on the invoice.
+ */
+export function j6DraftBindsLatestPriorQuote(
+  content: J6Content,
+  snapshot: Pick<CaseSnapshot, 'records' | 'attestations'>,
+): boolean {
+  const latest = priorQuote(snapshot);
+  if (!latest) return false;
+  const frozen = content.priorJ5;
+  if (latest.source === 'system') {
+    return frozen.source === 'system'
+      && frozen.recordId === latest.j5.recordId
+      && frozen.contentSha256 === latest.j5.contentSha256;
+  }
+  if (latest.source === 'external') {
+    return frozen.source === 'external' && frozen.attestationId === latest.attestation.id;
+  }
+  const _exhaustive: never = latest;
+  return _exhaustive;
 }
 
 /** J6 prerequisites from the latest evidence; `editingRecordId` is the draft being updated (not "another open J6"). */

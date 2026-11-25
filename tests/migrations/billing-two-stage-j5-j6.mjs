@@ -42,6 +42,8 @@ import { deflateSync } from 'node:zlib';
 const MIGRATION_NAME = '20260927230000_billing_two_stage_j5_j6';
 const SIX_MONTH_MIGRATION = '20261006203708_billing_six_month_class_terms';
 const J6_RELAXED_MIGRATION = '20261110194500_billing_j6_signed_j5_and_review_notes';
+const J6_REVIEW_MIGRATION = '20261112044500_billing_j6_review_notes_do_not_block_signing';
+const j6ReviewMigration = readFileSync(`prisma/migrations/${J6_REVIEW_MIGRATION}/migration.sql`, 'utf8');
 const sixMonthMigration = readFileSync(`prisma/migrations/${SIX_MONTH_MIGRATION}/migration.sql`, 'utf8');
 const j6RelaxedMigration = readFileSync(`prisma/migrations/${J6_RELAXED_MIGRATION}/migration.sql`, 'utf8');
 const LEGACY_MIGRATION = 'prisma/migrations/20260904020000_training_billing_packets/migration.sql';
@@ -130,6 +132,18 @@ const notHeldByReview = (stmt) => sql(`DO $proof$ BEGIN ${stmt} RAISE EXCEPTION 
         WHEN raise_exception THEN IF SQLERRM <> 'proof-rollback' THEN RAISE; END IF;
         WHEN check_violation THEN IF SQLERRM LIKE 'the J6 is held%' THEN RAISE; END IF;
       END $proof$;`);
+// Strict: the sign must succeed (rolled back inside the DO block). Any error, including a check violation, fails the proof.
+const signsOutright = (stmt) => {
+  const result = spawnSync('psql', ['-X', '-qAt', '-v', 'ON_ERROR_STOP=1', '-d', proofDatabase], {
+    env,
+    input: `\\set VERBOSITY default\nSET client_min_messages = warning;\nDO $proof$ BEGIN ${stmt} RAISE EXCEPTION 'proof-rollback';
+      EXCEPTION WHEN raise_exception THEN IF SQLERRM <> 'proof-rollback' THEN RAISE; END IF;
+      END $proof$;`,
+    encoding: 'utf8',
+    timeout: 30_000,
+  });
+  assert.equal(result.status, 0, `the sign must not be refused, got: ${(result.stderr ?? '').trim()}`);
+};
 const ident = (value) => `"${String(value).replaceAll('"', '""')}"`;
 const pass = (message) => console.log(`PASS ${message}`);
 
@@ -371,6 +385,7 @@ try {
   sql(migration);
   // Production applies the J6 rule relaxation on top; the assertions below prove the current rules.
   sql(j6RelaxedMigration);
+  sql(j6ReviewMigration);
   TODAY_ISO = sql(`SELECT to_char(public.billing_today(), 'YYYY-MM-DD');`);
   const fingerprint = schemaFingerprint();
   pass('migration applies on the legacy billing state');
@@ -1142,6 +1157,9 @@ try {
   sql(recipientsInsert('j6-v3', 'j6', ['finance', 'counselor', 'student']));
   sql(artifactInsert({ id: 'art-j6-v3', kind: 'j6_signed_pdf', source: 'rendered', text: '%PDF-1.7 synthetic J6 v3', renders: { record: 'j6-v3', version: 3, contentSha256: HASH } }));
   const clearReview = `UPDATE public.billing_stage_records SET ${set({ review_cleared_at: 'now()', review_cleared_by_subject_id: `'${STAFF}'`, review_note: `'Synthetic: board OK by phone'` })}, updated_at = now() WHERE id='j6-v3';`;
+  // The app never writes the clearance fields: a recorded difference must sign with them empty.
+  assert.equal(sql(`SELECT (review_required AND review_cleared_at IS NULL AND review_cleared_by_subject_id IS NULL AND review_note IS NULL)::text FROM public.billing_stage_records WHERE id='j6-v3';`), 'true');
+  signsOutright(signJ6('j6-v3', 'art-j6-v3'));
   sql(clearReview);
   // A recorded voucher-period difference never blocks signing.
   notHeldByReview(signJ6('j6-v3', 'art-j6-v3'));
@@ -1501,10 +1519,53 @@ try {
   );
   pass('DB-stamped columns (attested_at x2, created_at upload, designated_at, uploaded_at/approved_at/revoked_at signature asset, signed_at, sent_at, superseded_at, voided_at, send_cancelled_at, claimed_at, last_claimed_at, accepted_at, reconciled_at, recorded_at x2, member_merged_at) are omittable in Prisma-shaped inserts and hold the DB clock');
 
+  // -------------------------------- bounded lock on the real migration file
+  // The suite applied the file once already, so the weaker check is in force.
+  // Production runs the file once, against the strict check. Put that check
+  // back, then race the real file: a second session holds the table, the file
+  // must refuse inside lock_timeout and leave the strict check, and after the
+  // holder commits the same file must install the weaker check again.
+  const reviewDef = () => sql(`SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conname = 'billing_stage_records_review_check';`);
+  const newDef = reviewDef();
+  assert.doesNotMatch(newDef, /signed/, 'the earlier apply already installed the weaker check');
+  sql(`ALTER TABLE public.billing_stage_records DROP CONSTRAINT "billing_stage_records_review_check";
+       ALTER TABLE public.billing_stage_records ADD CONSTRAINT "billing_stage_records_review_check" CHECK (coalesce((
+         (("review_cleared_at" IS NULL AND "review_cleared_by_subject_id" IS NULL AND "review_note" IS NULL)
+           OR ("review_required" AND "review_cleared_at" IS NOT NULL AND "review_cleared_by_subject_id" IS NOT NULL
+             AND btrim(coalesce("review_note", '')) <> ''))
+         AND ("review_required" = (cardinality(coalesce("review_reasons", ARRAY[]::TEXT[])) > 0))
+         AND ("status" NOT IN ('signed', 'sent') OR NOT "review_required" OR "review_cleared_at" IS NOT NULL)
+       ), false));`);
+  const oldDef = reviewDef();
+  assert.match(oldDef, /signed/, 'the restored check is the strict signed/sent clause');
+  assert.notEqual(oldDef, newDef);
+  const sessionSettings = () => sql(`SELECT current_setting('lock_timeout') || '|' || current_setting('statement_timeout');`);
+  assert.equal(sessionSettings(), '0|0', 'the proof session starts with no lock or statement timeout');
+  const holder = sqlAsync(`BEGIN; LOCK TABLE public.billing_stage_records IN ACCESS EXCLUSIVE MODE; SELECT pg_sleep(8); COMMIT;`);
+  await pause(500);
+  const blockedAt = Date.now();
+  const blocked = await sqlAsync(j6ReviewMigration);
+  const blockedMs = Date.now() - blockedAt;
+  assert.notEqual(blocked.code, 0, 'a held ACCESS EXCLUSIVE lock must refuse the migration');
+  assert.match(blocked.stderr, /55P03/, `expected lock_not_available (55P03), got ${blocked.stderr}`);
+  assert.ok(blockedMs < 7000, `the refusal must stay inside the 3s lock bound, took ${blockedMs}ms`);
+  assert.equal(reviewDef(), oldDef, 'a refused migration leaves the strict constraint');
+  const holderResult = await holder;
+  assert.equal(holderResult.code, 0, `the holder must finish on its own, not be killed: ${holderResult.stderr}`);
+  assert.equal(sessionSettings(), '0|0', 'SET LOCAL must not leak into the next statement on this session');
+  const releasedAt = Date.now();
+  sql(j6ReviewMigration);
+  const releasedMs = Date.now() - releasedAt;
+  assert.ok(releasedMs < 7000, `the unblocked migration must finish inside the bound, took ${releasedMs}ms`);
+  assert.equal(sessionSettings(), '0|0', 'the committed migration must not leave a session timeout');
+  assert.equal(reviewDef(), newDef, 'after the holder releases, the same file installs the weaker check');
+  pass('bounded lock: a holder of billing_stage_records makes the migration refuse with 55P03 inside 3s, the holder survives and the strict constraint stays; after release the same file applies and SET LOCAL does not leak');
+
   // ------------------------------------------------------- re-run
   const recordCount = sql(`SELECT count(*) FROM public.billing_stage_records;`);
   sql(migration);
   sql(j6RelaxedMigration);
+  sql(j6ReviewMigration);
   assert.equal(schemaFingerprint(), fingerprint, 'Re-applying must not change constraints, triggers or indexes.');
   for (const role of ['anon', 'authenticated']) assert.ok(privilegeMatrix(role).every((v) => v === false));
   assert.equal(legacyAccess(), legacyGrantsBefore, 'a re-run leaves legacy access unchanged');
@@ -1517,6 +1578,7 @@ try {
   sql(sixMonthMigration);
   sql(sixMonthMigration);
   sql(j6RelaxedMigration);
+  sql(j6ReviewMigration);
   assert.equal(snapshots(), snapshotsBefore, 'the term migration never rewrites existing documents');
   assert.equal(frozenSigned('j5-sig-a'), signedBefore, 'all signed/sent records retain their original content and signatures');
   // Legacy drafts remain usable under v1, and rollback code may still write v1.

@@ -820,7 +820,7 @@ describe('AI Career Tools contextual tool row', () => {
 
 describe('admin grouped rail (sidebar consolidation)', () => {
   const showAdmin = (superAdmin = true) => {
-    const navItems = ADMIN_PORTAL_NAV_ITEMS.filter((item) => !item.requiresSuperAdminContext || superAdmin);
+    const navItems = ADMIN_PORTAL_NAV_ITEMS.filter((item) => (!item.requiresSuperAdminContext || superAdmin) && !item.requiresGameLab);
     return render(
       <NextIntlClientProvider locale="en" messages={pickAdminClientMessages(messages)}>
         <WorkspaceShell portalRole="admin" navItems={navItems}
@@ -854,7 +854,7 @@ describe('admin grouped rail (sidebar consolidation)', () => {
       expect(container.querySelector(`#${b.getAttribute('aria-controls')}`)).not.toBeNull();
     }
     const hrefs = [...container.querySelectorAll('.workspace-sidebar-nav a')].map((a) => a.getAttribute('href'));
-    expect(new Set(hrefs)).toEqual(new Set(ADMIN_PORTAL_NAV_ITEMS.map((item) => item.href)));
+    expect(new Set(hrefs)).toEqual(new Set(ADMIN_PORTAL_NAV_ITEMS.filter((item) => !item.requiresGameLab).map((item) => item.href)));
     expect(hrefs).toHaveLength(new Set(hrefs).size);
   });
 

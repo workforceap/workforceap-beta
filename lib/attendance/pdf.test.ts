@@ -1,0 +1,98 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { PDFDocument } from 'pdf-lib';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { digest, DRAFT_RULE, TEMPLATE_VERSION, REPORTING_TIMEZONE, periodDates, summarize, type SheetKind } from './evidence';
+import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
+import { renderAttendancePdf, type AttendanceSnapshot } from './pdf';
+
+for (const kind of ['weekly', 'monthly', 'yearly'] as SheetKind[]) {
+  for (const variant of ['normal', 'long-names', 'missing', 'partial']) {
+    test(`render synthetic ${kind} ${variant} PDF`, async () => {
+      const dates = periodDates(kind, '2026-11-09', 8);
+      const rows = variant === 'missing' ? [] : [{ sourceKey: 'synthetic-reviewed-register', date: dates[0], kind: 'verified-duration' as const, minutes: 240, verifiedBy: 'synthetic-admin', reference: 'synthetic-only', reason: 'Synthetic dated attendance register reviewed' }];
+      const snapshot: AttendanceSnapshot = {
+        schemaVersion: 1, kind, provenance: { evidenceDigest: digest(rows), evidenceRevision: digest(rows), ruleVersion: DRAFT_RULE.version, pMinimumMinutes: 240, ruleApproved: false, reportingTimezone: REPORTING_TIMEZONE, templateVersion: TEMPLATE_VERSION }, academicLabel: '2026-2027',
+        profile: { name: variant === 'long-names' ? (kind === 'yearly' ? 'Synthetic Participant With A Rather Long Name' : 'Synthetic Participant '.repeat(30)) : 'Synthetic Participant', email: variant === 'missing' ? null : 'synthetic@example.invalid', phone: null },
+        enrollment: { program: variant === 'long-names' ? 'Synthetic Program '.repeat(25) : 'Synthetic Program', twistId: null, counselor: null, abbreviation: null, pathway: null, classStart: null, classEnd: null },
+        days: summarize(dates, rows),
+      };
+      if (kind === 'weekly' && variant === 'long-names') {
+        // A 30-repeat name cannot fit the weekly field legibly: it must fail loudly, never clip.
+        await assert.rejects(renderAttendancePdf(snapshot), /PARTICIPANT_NAME_DOES_NOT_FIT_WEEKLY/);
+        return;
+      }
+      if (variant === 'partial') snapshot.days[1].estimatedMinutes = 600;
+      const before = structuredClone(snapshot);
+      const bytes = await renderAttendancePdf(snapshot);
+      assert.deepEqual(snapshot, before, 'render must not mutate frozen snapshot');
+      const reopened = await PDFDocument.load(bytes);
+      assert.match(reopened.getTitle() ?? '', /DRAFT/);
+      assert.match(reopened.getSubject() ?? '', /not WFS approved/);
+      assert.equal(reopened.getPageCount(), 1);
+            for (const page of reopened.getPages()) assert.deepEqual(page.getSize(), kind === 'monthly' ? { width: 612, height: 792 } : { width: 792, height: 612 });
+      const loaded = await getDocument({ data: bytes.slice(), useSystemFonts: true, disableFontFace: true }).promise;
+      const texts: string[] = [];
+      try {
+        for (let pageIndex = 1; pageIndex <= loaded.numPages; pageIndex++) {
+          const content = await (await loaded.getPage(pageIndex)).getTextContent();
+          const text = content.items.map(item => 'str' in item ? item.str : '').join(' ').replace(/\s+/g, ' ');
+          texts.push(text);
+          assert.match(text, /Snapshot SHA-256:/);
+          assert.ok(text.includes(digest(snapshot)), 'every page binds the full frozen snapshot');
+          assert.match(text, /not institutionally approved/);
+          if (pageIndex > 1) {
+            assert.match(text, /Participant \(continued\): Synthetic Participant/);
+            assert.match(text, /Admin-entered \(unverified\).*Estimated hours \(not certified\).*Codes/);
+          }
+        }
+        const text = texts.join(' ');
+                if (kind === 'monthly') {
+                  for (const required of ['Synthetic Participant', 'Synthetic Program', dates[0], dates.at(-1)!,
+                    'unknown', 'estimated, not certified', 'Unknown days excluded.', 'Missing telemetry is not absence.',
+                    'Time In/Out unavailable.', 'Student attestation: pending', 'Instructor signature: pending']) assert.ok(text.includes(required), required);
+                  assert.match(text, variant === 'missing' ? /Admin-entered \(unverified\) subtotal: 0\.00; coverage 0\// : /Admin-entered \(unverified\) subtotal: 4\.00; coverage 1\//);
+                  assert.match(text, variant === 'missing' ? /Code counts: P 0 \/ W 0 \/ CR 0 \/ A 0/ : /Code counts: P 1 \/ W 0 \/ CR 0 \/ A 0/);
+                  if (variant === 'partial') assert.ok(text.includes('10.00'));
+                  assert.match(text, /MONTHLY ADAPTED DRAFT/);
+                } else if (kind === 'weekly') {
+                  for (const required of ['Synthetic Participant', 'Synthetic Program', 'Weekly Training Attendance Sheet',
+                    'Day of Week', 'Time In', 'Time Out', 'Total Hours', 'Monday', 'Sunday',
+                    'satisfactory progress', 'completed on time', 'Instructor Signature', 'Participant Signature',
+                    'Workforce Solutions Capital Area', 'not WFS approved', 'estimated, not certified']) assert.ok(text.includes(required), required);
+                  assert.equal((text.match(/0\.00/g) ?? []).length, 0, 'unknown days never print zero');
+                  if (variant !== 'missing') assert.ok(text.includes('4.00'));
+                  if (variant === 'partial') assert.ok(!text.includes('10.00'), 'estimated hours are not the weekly total');
+                } else {
+                  for (const required of ['Synthetic Participant', 'Workforce Advancement Project Student Attendance Record',
+                    'JANUARY', 'DECEMBER', 'P = Present (4 hrs)', 'Signature of WorkforceAP Student',
+                    'Signature of WorkforceAP representative', 'not WFS approved', 'estimated, not certified', 'not stored']) assert.ok(text.includes(required), required);
+                  assert.match(text, variant === 'missing' ? /Totals \(known days only\): P 0\s+W 0\s+CR 0\s+A 0/ : /Totals \(known days only\): P 1\s+W 0\s+CR 0\s+A 0/);
+                }
+      } finally { await loaded.destroy(); }
+      if (process.env.ATTENDANCE_FIXTURE_DIR) {
+        await mkdir(process.env.ATTENDANCE_FIXTURE_DIR, { recursive: true });
+        await writeFile(`${process.env.ATTENDANCE_FIXTURE_DIR}/${kind}-${variant}.pdf`, bytes);
+      }
+    });
+  }
+}
+
+test('academic label is bounded and whitespace is normalized before glyph fallback', async () => {
+  const rows: never[] = [];
+  const snapshot: AttendanceSnapshot = {
+    schemaVersion: 1, kind: 'weekly', academicLabel: '2026',
+    provenance: { evidenceDigest: digest(rows), evidenceRevision: digest(rows), ruleVersion: DRAFT_RULE.version, pMinimumMinutes: 240,
+      ruleApproved: false, reportingTimezone: REPORTING_TIMEZONE, templateVersion: TEMPLATE_VERSION },
+    profile: { name: 'Synthetic\nParticipant\tName', email: null, phone: null },
+    enrollment: { program: 'Synthetic', twistId: null, counselor: null, abbreviation: null, pathway: null, classStart: null, classEnd: null },
+    days: summarize(periodDates('weekly', '2026-11-09', null), rows),
+  };
+  await assert.rejects(renderAttendancePdf({ ...snapshot, academicLabel: 'x'.repeat(65) }), /INVALID_ACADEMIC_LABEL/);
+  const loaded = await getDocument({ data: await renderAttendancePdf(snapshot), useSystemFonts: true, disableFontFace: true }).promise;
+  try {
+    const text = (await (await loaded.getPage(1)).getTextContent()).items.map(item => 'str' in item ? item.str : '').join(' ');
+    assert.match(text, /Synthetic Participant Name/);
+    assert.doesNotMatch(text, /Synthetic\?Participant/);
+  } finally { await loaded.destroy(); }
+});

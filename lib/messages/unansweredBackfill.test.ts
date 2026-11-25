@@ -35,6 +35,16 @@ test('a deleted counselor of record is treated as unassigned', () => {
   assert.deepEqual(entry.recipientUserIds, []);
 });
 
+test('does not route a self-assigned counselor to the member who wrote the message', () => {
+  const entry = planBackfillEntry(
+    { ...row, counselorUserId: row.memberId },
+    { counselorExists: true, adminUserIds: [row.memberId, 'admin-2'] },
+  );
+  assert.equal(entry.route, 'admins');
+  assert.deepEqual(entry.recipientUserIds, ['admin-2']);
+  assert.equal(entry.link, '/admin/messages');
+});
+
 test('only threads with zero staff notifications since the member wrote are returned', async () => {
   const db = {
     $queryRawUnsafe: async () => [

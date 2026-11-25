@@ -71,6 +71,7 @@ export const STATIC_PATHS = {
     '/admin/ai-tools',
     '/admin/analytics/ai-efficacy',
     '/admin/assessments',
+    '/admin/attendance/draft',
     '/admin/blog',
     '/admin/blog/ai',
     '/admin/blog/new',
@@ -388,6 +389,19 @@ export const ATTENDED_ACTION_GATES = {
  * absent screening packs are explicit noncoverage. Entries remain separate
  * from unconditional static-page coverage.
  */
+/**
+ * Pages that are OFF by default behind a server flag and answer not-found
+ * until it is on. The release audit does not visit them (a default-OFF page
+ * cannot meet its 2xx rule); the inventory still lists them so drift fails,
+ * and `coveredBy` names the enforcing test for the OFF denial.
+ */
+export const FLAG_GATED_PATHS = {
+  admin: [
+    { path: '/admin/game-lab', flag: 'admin_game_lab', whenOff: 'not_found', coveredBy: 'tests/game-lab/game-lab-pages.spec.tsx' },
+    { path: '/admin/game-lab/[game]', flag: 'admin_game_lab', whenOff: 'not_found', coveredBy: 'tests/game-lab/game-lab-pages.spec.tsx' },
+  ],
+};
+
 export const REDIRECT_ONLY_PATHS = {
   member: [
     {

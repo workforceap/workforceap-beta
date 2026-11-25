@@ -104,7 +104,14 @@ function prismaFake() {
       findMany: async () => h.state.cases,
       create: mocks.txCreate,
     },
-    billingAttestation: { findMany: byCase('attestations') },
+    billingAttestation: {
+      findMany: byCase('attestations'),
+      create: async ({ data }: { data: Record<string, unknown> }) => {
+        const row = { ...data, id: 'att-new', attestedAt: new Date('2026-11-13T18:00:00Z') };
+        h.state.attestations.push(row);
+        return row;
+      },
+    },
     billingSignerSignatureAsset: {
       findMany: async ({ where }: { where: Record<string, unknown> }) => h.state.signatureAssets.filter((a) => a.organizationId === where.organizationId),
       create: async ({ data }: { data: Record<string, unknown> }) => {
@@ -170,6 +177,7 @@ import { POST as uploadVoucher } from '@/app/api/admin/members/[id]/billing/two-
 import { POST as sign } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/sign/route';
 import { POST as send } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/send/route';
 import { GET as receiptStatement, POST as receiptAttest } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/voucher/[artifactId]/receipt-attestation/route';
+import { POST as voucherAttest } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/voucher/[artifactId]/attestation/route';
 import { J5_READINESS_KEYS, J6_READINESS_KEYS, type ApiErrorBody, type CaseSummaryDto, type ReadinessKey } from '@/lib/billing/twoStage/dto';
 import { isBillingRuleRefusal, namedRefusal, parseStage, twoStageRoute } from '@/lib/billing/twoStage/api/access';
 import { POST as closeRoute } from '@/app/api/admin/members/[id]/billing/two-stage/cases/[caseId]/[stage]/versions/[recordId]/close/route';
@@ -564,6 +572,122 @@ describe('two-stage routes: sign and send are hard-disabled', () => {
     const body = (await res.json()) as { receiptAttestation: { attestationId: string; sha256: string; attestedAt: string } };
     expect(body.receiptAttestation).toMatchObject({ attestationId: 'rs-new', sha256: sha, attestedAt: '2026-09-29T18:00:00.000Z' });
   });
+
+  const voucherDataBody = {
+    boardName: 'Workforce Solutions Synthetic Area',
+    voucherReference: 'SYN-V-0001',
+    receivedOn: '2026-09-28',
+    authorizedAmountCents: 750000,
+    authorizedProgramSlug: 'data-analytics-professional-certificate-google',
+    authorizedClassName: 'Data Analytics Professional Certificate (Google)',
+    authorizedStartDate: '2026-09-30',
+    authorizedEndDate: '2027-02-28',
+    receivingSignaturePresent: true,
+    evidenceReference: 'SYN-EVIDENCE-2',
+    confirmed: true,
+  };
+
+  it('refuses voucher data entry on a superseded file so a stale tab cannot rewind the current voucher', async () => {
+    h.state.designated = { userId: h.ADMIN };
+    h.state.artifacts = [
+      {
+        id: 'v1',
+        organizationId: h.ORG,
+        caseId: h.CASE,
+        kind: 'board_signed_voucher',
+        source: 'uploaded',
+        fileName: 'old.pdf',
+        mimeType: 'application/pdf',
+        byteLength: 5,
+        sha256: 'b'.repeat(64),
+        storageBucket: 'billing-finance',
+        storageKey: 'k1',
+        createdBySubjectId: h.ADMIN,
+        createdAt: new Date('2026-09-29T15:00:00Z'),
+      },
+      {
+        id: 'v2',
+        organizationId: h.ORG,
+        caseId: h.CASE,
+        kind: 'board_signed_voucher',
+        source: 'uploaded',
+        fileName: 'new.pdf',
+        mimeType: 'application/pdf',
+        byteLength: 6,
+        sha256: 'd'.repeat(64),
+        storageBucket: 'billing-finance',
+        storageKey: 'k2',
+        createdBySubjectId: h.ADMIN,
+        createdAt: new Date('2026-09-30T15:00:00Z'),
+      },
+    ];
+    const res = await voucherAttest(jsonReq(`${base}/${h.CASE}/voucher/v1/attestation`, voucherDataBody), caseParams({ artifactId: 'v1' }));
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('VOUCHER_NOT_CURRENT');
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(h.state.attestations).toEqual([]);
+
+    const current = await voucherAttest(jsonReq(`${base}/${h.CASE}/voucher/v2/attestation`, voucherDataBody), caseParams({ artifactId: 'v2' }));
+    expect(current.status).toBe(201);
+    const body = (await current.json()) as { current: boolean; artifact: { id: string } };
+    expect(body.current).toBe(true);
+    expect(body.artifact.id).toBe('v2');
+    expect(h.state.attestations).toHaveLength(1);
+    expect(h.state.attestations[0]).toMatchObject({ artifactId: 'v2', voucherReference: 'SYN-V-0001' });
+  });
+
+  it('refuses a receiving-signature attestation on a superseded voucher', async () => {
+    h.state.designated = { userId: h.ADMIN };
+    process.env.BILLING_EXECUTIVE_SIGNER_USER_ID = h.ADMIN;
+    h.state.artifacts = [
+      {
+        id: 'v1',
+        organizationId: h.ORG,
+        caseId: h.CASE,
+        kind: 'board_signed_voucher',
+        source: 'uploaded',
+        fileName: 'old.pdf',
+        mimeType: 'application/pdf',
+        byteLength: 5,
+        sha256: 'b'.repeat(64),
+        storageBucket: 'billing-finance',
+        storageKey: 'k1',
+        createdBySubjectId: h.ADMIN,
+        createdAt: new Date('2026-09-29T15:00:00Z'),
+      },
+      {
+        id: 'v2',
+        organizationId: h.ORG,
+        caseId: h.CASE,
+        kind: 'board_signed_voucher',
+        source: 'uploaded',
+        fileName: 'new.pdf',
+        mimeType: 'application/pdf',
+        byteLength: 6,
+        sha256: 'd'.repeat(64),
+        storageBucket: 'billing-finance',
+        storageKey: 'k2',
+        createdBySubjectId: h.ADMIN,
+        createdAt: new Date('2026-09-30T15:00:00Z'),
+      },
+    ];
+    h.state.attestations = [
+      {
+        id: 'att-voucher',
+        organizationId: h.ORG,
+        caseId: h.CASE,
+        kind: 'voucher_board_signed',
+        artifactId: 'v1',
+        voucherReference: 'SYNTH-PO-001',
+        attestedBySubjectId: h.ADMIN,
+        attestedAt: new Date('2026-09-29T16:00:00Z'),
+      },
+    ];
+    const res = await receiptAttest(jsonReq(`${base}/${h.CASE}/voucher/v1/receipt-attestation`, {}), caseParams({ artifactId: 'v1' }));
+    expect(res.status).toBe(409);
+    expect((await res.json()).code).toBe('VOUCHER_NOT_CURRENT');
+    expect(mocks.receiptCreate).not.toHaveBeenCalled();
+  });
 });
 
 describe('two-stage routes: uploads', () => {
@@ -632,6 +756,34 @@ describe('two-stage routes: uploads', () => {
       mocks.adoptDirect.mockRejectedValueOnce(storageError('INTEGRITY_MISMATCH'));
       const res = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
       expect([res.status, await code(res)]).toEqual([502, 'ARCHIVE_INTEGRITY_MISMATCH']);
+    });
+
+    it('complete records the adopted artifact and refuses a file that still fits multipart', async () => {
+      mocks.artifactCreate.mockImplementation((data: Record<string, unknown>) => {
+        h.state.artifacts.push({ ...data, id: 'art-signed', createdAt: new Date('2026-09-29T18:00:00Z') });
+      });
+      mocks.adoptDirect.mockResolvedValueOnce({ ref, reused: false });
+      const ok = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
+      expect(ok.status).toBe(201);
+      expect(await ok.json()).toMatchObject({ reused: false, artifact: { id: 'art-signed' } });
+      expect(mocks.adoptDirect).toHaveBeenCalledWith(expect.objectContaining({ sha256: sha, byteLength: big, key: ref.key }));
+
+      const small = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: 1000, fileName: 'v.pdf' }), caseParams());
+      expect([small.status, await code(small)]).toEqual([422, 'VALIDATION_FAILED']);
+      expect(mocks.adoptDirect).toHaveBeenCalledTimes(1);
+    });
+
+    it('after Storage may have written, a missing object or unavailable archive does not claim a clean refusal', async () => {
+      mocks.adoptDirect.mockRejectedValueOnce(storageError('INVALID_INPUT'));
+      const notPdf = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
+      expect([notPdf.status, await code(notPdf)]).toEqual([415, 'VOUCHER_PDF_ONLY']);
+
+      mocks.adoptDirect.mockRejectedValueOnce(storageError('STORAGE_UNAVAILABLE'));
+      const down = await uploadVoucher(dreq({ action: 'complete', sha256: sha, byteLength: big, fileName: 'v.pdf' }), caseParams());
+      expect(down.status).toBe(503);
+      const body = (await down.json()) as { code: string; error: string };
+      expect(body.code).toBe('FINANCE_ARCHIVE_UNAVAILABLE');
+      expect(body.error).toMatch(/may or may not have been stored/u);
     });
   });
 
@@ -1547,7 +1699,7 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     };
   }
 
-  function seedSignableJ6(started: Attestation) {
+  function seedSignableJ6(started: Attestation, authorizedAmountCents = 750_000) {
     const quote = buildJ5Content({
       documentNumber: 'WAP-Q-2026-0001', logoSha256: logoSha, issueDate: '2026-09-20',
       student: { name: 'Jordan Example', email: 'jordan@example.test' },
@@ -1568,7 +1720,7 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     const voucherAttestation: Attestation = {
       id: 'att-voucher', kind: 'voucher_board_signed', statement: 'synthetic voucher', evidenceReference: 'synthetic voucher',
       classStartDate: null, classEndDate: null, artifactId: 'art-voucher', voucherReference: 'PO-44871-A',
-      authorizedAmountCents: 750_000, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30',
+      authorizedAmountCents, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30',
       receivedOn: '2026-09-29', receivingSignaturePresent: true, externalReference: null, externalQuoteDate: null,
       quotedProgramSlug: null, quotedClassName: null, authorizedProgramSlug: SLUG, authorizedClassName: CLASS_NAME,
       studentReadyConfirmed: null, counselorRequestedBy: null, counselorRequestedOn: null, counselorRequestReference: null,
@@ -1676,6 +1828,85 @@ describe('two-stage routes: a newer class_started attestation stale-blocks J6 si
     const signed = await sign(jsonReq(`${base}/${h.CASE}/j6/sign`, {
       recordId: REC, version: 1, contentSha256: hash, intentConfirmed: true,
       intentText: signerIntentStatement({ documentTitle: content.title, documentNumber: content.documentNumber, contentSha256: hash }),
+    }), caseParams({ stage: 'j6' }));
+    expect([signed.status, await code(signed)]).toEqual([409, 'DRAFT_STALE']);
+    expect(mocks.archive).not.toHaveBeenCalled();
+    expect(mocks.recordUpdate).not.toHaveBeenCalled();
+    expect(JSON.stringify(h.state.records.find((r) => r.id === REC))).toBe(before);
+  });
+
+  it('records a voucher amount difference and still lets the designated signer freeze the J6', async () => {
+    const started = classStarted('att-start', '2026-09-30', '2027-03-30', '2026-10-01T15:00:00.000Z');
+    const { hash } = seedSignableJ6(started, 700_000);
+    const summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(summary.j6.holds).toEqual(['voucher_amount_differs']);
+    expect(summary.j6.canSign).toBe(true);
+    const checkpoint = await freeze(jsonReq(`${base}/${h.CASE}/j6/freeze`, { recordId: REC, versionHash: hash }), caseParams({ stage: 'j6' }));
+    expect(checkpoint.status).toBe(200);
+  });
+
+  it('refuses freeze and sign when a signed J5 supersedes the frozen external quote, without writing', async () => {
+    const started = classStarted('att-start', '2026-09-30', '2027-03-30', '2026-10-01T15:00:00.000Z');
+    seedSignableJ6(started);
+    const j6 = h.state.records.find((r) => r.id === REC);
+    if (!j6) throw new Error('missing J6 draft');
+    const externalAttestation: Attestation = {
+      id: 'att-ext', kind: 'external_j5_reference', statement: 'manual quote', evidenceReference: 'email',
+      classStartDate: null, classEndDate: null, artifactId: null, voucherReference: null, authorizedAmountCents: null,
+      authorizedStartDate: null, authorizedEndDate: null, receivedOn: null, receivingSignaturePresent: null,
+      externalReference: 'MANUAL-Q-17', externalQuoteDate: '2026-08-01', quotedProgramSlug: SLUG, quotedClassName: CLASS_NAME,
+      authorizedProgramSlug: null, authorizedClassName: null, studentReadyConfirmed: null, counselorRequestedBy: null,
+      counselorRequestedOn: null, counselorRequestReference: null, attestedBySubjectId: h.ADMIN, attestedAt: '2026-08-02T12:00:00.000Z',
+    };
+    const rebuilt = buildJ6Content({
+      now: new Date(NOW_ISO), hasOpenJ6: false, programSlug: SLUG,
+      priorJ5: { source: 'external', attestation: externalAttestation },
+      classStarted: started,
+      voucher: { id: 'art-voucher', kind: 'board_signed_voucher', fileName: 'voucher.pdf', mimeType: 'application/pdf', byteLength: 1234, sha256: VOUCHER_SHA },
+      voucherAttestation: {
+        id: 'att-voucher', kind: 'voucher_board_signed', statement: 'synthetic voucher', evidenceReference: 'synthetic voucher',
+        classStartDate: null, classEndDate: null, artifactId: 'art-voucher', voucherReference: 'PO-44871-A',
+        authorizedAmountCents: 750_000, authorizedStartDate: '2026-09-01', authorizedEndDate: '2027-04-30',
+        receivedOn: '2026-09-29', receivingSignaturePresent: true, externalReference: null, externalQuoteDate: null,
+        quotedProgramSlug: null, quotedClassName: null, authorizedProgramSlug: SLUG, authorizedClassName: CLASS_NAME,
+        studentReadyConfirmed: null, counselorRequestedBy: null, counselorRequestedOn: null, counselorRequestReference: null,
+        attestedBySubjectId: h.ADMIN, attestedAt: '2026-09-29T16:00:00.000Z',
+      },
+      boardInvoice: null, documentNumber: 'WAP-I-2026-0001', logoSha256: logoSha,
+      signatureAsset: { assetId: 'sig-1', assetSha256: PNG_SHA }, issueDate: '2026-10-20',
+      student: { name: 'Jordan Example', email: 'jordan@example.test' },
+      counselor: { name: 'Casey Counselor', email: 'casey@example.test', phone: '(555) 010-0201' },
+      boardName: 'Workforce Solutions Capital Area', finance: { name: 'Morgan Finance', email: 'finance@example.test' },
+    });
+    if (!rebuilt.ok) throw new Error(rebuilt.errors.join('; '));
+    j6.content = rebuilt.content;
+    j6.contentSha256 = rebuilt.contentSha256;
+    h.state.attestations.push({
+      ...externalAttestation, caseId: h.CASE, organizationId: h.ORG,
+      classStartDate: null, classEndDate: null, attestedAt: new Date(externalAttestation.attestedAt),
+      counselorRequestedOn: null, authorizedStartDate: null, authorizedEndDate: null, receivedOn: null,
+      externalQuoteDate: new Date('2026-08-01T00:00:00.000Z'),
+    });
+    const sentJ5 = h.state.records.find((r) => r.id === J5_REC);
+    if (!sentJ5) throw new Error('missing seeded J5');
+    sentJ5.status = 'draft';
+    sentJ5.signedAt = null;
+    sentJ5.sentAt = null;
+    const stillBound = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(stillBound.j6.canSign).toBe(true);
+
+    sentJ5.status = 'signed';
+    sentJ5.signedAt = new Date('2026-09-20T18:00:00Z');
+    const before = JSON.stringify(h.state.records.find((r) => r.id === REC));
+    const summary = (await (await caseSummary(new Request(`${base}/${h.CASE}`), caseParams())).json()) as CaseSummaryDto;
+    expect(summary.j6.canSign).toBe(false);
+    expect(summary.j6.blockers).toContainEqual(expect.objectContaining({ code: 'DRAFT_STALE', message: expect.stringContaining('Save the draft again') }));
+
+    const staleFreeze = await freeze(jsonReq(`${base}/${h.CASE}/j6/freeze`, { recordId: REC, versionHash: rebuilt.contentSha256 }), caseParams({ stage: 'j6' }));
+    expect([staleFreeze.status, await code(staleFreeze)]).toEqual([409, 'DRAFT_STALE']);
+    const signed = await sign(jsonReq(`${base}/${h.CASE}/j6/sign`, {
+      recordId: REC, version: 1, contentSha256: rebuilt.contentSha256, intentConfirmed: true,
+      intentText: signerIntentStatement({ documentTitle: rebuilt.content.title, documentNumber: rebuilt.content.documentNumber, contentSha256: rebuilt.contentSha256 }),
     }), caseParams({ stage: 'j6' }));
     expect([signed.status, await code(signed)]).toEqual([409, 'DRAFT_STALE']);
     expect(mocks.archive).not.toHaveBeenCalled();

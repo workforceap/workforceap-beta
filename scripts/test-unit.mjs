@@ -74,6 +74,10 @@ async function listTestFiles() {
   for await (const entry of glob('scripts/**/*.test.cjs', { cwd: ROOT })) {
     out.add(entry);
   }
+  // Game Lab node:test suites: the prototypes' pure rules and the local-preview verdicts.
+  for await (const entry of glob('tests/game-lab/*.test.mjs', { cwd: ROOT })) {
+    out.add(entry);
+  }
   return [...out].map((file) => file.replace(/\\/g, '/'));
 }
 

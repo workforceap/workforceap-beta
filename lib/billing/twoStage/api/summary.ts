@@ -61,6 +61,7 @@ import {
   currentVoucher,
   isoDate,
   j6DraftBindsLatestClassStarted,
+  j6DraftBindsLatestPriorQuote,
   j6Prerequisites,
   latestAttestation,
   latestRecord,
@@ -479,6 +480,9 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
   if (current?.status === 'draft' && currentContent && !j6DraftBindsLatestClassStarted(currentContent, snapshot)) {
     signBlockers.push({ code: 'DRAFT_STALE', message: DRAFT_STALE_MESSAGE, hardHold: false });
   }
+  if (current?.status === 'draft' && currentContent && !j6DraftBindsLatestPriorQuote(currentContent, snapshot)) {
+    signBlockers.push({ code: 'DRAFT_STALE', message: DRAFT_STALE_MESSAGE, hardHold: false });
+  }
   const imageBlockers = signatureImageBlockers(snapshot, current);
   const sendBlockers = current?.status === 'signed' ? gateBlockers(input.gates, ['realEmail', 'receiptSignaturePrincipal']) : [];
   const classStartedRow = latestAttestation(snapshot, 'class_started');
@@ -512,7 +516,7 @@ function j6View(input: SummaryInput): { view: J6StageView; readiness: Partial<Re
     rolesThatReceivedEarlierVersions: rolesThatReceivedEarlierVersions(records.slice(1).map((r) => ({ version: r.version, acceptedRolesAtClose: r.acceptedRolesAtClose as RecipientRole[] }))),
     blockers: allBlockers,
     canSaveDraft: !current || current.status === 'draft' || current.status === 'superseded' || current.status === 'voided',
-    canSign: current?.status === 'draft' && gate.ok && holds.length === 0 && Boolean(receipt) && signBlockers.length === 0 && imageBlockers.length === 0 && input.viewerIsExecutiveSigner,
+    canSign: current?.status === 'draft' && gate.ok && Boolean(receipt) && signBlockers.length === 0 && imageBlockers.length === 0 && input.viewerIsExecutiveSigner,
     canSend: current?.status === 'signed' && sendBlockers.length === 0,
     priorQuote:
       prior?.source === 'system'
