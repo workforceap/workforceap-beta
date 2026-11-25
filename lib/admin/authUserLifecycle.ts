@@ -1,5 +1,6 @@
 import type { AdminUserAttributes } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { isSupabaseAuthUserMissing } from '@/lib/gdpr/deleteAuthUser';
 
 type Admin = ReturnType<typeof getSupabaseAdmin>;
 
@@ -20,6 +21,15 @@ export type DisableAuthUserResult =
   | { ok: true; alreadyMissing: boolean }
   | { ok: false; message: string };
 
+export type DisableAuthUserOptions = {
+  /**
+   * GDPR erase only: also clear every `user_metadata` key (full name, phone
+   * and whatever signup stored) so the banned identity holds no profile PII.
+   * Soft delete leaves metadata alone because restore unbans the same row.
+   */
+  scrubMetadata?: boolean;
+};
+
 /**
  * Admin "soft delete" used to hard-delete the Supabase auth user, which made
  * the app-side restore a no-op for sign-in (the row came back, the login did
@@ -31,9 +41,10 @@ export async function disableAuthUserForSoftDelete(
   admin: Admin,
   userId: string,
   expectedEmail: string,
+  options: DisableAuthUserOptions = {},
 ): Promise<DisableAuthUserResult> {
   const { data, error: lookupError } = await admin.auth.admin.getUserById(userId);
-  if (lookupError) return isUserNotFound(lookupError.message, lookupError.status)
+  if (lookupError) return isSupabaseAuthUserMissing(lookupError)
     ? { ok: true, alreadyMissing: true }
     : { ok: false, message: 'Could not verify the selected sign-in account.' };
   if (!data.user || !matchesSelectedIdentity(data.user, userId, expectedEmail)) {
@@ -43,13 +54,22 @@ export async function disableAuthUserForSoftDelete(
     ban_duration: SOFT_DELETE_BAN_DURATION,
     email: retiredAuthEmail(userId),
     email_confirm: true,
+    ...(options.scrubMetadata ? { user_metadata: clearedMetadata(data.user.user_metadata) } : {}),
   });
   if (!error) return { ok: true, alreadyMissing: false };
-  if (isUserNotFound(error.message, error.status)) {
+  if (isSupabaseAuthUserMissing(error)) {
     // Nothing to disable — the auth user is already gone (legacy hard delete).
     return { ok: true, alreadyMissing: true };
   }
   return { ok: false, message: error.message };
+}
+
+/**
+ * GoTrue merges an admin `user_metadata` update into the stored object and
+ * drops keys sent as null, so clearing means naming every existing key.
+ */
+function clearedMetadata(metadata: Record<string, unknown> | undefined): Record<string, null> {
+  return Object.fromEntries(Object.keys(metadata ?? {}).map((key) => [key, null]));
 }
 
 export type ReenableAuthUserResult =
@@ -78,7 +98,7 @@ export async function reenableAuthUserAfterRestore(
     });
     return unbanError ? { ok: false, message: unbanError.message } : { ok: true, action: 'unbanned' };
   }
-  if (!isUserNotFound(lookupError.message, lookupError.status)) {
+  if (!isSupabaseAuthUserMissing(lookupError)) {
     return { ok: false, message: 'Could not verify the selected sign-in account.' };
   }
 
@@ -109,9 +129,4 @@ export async function reenableAuthUserAfterRestore(
     };
   }
   return { ok: true, action: 'recreated' };
-}
-
-function isUserNotFound(message: string | undefined, status: number | undefined): boolean {
-  if (status === 404) return true;
-  return /user.*not.*found|not found/i.test(message ?? '');
 }

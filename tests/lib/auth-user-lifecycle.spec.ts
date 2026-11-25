@@ -33,7 +33,31 @@ describe('verified Supabase auth identity lifecycle', () => {
     expect(api.deleteUser).not.toHaveBeenCalled();
   });
 
-  it.each([{ id: otherId, email }, { id, email: 'somebody-else@example.test' }, { id, email: retiredAuthEmail(otherId) }, null])('refuses a mismatched or missing selected identity: %j', async (user) => {
+  it('clears every stored metadata key only when an erase asks for it', async () => {
+    api.getUserById.mockResolvedValue({
+      data: { user: { id, email, user_metadata: { full_name: 'Synthetic Learner', phone: '555-0100', signup_source: 'apply' } } },
+      error: null,
+    });
+    expect(await disableAuthUserForSoftDelete(admin, id, email, { scrubMetadata: true })).toEqual({ ok: true, alreadyMissing: false });
+    expect(api.updateUserById).toHaveBeenLastCalledWith(id, {
+      ban_duration: '876600h',
+      email: retiredAuthEmail(id),
+      email_confirm: true,
+      user_metadata: { full_name: null, phone: null, signup_source: null },
+    });
+    await disableAuthUserForSoftDelete(admin, id, email);
+    expect(api.updateUserById).toHaveBeenLastCalledWith(id, {
+      ban_duration: '876600h', email: retiredAuthEmail(id), email_confirm: true,
+    });
+  });
+
+  it.each([{ status: 404, message: 'Not Found' }, { status: 500, message: 'Route not found' }])('does not read an unconfirmed lookup failure as a missing identity: %j', async (lookupError) => {
+    api.getUserById.mockResolvedValueOnce({ data: { user: null }, error: lookupError });
+    expect(await disableAuthUserForSoftDelete(admin, id, email)).toEqual({ ok: false, message: 'Could not verify the selected sign-in account.' });
+    expectNoMutations();
+  });
+
+  it.each([{ id: otherId, email },{ id, email: 'somebody-else@example.test' }, { id, email: retiredAuthEmail(otherId) }, null])('refuses a mismatched or missing selected identity: %j', async (user) => {
     api.getUserById.mockResolvedValue({ data: { user }, error: null });
     expect(await disableAuthUserForSoftDelete(admin, id, email)).toMatchObject({ ok: false });
     expect(await reenableAuthUserAfterRestore(admin, { id, email })).toMatchObject({ ok: false });
