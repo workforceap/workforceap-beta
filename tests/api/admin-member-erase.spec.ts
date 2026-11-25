@@ -207,7 +207,7 @@ describe('POST /api/admin/members/[id]/erase', () => {
     });
     expect(ANONYMIZED_PROFILE_DATA).toMatchObject({ dob: null, address: null, hasDisability: null, householdIncome: null, ethnicity: null, parentGuardianEmail: null });
     expect(transaction).toHaveBeenCalledTimes(1);
-    const scopedInTransaction = vi.mocked(withTenantScope).mock.calls.filter(([, , client]) => client === transactionClient);
+    const scopedInTransaction = vi.mocked(withTenantScope).mock.calls.filter(([, , client]) => (client as unknown) === transactionClient);
     expect(scopedInTransaction).toHaveLength(1);
   });
 
