@@ -82,6 +82,7 @@ const RECORDED_JOB_NAME_BY_PATH: Record<string, string> = {
   '/api/cron/coursera-b4b-sync': 'cron_coursera_b4b_sync',
   '/api/cron/coursera-sync': 'cron_coursera_sync',
   '/api/cron/coursera-training-sync': 'cron_coursera_training_sync',
+  '/api/cron/coursera-hours-snapshot': 'cron_coursera_hours_snapshot',
   '/api/cron/course-accountability': 'cron_course_accountability',
   '/api/cron/data-cleanup': 'data_cleanup',
   '/api/cron/deploy-health': 'cron_deploy_health',

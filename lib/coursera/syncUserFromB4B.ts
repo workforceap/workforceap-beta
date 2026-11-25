@@ -38,6 +38,10 @@ import { refreshMemberProgramProgressRollup } from '@/lib/member/courseProgress'
 import { invalidateLearnerProgressCacheForEmail } from '@/lib/coursera/learnerProgress';
 import { getMilestonesCrossed, trackLearningMilestoneServer } from '@/lib/analytics/track';
 import { extractGradebookCourseScoreScaled } from '@/lib/coursera/courseGradeDisplay';
+import {
+  recordLearningHoursSnapshots,
+  snapshotInputsFromGradebook,
+} from '@/lib/coursera/learningHoursSnapshot.server';
 import { upsertEquivalentCourseEnrollment } from '@/lib/member/courseEnrollmentAssignment';
 import {
   matchLearningPathReport,
@@ -613,11 +617,8 @@ export async function syncUserFromB4B(args: {
   // wide enrollmentReports view). They still resolve through the same
   // catalog mapping.
   //
-  // TODO(persist-learning-hrs): once we add `CourseProgress.totalLearningHours`
-  // (Float?) we'll persist `gradebookRow.approxTotalLearningHrs` here. Held
-  // back from this PR to avoid expanding scope into a Prisma migration; the
-  // value is still surfaced through `courseGradebookReports` for the
-  // cohort-hours dashboard backlog item.
+  // Gradebook learning hours are recorded as a daily snapshot in step 3.6
+  // (`coursera_learning_hours_snapshots`), not on CourseProgress.
   let courseProgressUpserted = 0;
 
   // Build a map keyed by courseraContentId so we don't double-process a
@@ -775,6 +776,27 @@ export async function syncUserFromB4B(args: {
         err instanceof Error ? err.message : err,
       );
     }
+  }
+
+  // ────────── 3.6. Today's cumulative learning-hours snapshot ──────────
+  // Gradebook rows are the only Coursera source with hours. One reading per
+  // course per Central-time day; a later reading the same day keeps the
+  // larger total. The nightly cron writes the same table for every learner;
+  // this adds a fresh point whenever a single learner syncs. Non-fatal.
+  try {
+    const { inputs } = snapshotInputsFromGradebook(
+      // The gradebook query was scoped to this learner's email.
+      gradebookReports.map((row) => ({ ...row, email })),
+      (rowEmail) =>
+        rowEmail === email ? { organizationId: args.orgId, userId: args.wapUserId } : null,
+      'b4b_gradebook_user_sync',
+    );
+    await recordLearningHoursSnapshots(inputs);
+  } catch (err) {
+    console.warn(
+      `[syncUserFromB4B] learning-hours snapshot failed for user=${args.wapUserId}:`,
+      err instanceof Error ? err.message : err,
+    );
   }
 
   // ────────── 4. Replay xAPI for this identity ──────────

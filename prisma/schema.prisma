@@ -310,6 +310,7 @@ model User {
   memberProgramProgress    MemberProgramProgress[]
 
   courseraCourseProgress   CourseraCourseProgress[]
+  courseraLearningHoursSnapshots CourseraLearningHoursSnapshot[]
   courseraBadgeProgress    CourseraBadgeProgress[]
   courseraSkillsetProgress CourseraSkillsetProgress[]
   courseraCanonicalCourseMappingsCreated CourseraCanonicalCourseMapping[] @relation("CourseraCanonicalCourseMappingCreatedBy")
@@ -3352,6 +3353,33 @@ model CourseraCourseProgress {
   @@index([courseraCourseId])
   @@index([organizationId, lastActivityTime])
   @@map("coursera_course_progress")
+}
+
+/// One cumulative Coursera learning-hours reading per learner, course and
+/// Central-time day. Coursera reports only a running total, so daily study
+/// minutes for the student sign-in timesheet are the difference between
+/// consecutive days (`lib/coursera/learningHoursDaily.ts`). Written by the
+/// nightly `/api/cron/coursera-hours-snapshot` and by the single-learner
+/// `syncUserFromB4B`; a second reading the same day keeps the larger total.
+/// Emails are stored lowercased. Service-role access only (RLS on, no policies).
+model CourseraLearningHoursSnapshot {
+  id               String   @id @default(uuid())
+  organizationId   String   @map("organization_id")
+  userId           String?  @map("user_id")
+  externalEmail    String   @map("external_email")
+  courseraCourseId String   @map("coursera_course_id")
+  snapshotDate     DateTime @map("snapshot_date") @db.Date
+  learningHours    Decimal  @map("learning_hours") @db.Decimal(8, 2)
+  source           String   @map("source")
+  firstCapturedAt  DateTime @default(now()) @map("first_captured_at")
+  lastCapturedAt   DateTime @default(now()) @map("last_captured_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, externalEmail, courseraCourseId, snapshotDate], map: "coursera_learning_hours_snapshots_org_email_course_day_key")
+  @@index([userId, snapshotDate])
+  @@index([organizationId, snapshotDate])
+  @@map("coursera_learning_hours_snapshots")
 }
 
 /// Admin-curated mapping from a real Coursera course (identified by its
