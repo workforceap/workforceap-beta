@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   buildInviteAcceptExistingUserUpdate,
   chooseInviteAcceptOrganizationId,
+  decideInviteAcceptExistingProfileRole,
   decideInviteAcceptExistingProgram,
 } from './resolveInviteAcceptOrg';
 
@@ -51,6 +52,24 @@ test('existing invitee update never includes organizationId', () => {
   assert.equal(patch.fullName, 'Ada Lovelace');
   assert.equal(patch.deletedAt, null);
   assert.equal(patch.email, 'ada@example.com');
+});
+
+test('invite-accept writes a profile role for members and missing profiles', () => {
+  assert.equal(decideInviteAcceptExistingProfileRole(null, 'admin'), 'write');
+  assert.equal(decideInviteAcceptExistingProfileRole('', 'counselor'), 'write');
+  assert.equal(decideInviteAcceptExistingProfileRole('member', 'admin'), 'write');
+  assert.equal(decideInviteAcceptExistingProfileRole('member', 'member'), 'write');
+});
+
+test('invite-accept keeps a matching staff profile and refuses demotion', () => {
+  assert.equal(decideInviteAcceptExistingProfileRole('admin', 'admin'), 'keep');
+  assert.equal(decideInviteAcceptExistingProfileRole('counselor', 'counselor'), 'keep');
+  assert.equal(decideInviteAcceptExistingProfileRole('partner', 'partner'), 'keep');
+  assert.equal(decideInviteAcceptExistingProfileRole('super_admin', 'member'), 'refuse');
+  assert.equal(decideInviteAcceptExistingProfileRole('Super Admin', 'admin'), 'refuse');
+  assert.equal(decideInviteAcceptExistingProfileRole('admin', 'member'), 'refuse');
+  assert.equal(decideInviteAcceptExistingProfileRole('counselor', 'member'), 'refuse');
+  assert.equal(decideInviteAcceptExistingProfileRole('case_manager', 'partner'), 'refuse');
 });
 
 test('invite-accept assigns a program only when the existing member has none', () => {
