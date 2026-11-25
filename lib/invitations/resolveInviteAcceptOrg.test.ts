@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {
   buildInviteAcceptExistingUserUpdate,
   chooseInviteAcceptOrganizationId,
+  decideInviteAcceptExistingCounselorLink,
+  decideInviteAcceptExistingPartnerLink,
   decideInviteAcceptExistingProfileRole,
   decideInviteAcceptExistingProgram,
 } from './resolveInviteAcceptOrg';
@@ -37,6 +39,86 @@ test('invite-accept uses default org only as last resort', () => {
   assert.equal(
     chooseInviteAcceptOrganizationId('', undefined, DEFAULT_ORG),
     DEFAULT_ORG,
+  );
+});
+
+test('invite-accept assigns a partner link only when the existing user has none', () => {
+  assert.equal(
+    decideInviteAcceptExistingPartnerLink({
+      invitationRole: 'partner',
+      targetPartnerId: 'partner-b',
+      existingPartnerId: null,
+    }),
+    'assign',
+  );
+});
+
+test('invite-accept keeps an existing same-partner link instead of rewriting it', () => {
+  assert.equal(
+    decideInviteAcceptExistingPartnerLink({
+      invitationRole: 'partner',
+      targetPartnerId: 'partner-a',
+      existingPartnerId: 'partner-a',
+    }),
+    'keep',
+  );
+});
+
+test('invite-accept refuses to move an existing partner user onto another partner', () => {
+  assert.equal(
+    decideInviteAcceptExistingPartnerLink({
+      invitationRole: 'partner',
+      targetPartnerId: 'partner-b',
+      existingPartnerId: 'partner-a',
+    }),
+    'refuse',
+  );
+});
+
+test('invite-accept ignores partner writes for non-partner invites', () => {
+  assert.equal(
+    decideInviteAcceptExistingPartnerLink({
+      invitationRole: 'member',
+      targetPartnerId: 'partner-b',
+      existingPartnerId: 'partner-a',
+    }),
+    'keep',
+  );
+});
+
+test('invite-accept assigns a counselor row only when the existing user has none', () => {
+  assert.equal(
+    decideInviteAcceptExistingCounselorLink({
+      invitationRole: 'counselor',
+      targetPartnerId: 'partner-b',
+      existingCounselor: false,
+      existingPartnerId: null,
+    }),
+    'assign',
+  );
+});
+
+test('invite-accept keeps an existing counselor on the same partner', () => {
+  assert.equal(
+    decideInviteAcceptExistingCounselorLink({
+      invitationRole: 'counselor',
+      targetPartnerId: null,
+      existingCounselor: true,
+      existingPartnerId: null,
+    }),
+    'keep',
+  );
+});
+
+test('invite-accept refuses to move an existing counselor onto another partner', () => {
+  assert.equal(
+    decideInviteAcceptExistingCounselorLink({
+      invitationRole: 'counselor',
+      targetPartnerId: 'partner-b',
+      existingCounselor: true,
+      existingPartnerId: 'partner-a',
+    }),
+    'refuse',
   );
 });
 
