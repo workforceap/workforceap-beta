@@ -104,6 +104,7 @@ import { POST } from '@/app/api/admin/members/[id]/erase/route';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
+import { auditLog } from '@/lib/audit';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { ANONYMIZED_PROFILE_DATA } from '@/lib/member/anonymizeMember';
@@ -209,6 +210,76 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(transaction).toHaveBeenCalledTimes(1);
     const scopedInTransaction = vi.mocked(withTenantScope).mock.calls.filter(([, , client]) => (client as unknown) === transactionClient);
     expect(scopedInTransaction).toHaveLength(1);
+  });
+
+  it('keeps enrollments when a completed anonymize is posted again', async () => {
+    findFirst.mockResolvedValue(
+      member({
+        email: 'anon_bWVtYmVyLTE@anonymized.invalid',
+        deletedAt: new Date('2026-11-24T00:00:00.000Z'),
+        courseEnrollments: [{ id: 'enr-1' }],
+      }),
+    );
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, action: 'anonymize', memberId: MEMBER_ID });
+    expect(deleteUserStorageObjects).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
+    expect(remove).not.toHaveBeenCalled();
+    expect(disableAuthUserForSoftDelete).not.toHaveBeenCalled();
+    expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+  });
+
+  it('hard-deletes an already-anonymized member when a super-admin forces erase', async () => {
+    vi.mocked(isSuperAdmin).mockResolvedValue(true);
+    findFirst.mockResolvedValue(
+      member({
+        email: 'anon_bWVtYmVyLTE@anonymized.invalid',
+        deletedAt: new Date('2026-11-24T00:00:00.000Z'),
+        courseEnrollments: [{ id: 'enr-1' }],
+      }),
+    );
+
+    const res = await POST(eraseReq({ force: true }), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, action: 'hard_delete', memberId: MEMBER_ID });
+    expect(remove).toHaveBeenCalledWith({ where: { id: MEMBER_ID } });
+  });
+
+  it('still hard-deletes a legal-hold soft-deleted enrolled member', async () => {
+    findFirst.mockResolvedValue(
+      member({
+        email: `deleted_${MEMBER_ID}_1_member@example.com@deleted.invalid`,
+        deletedAt: new Date('2026-10-01T00:00:00.000Z'),
+        courseEnrollments: [{ id: 'enr-1' }],
+      }),
+    );
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, action: 'hard_delete', memberId: MEMBER_ID });
+    expect(remove).toHaveBeenCalledWith({ where: { id: MEMBER_ID } });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('does not 500 or hard-delete when the anonymize audit write fails after commit', async () => {
+    findFirst.mockResolvedValue(member({ courseEnrollments: [{ id: 'enr-1' }] }));
+    vi.mocked(auditLog).mockRejectedValueOnce(new Error('audit_logs unavailable'));
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ok: true, action: 'anonymize', memberId: MEMBER_ID });
+      expect(update).toHaveBeenCalled();
+      expect(remove).not.toHaveBeenCalled();
+      expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+    } finally {
+      errorSpy.mockRestore();
+    }
   });
 
   it('reports failure and leaves the row retryable when the profile scrub fails', async () => {
