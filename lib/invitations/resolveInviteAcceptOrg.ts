@@ -43,6 +43,38 @@ export function buildInviteAcceptExistingUserUpdate(fields: {
   };
 }
 
+/**
+ * `profiles.role` is the privilege store for `super_admin` (seed and
+ * `syncManagedUserRoles` never write that name into `user_roles`). Invite
+ * accept must not replace a non-member profile with a different invitation
+ * role — a Student invite to a super-admin email would otherwise lock the
+ * operator out of admin/ops.
+ */
+export type InviteAcceptExistingProfileDecision = 'write' | 'keep' | 'refuse';
+
+export class InviteAcceptExistingProfileError extends Error {
+  readonly code = 'ALREADY_PRIVILEGED';
+  constructor() {
+    super('ALREADY_PRIVILEGED');
+    this.name = 'InviteAcceptExistingProfileError';
+  }
+}
+
+export function profileRoleForInvitation(role: string): string {
+  return role === 'member' ? 'member' : role === 'counselor' ? 'counselor' : role;
+}
+
+export function decideInviteAcceptExistingProfileRole(
+  existingProfileRole: string | null | undefined,
+  invitationRole: string,
+): InviteAcceptExistingProfileDecision {
+  const existing = existingProfileRole?.trim().toLowerCase().replace(/\s+/g, '_') ?? '';
+  const invited = profileRoleForInvitation(invitationRole);
+  if (!existing || existing === 'member') return 'write';
+  if (existing === invited) return 'keep';
+  return 'refuse';
+}
+
 export type InviteAcceptExistingProgramDecision = 'assign' | 'keep' | 'refuse';
 
 /**
