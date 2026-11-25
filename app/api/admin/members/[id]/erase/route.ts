@@ -4,6 +4,7 @@ import { getUser } from '@/lib/auth/server';
 import { isAdmin, isSuperAdmin } from '@/lib/auth/roles';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { disableAuthUserForSoftDelete } from '@/lib/admin/authUserLifecycle';
 import { logCronRun } from '@/lib/admin/logCronRun';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
@@ -13,6 +14,10 @@ import { auditRequestMeta, logAuditEvent } from '@/lib/audit/log';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { retainEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
+import {
+  deleteSupabaseAuthUser,
+  isSupabaseAuthUserMissing,
+} from '@/lib/gdpr/deleteAuthUser';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -106,8 +111,24 @@ export const POST = withApiGuc(async (
     // have active program enrollments. Admins can pass force=true to
     // override, but the default is hard-delete.
     const shouldAnonymize = !force && existing.deletedAt == null && existing.courseEnrollments.length > 0;
+    const supabaseAdmin = getSupabaseAdmin();
 
     if (shouldAnonymize) {
+      // Retire Auth before rewriting the application row so a failed ban
+      // leaves the member intact and retryable. Login only blocks
+      // deletedAt; a surviving Auth identity still holds the real email.
+      const disabled = await disableAuthUserForSoftDelete(supabaseAdmin, id, existing.email);
+      if (!disabled.ok) {
+        console.error(`[gdpr-erase] Supabase auth disable error for ${id}:`, disabled.message);
+        return NextResponse.json(
+          {
+            error: 'The account was not anonymized because its sign-in could not be disabled. Retry this action or contact support.',
+            authDisabled: false,
+          },
+          { status: 502 },
+        );
+      }
+
       // Anonymize: scramble PII but keep enrollment records for reporting
       const hash = `anon_${Buffer.from(id).toString('base64url').slice(0, 12)}`;
       await withTenantScope(orgId, (db) =>
@@ -152,15 +173,23 @@ export const POST = withApiGuc(async (
       return NextResponse.json({ ok: true, action: 'anonymize', memberId: id });
     }
 
-    // Hard delete via Prisma cascading relations
-    await withTenantScope(orgId, (db) => db.user.delete({ where: { id } }));
-
-    // Also remove from Supabase Auth so the identity cannot be reused
-    const supabaseAdmin = getSupabaseAdmin();
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
-    if (error) {
-      console.error(`[gdpr-erase] Supabase auth delete error for ${id}:`, error.message);
+    // Remove Auth first. Login allows a missing application row so signup
+    // can reconcile; ensureAppUserProvisioned then recreates users+profiles
+    // for that Auth id. Reporting success after a Prisma-only delete left
+    // erased members able to sign back in.
+    const { error: authDeleteError } = await deleteSupabaseAuthUser(id, supabaseAdmin);
+    if (authDeleteError && !isSupabaseAuthUserMissing(authDeleteError)) {
+      console.error(`[gdpr-erase] Supabase auth delete error for ${id}:`, authDeleteError);
+      return NextResponse.json(
+        {
+          error: 'The account was not erased because its sign-in could not be deleted. Retry this action or contact support.',
+          authDeleted: false,
+        },
+        { status: 502 },
+      );
     }
+
+    await withTenantScope(orgId, (db) => db.user.delete({ where: { id } }));
 
     await logCronRun('gdpr_erase', {
       memberId: id,

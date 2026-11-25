@@ -76,6 +76,37 @@ test('weekly sheet matches the WFS form on one landscape page', async () => {
   assert.ok(lowest >= MIN_FOOTER_Y - 0.5, `footer baseline ${lowest} is below 36pt`);
 });
 
+test('weekly Total Hours prints W, CR and A; those days do not look unentered', async () => {
+  const dates = periodDates('weekly', '2026-11-09', null);
+  const rows = [
+    { sourceKey: 'hours', date: dates[0], kind: 'verified-duration' as const, minutes: 240, verifiedBy: 'synthetic-admin', reference: 'synthetic-only', reason: 'hours' },
+    { sourceKey: 'webinar', date: dates[1], kind: 'W' as const, verifiedBy: 'synthetic-admin', reference: 'synthetic-only', reason: 'webinar' },
+    { sourceKey: 'recording', date: dates[2], kind: 'CR' as const, verifiedBy: 'synthetic-admin', reference: 'synthetic-only', reason: 'recording' },
+    { sourceKey: 'absent', date: dates[3], kind: 'A' as const, verifiedBy: 'synthetic-admin', reference: 'synthetic-only', reason: 'absent' },
+  ];
+  const bytes = await renderAttendancePdf(snapshot('weekly', { days: summarize(dates, rows) }));
+  const [page] = await boxes(bytes);
+  const hoursX = page.find(box => box.str === 'Total Hours')!.x;
+  const onHours = (weekday: string, value: string) => {
+    const rowY = page.find(box => box.str === weekday)!.y;
+    return page.some(box => box.str === value && Math.abs(box.x - hoursX) < 8 && Math.abs(box.y - rowY) < 1);
+  };
+  assert.ok(onHours('Monday', '4.00'), 'known hours stay in Total Hours');
+  assert.ok(onHours('Tuesday', 'W'), 'webinar code prints in Total Hours');
+  assert.ok(onHours('Wednesday', 'CR'), 'recording code prints in Total Hours');
+  assert.ok(onHours('Thursday', 'A'), 'absence still prints in Total Hours');
+  assert.equal(page.filter(box => box.str === 'W').length, 1);
+  assert.equal(page.filter(box => box.str === 'CR').length, 1);
+  assert.equal(page.filter(box => box.str === 'A').length, 1);
+  assert.equal(page.filter(box => box.str === '0.00' || box.str === '0').length, 0, 'unknown days never print zero');
+  const friday = page.find(box => box.str === 'Friday')!;
+  assert.equal(
+    page.filter(box => Math.abs(box.y - friday.y) < 1 && Math.abs(box.x - hoursX) < 8 && box.str !== 'Total Hours').length,
+    0,
+    'an unentered weekday stays blank in Total Hours',
+  );
+});
+
 test('yearly sheet matches the spreadsheet grid on one landscape page', async () => {
   const bytes = await renderAttendancePdf(snapshot('yearly'));
   const doc = await PDFDocument.load(bytes);

@@ -53,11 +53,25 @@ vi.mock('@/lib/tenant/withTenantScope', () => ({
   ),
 }));
 
-const supabaseDeleteUser = vi.fn();
+const supabaseAdmin = { auth: { admin: {} } };
+const disableAuthUserForSoftDelete = vi.fn();
+const deleteSupabaseAuthUser = vi.fn();
 
 vi.mock('@/lib/supabase-admin', () => ({
-  getSupabaseAdmin: vi.fn(() => ({ auth: { admin: { deleteUser: supabaseDeleteUser } } })),
+  getSupabaseAdmin: vi.fn(() => supabaseAdmin),
 }));
+
+vi.mock('@/lib/admin/authUserLifecycle', () => ({
+  disableAuthUserForSoftDelete: (...args: unknown[]) => disableAuthUserForSoftDelete(...args),
+}));
+
+vi.mock('@/lib/gdpr/deleteAuthUser', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/gdpr/deleteAuthUser')>();
+  return {
+    ...actual,
+    deleteSupabaseAuthUser: (...args: unknown[]) => deleteSupabaseAuthUser(...args),
+  };
+});
 
 vi.mock('@/lib/admin/logCronRun', () => ({
   logCronRun: vi.fn().mockResolvedValue(undefined),
@@ -121,7 +135,8 @@ describe('POST /api/admin/members/[id]/erase', () => {
     remove.mockResolvedValue({ id: MEMBER_ID });
     queryRaw.mockResolvedValue([{ present: false }]);
     agreementUpdateMany.mockResolvedValue({ count: 2 });
-    supabaseDeleteUser.mockResolvedValue({ error: null });
+    disableAuthUserForSoftDelete.mockResolvedValue({ ok: true, alreadyMissing: false });
+    deleteSupabaseAuthUser.mockResolvedValue({ error: null });
     vi.mocked(deleteUserStorageObjects).mockResolvedValue({ ok: true, deleted: [] });
   });
 
@@ -136,7 +151,8 @@ describe('POST /api/admin/members/[id]/erase', () => {
     });
     expect(update).not.toHaveBeenCalled();
     expect(remove).not.toHaveBeenCalled();
-    expect(supabaseDeleteUser).not.toHaveBeenCalled();
+    expect(disableAuthUserForSoftDelete).not.toHaveBeenCalled();
+    expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
   });
 
   it('removes resume and certificate blobs before anonymizing an enrolled member', async () => {
@@ -156,24 +172,68 @@ describe('POST /api/admin/members/[id]/erase', () => {
       expect.objectContaining({ where: { id: MEMBER_ID }, data: expect.objectContaining({ deletedAt: expect.any(Date) }) }),
     );
     expect(remove).not.toHaveBeenCalled();
+    expect(disableAuthUserForSoftDelete).toHaveBeenCalledWith(supabaseAdmin, MEMBER_ID, 'member@example.com');
+    expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
     const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
+    const [authOrder] = disableAuthUserForSoftDelete.mock.invocationCallOrder;
     const [updateOrder] = update.mock.invocationCallOrder;
-    expect(storageOrder).toBeLessThan(updateOrder);
+    expect(storageOrder).toBeLessThan(authOrder);
+    expect(authOrder).toBeLessThan(updateOrder);
   });
 
-  it('removes blobs before the hard delete and the auth delete', async () => {
+  it('fails closed with 502 and does not anonymize when Auth retirement fails', async () => {
+    findFirst.mockResolvedValue(member({ courseEnrollments: [{ id: 'enr-1' }] }));
+    disableAuthUserForSoftDelete.mockResolvedValue({ ok: false, message: 'Auth unavailable' });
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({
+      error: 'The account was not anonymized because its sign-in could not be disabled. Retry this action or contact support.',
+      authDisabled: false,
+    });
+    expect(update).not.toHaveBeenCalled();
+    expect(remove).not.toHaveBeenCalled();
+    expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+  });
+
+  it('removes blobs, then Auth, then the application row on hard delete', async () => {
     const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true, action: 'hard_delete', memberId: MEMBER_ID });
     expect(update).not.toHaveBeenCalled();
+    expect(disableAuthUserForSoftDelete).not.toHaveBeenCalled();
+    expect(deleteSupabaseAuthUser).toHaveBeenCalledWith(MEMBER_ID, supabaseAdmin);
     expect(remove).toHaveBeenCalledWith({ where: { id: MEMBER_ID } });
-    expect(supabaseDeleteUser).toHaveBeenCalledWith(MEMBER_ID);
     const [storageOrder] = vi.mocked(deleteUserStorageObjects).mock.invocationCallOrder;
+    const [authOrder] = deleteSupabaseAuthUser.mock.invocationCallOrder;
     const [deleteOrder] = remove.mock.invocationCallOrder;
-    const [authOrder] = supabaseDeleteUser.mock.invocationCallOrder;
-    expect(storageOrder).toBeLessThan(deleteOrder);
-    expect(deleteOrder).toBeLessThan(authOrder);
+    expect(storageOrder).toBeLessThan(authOrder);
+    expect(authOrder).toBeLessThan(deleteOrder);
+  });
+
+  it('fails closed with 502 and keeps the application row when Auth delete fails', async () => {
+    deleteSupabaseAuthUser.mockResolvedValue({ error: { status: 503, message: 'Auth unavailable' } });
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({
+      error: 'The account was not erased because its sign-in could not be deleted. Retry this action or contact support.',
+      authDeleted: false,
+    });
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it('hard-deletes the application row when Auth is already gone', async () => {
+    deleteSupabaseAuthUser.mockResolvedValue({ error: { status: 404, message: 'User not found' } });
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, action: 'hard_delete', memberId: MEMBER_ID });
+    expect(remove).toHaveBeenCalledWith({ where: { id: MEMBER_ID } });
   });
 
   it.each([true, false])('retains every agreement before account removal (enrolled: %s)', async (enrolled) => {
@@ -197,7 +257,8 @@ describe('POST /api/admin/members/[id]/erase', () => {
       expect(res.status).toBe(500);
       expect(update).not.toHaveBeenCalled();
       expect(remove).not.toHaveBeenCalled();
-      expect(supabaseDeleteUser).not.toHaveBeenCalled();
+      expect(disableAuthUserForSoftDelete).not.toHaveBeenCalled();
+      expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
     } finally {
       errorSpy.mockRestore();
     }
@@ -212,5 +273,7 @@ describe('POST /api/admin/members/[id]/erase', () => {
     expect(deleteUserStorageObjects).not.toHaveBeenCalled();
     expect(update).not.toHaveBeenCalled();
     expect(remove).not.toHaveBeenCalled();
+    expect(disableAuthUserForSoftDelete).not.toHaveBeenCalled();
+    expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
   });
 });
