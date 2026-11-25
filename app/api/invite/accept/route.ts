@@ -8,6 +8,8 @@ import { tryResolveOrgFromRequest } from '@/lib/tenant/resolveOrgFromRequest';
 import {
   buildInviteAcceptExistingUserUpdate,
   chooseInviteAcceptOrganizationId,
+  decideInviteAcceptExistingCounselorLink,
+  decideInviteAcceptExistingPartnerLink,
   decideInviteAcceptExistingProfileRole,
   InviteAcceptExistingProfileError,
   profileRoleForInvitation,
@@ -146,25 +148,36 @@ async function ensureProfileRow(
   });
 }
 
+class InviteAcceptAlreadyAffiliatedError extends Error {
+  readonly code = 'ALREADY_AFFILIATED' as const;
+}
+
 async function ensurePartnerUserLink(tx: InviteTx, userId: string, partnerId: string) {
   const existing = await tx.partnerUser.findFirst({
     where: { userId },
     select: { id: true, partnerId: true },
   });
 
-  if (existing) {
-    if (existing.partnerId !== partnerId) {
-      await tx.partnerUser.update({
-        where: { id: existing.id },
-        data: { partnerId },
-      });
-    }
-    return;
-  }
-
-  await tx.partnerUser.create({
-    data: { partnerId, userId },
+  const decision = decideInviteAcceptExistingPartnerLink({
+    invitationRole: 'partner',
+    targetPartnerId: partnerId,
+    existingPartnerId: existing?.partnerId ?? null,
   });
+  switch (decision) {
+    case 'keep':
+      return;
+    case 'refuse':
+      throw new InviteAcceptAlreadyAffiliatedError();
+    case 'assign':
+      await tx.partnerUser.create({
+        data: { partnerId, userId },
+      });
+      return;
+    default: {
+      const _exhaustive: never = decision;
+      throw new Error(`Unhandled invite partner decision: ${_exhaustive}`);
+    }
+  }
 }
 
 async function ensureMemberSubgroupLink(
@@ -345,22 +358,32 @@ async function ensureCounselorRow(
     select: { id: true, partnerId: true, active: true, affiliation: true },
   });
 
-  if (existing) {
-    if (
-      existing.partnerId !== partnerId ||
-      !existing.active ||
-      existing.affiliation !== affiliation
-    ) {
-      await tx.counselor.update({
-        where: { id: existing.id },
-        data: {
-          partnerId,
-          affiliation,
-          active: true,
-        },
-      });
+  const decision = decideInviteAcceptExistingCounselorLink({
+    invitationRole: 'counselor',
+    targetPartnerId: partnerId,
+    existingCounselor: Boolean(existing),
+    existingPartnerId: existing?.partnerId ?? null,
+  });
+  switch (decision) {
+    case 'refuse':
+      throw new InviteAcceptAlreadyAffiliatedError();
+    case 'keep':
+      if (
+        existing
+        && (!existing.active || existing.affiliation !== affiliation)
+      ) {
+        await tx.counselor.update({
+          where: { id: existing.id },
+          data: { affiliation, active: true },
+        });
+      }
+      return;
+    case 'assign':
+      break;
+    default: {
+      const _exhaustive: never = decision;
+      throw new Error(`Unhandled invite counselor decision: ${_exhaustive}`);
     }
-    return;
   }
 
   await tx.counselor.create({
@@ -547,6 +570,45 @@ async function acceptExistingUser(
         throw new InviteAcceptAlreadyEnrolledError();
       }
 
+      txStep = 'resolve_existing_affiliation';
+      if (invitation.role === 'partner' && invitation.subgroupId) {
+        const partner = await tx.subgroup.findUnique({
+          where: { id: invitation.subgroupId },
+          select: { partnerId: true },
+        });
+        if (partner?.partnerId) {
+          const existingLink = await tx.partnerUser.findFirst({
+            where: { userId: user.id },
+            select: { partnerId: true },
+          });
+          if (
+            decideInviteAcceptExistingPartnerLink({
+              invitationRole: 'partner',
+              targetPartnerId: partner.partnerId,
+              existingPartnerId: existingLink?.partnerId ?? null,
+            }) === 'refuse'
+          ) {
+            throw new InviteAcceptAlreadyAffiliatedError();
+          }
+        }
+      }
+      if (invitation.role === 'counselor') {
+        const existingCounselor = await tx.counselor.findFirst({
+          where: { userId: user.id },
+          select: { partnerId: true },
+        });
+        if (
+          decideInviteAcceptExistingCounselorLink({
+            invitationRole: 'counselor',
+            targetPartnerId: invitation.partnerId ?? null,
+            existingCounselor: Boolean(existingCounselor),
+            existingPartnerId: existingCounselor?.partnerId ?? null,
+          }) === 'refuse'
+        ) {
+          throw new InviteAcceptAlreadyAffiliatedError();
+        }
+      }
+
       txStep = 'claim_invitation_existing';
       await claimPendingInvitationForAccept(tx, invitation.id, user.id);
 
@@ -653,6 +715,12 @@ async function acceptExistingUser(
   } catch (dbError) {
     if (dbError instanceof InvitationClaimError) {
       return NextResponse.json({ error: 'Invitation no longer valid' }, { status: 400 });
+    }
+    if (dbError instanceof InviteAcceptAlreadyAffiliatedError) {
+      return NextResponse.json(
+        { error: 'Already linked to another partner. Changes require admin.', code: 'ALREADY_AFFILIATED' },
+        { status: 409 },
+      );
     }
     if (dbError instanceof InviteAcceptExistingProfileError) {
       return refuseExistingProfileRole();
@@ -943,6 +1011,12 @@ async function finishNewUserDbSetup(
   } catch (dbError) {
     if (dbError instanceof InvitationClaimError) {
       return NextResponse.json({ error: 'Invitation no longer valid' }, { status: 400 });
+    }
+    if (dbError instanceof InviteAcceptAlreadyAffiliatedError) {
+      return NextResponse.json(
+        { error: 'Already linked to another partner. Changes require admin.', code: 'ALREADY_AFFILIATED' },
+        { status: 409 },
+      );
     }
     if (dbError instanceof InviteAcceptExistingProfileError) {
       return refuseExistingProfileRole();
