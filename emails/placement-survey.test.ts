@@ -61,3 +61,16 @@ test('escalation omits the day count and defaults to the 30-day label', () => {
   assert.match(html, /30-day placement survey/);
   assert.match(html, /href="https:\/\/www\.workforceap\.org\/survey\/placement\/token"/);
 });
+
+test('currently lets a javascript: surveyUrl through escapeHtml (pinned)', () => {
+  const html = placementSurveyEscalationHtml({
+    counselorName: 'Jordan',
+    memberName: 'Ada',
+    memberEmail: 'ada@example.com',
+    employerName: 'Acme',
+    jobTitle: 'Analyst',
+    daysSincePlacement: 14,
+    surveyUrl: 'javascript:alert(1)',
+  });
+  assert.match(html, /href="javascript:alert\(1\)"/);
+});
