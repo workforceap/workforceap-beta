@@ -1,7 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { buildDeletedEmail, isDeletedEmail, isDeletedEmailMarker, parseDeletedEmail } from './_deletedEmail';
+import {
+  ANONYMIZED_EMAIL_SUFFIX,
+  buildAnonymizedEmail,
+  buildDeletedEmail,
+  isAnonymizedEmail,
+  isDeletedEmail,
+  isDeletedEmailMarker,
+  parseDeletedEmail,
+} from './_deletedEmail';
 
 const userId = '123e4567-e89b-12d3-a456-426614174000';
 
@@ -28,4 +36,14 @@ test('deleted email helper does not parse truncated sentinel values', () => {
   assert.equal(isDeletedEmail(malformed), false);
   assert.equal(isDeletedEmailMarker(malformed), true);
   assert.equal(parseDeletedEmail(malformed), null);
+});
+
+test('anonymized email helper stamps the reporting marker, not the restorable deleted marker', () => {
+  const anonymized = buildAnonymizedEmail(userId);
+
+  assert.equal(anonymized.endsWith(ANONYMIZED_EMAIL_SUFFIX), true);
+  assert.equal(isAnonymizedEmail(anonymized), true);
+  assert.equal(isDeletedEmail(anonymized), false);
+  assert.equal(isAnonymizedEmail('deleted_' + userId + '_1_person@deleted.invalid'), false);
+  assert.equal(isAnonymizedEmail(null), false);
 });

@@ -251,7 +251,7 @@ try {
   createdDatabase = true;
   sql(`
     CREATE TABLE public.organizations (id text PRIMARY KEY);
-    CREATE TABLE public.users (id text PRIMARY KEY, organization_id text NOT NULL REFERENCES public.organizations(id), deleted_at timestamp, full_name text NOT NULL);
+    CREATE TABLE public.users (id text PRIMARY KEY, organization_id text NOT NULL REFERENCES public.organizations(id), deleted_at timestamp, full_name text NOT NULL, email text);
     CREATE TABLE public.audit_events (id text PRIMARY KEY, actor_user_id text REFERENCES public.users(id) ON DELETE SET NULL, actor_role text);
     INSERT INTO public.organizations VALUES (${quote(ORG)}), (${quote(OTHER_ORG)});
     INSERT INTO public.users VALUES (${quote(ADMIN)}, ${quote(ORG)}, NULL, ${quote(memberName(ADMIN))}), ('other-org-admin', ${quote(OTHER_ORG)}, NULL, 'Synthetic other-org-admin');
@@ -412,6 +412,11 @@ try {
   expired('purge-expired');
   sql("INSERT INTO audit_events VALUES ('own-audit','purge-expired','member'), ('staff-audit','purge-expired','admin');");
   assert.equal(sql(purge('purge-expired')), '1');
+  expired('anon-reporting');
+  sql("UPDATE users SET email='anon_testhash12@anonymized.invalid' WHERE id='anon-reporting';");
+  assert.equal(sql(purge('anon-reporting')), '0');
+  assert.equal(sql("SELECT count(*) FROM users WHERE id='anon-reporting';"), '1');
+  pass('account purge keeps admin GDPR enrollment-preserving anonymizations');
   assert.equal(sql("SELECT count(*) FROM audit_events WHERE id='own-audit';"), '0');
   assert.equal(sql("SELECT actor_user_id IS NULL FROM audit_events WHERE id='staff-audit';"), 't');
   expired('restore-before-cascade');

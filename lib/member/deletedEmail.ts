@@ -12,6 +12,15 @@ const DELETED_EMAIL_SUFFIX = '@deleted.invalid';
 const DELETED_EMAIL_RE = /^deleted_[0-9a-f-]{36}_\d+_(.+)@deleted\.invalid$/i;
 const DELETED_EMAIL_MARKER_RE = /^deleted_[0-9a-f-]{36}_\d+_/i;
 
+/**
+ * Admin GDPR erase of an enrolled member rewrites the address here instead of
+ * `@deleted.invalid`. The 30-day account purge must leave these rows in place
+ * so `CourseEnrollment` / placement / certification cascades stay for reporting.
+ * Keep this suffix in sync with the `email NOT ILIKE` guard in
+ * `lib/retention/cleanup.ts` (`purgeEligibleAccount`).
+ */
+export const ANONYMIZED_EMAIL_SUFFIX = '@anonymized.invalid';
+
 export function buildDeletedEmail(userId: string, timestampMs: number, email: string): string | null {
   const deletedEmail = `deleted_${userId}_${timestampMs}_${email}${DELETED_EMAIL_SUFFIX}`;
   return deletedEmail.length <= MAX_EMAIL_LENGTH ? deletedEmail : null;
@@ -27,4 +36,13 @@ export function isDeletedEmail(email: string): boolean {
 
 export function isDeletedEmailMarker(email: string): boolean {
   return DELETED_EMAIL_MARKER_RE.test(email);
+}
+
+export function isAnonymizedEmail(email: string | null | undefined): boolean {
+  return typeof email === 'string' && email.toLowerCase().endsWith(ANONYMIZED_EMAIL_SUFFIX);
+}
+
+export function buildAnonymizedEmail(userId: string): string {
+  const hash = `anon_${Buffer.from(userId).toString('base64url').slice(0, 12)}`;
+  return `${hash}${ANONYMIZED_EMAIL_SUFFIX}`;
 }

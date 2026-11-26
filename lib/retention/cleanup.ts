@@ -5,6 +5,7 @@ import {
   type EmailFailureSnapshotClient,
 } from '@/lib/email/failureSnapshot';
 import { anonymizeMember } from '@/lib/member/anonymizeMember';
+import { ANONYMIZED_EMAIL_SUFFIX } from '@/lib/member/deletedEmail';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
 import { claimEnrollmentAgreementErasure } from '@/lib/enrollmentAgreements/operationLock';
 import { retainEnrollmentAgreementData } from '@/lib/gdpr/enrollmentAgreementData';
@@ -379,7 +380,14 @@ async function retainAgreementsBeforeAccountPurge(memberId: string, cutoff: Date
 async function purgeEligibleAccount(id: string, cutoff: Date): Promise<number> {
   const result = await prisma.$queryRaw<Array<{ deleted: number }>>`
     WITH eligible AS (
-      SELECT id FROM users WHERE id = ${id} AND deleted_at < ${cutoff}::timestamp FOR UPDATE
+      SELECT id FROM users
+      WHERE id = ${id}
+        AND deleted_at < ${cutoff}::timestamp
+        -- Keep admin GDPR enrollment-preserving anonymizations.
+        -- Literal must match ANONYMIZED_EMAIL_SUFFIX. NULL email stays eligible
+        -- (legal-hold / enrollment-agreements proof stubs).
+        AND (email IS NULL OR email NOT ILIKE '%@anonymized.invalid')
+      FOR UPDATE
     ), removed_audit AS (
       DELETE FROM audit_events
       WHERE actor_user_id = ${id} AND actor_role = ${SELF_SERVICE_AUDIT_ACTOR_ROLE}
@@ -427,6 +435,11 @@ async function purgeEligibleAccount(id: string, cutoff: Date): Promise<number> {
  * membership no longer holds one either;
  * the member's own self-service rows are still removed with the account
  * because they are the account's data, not the staff trail.
+ *
+ * Admin GDPR erase of an enrolled member stamps `@anonymized.invalid` and
+ * keeps `CourseEnrollment` (and other cascaded reporting rows) on purpose.
+ * Those accounts are excluded here; `@deleted.invalid` legal-hold /
+ * self-service rows still purge after DELETED_ACCOUNT_RETENTION_DAYS.
  */
 export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
   const cutoff = getCutoffDate(DELETED_ACCOUNT_RETENTION_DAYS);
@@ -435,7 +448,10 @@ export async function cleanupDeletedAccounts(): Promise<DeletedAccountsResult> {
   const blocked: BlockedAccount[] = [];
 
   while (true) {
-    const where: Record<string, unknown> = { deletedAt: { not: null, lt: cutoff } };
+    const where: Record<string, unknown> = {
+      deletedAt: { not: null, lt: cutoff },
+      NOT: { email: { endsWith: ANONYMIZED_EMAIL_SUFFIX } },
+    };
     if (blocked.length > 0) where.id = { notIn: blocked.map((b) => b.id) };
 
     // Read inside a transaction so the query runs under the same GUC-tagged
