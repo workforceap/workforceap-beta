@@ -1,14 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { GAME_LAB_SAVE_KEYS } from '@/lib/game-lab/manifest';
+import { GAME_LAB_ARCADE_SAVE_PREFIX, GAME_LAB_SAVE_KEYS } from '@/lib/game-lab/manifest';
 
-/** Removes only the two Game Lab save keys from this browser. Nothing is sent anywhere. */
+/** Removes only the Game Lab save keys from this browser. Nothing is sent anywhere. */
 export default function GameLabResetProgress() {
   const [done, setDone] = useState(false);
   function reset() {
     try {
       for (const key of GAME_LAB_SAVE_KEYS) window.localStorage.removeItem(key);
+      // Arcade games save one key per game id under this prefix, plus settings and last-played.
+      const arcadeKeys = [];
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const key = window.localStorage.key(i);
+        if (key?.startsWith(GAME_LAB_ARCADE_SAVE_PREFIX)) arcadeKeys.push(key);
+      }
+      for (const key of arcadeKeys) window.localStorage.removeItem(key);
     } catch {
       /* storage blocked: nothing saved to clear */
     }

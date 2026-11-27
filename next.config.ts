@@ -171,15 +171,16 @@ const nextConfig: NextConfig = {
           { key: 'Content-Security-Policy', value: previewContentSecurityPolicy },
         ],
       })),
-      // Admin Game Lab: only the game document may embed in its own admin page.
-      // The scripts it imports are fetched as modules, not framed.
-      {
-        source: '/api/admin/game-lab/:game/index.html',
+      // Admin Game Lab: only a game's own document may embed in its admin page.
+      // The scripts it imports are fetched as modules, not framed. The Practice
+      // Arcade opens its games from play.html inside the same frame.
+      ...['index.html', 'play.html'].map((document) => ({
+        source: `/api/admin/game-lab/:game/${document}`,
         headers: [
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'Content-Security-Policy', value: previewContentSecurityPolicy },
         ],
-      },
+      })),
       // Authenticated HTML routes should never be cached by browsers or
       // intermediate caches. Without this, hitting back-button after sign-
       // out (or shared CDN edge in front of Vercel) can surface a previous

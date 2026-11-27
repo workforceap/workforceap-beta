@@ -1,0 +1,330 @@
+{
+ "programSlug": "it-automation-with-python-google",
+ "programTitle": "IT Automation with Python",
+ "category": "it-cyber",
+ "categoryLabel": "IT & Cybersecurity",
+ "brandColor": "#ad2c4d",
+ "providers": null,
+ "programDescription": null,
+ "hasTwcSyllabus": false,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "it-auto-course-1",
+   "courseTitle": "Crash Course on Python",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can write Python scripts to automate IT tasks",
+   "skillLabels": [
+    "Python basics",
+    "Functions",
+    "Data structures",
+    "Scripting",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are an IT technician who needs to write a Python script that reads a list of usernames from a text file and checks whether each username follows the company's naming policy (lowercase letters only, 6-12 characters, no spaces). The script should print a report of compliant and non-compliant usernames. Describe the script logic.",
+   "quiz": [
+    {
+     "text": "A Python function validates usernames and returns True if the name is 6-12 lowercase letters only. Which expression CORRECTLY implements this check?",
+     "options": [
+      "return len(username) >= 6 and len(username) <= 12 and username.isalpha()",
+      "return 6 <= len(username) <= 12 and username.isalpha() and username.islower()",
+      "return username.length > 6 and username.length < 12 and username.isLowercase()",
+      "return len(username) in range(6, 12) and username.lower() == username"
+     ],
+     "correctIndex": 1,
+     "explanation": "Option B is the most complete: checks length range with chained comparison, isalpha() ensures only letters (no digits or special chars), and islower() ensures all letters are lowercase. Option A passes 'Hello' since isalpha() does not check case."
+    },
+    {
+     "text": "A Python script reads a file of usernames using open() but crashes with UnicodeDecodeError on some lines. What is the BEST fix?",
+     "options": [
+      "Skip lines that cause errors using a bare except clause",
+      "Open the file with open(filename, encoding='utf-8', errors='ignore') or 'replace' to handle non-UTF-8 characters gracefully without crashing",
+      "Convert the entire file to ASCII format before running the script",
+      "Use a try/except around each line read to catch and ignore UnicodeDecodeError individually"
+     ],
+     "correctIndex": 1,
+     "explanation": "The errors parameter controls how the file reading handles encoding failures. 'ignore' drops the problematic bytes; 'replace' substitutes a replacement character. Both prevent crashes without needing exception handling per line."
+    },
+    {
+     "text": "A script processes a 50,000-line username file and builds a list of all usernames before validating them. The script runs out of memory. What is the MOST efficient fix?",
+     "options": [
+      "Increase the Python recursion limit to handle more data in memory",
+      "Process the file line by line in a loop (for line in file:) instead of loading all lines at once—this keeps memory usage constant regardless of file size",
+      "Split the file into 10 smaller files and process each separately",
+      "Use a faster computer with more RAM to handle the full file in memory"
+     ],
+     "correctIndex": 1,
+     "explanation": "File iteration in Python is a generator—it reads one line at a time without loading the entire file. This is always preferable to readlines() or read().splitlines() for large files."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "it-auto-course-2",
+   "courseTitle": "Using Python to Interact with the Operating System",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can automate OS-level tasks with Python",
+   "skillLabels": [
+    "os module",
+    "subprocess",
+    "File system automation",
+    "Log processing",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You need to write a Python script that scans a directory of log files, finds all files modified in the last 24 hours, compresses them into a zip archive with a timestamp in the filename, and moves the archive to a backup folder. Describe the modules and logic you would use.",
+   "quiz": [
+    {
+     "text": "A Python script needs to run the Linux command 'df -h' and capture its output for parsing. Which code is MOST appropriate?",
+     "options": [
+      "os.system('df -h')",
+      "result = subprocess.run(['df', '-h'], capture_output=True, text=True); output = result.stdout",
+      "output = exec('df -h')",
+      "os.popen('df -h').read()"
+     ],
+     "correctIndex": 1,
+     "explanation": "subprocess.run with capture_output=True captures stdout and stderr into the result object. os.system() only returns the exit code; os.popen() is deprecated; exec() runs Python code, not shell commands."
+    },
+    {
+     "text": "A Python script constructs file paths using string concatenation: path = directory + '/' + filename. A colleague says this will fail on Windows. What is the CORRECT alternative?",
+     "options": [
+      "path = directory + '\\\\' + filename",
+      "path = os.path.join(directory, filename)",
+      "path = f'{directory}/{filename}'",
+      "path = directory.replace('/', '\\\\') + filename"
+     ],
+     "correctIndex": 1,
+     "explanation": "os.path.join() automatically uses the correct path separator for the current operating system (/ on Unix, \\ on Windows). Hardcoded slashes break cross-platform scripts—os.path.join() is always the correct approach."
+    },
+    {
+     "text": "A Python script deletes log files older than 30 days from a directory. After running, the team discovers it also deleted files in subdirectories they did not intend to touch. What went wrong?",
+     "options": [
+      "os.remove() automatically recursively deletes files in subdirectories",
+      "The script likely used os.walk() which traverses all subdirectories recursively; without a check limiting deletion to the top-level directory, it processed all nested files",
+      "Python's file deletion ignores directory boundaries in some versions",
+      "The 30-day age check failed on files in subdirectories due to different timezone handling"
+     ],
+     "correctIndex": 1,
+     "explanation": "os.walk() recursively traverses all subdirectories unless limited. Without adding depth control or explicitly checking that the file is in the target directory only, the script affects the entire directory tree."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "it-auto-course-3",
+   "courseTitle": "Introduction to Git and GitHub",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can version-control your automation scripts with Git",
+   "skillLabels": [
+    "Git version control",
+    "GitHub",
+    "Branching",
+    "Collaboration",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Your IT automation team has 5 people all contributing Python scripts to a shared repository. Last week two team members modified the same script simultaneously causing a conflict. Using your Git and GitHub skills from this course, describe the workflow you would implement to prevent this situation going forward.",
+   "quiz": [
+    {
+     "text": "Two IT engineers both made changes to backup.py and pushed to the main branch without coordination. One engineer's changes were overwritten. Which Git workflow prevents this?",
+     "options": [
+      "Each engineer should save a copy of backup.py with their initials before making changes",
+      "Implement branch protection requiring pull requests with at least one review approval before merging to main; each engineer works on their own branch and conflicts are resolved before any merge completes",
+      "Use git lock on backup.py so only one person can edit it at a time",
+      "Have engineers email each other before editing any shared file to coordinate manually"
+     ],
+     "correctIndex": 1,
+     "explanation": "Branch protection with required PR reviews prevents direct pushes to main. Each change goes through a review process where conflicts must be resolved before merging—preventing silent overwrites."
+    },
+    {
+     "text": "You run 'git status' and see 'Your branch is 3 commits behind origin/main.' What does this mean and what should you do before pushing your changes?",
+     "options": [
+      "Your changes will overwrite 3 commits on the remote; force push is needed to proceed",
+      "Three commits were added to the remote main branch since you last pulled; run 'git pull' to integrate those changes into your local branch before pushing to avoid conflicts",
+      "Your branch is outdated and should be deleted; create a new branch from main instead",
+      "The remote is 3 commits ahead and your local commits are not tracked yet; use 'git push -u origin main' to link them"
+     ],
+     "correctIndex": 1,
+     "explanation": "Being behind the remote means others have pushed commits you do not have locally. Pulling first integrates those changes and resolves any conflicts before you add your own commits to the shared history."
+    },
+    {
+     "text": "A team member accidentally committed a file containing an AWS secret key to GitHub. They deleted the file in a new commit. Is the secret still at risk?",
+     "options": [
+      "No, deleting the file in a subsequent commit removes it from the repository completely",
+      "Yes, the secret is still in the git history and can be retrieved by anyone with access to the repository by checking out the commit that added the file; the secret must be revoked immediately and git history must be rewritten",
+      "The secret is only at risk if the repository is public; private repositories are safe",
+      "GitHub automatically scans for and invalidates secrets in all commits, so no action is needed"
+     ],
+     "correctIndex": 1,
+     "explanation": "Git history is immutable by default—deleted files remain in previous commits forever. The secret should be rotated immediately (assume it is compromised), then history rewritten with git filter-branch or BFG Repo Cleaner if needed."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "it-auto-course-4",
+   "courseTitle": "Troubleshooting and Debugging Techniques",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can find and fix bugs in automation scripts systematically",
+   "skillLabels": [
+    "Debugging",
+    "Error analysis",
+    "Logging",
+    "Performance profiling",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A production Python automation script that runs nightly suddenly started failing with 'IndexError: list index out of range' after working correctly for 3 months. No code changes were made. Using your debugging and troubleshooting skills from this course, describe how you would diagnose the root cause.",
+   "quiz": [
+    {
+     "text": "A Python script that processed customer records correctly for months suddenly fails with 'KeyError: customer_id'. No code changed. What is the MOST likely root cause?",
+     "options": [
+      "A Python version update changed how dictionary keys are accessed",
+      "The input data format changed—the records being processed no longer contain the 'customer_id' key, possibly due to a schema change in the upstream data source or export format",
+      "The script's virtual environment was corrupted and the dictionary methods are no longer working correctly",
+      "The customer database grew too large and the script cannot process records past a certain size"
+     ],
+     "correctIndex": 1,
+     "explanation": "When a script fails without code changes, the input is the primary suspect. A KeyError on a previously reliable key almost always means the data schema changed—a field was renamed, removed, or conditionally absent for new record types."
+    },
+    {
+     "text": "A Python automation script occasionally fails but the error is not reproducible and the logs show only a generic exception. What is the MOST effective debugging improvement?",
+     "options": [
+      "Add a try/except that silently swallows all exceptions so the script continues regardless",
+      "Implement structured logging that records the input data state, function call stack, and relevant variable values at each processing step—so when the intermittent failure occurs, the logs contain enough context to diagnose it",
+      "Run the script on a faster server so the intermittent failure occurs less frequently",
+      "Add a random sleep(1) call before the failing section to eliminate timing-related race conditions"
+     ],
+     "correctIndex": 1,
+     "explanation": "Intermittent failures require logs that capture state at the time of failure. Structured logging with context (inputs, state variables, call stack) turns a mystery into a diagnosable event."
+    },
+    {
+     "text": "A Python script processes 100,000 files and takes 4 hours to complete. A colleague suggests it could be profiled to identify the bottleneck. What tool and approach would identify the slowest function?",
+     "options": [
+      "Add time.sleep(0) calls between functions to measure relative execution speed",
+      "Run the script with Python's cProfile module (python -m cProfile script.py) and sort the output by cumulative time to identify which functions account for the most execution time",
+      "Use a stopwatch to manually time each section of the code",
+      "Reduce the input dataset to 1,000 files and multiply the result by 100 to estimate the bottleneck"
+     ],
+     "correctIndex": 1,
+     "explanation": "cProfile is Python's built-in profiler. It instruments every function call and produces a report sorted by cumulative time, immediately revealing which functions are responsible for the majority of execution time."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "it-auto-course-5",
+   "courseTitle": "Configuration Management and the Cloud",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can manage infrastructure configuration at scale",
+   "skillLabels": [
+    "Puppet/Ansible",
+    "Configuration management",
+    "Cloud automation",
+    "Infrastructure as Code",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Your IT team manually configures 50 Linux servers every time a new server is provisioned—installing packages, setting timezone, configuring NTP, and creating standard user accounts. This process takes 2 hours per server and introduces inconsistencies. Using your configuration management knowledge from this course, describe how you would automate this using a configuration management tool.",
+   "quiz": [
+    {
+     "text": "An Ansible playbook runs and shows 'changed: [server01]' for a package installation task. The playbook is run again and shows 'ok: [server01]' for the same task. What does this demonstrate?",
+     "options": [
+      "The second run detected an error in the first run and corrected it",
+      "Idempotency—Ansible checks the current state before acting; the package was already installed on the second run so no change was needed, demonstrating that running the playbook multiple times produces the same end state without unintended side effects",
+      "Ansible caches results from the first run and replays them on subsequent runs without actually checking the server",
+      "The 'ok' status means the task was skipped because it was flagged as optional"
+     ],
+     "correctIndex": 1,
+     "explanation": "Idempotency is a core configuration management principle: applying the same configuration repeatedly yields the same result. This makes automation safe to run multiple times—on updates, after changes, or for drift remediation."
+    },
+    {
+     "text": "A Puppet manifest sets the timezone on all servers to 'America/New_York'. An engineer manually changes one server's timezone to 'UTC'. What happens the next time Puppet runs?",
+     "options": [
+      "Puppet detects the manual change and leaves it in place since manual changes take precedence",
+      "Puppet detects that the server's current state (UTC) does not match the desired state (America/New_York) and automatically reverts it—this drift remediation is a key configuration management feature",
+      "Puppet logs the discrepancy but does not make changes to avoid overwriting intentional modifications",
+      "Puppet disables the timezone resource for that server to prevent future conflicts"
+     ],
+     "correctIndex": 1,
+     "explanation": "Configuration management continuously enforces desired state. Manual changes that create drift are automatically corrected on the next run—this is exactly why configuration management is used instead of manual administration."
+    },
+    {
+     "text": "A company wants to ensure all 200 Linux servers always have the same version of a security package installed. Without configuration management, an engineer must SSH into each server and run the update manually. What is the PRIMARY operational risk of the manual approach?",
+     "options": [
+      "SSH connections to 200 servers will take too long and cause network congestion",
+      "Human error and inconsistency—some servers will be missed, different engineers may install different versions or skip error handling, and the team has no centralized verification that all servers are compliant",
+      "Running manual package updates risks breaking server configurations on production systems",
+      "The manual approach requires a maintenance window that causes unnecessary service downtime"
+     ],
+     "correctIndex": 1,
+     "explanation": "Manual administration at scale is inherently inconsistent and unverifiable. Configuration management enforces uniformity across all hosts simultaneously, with a single source of truth for desired state and built-in compliance reporting."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "it-auto-course-6",
+   "courseTitle": "Automating Real-World Tasks with Python",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can build complete automation solutions for real IT problems",
+   "skillLabels": [
+    "API automation",
+    "Email automation",
+    "Web scraping",
+    "End-to-end scripting",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Your IT team needs a Python script that monitors a company's website for downtime, sends an email alert when the site is unreachable, and logs each check result to a CSV file with a timestamp. The script should run continuously and check every 5 minutes. Describe the complete script design.",
+   "quiz": [
+    {
+     "text": "A monitoring script uses requests.get() to check a website and gets a response code of 200. Five minutes later, the website is loading but showing an internal server error page—also with a 200 response code. What does this reveal about the monitoring approach?",
+     "options": [
+      "The monitoring is working correctly; a 200 status always means the site is healthy",
+      "HTTP status codes alone are insufficient for application-level monitoring; the script should also check that the response body contains expected content (e.g., a specific page title or element) to detect error pages that return 200",
+      "The monitoring script needs to follow redirects to detect error pages",
+      "A 200 response code on an error page indicates a CDN is caching the error; the origin server should be monitored instead"
+     ],
+     "correctIndex": 1,
+     "explanation": "A 200 status code means the HTTP request succeeded but does not guarantee the page content is correct. Content verification (checking for expected text) is required to distinguish a healthy page from a custom error page that returns 200."
+    },
+    {
+     "text": "A Python monitoring script sends an email alert when the website is down. The site has a 3-minute outage and the script sends 36 alert emails (one per 5-second check during the outage) to the on-call engineer. How should this be improved?",
+     "options": [
+      "Reduce the check frequency to once per 30 minutes to limit alert volume",
+      "Implement alert deduplication: send one alert when the site first goes down, suppress subsequent alerts while it remains down, and send a recovery notification when it comes back up",
+      "Send the alerts to a group email so the volume is distributed across multiple recipients",
+      "Add a 5-minute delay before sending any alert to allow transient issues to resolve naturally"
+     ],
+     "correctIndex": 1,
+     "explanation": "Alert fatigue from repeated notifications for the same ongoing incident is a common monitoring problem. Stateful alerting (fire once on state change, suppress during the incident, recover notification on resolution) is the standard solution."
+    },
+    {
+     "text": "A Python script authenticates to a third-party API using a hardcoded API key stored as a string variable at the top of the script file. Why is this a security concern and what is the correct approach?",
+     "options": [
+      "Hardcoded strings are slower to process than environment variables at API call time",
+      "The script file gets committed to version control, shared in code reviews, or emailed between team members—exposing the API key to anyone who sees the file; keys should be stored in environment variables or a secrets manager and never in source code",
+      "Third-party APIs revoke keys that are hardcoded in Python code rather than passed as headers",
+      "Python's garbage collector may clear string variables before the API call completes"
+     ],
+     "correctIndex": 1,
+     "explanation": "Secrets in source code are one of the most common causes of credential leaks. Using environment variables (os.environ.get('API_KEY')) or a secrets manager keeps credentials out of code repositories and review processes."
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,389 @@
+{
+ "generatedFrom": [
+  "lib/content/skillMissionCatalog.ts",
+  "shared/programSyllabi.ts",
+  "lib/content/programs.ts"
+ ],
+ "programCount": 20,
+ "programs": [
+  {
+   "programSlug": "digital-literacy-empowerment-class",
+   "programTitle": "Workforce AP Digital Literacy Course",
+   "category": null,
+   "categoryLabel": null,
+   "hasTwcSyllabus": false,
+   "courseCount": 4,
+   "quizCount": 12,
+   "courses": [
+    "Computer Basics",
+    "Internet Basics",
+    "Email Basics",
+    "Cybersecurity Basics: Online Scams and Fraud"
+   ]
+  },
+  {
+   "programSlug": "data-analytics-professional-certificate-google",
+   "programTitle": "Management Analyst & Business Intelligence Professional Certificate",
+   "category": "cloud-data",
+   "categoryLabel": "Cloud & Data",
+   "hasTwcSyllabus": true,
+   "courseCount": 8,
+   "quizCount": 24,
+   "courses": [
+    "Foundations: Data, Data, Everywhere",
+    "Ask Questions to Make Data-Driven Decisions",
+    "Prepare Data for Exploration",
+    "Process Data from Dirty to Clean",
+    "Analyze Data to Answer Questions",
+    "Share Data Through the Art of Visualization",
+    "Data Analysis with R Programming",
+    "Google Data Analytics Capstone"
+   ]
+  },
+  {
+   "programSlug": "ux-design-professional-certificate-google",
+   "programTitle": "User Experience & Interface Design Professional Certificate",
+   "category": "business",
+   "categoryLabel": "Business",
+   "hasTwcSyllabus": true,
+   "courseCount": 7,
+   "quizCount": 21,
+   "courses": [
+    "Foundations of User Experience (UX) Design",
+    "Start the UX Design Process: Empathize, Define, and Ideate",
+    "Build Wireframes and Low-Fidelity Prototypes",
+    "Conduct UX Research and Test Early Concepts",
+    "Create High-Fidelity Designs and Prototypes in Figma",
+    "Responsive Web Design in Adobe XD",
+    "Design a User Experience for Social Good & Prepare for Jobs"
+   ]
+  },
+  {
+   "programSlug": "software-developer-professional-certificate-ibm",
+   "programTitle": "AI and Software Developer Professional Certificate (IBM)",
+   "category": "ai-software",
+   "categoryLabel": "AI & Software Dev",
+   "hasTwcSyllabus": true,
+   "courseCount": 9,
+   "quizCount": 27,
+   "courses": [
+    "Introduction to Software Engineering",
+    "Introduction to HTML, CSS, & JavaScript",
+    "Getting Started with Git and GitHub",
+    "Python for Data Science, AI & Development",
+    "Developing Front-End Apps with React",
+    "Developing Back-End Apps with Node.js and Express",
+    "Django Application Development with SQL and Databases",
+    "Introduction to Containers w/ Docker, Kubernetes & OpenShift",
+    "Application Development using Microservices and Serverless"
+   ]
+  },
+  {
+   "programSlug": "cybersecurity-professional-certificate-google",
+   "programTitle": "Networking and Cybersecurity Professional Certificate (Net+, Sec+)",
+   "category": "it-cyber",
+   "categoryLabel": "IT & Cybersecurity",
+   "hasTwcSyllabus": true,
+   "courseCount": 8,
+   "quizCount": 24,
+   "courses": [
+    "Foundations of Cybersecurity",
+    "Play It Safe: Manage Security Risks",
+    "Connect and Protect: Networks and Network Security",
+    "Tools of the Trade: Linux and SQL",
+    "Assets, Threats, and Vulnerabilities",
+    "Sound the Alarm: Detection and Response",
+    "Automate Cybersecurity Tasks with Python",
+    "Put It to Work: Prepare for Cybersecurity Jobs"
+   ]
+  },
+  {
+   "programSlug": "ai-professional-developer-certificate-ibm",
+   "programTitle": "AI Professional Practitioner Certificate",
+   "category": null,
+   "categoryLabel": null,
+   "hasTwcSyllabus": false,
+   "courseCount": 8,
+   "quizCount": 24,
+   "courses": [
+    "Introduction to Software Engineering",
+    "Introduction to Artificial Intelligence (AI)",
+    "Generative AI: Introduction and Applications",
+    "Generative AI: Prompt Engineering Basics",
+    "Python for Data Science, AI & Development",
+    "Developing AI Applications with Python and Flask",
+    "Building Generative AI-Powered Applications with Python",
+    "Generative AI: Elevate your Software Development Career"
+   ]
+  },
+  {
+   "programSlug": "data-science-professional-certificate-ibm",
+   "programTitle": "Database Administrator (DBA) Professional Certificate (IBM)",
+   "category": "cloud-data",
+   "categoryLabel": "Cloud & Data",
+   "hasTwcSyllabus": true,
+   "courseCount": 10,
+   "quizCount": 30,
+   "courses": [
+    "What is Data Science?",
+    "Tools for Data Science",
+    "Data Science Methodology",
+    "Python for Data Science, AI & Development",
+    "Python Project for Data Science",
+    "Databases and SQL for Data Science with Python",
+    "Data Analysis with Python",
+    "Data Visualization with Python",
+    "Machine Learning with Python",
+    "Applied Data Science Capstone"
+   ]
+  },
+  {
+   "programSlug": "it-support-professional-certificate-ibm",
+   "programTitle": "IT Support Professional Certificate (IBM)",
+   "category": null,
+   "categoryLabel": null,
+   "hasTwcSyllabus": true,
+   "courseCount": 7,
+   "quizCount": 21,
+   "courses": [
+    "Introduction to Technical Support",
+    "Introduction to Hardware and Operating Systems",
+    "Introduction to Software, Programming, and Databases",
+    "Introduction to Networking and Storage",
+    "Introduction to Cybersecurity Essentials",
+    "Introduction to Cloud Computing",
+    "Technical Support Case Studies and Capstone Project"
+   ]
+  },
+  {
+   "programSlug": "project-management-professional-certificate-microsoft",
+   "programTitle": "Project Management Professional Certificate (Microsoft)",
+   "category": null,
+   "categoryLabel": null,
+   "hasTwcSyllabus": true,
+   "courseCount": 8,
+   "quizCount": 24,
+   "courses": [
+    "Project Management Foundations",
+    "Initiating and Planning Projects",
+    "Project Scheduling and Cost Management",
+    "Managing Project Risks, Changes and Stakeholders",
+    "Project Leadership, Communication and Stakeholder Management",
+    "Agile Project Management",
+    "Microsoft Project & Power BI for Project Managers",
+    "Project Management Capstone"
+   ]
+  },
+  {
+   "programSlug": "digital-marketing-e-commerce-google",
+   "programTitle": "Digital Marketing & E-Commerce Professional Certificate (Google)",
+   "category": "business",
+   "categoryLabel": "Business",
+   "hasTwcSyllabus": true,
+   "courseCount": 7,
+   "quizCount": 21,
+   "courses": [
+    "Foundations of Digital Marketing and E-commerce",
+    "Attract and Engage Customers with Digital Marketing",
+    "From Likes to Leads: Interact with Customers Online",
+    "Think Outside the Inbox: Email Marketing",
+    "Assess for Success: Marketing Analytics and Measurement",
+    "Make the Sale: Build, Launch, and Manage E-commerce Stores",
+    "Satisfaction Guaranteed: Develop Customer Loyalty Online"
+   ]
+  },
+  {
+   "programSlug": "aws-cloud-technology-amazon",
+   "programTitle": "AWS Cloud Technology Professional Certificate (AWS)",
+   "category": "cloud-data",
+   "categoryLabel": "Cloud & Data",
+   "hasTwcSyllabus": true,
+   "courseCount": 8,
+   "quizCount": 24,
+   "courses": [
+    "Introduction to Information Technology and AWS Cloud",
+    "Providing Technical Support for AWS Workloads",
+    "Developing Applications in Python on AWS",
+    "Skills for Working as an AWS Cloud Consultant",
+    "DevOps on AWS and Project Management",
+    "Automation in the AWS Cloud",
+    "Data Analytics and Databases on AWS",
+    "Capstone: Following the AWS Well-Architected Framework"
+   ]
+  },
+  {
+   "programSlug": "comptia-a-professional-certificate",
+   "programTitle": "CompTIA A+ Professional Certificate (CompTIA A+)",
+   "category": "it-cyber",
+   "categoryLabel": "IT & Cybersecurity",
+   "hasTwcSyllabus": true,
+   "courseCount": 7,
+   "quizCount": 21,
+   "courses": [
+    "IT Fundamentals and Hardware Essentials",
+    "Networking, Peripherals, and Wireless Technologies",
+    "Advanced Networking, Virtualization, and IT Security",
+    "Foundations of Computer Hardware and Storage",
+    "Operating Systems and Networking Fundamentals",
+    "Advanced Networking, Security, and IT Operations",
+    "Practice Exams for CompTIA A+ Core 1 & Core 2"
+   ]
+  },
+  {
+   "programSlug": "comptia-network-professional-certificate",
+   "programTitle": "CompTIA Network+ Professional Certificate",
+   "category": "it-cyber",
+   "categoryLabel": "IT & Cybersecurity",
+   "hasTwcSyllabus": false,
+   "courseCount": 9,
+   "quizCount": 27,
+   "courses": [
+    "Introduction to Networking",
+    "Networking Fundamentals",
+    "Introduction to Contemporary Operating Systems and Hardware",
+    "Introduction to Networking and Storage",
+    "Basics of Cisco Networking",
+    "CCNA Foundations",
+    "TCP/IP and Advanced Topics",
+    "Operating Systems and Networking Fundamentals",
+    "Network Foundations and Addressing"
+   ]
+  },
+  {
+   "programSlug": "comptia-security-professional-certificate",
+   "programTitle": "CompTIA Security+ Professional Certificate",
+   "category": "it-cyber",
+   "categoryLabel": "IT & Cybersecurity",
+   "hasTwcSyllabus": false,
+   "courseCount": 4,
+   "quizCount": 12,
+   "courses": [
+    "Network Security Fundamentals",
+    "Security Threats and Vulnerabilities",
+    "System Hardening and Endpoint Security",
+    "Cryptography and Secure Communications"
+   ]
+  },
+  {
+   "programSlug": "it-automation-with-python-google",
+   "programTitle": "IT Automation with Python",
+   "category": "it-cyber",
+   "categoryLabel": "IT & Cybersecurity",
+   "hasTwcSyllabus": false,
+   "courseCount": 6,
+   "quizCount": 18,
+   "courses": [
+    "Crash Course on Python",
+    "Using Python to Interact with the Operating System",
+    "Introduction to Git and GitHub",
+    "Troubleshooting and Debugging Techniques",
+    "Configuration Management and the Cloud",
+    "Automating Real-World Tasks with Python"
+   ]
+  },
+  {
+   "programSlug": "health-information-technology-mchit",
+   "programTitle": "Medical Billing, Coding, and Health Information Technician Certificate (MBCHIT)",
+   "category": "healthcare",
+   "categoryLabel": "Healthcare",
+   "hasTwcSyllabus": true,
+   "courseCount": 8,
+   "quizCount": 24,
+   "courses": [
+    "Introduction to Health Information Technology",
+    "Medical Terminology and Anatomy",
+    "Health Information Management",
+    "Electronic Health Records (EHR)",
+    "Healthcare Law, Ethics & HIPAA",
+    "Medical Coding: ICD-10 and CPT",
+    "Revenue Cycle Management",
+    "Capstone: HIT Practice Simulation"
+   ]
+  },
+  {
+   "programSlug": "certified-production-technician-cpt",
+   "programTitle": "Certified Production Technician (CPT)",
+   "category": "manufacturing",
+   "categoryLabel": "Manufacturing",
+   "hasTwcSyllabus": false,
+   "courseCount": 8,
+   "quizCount": 24,
+   "courses": [
+    "Introduction to Manufacturing",
+    "Blueprint Reading and Technical Drawing",
+    "Machining and CNC Operations",
+    "Welding Fundamentals",
+    "Quality Control and Inspection",
+    "Safety and OSHA Compliance",
+    "Lean Manufacturing Principles",
+    "Production Technology Capstone"
+   ]
+  },
+  {
+   "programSlug": "certified-logistics-technician-clt",
+   "programTitle": "Certified Logistics Technician (CLT)",
+   "category": "manufacturing",
+   "categoryLabel": "Manufacturing",
+   "hasTwcSyllabus": false,
+   "courseCount": 8,
+   "quizCount": 24,
+   "courses": [
+    "Introduction to Supply Chain Management",
+    "Inventory Management and Control",
+    "Transportation and Distribution",
+    "Warehouse Operations",
+    "Procurement and Vendor Management",
+    "Supply Chain Technology and SAP",
+    "Global Supply Chain and Trade",
+    "CLT Certification Preparation"
+   ]
+  },
+  {
+   "programSlug": "core-construction-training-certificate",
+   "programTitle": "Core Construction Training Certificate",
+   "category": "manufacturing",
+   "categoryLabel": "Construction & Trades",
+   "hasTwcSyllabus": false,
+   "courseCount": 8,
+   "quizCount": 24,
+   "courses": [
+    "Introduction to Construction Industry",
+    "Blueprint Reading and Construction Math",
+    "Construction Safety and OSHA-10",
+    "Hand and Power Tools",
+    "Concrete and Masonry Fundamentals",
+    "Carpentry and Framing Basics",
+    "Electrical and Plumbing Basics",
+    "Construction Readiness Capstone"
+   ]
+  },
+  {
+   "programSlug": "ai-practitioner-professional-certificate-aws",
+   "programTitle": "AI Practitioner Professional Certificate (AWS)",
+   "category": "ai-software",
+   "categoryLabel": "AI & Software Dev",
+   "hasTwcSyllabus": true,
+   "courseCount": 17,
+   "quizCount": 51,
+   "courses": [
+    "Introduction to Artificial Intelligence (AI)",
+    "Artificial Intelligence: An Overview",
+    "Introduction to Digital Transformation Part 1",
+    "AI For All",
+    "AI Concepts and Strategy",
+    "AI for Professional Communication",
+    "Understand and Apply Artificial Intelligence Fundamentals",
+    "AI for Business: Generation & Prediction",
+    "Artificial Intelligence: Ethics & Societal Challenges",
+    "ChatGPT — Foundations",
+    "ChatGPT for Beginners: Using AI for Market Research",
+    "AI Fundamentals with Claude",
+    "Sales with AI",
+    "AI for Marketing",
+    "Salesforce Certified AI Associate Certification",
+    "AWS Artificial Intelligence Practitioner",
+    "Lab, Project, and Test Preparation"
+   ]
+  }
+ ]
+}

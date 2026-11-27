@@ -1,0 +1,222 @@
+{
+ "programSlug": "digital-literacy-empowerment-class",
+ "programTitle": "Workforce AP Digital Literacy Course",
+ "category": null,
+ "categoryLabel": null,
+ "brandColor": null,
+ "providers": null,
+ "programDescription": null,
+ "hasTwcSyllabus": false,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "digital-literacy-course-1",
+   "courseTitle": "Computer Basics",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Support Hero",
+   "missionTagline": "Prove you can keep people safe online",
+   "skillLabels": [
+    "Online safety awareness",
+    "Digital citizenship",
+    "Web Browser",
+    "Communication"
+   ],
+   "scenarioPrompt": "You just joined a nonprofit office that serves seniors. A colleague forwards an email asking everyone to click a link and verify their login credentials or their account will be suspended. Your coworker asks you what to do. Using what you learned in the Orientation & Informational Session about online safety and digital citizenship, walk through how you would handle this situation.",
+   "quiz": [
+    {
+     "text": "A new employee receives an urgent email claiming their company account will be deleted unless they click a link and re-enter their password within 24 hours. What is the BEST first action to take?",
+     "options": [
+      "Click the link and re-enter the password quickly to avoid losing account access",
+      "Forward the email to IT and report it as a potential phishing attempt without clicking anything",
+      "Reply to the sender asking them to verify their identity before taking any action",
+      "Delete the email immediately and hope nobody else received it"
+     ],
+     "correctIndex": 1,
+     "explanation": "Reporting to IT without clicking preserves evidence and protects the organization. Clicking the link—even to investigate—puts credentials at risk."
+    },
+    {
+     "text": "A community center volunteer wants to teach seniors about digital citizenship. Which behavior BEST demonstrates responsible digital citizenship?",
+     "options": [
+      "Sharing other people's personal information in a community Facebook group to keep neighbors informed",
+      "Using strong, unique passwords and treating others respectfully in online comments",
+      "Downloading software from any website that offers it for free to save money",
+      "Ignoring privacy settings because they are too complicated to configure"
+     ],
+     "correctIndex": 1,
+     "explanation": "Digital citizenship includes protecting your own data with strong passwords and treating others respectfully online—both covered in the orientation session."
+    },
+    {
+     "text": "During a team meeting a colleague opens a browser and accidentally lands on a suspicious pop-up claiming the computer is infected and demanding a phone call. What should the colleague do FIRST?",
+     "options": [
+      "Call the phone number displayed to get help removing the supposed virus",
+      "Close the browser tab without calling the number and alert the IT department",
+      "Restart the computer immediately and reinstall the operating system",
+      "Take a photo of the screen and post it on social media to warn others"
+     ],
+     "correctIndex": 1,
+     "explanation": "These tech-support scam pop-ups are designed to panic users. Closing the tab and notifying IT is the safest response—calling the number connects you to scammers."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "digital-literacy-course-2",
+   "courseTitle": "Internet Basics",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can set up and navigate devices confidently",
+   "skillLabels": [
+    "Device setup",
+    "Browser navigation",
+    "Chrome",
+    "Windows",
+    "Search Engines",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are helping a new hire at a workforce development center get their laptop ready for their first day. The device is running Windows, but the browser hasn't been configured, no bookmarks are set, and the employee doesn't know how to search efficiently for the resources they need. Using the skills from Device Distribution & Setup and Browser & Search Engines, describe how you would get them set up and show them effective search techniques.",
+   "quiz": [
+    {
+     "text": "A new employee needs to find the official Windows 11 system requirements on Microsoft's website—not just any result. Which search query is MOST effective?",
+     "options": [
+      "windows 11 requirements",
+      "\"Windows 11\" system requirements site:microsoft.com",
+      "how do I know if my computer can run windows",
+      "microsoft windows new version info"
+     ],
+     "correctIndex": 1,
+     "explanation": "The site: filter restricts results to microsoft.com and quotes ensure the exact phrase is matched, making this far more targeted than a general query."
+    },
+    {
+     "text": "You hand a new hire a Windows laptop and they say the screen resolution looks stretched and wrong. What is the BEST first troubleshooting step?",
+     "options": [
+      "Return the device and request a replacement",
+      "Right-click the desktop, select Display settings, and adjust the resolution to the recommended setting",
+      "Reinstall Windows to fix display driver issues",
+      "Lower the brightness until the display looks better"
+     ],
+     "correctIndex": 1,
+     "explanation": "Display settings in Windows allow you to set the native recommended resolution without any reinstallation—a basic device setup skill covered in this course."
+    },
+    {
+     "text": "A coworker says Chrome keeps opening tabs they didn't request and the homepage changed without their permission. What is the MOST likely cause and fix?",
+     "options": [
+      "Chrome needs to be updated; visit chrome://settings and check for updates",
+      "The browser has been hijacked by unwanted extensions; remove suspicious extensions and reset the homepage in Chrome settings",
+      "The computer's RAM is full; close all other applications to free memory",
+      "The coworker's keyboard has a sticky key that opens new tabs automatically"
+     ],
+     "correctIndex": 1,
+     "explanation": "Unexpected homepage changes and automatic tabs are classic signs of browser hijacking via malicious extensions. Removing them and resetting settings resolves the issue."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "digital-literacy-course-3",
+   "courseTitle": "Email Basics",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Client Champion",
+   "missionTagline": "Prove you can communicate professionally over email",
+   "skillLabels": [
+    "Email etiquette",
+    "Professional communication",
+    "Gmail",
+    "Email",
+    "Communication"
+   ],
+   "scenarioPrompt": "You work at a job-placement agency and need to email a hiring manager at a local company to follow up on a client's application. The email must be professional, clear, and respectful of the manager's time. You also need to CC your supervisor. Using what you learned in Introduction to Emails & Advanced Email Techniques, describe how you would compose and organize this email.",
+   "quiz": [
+    {
+     "text": "You send an email to a hiring manager but accidentally include confidential client salary information. The email has not yet been opened according to your read receipt. What should you do FIRST?",
+     "options": [
+      "Send a follow-up email explaining the mistake and asking the manager to disregard the sensitive information",
+      "Use Gmail's 'Undo Send' feature immediately if within the cancellation window, then resend without the sensitive data",
+      "Call the hiring manager and ask them to delete the email without reading it",
+      "Do nothing because email cannot be recalled once sent"
+     ],
+     "correctIndex": 1,
+     "explanation": "Gmail's Undo Send is the fastest corrective action if still within the configured window. Acting immediately before the email is read is always the first priority."
+    },
+    {
+     "text": "Your Gmail inbox has grown to over 500 unread messages and important client emails are getting buried. Which Gmail feature BEST helps you stay on top of high-priority messages?",
+     "options": [
+      "Star every incoming message so none are missed",
+      "Enable Priority Inbox so Gmail automatically separates important messages from the rest",
+      "Create a new Gmail account and only share it with important contacts",
+      "Set your phone to vibrate for every new email notification"
+     ],
+     "correctIndex": 1,
+     "explanation": "Priority Inbox uses Gmail's signals to surface important messages automatically, which is far more scalable than manually starring every email."
+    },
+    {
+     "text": "A coworker asks for feedback on an email they are about to send to a potential employer. The email starts with 'Hey!' and ends without a sign-off. What is the MOST important feedback to give?",
+     "options": [
+      "The email is fine as long as the body content is strong and grammatically correct",
+      "Replace 'Hey!' with a formal salutation like 'Dear [Name],' and add a professional closing such as 'Best regards' before the name",
+      "Add a colorful email signature with a personal photo to make the message memorable",
+      "Use bullet points throughout the body to make scanning easier for busy hiring managers"
+     ],
+     "correctIndex": 1,
+     "explanation": "Professional email etiquette requires a formal salutation and closing. An informal opener like 'Hey!' signals a lack of professional communication skills to a hiring manager."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "digital-literacy-course-4",
+   "courseTitle": "Cybersecurity Basics: Online Scams and Fraud",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Support Hero",
+   "missionTagline": "Prove you can protect yourself and others from digital fraud",
+   "skillLabels": [
+    "Security awareness",
+    "Fraud prevention",
+    "Security Awareness"
+   ],
+   "scenarioPrompt": "A participant in your workforce training program approaches you worried about a text message they received saying they won a $500 gift card and just need to pay a $25 'processing fee' to claim it. They ask if it is legitimate. Using your knowledge from Avoiding Online Scams and Introduction to Financial Literacy, explain what is happening and what they should do.",
+   "quiz": [
+    {
+     "text": "An elderly neighbor says they received a call from someone claiming to be the IRS demanding immediate payment via gift cards or they will be arrested. What is MOST accurate?",
+     "options": [
+      "This could be legitimate; the IRS sometimes uses phone calls for urgent tax debt collection",
+      "This is a government impersonation scam; the IRS never demands gift card payment or threatens immediate arrest by phone",
+      "They should call back the number provided to verify whether the debt is real",
+      "They should pay with a small gift card to buy time and consult a lawyer afterward"
+     ],
+     "correctIndex": 1,
+     "explanation": "The IRS contacts taxpayers by mail first and never demands gift card payment. Demanding gift cards and threatening arrest are hallmark signs of a government impersonation scam."
+    },
+    {
+     "text": "Someone in your community receives an email offering them a data-entry job that pays $500 per week and only requires them to receive packages at home and reship them. What should they know?",
+     "options": [
+      "This sounds like a legitimate remote work opportunity since package reshipping is a real logistics need",
+      "This is likely a reshipping scam that may involve receiving and forwarding stolen goods, exposing them to legal risk",
+      "They should accept the job but keep the pay rate secret from the IRS to avoid taxes",
+      "This is fine as long as they get the job offer in writing via email"
+     ],
+     "correctIndex": 1,
+     "explanation": "Reshipping scams use unsuspecting people to move stolen merchandise. Participants can face legal consequences even if they did not know the goods were stolen."
+    },
+    {
+     "text": "A job seeker is filling out an online job application that asks for their Social Security Number, bank account number, and a copy of their debit card before any interview. What is the appropriate response?",
+     "options": [
+      "Provide all the information since employers need it to run background checks and set up direct deposit",
+      "Stop the application, do not provide financial information, and research whether the company and job posting are legitimate",
+      "Provide only the SSN and skip the bank details since that is standard practice",
+      "Complete the application but use a friend's bank account details to protect their own"
+     ],
+     "correctIndex": 1,
+     "explanation": "Legitimate employers never request bank account numbers or debit card images before hiring. Asking for these details upfront is a clear sign of a job scam designed to commit identity theft."
+    }
+   ]
+  }
+ ]
+}

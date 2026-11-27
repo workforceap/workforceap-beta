@@ -14,7 +14,12 @@ const NOT_FOUND = '<html><body>NEXT_HTTP_ERROR_FALLBACK;404 This page could not 
 const okAsset = (body, type) => ({ status: 200, body, contentType: `${type}; charset=utf-8`, cacheControl: 'private, no-store', vary: 'Cookie' });
 
 test('every probed asset body is recognised as game content', () => {
-  for (const file of ['packet-quest-3d/index.html', 'packet-quest-3d/game.mjs', 'firewall-defender-3d/index.html', 'firewall-defender-3d/rules.mjs', 'vendor/three.module.min.js']) {
+  for (const file of [
+    'packet-quest-3d/index.html', 'packet-quest-3d/game.mjs', 'firewall-defender-3d/index.html', 'firewall-defender-3d/rules.mjs', 'vendor/three.module.min.js',
+    'packet-quest/index.html', 'packet-quest/rules.mjs', 'network-path/index.html', 'network-path/lesson.js', 'network-path/styles.css',
+    'practice-arcade/index.html', 'practice-arcade/play.html', 'practice-arcade/hub.mjs', 'practice-arcade/kit/shell.mjs',
+    'practice-arcade/data/source/_index.json', 'practice-arcade/games/demo-sort/game.mjs', 'practice-arcade/kit/vendor/three.module.min.js',
+  ]) {
     assert.equal(hasGameContent(asset(file)), true, file);
   }
   assert.equal(hasGameContent(NOT_FOUND), false);

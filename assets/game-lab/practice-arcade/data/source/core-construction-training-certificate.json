@@ -1,0 +1,436 @@
+{
+ "programSlug": "core-construction-training-certificate",
+ "programTitle": "Core Construction Training Certificate",
+ "category": "manufacturing",
+ "categoryLabel": "Construction & Trades",
+ "brandColor": "#1a1a1a",
+ "providers": null,
+ "programDescription": null,
+ "hasTwcSyllabus": false,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "construction-course-1",
+   "courseTitle": "Introduction to Construction Industry",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Project Commander",
+   "missionTagline": "Prove you understand how the construction industry works",
+   "skillLabels": [
+    "Construction industry overview",
+    "Project roles",
+    "Trades knowledge",
+    "Professional standards",
+    "Career pathways"
+   ],
+   "scenarioPrompt": "A general contractor hires you as a site helper on your first construction job. On day one, the site foreman asks you to explain the difference between the GC, the owner, and the subcontractors—and who you report to. Give a clear, accurate answer.",
+   "quiz": [
+    {
+     "text": "On a commercial construction project, the owner, general contractor, and three subcontractors all have different roles. A subcontractor's electrician asks who gives him work orders. What is the correct answer?",
+     "options": [
+      "Directly from the building owner since they are paying for the project",
+      "From the electrical subcontractor's supervisor, who coordinates with the general contractor—subcontractors are hired by and take direction from the GC, not directly from the owner; the GC is responsible for coordinating all trades on site",
+      "From whichever foreman is present on site regardless of trade",
+      "Directly from the architect since the architect designed the electrical system"
+     ],
+     "correctIndex": 1,
+     "explanation": "Construction contracts establish clear chains of authority. Subcontractors contract with and take direction from the GC. Understanding this hierarchy prevents work stoppages, scope conflicts, and safety issues caused by receiving conflicting instructions."
+    },
+    {
+     "text": "A construction crew is starting a new residential project. Before any physical work begins, which activity is most critical to complete?",
+     "options": [
+      "Order all materials so they arrive on day one to avoid any waiting",
+      "Obtain all required permits, complete a site safety assessment, and hold a pre-construction meeting with all trades to review the schedule, scope, and site rules—starting work without permits or a coordinated plan creates legal liability and costly rework",
+      "Begin excavation immediately to stay ahead of schedule",
+      "Install temporary fencing around the site perimeter before notifying the permitting office"
+     ],
+     "correctIndex": 1,
+     "explanation": "Pre-construction planning and permitting prevents the most expensive construction problems—illegal work requiring demolition, uncoordinated trades creating conflicts, and safety incidents from an unprepared site."
+    },
+    {
+     "text": "A new worker observes that the concrete subcontractor and the plumbing subcontractor are arguing about which trade goes first in the foundation pour. How is this type of conflict typically resolved on a well-managed construction site?",
+     "options": [
+      "The two subcontractors negotiate between themselves without involving the GC",
+      "The general contractor is the authority on site coordination—the GC reviews the construction schedule, confirms the approved sequence (typically plumbing rough-in before concrete pour), and communicates the work order to both subs; sequencing conflicts are a GC coordination responsibility",
+      "The trade that arrives first each morning has priority for that day",
+      "The architect resolves all trade coordination disputes since they designed the building"
+     ],
+     "correctIndex": 1,
+     "explanation": "Trade coordination is a primary GC responsibility. The construction schedule and RFI/submittal process define sequencing. Workers who understand this hierarchy can de-escalate conflicts by directing them to the appropriate authority rather than arguing on site."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "construction-course-2",
+   "courseTitle": "Blueprint Reading and Construction Math",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Design Thinker",
+   "missionTagline": "Prove you can read blueprints and apply construction math accurately",
+   "skillLabels": [
+    "Blueprint reading",
+    "Scale interpretation",
+    "Construction math",
+    "Measurement accuracy",
+    "Material estimation"
+   ],
+   "scenarioPrompt": "A foreman hands you a blueprint page and asks you to calculate the total linear feet of baseboard trim needed for a room based on the floor plan. The scale is 1/4 inch = 1 foot. Describe your process from start to finish.",
+   "quiz": [
+    {
+     "text": "A blueprint shows a room dimension of 3.5 inches at a scale of 1/4 inch = 1 foot. What is the actual room length?",
+     "options": [
+      "3.5 feet",
+      "14 feet — each 1/4 inch on the drawing represents 1 foot, so 3.5 inches ÷ 0.25 = 14 feet",
+      "8.75 feet",
+      "42 feet"
+     ],
+     "correctIndex": 1,
+     "explanation": "Scale conversion is foundational to blueprint reading. At 1/4\" = 1', the scale factor is 4 — multiply the drawing measurement by 4 to get actual dimensions. An error in scale reading propagates into every material order and cut."
+    },
+    {
+     "text": "A worker is cutting lumber to frame a wall that must be exactly 8 feet 3 and 3/4 inches tall. The saw is set up and ready. What is the correct approach before making the cut?",
+     "options": [
+      "Cut at 8 feet since fractions are difficult to measure accurately",
+      "Measure twice and mark with a pencil before cutting—confirm the tape is reading in the correct direction, that the measurement accounts for the saw blade's kerf width, and that the cut is at the intended location; 'measure twice, cut once' prevents waste and rework",
+      "Cut slightly long and trim down since it is easier to remove material than add it",
+      "Ask a more experienced worker to make all fractional cuts"
+     ],
+     "correctIndex": 1,
+     "explanation": "'Measure twice, cut once' is the core discipline of construction accuracy. The kerf width, measurement direction, and mark placement all affect the final dimension. Cutting long and trimming wastes time and material."
+    },
+    {
+     "text": "A contractor needs to order flooring for a room that measures 14 feet by 18 feet. Flooring is sold by the square foot and comes in boxes of 25 sq ft. A 10% waste factor is standard for cuts and pattern matching. How many boxes should be ordered?",
+     "options": [
+      "11 boxes (252 sq ft ÷ 25 = 10.08, rounded up)",
+      "12 boxes — room area = 252 sq ft; with 10% waste, order 277.2 sq ft; 277.2 ÷ 25 = 11.09, round up to 12 boxes",
+      "10 boxes since waste factor is an estimate and may not apply",
+      "14 boxes to ensure there is surplus material for future repairs"
+     ],
+     "correctIndex": 1,
+     "explanation": "Material estimation must include waste factors. Ordering the exact calculated amount guarantees a shortage when cuts generate waste. Rounding box count up (never down) ensures project completion without costly reorders of potentially discontinued material."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "construction-course-3",
+   "courseTitle": "Construction Safety and OSHA-10",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Client Champion",
+   "missionTagline": "Prove you can identify hazards and apply OSHA safety standards",
+   "skillLabels": [
+    "OSHA regulations",
+    "Hazard identification",
+    "PPE requirements",
+    "Fall protection",
+    "Safety reporting"
+   ],
+   "scenarioPrompt": "You arrive on a job site and notice a coworker on a scaffold without fall protection equipment, and another worker using a grinder without eye protection. Describe exactly what you do.",
+   "quiz": [
+    {
+     "text": "A construction worker is asked to work on a scaffold at 12 feet above the ground. The supervisor says fall protection equipment is 'in the truck' and to start work now—they'll bring the harness in a few minutes. What is the correct response?",
+     "options": [
+      "Begin work and signal for the harness when the supervisor returns with it",
+      "Decline to work at height without fall protection in place—OSHA requires fall protection at 6 feet and above in construction; starting work without it violates federal law and puts the worker at risk of a fatal fall; the harness must be on and anchored before ascending the scaffold",
+      "Work carefully and hold onto the scaffold frame as a substitute for a harness",
+      "Only use fall protection on the descent since ascending is lower risk"
+     ],
+     "correctIndex": 1,
+     "explanation": "OSHA 1926.502 requires fall protection at 6 feet in construction with no exceptions. Workers have the right to refuse unsafe work. The few minutes saved by starting early are not worth the risk of a fatality or the OSHA citation."
+    },
+    {
+     "text": "A worker discovers an unmarked barrel of liquid in a construction storage area. There are no labels or safety data sheets present. What is the correct action?",
+     "options": [
+      "Open the barrel to smell the contents and determine if it is hazardous",
+      "Do not touch or open the barrel—treat it as potentially hazardous, alert the supervisor immediately, and ensure the area is secured until the substance is identified through proper channels; OSHA's Hazard Communication Standard requires all chemicals to be labeled and have accessible SDS documents",
+      "Move the barrel outside so it is not a problem inside the work area",
+      "Check the color of the liquid since color-coding indicates the type of chemical"
+     ],
+     "correctIndex": 1,
+     "explanation": "Unknown chemicals must be treated as hazardous. OSHA's HazCom standard (1910.1200) requires labels and SDS for all chemicals. Attempting to identify an unknown substance by smell or appearance has caused numerous fatalities and serious injuries."
+    },
+    {
+     "text": "A crew member notices a coworker using a circular saw with the blade guard removed, claiming 'it's faster without it.' What is the correct response as a fellow worker?",
+     "options": [
+      "Continue working and let the supervisor address it if they notice",
+      "Speak up immediately—tell the coworker that saw guards are required by OSHA 1926.304 and exist to prevent blade contact injuries; if the coworker refuses, notify the supervisor; safety is a team responsibility and speaking up is not 'ratting out' a coworker—it may prevent a life-altering injury",
+      "Remove your own saw guard to maintain equal productivity with the coworker",
+      "Only intervene if the coworker is working immediately next to you"
+     ],
+     "correctIndex": 1,
+     "explanation": "Construction site safety is a shared responsibility. OSHA 1926.304 requires circular saw guards. Workers have both the right and the responsibility to stop unsafe acts. A blade contact injury happens in a fraction of a second and can be permanent."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "construction-course-4",
+   "courseTitle": "Hand and Power Tools",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can safely select and use construction tools",
+   "skillLabels": [
+    "Hand tools",
+    "Power tools",
+    "Tool safety",
+    "Tool maintenance",
+    "Proper technique"
+   ],
+   "scenarioPrompt": "Your foreman assigns you to cut and install door casings for 12 doorways. You need to select the right tools, set up your work area, and ensure each cut is accurate. Describe your tool selection and process.",
+   "quiz": [
+    {
+     "text": "A worker is using a hammer drill to anchor bolts into a concrete wall. After the first hole, the bit is extremely hot and smoke is coming from the bit tip. What should the worker do?",
+     "options": [
+      "Continue drilling to complete the job since heat is normal for concrete drilling",
+      "Stop immediately—let the bit cool before continuing, use a lower RPM setting, apply steady moderate pressure without forcing, and use water cooling if the drill supports it; overheating damages the bit and can cause bit failure, kickback, or injury",
+      "Pour water on the bit immediately while it is still spinning to cool it",
+      "Increase drill pressure to get through the concrete faster and reduce overall heat exposure time"
+     ],
+     "correctIndex": 1,
+     "explanation": "Overheating a drill bit damages the carbide tip and creates kickback risk. Proper concrete drilling uses consistent pressure, correct RPM, and rest intervals. Forcing a hot bit increases injury risk and destroys expensive tooling."
+    },
+    {
+     "text": "Before using a power tool on a job site, a worker notices the power cord has a 3-inch section where the insulation is worn away and bare copper is visible. What is the correct action?",
+     "options": [
+      "Wrap the damaged section with electrical tape and proceed with the work",
+      "Remove the tool from service immediately, tag it as damaged, and report it to the supervisor for repair or replacement; using a tool with damaged insulation creates an electrocution hazard—electrical tape is not a permanent repair and does not restore the cord to a safe condition",
+      "Only use the tool if wearing rubber-soled boots since they provide insulation",
+      "Continue using the tool if the damaged section can be held away from the body during operation"
+     ],
+     "correctIndex": 1,
+     "explanation": "Damaged power cords are a leading cause of electrocution on construction sites. OSHA requires that damaged tools be taken out of service. Electrical tape is a temporary measure that does not meet code and masks the hazard."
+    },
+    {
+     "text": "A carpenter needs to make a 45-degree miter cut on a door casing. The miter saw is available, but the blade needs to be adjusted from 0 degrees to 45 degrees. What is the correct setup sequence?",
+     "options": [
+      "Make the angle adjustment while the saw is running to save time",
+      "Ensure the saw is unplugged before making any angle adjustments, set and lock the miter at 45 degrees, confirm the lock is secure, make a test cut on scrap material to verify the angle, then plug in and cut the workpiece—never adjust blade angle or guards on a running saw",
+      "Ask a coworker to hold the angle adjustment while you make the cut",
+      "Estimate the 45-degree angle by eye since miter saws are close enough without exact adjustment"
+     ],
+     "correctIndex": 1,
+     "explanation": "Lockout/tagout principles apply to all power tool adjustments. Making angle adjustments on a powered saw is one of the leading causes of hand and finger injuries. Scrap test cuts verify accuracy before committing to finish material."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "construction-course-5",
+   "courseTitle": "Concrete and Masonry Fundamentals",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can work with concrete and masonry on a construction site",
+   "skillLabels": [
+    "Concrete mixing",
+    "Masonry techniques",
+    "Curing process",
+    "Load bearing",
+    "Material properties"
+   ],
+   "scenarioPrompt": "You are part of a crew pouring a concrete slab for a garage floor. During the pour, the concrete arrives noticeably thicker (stiffer) than the mix design spec. The truck driver offers to add water to loosen it. Describe what you do and why.",
+   "quiz": [
+    {
+     "text": "Concrete is delivered to a job site and appears too stiff to work easily. The truck driver offers to add 20 gallons of water to the drum to improve workability. Why is this problematic?",
+     "options": [
+      "Adding water to the drum is acceptable as long as it happens before the concrete is placed",
+      "Adding water increases the water-to-cement ratio, which directly reduces compressive strength—concrete mixed to specification achieves a designed PSI; adding water can weaken the final product below the structural requirement, creating a liability and safety issue; only the project engineer can authorize a mix change",
+      "Water addition is only problematic if the concrete has already been placed in the forms",
+      "The issue is solely a cost concern since excess water requires more finishing time"
+     ],
+     "correctIndex": 1,
+     "explanation": "Water-to-cement ratio is the primary determinant of concrete strength. Unauthorized water addition is one of the most common causes of concrete failures. Only a project engineer with authority over the mix design can approve modifications."
+    },
+    {
+     "text": "A newly poured concrete slab is covered with plastic sheeting immediately after finishing on a hot, windy day. Why?",
+     "options": [
+      "To protect the surface from rain, which would damage the smooth finish",
+      "To retain moisture for proper curing—concrete gains strength through a chemical hydration process that requires water; hot and windy conditions cause rapid evaporation that stops hydration prematurely, resulting in a weaker, cracked surface; curing methods retain moisture for the required cure period",
+      "To prevent workers from walking on the surface before it hardens",
+      "To protect the concrete from temperature changes that would cause it to expand"
+     ],
+     "correctIndex": 1,
+     "explanation": "Curing is not drying—it is a chemical process that requires moisture. Premature drying causes surface cracking and reduces strength. Curing compounds, wet burlap, or plastic sheeting maintain moisture during the critical early strength gain period."
+    },
+    {
+     "text": "A masonry worker is laying concrete blocks for a foundation wall and notices that every third course has blocks that are slightly out of plumb by about 1/4 inch. After 10 courses, how significant is this error?",
+     "options": [
+      "A 1/4 inch error per third course is within acceptable tolerance and requires no correction",
+      "After 10 courses with this pattern, the wall is approximately 3/4 inch out of plumb—small consistent errors compound significantly over height; the correct approach is to check plumb every 2-3 courses and make small corrections early before the error becomes structurally significant or requires costly rework",
+      "The error will self-correct as mortar cures and the weight of the blocks settles the wall",
+      "Only the top course matters for plumb since the foundation is in the ground"
+     ],
+     "correctIndex": 1,
+     "explanation": "Compounding errors are a key masonry concept. A small plumb error that is not corrected early becomes a large structural deviation over height. Frequent checking and small early corrections prevent expensive teardown and rebuild."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "construction-course-6",
+   "courseTitle": "Carpentry and Framing Basics",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can frame walls and structures to spec",
+   "skillLabels": [
+    "Wall framing",
+    "Floor systems",
+    "Roof framing basics",
+    "Structural layout",
+    "Fastening methods"
+   ],
+   "scenarioPrompt": "You are framing an exterior wall for a new residential addition. The wall is 20 feet long and the plans show standard 16-inch on-center stud spacing. Walk through your layout process from plate to finished frame.",
+   "quiz": [
+    {
+     "text": "A carpenter is laying out stud spacing on a wall plate. The standard is 16 inches on center (OC). Starting from the end of the plate, where is the center of the first stud?",
+     "options": [
+      "16 inches from the end of the plate",
+      "The first stud is typically at the end (corner), and the first field stud center mark is at 15.25 inches—this accounts for the 3/4-inch offset so that 4x8 sheathing sheets break on stud centers; subsequent marks are at 16-inch intervals from there",
+      "8 inches from the end to center the spacing for the wall",
+      "24 inches from the end since the first stud must leave room for insulation"
+     ],
+     "correctIndex": 1,
+     "explanation": "The 15.25-inch first-mark rule is one of the most fundamental framing layout details. It ensures sheathing sheet edges land on stud centers, which is critical for structural integrity and reduces waste from unnecessary blocking."
+    },
+    {
+     "text": "After framing a wall and standing it up, a carpenter checks for square using the 3-4-5 method. Starting from one corner, they measure 3 feet along the bottom plate and 4 feet up the king stud. The diagonal should measure 5 feet if the corner is square. The actual measurement is 5 feet 1.5 inches. What does this mean?",
+     "options": [
+      "The wall is square—small variations are expected in wood framing",
+      "The corner is out of square by a meaningful amount; the wall needs to be racked (pushed laterally at the top) until the diagonal measures exactly 5 feet before it is braced and fastened; an out-of-square wall affects every subsequent finish trade",
+      "The measurement error is in the tape—measure again from the opposite corner",
+      "A 3-4-5 measurement is only accurate for walls under 10 feet; longer walls require different methods"
+     ],
+     "correctIndex": 1,
+     "explanation": "The 3-4-5 method is a direct application of the Pythagorean theorem to verify square. Any deviation means the corner is not 90 degrees. Out-of-square framing cascades into difficult drywall, window, and door installation problems."
+    },
+    {
+     "text": "A framing crew is building a load-bearing wall and needs to create an opening for a door. The crew lead says a header is required above the opening. A new worker asks why. What is the correct explanation?",
+     "options": [
+      "Headers are required by code for aesthetic reasons and do not serve a structural function",
+      "Removing studs for a door opening interrupts the load path from the floor above—a header (sized beam) transfers the load around the opening to the jack studs and king studs on each side, which carry the load down to the foundation; header size depends on the span and load it must carry",
+      "Headers are only required in commercial construction, not residential",
+      "The header is required to provide a nailing surface for the door frame trim"
+     ],
+     "correctIndex": 1,
+     "explanation": "Understanding load paths is a fundamental competency in framing. Headers are structural elements, not just blocking. The correct header size ensures the opening does not allow deflection or failure of the floor or roof structure above."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "construction-course-7",
+   "courseTitle": "Electrical and Plumbing Basics",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you understand rough-in trades and can assist safely",
+   "skillLabels": [
+    "Electrical basics",
+    "Plumbing rough-in",
+    "Code awareness",
+    "Trade coordination",
+    "Safety protocols"
+   ],
+   "scenarioPrompt": "You are assisting the electrical subcontractor rough-in a new home. The electrician asks you to help pull wire through wall cavities. Before you start, what do you need to know and check to work safely and correctly?",
+   "quiz": [
+    {
+     "text": "An electrician asks a helper to drill holes through studs to run wire in a new construction wall. What size hole should be drilled and where should it be located relative to the stud face?",
+     "options": [
+      "Any size hole in any location is acceptable since the wire is flexible",
+      "Holes should be sized to the wire diameter (typically 7/8 inch for 12/2 cable) and centered in the stud so they are at least 1.25 inches from the stud face—if holes are closer than 1.25 inches, nail plates must be installed to protect the wire from drywall screws and nails",
+      "Holes must be drilled as close to the bottom of the stud as possible to keep wire away from outlets",
+      "Holes larger than 1 inch are not permitted in load-bearing studs under any circumstances"
+     ],
+     "correctIndex": 1,
+     "explanation": "Hole sizing and placement rules exist to prevent accidental wire damage from future fasteners. The 1.25-inch rule is an NEC requirement. Nail plates are the required solution when clearance cannot be maintained."
+    },
+    {
+     "text": "A plumber is roughing in a drain line and needs to pass through a load-bearing stud. The required hole is 3 inches in diameter. What must happen before cutting?",
+     "options": [
+      "The plumber can cut any size hole in any stud as long as the pipe fits",
+      "Holes larger than 40% of the stud width (a 2x4 stud is 3.5 inches wide—40% = 1.4 inches) require engineering approval or structural reinforcement; the plumber should notify the GC and structural engineer before cutting since oversized holes compromise load-bearing capacity",
+      "Load-bearing studs cannot be notched or drilled under any circumstances",
+      "The hole is acceptable as long as the stud is doubled on each side of the opening"
+     ],
+     "correctIndex": 1,
+     "explanation": "Structural stud integrity is critical to the building's load path. Oversized holes weaken studs beyond acceptable limits. This is a coordination point between the plumbing sub and the structural engineer—not a unilateral decision."
+    },
+    {
+     "text": "After rough-in electrical and plumbing work is complete, a new worker asks why the walls cannot be closed with drywall immediately. What is the correct answer?",
+     "options": [
+      "Walls must stay open for 30 days to allow pipe sealants and caulking to fully cure",
+      "Rough-in inspections are required—a building inspector must verify that electrical wiring, plumbing rough-in, and mechanical systems comply with code before walls are closed; closing walls before inspection requires opening them again at significant cost if violations are found",
+      "Insulation must be installed before drywall regardless of inspection requirements",
+      "The general contractor must photograph every wall cavity for their project records before closure"
+     ],
+     "correctIndex": 1,
+     "explanation": "Inspection sequencing is a critical construction process concept. Rough-in inspections happen before wall close. Closing walls before inspection is one of the most expensive mistakes in construction—discovery of a code violation requires opening and repairing the wall."
+    }
+   ]
+  },
+  {
+   "order": 8,
+   "courseSlug": "construction-course-8",
+   "courseTitle": "Construction Readiness Capstone",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Help Desk Pro",
+   "missionTagline": "Prove you are construction-ready with integrated skills",
+   "skillLabels": [
+    "Construction readiness",
+    "Trade coordination",
+    "Safety integration",
+    "Professional readiness",
+    "Career preparation"
+   ],
+   "scenarioPrompt": "You are interviewing for your first construction job as a laborer with potential for advancement. The interviewer asks: 'What makes you ready to work on a construction site, and what do you bring to the crew?' Give a strong, specific answer.",
+   "quiz": [
+    {
+     "text": "On your first week on a construction site, a senior carpenter asks you to do a task you have never done before and says 'figure it out.' What is the best response for a new construction worker?",
+     "options": [
+      "Attempt the task independently and only ask for help if something goes wrong",
+      "Tell the carpenter that you are new to this specific task, ask for a quick demonstration or clear instructions, confirm you understand the expected outcome and safety requirements, then complete the task—asking for guidance on unfamiliar tasks is professional behavior, not weakness, and prevents costly mistakes",
+      "Decline the task since you were not specifically trained in it during the program",
+      "Ask a different coworker to do it since the carpenter did not explain it properly"
+     ],
+     "correctIndex": 1,
+     "explanation": "Construction errors are expensive and sometimes dangerous. Experienced tradespeople respect new workers who ask the right questions and confirm understanding before acting. Attempting unfamiliar tasks without guidance creates safety risks and wasted materials."
+    },
+    {
+     "text": "At the end of a shift, a new construction worker notices that the crew has left tools scattered around the work area, scrap material blocking walkways, and a circular saw on the ground with the cord across a traffic path. What should the worker do?",
+     "options": [
+      "Leave the site as found since cleanup is the responsibility of the site supervisor",
+      "Take initiative to store tools in designated locations, stack and remove scrap from walkways, and coil and properly store the cord and saw—site cleanup is every crew member's responsibility; a safe, organized site prevents injuries, reduces tool loss, and demonstrates the professionalism that leads to advancement",
+      "Only clean up the items in your immediate work area",
+      "Photograph the hazards and submit a safety report but leave cleanup for morning"
+     ],
+     "correctIndex": 1,
+     "explanation": "Site housekeeping is a professional standard and an OSHA requirement. Workers who take initiative on cleanup without being asked demonstrate the work ethic and situational awareness that foremen notice when choosing who to advance."
+    },
+    {
+     "text": "A construction worker with the Core Construction certificate is applying for jobs. An employer asks: 'You have a certificate but no field experience. Why should I hire you over someone who has worked construction before?' What is the strongest response?",
+     "options": [
+      "The certificate guarantees I will perform better than uncertified workers with experience",
+      "I bring a verified foundation: OSHA-10 safety training, blueprint reading, tool competency, and understanding of how trades coordinate—I know how to work safely on day one, I will not be a liability, and I am ready to learn from experienced crew members rather than starting from scratch on basics; I am asking for a chance to earn my way, not to skip the learning process",
+      "My certificate proves I know more than workers who only learned on the job",
+      "I am willing to work for a lower wage than experienced workers to compensate for the experience gap"
+     ],
+     "correctIndex": 1,
+     "explanation": "The strongest job interview response combines honest acknowledgment of the experience gap with a clear articulation of the value the candidate brings. Employers of entry-level workers primarily need people who are safe, coachable, and ready to work—the certificate demonstrates all three."
+    }
+   ]
+  }
+ ]
+}

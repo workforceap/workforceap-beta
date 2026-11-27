@@ -2,19 +2,34 @@
 // No I/O here, so tests/game-lab/verdicts.test.mjs can prove that a wrong status, a content leak,
 // an external request, a console error, a DB write or a missing/non-empty mail sink cannot PASS.
 
-export const GAME_SLUGS = ['packet-quest-3d', 'firewall-defender-3d'];
+export const GAME_SLUGS = ['packet-quest-3d', 'firewall-defender-3d', 'packet-quest', 'network-path', 'practice-arcade'];
 
 /** Targets probed for every actor. `kind` decides the expected result. */
 export const MATRIX_TARGETS = [
   { name: 'launcher', path: '/admin/game-lab', kind: 'page' },
   { name: 'play PQ', path: '/admin/game-lab/packet-quest-3d', kind: 'page' },
   { name: 'play FD', path: '/admin/game-lab/firewall-defender-3d', kind: 'page' },
+  { name: 'play PQ2D', path: '/admin/game-lab/packet-quest', kind: 'page' },
+  { name: 'play network', path: '/admin/game-lab/network-path', kind: 'page' },
+  { name: 'play arcade', path: '/admin/game-lab/practice-arcade', kind: 'page' },
   { name: 'unknown game page', path: '/admin/game-lab/not-a-game', kind: 'unknown-page' },
   { name: 'PQ index.html', path: '/api/admin/game-lab/packet-quest-3d/index.html', kind: 'asset', type: 'text/html' },
   { name: 'PQ game.mjs', path: '/api/admin/game-lab/packet-quest-3d/game.mjs', kind: 'asset', type: 'text/javascript' },
   { name: 'PQ vendor three', path: '/api/admin/game-lab/packet-quest-3d/vendor/three.module.min.js', kind: 'asset', type: 'text/javascript' },
   { name: 'FD index.html', path: '/api/admin/game-lab/firewall-defender-3d/index.html', kind: 'asset', type: 'text/html' },
   { name: 'FD rules.mjs', path: '/api/admin/game-lab/firewall-defender-3d/rules.mjs', kind: 'asset', type: 'text/javascript' },
+  { name: 'PQ2D index.html', path: '/api/admin/game-lab/packet-quest/index.html', kind: 'asset', type: 'text/html' },
+  { name: 'PQ2D rules.mjs', path: '/api/admin/game-lab/packet-quest/rules.mjs', kind: 'asset', type: 'text/javascript' },
+  { name: 'network index.html', path: '/api/admin/game-lab/network-path/index.html', kind: 'asset', type: 'text/html' },
+  { name: 'network lesson.js', path: '/api/admin/game-lab/network-path/lesson.js', kind: 'asset', type: 'text/javascript' },
+  { name: 'network styles.css', path: '/api/admin/game-lab/network-path/styles.css', kind: 'asset', type: 'text/css' },
+  { name: 'arcade hub', path: '/api/admin/game-lab/practice-arcade/index.html', kind: 'asset', type: 'text/html' },
+  { name: 'arcade play', path: '/api/admin/game-lab/practice-arcade/play.html', kind: 'asset', type: 'text/html' },
+  { name: 'arcade hub.mjs', path: '/api/admin/game-lab/practice-arcade/hub.mjs', kind: 'asset', type: 'text/javascript' },
+  { name: 'arcade shell', path: '/api/admin/game-lab/practice-arcade/kit/shell.mjs', kind: 'asset', type: 'text/javascript' },
+  { name: 'arcade index json', path: '/api/admin/game-lab/practice-arcade/data/source/_index.json', kind: 'asset', type: 'application/json' },
+  { name: 'arcade one game', path: '/api/admin/game-lab/practice-arcade/games/demo-sort/game.mjs', kind: 'asset', type: 'text/javascript' },
+  { name: 'arcade three', path: '/api/admin/game-lab/practice-arcade/kit/vendor/three.module.min.js', kind: 'asset', type: 'text/javascript' },
   { name: 'unknown asset', path: '/api/admin/game-lab/packet-quest-3d/nope.mjs', kind: 'deny-asset' },
   { name: 'README not served', path: '/api/admin/game-lab/packet-quest-3d/README.md', kind: 'deny-asset' },
   { name: 'unknown game asset', path: '/api/admin/game-lab/not-a-game/index.html', kind: 'deny-asset' },
@@ -35,6 +50,15 @@ const GAME_CONTENT = [
   /from '\.\/(rules|scene|look)\.mjs'/,
   /WebGLRenderer/,
   /export const STAGES\b/,
+  /data-game-lab-prerelease/,
+  /PACKET QUEST/,
+  /Follow a request through the local network/,
+  /WAP Practice hub/,
+  /window\.__arcade\b/,
+  /"programCount": 20/,
+  /portal\.cedar\.example/,
+  /id: 'demo-sort'/,
+  /Original WAP Practice demo/,
 ];
 
 export function hasGameContent(body) {

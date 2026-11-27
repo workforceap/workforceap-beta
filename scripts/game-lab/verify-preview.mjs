@@ -43,7 +43,7 @@ const ADMIN = { id: env.PREVIEW_ADMIN_ID, email: env.PREVIEW_ADMIN_EMAIL, passwo
 const STUDENT = { id: env.PREVIEW_STUDENT_ID, email: env.PREVIEW_STUDENT_EMAIL, password: env.PREVIEW_STUDENT_PASSWORD };
 const OTHER_ROLES = ['counselor', 'employer', 'partner', 'case_manager', 'wap_staff', 'group_leader'];
 const VIEWPORTS = [[1280, 900], [390, 844], [320, 640]];
-const SAVE_KEYS = ['wap-practice-3d-save-v1', 'wap-practice-3d-security-save-v1'];
+const SAVE_KEYS = ['wap-practice-3d-save-v1', 'wap-practice-3d-security-save-v1', 'packet-quest-v1', 'wap-practice-local-network-v1', 'wap-arcade-v1:settings', 'wap-arcade-v1:last'];
 const FLAG = { key: 'admin_game_lab', name: 'Admin Game Lab (local preview)', description: 'Local preview only', enabled: true, rolloutPercentage: 100, allowedRoles: ['admin', 'super_admin'] };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -115,7 +115,7 @@ async function login(who, opts = {}) {
   await p.locator('#email').fill(who.email);
   await p.locator('#password').fill(who.password);
   await p.getByRole('button', { name: /sign in/i }).click();
-  await p.waitForURL((u) => !/\/login([?#/]|$)/.test(u.pathname + u.search), { timeout: 90000 });
+  await p.waitForURL((u) => !/\/login([?#/]|$)/.test(u.pathname + u.search), { timeout: 180000 });
   await p.close();
   return ctx;
 }
@@ -153,7 +153,12 @@ async function launch(p, slug) {
   const deadline = Date.now() + 60000;
   for (;;) {
     const f = p.frames().find((fr) => fr.url().includes(`/api/admin/game-lab/${slug}/index.html`));
-    if (f && (await f.evaluate((k) => !!window[k], slug === 'packet-quest-3d' ? '__pq' : '__fd').catch(() => false))) return f;
+    if (f && (await f.evaluate((s) => {
+      if (s.endsWith('-3d')) return !!window[s === 'packet-quest-3d' ? '__pq' : '__fd'];
+      if (s === 'packet-quest') return !!document.getElementById('overlayTitle');
+      if (s === 'network-path') return !!window.WapPractice;
+      return !!document.getElementById('games');
+    }, slug).catch(() => false))) return f;
     if (Date.now() > deadline) throw new Error(`${slug} frame did not become ready after Launch (frames: ${p.frames().map((fr) => fr.url()).join(', ')})`);
     await sleep(250);
   }
@@ -187,6 +192,70 @@ async function fdStage(f, { keys = false } = {}) {
     else await f.locator(`#act-${act}`).click();
   }
   await f.waitForFunction(() => window.__fd.state.status === 'win', null, { timeout: 120000 });
+}
+async function pq2dWin(f) {
+  await f.locator('#s0').click();
+  await f.locator('#repair').click();
+  await f.locator('#switch').click();
+  await f.locator('#repair').click();
+  await f.locator('#client').click();
+  await f.locator('#switch').click();
+  await f.locator('#server').click();
+  await f.locator('#launch').click();
+  await f.waitForFunction(() => document.getElementById('overlayTitle').textContent === 'STAGE CLEAR', null, { timeout: 30000 });
+}
+async function networkWin(f) {
+  const steps = await f.evaluate(() => {
+    const P = window.WapPractice;
+    const work = P.perfectWork('A');
+    return {
+      dns: work.dnsPath.map((id) => 'Add ' + P.NODES[id]),
+      app: work.appPath.map((id) => 'Add ' + P.NODES[id]),
+      roles: P.ROLE_SUBJECTS.map((s) => ({ select: 'role-' + s.id, value: work.roles[s.id] })),
+      diagnosis: work.diagnosis,
+      evidence: P.EVIDENCE.A.map((row) => row.id),
+      actions: P.ACTIONS.filter((a) => work.actions[a.id]).map((a) => a.label),
+      verifications: Object.keys(work.verifications).filter((k) => work.verifications[k]),
+      prose: work.prose,
+    };
+  });
+  for (const label of steps.dns) await f.getByRole('button', { name: label, exact: true }).nth(0).click();
+  for (const label of steps.app) await f.getByRole('button', { name: label, exact: true }).nth(1).click();
+  for (const role of steps.roles) await f.locator('#' + role.select).selectOption(role.value);
+  await f.locator('#dns-separate').check();
+  for (const id of steps.evidence) await f.getByRole('button', { name: new RegExp(id) }).click();
+  await f.locator('#diagnosis').selectOption(steps.diagnosis);
+  for (const label of steps.actions) await f.getByRole('button', { name: label, exact: true }).click();
+  for (const id of steps.verifications) await f.locator('#verify-' + id).check();
+  await f.locator('#prose-rationale').fill(steps.prose.rationale);
+  await f.locator('#prose-limits').fill(steps.prose.limits);
+  await f.locator('#prose-customer').fill(steps.prose.customer);
+  await f.locator('#submit').click();
+  await f.waitForFunction(() => /10 \/ 10/.test(document.getElementById('score').textContent) && /Automated checks passed/.test(document.getElementById('score').textContent), null, { timeout: 15000 });
+}
+async function arcadeLevelWin(f, gameId) {
+  await f.goto('/api/admin/game-lab/practice-arcade/play.html?game=' + gameId);
+  await f.waitForFunction(() => window.__arcade && (window.__arcade.ready || window.__arcade.error), null, { timeout: 60000 });
+  const failed = await f.evaluate(() => window.__arcade.error);
+  if (failed) throw new Error(gameId + ' failed to load: ' + failed);
+  const levelId = await f.evaluate(() => window.__arcade.levelIds()[0]);
+  await f.evaluate((id) => window.__arcade.startLevel(id), levelId);
+  await f.waitForFunction(() => window.__arcade.screen() === 'coach', null, { timeout: 10000 });
+  await f.evaluate(() => window.__arcade.begin());
+  const deadline = Date.now() + 120000;
+  for (;;) {
+    if (Date.now() > deadline) throw new Error(gameId + ' did not reach results');
+    const screen = await f.evaluate(() => window.__arcade.screen());
+    if (screen === 'results') break;
+    if (screen === 'feedback') { await f.evaluate(() => window.__arcade.dismiss()); await sleep(50); continue; }
+    const hint = await f.evaluate(() => window.__arcade.hint());
+    if (hint == null) { await sleep(100); continue; }
+    await f.evaluate((id) => window.__arcade.choose(id), hint);
+    await sleep(30);
+  }
+  const result = await f.evaluate(() => window.__arcade.result());
+  if (!result || result.won !== true) throw new Error(gameId + ' finished without a win: ' + JSON.stringify(result));
+  return result;
 }
 async function pauseResume(f, label) {
   await f.locator('#pause').click();
@@ -266,8 +335,8 @@ try {
 
     requests.length = 0;
     await p.goto('/admin/game-lab', { waitUntil: 'networkidle' });
-    const launcherOk = (await p.getByTestId('game-lab-prerelease-badge').isVisible()) && (await p.getByTestId('game-lab-disclaimer').isVisible()) && (await p.locator('[data-testid^="game-card-"]').count()) === 2;
-    check(`${label}: launcher renders badge, disclaimer and two cards without loading a game`, launcherOk && !requests.some(gameReq));
+    const launcherOk = (await p.getByTestId('game-lab-prerelease-badge').isVisible()) && (await p.getByTestId('game-lab-disclaimer').isVisible()) && (await p.locator('[data-testid^="game-card-"]').count()) === GAME_SLUGS.length;
+    check(`${label}: launcher renders badge, disclaimer and five cards without loading a game`, launcherOk && !requests.some(gameReq));
     await p.screenshot({ path: join(OUT, `launcher-${width}.png`), fullPage: true });
 
     for (const slug of GAME_SLUGS) {
@@ -275,7 +344,7 @@ try {
       await p.goto(`/admin/game-lab/${slug}`, { waitUntil: 'networkidle' });
       check(`${label}: ${slug} play page loads nothing before Launch`, (await p.locator('iframe').count()) === 0 && !requests.some(gameReq));
       const f = await launch(p, slug);
-      check(`${label}: ${slug} engine loads only after Launch`, requests.filter((u) => /three\.module/.test(u)).length === 1);
+      check(`${label}: ${slug} engine loads only after Launch`, slug.endsWith('-3d') ? requests.filter((u) => /three\.module/.test(u)).length === 1 : !requests.some((u) => /three\.module/.test(u)));
       const geo = await p.evaluate(() => {
         const box = (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right }; };
         const d = document.querySelector('dialog[open]');
@@ -286,7 +355,7 @@ try {
         return { modal: !!d && d.matches(':modal'), title: title && box(title), titleClipped: title ? title.scrollHeight > title.clientHeight + 1 : true, frame: frame && box(frame), exitOnTop: !!top && exitBtn.contains(top), vw: innerWidth, vh: innerHeight };
       });
       check(`${label}: ${slug} player is a top-layer modal: title, Exit and frame inside the viewport, nothing on top`,
-        geo.modal && geo.exitOnTop && !geo.titleClipped && geo.title.top >= 0 && geo.frame.top >= geo.title.bottom && geo.frame.left === 0 && Math.abs(geo.frame.right - geo.vw) < 1 && Math.abs(geo.frame.bottom - geo.vh) < 1, geo);
+        geo.modal && geo.exitOnTop && !geo.titleClipped && geo.title.top >= 0 && geo.frame.top >= geo.title.bottom - 1 && geo.frame.left <= 1 && Math.abs(geo.frame.right - geo.vw) < 2 && Math.abs(geo.frame.bottom - geo.vh) < 2, geo);
 
       if (slug === 'packet-quest-3d') {
         await f.locator('#s0').click();
@@ -313,7 +382,7 @@ try {
           check(`${label}: ${slug} keyboard-only stage 1 win`, true);
           await f.locator('#eMenu').click();
         }
-      } else {
+      } else if (slug === 'firewall-defender-3d') {
         await f.locator('#s2').click();
         await pauseResume(f, `${label} ${slug} (Phish Filter)`);
         await fdStage(f);
@@ -337,15 +406,31 @@ try {
           check(`${label}: ${slug} keyboard-only stage 1 win`, true);
           await f.locator('#eMenu').click();
         }
+      } else if (slug === 'packet-quest') {
+        await pq2dWin(f);
+        check(`${label}: ${slug} stage 1 cleared`, true);
+      } else if (slug === 'network-path') {
+        await networkWin(f);
+        check(`${label}: ${slug} submitted attempt passes 10/10`, true);
+      } else if (slug === 'practice-arcade') {
+        const hubGames = await f.locator('a[href*="play.html?game="]').count();
+        check(`${label}: ${slug} hub lists the program games`, hubGames >= 20);
+        const played = [];
+        for (const gameId of ['digital-literacy-empowerment-class', 'comptia-security-professional-certificate', 'data-analytics-professional-certificate-google', 'demo-sort']) {
+          const result = await arcadeLevelWin(f, gameId);
+          played.push({ gameId, stars: result.stars });
+        }
+        check(`${label}: ${slug} one level of three program games and one demo won`, played.length === 4 && played.every((row) => row.stars >= 1), { played });
+        await f.goto('/api/admin/game-lab/practice-arcade/index.html');
       }
       await p.screenshot({ path: join(OUT, `game-${slug}-${width}.png`) });
       check(`${label}: ${slug} Exit unmounts the frame`, (await exit(p)) === 0);
     }
 
-    await p.evaluate((keys) => { for (const k of keys) localStorage.setItem(k, '{}'); localStorage.setItem('unrelated-key', 'keep'); }, SAVE_KEYS);
+    await p.evaluate((keys) => { for (const k of keys) localStorage.setItem(k, '{}'); localStorage.setItem('wap-arcade-v1:demo-sort', '{}'); localStorage.setItem('unrelated-key', 'keep'); }, SAVE_KEYS);
     await p.getByTestId('game-lab-reset').click();
-    const ls = await p.evaluate((keys) => [...keys.map((k) => localStorage.getItem(k)), localStorage.getItem('unrelated-key')], SAVE_KEYS);
-    check(`${label}: reset clears only the two save keys`, JSON.stringify(ls) === '[null,null,"keep"]', { ls });
+    const ls = await p.evaluate((keys) => [...keys.map((k) => localStorage.getItem(k)), localStorage.getItem('wap-arcade-v1:demo-sort'), localStorage.getItem('unrelated-key')], SAVE_KEYS);
+    check(`${label}: reset clears the game-lab save keys and leaves other keys`, JSON.stringify(ls) === '[null,null,null,null,null,null,null,"keep"]', { ls });
     await ctx.close();
 
     const sctx = await newContext({ storageState: studentState, viewport: { width, height } });

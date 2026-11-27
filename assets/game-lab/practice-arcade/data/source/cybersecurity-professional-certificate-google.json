@@ -1,0 +1,436 @@
+{
+ "programSlug": "cybersecurity-professional-certificate-google",
+ "programTitle": "Networking and Cybersecurity Professional Certificate (Net+, Sec+)",
+ "category": "it-cyber",
+ "categoryLabel": "IT & Cybersecurity",
+ "brandColor": "#ad2c4d",
+ "providers": "Microsoft, Google & Google Cloud via Coursera",
+ "programDescription": "A career-launch program designed for learners with a CompTIA A+ foundation who want to add the Network+ and Security+ credentials that modern employers demand. The curriculum follows a deliberate progression: build complete networking fluency (LANs, WANs, TCP/IP, Cisco IOS, wireless, and cloud networking) preparing for the CompTIA Network+ exam, then layer cybersecurity frameworks, network defense, threat and vulnerability analysis, and incident detection-and-response preparing for the CompTIA Security+ exam. Graduates leave dual-credential ready for entry-level roles in network administration, network security, and security operations.",
+ "hasTwcSyllabus": true,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "cybersecurity-course-1",
+   "courseTitle": "Foundations of Cybersecurity",
+   "hours": 10,
+   "syllabusDescription": "Phase 2 (Sec+): Recognize core cybersecurity analyst competencies, identify how attacks impact business operations, explain security ethics, and identify common analyst tools — including an introduction to SIEM platforms.",
+   "courseraSlug": null,
+   "missionName": "Support Hero",
+   "missionTagline": "Prove you understand what cybersecurity protects and why it matters",
+   "skillLabels": [
+    "Security fundamentals",
+    "Threat awareness",
+    "SIEM tools",
+    "Network security",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are starting your first week as a security analyst intern. Your manager asks you to explain, in plain terms, what the CIA triad means and give a real workplace example of how each element can be violated. Using your Foundations of Cybersecurity knowledge, walk through each component with a concrete scenario.",
+   "quiz": [
+    {
+     "text": "An employee accidentally emails a spreadsheet containing Social Security numbers to an external vendor. Which element of the CIA triad is PRIMARILY violated?",
+     "options": [
+      "Availability — authorized users can no longer access the data",
+      "Confidentiality — sensitive data was disclosed to an unauthorized party",
+      "Integrity — the data in the spreadsheet may have been altered during transmission",
+      "Authentication — the employee's identity was not verified before sending the email"
+     ],
+     "correctIndex": 1,
+     "explanation": "Confidentiality means data is only accessible to authorized parties. Sending SSNs to an unintended external recipient is a confidentiality breach regardless of whether the data was altered."
+    },
+    {
+     "text": "A ransomware attack encrypts all files on a hospital's servers, making patient records inaccessible during surgery prep. Which CIA triad element is MOST directly impacted?",
+     "options": [
+      "Confidentiality — encrypted files cannot be read by attackers",
+      "Integrity — the ransomware may have modified patient records",
+      "Availability — authorized users cannot access the data they need to perform critical work",
+      "Non-repudiation — the hospital cannot prove who last accessed the records"
+     ],
+     "correctIndex": 2,
+     "explanation": "Availability means authorized users can access systems and data when needed. Ransomware that blocks access to patient records during medical care is a life-threatening availability failure."
+    },
+    {
+     "text": "A malicious insider changes the invoice total in a payment system from $5,000 to $50,000 without authorization. Which CIA triad element is violated?",
+     "options": [
+      "Availability — the invoice system is still running but returning wrong data",
+      "Confidentiality — the attacker viewed financial records they should not have seen",
+      "Integrity — the accuracy and trustworthiness of the data has been compromised by unauthorized modification",
+      "Authentication — the insider used their own valid credentials to make the change"
+     ],
+     "correctIndex": 2,
+     "explanation": "Integrity means data is accurate and has not been tampered with. Unauthorized modification of financial records—even by someone with system access—is an integrity violation."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "cybersecurity-course-2",
+   "courseTitle": "Play It Safe: Manage Security Risks",
+   "hours": 9,
+   "syllabusDescription": "Phase 2 (Sec+): Examine how organizations use security frameworks (NIST CSF, ISO 27001) and controls to protect operations. Use SIEM tools and incident-response playbooks.",
+   "courseraSlug": null,
+   "missionName": "Strategy Lead",
+   "missionTagline": "Prove you can assess and prioritize security risks systematically",
+   "skillLabels": [
+    "Risk management",
+    "Security frameworks",
+    "NIST",
+    "Threat modeling",
+    "Critical thinking"
+   ],
+   "scenarioPrompt": "A mid-size company stores customer credit card data and has asked you to help them identify and prioritize their top security risks before their annual audit. They have limited budget and need to know where to focus first. Using the risk management frameworks from this course, describe how you would assess and rank their risks.",
+   "quiz": [
+    {
+     "text": "A security team has identified 12 vulnerabilities across their systems. Time and budget allow fixing only 4 this quarter. What is the MOST defensible basis for choosing which 4 to address first?",
+     "options": [
+      "Fix the 4 vulnerabilities that were discovered most recently since they are the newest attack surface",
+      "Prioritize by risk score—calculated as likelihood of exploitation multiplied by potential business impact—addressing the highest-scoring vulnerabilities first",
+      "Fix the 4 vulnerabilities that are easiest to patch so the team demonstrates quick progress",
+      "Address vulnerabilities alphabetically by system name to ensure fair coverage across all systems"
+     ],
+     "correctIndex": 1,
+     "explanation": "Risk = likelihood × impact is the standard risk prioritization formula. It ensures limited resources address the vulnerabilities that pose the greatest actual threat to the business."
+    },
+    {
+     "text": "A company uses the NIST Cybersecurity Framework to guide its security program. An auditor asks which function covers detecting security incidents. Which NIST CSF function applies?",
+     "options": [
+      "Identify — establishing what assets exist and what risks they face",
+      "Protect — implementing safeguards to ensure service delivery",
+      "Detect — developing activities to identify when a cybersecurity event has occurred",
+      "Respond — taking action regarding a detected incident"
+     ],
+     "correctIndex": 2,
+     "explanation": "The NIST CSF Detect function encompasses the capabilities and processes that enable timely discovery of cybersecurity events, including continuous monitoring and anomaly detection."
+    },
+    {
+     "text": "An unpatched web server is exposed to the internet and the application running on it has a known SQL injection vulnerability. How should these be classified?",
+     "options": [
+      "Both are threats because they represent actions an attacker could take",
+      "The unpatched server and the SQL injection flaw are vulnerabilities; a threat is an actor or event that could exploit them, and together they constitute a risk",
+      "Both are risks because they could lead to a data breach",
+      "The SQL injection is a vulnerability but the unpatched server is a threat since it enables the attack"
+     ],
+     "correctIndex": 1,
+     "explanation": "Vulnerabilities are weaknesses; threats are actors or events that exploit them; risk is the combination. Distinguishing these terms is fundamental to structured security risk management."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "cybersecurity-course-3",
+   "courseTitle": "Connect and Protect: Networks and Network Security",
+   "hours": 12,
+   "syllabusDescription": "Phase 2 (Sec+): Apply networking knowledge to defense — secure networks against intrusion tactics, apply system hardening, and configure VPNs, firewalls, and segmentation.",
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can identify and defend network-level threats",
+   "skillLabels": [
+    "Network protocols",
+    "Firewalls",
+    "TCP/IP",
+    "Intrusion detection",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A security analyst notices unusual outbound traffic from an internal workstation to an unfamiliar IP address at 3 AM. The company has a firewall and an IDS in place. Using your network security skills from this course, describe how you would investigate this alert and what network-level controls could have prevented or detected this earlier.",
+   "quiz": [
+    {
+     "text": "A network administrator sees repeated SYN packets sent to hundreds of different ports on a server from a single IP address over 30 seconds. What is MOST likely happening?",
+     "options": [
+      "A legitimate user is testing a new application that opens many connections simultaneously",
+      "A port scan is underway—the attacker is probing which services are listening to map the attack surface before launching an exploit",
+      "The server is experiencing a denial-of-service attack that is flooding it with connection requests",
+      "The network switch is malfunctioning and broadcasting packets to all ports"
+     ],
+     "correctIndex": 1,
+     "explanation": "Sequential SYN packets to many ports from one source is the signature of a port scan. The goal is reconnaissance—identifying open services that can be exploited in a subsequent attack."
+    },
+    {
+     "text": "A firewall rule allows all outbound traffic on port 443 (HTTPS). An attacker uses an encrypted HTTPS tunnel to exfiltrate data to an external server. Why did the firewall fail to stop this?",
+     "options": [
+      "The firewall was not properly configured and should have blocked port 443 entirely",
+      "Firewalls that only inspect port numbers cannot see inside encrypted traffic; a next-generation firewall with deep packet inspection or DNS filtering is needed to detect malicious HTTPS connections",
+      "Port 443 traffic is automatically trusted by all network devices and cannot be blocked",
+      "The attacker exploited a firewall vulnerability that allowed them to disable the outbound rules"
+     ],
+     "correctIndex": 1,
+     "explanation": "Traditional firewalls filter by port and IP, not by content. Encrypted exfiltration over allowed ports bypasses this control. NGFW or DNS-layer filtering can detect malicious destinations even over HTTPS."
+    },
+    {
+     "text": "Two computers on the same network segment are communicating and a technician captures the traffic. They can read the full contents of every message. What does this indicate about the communication?",
+     "options": [
+      "The computers are using IPv6, which does not support encryption",
+      "The traffic is unencrypted, meaning the protocol in use (such as HTTP or Telnet) transmits data in plaintext—visible to anyone with network access",
+      "The technician has installed malware that strips encryption from network packets",
+      "This is normal behavior; internal network traffic is always readable by network administrators"
+     ],
+     "correctIndex": 1,
+     "explanation": "Protocols like HTTP and Telnet transmit in plaintext. Any device on the same network segment with a packet sniffer can read the full content. Encryption (HTTPS, SSH) is required to prevent this."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "cybersecurity-course-4",
+   "courseTitle": "Tools of the Trade: Linux and SQL",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can use Linux and SQL to investigate security issues",
+   "skillLabels": [
+    "Linux command line",
+    "SQL queries",
+    "Log analysis",
+    "File permissions",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are a security analyst responding to a potential insider threat. You need to check which files a specific user account accessed in the last 24 hours and whether they have write permission to sensitive directories. You have access to a Linux terminal and a SQL database of access logs. Describe the Linux commands and SQL queries you would run.",
+   "quiz": [
+    {
+     "text": "A security analyst needs to find all files in /var/log modified in the last 24 hours on a Linux system. Which command is MOST appropriate?",
+     "options": [
+      "ls -la /var/log | grep 'today'",
+      "find /var/log -mtime -1 -type f",
+      "cat /var/log/* | grep modified",
+      "stat /var/log --recent=24h"
+     ],
+     "correctIndex": 1,
+     "explanation": "find with -mtime -1 returns files modified less than 1 day ago (within the last 24 hours). The other options use invalid flags or grep on content rather than file metadata."
+    },
+    {
+     "text": "An analyst queries a login_events table and needs to find all failed login attempts by a user named 'jsmith' in the last 7 days ordered by most recent first. Which SQL query is correct?",
+     "options": [
+      "SELECT * FROM login_events WHERE user = 'jsmith' AND status = 'failed' AND event_time > NOW() - INTERVAL '7 days' ORDER BY event_time DESC;",
+      "SELECT * FROM login_events WHERE user = 'jsmith' ORDER BY event_time WHERE status = 'failed';",
+      "SELECT user, status FROM login_events HAVING user = 'jsmith' AND status = 'failed';",
+      "SELECT * FROM login_events WHERE status = 'failed' GROUP BY user HAVING user = 'jsmith';"
+     ],
+     "correctIndex": 0,
+     "explanation": "The first query correctly combines a user filter, status filter, and date range using INTERVAL arithmetic, then orders results newest-first. The other options misplace clauses or use HAVING incorrectly outside of aggregation."
+    },
+    {
+     "text": "A Linux file has permissions -rwxr-x--- and is owned by user 'root' and group 'security'. A member of the 'security' group tries to delete the file and gets 'Permission denied.' Why?",
+     "options": [
+      "The security group member does not have execute permission on the file",
+      "Deleting a file requires write permission on the DIRECTORY containing the file, not on the file itself; the security group only has read and execute on the file",
+      "The file has an immutable flag set that prevents deletion by any user including root",
+      "The security group member needs write permission (w) on the file itself to delete it"
+     ],
+     "correctIndex": 1,
+     "explanation": "In Linux, file deletion is controlled by the parent directory's write permission, not the file's own permissions. The security group likely lacks write permission on the containing directory."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "cybersecurity-course-5",
+   "courseTitle": "Assets, Threats, and Vulnerabilities",
+   "hours": 19,
+   "syllabusDescription": "Phase 2 (Sec+): Classify assets, analyze attack surfaces, identify threats (social engineering, malware, web exploits), and summarize threat modeling — including the MITRE ATT&CK framework and cryptography fundamentals.",
+   "courseraSlug": null,
+   "missionName": "Insight Analyst",
+   "missionTagline": "Prove you can map assets to threats and find the gaps",
+   "skillLabels": [
+    "Asset classification",
+    "Threat analysis",
+    "Vulnerability scanning",
+    "NIST",
+    "Critical thinking"
+   ],
+   "scenarioPrompt": "A retail company asks you to conduct an asset inventory and threat analysis for their e-commerce platform before a planned expansion. The platform stores customer PII and payment data. Using your assets, threats, and vulnerabilities framework from this course, describe how you would inventory critical assets, identify threats to each, and recommend prioritized controls.",
+   "quiz": [
+    {
+     "text": "A company's asset inventory includes employee laptops, customer database servers, and the building's physical access system. Which asset requires the HIGHEST security classification?",
+     "options": [
+      "Employee laptops because they are the most numerous and therefore the largest attack surface",
+      "The customer database servers because they store regulated personal and payment data whose exposure carries legal, financial, and reputational consequences",
+      "The physical access system because it controls who can enter the building where all other assets are housed",
+      "All three require equal classification since compromise of any one could lead to a breach"
+     ],
+     "correctIndex": 1,
+     "explanation": "Asset classification is driven by the sensitivity of the data and the impact of compromise. A database containing regulated PII and payment card data warrants the highest classification due to legal liability and breach severity."
+    },
+    {
+     "text": "A vulnerability scanner reports a critical CVE on a server that runs an internal tool used by 3 employees with no external access. A public-facing payment server has a medium CVE. Which should be patched first?",
+     "options": [
+      "The internal server with the critical CVE since higher severity always takes priority regardless of exposure",
+      "The public-facing payment server with the medium CVE because its internet exposure and access to payment data make exploitation far more likely, raising the actual risk above the internal server despite the lower CVE score",
+      "Both should be patched simultaneously since any unpatched CVE is unacceptable",
+      "Neither requires urgent patching since CVEs are theoretical vulnerabilities that rarely get exploited in practice"
+     ],
+     "correctIndex": 1,
+     "explanation": "Risk = likelihood × impact. A medium CVE on an internet-exposed payment server often poses greater real-world risk than a critical CVE on an isolated internal tool. Context matters more than raw severity scores."
+    },
+    {
+     "text": "A threat model for an e-commerce site identifies 'credential stuffing attacks' as a high-likelihood threat. Which control MOST directly reduces the likelihood of this threat succeeding?",
+     "options": [
+      "Encrypting all data at rest so stolen credentials cannot be used to access the database directly",
+      "Implementing multi-factor authentication so that stolen username/password pairs alone are insufficient to gain access",
+      "Deploying a web application firewall to block SQL injection attempts",
+      "Increasing password minimum length requirements across all user accounts"
+     ],
+     "correctIndex": 1,
+     "explanation": "Credential stuffing uses valid username/password pairs obtained from other breaches. MFA invalidates the attack by requiring a second factor the attacker does not have—directly neutralizing this specific threat."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "cybersecurity-course-6",
+   "courseTitle": "Sound the Alarm: Detection and Response",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can detect incidents and respond effectively",
+   "skillLabels": [
+    "Incident detection",
+    "SIEM",
+    "Incident response",
+    "Log analysis",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Your SIEM fires an alert at 2 PM on a Tuesday: an employee account has authenticated from two countries within 15 minutes—an impossible travel scenario. Using your detection and response skills from this course, walk through the incident response steps you would take from initial triage to containment.",
+   "quiz": [
+    {
+     "text": "A SIEM alert triggers for 'multiple failed login attempts followed by a successful login' on an admin account at 11 PM. What is the FIRST step in the incident response process?",
+     "options": [
+      "Immediately disable the admin account to prevent further access",
+      "Triage the alert by gathering additional context—checking the source IP, comparing against known admin login patterns, and determining whether the successful login was from a legitimate location before taking containment action",
+      "Notify the executive team and legal counsel that a breach has occurred",
+      "Reset all user passwords company-wide as a precautionary measure"
+     ],
+     "correctIndex": 1,
+     "explanation": "Hasty containment without triage can lock out legitimate users and destroy forensic evidence. The first step is to analyze available data to confirm whether the alert is a true positive before acting."
+    },
+    {
+     "text": "During an incident investigation, a security analyst discovers that malware has been running on a workstation for 3 weeks. The workstation contains sensitive HR files. What should the analyst do with the workstation BEFORE wiping it?",
+     "options": [
+      "Wipe and reimage the workstation immediately to remove the malware as quickly as possible",
+      "Isolate the workstation from the network to prevent further spread, then create a forensic image of the drive to preserve evidence before remediation begins",
+      "Leave the workstation connected to observe the malware's behavior and gather intelligence",
+      "Run the company's antivirus tool and remove any detected threats before deciding whether a full wipe is needed"
+     ],
+     "correctIndex": 1,
+     "explanation": "Forensic imaging before wiping preserves evidence needed to understand the breach scope, identify the attack vector, and meet potential legal or regulatory obligations. Containment (isolation) precedes eradication."
+    },
+    {
+     "text": "A SIEM generates 500 alerts per day, but the security team can only investigate 50. Which approach BEST improves alert quality without missing critical incidents?",
+     "options": [
+      "Hire more analysts until the team can investigate all 500 alerts daily",
+      "Tune SIEM rules to reduce false positives, apply risk-based scoring to prioritize high-fidelity alerts, and correlate events across multiple log sources before escalating",
+      "Disable the lower-priority alert rules to reduce the total volume to a manageable number",
+      "Rotate alert investigation across team members so every analyst reviews a random sample"
+     ],
+     "correctIndex": 1,
+     "explanation": "Alert fatigue is a top SIEM challenge. Tuning rules, adding correlation logic, and risk-scoring alerts improves the signal-to-noise ratio without eliminating detection coverage."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "cybersecurity-course-7",
+   "courseTitle": "Automate Cybersecurity Tasks with Python",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can write Python scripts to automate security work",
+   "skillLabels": [
+    "Python automation",
+    "Log parsing",
+    "Regular expressions",
+    "File I/O",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Your team receives firewall log files daily and manually reviews them for suspicious IPs. You have been asked to write a Python script that parses the log file, extracts all unique source IPs, counts how many connection attempts each IP made, and flags any IP with more than 100 attempts in a day. Describe the script logic you would implement.",
+   "quiz": [
+    {
+     "text": "A Python script needs to extract all IPv4 addresses from a multi-line log file string. Which regular expression pattern is MOST appropriate?",
+     "options": [
+      "'d+'",
+      "'\b(?:d{1,3}.){3}d{1,3}\b'",
+      "'[0-9].[0-9].[0-9].[0-9]'",
+      "'ddd.ddd.ddd.ddd'"
+     ],
+     "correctIndex": 1,
+     "explanation": "The pattern \b(?:d{1,3}.){3}d{1,3}\b matches four groups of 1-3 digits separated by literal dots with word boundaries. The other options either match only integers, use unescaped dots (which match any character), or require exactly 3 digits per octet."
+    },
+    {
+     "text": "A security script opens a log file and counts IP occurrences using a Python dictionary. After processing 10,000 lines the script runs out of memory. What is the MOST appropriate fix?",
+     "options": [
+      "Switch from a dictionary to a list since lists use less memory than dictionaries",
+      "Process the file line by line using a generator or iteration rather than reading the entire file into memory at once with read()",
+      "Split the log file into smaller files manually before running the script",
+      "Increase the server's RAM allocation to handle larger file processing"
+     ],
+     "correctIndex": 1,
+     "explanation": "Reading large files entirely into memory with read() is inefficient. Iterating line by line (for line in file) processes one line at a time, keeping memory usage constant regardless of file size."
+    },
+    {
+     "text": "A Python security script catches an exception when the log file does not exist and prints 'Error: file not found.' A colleague says this is insufficient for a production security tool. What should be improved?",
+     "options": [
+      "The script should crash loudly so the on-call team is immediately aware of the problem",
+      "The script should log the error with a timestamp to a dedicated error log, send an alert to the security team, and exit with a non-zero status code so automated pipelines can detect the failure",
+      "The script should create an empty log file so subsequent steps in the pipeline do not fail",
+      "The error message is sufficient; adding logging would create more files that also need to be monitored"
+     ],
+     "correctIndex": 1,
+     "explanation": "Production security automation needs structured error logging, alerting, and machine-readable exit codes. A print statement to stdout is invisible to monitoring systems and leaves no audit trail."
+    }
+   ]
+  },
+  {
+   "order": 8,
+   "courseSlug": "cybersecurity-course-8",
+   "courseTitle": "Put It to Work: Prepare for Cybersecurity Jobs",
+   "hours": 11,
+   "syllabusDescription": "Phase 3: Determine when and how to escalate incidents, engage with the cybersecurity community, and prepare for interviews. Includes AI-augmented workflows for vulnerability analysis and alert triage.",
+   "courseraSlug": null,
+   "missionName": "Strategy Lead",
+   "missionTagline": "Prove you can communicate security findings and build your career",
+   "skillLabels": [
+    "Incident reporting",
+    "Security communication",
+    "Career preparation",
+    "Documentation",
+    "Critical thinking"
+   ],
+   "scenarioPrompt": "You have completed your first solo incident investigation as a junior security analyst. You found that a phishing email led to credential theft and lateral movement to two additional workstations before being contained. You must now write an incident report for leadership and prepare talking points for your first job interview about what you learned. Using the communication and career skills from this course, describe how you would structure both.",
+   "quiz": [
+    {
+     "text": "An executive reads your incident report and asks 'What did we learn from this and how do we prevent it happening again?' Which section of a well-structured incident report directly answers this question?",
+     "options": [
+      "The timeline section, which documents exactly when each event occurred",
+      "The lessons learned and recommendations section, which identifies root causes and specifies actionable controls to prevent recurrence",
+      "The impact assessment section, which quantifies the business damage from the incident",
+      "The executive summary, which provides a high-level narrative of what happened"
+     ],
+     "correctIndex": 1,
+     "explanation": "The lessons learned and recommendations section is the forward-looking portion of an incident report. It translates the investigation findings into specific, actionable improvements to security controls and processes."
+    },
+    {
+     "text": "During a job interview, a hiring manager asks: 'Tell me about a time you handled a security incident.' You investigated a phishing attack during your training program. Using the STAR method, which response structure is BEST?",
+     "options": [
+      "Describe all the technical tools you used during the investigation to demonstrate depth of knowledge",
+      "Situation: describe the phishing alert context; Task: explain your responsibility; Action: detail the specific investigation steps you took; Result: share what you contained, learned, and recommended",
+      "Briefly mention the incident and pivot to describing your technical certifications since they are more relevant to the role",
+      "Explain that you cannot share details due to confidentiality even though it was a training exercise"
+     ],
+     "correctIndex": 1,
+     "explanation": "The STAR method (Situation, Task, Action, Result) structures behavioral answers to demonstrate competency with a concrete example. It is the hiring standard for experience-based interview questions."
+    },
+    {
+     "text": "You are writing a post-incident report and must include the root cause. During investigation you found the phishing email bypassed the spam filter because it came from a newly registered domain. What is the CORRECT way to state the root cause?",
+     "options": [
+      "Root cause: an employee clicked a phishing link",
+      "Root cause: the email security gateway did not flag the email because the sending domain was too new to have an established spam reputation, and there was no compensating control to block or sandbox emails from domains registered within the past 30 days",
+      "Root cause: the attacker sent a very convincing phishing email that was hard to detect",
+      "Root cause: the incident response team took 4 hours to contain the breach after detection"
+     ],
+     "correctIndex": 1,
+     "explanation": "Root causes identify the systemic gap, not the human action or attacker behavior. A precise root cause points directly to a fixable control failure—in this case, the absence of new-domain blocking or sandboxing policy."
+    }
+   ]
+  }
+ ]
+}

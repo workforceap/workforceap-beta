@@ -1,0 +1,436 @@
+{
+ "programSlug": "health-information-technology-mchit",
+ "programTitle": "Medical Billing, Coding, and Health Information Technician Certificate (MBCHIT)",
+ "category": "healthcare",
+ "categoryLabel": "Healthcare",
+ "brandColor": "#4a9b4f",
+ "providers": "MedCerts, Johns Hopkins University, AAPC & Coursera",
+ "programDescription": "Prepare for a credentialed career in medical billing, coding, and health information management. This 15-course program combines content from MedCerts, Johns Hopkins University, AAPC, and Coursera to deliver foundational anatomy and medical terminology, end-to-end revenue cycle and claims processing, ICD-10/CPT/HCPCS coding, HIPAA-compliant records management, electronic health records, telehealth fundamentals, and front-office administration. Graduates are prepared for entry-level roles and the AAPC Certified Professional Biller (CPB) credential.",
+ "hasTwcSyllabus": true,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "mchit-course-1",
+   "courseTitle": "Introduction to Health Information Technology",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Support Hero",
+   "missionTagline": "Prove you understand the HIT landscape and why it matters",
+   "skillLabels": [
+    "HIT fundamentals",
+    "Healthcare systems",
+    "EHR basics",
+    "HIPAA overview",
+    "Communication"
+   ],
+   "scenarioPrompt": "A newly hired medical office assistant asks you to explain what Health Information Technology is and how it affects their day-to-day role. Using your HIT foundations, describe the key systems they will encounter, what data they handle, and why accuracy matters.",
+   "quiz": [
+    {
+     "text": "A medical office enters a patient's diagnosis code incorrectly on a claim. The insurance company denies the claim. What downstream effects does this single data entry error create?",
+     "options": [
+      "No effect beyond the one denied claim; the office simply resubmits with the correct code",
+      "Delayed payment, staff time spent on appeals and resubmission, potential impact on the patient's explanation of benefits, and possible audit flags if the pattern repeats across multiple claims",
+      "The patient's medical record is automatically corrected by the insurance company",
+      "The error is caught by the EHR automatically before submission"
+     ],
+     "correctIndex": 1,
+     "explanation": "A single coding error cascades into revenue cycle delays, staff rework, patient confusion, and compliance risk. Data accuracy in HIT is not clerical—it has direct financial and patient care consequences."
+    },
+    {
+     "text": "A healthcare worker sends a patient's lab results to the correct provider via unencrypted email because it is faster. Why is this a problem?",
+     "options": [
+      "It is acceptable since the recipient is a licensed medical professional",
+      "Unencrypted email is not a HIPAA-compliant transmission method for Protected Health Information (PHI); a data breach or interception would expose the patient's private health data and expose the organization to regulatory penalties",
+      "It is only a problem if the email is intercepted; the probability is low enough to be acceptable",
+      "Lab results are not considered PHI and can be sent without encryption"
+     ],
+     "correctIndex": 1,
+     "explanation": "HIPAA requires appropriate safeguards for all PHI in transit. Standard email is not encrypted end-to-end and does not meet the minimum technical safeguard standard for electronic PHI transmission."
+    },
+    {
+     "text": "What is the PRIMARY difference between an EMR (Electronic Medical Record) and an EHR (Electronic Health Record)?",
+     "options": [
+      "EMRs are used in hospitals while EHRs are used in outpatient clinics",
+      "An EMR is a digital version of a single provider's paper chart used within one practice; an EHR is designed to share patient information across multiple providers and care settings",
+      "EHRs contain billing information while EMRs contain only clinical notes",
+      "EMRs are the older technology and EHRs are the modern replacement with no functional difference"
+     ],
+     "correctIndex": 1,
+     "explanation": "The key distinction is interoperability. EMRs are practice-specific; EHRs are designed for cross-provider sharing—enabling care coordination across specialists, hospitals, and primary care providers."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "mchit-course-2",
+   "courseTitle": "Medical Terminology and Anatomy",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Discovery Expert",
+   "missionTagline": "Prove you can decode medical terminology to support accurate coding",
+   "skillLabels": [
+    "Medical terminology",
+    "Anatomy basics",
+    "Root words/prefixes/suffixes",
+    "Clinical documentation",
+    "Attention to detail"
+   ],
+   "scenarioPrompt": "A physician's note reads: 'Patient presents with acute myocardial infarction with dyspnea and diaphoresis.' A medical coder needs to identify the correct diagnosis. Using your medical terminology knowledge, break down each term and explain how understanding the components ensures accurate code selection.",
+   "quiz": [
+    {
+     "text": "A medical coder reads 'hypertension' in a chart. Using medical terminology word analysis, what does this term mean?",
+     "options": [
+      "Low blood pressure — 'hyper' means below normal in medical terminology",
+      "Abnormally high blood pressure — 'hyper' means excessive or above normal, 'tension' in this context refers to arterial blood pressure",
+      "Rapid heartbeat — 'hyper' refers to speed and 'tension' refers to cardiac muscle contraction",
+      "Inflammation of the arteries — 'hyper' indicates severity and 'tension' refers to vessel wall stress"
+     ],
+     "correctIndex": 1,
+     "explanation": "The prefix 'hyper-' means above or excessive. In the context of 'tension' (pressure), hypertension = abnormally high blood pressure. This is one of the most common terms a medical coder encounters."
+    },
+    {
+     "text": "A physician documents 'appendectomy' in the operative report. A coder needs to identify what procedure was performed. What does this term indicate?",
+     "options": [
+      "Inflammation of the appendix requiring antibiotic treatment",
+      "Surgical removal of the appendix — 'append' refers to the appendix and '-ectomy' is the suffix meaning surgical removal or excision",
+      "A biopsy of the appendix tissue for laboratory analysis",
+      "Imaging of the appendix using CT scan technology"
+     ],
+     "correctIndex": 1,
+     "explanation": "The suffix '-ectomy' consistently means surgical removal. Identifying this suffix in any term immediately tells a coder a surgical removal procedure was performed, regardless of the root organ word."
+    },
+    {
+     "text": "A coder sees 'nephro/o' as a combining form in a procedure note. Which body system does this term relate to?",
+     "options": [
+      "Nervous system — 'nephro' relates to nerve pathways",
+      "Renal/urinary system — 'nephro' is the combining form for kidney, used in terms like nephrology, nephrectomy, and nephritis",
+      "Respiratory system — 'nephro' relates to breathing capacity",
+      "Musculoskeletal system — 'nephro' relates to connective tissue"
+     ],
+     "correctIndex": 1,
+     "explanation": "Nephro- is the Greek combining form for kidney. Recognizing this root allows a coder to immediately identify kidney-related procedures and diagnoses, directing them to the correct code set section."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "mchit-course-3",
+   "courseTitle": "Health Information Management",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Operations Pro",
+   "missionTagline": "Prove you can manage health records efficiently and compliantly",
+   "skillLabels": [
+    "Records management",
+    "Release of information",
+    "Retention policies",
+    "HIPAA",
+    "Organizational skills"
+   ],
+   "scenarioPrompt": "A patient calls requesting a copy of their complete medical records from the past 5 years to share with a new specialist. Your office has a records release policy and HIPAA requirements to follow. Using your Health Information Management knowledge, describe the step-by-step process for fulfilling this request.",
+   "quiz": [
+    {
+     "text": "A patient calls and asks your office to fax their records directly to their new specialist without signing an authorization form first. What should you do?",
+     "options": [
+      "Fax the records immediately since the patient is verbally consenting on the phone",
+      "Explain that a signed written authorization is required before releasing records to any third party, even at the patient's verbal request, and send or provide the authorization form for the patient to sign",
+      "Fax the records and follow up with the authorization form afterward",
+      "Release the records since the specialist is a licensed healthcare provider and no authorization is needed"
+     ],
+     "correctIndex": 1,
+     "explanation": "HIPAA requires a valid written authorization for most third-party disclosures. A verbal request on the phone does not satisfy the authorization requirement—even when it is the patient calling."
+    },
+    {
+     "text": "A hospital's records retention policy requires keeping adult patient records for 10 years. A records manager finds records from 15 years ago that were never destroyed. What should be done?",
+     "options": [
+      "Destroy all 15-year-old records immediately since they are past the retention period",
+      "Review records individually for any active legal holds, ongoing care relationships, or special circumstances before destruction; destroy only those that are clearly past retention with no exceptions, using a compliant destruction method and documenting the destruction",
+      "Keep all records indefinitely since the cost of storage is lower than the risk of destroying needed records",
+      "Move the records to a cheaper storage tier but do not destroy them in case they are ever needed"
+     ],
+     "correctIndex": 1,
+     "explanation": "Retention policies define minimums, not automatic destruction triggers. Legal holds, active litigation, or ongoing care can require retention beyond the standard period. Compliant destruction with documentation protects the organization."
+    },
+    {
+     "text": "HIPAA's Minimum Necessary Standard applies to a records release request. A researcher requests all records for patients with diabetes from 2020-2023. What does minimum necessary require?",
+     "options": [
+      "Release only the most recent record for each patient since that contains the most current information",
+      "Release only the specific data elements the researcher needs for their stated purpose—not the complete medical record—unless the researcher can justify that the full record is required",
+      "Release all records since researchers have special HIPAA exemptions for public health purposes",
+      "Require the researcher to obtain individual patient authorizations before releasing any records"
+     ],
+     "correctIndex": 1,
+     "explanation": "The minimum necessary standard requires organizations to disclose only the information reasonably needed to accomplish the purpose. For research, this typically means specific data fields rather than complete chart downloads."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "mchit-course-4",
+   "courseTitle": "Electronic Health Records (EHR)",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can navigate and use EHR systems effectively",
+   "skillLabels": [
+    "EHR navigation",
+    "Data entry",
+    "Clinical documentation",
+    "Meaningful Use",
+    "Attention to detail"
+   ],
+   "scenarioPrompt": "A new medical assistant is learning to use the practice's EHR system. They need to document a patient visit: record vitals, enter the chief complaint, update the medication list, and flag an allergy. Using your EHR knowledge from this course, walk them through each step and explain why documentation accuracy matters.",
+   "quiz": [
+    {
+     "text": "A medical assistant enters a patient's penicillin allergy as a 'note' in the free-text comments field rather than in the designated allergy module of the EHR. Why is this a clinical safety risk?",
+     "options": [
+      "The note field has a character limit that may truncate the allergy information",
+      "Clinical decision support alerts that warn prescribers about drug allergies only check the structured allergy module—a penicillin allergy in a free-text comment will not trigger an alert if the provider prescribes amoxicillin, potentially causing a serious adverse reaction",
+      "Free-text fields are visible to unauthorized staff while the allergy module is access-restricted",
+      "Notes entered in free-text are not included in the patient summary sent to other providers"
+     ],
+     "correctIndex": 1,
+     "explanation": "EHR clinical decision support checks structured data fields. An allergy documented only as free text bypasses all automated safety alerts—the most dangerous documentation error a medical assistant can make."
+    },
+    {
+     "text": "A provider documents a patient visit but does not include the level of medical decision-making complexity required to support the E/M code billed. What is the consequence?",
+     "options": [
+      "The claim is automatically upgraded to the highest level since the provider is board-certified",
+      "The claim may be denied, downcoded, or flagged in an audit—the documentation must support the level of service billed; insufficient documentation is the leading cause of E/M claim denials",
+      "The billing department can infer the correct level from the diagnosis codes submitted",
+      "There is no consequence since the EHR system assigns the E/M level automatically based on visit duration"
+     ],
+     "correctIndex": 1,
+     "explanation": "Medical necessity documentation must support the code billed. Insufficient documentation of medical decision-making is the most common reason E/M claims are audited or denied—coders can only code what is documented."
+    },
+    {
+     "text": "An EHR system prompts a provider with a clinical decision support alert when they attempt to prescribe a medication that interacts with another drug the patient is already taking. The provider clicks 'override' without reading it. What is the PRIMARY concern?",
+     "options": [
+      "The override wastes time and adds unnecessary clicks to the prescribing workflow",
+      "Alert fatigue—when providers routinely override CDS alerts without review, both meaningful and non-meaningful alerts are dismissed indiscriminately; this negates the safety value of clinical decision support and increases adverse drug event risk",
+      "The EHR vendor may revoke the provider's license to override alerts",
+      "The override creates a HIPAA audit trail that could be used against the provider in a malpractice case"
+     ],
+     "correctIndex": 1,
+     "explanation": "Alert fatigue is a recognized patient safety problem in EHR systems. When every alert is overridden by reflex, the critical safety alerts are treated the same as nuisance alerts—eliminating the protective function of CDS."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "mchit-course-5",
+   "courseTitle": "Healthcare Law, Ethics & HIPAA",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Help Desk Pro",
+   "missionTagline": "Prove you can navigate healthcare privacy law and ethics on the job",
+   "skillLabels": [
+    "HIPAA Privacy Rule",
+    "HIPAA Security Rule",
+    "Patient rights",
+    "Healthcare ethics",
+    "Communication"
+   ],
+   "scenarioPrompt": "A hospital receptionist tells you they gave a patient's room number and diagnosis to a person who called claiming to be the patient's spouse. No authorization was on file. Using your HIPAA and healthcare law knowledge from this course, explain what went wrong, what the receptionist should have done, and what the compliance implications are.",
+   "quiz": [
+    {
+     "text": "A patient's adult child calls asking about their parent's test results. The patient has not listed this person on their HIPAA authorization form. What should the healthcare worker do?",
+     "options": [
+      "Share the results since immediate family members are automatically authorized to receive medical information",
+      "Decline to confirm or deny any patient information and explain that a signed authorization from the patient is required before disclosing health information to any third party",
+      "Ask the caller to provide the patient's date of birth and insurance ID as verification before sharing results",
+      "Transfer the call to the treating physician who has the authority to decide whether to share information with family"
+     ],
+     "correctIndex": 1,
+     "explanation": "HIPAA does not grant family members automatic access to patient information. Only the patient or their legally authorized representative can authorize disclosure. Date-of-birth verification does not satisfy the authorization requirement."
+    },
+    {
+     "text": "A healthcare employee posts about a difficult patient encounter on social media without using the patient's name. They describe the patient's unusual diagnosis, approximate age, and the rural town they are from. Is this a HIPAA violation?",
+     "options": [
+      "No, because the patient's name was not mentioned",
+      "Yes, because the combination of diagnosis, age, and geographic location could reasonably identify the patient—HIPAA protects individually identifiable health information, not just named records",
+      "No, because social media posts are personal expression and not covered by HIPAA",
+      "Yes, but only if the patient's employer or insurer could see the post"
+     ],
+     "correctIndex": 1,
+     "explanation": "HIPAA's de-identification standard requires removing 18 specific identifiers. A combination of diagnosis, age range, and small geographic location can be enough to identify a patient—especially in a small town."
+    },
+    {
+     "text": "A covered entity discovers a laptop containing unencrypted PHI was stolen from an employee's car. What is the organization's obligation under HIPAA?",
+     "options": [
+      "No obligation as long as the employee reports the theft to police within 24 hours",
+      "Conduct a breach risk assessment to determine if PHI was compromised; if the assessment cannot rule out exposure, notify affected patients within 60 days, notify HHS, and if 500+ individuals are affected, notify prominent media in the affected state",
+      "Replace the laptop and implement a password policy to prevent future incidents—no patient notification is required for physical theft",
+      "Notify HHS only if the stolen device was accessed by an unauthorized person"
+     ],
+     "correctIndex": 1,
+     "explanation": "HIPAA's Breach Notification Rule requires a four-factor risk assessment. Unencrypted stolen hardware is presumed to be a breach unless the assessment demonstrates low probability of PHI compromise—patient and HHS notification follows."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "mchit-course-6",
+   "courseTitle": "Medical Coding: ICD-10 and CPT",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Analytics Pro",
+   "missionTagline": "Prove you can select accurate ICD-10 and CPT codes from documentation",
+   "skillLabels": [
+    "ICD-10-CM",
+    "CPT coding",
+    "Code selection",
+    "Documentation review",
+    "Attention to detail"
+   ],
+   "scenarioPrompt": "A physician's note documents: 'Patient seen for follow-up of type 2 diabetes mellitus with diabetic chronic kidney disease, stage 3. Patient also treated for essential hypertension. Blood glucose management counseling provided.' Using your ICD-10 and CPT knowledge from this course, identify the appropriate diagnosis codes and what documentation would be needed to support an E/M code.",
+   "quiz": [
+    {
+     "text": "A coder finds that a physician documented 'chest pain' in the assessment but the discharge summary clearly states 'acute myocardial infarction.' Which diagnosis should be coded for the inpatient encounter?",
+     "options": [
+      "Chest pain, because that is what the physician documented in the assessment section",
+      "Acute myocardial infarction, because inpatient coding guidelines require coding the confirmed final diagnosis rather than signs or symptoms when a definitive diagnosis is available at discharge",
+      "Both chest pain and acute myocardial infarction since both appear in the documentation",
+      "Chest pain with acute myocardial infarction as a secondary diagnosis since symptoms should always be sequenced first"
+     ],
+     "correctIndex": 1,
+     "explanation": "Inpatient coding guidelines (UHDDS) require reporting the definitive diagnosis established at discharge. Signs and symptoms are not coded separately when they are integral to the confirmed diagnosis."
+    },
+    {
+     "text": "A coder is assigning a CPT code for a surgical procedure and finds two codes that seem to describe the procedure. The guidelines note that one code is a 'parent code' and the other is an 'add-on code.' What does this mean?",
+     "options": [
+      "The parent code is for the attending physician and the add-on code is for the assistant surgeon",
+      "Add-on codes describe additional work performed at the same session as the parent procedure and cannot be billed alone; they must always be reported with the designated parent code",
+      "The add-on code is an optional additional charge that can be added to any procedure",
+      "Parent codes apply to the first occurrence of a procedure and add-on codes apply to each subsequent occurrence"
+     ],
+     "correctIndex": 1,
+     "explanation": "CPT add-on codes (+) are always paired with specific parent codes. They describe work that accompanies a primary procedure and are never reported alone—understanding this pairing relationship prevents claim rejections."
+    },
+    {
+     "text": "A physician documents that a patient has 'possible pneumonia' and orders further testing. This is an outpatient encounter. Which should the coder report?",
+     "options": [
+      "Pneumonia, using the confirmed code since 'possible' is likely the physician's clinical assessment",
+      "The presenting signs and symptoms (e.g., fever, cough, shortness of breath) because outpatient coding guidelines prohibit reporting 'possible,' 'probable,' or 'suspected' diagnoses—only confirmed or established conditions are coded outpatient",
+      "Both the symptoms and the possible diagnosis to give the payer maximum information",
+      "Possible pneumonia using an unspecified pneumonia code to indicate diagnostic uncertainty"
+     ],
+     "correctIndex": 1,
+     "explanation": "Outpatient coding guidelines explicitly prohibit coding uncertain diagnoses. Signs and symptoms are coded until a confirmed diagnosis is established—the opposite of inpatient guidelines."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "mchit-course-7",
+   "courseTitle": "Revenue Cycle Management",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Project Commander",
+   "missionTagline": "Prove you can optimize the healthcare revenue cycle from visit to payment",
+   "skillLabels": [
+    "Revenue cycle",
+    "Claims management",
+    "Denial management",
+    "AR follow-up",
+    "Analytical thinking"
+   ],
+   "scenarioPrompt": "A medical practice has a 34% claim denial rate and aging accounts receivable over 90 days totaling $180,000. The billing manager asks for your assessment and a prioritized action plan. Using your revenue cycle management knowledge from this course, describe how you would approach this problem.",
+   "quiz": [
+    {
+     "text": "A practice's top three denial reasons are: missing prior authorization (40%), incorrect patient insurance information (35%), and coding errors (25%). Which prevention strategy addresses the largest single denial category?",
+     "options": [
+      "Hire additional coders to reduce the error rate on submitted claims",
+      "Implement a pre-authorization workflow that verifies and obtains required authorizations before scheduling procedures, preventing 40% of denials before the claim is ever submitted",
+      "Appeal all denied claims regardless of reason since appeal success rates are typically 60%",
+      "Switch to a different clearinghouse that screens claims more thoroughly before submission"
+     ],
+     "correctIndex": 1,
+     "explanation": "Preventing denials is always more efficient than appealing them. A pre-authorization verification workflow eliminates the largest single denial category—missing auth—before the service is rendered."
+    },
+    {
+     "text": "A billing department has $180,000 in accounts receivable over 90 days old. They have capacity to work 50 accounts this week. Which accounts should be prioritized?",
+     "options": [
+      "The oldest accounts first since they are at the highest risk of becoming uncollectable",
+      "The highest-balance accounts within the 90-120 day bucket, focusing on payers with the highest appeal success rate—this approach maximizes revenue recovery per hour of staff time",
+      "Accounts approaching the payer's timely filing deadline, regardless of balance size",
+      "The most recent accounts in the 90-day bucket to prevent them from aging further"
+     ],
+     "correctIndex": 1,
+     "explanation": "Revenue cycle prioritization balances balance size, timely filing risk, and payer behavior. High-balance accounts approaching filing limits get immediate attention; smaller balances are batched. Timely filing deadlines are a secondary filter to prevent permanent loss."
+    },
+    {
+     "text": "A practice's clean claim rate is 78%—meaning 22% of claims submitted require correction before payment. What does this metric most directly indicate about the practice's operations?",
+     "options": [
+      "The payer mix includes too many government payers who have stricter claim requirements",
+      "There are systematic upstream errors in registration, coding, or charge capture that should be identified through root cause analysis of denied and rejected claims and fed back to the relevant staff for process improvement",
+      "A 78% clean claim rate is industry standard and does not require improvement",
+      "The clearinghouse is introducing errors during claim transmission and should be replaced"
+     ],
+     "correctIndex": 1,
+     "explanation": "A 78% clean claim rate means 22% of claims require rework—a significant revenue cycle inefficiency. Root cause analysis of rejected claims identifies the specific upstream failures (registration errors, missing information, coding mistakes) driving the rate."
+    }
+   ]
+  },
+  {
+   "order": 8,
+   "courseSlug": "mchit-course-8",
+   "courseTitle": "Capstone: HIT Practice Simulation",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Help Desk Pro",
+   "missionTagline": "Prove you can handle a full HIT workflow from patient intake to claim",
+   "skillLabels": [
+    "End-to-end HIT workflow",
+    "EHR documentation",
+    "Medical coding",
+    "Revenue cycle",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are presenting your HIT capstone simulation to a hiring panel at a medical practice. Walk them through a complete patient encounter cycle: from verifying eligibility at check-in, through clinical documentation, to coding the visit and submitting a clean claim. Identify the two points in the cycle where errors are most costly.",
+   "quiz": [
+    {
+     "text": "A patient arrives for a procedure that requires prior authorization. The front desk forgot to verify authorization before the visit. The procedure is performed and the claim is denied. Who bears the financial responsibility?",
+     "options": [
+      "The payer, because the procedure was medically necessary",
+      "The practice, because the failure to obtain required prior authorization is an administrative error—the payer's contract terms typically prohibit billing the patient for services denied due to the practice's failure to follow authorization requirements",
+      "The patient, because they are responsible for understanding their own insurance benefits",
+      "The referring physician, because they should have confirmed authorization before referring the patient"
+     ],
+     "correctIndex": 1,
+     "explanation": "Authorization failures are the practice's administrative responsibility. Payer contracts often prohibit balance billing patients for denials caused by the practice's failure to comply with prior authorization requirements."
+    },
+    {
+     "text": "During a capstone simulation, a coder assigns a higher-complexity E/M code than the documentation supports. A reviewer catches this. What is this called and what is the compliance risk?",
+     "options": [
+      "Upcoding—assigning a higher-level code than the documentation justifies; this constitutes fraud if intentional and can result in payer audits, repayment demands, civil monetary penalties, and OIG investigation",
+      "Unbundling—separately coding services that should be reported together under one code",
+      "Modifier misuse—applying an incorrect modifier to increase reimbursement",
+      "This is a minor documentation error with no compliance implications if corrected before submission"
+     ],
+     "correctIndex": 0,
+     "explanation": "Upcoding is a federal False Claims Act violation when intentional. Even unintentional patterns of upcoding identified in an audit require repayment. Every code must be supported by documentation—no exceptions."
+    },
+    {
+     "text": "A practice simulation shows that claims scrubbed by a clearinghouse have a 96% first-pass acceptance rate versus 72% without scrubbing. What does claim scrubbing do that produces this improvement?",
+     "options": [
+      "It adds missing diagnosis codes automatically based on the procedure codes submitted",
+      "It checks claims against payer-specific edit rules before submission—identifying format errors, missing required fields, invalid code combinations, and eligibility mismatches that would cause denials, allowing correction before the claim reaches the payer",
+      "It prioritizes high-value claims so they are processed faster by the payer",
+      "It converts paper claims to electronic format which payers process more accurately"
+     ],
+     "correctIndex": 1,
+     "explanation": "Clearinghouse claim scrubbing applies hundreds of payer-specific edits before submission. Catching errors pre-submission is faster and cheaper than correcting denied claims post-payment—the 24-point improvement in first-pass rate represents significant revenue cycle efficiency."
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,436 @@
+{
+ "programSlug": "certified-production-technician-cpt",
+ "programTitle": "Certified Production Technician (CPT)",
+ "category": "manufacturing",
+ "categoryLabel": "Manufacturing",
+ "brandColor": "#1a1a1a",
+ "providers": null,
+ "programDescription": null,
+ "hasTwcSyllabus": false,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "cpt-course-1",
+   "courseTitle": "Introduction to Manufacturing",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you understand the manufacturing environment and your role in it",
+   "skillLabels": [
+    "Manufacturing fundamentals",
+    "Production processes",
+    "Quality basics",
+    "Safety overview",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are starting your first week on a production floor. Your supervisor explains you will rotate through three workstations before settling into a role. Using your Introduction to Manufacturing knowledge, describe what you would observe and learn at each station to understand how your work fits into the larger production process.",
+   "quiz": [
+    {
+     "text": "A production worker notices their workstation is producing parts 30% faster than the next workstation, causing parts to pile up between stations. What manufacturing problem does this represent?",
+     "options": [
+      "An efficiency achievement—the faster workstation should be recognized for exceeding targets",
+      "A bottleneck and inventory buildup problem—in a balanced production line, each station should produce at the same rate (takt time); the pileup indicates line imbalance that disrupts flow and hides quality defects",
+      "A staffing issue—more workers should be added to the slower downstream station",
+      "A scheduling error—the production plan was not properly sequenced for this product"
+     ],
+     "correctIndex": 1,
+     "explanation": "Work-in-process inventory buildup between stations signals line imbalance. Parts accumulating between stations hide quality problems, create handling damage risk, and signal that flow production principles have not been applied."
+    },
+    {
+     "text": "A manufacturing plant uses a 'pull' production system. A downstream workstation signals it needs more parts. What happens in a pull system?",
+     "options": [
+      "The production manager schedules the upstream station to produce parts based on the weekly forecast",
+      "The upstream workstation produces only the quantity signaled by the downstream station's demand—nothing is produced until there is a pull signal from the next step in the process",
+      "The warehouse ships parts from inventory to the downstream station regardless of current demand",
+      "All workstations increase production simultaneously to build a buffer against future demand"
+     ],
+     "correctIndex": 1,
+     "explanation": "Pull systems (the foundation of lean/JIT manufacturing) produce only what is needed, when it is needed, in the quantity needed. This eliminates overproduction—the most wasteful of the seven manufacturing wastes."
+    },
+    {
+     "text": "A new production technician is asked to document their workstation's standard work instructions. Why is standardizing work procedures important in manufacturing?",
+     "options": [
+      "Standard work documentation is required by OSHA for all manufacturing jobs",
+      "Standardized procedures ensure every operator performs the task the same way—producing consistent quality, enabling cross-training, establishing a baseline for improvement, and making deviations immediately visible",
+      "Standard work prevents operators from suggesting process improvements since changes must be formally approved",
+      "Documentation protects the company from liability when operators make mistakes"
+     ],
+     "correctIndex": 1,
+     "explanation": "Standard work is the foundation of quality and continuous improvement. You cannot improve a process that is not standardized—variation in methods produces variation in output, and you cannot identify what to improve without a baseline."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "cpt-course-2",
+   "courseTitle": "Blueprint Reading and Technical Drawing",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Design Thinker",
+   "missionTagline": "Prove you can read and interpret technical drawings accurately",
+   "skillLabels": [
+    "Blueprint reading",
+    "GD&T basics",
+    "Tolerances",
+    "Technical drawing",
+    "Attention to detail"
+   ],
+   "scenarioPrompt": "You are a production technician and receive a blueprint for a metal bracket with a drilled hole. The drawing shows the hole diameter as 25.00 ±0.05mm and specifies a perpendicularity tolerance of 0.1mm. Using your blueprint reading skills from this course, explain what these specifications mean and how you would verify the part meets them.",
+   "quiz": [
+    {
+     "text": "A blueprint shows a shaft diameter of 50.00 +0.00/-0.05mm. What is the acceptable size range for this shaft?",
+     "options": [
+      "Between 49.95mm and 50.05mm",
+      "Between 49.95mm and 50.00mm exactly — the +0.00 means no material can be added above nominal; the shaft can only be at or below 50.00mm, down to 49.95mm",
+      "Exactly 50.00mm with no tolerance allowed",
+      "Between 50.00mm and 50.05mm only"
+     ],
+     "correctIndex": 1,
+     "explanation": "+0.00/-0.05 is a unilateral tolerance. The nominal (50.00mm) is the maximum allowed size; the shaft can be as small as 49.95mm. This is common for shafts designed to fit into a bore without interference."
+    },
+    {
+     "text": "A drawing has three views: Front, Top, and Right Side. The front view shows a rectangular shape with a circular feature. The top view shows the same rectangle with a dashed circle. What does the dashed circle in the top view indicate?",
+     "options": [
+      "A surface finish requirement applied to the circular area of the part",
+      "A hidden line representing a feature (likely a hole or counterbore) that exists below the visible surface in the top view—dashed lines always represent features hidden from that viewing direction",
+      "An optional feature that may be added based on customer requirements",
+      "A centerline marking the axis of symmetry of the part"
+     ],
+     "correctIndex": 1,
+     "explanation": "Dashed (hidden) lines in technical drawings represent features not visible from that view angle. In the top view, a dashed circle below a surface indicates a hole or cavity on the underside of the part."
+    },
+    {
+     "text": "A production technician measures a finished part and finds a hole diameter of 24.92mm. The blueprint specifies 25.00 ±0.05mm. What should the technician do?",
+     "options": [
+      "Accept the part since 24.92mm is close enough to the specification for practical purposes",
+      "Reject the part as nonconforming — 24.92mm is outside the acceptable range of 24.95mm to 25.05mm and must be quarantined per the nonconforming material procedure",
+      "Rework the part by machining the hole slightly larger to bring it within specification",
+      "Accept the part with a deviation note since the hole is smaller, which errs on the side of caution"
+     ],
+     "correctIndex": 1,
+     "explanation": "A dimension outside tolerance is a nonconformance—period. The decision to rework, scrap, or use-as-is requires formal disposition through the quality system, not an individual technician's judgment. The first step is always quarantine and documentation."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "cpt-course-3",
+   "courseTitle": "Machining and CNC Operations",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can set up and run CNC machining operations safely",
+   "skillLabels": [
+    "CNC operation",
+    "G-code basics",
+    "Machining processes",
+    "Tool offset",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are a CNC operator preparing to run a new part program for the first time. The setup sheet specifies tooling, speeds, and feeds. Before running at full speed, you do a dry run without material. Using your CNC operations knowledge from this course, describe the pre-run checks and the dry run process.",
+   "quiz": [
+    {
+     "text": "A CNC operator loads a new program and starts it at full feed rate without a dry run. The spindle crashes into the workholding fixture. Which pre-run check would have prevented this?",
+     "options": [
+      "The operator should have read the program code line by line to look for errors",
+      "A dry run in single-block mode with feed rate override at 0-10% would have revealed the incorrect tool path before any contact with the fixture, allowing the operator to stop and correct the program",
+      "The machine's collision detection system should have stopped the spindle automatically",
+      "The programmer is responsible for verifying the program in simulation software before giving it to the operator"
+     ],
+     "correctIndex": 1,
+     "explanation": "Dry runs with feed rate override are standard practice for new programs. Running at reduced speed in single-block mode lets the operator verify each move before committing to full-speed production."
+    },
+    {
+     "text": "After a tool change, a CNC part is measuring 0.3mm too deep on all milled surfaces. What is the MOST likely cause?",
+     "options": [
+      "The CNC program was edited with an incorrect depth value",
+      "The tool length offset for the new tool was not updated—the machine is using the previous tool's length offset, causing all Z-axis positions to be 0.3mm off from the intended position",
+      "The workpiece is not flat and is rocking in the fixture",
+      "The material being cut is harder than specified and is deflecting the tool"
+     ],
+     "correctIndex": 1,
+     "explanation": "Tool length offsets compensate for each tool's unique length. Using a different tool without updating the offset displaces all Z-axis moves by the length difference—a systematic error affecting every cut by the same amount."
+    },
+    {
+     "text": "A CNC operator notices a high-pitched squealing sound and sees blue smoke coming from the cutting area. What should they do IMMEDIATELY?",
+     "options": [
+      "Continue running and monitor whether the smoke increases before stopping",
+      "Stop the machine immediately using the emergency stop or feed hold, then investigate the cause—smoke and squealing indicate severe cutting conditions, possible tool failure, or incorrect speeds/feeds that can damage the part, tooling, and machine",
+      "Increase the coolant flow to suppress the smoke and reduce heat",
+      "Decrease the feed rate by 10% to reduce the cutting force"
+     ],
+     "correctIndex": 1,
+     "explanation": "Smoke and abnormal noise indicate an immediate problem—a broken tool, missing coolant, or wrong speeds/feeds. Continuing without stopping risks workpiece damage, tooling loss, machine damage, and potential safety hazard."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "cpt-course-4",
+   "courseTitle": "Welding Fundamentals",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can identify welding processes and quality requirements",
+   "skillLabels": [
+    "Welding processes",
+    "Weld symbols",
+    "Quality inspection",
+    "Safety",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are a production technician inspecting welded assemblies before they ship to a customer. The blueprint specifies a 6mm fillet weld on all four sides of a bracket joint. You find one weld that is 4mm and shows porosity. Using your welding knowledge from this course, describe how you would handle this nonconformance.",
+   "quiz": [
+    {
+     "text": "A weld symbol on a blueprint shows a fillet weld with the number '8' below the horizontal line. What does this specify?",
+     "options": [
+      "The weld must be completed in 8 passes",
+      "The fillet weld size is 8mm — the number adjacent to the weld symbol on the arrow side specifies the leg size of the fillet weld",
+      "The weld requires 8mm of overlap with the base metal",
+      "The weld should be performed 8mm from the edge of the joint"
+     ],
+     "correctIndex": 1,
+     "explanation": "Weld symbols use standardized notation where the number adjacent to the fillet weld symbol specifies the leg size. An 8mm fillet has legs of 8mm—a larger size indicates greater strength and penetration requirements."
+    },
+    {
+     "text": "A welder uses contaminated base metal with rust and oil on the surface before welding. What weld defect is MOST likely to result?",
+     "options": [
+      "Undercutting — the base metal surface is melted away at the weld toe",
+      "Porosity — gas from the contamination (oil vapor, rust) is trapped in the solidifying weld metal, creating voids that weaken the joint",
+      "Cold cracking — the contamination causes hydrogen embrittlement after cooling",
+      "Lack of fusion — the contamination prevents the weld pool from bonding to the base metal"
+     ],
+     "correctIndex": 1,
+     "explanation": "Oil and rust release gas when exposed to welding heat. Gas trapped in the weld pool before solidification creates porosity—small voids that reduce the weld's cross-sectional area and strength."
+    },
+    {
+     "text": "A production inspector finds a crack in a structural weld on a safety-critical assembly. The weld looks acceptable by visual inspection but the crack is detected by dye penetrant testing. What is the CORRECT response?",
+     "options": [
+      "Accept the part since the crack was not visible without special testing methods",
+      "Reject and quarantine the part immediately — cracks in structural welds are a critical defect regardless of detection method; the part must follow the nonconforming material process and the root cause must be investigated before production continues",
+      "Grind out the crack and re-weld the area without formal documentation since the repair is straightforward",
+      "Accept the part with a deviation since the crack is below the visual detection threshold and may not affect performance"
+     ],
+     "correctIndex": 1,
+     "explanation": "Cracks in structural welds are never acceptable regardless of size or detection method. They propagate under load and can lead to catastrophic failure. Immediate quarantine and root cause investigation are mandatory."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "cpt-course-5",
+   "courseTitle": "Quality Control and Inspection",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Insight Analyst",
+   "missionTagline": "Prove you can use quality tools to find and prevent defects",
+   "skillLabels": [
+    "SPC",
+    "Control charts",
+    "Measurement tools",
+    "Root cause analysis",
+    "Attention to detail"
+   ],
+   "scenarioPrompt": "Your quality team notices that a drilled hole diameter has been drifting toward the upper control limit on the control chart over the last 20 samples, even though no points have exceeded the limit yet. Using your quality control and SPC knowledge from this course, explain what this trend indicates and what action should be taken.",
+   "quiz": [
+    {
+     "text": "A control chart shows 8 consecutive data points above the centerline, all within the control limits. Should the operator take action?",
+     "options": [
+      "No — all points are within control limits so the process is in statistical control",
+      "Yes — eight consecutive points on one side of the centerline is a Western Electric run rule violation indicating a non-random shift in the process mean; action should be taken to investigate and correct the cause before a point exceeds the control limit",
+      "No — action is only required when a point exceeds the upper or lower control limit",
+      "Yes — but only if the next point also falls above the centerline, making it nine consecutive points"
+     ],
+     "correctIndex": 1,
+     "explanation": "Control charts use run rules beyond just limit violations. Eight consecutive points above the centerline indicates a non-random pattern—statistically, this is very unlikely to occur by chance and signals a real process shift requiring investigation."
+    },
+    {
+     "text": "A measurement technician measures the same part five times with a micrometer and gets five different readings: 25.01, 24.99, 25.03, 24.98, 25.02mm. The specification is 25.00 ±0.05mm. What does this variation in repeated measurements indicate?",
+     "options": [
+      "The part dimensions are inconsistent and the part should be rejected",
+      "The measurement system has repeatability variation (gauge R&R issue) — the micrometer, technique, or the technician's reading consistency is contributing to measurement error that must be understood before trusting inspection results",
+      "The part is at the center of the tolerance and all readings are acceptable",
+      "Normal measurement variation; this level of spread is expected for all precision instruments"
+     ],
+     "correctIndex": 1,
+     "explanation": "Variation in repeated measurements of the same stable part reflects measurement system error. A Gauge R&R study quantifies how much of observed variation is from the measurement system vs. the process—measurement error must be small relative to the tolerance."
+    },
+    {
+     "text": "A fishbone (Ishikawa) diagram is used during a quality investigation of increased scrap rates. Which categories does this tool systematically explore?",
+     "options": [
+      "Cost, schedule, quality, and safety — the four dimensions of manufacturing performance",
+      "Man, Machine, Material, Method, Measurement, and Environment — the 6M categories that represent the major potential causes of a quality problem",
+      "Define, Measure, Analyze, Improve, and Control — the DMAIC problem-solving phases",
+      "Customer, supplier, input, process, and output — the SIPOC supply chain model"
+     ],
+     "correctIndex": 1,
+     "explanation": "The fishbone diagram organizes potential causes into the 6M categories. This structured brainstorming tool ensures no major cause category is overlooked during root cause analysis—each 'bone' represents one category with specific causes branching off."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "cpt-course-6",
+   "courseTitle": "Safety and OSHA Compliance",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Client Champion",
+   "missionTagline": "Prove you can identify hazards and keep your team safe",
+   "skillLabels": [
+    "OSHA standards",
+    "Hazard identification",
+    "PPE requirements",
+    "Lockout/Tagout",
+    "Safety culture"
+   ],
+   "scenarioPrompt": "You are a production technician who notices that a machine guard has been removed from a press brake and is sitting on a nearby shelf. Your supervisor is not in the area and the operator is about to start the next production run. Using your OSHA and safety knowledge from this course, describe how you would handle this situation.",
+   "quiz": [
+    {
+     "text": "A production worker is about to perform maintenance on a conveyor while it is still energized because 'it will only take a second.' What OSHA standard applies and what must be done?",
+     "options": [
+      "The worker can proceed if they are moving quickly and another worker watches for movement",
+      "OSHA's Lockout/Tagout (LOTO) standard (29 CFR 1910.147) requires that all energy sources be isolated and locked out before any servicing or maintenance work begins — no exceptions for short-duration tasks",
+      "The worker must wear additional PPE (heavy gloves) to compensate for the energized state during quick maintenance",
+      "The LOTO standard only applies to electrical energy; pneumatic systems have a separate procedure"
+     ],
+     "correctIndex": 1,
+     "explanation": "LOTO has no time exceptions. 'Just a second' tasks cause severe injuries and fatalities every year because unexpected machine energization takes less than a second. The standard requires complete energy isolation regardless of task duration."
+    },
+    {
+     "text": "A safety data sheet (SDS) for a cleaning solvent lists the flash point as 15°C (59°F). What does this indicate about storage and handling in a manufacturing environment?",
+     "options": [
+      "The solvent needs to be stored above 15°C to prevent it from freezing",
+      "The solvent is highly flammable — its flash point is below room temperature, meaning it can ignite at normal working conditions; it must be stored in flammable storage cabinets away from ignition sources and used with appropriate ventilation and PPE",
+      "The flash point indicates the temperature at which the solvent evaporates, requiring specific ventilation above 15°C",
+      "No special precautions are needed since industrial facilities are typically kept below the flash point"
+     ],
+     "correctIndex": 1,
+     "explanation": "A flash point below ambient temperature means the solvent is constantly releasing flammable vapors in normal conditions. This requires flammable-rated storage, bonding and grounding during transfer, and fire suppression controls."
+    },
+    {
+     "text": "A production technician reports a near-miss incident where a part ejected from a lathe narrowly missed another worker. The supervisor says 'nobody got hurt so we don't need to report it.' What is the correct response?",
+     "options": [
+      "Agree with the supervisor since OSHA only requires reporting actual injuries, not near-misses",
+      "Disagree and document the near-miss — near-miss reporting is a leading indicator of serious incidents; investigating and correcting the cause prevents the next occurrence from becoming an injury or fatality",
+      "Report the incident to OSHA directly since the supervisor is suppressing safety information",
+      "Wait to see if the same near-miss occurs again before escalating, since a single occurrence may be an anomaly"
+     ],
+     "correctIndex": 1,
+     "explanation": "Near-miss reporting is fundamental to safety culture. Near-misses reveal the same hazards as accidents without the injury—investigating them is the opportunity to fix the root cause before someone is hurt."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "cpt-course-7",
+   "courseTitle": "Lean Manufacturing Principles",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Project Commander",
+   "missionTagline": "Prove you can identify waste and improve production flow",
+   "skillLabels": [
+    "Lean principles",
+    "5S",
+    "Waste elimination",
+    "Value stream mapping",
+    "Continuous improvement"
+   ],
+   "scenarioPrompt": "You walk through a production area and observe: tools not returned to designated locations, operators waiting 2 minutes between each cycle for the machine to reset, partially completed assemblies stacked between workstations, and operators walking 50 feet to retrieve raw materials. Using your lean manufacturing knowledge from this course, identify the wastes present and prioritize one improvement.",
+   "quiz": [
+    {
+     "text": "A production area has tools, materials, and equipment scattered without designated locations. Operators spend an average of 8 minutes per shift searching for items. Which lean tool directly addresses this waste?",
+     "options": [
+      "Kanban — a visual signaling system for inventory replenishment",
+      "5S (Sort, Set in order, Shine, Standardize, Sustain) — a workplace organization methodology that assigns specific locations to every item, making the standard condition visual and searchable time zero",
+      "SMED (Single Minute Exchange of Die) — a methodology for reducing setup and changeover time",
+      "Poka-yoke — error-proofing devices that prevent mistakes during production"
+     ],
+     "correctIndex": 1,
+     "explanation": "5S creates visual order in the workplace. 'Set in order' assigns a designated place to every item with visual indicators; 'Standardize' maintains it. Eliminating search time is one of 5S's most immediate productivity benefits."
+    },
+    {
+     "text": "A value stream map shows that a part spends 3 hours in production but 21 hours waiting between processes. What does this reveal about the production system?",
+     "options": [
+      "The production process is highly efficient since value-added time is concentrated in a short window",
+      "Only 12.5% of the lead time is value-added (3÷24 hrs); 87.5% is non-value-added waiting — the biggest improvement opportunity is reducing the wait time between processes, not speeding up the production steps themselves",
+      "The waiting time is acceptable since it allows batches to accumulate for efficient processing",
+      "The value stream map is inaccurate; 21 hours of waiting is not possible in a lean facility"
+     ],
+     "correctIndex": 1,
+     "explanation": "Value stream maps frequently reveal that value-added time is a small fraction of total lead time. The improvement opportunity is almost always in the waiting and non-value-added time—not in the value-added steps that are already lean."
+    },
+    {
+     "text": "A production team implements a kaizen event and reduces a changeover time from 90 minutes to 25 minutes. Which lean principle does this improvement support and what business benefit does it create?",
+     "options": [
+      "5S — organizing the changeover tools reduces the time spent searching for items",
+      "SMED (Single Minute Exchange of Die) — reducing changeover time increases the frequency at which the line can switch between products, enabling smaller batch sizes, reduced inventory, and faster response to customer demand changes",
+      "Poka-yoke — the changeover now includes error-proofing steps that prevent incorrect setups",
+      "TPM (Total Productive Maintenance) — the changeover improvement reduces unplanned downtime"
+     ],
+     "correctIndex": 1,
+     "explanation": "SMED is the lean tool specifically for changeover reduction. Shorter changeovers enable smaller economical batch sizes, which reduces inventory, shortens lead times, and allows the production line to respond faster to changes in product mix."
+    }
+   ]
+  },
+  {
+   "order": 8,
+   "courseSlug": "cpt-course-8",
+   "courseTitle": "Production Technology Capstone",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you are ready to perform as a certified production technician",
+   "skillLabels": [
+    "End-to-end production skills",
+    "Quality",
+    "Safety",
+    "CNC operation",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are presenting your CPT capstone to a manufacturing hiring panel. They ask you to describe a production problem you identified and solved during your training, walk through the tools you used, and explain what you would do differently. Using the full skill set from this program, structure your answer.",
+   "quiz": [
+    {
+     "text": "During a capstone production run, a technician finds that 8 of 50 parts are out of tolerance on a drilled hole dimension. What is the FIRST action in a structured problem-solving response?",
+     "options": [
+      "Adjust the machine settings to correct the dimension and continue production",
+      "Quarantine the 8 nonconforming parts, stop production to prevent further defects, and begin root cause investigation—changing settings without understanding the cause may fix the symptom while the real cause continues",
+      "Accept the parts since 84% pass rate exceeds most quality standards",
+      "Notify the customer immediately about the potential quality issue"
+     ],
+     "correctIndex": 1,
+     "explanation": "Containment (quarantine + production stop) is always the first response to a quality excursion. Acting on the cause before containment risks shipping defective parts or producing hundreds more while the investigation proceeds."
+    },
+    {
+     "text": "A panel member asks: 'What is the most important skill a production technician brings to a manufacturing team?' Which answer BEST demonstrates professional understanding of the role?",
+     "options": [
+      "Physical strength and stamina for operating heavy machinery throughout a full shift",
+      "Observational discipline — the ability to notice when something looks, sounds, or measures differently from standard, combined with the knowledge to take the right action; most production problems announce themselves before they become critical if someone is paying attention",
+      "Speed — producing parts as fast as possible to meet daily output targets",
+      "Technical knowledge of every machine on the production floor"
+     ],
+     "correctIndex": 1,
+     "explanation": "Observational discipline is what separates an average technician from an excellent one. Speed without quality creates scrap; broad machine knowledge helps but is incomplete without the judgment to act on abnormal conditions before they escalate."
+    },
+    {
+     "text": "A new job posting requires 'CPT certification and knowledge of lean manufacturing, blueprint reading, and OSHA compliance.' A candidate with this certificate asks how to demonstrate competency in an interview. What is the STRONGEST approach?",
+     "options": [
+      "List the course names from the certificate program and describe the topics covered",
+      "Bring specific examples: describe a part you inspected using a blueprint spec, a waste you identified and the lean tool you applied, and a safety hazard you recognized and addressed—concrete examples from real or simulated production experience demonstrate applied competency",
+      "Offer to take any skills test the employer provides since certification alone proves competency",
+      "Emphasize the number of hours spent in training and the passing score achieved on certification exams"
+     ],
+     "correctIndex": 1,
+     "explanation": "Employers hire competency, not credentials. Concrete examples using specific tools and real situations demonstrate that the candidate can apply knowledge in a production environment—certification shows the training happened; examples show it was absorbed."
+    }
+   ]
+  }
+ ]
+}
