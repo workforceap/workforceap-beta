@@ -340,8 +340,14 @@ const heroPhotoUrl3 = `url('${heroPhoto3}')`;
         });
       });
 
-      document.addEventListener('focusin', function (event) {
-        if (!openDrop || openDrop.contains(event.target)) return;
+      // focusout fires on the element that is losing focus, before the next
+      // element is focused. focusin arrives too late here: moving from a menu
+      // link to another trigger focuses that link first, so the open check
+      // still sees focus inside the menu and leaves it open.
+      document.addEventListener('focusout', function (event) {
+        if (!openDrop || !openDrop.contains(event.target)) return;
+        var next = event.relatedTarget;
+        if (next && openDrop.contains(next)) return;
         setOpen(openDrop, false);
       });
       document.addEventListener('pointerover', function (event) {

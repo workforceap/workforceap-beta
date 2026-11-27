@@ -1,13 +1,25 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { runInNewContext } from 'node:vm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const root = path.resolve(__dirname, '../..');
-const layout = readFileSync(path.resolve(root, 'marketing/src/layouts/Layout.astro'), 'utf8');
-const css = readFileSync(path.resolve(root, 'marketing/src/styles/blend.css'), 'utf8');
-const built = readFileSync(path.resolve(root, 'marketing/dist/programs/index.html'), 'utf8');
+const layoutPath = path.resolve(root, 'marketing/src/layouts/Layout.astro');
+const cssPath = path.resolve(root, 'marketing/src/styles/blend.css');
+const builtPath = path.resolve(root, 'marketing/dist/programs/index.html');
+const layout = readFileSync(layoutPath, 'utf8');
+const css = readFileSync(cssPath, 'utf8');
+const built = readFileSync(builtPath, 'utf8');
 const script = layout.match(/<script is:inline data-nav-menus>([\s\S]*?)<\/script>/)?.[1];
+const builtScript = built.match(/<script data-nav-menus>([\s\S]*?)<\/script>/)?.[1];
+
+if (!script) throw new Error('desktop nav keyboard script is missing from Layout.astro');
+if (statSync(builtPath).mtimeMs < Math.max(statSync(layoutPath).mtimeMs, statSync(cssPath).mtimeMs)) {
+  throw new Error('marketing/dist is older than the nav source; run the marketing build before this test');
+}
+if (!builtScript?.includes('focusout') || builtScript.trim() !== script.trim()) {
+  throw new Error('the built programs page does not contain the current nav script; rebuild marketing');
+}
 
 /** The three menus as the built programs page renders them. */
 function desktopMenus() {
@@ -17,11 +29,11 @@ function desktopMenus() {
   if (drops.length !== 3) {
     throw new Error(`expected 3 desktop menus on the built page, found ${drops.length}`);
   }
-  for (const menu of drops) {
-    if (!/aria-expanded="false"/.test(menu) || !/aria-controls="nav-menu-/.test(menu)) {
+  for (const item of drops) {
+    if (!/aria-expanded="false"/.test(item) || !/aria-controls="nav-menu-/.test(item)) {
       throw new Error('a built menu is missing aria-expanded or aria-controls');
     }
-    if (!/id="nav-menu-/.test(menu) || !/\shidden>/.test(menu)) {
+    if (!/id="nav-menu-/.test(item) || !/\shidden>/.test(item)) {
       throw new Error('a built menu is missing its id or the hidden attribute');
     }
   }
@@ -41,6 +53,14 @@ function start() {
 
 function press(key: string, target: Element = document.activeElement ?? document.body) {
   target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+}
+
+/** jsdom does not move focus on Tab, so follow the browser's focusout order. */
+function leaveTo(next: HTMLElement) {
+  const from = document.activeElement as HTMLElement;
+  const event = new FocusEvent('focusout', { bubbles: true, cancelable: true, relatedTarget: next });
+  from.dispatchEvent(event);
+  next.focus();
 }
 
 function trigger(name: string) {
@@ -123,11 +143,13 @@ describe('desktop marketing menus from the keyboard', () => {
     const about = trigger('About Us');
     about.focus();
     press('ArrowDown', about);
-    expect(menuOf('About Us').querySelector('a')).toHaveFocus();
+    const first = menuOf('About Us').querySelector('a') as HTMLAnchorElement;
+    expect(first).toHaveFocus();
 
-    trigger('Programs').focus();
+    leaveTo(trigger('Programs'));
     expect(about).toHaveAttribute('aria-expanded', 'false');
     expect(menuOf('About Us').hidden).toBe(true);
+    expect(about.parentElement).not.toHaveClass('is-open');
   });
 
   it('opens from a click and leaves the mobile drawer on details/summary', () => {
