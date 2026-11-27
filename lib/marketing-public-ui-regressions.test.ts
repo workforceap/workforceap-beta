@@ -15,6 +15,21 @@ test('program search hidden cards override the flex card layout', () => {
   assert.match(programs, /\.pcard\[hidden\]\s*\{\s*display\s*:\s*none\s*\}/);
 });
 
+test('the three Programs pathfinder links use the approved five-minute estimate', () => {
+  const programs = source('marketing/src/pages/programs.astro').replace(/<!--[\s\S]*?-->/g, '');
+  const linkLabels = Array.from(
+    programs.matchAll(/<a\b[^>]*\bhref="\/find-your-path"[^>]*>([^<]+)<\/a>/g),
+    ([, label]) => label.trim(),
+  );
+
+  assert.deepEqual(linkLabels.filter((label) => /pathfinder/i.test(label)), [
+    'Not sure? Take the 5-minute pathfinder&nbsp;→',
+    'Not sure? Take the 5-minute pathfinder',
+    'The pathfinder guide helps in about 5 minutes.',
+  ]);
+  assert.doesNotMatch(programs, /2-minute pathfinder|about two minutes/i);
+});
+
 test('program comparison pick-to-compare matrix is in the Astro page', () => {
   const page = source('marketing/src/pages/program-comparison.astro');
 
