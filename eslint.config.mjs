@@ -135,7 +135,9 @@ const config = [
   {
     // Astro's compiled assets are also staged into public before the Next build.
     // Keep handwritten public scripts in lint; ignore only generated chunks.
-    ignores: [".next/**", "marketing/dist/**", "public/_astro/**", "node_modules/**", ".claude/**", "assets/game-lab/vendor/**"],
+    // game-lab/vendor and the arcade's kit/vendor are vendored three.js builds.
+    // ESLint reads the minified "use…" identifiers as React hooks.
+    ignores: [".next/**", "marketing/dist/**", "public/_astro/**", "node_modules/**", ".claude/**", "assets/game-lab/vendor/**", "assets/game-lab/practice-arcade/kit/vendor/**"],
   },
   ...nextVitals,
   tseslint.configs.base,
