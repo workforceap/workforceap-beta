@@ -347,16 +347,14 @@ const heroPhotoUrl3 = `url('${heroPhoto3}')`;
       document.addEventListener('pointerover', function (event) {
         var drop = event.target.closest && event.target.closest('nav.top .navdrop');
         if (!drop || drop === openDrop) return;
-        var menu = drop.querySelector('.navdrop-menu');
-        if (menu) menu.hidden = false;
+        setOpen(drop, true);
       });
       document.addEventListener('pointerout', function (event) {
         var drop = event.target.closest && event.target.closest('nav.top .navdrop');
-        if (!drop || drop === openDrop) return;
+        if (!drop || drop !== openDrop) return;
         var next = event.relatedTarget && event.relatedTarget.closest && event.relatedTarget.closest('nav.top .navdrop');
         if (next === drop) return;
-        var menu = drop.querySelector('.navdrop-menu');
-        if (menu) menu.hidden = true;
+        setOpen(drop, false);
       });
     })();
   </script>
