@@ -287,7 +287,7 @@ test('every public <title>, og:title and twitter:title runs through the brand-su
 
 test('the marketing header uses one sign-in label on desktop and in the drawer', () => {
   const layout = source('marketing/src/layouts/Layout.astro');
-  const desktop = layout.match(/class="navdrop-trigger signin" href="\/login">([^<]+)</);
+  const desktop = layout.match(/class="navdrop-trigger signin"[^>]*>\s*(Sign in|Log in|Sign In|Log In)\s*</);
   const drawer = layout.match(/<summary>(Sign in|Log in|Sign In|Log In)</);
 
   assert.ok(desktop && drawer, 'expected the desktop sign-in trigger and the drawer summary');
