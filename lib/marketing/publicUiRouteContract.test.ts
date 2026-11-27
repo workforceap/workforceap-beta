@@ -326,6 +326,22 @@ test('small text-bearing labels on the public pages clear WCAG AA', () => {
   assert.ok(contrastRatio('#b8860b', cream![1]) < 4.5, 'the old bright gold would pass here now — revisit this case');
 });
 
+test('the FAQ asks how long programs take once and the sidebar group is not the first category', () => {
+  const faq = source('marketing/src/pages/faq.astro');
+  const frontmatter = faq.slice(0, faq.indexOf('---', 3));
+  const question = 'How long do programs take?';
+  const asked = [...frontmatter.matchAll(/q:\s*(['"])(.*?)\1/g)].map((match) => match[2]);
+
+  assert.equal(asked.filter((item) => item === question).length, 1);
+  assert.equal(asked.indexOf(question), asked.indexOf('How much do WorkforceAP programs cost?') + 3);
+
+  const groups = [...frontmatter.matchAll(/label:\s*'([^']+)'/g)].map((match) => match[1]);
+  const firstCategory = frontmatter.match(/key:\s*'([^']+)'/);
+  assert.ok(groups.length > 0 && firstCategory, 'expected sidebar groups and a first category');
+  assert.notEqual(groups[0], firstCategory![1]);
+  assert.equal(groups[0], 'Start here');
+});
+
 test('public copy in the default catalog uses US spelling', () => {
   const catalog = readFileSync(join(process.cwd(), 'messages/en.json'), 'utf8');
   const offenders = catalog.match(/\b(recognised|organisation|programme|colour|favourite|enrol)\b/gi) ?? [];
