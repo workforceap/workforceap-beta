@@ -1,0 +1,436 @@
+{
+ "programSlug": "ai-professional-developer-certificate-ibm",
+ "programTitle": "AI Professional Practitioner Certificate",
+ "category": null,
+ "categoryLabel": null,
+ "brandColor": null,
+ "providers": null,
+ "programDescription": null,
+ "hasTwcSyllabus": false,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "ai-dev-course-1",
+   "courseTitle": "Introduction to Software Engineering",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you understand the engineering foundation AI apps are built on",
+   "skillLabels": [
+    "SDLC",
+    "Software architecture",
+    "Cloud",
+    "DevOps",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are joining an AI product team as a junior developer. Your tech lead asks you to explain how the Software Development Lifecycle applies to an AI feature—specifically where AI development differs from traditional software development. Using your Introduction to Software Engineering knowledge, walk through the SDLC phases and note where AI introduces unique challenges.",
+   "quiz": [
+    {
+     "text": "A team is building an AI-powered resume screener. During the requirements phase, a product manager says 'it should screen resumes accurately.' Why is this requirement insufficient for an AI project?",
+     "options": [
+      "AI projects do not need formal requirements since the model learns them from data",
+      "The requirement lacks measurable criteria—an AI system requires defined accuracy thresholds, acceptable error types, bias constraints, and the data sources needed to train and evaluate the model",
+      "The requirement is sufficient; the development team can define accuracy during testing",
+      "Requirements for AI systems should focus on the user interface, not model performance"
+     ],
+     "correctIndex": 1,
+     "explanation": "AI requirements must specify quantifiable performance metrics, acceptable bias limits, and data requirements. Vague accuracy goals make it impossible to know when the model is good enough to ship."
+    },
+    {
+     "text": "An AI model performs well in testing but poorly in production. Investigation shows the training data was from 2020 while users are submitting 2025 data with different patterns. What SDLC phase was inadequately planned?",
+     "options": [
+      "Design — the model architecture was not optimized for newer data patterns",
+      "Maintenance and monitoring — the plan did not include data drift detection or model retraining cycles to keep the model current with evolving real-world data",
+      "Testing — the QA team should have caught the performance degradation before deployment",
+      "Deployment — the production environment was configured differently from the test environment"
+     ],
+     "correctIndex": 1,
+     "explanation": "AI models degrade as real-world data drifts from training data. Unlike traditional software, AI requires ongoing maintenance including data drift monitoring and scheduled retraining—a unique SDLC consideration."
+    },
+    {
+     "text": "A startup ships an AI chatbot directly to 100,000 users without a staged rollout. The chatbot produces harmful outputs for a small percentage of edge-case queries. What deployment practice would MOST have reduced this risk?",
+     "options": [
+      "Running more training epochs to eliminate all edge cases before deployment",
+      "Using a staged rollout—deploying to a small percentage of users first, monitoring outputs and safety metrics, and expanding only after confirming acceptable behavior at scale",
+      "Adding a disclaimer that the chatbot may make mistakes so users cannot hold the company liable",
+      "Requiring users to complete a tutorial before accessing the chatbot to filter out edge-case queries"
+     ],
+     "correctIndex": 1,
+     "explanation": "Staged rollouts limit blast radius when unexpected behaviors emerge. AI systems are especially prone to edge-case failures at scale because real user inputs differ from test distributions."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "ai-dev-course-2",
+   "courseTitle": "Introduction to Artificial Intelligence (AI)",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Insight Analyst",
+   "missionTagline": "Prove you understand what AI can and cannot do in the real world",
+   "skillLabels": [
+    "AI concepts",
+    "Machine learning basics",
+    "AI ethics",
+    "Data analysis",
+    "Critical thinking"
+   ],
+   "scenarioPrompt": "Your company's marketing team wants to use AI to predict which customers will churn in the next 30 days. The VP asks if AI is the right tool for this problem. Using your AI fundamentals from this course, explain what type of AI/ML approach would apply, what data would be needed, and what limitations the team should understand before committing.",
+   "quiz": [
+    {
+     "text": "A company wants to build an AI system that predicts whether a loan applicant will default. Which type of machine learning is MOST appropriate?",
+     "options": [
+      "Unsupervised learning, using clustering to group applicants into risk segments without labeled data",
+      "Supervised learning using historical loan data with known outcomes (default/no default) as labeled training examples to build a binary classification model",
+      "Reinforcement learning, where the model learns by trial-and-error which applicants to approve",
+      "Generative AI, which creates synthetic applicant profiles to simulate default scenarios"
+     ],
+     "correctIndex": 1,
+     "explanation": "Binary classification (default/no default) with historical labeled outcomes is a classic supervised learning problem. Unsupervised learning cannot predict a specific target without labels."
+    },
+    {
+     "text": "An AI hiring tool trained on historical resumes rejects significantly more applications from women than men for engineering roles. What is the MOST likely cause?",
+     "options": [
+      "The AI correctly identified that women have fewer engineering qualifications on average",
+      "The historical training data reflected past hiring biases that underrepresented women in engineering roles; the model learned to replicate those biases rather than evaluate true qualifications",
+      "The AI was programmed with a gender bias by the developers who built it",
+      "Women's resumes use different formatting that the AI parser cannot read accurately"
+     ],
+     "correctIndex": 1,
+     "explanation": "AI systems that train on biased historical data learn and amplify those biases. This is a well-documented problem in hiring AI and illustrates why data quality and fairness auditing are essential before deployment."
+    },
+    {
+     "text": "A business analyst presents an AI model with 94% accuracy as proof it is ready to replace human customer service agents. What critical limitation might this metric hide?",
+     "options": [
+      "94% accuracy means 6% of predictions are wrong, which is an acceptable error rate for customer service",
+      "Accuracy can be misleading when classes are imbalanced—if 94% of customer queries are routine, a model that always predicts 'routine' achieves 94% accuracy without understanding any edge cases or complex complaints",
+      "The model should achieve 99.9% accuracy before replacing human agents since any error is unacceptable",
+      "Accuracy is the gold standard metric for all AI classification problems and cannot be misleading"
+     ],
+     "correctIndex": 1,
+     "explanation": "Accuracy is a poor metric on imbalanced datasets. A model that never flags complex cases can score highly on accuracy while completely failing at the hardest and most important customer interactions."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "ai-dev-course-3",
+   "courseTitle": "Generative AI: Introduction and Applications",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Analytics Pro",
+   "missionTagline": "Prove you know where generative AI fits in real business workflows",
+   "skillLabels": [
+    "Generative AI",
+    "LLM applications",
+    "AI use cases",
+    "Data analysis",
+    "Critical thinking"
+   ],
+   "scenarioPrompt": "A workforce development nonprofit asks you whether they should use a generative AI tool to automatically write personalized job application cover letters for their clients. They want to know the benefits, the risks, and what safeguards you would recommend. Using your generative AI knowledge from this course, provide your assessment.",
+   "quiz": [
+    {
+     "text": "A recruiter notices that dozens of applications for the same role contain nearly identical cover letter phrasing. What is the MOST likely explanation and concern?",
+     "options": [
+      "Applicants are sharing a template; this is acceptable since cover letter formats are standardized",
+      "Applicants likely used the same generative AI tool with similar prompts; the concern is that recruiters will filter these out as inauthentic, harming the applicants' chances despite the letters being technically correct",
+      "The company's ATS is malfunctioning and duplicating application records",
+      "This indicates the job description was too narrow, attracting only a homogeneous applicant pool"
+     ],
+     "correctIndex": 1,
+     "explanation": "Undifferentiated AI-generated cover letters signal inauthenticity to experienced recruiters. Effective use of generative AI requires customization and human review to produce genuine, differentiated content."
+    },
+    {
+     "text": "A generative AI tool produces a cover letter that states the applicant 'managed a team of 15 engineers at Google' — a claim the applicant never made. What is this called and why is it dangerous?",
+     "options": [
+      "A bias error; the model stereotyped the applicant based on demographic data in the prompt",
+      "A hallucination; the model generated plausible-sounding but fabricated information, which could be discovered during reference or background checks and disqualify the candidate",
+      "A prompt injection; a malicious third party inserted false claims into the model's output",
+      "A confidence error; the model overstated the applicant's experience based on correct but ambiguous information in the prompt"
+     ],
+     "correctIndex": 1,
+     "explanation": "Hallucinations are a well-known generative AI failure mode where the model invents factual-sounding content. In job applications, fabricated credentials can lead to disqualification or termination if discovered post-hire."
+    },
+    {
+     "text": "A nonprofit wants to deploy a generative AI writing assistant for all clients without any human review step to maximize efficiency. What is the MOST important risk of removing the human review step?",
+     "options": [
+      "The AI will generate too many cover letters and overwhelm employer email inboxes",
+      "Without human review, fabricated claims, inappropriate tone, and factual errors will reach employers unchecked—potentially damaging client credibility and the organization's reputation",
+      "The cost of API calls to the AI service will exceed the nonprofit's budget",
+      "Clients will become dependent on AI writing and lose their own communication skills over time"
+     ],
+     "correctIndex": 1,
+     "explanation": "Human review is the critical safeguard that catches hallucinations, tone problems, and inaccuracies before they cause harm. Removing it entirely trades efficiency for reliability in a high-stakes context."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "ai-dev-course-4",
+   "courseTitle": "Generative AI: Prompt Engineering Basics",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Data Detective",
+   "missionTagline": "Prove you can write prompts that get reliable, useful AI outputs",
+   "skillLabels": [
+    "Prompt engineering",
+    "Few-shot prompting",
+    "LLM behavior",
+    "Data analysis",
+    "Critical thinking"
+   ],
+   "scenarioPrompt": "You are building an internal tool that uses an LLM to classify customer support tickets into categories (billing, technical, general). Your first prompt returns inconsistent results—sometimes the model returns a category name, sometimes a full sentence, sometimes 'I am not sure.' Using your prompt engineering skills from this course, describe how you would redesign the prompt to get consistent, structured output.",
+   "quiz": [
+    {
+     "text": "An LLM is asked to summarize customer complaints but frequently includes its own opinions about the company's service quality. Which prompt technique MOST directly addresses this?",
+     "options": [
+      "Ask the model to summarize in fewer words so it has less room to add opinions",
+      "Add an explicit instruction in the prompt: 'Summarize only the content of the complaint. Do not evaluate, judge, or add commentary about the company or its service.'",
+      "Use a different LLM provider since opinion injection is a model-specific bug",
+      "Lower the model's temperature setting to reduce creative output"
+     ],
+     "correctIndex": 1,
+     "explanation": "LLMs follow instructions when they are explicit and specific. Adding a clear constraint about what NOT to include directly addresses the unwanted behavior more reliably than indirect approaches."
+    },
+    {
+     "text": "You need an LLM to extract the customer name, issue type, and urgency level from support emails and return them as JSON. Which prompt approach is MOST likely to produce consistent JSON output?",
+     "options": [
+      "Ask the model to 'read this email and tell me the key information'",
+      "Provide a few-shot example in the prompt showing an input email and the exact JSON output format expected, then present the new email to classify",
+      "Instruct the model to 'output JSON' without specifying the field names and let it determine the structure",
+      "Ask the model to summarize the email and then run a second model to convert the summary to JSON"
+     ],
+     "correctIndex": 1,
+     "explanation": "Few-shot examples showing exact input/output pairs are the most reliable way to teach format consistency. Without an example, the model must infer the desired JSON structure, leading to variation."
+    },
+    {
+     "text": "A prompt returns correct answers 80% of the time but occasionally produces wrong category labels for tickets with ambiguous wording. Which change is MOST likely to improve accuracy on ambiguous cases?",
+     "options": [
+      "Increase the max_tokens limit so the model has room to think through ambiguous cases",
+      "Add chain-of-thought instructions asking the model to reason through the ticket's key phrases before stating the final category",
+      "Remove the few-shot examples since they may be biasing the model on ambiguous inputs",
+      "Run the same prompt five times and take the most frequent result as the answer"
+     ],
+     "correctIndex": 1,
+     "explanation": "Chain-of-thought prompting improves accuracy on ambiguous inputs by directing the model to reason explicitly before concluding. This surfaces the reasoning process and reduces confident-but-wrong outputs."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "ai-dev-course-5",
+   "courseTitle": "Python for Data Science, AI & Development",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can write Python to feed and query AI systems",
+   "skillLabels": [
+    "Python",
+    "Pandas",
+    "NumPy",
+    "API calls",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Your AI team needs a Python script that loads a CSV of customer feedback, preprocesses it (remove nulls, strip whitespace from text), and sends each feedback entry as a prompt to an AI API, then saves the classification result to a new CSV. Describe the script logic and key functions you would use.",
+   "quiz": [
+    {
+     "text": "A Python script calls an AI API in a loop over 10,000 rows and starts getting HTTP 429 (Too Many Requests) errors after 1,000 calls. What is the BEST fix?",
+     "options": [
+      "Catch the 429 error and immediately retry the same request until it succeeds",
+      "Implement exponential backoff—catch the 429, wait an increasing delay before retrying, and consider batching requests to stay within the API's rate limits",
+      "Run multiple instances of the script simultaneously to distribute the load across different IP addresses",
+      "Remove the error handling and let the script crash so the team can manually resume from the failure point"
+     ],
+     "correctIndex": 1,
+     "explanation": "Exponential backoff is the standard rate-limit handling strategy. Immediate retries worsen the 429 problem; exponential delays give the API time to recover and respect the provider's terms of service."
+    },
+    {
+     "text": "A pandas DataFrame column containing customer feedback text has leading and trailing spaces in many entries, causing duplicate categories when grouping. Which code CORRECTLY cleans this column in place?",
+     "options": [
+      "df['feedback'] = df['feedback'].strip()",
+      "df['feedback'] = df['feedback'].str.strip()",
+      "df['feedback'].apply(strip)",
+      "df.strip('feedback')"
+     ],
+     "correctIndex": 1,
+     "explanation": "pandas Series use the .str accessor to apply string methods element-wise. .strip() without .str only works on a plain Python string, not a pandas Series, and will raise an AttributeError."
+    },
+    {
+     "text": "After classifying 10,000 feedback entries with an AI API, you need to save the original text and the AI-assigned category to a new CSV file. Which pandas code is correct?",
+     "options": [
+      "df[['feedback', 'category']].write_csv('results.csv')",
+      "df[['feedback', 'category']].to_csv('results.csv', index=False)",
+      "pd.save(df[['feedback', 'category']], 'results.csv')",
+      "df.export('results.csv', columns=['feedback', 'category'])"
+     ],
+     "correctIndex": 1,
+     "explanation": "DataFrame.to_csv() is the correct pandas method. index=False prevents an extra unnamed index column in the output file. The other options use non-existent methods."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "ai-dev-course-6",
+   "courseTitle": "Developing AI Applications with Python and Flask",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can build and serve an AI-powered web application",
+   "skillLabels": [
+    "Flask",
+    "REST APIs",
+    "Python",
+    "AI integration",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are building a Flask API that accepts a job description as POST input, sends it to an AI API for skill extraction, and returns the extracted skills as JSON. Your manager asks how you will handle cases where the AI API is unavailable. Describe the Flask route structure and your error handling strategy.",
+   "quiz": [
+    {
+     "text": "A Flask route receives a POST request with JSON body { \"job_description\": \"...\" }. Which code correctly extracts the value?",
+     "options": [
+      "data = request.args.get('job_description')",
+      "data = request.get_json().get('job_description')",
+      "data = request.form['job_description']",
+      "data = request.body.json['job_description']"
+     ],
+     "correctIndex": 1,
+     "explanation": "request.get_json() parses the JSON body of a POST request. request.args is for URL query parameters; request.form is for HTML form data; request.body does not exist in Flask."
+    },
+    {
+     "text": "A Flask AI application returns a 500 error when the upstream AI API is unavailable. A client retries immediately and keeps getting 500s. What should the API return instead to signal the client to retry later?",
+     "options": [
+      "200 OK with an error message in the body so the client does not retry",
+      "503 Service Unavailable with a Retry-After header indicating when the client should try again",
+      "404 Not Found to indicate the AI service cannot be located",
+      "400 Bad Request to indicate the client should reformulate its query"
+     ],
+     "correctIndex": 1,
+     "explanation": "503 Service Unavailable is the correct HTTP status when a dependency is down. The Retry-After header gives clients a signal to back off rather than hammering a recovering service."
+    },
+    {
+     "text": "A Flask application stores the AI API key as a hardcoded string in the route handler code. Why is this a problem and how should it be fixed?",
+     "options": [
+      "Hardcoded strings are slower to access than environment variables at runtime",
+      "Hardcoded API keys get committed to version control, exposing them to anyone with repo access; keys should be loaded from environment variables using os.environ.get('AI_API_KEY')",
+      "Flask route handlers do not support string variables; keys must be stored in a database",
+      "The API key will expire faster if hardcoded because the provider detects static usage patterns"
+     ],
+     "correctIndex": 1,
+     "explanation": "Hardcoded secrets in source code are a critical security vulnerability—they end up in git history and CI logs. Environment variables keep secrets out of code and allow rotation without code changes."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "ai-dev-course-7",
+   "courseTitle": "Building Generative AI-Powered Applications with Python",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can build production-ready generative AI features",
+   "skillLabels": [
+    "Generative AI integration",
+    "LangChain",
+    "Python",
+    "RAG",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A workforce nonprofit wants a chatbot that answers questions about their programs using their own documentation, not just general knowledge from the model. You are building a Retrieval-Augmented Generation (RAG) pipeline in Python. Describe the architecture: how documents are ingested, how a user query triggers retrieval, and how the answer is generated.",
+   "quiz": [
+    {
+     "text": "A nonprofit deploys a RAG chatbot on their program documentation. A user asks about a program that was added to the docs last week but the chatbot says it does not exist. What is the MOST likely cause?",
+     "options": [
+      "The LLM's training data does not include the new program information",
+      "The new document was not re-ingested and re-embedded into the vector store after it was added, so it is not retrieved when relevant queries are made",
+      "The vector store has a maximum document limit and rejected the new file",
+      "The chatbot's context window is too small to include information about all programs simultaneously"
+     ],
+     "correctIndex": 1,
+     "explanation": "RAG systems answer based on what is in the vector store, not the LLM's training data. New documents must be embedded and indexed into the vector store to become retrievable."
+    },
+    {
+     "text": "A RAG pipeline retrieves the top 5 document chunks most similar to a user query. The generated answer is sometimes wrong because the relevant information is in chunk 6. What is the BEST fix?",
+     "options": [
+      "Increase the number of retrieved chunks (top-k) and tune chunk size so more context is available to the generator",
+      "Ask users to rephrase their queries more precisely so the retriever finds the right chunks",
+      "Switch to a more powerful LLM since the current model cannot reason across multiple chunks",
+      "Manually curate the vector store to put the most important chunks first"
+     ],
+     "correctIndex": 0,
+     "explanation": "Retrieval coverage is controlled by top-k and chunk size. Increasing top-k retrieves more candidates; better chunking keeps related content together. Both improve retrieval recall before generation."
+    },
+    {
+     "text": "A generative AI application sends entire user conversations to an external LLM API, including sensitive personal details users share about their employment situation. What is the PRIMARY concern?",
+     "options": [
+      "The API calls will be slow because longer conversations take more time to process",
+      "Sending sensitive personal data to a third-party API without user consent or data processing agreements may violate privacy regulations like GDPR and expose the organization to legal liability",
+      "The LLM may confuse personal details from one user's conversation with another user's session",
+      "Longer prompts are more expensive, so the organization will face unexpected API costs"
+     ],
+     "correctIndex": 1,
+     "explanation": "Transmitting personally identifiable information to external APIs triggers privacy and data protection obligations. Organizations must ensure data processing agreements are in place and that users have been informed."
+    }
+   ]
+  },
+  {
+   "order": 8,
+   "courseSlug": "ai-dev-course-8",
+   "courseTitle": "Generative AI: Elevate your Software Development Career",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Strategy Lead",
+   "missionTagline": "Prove you can use AI to accelerate your development workflow",
+   "skillLabels": [
+    "AI-assisted development",
+    "Career strategy",
+    "Code review",
+    "Prompt engineering",
+    "Communication"
+   ],
+   "scenarioPrompt": "A hiring manager asks how you use AI tools in your daily development workflow without becoming dependent on them or producing code you do not understand. Using your skills from this course, describe your approach to AI-assisted development and how you maintain and demonstrate your own engineering competency.",
+   "quiz": [
+    {
+     "text": "A developer uses an AI coding assistant to generate a database query. The AI produces working code but the developer does not understand how it works. What is the PRIMARY risk of committing this code?",
+     "options": [
+      "The AI-generated code may be slower than hand-written code due to suboptimal query structure",
+      "If the code breaks in production, the developer cannot debug it, explain it in a code review, or safely modify it—creating a maintenance liability",
+      "The code may contain comments in a different language than the rest of the codebase",
+      "AI-generated code has a different license than the project and may cause legal issues"
+     ],
+     "correctIndex": 1,
+     "explanation": "Code you do not understand is code you cannot maintain or debug. AI-assisted development requires the developer to read and comprehend every line before committing—otherwise technical debt accumulates rapidly."
+    },
+    {
+     "text": "An AI coding assistant suggests a solution that passes all unit tests but a senior developer reviews it and says the approach will cause performance problems at scale. What does this reveal about AI-assisted development?",
+     "options": [
+      "AI tools are unreliable and should not be used for production code",
+      "AI tools optimize for passing the tests and constraints it is given; they cannot fully reason about system-wide performance characteristics, architecture constraints, or non-functional requirements without explicit guidance",
+      "The unit tests are insufficient and should include performance benchmarks",
+      "The senior developer is being overly critical since the code passes all defined tests"
+     ],
+     "correctIndex": 1,
+     "explanation": "AI assistants excel at local correctness but lack full system context. Human review catches architectural concerns, performance implications, and design trade-offs that unit tests do not cover."
+    },
+    {
+     "text": "A developer wants to use an AI tool to write the security-critical authentication logic for their application. What is the MOST responsible approach?",
+     "options": [
+      "Use the AI output directly since authentication is a well-documented domain and AI models have seen many implementations",
+      "Use a well-audited authentication library instead of custom code; if AI suggestions inform the implementation, have a security engineer review every line against relevant security standards before deployment",
+      "Avoid AI tools entirely for security code and write it manually from scratch",
+      "Generate the authentication code with AI and add extra logging so any security issues can be detected after deployment"
+     ],
+     "correctIndex": 1,
+     "explanation": "Security-critical code requires expert review regardless of its source. Using established libraries reduces risk; when custom logic is unavoidable, a security review is non-negotiable—AI-generated or not."
+    }
+   ]
+  }
+ ]
+}

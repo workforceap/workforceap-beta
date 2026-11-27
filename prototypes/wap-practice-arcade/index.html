@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#1a1a1a">
+  <meta name="description" content="Short practice games for every training program. Play one between courses.">
+  <title>WAP Practice</title>
+  <link rel="stylesheet" href="hub.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to games</a>
+  <header class="bar">
+    <div class="bar-in">
+      <span class="brand"><span class="brand-mark">WAP</span><span class="brand-sub">Practice</span></span>
+    </div>
+  </header>
+  <main id="main" class="wrap" tabindex="-1">
+    <section class="hero" aria-labelledby="h-title">
+      <div class="hero-copy">
+        <h1 id="h-title">Practice what you just learned</h1>
+        <p class="lede">Quick 3D games, one for each training program. Play one after a course to make it stick.</p>
+      </div>
+      <ol class="steps" aria-label="How it works">
+        <li><span class="n" aria-hidden="true">1</span><span><strong>Finish a course</strong><small>Do your online lessons as usual.</small></span></li>
+        <li><span class="n" aria-hidden="true">2</span><span><strong>Play its level</strong><small>Each level takes a few minutes.</small></span></li>
+        <li><span class="n" aria-hidden="true">3</span><span><strong>Earn up to 3 stars</strong><small>Fewer mistakes, more stars.</small></span></li>
+      </ol>
+    </section>
+
+    <div id="continue"></div>
+
+    <div class="finder" id="finder" hidden>
+      <label for="q" class="finder-label">Find your program</label>
+      <div class="finder-box">
+        <svg class="finder-ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15 15l5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <input id="q" type="search" placeholder="Try Security or Python" autocomplete="off" enterkeyhint="search">
+      </div>
+      <p id="count" class="count" role="status" aria-live="polite"></p>
+    </div>
+
+    <div id="games" aria-busy="true"><p class="loading">Loading games...</p></div>
+    <p id="empty" class="empty" hidden>No program matches that. Try a shorter word, or clear the box to see every game.</p>
+  </main>
+  <footer class="foot"><p>Practice only. Not graded, not course credit. Progress is saved on this device only.</p></footer>
+  <noscript><p class="noscript">The practice hub needs JavaScript turned on.</p></noscript>
+  <script type="module" src="hub.mjs"></script>
+</body>
+</html>

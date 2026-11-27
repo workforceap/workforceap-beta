@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Arcade lab (dev only)</title>
+  <!-- DEV ONLY. Not linked from the games. Previews a world, mood, accent, props, labels and a camera focus box.
+       URL: kit/dev/lab.html?world=office&mood=day&accent=2b7bb9&quality=medium&focus=x0,x1,z0,z1[,y0,y1]
+            &pitch=40&yaw=0&margin=0.06&canvas=390x430&box=1&labels=1&props=ticket,crate,chip&reduced=1&demo=1
+       window.__lab = {ready, engine, THREE, look, setFocus(box, opts), punch(n), shake(n), setMood(id), setAccent(hex)} -->
+  <style>
+    html, body { margin: 0; height: 100%; background: #222; color: #eee; font: 13px system-ui, sans-serif; overflow: hidden; }
+    #wrap { position: absolute; inset: 0; display: grid; place-items: center; }
+    #wrap.fill canvas { width: 100vw; height: 100vh; }
+    canvas { display: block; touch-action: manipulation; }
+    #hud { position: absolute; left: 8px; bottom: 8px; padding: 4px 8px; background: rgba(0,0,0,.55); border-radius: 6px; pointer-events: none; white-space: pre; }
+    #hud:empty { display: none; }
+  </style>
+</head>
+<body>
+  <div id="wrap" class="fill"><canvas id="gl"></canvas></div>
+  <div id="hud"></div>
+  <script type="module" src="./lab.mjs"></script>
+</body>
+</html>

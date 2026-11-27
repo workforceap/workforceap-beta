@@ -1,0 +1,489 @@
+{
+ "programSlug": "software-developer-professional-certificate-ibm",
+ "programTitle": "AI and Software Developer Professional Certificate (IBM)",
+ "category": "ai-software",
+ "categoryLabel": "AI & Software Dev",
+ "brandColor": "#8b4a9b",
+ "providers": "IBM via Coursera",
+ "programDescription": "A merged 16-course pathway combining the IBM Software Developer Professional Certificate with IBM AI Developer content — preparing graduates for the dual demand of modern application development and AI-augmented engineering. Coursework covers the software development lifecycle, full-stack web development with HTML/CSS/JavaScript, React, Node.js/Express, Django, Python, Git/GitHub, containers (Docker, Kubernetes, OpenShift), microservices and serverless, plus generative AI, prompt engineering, AI application development with Flask and Gradio, and the AI-augmented coding tools (ChatGPT, GitHub Copilot, Google Gemini, IBM watsonx) that modern employers expect. No prior AI or programming experience required.",
+ "hasTwcSyllabus": true,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "software-dev-course-1",
+   "courseTitle": "Introduction to Software Engineering",
+   "hours": 15,
+   "syllabusDescription": "Software development lifecycle (SDLC), software architecture, and the basic programming and IT career paths.",
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you understand how software is built and deployed",
+   "skillLabels": [
+    "SDLC",
+    "Software architecture",
+    "Cloud",
+    "DevOps",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are in a technical interview for a junior developer role. The interviewer asks you to describe the Software Development Lifecycle (SDLC) and explain what phase is most often skipped by small teams—and why that causes problems. Using your Introduction to Software Engineering knowledge, walk through the SDLC and make your argument.",
+   "quiz": [
+    {
+     "text": "A startup ships a new feature directly from a developer's laptop to production without any testing or staging environment. Two hours later, 30% of users cannot log in. Which SDLC principle did the team violate?",
+     "options": [
+      "They should have written the code in a different programming language for better stability",
+      "They bypassed the testing and staging phases of the SDLC; changes should be validated in a non-production environment before deployment",
+      "They deployed too late in the day; production releases should happen in the morning",
+      "They violated the agile principle by not holding a sprint retrospective before releasing"
+     ],
+     "correctIndex": 1,
+     "explanation": "The SDLC's testing and staging phases exist specifically to catch failures before they reach users. Skipping them trades short-term speed for catastrophic production incidents."
+    },
+    {
+     "text": "A project manager asks a developer to estimate how long it will take to add a payment feature to an existing app. The developer says 'two days' without reviewing the existing codebase or requirements. What SDLC phase was skipped?",
+     "options": [
+      "Deployment — the developer should have deployed a test version first to estimate effort",
+      "Requirements and analysis — understanding the scope of the feature before estimating prevents wildly inaccurate timelines",
+      "Maintenance — existing bugs should be fixed before new features are added",
+      "Testing — a spike test would reveal how long the feature takes"
+     ],
+     "correctIndex": 1,
+     "explanation": "Estimates made without reviewing requirements or existing code are guesses. The requirements and analysis phase produces the information needed to estimate accurately—skipping it leads to missed deadlines."
+    },
+    {
+     "text": "A company's web application is a monolith—one large codebase that handles everything from user authentication to payment processing. The team is struggling to update one feature without breaking others. Which architectural approach would BEST address this problem?",
+     "options": [
+      "Rewrite the entire application in a different programming language for better performance",
+      "Decompose the monolith into microservices so each feature area can be developed, tested, and deployed independently",
+      "Add more developers to the team so more features can be built simultaneously",
+      "Move the monolith to a faster server to reduce the chance of cascading failures"
+     ],
+     "correctIndex": 1,
+     "explanation": "Microservices decompose a monolith into independently deployable services, eliminating the tight coupling that causes unrelated changes to break each other."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "software-dev-course-2",
+   "courseTitle": "Introduction to HTML, CSS, & JavaScript",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can build and style a working web page",
+   "skillLabels": [
+    "HTML",
+    "CSS",
+    "JavaScript",
+    "Responsive design",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are building a simple landing page for a local business. It needs a header with the business name, a navigation bar, a hero section with a call-to-action button, and a contact form. The client wants it to look good on mobile. Using your HTML, CSS, and JavaScript skills from this course, describe how you would structure and style this page.",
+   "quiz": [
+    {
+     "text": "A web page has a contact form where clicking 'Submit' reloads the page and clears all the data instead of showing a confirmation message. Which technology should be used to fix this behavior?",
+     "options": [
+      "Add a CSS transition to the submit button so users know it was clicked",
+      "Use JavaScript to listen for the form submit event, call preventDefault() to stop the page reload, and then handle the submission and show the confirmation message",
+      "Change the form method from POST to GET so the data is preserved in the URL",
+      "Wrap the form in an iframe so the main page does not reload when the form submits"
+     ],
+     "correctIndex": 1,
+     "explanation": "preventDefault() stops the browser's default form submission behavior. JavaScript can then validate, submit via fetch, and show a custom confirmation without a page reload."
+    },
+    {
+     "text": "A developer wants a row of three product cards to stack vertically on mobile screens (under 600px) but remain horizontal on larger screens. Which CSS approach BEST accomplishes this?",
+     "options": [
+      "Set position: absolute on each card and manually specify pixel coordinates for each screen size",
+      "Use CSS Flexbox with flex-wrap: wrap on the container and a media query that sets each card to flex: 1 1 100% below 600px",
+      "Use JavaScript to detect screen width and toggle CSS classes on each card on window resize",
+      "Set a fixed width of 200px on each card so they wrap automatically when the screen narrows"
+     ],
+     "correctIndex": 1,
+     "explanation": "Flexbox with flex-wrap combined with a media query is the clean, standards-based approach. Fixed pixel widths can cause unwanted behavior at intermediate screen sizes, and JavaScript-driven layout is fragile."
+    },
+    {
+     "text": "A web page loads slowly because a 4MB hero image is displayed at 300px wide. What is the BEST fix?",
+     "options": [
+      "Compress the image using CSS: img { quality: 50%; }",
+      "Export the image at an appropriate resolution (e.g., 600px wide at 2x for retina) and serve a compressed JPEG or WebP instead of the full 4MB original",
+      "Load the image using JavaScript after the rest of the page finishes rendering",
+      "Replace the image with an animated CSS gradient that approximates the same visual style"
+     ],
+     "correctIndex": 1,
+     "explanation": "Serving an appropriately sized and compressed image file is the most impactful performance fix. A 4MB image shown at 300px carries ~90% unnecessary data that the browser must still download."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "software-dev-course-3",
+   "courseTitle": "Getting Started with Git and GitHub",
+   "hours": 8,
+   "syllabusDescription": "Version control with Git, repository management on GitHub, branching, merging, pull requests, and collaborative developer workflows.",
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can use Git to collaborate and manage code safely",
+   "skillLabels": [
+    "Git version control",
+    "Branching",
+    "GitHub",
+    "Collaboration",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are working on a team of four developers. You need to add a new search feature to an existing web app. Another developer is simultaneously fixing a bug in the same codebase. Using your Git and GitHub skills from this course, describe how you would set up your workflow to avoid conflicts and merge your feature safely.",
+   "quiz": [
+    {
+     "text": "A developer pushes code directly to the main branch of a production repository. Ten minutes later, the site is down because of a bug in the pushed code. Which Git workflow practice would have MOST likely prevented this?",
+     "options": [
+      "Using git stash before every push to preserve a backup of the previous state",
+      "Requiring all changes to go through a feature branch with a pull request and at least one code review approval before merging to main",
+      "Running git status before every push to confirm which files are being changed",
+      "Protecting the main branch with a password that only the team lead knows"
+     ],
+     "correctIndex": 1,
+     "explanation": "Branch protection rules combined with required PR reviews are the standard defense against broken code reaching production. They introduce a review gate without slowing individual development."
+    },
+    {
+     "text": "You run git pull and see a merge conflict in a file another developer also edited. Git shows conflict markers (<<<<<<, =======, >>>>>>>) in the file. What is the correct next step?",
+     "options": [
+      "Run git reset --hard to discard all changes and start fresh",
+      "Open the file, review both versions shown by the conflict markers, edit the file to the correct combined state, save it, then run git add and git commit to complete the merge",
+      "Delete the file and recreate it from scratch to avoid the conflict",
+      "Push your version immediately to overwrite the other developer's changes before they push again"
+     ],
+     "correctIndex": 1,
+     "explanation": "Merge conflicts require manual resolution—inspecting both versions and editing to the intended state. After editing, staging and committing completes the merge. Hard reset would discard your work."
+    },
+    {
+     "text": "A teammate reviews your pull request and asks you to squash your 15 commits into 1 before merging. Why might they make this request?",
+     "options": [
+      "GitHub limits the number of commits per pull request to 10",
+      "Squashing produces a single, clean commit on the main branch that describes the complete feature rather than cluttering history with intermediate work-in-progress commits",
+      "Individual commits in a pull request slow down the CI/CD pipeline",
+      "Squashing is required before any merge conflict can be resolved"
+     ],
+     "correctIndex": 1,
+     "explanation": "Squashing keeps the main branch history clean and readable. A single commit per feature or fix makes git log and git bisect much easier to use when debugging future issues."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "software-dev-course-4",
+   "courseTitle": "Python for Data Science, AI & Development",
+   "hours": 22,
+   "syllabusDescription": "Foundational Python — syntax, data types, expressions, variables, string operations, structures, and Python for development & AI.",
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can write Python to solve real data problems",
+   "skillLabels": [
+    "Python",
+    "Pandas",
+    "NumPy",
+    "Data manipulation",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are a junior developer at an analytics company. Your manager gives you a CSV of 50,000 sales transactions and asks for a summary report showing total revenue by product category for the top 5 categories. You have Python with pandas available. Describe the code logic you would use to produce this summary.",
+   "quiz": [
+    {
+     "text": "You have a pandas DataFrame called df with columns 'category' and 'revenue'. Which code CORRECTLY produces total revenue per category sorted highest to lowest?",
+     "options": [
+      "df.sort_values('revenue').groupby('category').sum()",
+      "df.groupby('category')['revenue'].sum().sort_values(ascending=False)",
+      "df.groupby('revenue')['category'].sum().sort_values()",
+      "df['category'].sum().groupby('revenue').sort_values(descending=True)"
+     ],
+     "correctIndex": 1,
+     "explanation": "groupby('category') groups rows by category, ['revenue'].sum() aggregates the revenue column, and sort_values(ascending=False) orders highest first. The other options misorder operations or misuse groupby."
+    },
+    {
+     "text": "A Python script opens a CSV file without a try/except block. When the file is missing, the script crashes with a FileNotFoundError. What is the BEST fix?",
+     "options": [
+      "Add a print statement before the open() call to confirm the path is correct",
+      "Wrap the file-open call in a try/except FileNotFoundError block that prints a clear error message and exits gracefully instead of crashing",
+      "Add an if statement that checks whether the file is currently open by another program",
+      "Change the file extension from .csv to .txt to avoid the error"
+     ],
+     "correctIndex": 1,
+     "explanation": "try/except handles runtime errors gracefully. A FileNotFoundError should give the user a clear message about what went wrong rather than an unhandled stack trace."
+    },
+    {
+     "text": "A pandas DataFrame has a column 'date' stored as strings in the format 'YYYY-MM-DD'. The team needs to filter rows to those from 2024 only. What is the MOST reliable approach?",
+     "options": [
+      "df[df['date'].str.startswith('2024')]",
+      "Convert the column to datetime using pd.to_datetime(df['date']), then filter with df[df['date'].dt.year == 2024]",
+      "df[df['date'] > '2024-01-01' and df['date'] < '2024-12-31']",
+      "df[df['date'].str[-4:] == '2024']"
+     ],
+     "correctIndex": 1,
+     "explanation": "Converting to datetime enables proper date arithmetic and filtering by year. String-based filtering with startswith or slicing is brittle and does not handle edge cases like leap years or different string formats."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "software-dev-course-5",
+   "courseTitle": "Developing Front-End Apps with React",
+   "hours": 16,
+   "syllabusDescription": "Build modern user interfaces with React — functional components, hooks, state management with Redux, useEffect, component composition, and Vite. Capstone: a working React shopping cart application.",
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can build dynamic UI components with React",
+   "skillLabels": [
+    "React",
+    "Components",
+    "State management",
+    "JavaScript",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are building a React application for a staffing agency that shows a filterable list of job openings. Users can type in a search box and the list should update in real time to show only matching jobs. Using your React skills from this course, describe how you would structure the component and manage state.",
+   "quiz": [
+    {
+     "text": "A React component renders a list of items from props but the list never updates when new items are added. What is the MOST likely cause?",
+     "options": [
+      "React does not support dynamic lists; each item must be added manually in JSX",
+      "The component is likely storing a local copy of the array in state and mutating it directly instead of calling setState with a new array reference, preventing React from detecting the change",
+      "The component needs to be converted to a class component to support dynamic updates",
+      "The list items are missing CSS styles that tell React they are interactive"
+     ],
+     "correctIndex": 1,
+     "explanation": "React tracks state changes by reference. Mutating an array directly (e.g., push) does not create a new reference, so React does not re-render. Always pass a new array to setState."
+    },
+    {
+     "text": "You want a React input field's value to always reflect the component's state variable searchTerm. Which approach CORRECTLY creates a controlled input?",
+     "options": [
+      "<input defaultValue={searchTerm} />",
+      "<input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />",
+      "<input value={searchTerm} />",
+      "<input onChange={() => setSearchTerm(input.current.value)} ref={input} />"
+     ],
+     "correctIndex": 1,
+     "explanation": "A controlled input requires both value={state} to display current state and onChange to update state when the user types. Without onChange, the input becomes read-only; without value, it is uncontrolled."
+    },
+    {
+     "text": "A React component fetches user data from an API every time the parent re-renders, causing excessive network calls. How should this be fixed?",
+     "options": [
+      "Move the fetch call outside the component so it only runs once when the file is loaded",
+      "Wrap the fetch call in useEffect with an empty dependency array [] so it runs only once after the component mounts",
+      "Use useState instead of useEffect to trigger the fetch so it is controlled by component state",
+      "Add a loading state that prevents re-renders while the fetch is in progress"
+     ],
+     "correctIndex": 1,
+     "explanation": "useEffect with an empty dependency array [] runs the effect once after mount, equivalent to componentDidMount. Without the dependency array, the effect runs on every render—causing the observed problem."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "software-dev-course-6",
+   "courseTitle": "Developing Back-End Apps with Node.js and Express",
+   "hours": 13,
+   "syllabusDescription": "Build back-end applications with Node.js and Express — routing, middleware, REST APIs, asynchronous JavaScript, and integration with databases and front-end clients.",
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can build server-side APIs with Node and Express",
+   "skillLabels": [
+    "Node.js",
+    "Express",
+    "REST APIs",
+    "Middleware",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are building the back end for a job board. You need to create a REST API with endpoints to list all job postings (GET), add a new posting (POST), and delete a posting by ID (DELETE). Using your Node.js and Express skills from this course, describe how you would structure these routes and handle errors.",
+   "quiz": [
+    {
+     "text": "A client sends a POST request to an Express API to create a new job posting, but the server returns a 500 error and logs 'Cannot read property title of undefined.' What is the MOST likely cause?",
+     "options": [
+      "The Express server is running on the wrong port",
+      "The server is missing express.json() middleware, so req.body is undefined and the destructuring of req.body.title fails",
+      "POST requests are not supported in Express without installing a separate plugin",
+      "The database connection timed out before the body could be parsed"
+     ],
+     "correctIndex": 1,
+     "explanation": "Without express.json() (or the older bodyParser.json()), req.body is undefined. Accessing a property on undefined throws a TypeError—the classic symptom of missing JSON middleware."
+    },
+    {
+     "text": "An Express route handler for GET /jobs/:id returns the job if found but does nothing when the ID does not exist, causing the request to hang indefinitely. How should this be fixed?",
+     "options": [
+      "Add a setTimeout to close the connection after 5 seconds if no response is sent",
+      "Add an else branch that calls res.status(404).json({ error: 'Job not found' }) when the lookup returns null or undefined",
+      "Return an empty object {} with status 200 so the client can detect the missing record",
+      "Redirect the client to GET /jobs to show the full list when a specific ID is not found"
+     ],
+     "correctIndex": 1,
+     "explanation": "Every code path in a route handler must call res to send a response. A 404 with a descriptive message is the correct response when a requested resource does not exist."
+    },
+    {
+     "text": "Your Express API needs to verify that every request to protected routes includes a valid authentication token. Which approach BEST implements this without repeating the check in every route handler?",
+     "options": [
+      "Copy and paste the token verification code into every protected route handler",
+      "Create a middleware function that checks the token and call next() if valid or res.status(401) if not, then apply it to all protected routes using app.use() or by passing it to individual routers",
+      "Store the token in a global variable and check it manually at the start of each handler",
+      "Require the client to pass the token as a query parameter and validate it in the router's base path"
+     ],
+     "correctIndex": 1,
+     "explanation": "Middleware is Express's mechanism for reusable request processing. A single auth middleware applied to protected routes eliminates code duplication and makes the security logic easy to update in one place."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "software-dev-course-7",
+   "courseTitle": "Django Application Development with SQL and Databases",
+   "hours": 17,
+   "syllabusDescription": "Develop web applications with the Django framework & ORM. Cover models, views, templates, SQL fundamentals, and databases.",
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can build database-backed apps with Django",
+   "skillLabels": [
+    "Django",
+    "SQL",
+    "ORM",
+    "Database modeling",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are building a Django app for a training program that needs to track students, courses, and enrollments. A student can enroll in many courses and each course can have many students. Using your Django and SQL skills from this course, describe how you would model this data and query it.",
+   "quiz": [
+    {
+     "text": "A Django developer creates a new model field and forgets to run makemigrations before deploying to production. What is the MOST likely result?",
+     "options": [
+      "Django will automatically create the database column the first time the model is used",
+      "Queries that reference the new field will fail with a database error because the column does not exist in the production database",
+      "The application will ignore the new field and use the old schema without error",
+      "The Django admin will show an error only when an admin user tries to access the model"
+     ],
+     "correctIndex": 1,
+     "explanation": "Django's ORM generates SQL based on the model definition, but the actual database schema only changes when migrations are applied. A missing column causes OperationalError on any query referencing that field."
+    },
+    {
+     "text": "A Django ORM query returns all Course objects but the related Instructor object is fetched in a separate query for each course, causing N+1 query performance issues. What is the BEST fix?",
+     "options": [
+      "Add an index to the instructor_id foreign key column in the database",
+      "Use select_related('instructor') in the queryset to fetch courses and their instructors in a single SQL JOIN",
+      "Cache the instructor queryset in a session variable to avoid repeated database calls",
+      "Switch from a ForeignKey to a ManyToManyField to reduce the number of join operations"
+     ],
+     "correctIndex": 1,
+     "explanation": "select_related performs a SQL JOIN and fetches related objects in one query. The N+1 problem—where each row triggers a separate query—is Django's most common ORM performance issue."
+    },
+    {
+     "text": "A Django view function directly inserts user-supplied form input into an SQL string using Python string formatting. Why is this dangerous?",
+     "options": [
+      "String formatting is slower than parameterized queries so the view will time out under load",
+      "It is vulnerable to SQL injection—an attacker can craft input that terminates the intended SQL and executes arbitrary database commands",
+      "Django's ORM does not support raw SQL so the query will silently fail",
+      "String-formatted queries bypass Django's migration system and may corrupt the schema"
+     ],
+     "correctIndex": 1,
+     "explanation": "SQL injection is one of the most critical web security vulnerabilities. Django's ORM and parameterized queries escape user input automatically—raw string formatting bypasses this protection entirely."
+    }
+   ]
+  },
+  {
+   "order": 8,
+   "courseSlug": "software-dev-course-8",
+   "courseTitle": "Introduction to Containers w/ Docker, Kubernetes & OpenShift",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can containerize and orchestrate applications",
+   "skillLabels": [
+    "Docker",
+    "Kubernetes",
+    "Containers",
+    "OpenShift",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Your team is deploying a Node.js API to production. Previously the app ran on a bare server and worked on your machine but failed in production due to environment differences. Your manager asks you to containerize it with Docker and explain how Kubernetes would manage it at scale. Using your container skills from this course, describe your approach.",
+   "quiz": [
+    {
+     "text": "A Node.js application works on a developer's laptop but crashes in production because the server has Node.js version 14 while the app requires version 20. How does Docker solve this problem?",
+     "options": [
+      "Docker updates the server's Node.js version automatically when the container starts",
+      "The Dockerfile specifies FROM node:20-alpine, which packages the correct Node.js version inside the container image—making the runtime environment consistent regardless of what is installed on the host",
+      "Docker installs a virtual machine with the correct version isolated from the host OS",
+      "Docker caches the developer's local node_modules folder and replicates it on the server"
+     ],
+     "correctIndex": 1,
+     "explanation": "The FROM instruction in a Dockerfile pins the exact runtime version inside the image. This eliminates 'works on my machine' failures caused by environment drift between development and production."
+    },
+    {
+     "text": "A Kubernetes Deployment is configured with 3 replicas of a web application pod. One pod crashes. What does Kubernetes do automatically?",
+     "options": [
+      "Nothing—Kubernetes waits for an administrator to manually restart the failed pod",
+      "Kubernetes detects that the actual state (2 pods) does not match the desired state (3 replicas) and automatically schedules a new pod to restore the configured replica count",
+      "Kubernetes reduces the replica count to 2 to match the current actual state",
+      "Kubernetes restarts all three pods simultaneously to ensure the cluster is in a clean state"
+     ],
+     "correctIndex": 1,
+     "explanation": "Kubernetes continuously reconciles actual state with desired state. A crashed pod triggers automatic rescheduling—this self-healing behavior is a core value of container orchestration."
+    },
+    {
+     "text": "A team stores a database password in plain text inside a Dockerfile using the ENV instruction. Why is this a security problem?",
+     "options": [
+      "ENV variables in Docker are encrypted at rest so the password is safe in the image but exposed at runtime",
+      "The Dockerfile is typically committed to version control and the image layers are inspectable, making the password visible to anyone with access to the repository or the image",
+      "Docker does not support string values in ENV instructions; only numeric values are allowed",
+      "ENV variables are stripped from the container when it is deployed to Kubernetes"
+     ],
+     "correctIndex": 1,
+     "explanation": "Embedding secrets in Dockerfiles exposes them in image layers and version history. Kubernetes Secrets or a secret manager (like Vault) should inject credentials at runtime, keeping them out of the image."
+    }
+   ]
+  },
+  {
+   "order": 9,
+   "courseSlug": "software-dev-course-9",
+   "courseTitle": "Application Development using Microservices and Serverless",
+   "hours": 13,
+   "syllabusDescription": "Build cloud-native applications using microservices architecture and serverless functions. Cover API gateways, service decomposition, and event-driven design.",
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can design and deploy cloud-native applications",
+   "skillLabels": [
+    "Microservices",
+    "Serverless",
+    "REST APIs",
+    "Cloud functions",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Your company is splitting a monolithic job-board application into microservices. You are assigned the notifications service, which must send emails when a candidate applies to a job. You are also evaluating whether to deploy it as a serverless function or a persistent microservice. Using your microservices and serverless skills from this course, explain your design decision and how the service would communicate with the rest of the system.",
+   "quiz": [
+    {
+     "text": "A notifications service sends emails whenever a new job application is submitted. The applications team calls the notifications service directly via HTTP. When the notifications service is down for maintenance, job applications also fail. How should this dependency be decoupled?",
+     "options": [
+      "Deploy the notifications service with 99.99% SLA so it is never down during business hours",
+      "Use a message queue (like RabbitMQ or SQS) so the applications service publishes an event and the notifications service consumes it independently—allowing maintenance without affecting application submissions",
+      "Combine both services into a single service so they share the same deployment lifecycle",
+      "Add a retry loop in the applications service that keeps trying to reach notifications until it succeeds"
+     ],
+     "correctIndex": 1,
+     "explanation": "Message queues decouple producers from consumers. The applications service publishes and moves on; the notifications service processes the event when it is available—eliminating the synchronous dependency."
+    },
+    {
+     "text": "A serverless function that processes uploaded resumes runs in under 2 seconds for small files but times out on files larger than 10MB. What is the MOST appropriate fix?",
+     "options": [
+      "Increase the serverless function's memory allocation since more memory extends the timeout",
+      "Move large-file processing to an asynchronous queue-based worker that can process without strict time limits, reserving the serverless function for initial validation and queuing",
+      "Compress all uploaded files to under 1MB using the serverless function before processing",
+      "Upgrade the serverless plan to a higher tier that removes the timeout restriction"
+     ],
+     "correctIndex": 1,
+     "explanation": "Serverless functions are designed for short-lived, stateless tasks. Long-running or resource-intensive processing belongs in a queue-backed worker service with relaxed time constraints."
+    },
+    {
+     "text": "Two microservices share the same database table to exchange data. A schema change in that table for Service A breaks Service B. What architectural principle does this violate?",
+     "options": [
+      "Single Responsibility Principle — each service should have only one reason to change",
+      "Service autonomy — each microservice should own its own data store so schema changes in one service do not cascade to others",
+      "DRY (Don't Repeat Yourself) — the shared table reduces code duplication but introduces coupling",
+      "YAGNI — the shared table is premature optimization that adds unnecessary complexity"
+     ],
+     "correctIndex": 1,
+     "explanation": "Microservice autonomy requires that services own their own data. Sharing a database table creates tight schema coupling that defeats the independent deployability goal of microservices."
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,436 @@
+{
+ "programSlug": "aws-cloud-technology-amazon",
+ "programTitle": "AWS Cloud Technology Professional Certificate (AWS)",
+ "category": "cloud-data",
+ "categoryLabel": "Cloud & Data",
+ "brandColor": "#2b7bb9",
+ "providers": "Amazon Web Services via Coursera",
+ "programDescription": "Prepare for a new career in the fast-growing field of cloud computing and AWS consulting. Built and delivered by Amazon Web Services on Coursera, this 10-course program builds in-demand cloud skills across foundational IT, AWS core services, technical support, consulting, application development on AWS, DevOps, automation, data analytics, and the AWS Well-Architected Framework.",
+ "hasTwcSyllabus": true,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "aws-course-1",
+   "courseTitle": "Introduction to Information Technology and AWS Cloud",
+   "hours": 6,
+   "syllabusDescription": "Foundational technology context for the cloud — starting from zero technical knowledge. Covers how computers work, modern IT infrastructure, internet-connected networks (web servers, web applications, DNS, IT security), and the basics of Cloud Computing including public, private, and hybrid models, plus the role of APIs.",
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you understand what AWS Cloud is and how it works",
+   "skillLabels": [
+    "AWS fundamentals",
+    "Cloud concepts",
+    "IT infrastructure",
+    "Problem-solving",
+    "Communication"
+   ],
+   "scenarioPrompt": "An HR manager at a small company asks you to explain why their company should move their file server from an on-premises closet to AWS. They do not understand technical terms. Using your AWS and cloud fundamentals from this course, explain the business case in plain language, covering cost, reliability, and scalability.",
+   "quiz": [
+    {
+     "text": "A company's on-premises server room was flooded and all local backups were destroyed. Which AWS feature would have prevented this data loss?",
+     "options": [
+      "AWS pricing—cloud storage is cheaper than on-premises so the company should have moved earlier",
+      "AWS regional data storage with cross-region replication—data stored in S3 can be automatically replicated to a geographically separate region, surviving a single-location disaster",
+      "AWS auto-scaling—the server would have automatically spun up additional capacity to avoid the flood",
+      "AWS CloudWatch—monitoring alerts would have notified the team before the flood caused damage"
+     ],
+     "correctIndex": 1,
+     "explanation": "Geographic redundancy through cross-region replication means a disaster destroying one physical location does not destroy the data. On-premises backups in the same building fail together."
+    },
+    {
+     "text": "A startup is choosing between buying a $15,000 server upfront or using AWS EC2 at $0.10/hour. They expect low usage for the first 6 months and heavy usage for 2 weeks during a product launch. Which option is MORE cost-effective and why?",
+     "options": [
+      "The on-premises server, because it has no recurring costs after the initial purchase",
+      "AWS EC2, because it charges only for actual usage—the startup pays very little during low-traffic months and can scale up for 2 weeks of peak demand without owning hardware that sits idle the rest of the year",
+      "Both options cost the same over a 3-year period due to depreciation and cloud cost increases",
+      "The on-premises server, because EC2 costs will exceed $15,000 within the first year at normal usage rates"
+     ],
+     "correctIndex": 1,
+     "explanation": "The pay-as-you-go model is especially valuable for variable workloads. A startup paying for idle capacity 10 months to own 2 months of peak is a poor use of capital compared to elastic cloud pricing."
+    },
+    {
+     "text": "A retail website crashes every year during Black Friday because their single server cannot handle the traffic spike. Which AWS feature directly solves this problem?",
+     "options": [
+      "AWS IAM—access control ensures only legitimate users can connect during peak traffic",
+      "AWS Auto Scaling—automatically adds more EC2 instances as traffic increases and removes them when traffic subsides, handling any traffic volume without pre-purchasing capacity",
+      "AWS CloudTrail—logging all requests prevents the server from being overwhelmed",
+      "AWS Route 53—DNS routing distributes requests evenly across existing servers"
+     ],
+     "correctIndex": 1,
+     "explanation": "Auto Scaling adds compute capacity in response to demand. Black Friday crashes happen because traffic exceeds fixed capacity—Auto Scaling eliminates the ceiling by provisioning and deprovisioning dynamically."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "aws-course-2",
+   "courseTitle": "Providing Technical Support for AWS Workloads",
+   "hours": 7,
+   "syllabusDescription": "Gain the knowledge and skills to troubleshoot cloud-related issues. Review AWS infrastructure, develop a troubleshooting mindset, and learn AWS Support methods. Troubleshoot scenarios across Amazon EC2, AWS Lambda, and Amazon VPC, and apply controls with Amazon S3, Amazon RDS, AWS IAM, and AWS Organizations.",
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can support and troubleshoot AWS-hosted applications",
+   "skillLabels": [
+    "AWS support",
+    "CloudWatch",
+    "EC2 troubleshooting",
+    "IAM",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A developer calls your AWS support line saying their EC2 instance is running but their web application is returning a 503 error to users. The instance shows green health checks. Using your AWS technical support skills from this course, walk through the troubleshooting steps you would take.",
+   "quiz": [
+    {
+     "text": "An EC2 instance shows 'running' status but users cannot access the web application on port 80. What is the MOST common cause?",
+     "options": [
+      "The EC2 instance type does not support HTTP traffic",
+      "The security group attached to the instance does not have an inbound rule allowing TCP traffic on port 80 from the internet",
+      "AWS automatically blocks port 80 for security reasons; HTTPS port 443 must be used instead",
+      "The instance needs to be stopped and restarted to activate HTTP listener support"
+     ],
+     "correctIndex": 1,
+     "explanation": "EC2 security groups act as virtual firewalls. A missing inbound rule for port 80 blocks all HTTP traffic even when the instance is running and the web server is active—the most common cause of this symptom."
+    },
+    {
+     "text": "A CloudWatch alarm fires showing CPU utilization at 98% on an EC2 instance hosting a web application. The application is responding slowly. What is the MOST appropriate immediate action?",
+     "options": [
+      "Terminate the instance and launch a new one since high CPU indicates the instance is compromised",
+      "Identify the process consuming CPU using top or CloudWatch detailed metrics, then either optimize the application, scale vertically to a larger instance type, or add horizontal scaling through Auto Scaling",
+      "Reboot the instance to clear the CPU backlog and restore normal performance",
+      "Reduce the number of CloudWatch metrics being collected since metric collection itself is consuming CPU"
+     ],
+     "correctIndex": 1,
+     "explanation": "Diagnosing before acting prevents unnecessary disruption. Identifying the cause of CPU saturation determines the right fix—application optimization, vertical scaling, or horizontal scaling—rather than guessing."
+    },
+    {
+     "text": "A developer receives an 'Access Denied' error when trying to upload files to an S3 bucket from an EC2 instance. The developer's personal IAM user can upload without error. What is MOST likely the cause?",
+     "options": [
+      "The S3 bucket is in a different AWS region from the EC2 instance",
+      "The EC2 instance's IAM role does not have the s3:PutObject permission for that bucket; the developer's personal IAM user has it but the instance's role does not",
+      "S3 bucket uploads from EC2 are not supported; files must be transferred using the AWS CLI from a local machine",
+      "The S3 bucket's versioning is enabled, which blocks all new uploads until it is disabled"
+     ],
+     "correctIndex": 1,
+     "explanation": "EC2 instances access AWS services through an attached IAM role, not the developer's personal credentials. Missing s3:PutObject on the instance role is the most common cause of this exact symptom."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "aws-course-3",
+   "courseTitle": "Developing Applications in Python on AWS",
+   "hours": 10,
+   "syllabusDescription": "A thorough introduction to Python programming for AWS applications. Covers Python syntax, variables, functions, and packages; serverless architectures with AWS Lambda, Amazon API Gateway, and Cloud9; AWS databases with Amazon RDS and DynamoDB; and application integration services including Amazon SNS, SQS, and EventBridge — culminating in a hands-on Python and DynamoDB project.",
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can build Python applications that run on AWS",
+   "skillLabels": [
+    "Boto3",
+    "AWS Lambda",
+    "S3",
+    "Python",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are building a Python application that automatically processes new CSV files uploaded to an S3 bucket, extracts summary statistics, and stores the results back in S3. Using your Python on AWS skills from this course, describe the architecture and the key code components.",
+   "quiz": [
+    {
+     "text": "A Python Lambda function reads a file from S3 using boto3 and gets a NoSuchKey error. The file was just uploaded seconds earlier. What is the MOST likely cause?",
+     "options": [
+      "Lambda functions cannot access S3 buckets without a VPC endpoint",
+      "The key path in the code may not match the actual S3 object key—common causes include trailing slashes, case sensitivity differences, or a prefix mismatch between the event notification and the code",
+      "S3 has eventual consistency for new objects and the Lambda ran before the upload propagated",
+      "The Lambda function's execution role does not have s3:GetObject permission"
+     ],
+     "correctIndex": 1,
+     "explanation": "NoSuchKey means the key literally does not exist at the path specified. Key mismatches (capitalization, prefix differences, extra characters) are the most common cause—especially when the key is constructed from event data."
+    },
+    {
+     "text": "A Python Lambda function processes large CSV files and times out after 15 minutes—the maximum Lambda execution limit. What is the BEST architectural solution?",
+     "options": [
+      "Increase the Lambda memory allocation, which proportionally increases CPU and reduces processing time",
+      "Redesign the workflow to split large files into chunks using S3 Select or a preprocessing step, so each Lambda invocation processes a smaller portion within the time limit",
+      "Move the entire application to an EC2 instance where there is no execution time limit",
+      "Use Lambda Provisioned Concurrency to keep the function warm and reduce startup overhead"
+     ],
+     "correctIndex": 1,
+     "explanation": "Lambda's 15-minute limit requires rethinking large-file workloads. Chunking the processing so each invocation handles a slice is the serverless-native solution—allowing parallel processing as a bonus."
+    },
+    {
+     "text": "A boto3 script hardcodes AWS credentials directly in the Python file for a Lambda function. Why is this a security problem and what is the correct approach?",
+     "options": [
+      "Hardcoded credentials slow down the Lambda cold start time",
+      "Hardcoded credentials in code get committed to version control and exposed in Lambda deployment packages; Lambda functions should use IAM execution roles instead—credentials are injected automatically without any code-level secrets",
+      "Lambda functions cannot use hardcoded credentials; they require environment variables",
+      "AWS automatically rotates hardcoded credentials every 90 days so they expire before becoming a security risk"
+     ],
+     "correctIndex": 1,
+     "explanation": "IAM roles are the correct mechanism for Lambda to access AWS services. They provide automatic credential rotation, auditability, and least-privilege enforcement—all without a single secret in code or environment variables."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "aws-course-4",
+   "courseTitle": "Skills for Working as an AWS Cloud Consultant",
+   "hours": 10,
+   "syllabusDescription": "Develop the soft skills essential to cloud consulting — critical thinking, analytical problem-solving, customer requirements gathering, solution design, project execution, and stakeholder management. Build professional relationships, establish a personal brand, plan skill development, and prepare resumes and interview techniques.",
+   "courseraSlug": null,
+   "missionName": "Project Commander",
+   "missionTagline": "Prove you can advise clients on their AWS cloud strategy",
+   "skillLabels": [
+    "Cloud consulting",
+    "AWS architecture",
+    "Cost optimization",
+    "Client communication",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A mid-size company asks you to review their AWS bill, which has grown 40% in the past quarter without any new services being launched. Using your AWS consulting skills from this course, describe how you would investigate the cost increase and what recommendations you might make.",
+   "quiz": [
+    {
+     "text": "An AWS client's bill shows that EC2 costs tripled last month. Using Cost Explorer, you see 15 EC2 instances running 24/7 in a dev environment that is only used 8 hours a day on weekdays. What is the MOST cost-effective recommendation?",
+     "options": [
+      "Migrate the dev environment to a smaller instance type to reduce hourly cost",
+      "Schedule the dev instances to automatically stop outside business hours using AWS Instance Scheduler or Lambda, reducing running time from 720 hours/month to approximately 175 hours/month",
+      "Switch the dev instances from On-Demand to Spot Instances for lower hourly rates",
+      "Move the dev environment to a single large instance instead of 15 smaller ones"
+     ],
+     "correctIndex": 1,
+     "explanation": "Dev environments typically only need to run during business hours. Automated start/stop reduces billable hours from 100% to ~24%, often cutting dev EC2 costs by 75%+ without any infrastructure changes."
+    },
+    {
+     "text": "A Cost Explorer report shows $8,000/month in data transfer charges. Investigation reveals an application in us-east-1 is making API calls to a service in eu-west-1, with responses transferring back. What is the MOST cost-effective architectural fix?",
+     "options": [
+      "Switch to a more expensive instance type that includes data transfer in the price",
+      "Colocate the dependent services in the same AWS region to eliminate inter-region data transfer charges, which AWS applies to all traffic between regions",
+      "Use AWS Direct Connect to reduce data transfer costs between regions",
+      "Enable data compression on the API responses to reduce the volume of data transferred"
+     ],
+     "correctIndex": 1,
+     "explanation": "Inter-region data transfer is charged at a per-GB rate. Colocating services in the same region makes all traffic intra-region, which AWS charges at a significantly lower rate or sometimes zero within the same AZ."
+    },
+    {
+     "text": "A client has been running the same 20 EC2 instances at steady load for 2 years and is paying On-Demand rates. What savings opportunity should a cloud consultant flag?",
+     "options": [
+      "Migrate to Spot Instances since the steady workload qualifies for the largest spot discount",
+      "Purchase Reserved Instances or Savings Plans for the consistently-used instances—committing to 1 or 3 years provides 40-72% savings over On-Demand for predictable workloads",
+      "Downgrade the instance types since steady load indicates the current instances are oversized",
+      "Move the workload to a self-managed on-premises server since the steady usage makes cloud more expensive long-term"
+     ],
+     "correctIndex": 1,
+     "explanation": "On-Demand pricing carries a premium for flexibility. For steady, predictable workloads running for years, Reserved Instances or Savings Plans provide substantial discounts in exchange for a usage commitment—the most common missed optimization."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "aws-course-5",
+   "courseTitle": "DevOps on AWS and Project Management",
+   "hours": 9,
+   "syllabusDescription": "Understand how software is built, tested, and deployed in modern teams. Define projects and apply project management best practices, then compare Waterfall, Agile, Scrum, and Kanban methodologies. Build a Continuous Integration / Continuous Delivery (CI/CD) pipeline using AWS CodeCommit, CodeBuild, CodeDeploy, and CodePipeline, with hands-on labs in Cloud9.",
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can apply DevOps practices on AWS",
+   "skillLabels": [
+    "CI/CD pipelines",
+    "AWS CodePipeline",
+    "Infrastructure as Code",
+    "DevOps practices",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Your team deploys application updates to AWS manually by SSHing into EC2 instances and running git pull. This causes 30-minute outages during each deploy. Using your DevOps on AWS skills from this course, describe how you would redesign the deployment process to eliminate downtime.",
+   "quiz": [
+    {
+     "text": "A team deploys by manually SSHing into production servers and running scripts. Two engineers deployed different versions to different servers last week causing inconsistent behavior. Which DevOps practice MOST directly prevents this?",
+     "options": [
+      "Require all engineers to write deployment scripts in the same programming language",
+      "Implement a CI/CD pipeline where all deployments flow through a single automated process—eliminating manual variation and ensuring every server receives the same artifact from the same source",
+      "Document the deployment steps in a runbook so all engineers follow the same manual process",
+      "Assign one engineer as the sole deployer to remove the variable of multiple people making changes"
+     ],
+     "correctIndex": 1,
+     "explanation": "Manual deployments are inherently inconsistent. CI/CD pipelines automate the process so every deployment follows identical steps—eliminating human variation as the source of inconsistency."
+    },
+    {
+     "text": "A CodeDeploy blue/green deployment has completed successfully, but the team notices a bug in production after routing 100% of traffic to the new (green) environment. What advantage did blue/green deployment provide?",
+     "options": [
+      "None—blue/green deployment cannot help once 100% of traffic has been shifted to the new environment",
+      "The original (blue) environment is still running and traffic can be instantly shifted back to it, providing near-zero-downtime rollback without redeployment",
+      "CodeDeploy automatically rolls back to blue when a bug is detected in production",
+      "Blue/green ensures both environments run simultaneously so the bug only affects half the users"
+     ],
+     "correctIndex": 1,
+     "explanation": "Blue/green's key advantage is instant rollback—the previous environment remains live and traffic can be redirected back in seconds. This is far faster than redeploying the previous version."
+    },
+    {
+     "text": "A team defines their AWS infrastructure using CloudFormation templates stored in version control. A new environment needs to be identical to production. What is the PRIMARY benefit of this Infrastructure as Code approach?",
+     "options": [
+      "CloudFormation templates are faster to execute than AWS Console clicks",
+      "The infrastructure is reproducible and version-controlled—any new environment can be provisioned to an exact specification, configuration drift is detectable, and changes are peer-reviewed before application",
+      "CloudFormation reduces AWS costs by optimizing resource configurations automatically",
+      "Infrastructure as Code eliminates the need for AWS security groups since code-based deployments are inherently secure"
+     ],
+     "correctIndex": 1,
+     "explanation": "Reproducibility and version control are the core benefits of IaC. Infrastructure defined as code can be provisioned identically across environments, reviewed before changes, and audited for drift—none of which is possible with manual console work."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "aws-course-6",
+   "courseTitle": "Automation in the AWS Cloud",
+   "hours": 8,
+   "syllabusDescription": "Simplify processes, enable agility and scalability, and deploy faster through cloud automation. Use the AWS CLI and Bash scripting for automation, apply Infrastructure as Code (IaC) with AWS CloudFormation, manage configuration as code, and use AWS Systems Manager and AWS Config for at-scale resource management.",
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can automate AWS operations to save time and reduce errors",
+   "skillLabels": [
+    "AWS Lambda",
+    "CloudWatch Events",
+    "Systems Manager",
+    "Automation scripts",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Your company's AWS operations team spends 3 hours every Monday manually starting EC2 instances, running backup scripts, and generating cost reports. Using your AWS automation skills from this course, describe how you would automate each of these three tasks.",
+   "quiz": [
+    {
+     "text": "A company wants EC2 development instances to automatically start at 8 AM and stop at 6 PM on weekdays in the US Eastern time zone. Which AWS services work together to implement this schedule?",
+     "options": [
+      "AWS CloudTrail + IAM: log all start/stop events and restrict manual changes to business hours",
+      "Amazon EventBridge (CloudWatch Events) with a cron expression to trigger a Lambda function that calls the EC2 start/stop API at the specified times",
+      "AWS Auto Scaling: configure a scheduled scaling policy to add and remove instances at specified times",
+      "AWS Systems Manager Maintenance Windows: configure windows during off-hours to automatically stop instances"
+     ],
+     "correctIndex": 1,
+     "explanation": "EventBridge scheduled rules with cron expressions trigger Lambda at specified times. Lambda then calls the EC2 API to start or stop specific instances—the standard pattern for scheduled instance management."
+    },
+    {
+     "text": "An operations engineer manually SSH-es into 25 EC2 instances every week to run a security patch script. Using AWS automation, which service eliminates the need for SSH access entirely?",
+     "options": [
+      "AWS CloudFormation: redeploy all instances with the patch included in the AMI",
+      "AWS Systems Manager Run Command: execute scripts on multiple instances simultaneously without opening SSH ports, using the SSM agent already installed on managed instances",
+      "AWS Lambda: run the patch script inside a Lambda function that connects to each EC2 instance",
+      "AWS Elastic Beanstalk: managed environments automatically apply security patches without manual intervention"
+     ],
+     "correctIndex": 1,
+     "explanation": "Systems Manager Run Command executes scripts on fleets of instances through the SSM agent without requiring SSH or open inbound ports—significantly more secure and scalable than manual SSH-based patching."
+    },
+    {
+     "text": "A Lambda function meant to clean up old S3 objects runs every night but the team has no visibility into whether it succeeds or fails. What is the MINIMUM monitoring setup needed?",
+     "options": [
+      "Add a print statement in the Lambda function that writes 'done' when complete",
+      "Configure CloudWatch to capture Lambda error metrics, set an alarm that triggers an SNS notification when errors exceed 0, and ensure the function logs to CloudWatch Logs for debugging when failures occur",
+      "Check the Lambda console manually each morning to review the invocation history",
+      "Add a DynamoDB write at the end of the Lambda to record each successful run as a timestamp"
+     ],
+     "correctIndex": 1,
+     "explanation": "Production automation requires automated alerting on failure—manual checks are unreliable. CloudWatch alarms on Lambda errors plus SNS notifications ensure the team is alerted when the function fails, not the next morning."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "aws-course-7",
+   "courseTitle": "Data Analytics and Databases on AWS",
+   "hours": 9,
+   "syllabusDescription": "Learn to think and act like a data analyst on AWS. Compare ETL and ELT approaches, explore data types, structures, and metadata, and contrast SQL and NoSQL databases. Apply AWS services for the ETL pipeline — Amazon API Gateway, AWS Lambda, Amazon RDS, Amazon DynamoDB, and Amazon QuickSight — labs.",
+   "courseraSlug": null,
+   "missionName": "Data Detective",
+   "missionTagline": "Prove you can store, query, and analyze data on AWS",
+   "skillLabels": [
+    "Amazon RDS",
+    "AWS Athena",
+    "S3 data lake",
+    "SQL",
+    "Analytical thinking"
+   ],
+   "scenarioPrompt": "Your company stores customer transaction data in an S3 data lake as CSV files. The business team needs to run ad-hoc SQL queries on this data without a DBA and without loading it into a database. Using your AWS data analytics knowledge from this course, describe which AWS service enables this and how you would set it up.",
+   "quiz": [
+    {
+     "text": "A business analyst wants to run SQL queries against 500GB of CSV files stored in S3 without loading data into a database. Which AWS service is MOST appropriate?",
+     "options": [
+      "Amazon RDS: load the CSVs into a managed relational database and run SQL queries",
+      "Amazon Athena: run serverless SQL queries directly against S3 data using standard SQL, paying only per TB scanned with no infrastructure to manage",
+      "Amazon EC2: launch a virtual machine with PostgreSQL installed and import the CSV files",
+      "Amazon Redshift: load the data into a cloud data warehouse optimized for analytics queries"
+     ],
+     "correctIndex": 1,
+     "explanation": "Athena queries S3 data in-place using standard SQL. It requires no infrastructure setup, charges per query (per TB scanned), and is ideal for ad-hoc analysis by non-technical users through the AWS console or BI tools."
+    },
+    {
+     "text": "An Amazon RDS database is experiencing slow query performance during business hours. CloudWatch shows CPU at 85% and available memory at 12%. What is the MOST appropriate immediate action?",
+     "options": [
+      "Restart the RDS instance to clear the memory and reduce CPU usage",
+      "Identify and optimize the slowest queries using RDS Performance Insights, then evaluate whether a vertical scale-up or read replica is needed for sustained load",
+      "Create a manual snapshot of the database and restore it to a larger instance type",
+      "Enable Multi-AZ deployment to distribute the query load across two database instances"
+     ],
+     "correctIndex": 1,
+     "explanation": "Performance Insights identifies the specific queries consuming most resources—the prerequisite for any optimization decision. Random scale-up without query diagnosis may not solve a poorly-written query problem."
+    },
+    {
+     "text": "A company stores all application logs in S3 as JSON files partitioned by date (e.g., logs/2024/01/15/). When running Athena queries filtered to a single day, the query scans the entire 6TB dataset and costs $30. What is the fix?",
+     "options": [
+      "Convert the JSON files to CSV format since CSV files scan faster in Athena",
+      "Define the date partition columns in the Athena table schema using PARTITIONED BY—Athena will then skip partitions outside the query's date filter, scanning only the relevant day's data instead of the full 6TB",
+      "Increase the Athena DPU allocation to process the full dataset scan faster",
+      "Move the log data from S3 to DynamoDB to enable faster indexed queries by date"
+     ],
+     "correctIndex": 1,
+     "explanation": "Partition pruning is Athena's mechanism for avoiding full dataset scans. When the table schema registers partition columns, Athena filters at the storage level—scanning only matching partitions and dramatically reducing both cost and query time."
+    }
+   ]
+  },
+  {
+   "order": 8,
+   "courseSlug": "aws-course-8",
+   "courseTitle": "Capstone: Following the AWS Well-Architected Framework",
+   "hours": 45,
+   "syllabusDescription": "A thorough review of the six pillars of the AWS Well-Architected Framework — Operational Excellence, Security, Reliability, Performance Efficiency, Cost Optimization, and Sustainability. Apply the framework to a real architecture, complete the capstone project document, and prepare for AWS Cloud Consultant interviews with a question bank.",
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can design AWS solutions that meet the Well-Architected pillars",
+   "skillLabels": [
+    "AWS Well-Architected",
+    "Security best practices",
+    "Reliability",
+    "Cost optimization",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are conducting a Well-Architected Review for a startup's production workload running on AWS. They have one EC2 instance, no backups, no monitoring, and store the database password in an environment variable on the server. Identify the gaps against each relevant pillar and propose fixes.",
+   "quiz": [
+    {
+     "text": "A production application stores its database password as an EC2 instance environment variable. Which Well-Architected pillar does this violate and what is the recommended fix?",
+     "options": [
+      "Cost Optimization pillar — secrets management services add cost; store credentials in Parameter Store free tier instead",
+      "Security pillar — environment variables are visible to any process on the instance and anyone with console access; use AWS Secrets Manager or SSM Parameter Store with encryption to manage credentials securely",
+      "Performance Efficiency pillar — reading environment variables adds latency; credentials should be cached in memory",
+      "Reliability pillar — environment variables are lost when the instance restarts, causing application failures"
+     ],
+     "correctIndex": 1,
+     "explanation": "Storing secrets in environment variables is a Security pillar violation. AWS Secrets Manager provides encrypted storage, automatic rotation, and fine-grained access control—all missing from environment variables."
+    },
+    {
+     "text": "A startup's entire production workload runs on a single EC2 instance with no load balancer or backup. Which Well-Architected pillar MOST directly addresses this architecture risk?",
+     "options": [
+      "Performance Efficiency — a single instance may not have sufficient resources for peak load",
+      "Reliability — the application has a single point of failure; the Reliability pillar requires designing for failure through redundancy, Multi-AZ deployment, and automatic recovery mechanisms",
+      "Operational Excellence — the team cannot patch or update the instance without downtime",
+      "Cost Optimization — running one large instance is more expensive than multiple smaller ones"
+     ],
+     "correctIndex": 1,
+     "explanation": "The Reliability pillar requires eliminating single points of failure through redundancy. A single EC2 instance fails catastrophically on hardware failure, AZ outage, or software crash—no failover is possible."
+    },
+    {
+     "text": "A Well-Architected Review finds that a production workload has no CloudWatch alarms, no logging, and engineers only know about outages when customers complain. Which pillar gap does this represent?",
+     "options": [
+      "Cost Optimization — CloudWatch costs money and the team is saving by not enabling it",
+      "Operational Excellence — the pillar requires monitoring operational health proactively, understanding normal workload behavior, and detecting issues before customers are impacted",
+      "Security — lack of logging means security incidents cannot be detected or investigated",
+      "Performance Efficiency — without metrics, the team cannot identify performance bottlenecks"
+     ],
+     "correctIndex": 1,
+     "explanation": "Operational Excellence requires proactive monitoring, alerting, and observability. Reactive awareness through customer complaints is an antipattern that extends mean time to recovery and customer impact duration."
+    }
+   ]
+  }
+ ]
+}
