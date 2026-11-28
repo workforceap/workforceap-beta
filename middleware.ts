@@ -298,6 +298,14 @@ export async function middleware(request: NextRequest) {
   if (!prefixLocale && !isLocaleBypassPath(pathname) && isLocaleableMarketingPath(pathname)) {
     const loc = inferredLocale;
     const target = new URL(withLocalePrefix(pathname, loc), request.url);
+    // Every unprefixed apply redirect carries only supported funnel inputs,
+    // including when an absent or unsupported lang falls back to another source.
+    if (pathname === '/apply') {
+      for (const key of ['program', 'ref', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
+        const value = request.nextUrl.searchParams.get(key);
+        if (value) target.searchParams.set(key, value);
+      }
+    }
     // Persist explicit ?lang= choice and strip it from the URL for cleanliness
     if (localeFromQuery) {
       target.searchParams.delete('lang');
@@ -309,7 +317,7 @@ export async function middleware(request: NextRequest) {
       });
       return redirectResponse;
     }
-    target.search = request.nextUrl.search;
+    if (pathname !== '/apply') target.search = request.nextUrl.search;
     return NextResponse.redirect(target, 308);
   }
 
