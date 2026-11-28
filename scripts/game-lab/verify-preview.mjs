@@ -9,7 +9,7 @@
 //   1. Setup (writes allowed): real logins, auth/flag matrix for every actor (flag created and removed
 //      through the real admin API), effective-role check per role fixture, and a synthetic contact-form
 //      send that must reach the local mail sink (proves the app is wired to it).
-//   2. Gameplay window (no writes allowed): after the DB settles, both games through the real
+//   2. Gameplay window (no writes allowed): after the DB settles, all games through the real
 //      /admin/game-lab/[game] page and its iframe at 1280x900, 390x844 and 320x640, then the window is
 //      closed and judged: zero DB row changes, zero new mail, zero external requests, zero console errors.
 //   Cleanup always runs: flag row removed, fixture role restored, browser closed.
@@ -20,9 +20,11 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { join, resolve } from 'node:path';
+import { arcadeLevelWin, notice } from './arcade-play.mjs';
+import { arcadeIds, demoIds, exactCoverage, GAME_SLUGS, sha256, winIds } from './inventory.mjs';
 import { buildPreviewEnv } from '../local-preview.mjs';
 import {
-  GAME_SLUGS, MATRIX_TARGETS, judgeRow, judgeRole, judgeRequests, judgeConsole, judgeDb, judgeMail,
+  MATRIX_TARGETS, judgeRow, judgeRole, judgeRequests, judgeConsole, judgeDb, judgeMail,
 } from './verdicts.mjs';
 
 const require = createRequire(import.meta.url);
@@ -57,7 +59,7 @@ function psql(sql) {
 const quoteLiteral = (v) => `'${String(v).replace(/'/g, "''")}'`;
 if (!/^[0-9a-f-]{36}$/i.test(STUDENT.id)) throw new Error('preview student id is not a uuid');
 
-const report = { base: BASE, head: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), startedAt: new Date().toISOString(), matrix: [], checks: [], failures: [] };
+const report = { base: BASE, head: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), startedAt: new Date().toISOString(), matrix: [], games: [], checks: [], failures: [] };
 const fail = (where, list) => { for (const f of list) report.failures.push(`${where}: ${f}`); };
 const check = (name, ok, detail = {}) => { report.checks.push({ name, ok, ...detail }); if (!ok) report.failures.push(`${name}: ${JSON.stringify(detail)}`); console.log(ok ? 'PASS' : 'FAIL', name); };
 
@@ -121,15 +123,20 @@ async function login(who, opts = {}) {
 }
 async function probe(request, target) {
   const res = await request.get(BASE + target.path, { maxRedirects: 0, failOnStatusCode: false });
-  const h = res.headers();
-  return { status: res.status(), location: h.location ?? '', contentType: h['content-type'] ?? '', cacheControl: h['cache-control'] ?? '', vary: h.vary ?? '', body: await res.text() };
+  try {
+    const h = res.headers();
+    const bytes = await res.body();
+    return { status: res.status(), location: h.location ?? '', contentType: h['content-type'] ?? '', cacheControl: h['cache-control'] ?? '', vary: h.vary ?? '', body: bytes.toString('utf8'), bodyBytes: bytes.length, sha256: sha256(bytes) };
+  } finally {
+    await res.dispose();
+  }
 }
 async function matrix(actorLabel, actor, request) {
   for (const target of MATRIX_TARGETS) {
     const observed = await probe(request, target);
     const failures = judgeRow(actor, target, observed);
     const { body, ...row } = observed;
-    report.matrix.push({ actor: actorLabel, target: target.name, ...row, bodyBytes: body.length, failures });
+    report.matrix.push({ actor: actorLabel, path: target.path, kind: target.kind, target: target.name, ...row, failures });
     fail(`matrix ${actorLabel} / ${target.name}`, failures);
   }
 }
@@ -205,57 +212,26 @@ async function pq2dWin(f) {
   await f.waitForFunction(() => document.getElementById('overlayTitle').textContent === 'STAGE CLEAR', null, { timeout: 30000 });
 }
 async function networkWin(f) {
-  const steps = await f.evaluate(() => {
-    const P = window.WapPractice;
-    const work = P.perfectWork('A');
-    return {
-      dns: work.dnsPath.map((id) => 'Add ' + P.NODES[id]),
-      app: work.appPath.map((id) => 'Add ' + P.NODES[id]),
-      roles: P.ROLE_SUBJECTS.map((s) => ({ select: 'role-' + s.id, value: work.roles[s.id] })),
-      diagnosis: work.diagnosis,
-      evidence: P.EVIDENCE.A.map((row) => row.id),
-      actions: P.ACTIONS.filter((a) => work.actions[a.id]).map((a) => a.label),
-      verifications: Object.keys(work.verifications).filter((k) => work.verifications[k]),
-      prose: work.prose,
-    };
-  });
-  for (const label of steps.dns) await f.getByRole('button', { name: label, exact: true }).nth(0).click();
-  for (const label of steps.app) await f.getByRole('button', { name: label, exact: true }).nth(1).click();
-  for (const role of steps.roles) await f.locator('#' + role.select).selectOption(role.value);
+  const dns = ['Client A (10.24.8.47)', 'Switch S1', 'Approved DNS D1 (10.24.8.10)'];
+  const app = [...dns.slice(0, 2), 'Gateway/router R1 (10.24.8.1)', 'Upstream path', 'Remote server portal.cedar.example (203.0.113.20)'];
+  for (const [index, nodes] of [dns, app].entries()) {
+    for (const n of nodes) await f.getByRole('button', { name: `Add ${n}`, exact: true }).nth(index).click();
+  }
+  for (const [field, value] of Object.entries({ client: 'endpoint', switch: 'switch', router: 'router', dns: 'dns', remote: 'remote' })) {
+    await f.locator(`#role-${field}`).selectOption(value);
+  }
   await f.locator('#dns-separate').check();
-  for (const id of steps.evidence) await f.getByRole('button', { name: new RegExp(id) }).click();
-  await f.locator('#diagnosis').selectOption(steps.diagnosis);
-  for (const label of steps.actions) await f.getByRole('button', { name: label, exact: true }).click();
-  for (const id of steps.verifications) await f.locator('#verify-' + id).check();
-  await f.locator('#prose-rationale').fill(steps.prose.rationale);
-  await f.locator('#prose-limits').fill(steps.prose.limits);
-  await f.locator('#prose-customer').fill(steps.prose.customer);
+  for (const id of ['A1', 'A2', 'A3', 'A4', 'A5', 'A6']) await f.getByRole('button', { name: new RegExp(id) }).click();
+  await f.locator('#diagnosis').selectOption('client-dns');
+  for (const label of ['Request owner approval to correct the setting', 'Apply the approved correction', 'Keep the old setting for authorized rollback', 'Stop and escalate if the correction fails or approval is absent']) {
+    await f.getByRole('button', { name: label, exact: true }).click();
+  }
+  for (const id of ['config', 'lookup', 'portal', 'unknown-followup', 'persistence']) await f.locator(`#verify-${id}`).check();
+  await f.locator('#prose-rationale').fill('Only A uses the stale DNS address; the approved resolver returns the portal address.');
+  await f.locator('#prose-limits').fill('Who changed DNS and whether the correction survives reconnect are still unknown.');
+  await f.locator('#prose-customer').fill('After approval we corrected DNS and checked that the portal opens.');
   await f.locator('#submit').click();
   await f.waitForFunction(() => /10 \/ 10/.test(document.getElementById('score').textContent) && /Automated checks passed/.test(document.getElementById('score').textContent), null, { timeout: 15000 });
-}
-async function arcadeLevelWin(f, gameId) {
-  await f.goto('/api/admin/game-lab/practice-arcade/play.html?game=' + gameId);
-  await f.waitForFunction(() => window.__arcade && (window.__arcade.ready || window.__arcade.error), null, { timeout: 60000 });
-  const failed = await f.evaluate(() => window.__arcade.error);
-  if (failed) throw new Error(gameId + ' failed to load: ' + failed);
-  const levelId = await f.evaluate(() => window.__arcade.levelIds()[0]);
-  await f.evaluate((id) => window.__arcade.startLevel(id), levelId);
-  await f.waitForFunction(() => window.__arcade.screen() === 'coach', null, { timeout: 10000 });
-  await f.evaluate(() => window.__arcade.begin());
-  const deadline = Date.now() + 120000;
-  for (;;) {
-    if (Date.now() > deadline) throw new Error(gameId + ' did not reach results');
-    const screen = await f.evaluate(() => window.__arcade.screen());
-    if (screen === 'results') break;
-    if (screen === 'feedback') { await f.evaluate(() => window.__arcade.dismiss()); await sleep(50); continue; }
-    const hint = await f.evaluate(() => window.__arcade.hint());
-    if (hint == null) { await sleep(100); continue; }
-    await f.evaluate((id) => window.__arcade.choose(id), hint);
-    await sleep(30);
-  }
-  const result = await f.evaluate(() => window.__arcade.result());
-  if (!result || result.won !== true) throw new Error(gameId + ' finished without a win: ' + JSON.stringify(result));
-  return result;
 }
 async function pauseResume(f, label) {
   await f.locator('#pause').click();
@@ -263,6 +239,24 @@ async function pauseResume(f, label) {
   await f.locator('#resume').click({ timeout: 5000 });
   const hidden = await f.locator('#pauseScreen').isHidden();
   check(`${label}: pause -> resume with ordinary clicks`, hidden);
+}
+
+let windowBaseline;
+async function closeWindow({ dbBefore, mailBefore, control }) {
+  // Close and judge the window.
+  await sleep(3000);
+  const dbAfter = dbSnapshot();
+  const mailAfter = await sink();
+  report.window.closedAt = new Date().toISOString();
+  report.db = { tables: Object.keys(dbBefore).length, changes: judgeDb(dbBefore, dbAfter) };
+  report.mail = { before: mailBefore, after: mailAfter };
+  report.external = external;
+  report.console = consoleEvents;
+  check('gameplay window: zero DB row inserts, updates or deletes', report.db.changes.length === 0, { changes: report.db.changes });
+  const mailFailures = judgeMail({ control: { reachable: control.reachable, captured: control.total }, before: mailBefore, after: mailAfter });
+  check('mail: control send captured by the local sink, zero messages during gameplay', mailFailures.length === 0, { mailFailures, control: report.mailControl });
+  check('zero external requests (any frame)', external.length === 0, { external: judgeRequests(external.map((e) => e.url), BASE) });
+  check('zero console errors or warnings (any frame)', consoleEvents.length === 0, { console: judgeConsole(consoleEvents) });
 }
 
 // ---------- run ----------
@@ -278,6 +272,7 @@ try {
   const admin = await login(ADMIN);
   const student = await login(STUDENT);
   check('admin fixture effective role is admin', (await effectiveRole(admin)) === 'admin');
+  check('student fixture effective role is member', (await effectiveRole(student)) === 'member');
   await matrix('anonymous', { kind: 'anonymous' }, anon.request);
   await matrix('student (flag absent)', { kind: 'non-admin' }, student.request);
   await matrix('admin (flag absent)', { kind: 'admin-off' }, admin.request);
@@ -304,6 +299,9 @@ try {
   }
   check('student fixture role restored', psql(`select role from profiles where user_id=${quoteLiteral(STUDENT.id)}`) === originalRole);
 
+  const actors = ['anonymous', 'student (flag absent)', 'admin (flag absent)', 'admin (flag row OFF)', 'admin (flag ON)', 'anonymous after admin warm-up', 'student (flag ON)', ...OTHER_ROLES.map((r) => `role=${r} (flag ON)`)];
+  exactCoverage('actor x target requests', actors.flatMap((a) => MATRIX_TARGETS.map((t) => `${a}:${t.path}`)), report.matrix.filter((r) => r.path).map((r) => `${r.actor}:${r.path}`));
+
   // Mail wiring control: a real app send must land in the local sink.
   await sink('DELETE');
   const contact = await anon.request.post(`${BASE}/api/contact`, { data: { first_name: 'Preview', last_name: 'Control', email: 'preview-control@example.test', topic: 'Game Lab mail-sink control', message: 'Local preview control message.', submission_id: randomUUID() }, failOnStatusCode: false });
@@ -317,10 +315,20 @@ try {
   // Phase 2: gameplay window. From here on nothing may write, send or leave the machine.
   const dbBefore = await settledDb();
   const mailBefore = await sink();
+  windowBaseline = { dbBefore, mailBefore, control };
   report.window = { openedAt: new Date().toISOString() };
   external.length = 0;
   consoleEvents.length = 0;
 
+  const recordWin = async (id, width, play) => {
+    const row = { id, width, mode: 'automated visible controls', won: false };
+    report.games.push(row);
+    try { Object.assign(row, await play(), { won: true }); } catch (error) {
+      row.error = String(error);
+      throw new Error(`${id} at ${width}px: ${row.error}`, { cause: error });
+    }
+    check(`${width}px: ${id} won`, true);
+  };
   for (const [width, height] of VIEWPORTS) {
     const label = `${width}x${height}`;
     const ctx = await newContext({ storageState: adminState, viewport: { width, height } });
@@ -341,7 +349,8 @@ try {
 
     for (const slug of GAME_SLUGS) {
       requests.length = 0;
-      await p.goto(`/admin/game-lab/${slug}`, { waitUntil: 'networkidle' });
+      await p.getByTestId(`game-card-${slug}`).getByRole('link').click();
+      await p.waitForURL(`**/admin/game-lab/${slug}`);
       check(`${label}: ${slug} play page loads nothing before Launch`, (await p.locator('iframe').count()) === 0 && !requests.some(gameReq));
       const f = await launch(p, slug);
       check(`${label}: ${slug} engine loads only after Launch`, slug.endsWith('-3d') ? requests.filter((u) => /three\.module/.test(u)).length === 1 : !requests.some((u) => /three\.module/.test(u)));
@@ -367,6 +376,7 @@ try {
       check(`${label}: ${slug} player is a top-layer modal: title, Exit and frame inside the viewport, nothing on top`,
         geo.modal && geo.exitOnTop && !geo.titleClipped && geo.title.top >= 0 && geo.frame.top >= geo.title.bottom - 1 && geo.frame.left <= 1 && Math.abs(geo.frame.right - geo.vw) < 2 && Math.abs(geo.frame.bottom - geo.vh) < 2, geo);
 
+      if (!slug.endsWith('-3d')) await notice(f);
       if (slug === 'packet-quest-3d') {
         await f.locator('#s0').click();
         await pauseResume(f, `${label} ${slug}`);
@@ -417,29 +427,17 @@ try {
           await f.locator('#eMenu').click();
         }
       } else if (slug === 'packet-quest') {
-        await pq2dWin(f);
-        check(`${label}: ${slug} stage 1 cleared`, true);
+        await recordWin(slug, width, async () => { await pq2dWin(f); return { level: 1, outcome: await f.locator('#overlayTitle').innerText() }; });
       } else if (slug === 'network-path') {
-        await networkWin(f);
-        check(`${label}: ${slug} submitted attempt passes 10/10`, true);
+        await recordWin(slug, width, async () => { await networkWin(f); return { level: 'A', outcome: await f.locator('#score').innerText() }; });
       } else if (slug === 'practice-arcade') {
         await f.locator('#games[aria-busy="false"]').waitFor({ timeout: 30000 });
-        const hubGames = await f.locator('a[href*="play.html?game="]').count();
-        check(`${label}: ${slug} hub lists the program games`, hubGames >= 20, { hubGames });
-        const demoIds = ['help-desk-demo', 'demo-sort', 'demo-order', 'demo-lane', 'demo-match', 'demo-world-a', 'demo-world-b'];
-        const demoLabels = await f.evaluate((ids) => ids.map((id) => {
-          const card = document.querySelector(`article.card[data-id="${id}"]`);
-          const label = card && [...card.querySelectorAll('.pill')].some((pill) => pill.textContent === 'Demo');
-          return { id, present: !!card, demo: !!label };
-        }), demoIds);
-        check(`${label}: ${slug} default hub lists the 7 demos, each labelled Demo`, demoLabels.length === 7 && demoLabels.every((row) => row.present && row.demo), { demoLabels });
-        const played = [];
-        for (const gameId of ['digital-literacy-empowerment-class', 'comptia-security-professional-certificate', 'data-analytics-professional-certificate-google', 'demo-sort']) {
-          const result = await arcadeLevelWin(f, gameId);
-          played.push({ gameId, stars: result.stars });
-        }
-        check(`${label}: ${slug} one level of three program games and one demo won`, played.length === 4 && played.every((row) => row.stars >= 1), { played });
-        await f.goto('/api/admin/game-lab/practice-arcade/index.html');
+        const cards = await f.locator('#games article.card').evaluateAll((nodes) => nodes.map((card) => ({
+          id: card.dataset.id, demo: [...card.querySelectorAll('.pill')].some((pill) => pill.textContent === 'Demo'),
+        })));
+        exactCoverage(`${label}: arcade hub`, arcadeIds, cards.map((card) => card.id));
+        exactCoverage(`${label}: labelled demos`, demoIds, cards.filter((c) => c.demo).map((c) => c.id));
+        for (const id of arcadeIds) await recordWin(id, width, () => arcadeLevelWin(f, id));
       }
       await p.screenshot({ path: join(OUT, `game-${slug}-${width}.png`) });
       check(`${label}: ${slug} Exit unmounts the frame`, (await exit(p)) === 0);
@@ -461,6 +459,8 @@ try {
     await sctx.close();
     check(`${label}: student is turned away with no game content or engine`, denied, { landed: sp.url() });
   }
+
+  exactCoverage('game x viewport wins', VIEWPORTS.flatMap(([w]) => winIds.map((id) => `${w}:${id}`)), report.games.filter((r) => r.won).map((r) => `${r.width}:${r.id}`));
 
   // Reduced motion and WebGL-off fallback, through the integrated page at 1280.
   {
@@ -513,30 +513,21 @@ try {
     await ctx.close();
   }
 
-  // Close and judge the window.
-  await sleep(3000);
-  const dbAfter = dbSnapshot();
-  const mailAfter = await sink();
-  report.window.closedAt = new Date().toISOString();
-  report.db = { tables: Object.keys(dbBefore).length, changes: judgeDb(dbBefore, dbAfter) };
-  report.mail = { before: mailBefore, after: mailAfter };
-  report.external = external;
-  report.console = consoleEvents;
-  check('gameplay window: zero DB row inserts, updates or deletes', report.db.changes.length === 0, { changes: report.db.changes });
-  const mailFailures = judgeMail({ control: { reachable: control.reachable, captured: control.total }, before: mailBefore, after: mailAfter });
-  check('mail: control send captured by the local sink, zero messages during gameplay', mailFailures.length === 0, { mailFailures, control: report.mailControl });
-  check('zero external requests (any frame)', external.length === 0, { external: judgeRequests(external.map((e) => e.url), BASE) });
-  check('zero console errors or warnings (any frame)', consoleEvents.length === 0, { console: judgeConsole(consoleEvents) });
 } catch (error) {
   report.failures.push(`aborted: ${error?.stack ?? error}`);
   if (activePage) await activePage.screenshot({ path: join(OUT, 'aborted.png') }).catch(() => {});
 } finally {
+  if (windowBaseline) {
+    try { await closeWindow(windowBaseline); } catch (error) { report.failures.push(`sandbox snapshot: ${error.message}`); }
+  }
   try { deleteFlag(); report.cleanupFlagRows = psql("select count(*) from feature_flags where key='admin_game_lab'"); } catch (e) { report.failures.push(`cleanup: ${e.message}`); }
   if (browser) await browser.close();
   rmSync(LOCK, { force: true });
   report.finishedAt = new Date().toISOString();
   report.result = report.failures.length === 0 ? 'PASS' : 'FAIL';
   writeFileSync(join(OUT, 'verify-results.json'), JSON.stringify(report, null, 2));
+  writeFileSync(join(OUT, 'game-width-results.json'), JSON.stringify(report.games, null, 2));
+  writeFileSync(join(OUT, 'actor-asset-results.json'), JSON.stringify(report.matrix.filter((r) => r.kind === 'asset'), null, 2));
   const md = ['| actor | target | status | location | cache-control | vary | failures |', '|---|---|---|---|---|---|---|'];
   for (const r of report.matrix) md.push(`| ${r.actor} | ${r.target} | ${r.status} | ${r.location ?? ''} | ${r.cacheControl ?? ''} | ${r.vary ?? ''} | ${(r.failures ?? []).join('; ')} |`);
   writeFileSync(join(OUT, 'auth-matrix.md'), md.join('\n'));

@@ -2,6 +2,7 @@
 // Runs in `npm run test:unit` (scripts/test-unit.mjs collects tests/game-lab/*.test.mjs).
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { sha256, exactCoverage } from '../../scripts/game-lab/inventory.mjs';
 import { readFileSync } from 'node:fs';
 import {
   MATRIX_TARGETS, expectedFor, judgeRow, judgeRole, judgeRequests, judgeConsole, judgeDb, judgeMail, hasGameContent,
@@ -11,9 +12,9 @@ const ORIGIN = 'http://localhost:3100';
 const target = (name) => MATRIX_TARGETS.find((t) => t.name === name);
 const asset = (file) => readFileSync(new URL(`../../assets/game-lab/${file}`, import.meta.url), 'utf8');
 const NOT_FOUND = '<html><body>NEXT_HTTP_ERROR_FALLBACK;404 This page could not be found.</body></html>';
-const okAsset = (body, type) => ({ status: 200, body, contentType: `${type}; charset=utf-8`, cacheControl: 'private, no-store', vary: 'Cookie' });
+const okAsset = (body, type) => ({ status: 200, body, sha256: sha256(body), bodyBytes: Buffer.byteLength(body), contentType: `${type}; charset=utf-8`, cacheControl: 'private, no-store', vary: 'Cookie' });
 
-test('every probed asset body is recognised as game content', () => {
+test('previously sampled asset bodies are recognised as game content', () => {
   for (const file of [
     'packet-quest-3d/index.html', 'packet-quest-3d/game.mjs', 'firewall-defender-3d/index.html', 'firewall-defender-3d/rules.mjs', 'vendor/three.module.min.js',
     'packet-quest/index.html', 'packet-quest/rules.mjs', 'network-path/index.html', 'network-path/lesson.js', 'network-path/styles.css',
@@ -27,18 +28,39 @@ test('every probed asset body is recognised as game content', () => {
 
 test('correct rows pass for every actor', () => {
   const html = asset('packet-quest-3d/index.html');
-  assert.deepEqual(judgeRow({ kind: 'admin-on' }, target('PQ index.html'), okAsset(html, 'text/html')), []);
-  assert.deepEqual(judgeRow({ kind: 'anonymous' }, target('PQ index.html'), { status: 401, body: '' }), []);
+  assert.deepEqual(judgeRow({ kind: 'admin-on' }, target('packet-quest-3d/index.html'), okAsset(html, 'text/html')), []);
+  assert.deepEqual(judgeRow({ kind: 'anonymous' }, target('packet-quest-3d/index.html'), { status: 401, body: '{"error":"Unauthorized"}', contentType: 'application/json' }), []);
   assert.deepEqual(judgeRow({ kind: 'anonymous' }, target('launcher'), { status: 307, location: '/en/login?redirectTo=x', body: '' }), []);
   assert.deepEqual(judgeRow({ kind: 'non-admin' }, target('launcher'), { status: 307, location: '/dashboard', body: '' }), []);
   assert.deepEqual(judgeRow({ kind: 'admin-off' }, target('launcher'), { status: 200, body: NOT_FOUND }), []);
   assert.deepEqual(judgeRow({ kind: 'admin-on' }, target('raw traversal'), { status: 404, body: '' }), []);
 });
 
+test('an allowed response must match the requested file, not merely contain a known game marker', () => {
+  const t = target('packet-quest-3d/index.html');
+  const wrong = okAsset(asset('firewall-defender-3d/index.html'), 'text/html');
+  assert.match(judgeRow({ kind: 'admin-on' }, t, wrong).join(), /bytes/);
+});
+
+test('denied assets accept only the denial payload, including for files without a game marker', () => {
+  const t = target('practice-arcade/kit/vendor/THREE-LICENSE.txt');
+  const row = { status: 404, body: '{"error":"Not found"}', contentType: 'application/json' };
+  assert.deepEqual(judgeRow({ kind: 'non-admin' }, t, row), []);
+  assert.match(judgeRow({ kind: 'non-admin' }, t, { ...row, body: row.body + ' extra bytes' }).join(), /denial/);
+});
+
+test('equal counts cannot hide a duplicate, substitution or missing row', () => {
+  for (const bad of [['a'], ['a', 'a'], ['a', 'c'], ['a', 'b', 'b']]) {
+    assert.throws(() => exactCoverage('sample', ['a', 'b'], bad));
+  }
+  assert.throws(() => exactCoverage('sample', ['a', 'a'], ['a', 'a']));
+  exactCoverage('sample', ['a', 'b'], ['b', 'a']);
+});
+
 test('a wrong auth status fails', () => {
-  assert.notDeepEqual(judgeRow({ kind: 'anonymous' }, target('PQ index.html'), { status: 404, body: '' }), []);
-  assert.notDeepEqual(judgeRow({ kind: 'non-admin' }, target('PQ game.mjs'), { status: 403, body: '' }), []);
-  assert.notDeepEqual(judgeRow({ kind: 'admin-off' }, target('PQ index.html'), { status: 200, body: '' }), []);
+  assert.notDeepEqual(judgeRow({ kind: 'anonymous' }, target('packet-quest-3d/index.html'), { status: 404, body: '' }), []);
+  assert.notDeepEqual(judgeRow({ kind: 'non-admin' }, target('packet-quest-3d/game.mjs'), { status: 403, body: '' }), []);
+  assert.notDeepEqual(judgeRow({ kind: 'admin-off' }, target('packet-quest-3d/index.html'), { status: 200, body: '' }), []);
   assert.notDeepEqual(judgeRow({ kind: 'admin-on' }, target('unknown asset'), { status: 200, body: '' }), []);
   assert.notDeepEqual(judgeRow({ kind: 'anonymous' }, target('launcher'), { status: 307, location: '/admin/game-lab', body: '' }), []);
 });
@@ -52,7 +74,7 @@ test('leaked game content fails even with the expected status', () => {
 
 test('missing private no-store, Vary: Cookie or MIME on an allowed asset fails', () => {
   const js = asset('packet-quest-3d/game.mjs');
-  const t = target('PQ game.mjs');
+  const t = target('packet-quest-3d/game.mjs');
   assert.match(judgeRow({ kind: 'admin-on' }, t, { ...okAsset(js, 'text/javascript'), cacheControl: 'public, max-age=60' }).join(), /cache-control/);
   assert.match(judgeRow({ kind: 'admin-on' }, t, { ...okAsset(js, 'text/javascript'), vary: '' }).join(), /vary/);
   assert.match(judgeRow({ kind: 'admin-on' }, t, okAsset(js, 'text/plain')).join(), /content-type/);
