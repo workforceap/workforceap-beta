@@ -98,6 +98,7 @@ function gameCard(g) {
   const card = h('article', {class: `card${g.soon ? ' soon' : ''}${g.mood && !g.soon ? ' ' + g.mood : ''}`, 'data-id': g.id});
   if (g.accent) card.style.setProperty('--a', g.accent);
   const strip = h('div', {class: 'strip'});
+  if (g.category === 'demos') strip.append(h('span', {class: 'pill', text: 'Demo'}));
   if (g.soon) strip.append(h('span', {class: 'pill', text: 'Coming soon'}));
   else for (const m of mechSet(g)) strip.append(h('span', {class: 'pill', text: m}));
   const body = h('div', {class: 'body'});
@@ -190,14 +191,10 @@ function section(label, items, idBase) {
 }
 
 async function main() {
-  const demos = new URLSearchParams(location.search).get('demos') === '1';
   const [{cats, list}, index] = await Promise.all([loadRegistry(), loadIndex()]);
   const loaded = await Promise.all(list.map(async (e) => normalize(e, await loadGame(e.id), index)));
-  let demoGames = [];
-  if (demos) {
-    const got = await Promise.all(DEMOS.map(async (id) => normalize({id, category: 'demos'}, await loadGame(id), index)));
-    demoGames = got.filter((g) => !g.soon);
-  }
+  const got = await Promise.all(DEMOS.map(async (id) => normalize({id, category: 'demos'}, await loadGame(id), index)));
+  const demoGames = got.filter((g) => !g.soon);
   const all = loaded.concat(demoGames);
 
   const root = $('#games');

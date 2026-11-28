@@ -426,6 +426,13 @@ try {
         await f.locator('#games[aria-busy="false"]').waitFor({ timeout: 30000 });
         const hubGames = await f.locator('a[href*="play.html?game="]').count();
         check(`${label}: ${slug} hub lists the program games`, hubGames >= 20, { hubGames });
+        const demoIds = ['help-desk-demo', 'demo-sort', 'demo-order', 'demo-lane', 'demo-match', 'demo-world-a', 'demo-world-b'];
+        const demoLabels = await f.evaluate((ids) => ids.map((id) => {
+          const card = document.querySelector(`article.card[data-id="${id}"]`);
+          const label = card && [...card.querySelectorAll('.pill')].some((pill) => pill.textContent === 'Demo');
+          return { id, present: !!card, demo: !!label };
+        }), demoIds);
+        check(`${label}: ${slug} default hub lists the 7 demos, each labelled Demo`, demoLabels.length === 7 && demoLabels.every((row) => row.present && row.demo), { demoLabels });
         const played = [];
         for (const gameId of ['digital-literacy-empowerment-class', 'comptia-security-professional-certificate', 'data-analytics-professional-certificate-google', 'demo-sort']) {
           const result = await arcadeLevelWin(f, gameId);
