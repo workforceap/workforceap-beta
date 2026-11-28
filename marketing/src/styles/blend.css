@@ -110,7 +110,8 @@
     display:flex;flex-direction:column;gap:2px;opacity:0;visibility:hidden;transform:translateY(6px);
     transition:opacity .18s,transform .18s,visibility .18s;z-index:60}
   .navdrop-menu--right{left:auto;right:0}
-  .navdrop:hover .navdrop-menu,.navdrop:focus-within .navdrop-menu{opacity:1;visibility:visible;transform:translateY(0)}
+  .navdrop:hover .navdrop-menu,.navdrop.is-open .navdrop-menu,.navdrop:hover.is-open .navdrop-menu{display:flex;opacity:1;visibility:visible;transform:translateY(0)}
+  .navdrop-menu[hidden]{display:none}
   .navdrop-menu a{display:block;padding:10px 12px;border-radius:9px;font-size:14px;font-weight:600;color:var(--text);white-space:nowrap}
   .navdrop-menu a::after{display:none!important}
   .navdrop-menu a:hover{background:var(--surface-2);color:var(--crimson)}
