@@ -6,6 +6,7 @@ import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { handleAdminDraftPdf } from '@/lib/attendance/admin-draft';
+import { loadMonthlyAssistiveSignals } from '@/lib/attendance/load-assistive-signals';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,35 +24,40 @@ async function _POST(request: Request) {
       try { organizationId = await getActorOrganizationId(userId); } catch { return null; }
       return { userId, organizationId, permissions: ['attendance:admin'] };
     },
-    loadEnrollment: (organizationId, enrollmentId) => withTenantScope(organizationId, async (db) => {
-      const row = await db.courseEnrollment.findFirst({
-        where: { id: enrollmentId, organizationId },
-        select: { id: true, userId: true, programSlug: true, user: { select: { fullName: true, email: true, phone: true, deletedAt: true, organizationId: true } } },
-      });
-      if (!row || row.user.organizationId !== organizationId) return null;
-      // Cumulative stored progress only. It is never turned into daily attendance.
-      const progress = await db.courseraCourseProgress.findMany({
-        where: { organizationId, userId: row.userId, programSlug: row.programSlug, isRemovedFromProgram: false },
-        select: { isCompleted: true, overallProgress: true, learningHours: true },
-      });
-      const coursera = progress.length === 0 ? null : {
-        coursesCompleted: progress.filter(course => course.isCompleted).length,
-        coursesTotal: null,
-        overallProgress: null,
-        learningHours: progress.reduce((sum, course) => sum + Number(course.learningHours), 0),
-      };
-      return {
-        scope: { organizationId, memberId: row.userId, enrollmentId: row.id },
-        active: !row.user.deletedAt,
-        profile: { name: row.user.fullName, email: row.user.email, phone: row.user.phone },
-        // Only stored fields; everything else stays blank, never inferred.
-        enrollment: { program: programDisplayTitle(row.programSlug), programSlug: row.programSlug, twistId: null, counselor: null, abbreviation: null, pathway: null, classStart: null, classEnd: null },
-        coursera,
-        startMonth: null,
-        configuredInstructorId: null,
-        sourceMappings: [],
-      };
-    }),
+    loadEnrollment: (organizationId, enrollmentId, selectedDate) => withTenantScope(organizationId, async (db) => {
+          const row = await db.courseEnrollment.findFirst({
+            where: { id: enrollmentId, organizationId },
+            select: { id: true, userId: true, programSlug: true, user: { select: { fullName: true, email: true, phone: true, deletedAt: true, organizationId: true } } },
+          });
+          if (!row || row.user.organizationId !== organizationId) return null;
+          // Cumulative stored progress only. It is never turned into daily attendance.
+          const progress = await db.courseraCourseProgress.findMany({
+            where: { organizationId, userId: row.userId, programSlug: row.programSlug, isRemovedFromProgram: false },
+            select: { isCompleted: true, overallProgress: true, learningHours: true },
+          });
+          const coursera = progress.length === 0 ? null : {
+            coursesCompleted: progress.filter((course: { isCompleted: boolean }) => course.isCompleted).length,
+            coursesTotal: null,
+            overallProgress: null,
+            learningHours: progress.reduce((sum: number, course: { learningHours: unknown }) => sum + Number(course.learningHours), 0),
+          };
+          const month = selectedDate.slice(0, 7);
+          const assistive = /^\d{4}-\d{2}$/.test(month)
+            ? await loadMonthlyAssistiveSignals(db as never, organizationId, row.id, month)
+            : null;
+          return {
+            scope: { organizationId, memberId: row.userId, enrollmentId: row.id },
+            active: !row.user.deletedAt,
+            profile: { name: row.user.fullName, email: row.user.email, phone: row.user.phone },
+            // Only stored fields; everything else stays blank, never inferred.
+            enrollment: { program: programDisplayTitle(row.programSlug), programSlug: row.programSlug, twistId: null, counselor: null, abbreviation: null, pathway: null, classStart: null, classEnd: null },
+            coursera,
+            assistive,
+            startMonth: null,
+            configuredInstructorId: null,
+            sourceMappings: [],
+          };
+        }),
   });
   const headers = { 'cache-control': 'no-store', 'x-robots-tag': 'noindex' };
   if (result.status === 200 && 'pdf' in result) {

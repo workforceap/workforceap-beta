@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { digest, DRAFT_RULE, TEMPLATE_VERSION, ESTIMATE_NOTICE, REPORTING_TIMEZONE, type Day, type SheetKind } from './evidence';
 import { programCourseEstimate } from './coursera-estimate';
+import { ACTIVITY_OBSERVED_LABEL, CUMULATIVE_ESTIMATE_LABEL, type AssistiveSignals } from './assistive-signals';
+import { COURSE_BLOCKS, WEEK_LABELS, buildMonthlyGrid } from './monthly-grid';
 
 export type AttendanceSnapshot = {
   schemaVersion: 1;
@@ -14,6 +16,8 @@ export type AttendanceSnapshot = {
   days: Day[];
   /** Stored Coursera progress. Cumulative estimates only: never daily attendance. */
   coursera?: { coursesCompleted: number; coursesTotal: number | null; overallProgress: number | null; learningHours: number | null } | null;
+  /** Dated point counts beside the monthly grid. Never copied into Class Hrs or Lab Hrs. */
+  assistive?: AssistiveSignals | null;
 };
 
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -339,77 +343,130 @@ function cellCode(day: Day): 'P' | 'W' | 'CR' | 'A' | null {
 }
 
 /**
- * No monthly form exists, so this stays the adapted portrait draft and says so.
- * Columns use fixed x positions; unknown days print "unknown", never zero.
+ * WFS Capital Area Monthly Training Attendance Sheet, landscape.
+ * Six Sunday-Saturday weeks, Class Hrs and Lab Hrs, four course blocks.
+ * Unknown days stay blank. Sign, send and archive stay pending.
  */
 function drawMonthly(pdf: PDFDocument, snapshot: AttendanceSnapshot, font: PDFFont, bold: PDFFont) {
-  const pen = penFor(pdf, font, bold, [612, 792]);
-  const columns = [
-    { label: 'Date', x: MARGIN },
-    { label: 'Admin-entered (unverified)', x: 130 },
-    { label: 'Estimated hours (not certified)', x: 290 },
-    { label: 'Codes', x: 470 },
-  ];
-  let pageNumber = 0;
-  let y = 0;
-  const startPage = () => {
-    if (pageNumber > 0) pen.page = pdf.addPage([612, 792]);
-    pageNumber++;
-    pen.text('ATTENDANCE / MONTHLY / DRAFT', MARGIN, 756, 15, true);
-    pen.text('Template fidelity unverified. Not WFS approved. No certification implied.', MARGIN, 740, 8);
-    pen.text('MONTHLY ADAPTED DRAFT - original monthly template unavailable', MARGIN, 726, 8, true);
-    pen.text('PROPOSED DRAFT RULE: P >=4 verified hours/day; not institutionally approved.', MARGIN, 712, 8);
-    pen.text(pen.fit(`Reporting timezone: ${REPORTING_TIMEZONE} | Academic label: ${snapshot.academicLabel}`, 540, 8), MARGIN, 698, 8);
-    drawDraftFooter(pen, snapshot);
-    y = 676;
-    if (pageNumber > 1) {
-      pen.text(pen.fit(`Participant (continued): ${snapshot.profile.name}`, 540, 9, true), MARGIN, y, 9, true);
-      y -= 16;
-    }
-    for (const column of columns) pen.text(column.label, column.x, y, 8, true);
-    y -= 16;
-  };
-  startPage();
-  const identity = [
-    `Participant: ${snapshot.profile.name}`,
-    `Email: ${snapshot.profile.email ?? ''} | Phone: ${snapshot.profile.phone ?? ''}`,
+  const pen = penFor(pdf, font, bold, [792, 612]);
+  const { page } = pen;
+  const ink = rgb(0, 0, 0);
+  const grid = buildMonthlyGrid(snapshot.days[0]?.date ?? snapshot.academicLabel.slice(0, 10), snapshot.days);
+  pen.text('DRAFT', 700, 590, 12, true);
+  pen.text('Workforce Solutions Capital Area', MARGIN, 590, 8, true);
+  pen.text('Monthly Training Attendance Sheet', MARGIN, 574, 14, true);
+  pen.text('not WFS approved; not institutionally approved', MARGIN, 560, 8, true);
+  pen.text(pen.fit(`Academic label: ${snapshot.academicLabel}`, 500, 7), MARGIN, 548, 7);
+
+  const monthLabel = snapshot.academicLabel.slice(0, 7);
+  const meta = [
+    `Month / Year of Attendance: ${monthLabel}`,
+    `Participant Name: ${snapshot.profile.name}`,
+    `TWIST ID: ${snapshot.enrollment.twistId ?? ''}`,
+    `Career Counselor: ${snapshot.enrollment.counselor ?? ''}`,
     `Training program: ${snapshot.enrollment.program}`,
-    `TWIST ID: ${snapshot.enrollment.twistId ?? ''} | WFS counselor: ${snapshot.enrollment.counselor ?? ''}`,
-    `Class abbreviation: ${snapshot.enrollment.abbreviation ?? ''} | Pathway: ${snapshot.enrollment.pathway ?? ''}`,
-    `Class dates: ${snapshot.enrollment.classStart ?? ''} to ${snapshot.enrollment.classEnd ?? ''}`,
   ];
-  for (const row of identity) {
-    pen.text(pen.fit(row, 540, 9), MARGIN, y, 9);
-    y -= 13;
+  let y = 534;
+  for (const row of meta) {
+    pen.text(pen.fit(row, 720, 8), MARGIN, y, 8);
+    y -= 11;
   }
-  pen.text('Unknown values are blank/unknown, never inferred. Time In/Out unavailable.', MARGIN, y, 8);
-  y -= 11;
-  pen.text('P/W/CR/A counts are not actual hours. Missing telemetry is not absence.', MARGIN, y, 8);
-  y -= 18;
-  let total = 0;
-  let known = 0;
-  const counts = { P: 0, W: 0, CR: 0, A: 0 };
-  for (const day of snapshot.days) {
-    if (y < 70) startPage();
-    if (day.actualMinutes !== null) { total += day.actualMinutes; known++; }
-    for (const code of day.codes) counts[code]++;
-    pen.text(day.date, columns[0].x, y, 9);
-    pen.text(hours(day.actualMinutes) ?? 'unknown', columns[1].x, y, 9);
-    pen.text(hours(day.estimatedMinutes) ?? 'unknown', columns[2].x, y, 9);
-    pen.text(day.codes.join(', '), columns[3].x, y, 9);
-    y -= 12;
+  pen.text('Enter Class Hrs and Lab Hrs only for days staff have recorded. Unknown days stay blank. Weekly totals use known days only.', MARGIN, y, 7);
+  y -= 12;
+
+  const blockTop = y;
+  const blockHeight = 78;
+  for (let block = 0; block < COURSE_BLOCKS; block++) {
+    const top = blockTop - block * blockHeight;
+    page.drawRectangle({ x: MARGIN, y: top - blockHeight + 8, width: 720, height: blockHeight - 4, borderWidth: 0.4, borderColor: ink });
+    const course = block === 0 ? snapshot.enrollment.program : '';
+    pen.text(pen.fit(`Course ${block + 1} Name: ${course}`, 340, 7, true), MARGIN + 4, top - 4, 7, true);
+    pen.text('Days / Time:', 390, top - 4, 7, true);
+    pen.text('Instructor Signature:', 520, top - 4, 7, true);
+    pen.text('pending', 620, top - 4, 7);
+    pen.text('Is the participant making acceptable progress as defined by the educational institution?', MARGIN + 4, top - 16, 6);
+    pen.text('Yes', 470, top - 16, 6);
+    pen.text('No', 510, top - 16, 6);
+    box(page, 456, top - 18);
+    box(page, 496, top - 18);
+    pen.text('Will the course / training be completed on time?', 540, top - 16, 6);
+    pen.text('Yes', 700, top - 16, 6);
+    pen.text('No', 730, top - 16, 6);
+    box(page, 686, top - 18);
+    box(page, 716, top - 18);
+    pen.text('unanswered', 620, top - 26, 6);
+    if (block === 0) drawMonthGrid(pen, grid, top - 36);
+    else pen.text('Additional course block is blank. Hours are not copied from activity signals.', MARGIN + 4, top - 40, 6);
   }
-  y -= 6;
-  if (y < 110) startPage();
-  pen.text(`Admin-entered (unverified) subtotal: ${(total / 60).toFixed(2)}; coverage ${known}/${snapshot.days.length} days. Unknown days excluded.`, MARGIN, y, 8, true);
-  y -= 12;
-  pen.text(`Code counts: P ${counts.P} / W ${counts.W} / CR ${counts.CR} / A ${counts.A}`, MARGIN, y, 8);
-  y -= 12;
-  pen.text('Student attestation: pending separate authenticated student act.', MARGIN, y, 8);
-  y -= 12;
-  pen.text('Instructor signature: pending authenticated review and explicit signing.', MARGIN, y, 8);
-  y -= 12;
-  pen.text('Satisfactory progress: unanswered. Will complete on time: unanswered.', MARGIN, y, 8);
-  y -= 12;
-  pen.text('Counselor delivery: student downloads and sends manually.', MARGIN, y, 8);
+
+  const signalY = blockTop - COURSE_BLOCKS * blockHeight - 2;
+  drawAssistiveStrip(pen, snapshot, signalY);
+  pen.text('I affirm that the information provided concerning my attendance is accurate.', MARGIN, 78, 7);
+  pen.text('Participant Signature:', MARGIN, 66, 8, true);
+  page.drawLine({ start: { x: 140, y: 64 }, end: { x: 420, y: 64 }, thickness: 0.4, color: ink });
+  pen.text('pending separate authenticated student act', 146, 68, 6);
+  pen.text('Sign, send and archive are disabled. No official copy is stored.', 430, 66, 6);
+  drawDraftFooter(pen, snapshot);
+}
+
+function drawMonthGrid(pen: Pen, grid: ReturnType<typeof buildMonthlyGrid>, top: number) {
+  const { page } = pen;
+  const ink = rgb(0, 0, 0);
+  const x = MARGIN + 4;
+  const labelWidth = 42;
+    const cell = 13;
+    const totalWidth = 18;
+  let cursor = x + labelWidth;
+  pen.text('Date', x, top, 5, true);
+  for (let week = 0; week < grid.weeks.length; week++) {
+    for (const label of WEEK_LABELS) {
+      pen.text(label, cursor, top, 5);
+      cursor += cell;
+    }
+    pen.text('Tot', cursor, top, 5, true);
+          cursor += totalWidth;
+  }
+  const rows: Array<[string, (cell: { classHours: string | null; labHours: string | null } | null, week: number) => string | null]> = [
+    ['Class Hrs', (item) => item?.classHours ?? null],
+    ['Lab Hrs', (item) => item?.labHours ?? null],
+  ];
+  rows.forEach(([label, value], rowIndex) => {
+    const y = top - 10 - rowIndex * 9;
+    pen.text(label, x, y, 5, true);
+    let col = x + labelWidth;
+    grid.weeks.forEach((week, weekIndex) => {
+      week.forEach(item => {
+        const printed = value(item, weekIndex);
+        if (printed) pen.text(pen.fit(printed, cell - 1, 4), col, y, 4);
+        page.drawRectangle({ x: col - 1, y: y - 2, width: cell - 1, height: 8, borderWidth: 0.2, borderColor: ink });
+        col += cell;
+      });
+      const total = rowIndex === 0 ? grid.weekTotals[weekIndex].classHours : grid.weekTotals[weekIndex].labHours;
+      if (total) pen.text(pen.fit(total, totalWidth - 1, 4), col, y, 4);
+            col += totalWidth;
+    });
+  });
+  const totalY = top - 28;
+  pen.text('Week total', x, totalY, 5, true);
+  let col = x + labelWidth + 7 * cell;
+  for (const week of grid.weekTotals) {
+    if (week.totalHours) pen.text(pen.fit(week.totalHours, 20, 4), col, totalY, 4);
+    col += 7 * cell + totalWidth;
+  }
+  const running = grid.running;
+  pen.text(`Running Total Hrs: Class ${running.classHours ?? 'blank'}  Lab ${running.labHours ?? 'blank'}  Total ${running.totalHours ?? 'blank'}`, x, top - 38, 6, true);
+}
+
+function drawAssistiveStrip(pen: Pen, snapshot: AttendanceSnapshot, y: number) {
+  const signals = snapshot.assistive;
+  const coursera = snapshot.coursera ?? null;
+  const estimate = programCourseEstimate(snapshot.enrollment.programSlug ?? null);
+  const learning = coursera?.learningHours != null ? `${coursera.learningHours} learning hours` : 'learning hours not stored';
+  const catalog = estimate ? `${estimate.estimatedHours} catalog hours` : 'catalog hours not stored';
+  const courses = coursera ? `${coursera.coursesCompleted} courses completed` : 'completion not stored';
+  pen.text(pen.fit(`${CUMULATIVE_ESTIMATE_LABEL}: ${catalog}; ${learning}; ${courses}.`, 720, 6), MARGIN, y, 6);
+  const observed = signals && signals.days.length > 0
+    ? signals.days.map(day => `${day.date.slice(8)} C${day.courseraPoints}/S${day.sitePoints}`).join(' ')
+    : 'no dated points in this month';
+  pen.text(pen.fit(`${ACTIVITY_OBSERVED_LABEL}: ${observed}. These counts are not Class Hrs or Lab Hrs.`, 720, 6), MARGIN, y - 8, 6);
 }

@@ -30,7 +30,7 @@ for (const kind of ['weekly', 'monthly', 'yearly'] as SheetKind[]) {
       assert.match(reopened.getTitle() ?? '', /DRAFT/);
       assert.match(reopened.getSubject() ?? '', /not WFS approved/);
       assert.equal(reopened.getPageCount(), 1);
-            for (const page of reopened.getPages()) assert.deepEqual(page.getSize(), kind === 'monthly' ? { width: 612, height: 792 } : { width: 792, height: 612 });
+            for (const page of reopened.getPages()) assert.deepEqual(page.getSize(), { width: 792, height: 612 });
       const loaded = await getDocument({ data: bytes.slice(), useSystemFonts: true, disableFontFace: true }).promise;
       const texts: string[] = [];
       try {
@@ -42,20 +42,19 @@ for (const kind of ['weekly', 'monthly', 'yearly'] as SheetKind[]) {
           assert.ok(text.includes(digest(snapshot)), 'every page binds the full frozen snapshot');
           assert.match(text, /not institutionally approved/);
           if (pageIndex > 1) {
-            assert.match(text, /Participant \(continued\): Synthetic Participant/);
-            assert.match(text, /Admin-entered \(unverified\).*Estimated hours \(not certified\).*Codes/);
-          }
+                      assert.match(text, /Participant \(continued\): Synthetic Participant/);
+                    }
         }
         const text = texts.join(' ');
                 if (kind === 'monthly') {
-                  for (const required of ['Synthetic Participant', 'Synthetic Program', dates[0], dates.at(-1)!,
-                    'unknown', 'estimated, not certified', 'Unknown days excluded.', 'Missing telemetry is not absence.',
-                    'Time In/Out unavailable.', 'Student attestation: pending', 'Instructor signature: pending']) assert.ok(text.includes(required), required);
-                  assert.match(text, variant === 'missing' ? /Admin-entered \(unverified\) subtotal: 0\.00; coverage 0\// : /Admin-entered \(unverified\) subtotal: 4\.00; coverage 1\//);
-                  assert.match(text, variant === 'missing' ? /Code counts: P 0 \/ W 0 \/ CR 0 \/ A 0/ : /Code counts: P 1 \/ W 0 \/ CR 0 \/ A 0/);
-                  if (variant === 'partial') assert.ok(text.includes('10.00'));
-                  assert.match(text, /MONTHLY ADAPTED DRAFT/);
-                } else if (kind === 'weekly') {
+                                  for (const required of ['Synthetic Participant', 'Synthetic Program', 'Monthly Training Attendance Sheet',
+                                    'Class Hrs', 'Lab Hrs', 'Running Total Hrs', 'Instructor Signature',
+                                    'acceptable progress', 'completed on time', 'Activity observed', 'Cumulative estimate',
+                                    'not WFS approved', 'Sign, send and archive are disabled']) assert.ok(text.includes(required), required);
+                                  assert.equal((text.match(/0\.00/g) ?? []).length, 0, 'unknown days never print zero');
+                                  if (variant !== 'missing') assert.ok(text.includes('4.00'));
+                                  if (variant === 'partial') assert.ok(!text.includes('10.00'), 'estimated hours are not class hours');
+                                } else if (kind === 'weekly') {
                   for (const required of ['Synthetic Participant', 'Synthetic Program', 'Weekly Training Attendance Sheet',
                     'Day of Week', 'Time In', 'Time Out', 'Total Hours', 'Monday', 'Sunday',
                     'satisfactory progress', 'completed on time', 'Instructor Signature', 'Participant Signature',

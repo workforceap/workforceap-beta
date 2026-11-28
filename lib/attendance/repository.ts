@@ -13,6 +13,8 @@ export type TrustedEnrollment = {
   configuredInstructorId: string | null;
   /** Stored Coursera progress for the member, loaded by the caller. Null means the sheet prints "not stored". */
   coursera?: AttendanceSnapshot['coursera'];
+  /** Read-only point signals for the monthly draft. Never attendance. */
+  assistive?: import('./assistive-signals').AssistiveSignals | null;
   sourceMappings: SourceMapping[];
 };
 

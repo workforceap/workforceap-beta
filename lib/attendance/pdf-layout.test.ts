@@ -71,7 +71,7 @@ for (const kind of ['monthly'] as SheetKind[]) {
     const pages = await textBoxes(bytes);
     assert.ok(pages.length >= 1);
     pages.forEach((boxes, pageIndex) => {
-      const header = boxes.filter(box => /Academic label|^W+$/.test(box.str));
+      const header = boxes.filter(box => box.str.includes('Monthly Training Attendance Sheet') || box.str.includes('Academic label') || /^W+$/.test(box.str));
       assert.ok(header.length >= 1, `page ${pageIndex + 1} shows the academic label`);
       for (const box of boxes) {
         assert.ok(box.x >= LEFT - 0.5, `left edge ${box.x} "${box.str.slice(0, 30)}"`);
@@ -81,11 +81,14 @@ for (const kind of ['monthly'] as SheetKind[]) {
   });
 }
 
-test('wrapped header lines never overlap each other or the body', async () => {
+test('monthly text stays inside both margins and above the footer', async () => {
   const [first] = await textBoxes(await renderAttendancePdf(snapshot('monthly', { academicLabel: 'W'.repeat(64) })));
-  const baselines = [...new Set(first.map(box => Math.round(box.y * 10) / 10))].sort((a, b) => b - a);
-  for (let index = 1; index < baselines.length; index++) {
-    assert.ok(baselines[index - 1] - baselines[index] >= 5.9, `baselines ${baselines[index - 1]} / ${baselines[index]} collide`);
+  const right = 792 - LEFT;
+  assert.ok(first.some(box => box.str.includes('Monthly Training Attendance Sheet')));
+  for (const box of first) {
+    assert.ok(box.x >= LEFT - 0.5, `left ${box.str.slice(0, 24)}`);
+    assert.ok(box.right <= right + 0.5, `right ${box.right.toFixed(1)} ${box.str.slice(0, 24)}`);
+    assert.ok(box.y >= LEFT - 0.5, `low ${box.y} ${box.str.slice(0, 24)}`);
   }
 });
 
