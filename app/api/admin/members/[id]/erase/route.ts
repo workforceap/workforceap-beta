@@ -26,6 +26,26 @@ import {
   deleteUserStorageObjects,
 } from '@/lib/gdpr/deleteUserStorage';
 
+const HARD_DELETE_RESTRICT_HOLD =
+  'This account still leads a subgroup or chapter, created a subgroup, or signed a billing packet. Reassign that role before erasing the account.';
+
+function hardDeleteRestrictHold(existing: {
+  subgroupsLed?: unknown[];
+  subgroupsCreated?: unknown[];
+  chaptersLed?: unknown[];
+  billingPacketsSigned?: unknown[];
+}): string | null {
+  if (
+    (existing.subgroupsLed?.length ?? 0) > 0 ||
+    (existing.subgroupsCreated?.length ?? 0) > 0 ||
+    (existing.chaptersLed?.length ?? 0) > 0 ||
+    (existing.billingPacketsSigned?.length ?? 0) > 0
+  ) {
+    return HARD_DELETE_RESTRICT_HOLD;
+  }
+  return null;
+}
+
 /**
  * POST /api/admin/members/[id]/erase
  *
@@ -77,6 +97,11 @@ export const POST = withApiGuc(async (
           messagesAuthored: true,
           courseEnrollments: true,
           userCertifications: { select: { proofUrl: true } },
+          // Restrict FKs that block user.delete after Auth is already gone.
+          subgroupsLed: { select: { id: true }, take: 1 },
+          subgroupsCreated: { select: { id: true }, take: 1 },
+          chaptersLed: { select: { id: true }, take: 1 },
+          billingPacketsSigned: { select: { id: true }, take: 1 },
         },
       }),
     );
@@ -85,6 +110,22 @@ export const POST = withApiGuc(async (
       return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     }
     if (hasAdminAccess(existing.profile?.role ?? 'member', existing.userRoles.map((entry) => entry.role.name))) return NextResponse.json({ error: 'Administrator accounts cannot be erased from member management.' }, { status: 403 });
+
+    // Optionally anonymize instead of hard-delete for members that still
+    // have active program enrollments. Admins can pass force=true to
+    // override, but the default is hard-delete.
+    const shouldAnonymize = !force && existing.deletedAt == null && existing.courseEnrollments.length > 0;
+
+    // Hard-delete removes Auth first (#2940/#2949). Subgroup/chapter leader
+    // (and billing-packet signer / subgroup creator) FKs are ON DELETE
+    // RESTRICT, so user.delete then 500s with the login already gone.
+    // Refuse before storage or Auth so staff can reassign and retry.
+    if (!shouldAnonymize) {
+      const hold = hardDeleteRestrictHold(existing);
+      if (hold) {
+        return NextResponse.json({ error: hold, authDeleted: false }, { status: 409 });
+      }
+    }
 
     const extraPaths = [
       existing.profile?.resumeOriginalPath
@@ -108,10 +149,6 @@ export const POST = withApiGuc(async (
     // Fail closed if detachment cannot be confirmed, even with uploads disabled.
     await withTenantScope(orgId, (db) => retainEnrollmentAgreementData(id, db));
 
-    // Optionally anonymize instead of hard-delete for members that still
-    // have active program enrollments. Admins can pass force=true to
-    // override, but the default is hard-delete.
-    const shouldAnonymize = !force && existing.deletedAt == null && existing.courseEnrollments.length > 0;
     const supabaseAdmin = getSupabaseAdmin();
 
     if (shouldAnonymize) {
@@ -208,7 +245,21 @@ export const POST = withApiGuc(async (
       );
     }
 
-    await withTenantScope(orgId, (db) => db.user.delete({ where: { id } }));
+    try {
+      await withTenantScope(orgId, (db) => db.user.delete({ where: { id } }));
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        console.error(`[gdpr-erase] Restrict FK blocked hard delete for ${id}:`, error.meta);
+        return NextResponse.json(
+          {
+            error: HARD_DELETE_RESTRICT_HOLD,
+            authDeleted: true,
+          },
+          { status: 409 },
+        );
+      }
+      throw error;
+    }
 
     await logCronRun('gdpr_erase', {
       memberId: id,

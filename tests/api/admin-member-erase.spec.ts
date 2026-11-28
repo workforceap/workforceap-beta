@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Prisma } from '@prisma/client';
 
 /**
  * Behavioural contract for POST /api/admin/members/[id]/erase (formerly
@@ -127,6 +128,10 @@ function member(overrides: Record<string, unknown> = {}) {
     userRoles: [],
     userCertifications: [{ proofUrl: 'cert-files/member-1/cert.pdf' }],
     courseEnrollments: [],
+    subgroupsLed: [],
+    subgroupsCreated: [],
+    chaptersLed: [],
+    billingPacketsSigned: [],
     ...overrides,
   };
 }
@@ -315,6 +320,71 @@ describe('POST /api/admin/members/[id]/erase', () => {
       expect(remove).not.toHaveBeenCalled();
       expect(disableAuthUserForSoftDelete).not.toHaveBeenCalled();
       expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  it('refuses hard-delete before Auth when the member still leads a subgroup', async () => {
+    findFirst.mockResolvedValue(member({ subgroupsLed: [{ id: 'sg-1' }] }));
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error:
+        'This account still leads a subgroup or chapter, created a subgroup, or signed a billing packet. Reassign that role before erasing the account.',
+      authDeleted: false,
+    });
+    expect(deleteUserStorageObjects).not.toHaveBeenCalled();
+    expect(remove).not.toHaveBeenCalled();
+    expect(disableAuthUserForSoftDelete).not.toHaveBeenCalled();
+    expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+  });
+
+  it('refuses hard-delete before Auth when the member still leads a chapter', async () => {
+    findFirst.mockResolvedValue(member({ chaptersLed: [{ id: 'ch-1' }] }));
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(409);
+    expect(deleteUserStorageObjects).not.toHaveBeenCalled();
+    expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+    expect(remove).not.toHaveBeenCalled();
+  });
+
+  it('still anonymizes an enrolled subgroup leader (update, not delete)', async () => {
+    findFirst.mockResolvedValue(
+      member({ courseEnrollments: [{ id: 'enr-1' }], subgroupsLed: [{ id: 'sg-1' }] }),
+    );
+
+    const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, action: 'anonymize', memberId: MEMBER_ID });
+    expect(remove).not.toHaveBeenCalled();
+    expect(deleteSupabaseAuthUser).not.toHaveBeenCalled();
+    expect(disableAuthUserForSoftDelete).toHaveBeenCalled();
+  });
+
+  it('returns 409 when user.delete hits a Restrict FK after Auth is already gone', async () => {
+    remove.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('Foreign key constraint violated', {
+        code: 'P2003',
+        clientVersion: 'test',
+        meta: { field_name: 'subgroups_leader_id_fkey' },
+      }),
+    );
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const res = await POST(eraseReq(), { params: Promise.resolve({ id: MEMBER_ID }) });
+      expect(res.status).toBe(409);
+      expect(await res.json()).toEqual({
+        error:
+          'This account still leads a subgroup or chapter, created a subgroup, or signed a billing packet. Reassign that role before erasing the account.',
+        authDeleted: true,
+      });
+      expect(deleteSupabaseAuthUser).toHaveBeenCalledWith(MEMBER_ID, supabaseAdmin);
     } finally {
       errorSpy.mockRestore();
     }
