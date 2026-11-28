@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { PROFILE_PHOTO_BUCKET } from '@/lib/portal/memberProfilePhoto';
+import { isAttendanceStoragePath } from '@/lib/attendance/storageKey';
 
 const SIGNED_URL_TTL_SECONDS = 3600;
 
@@ -25,6 +26,12 @@ export async function getMemberProfilePhotoSignedUrlForPath(
 ): Promise<string | null> {
   const path = storagePath?.trim();
   if (!path) return null;
+  // Confused-deputy guard: this service-role helper signs a database-provided
+  // path, so it must never reach the private attendance archive namespace.
+  if (isAttendanceStoragePath(path)) {
+    console.error('[memberProfilePhotoUrl] refused to sign an attendance/ path');
+    return null;
+  }
 
   try {
     const supabase = getSupabaseAdmin();
