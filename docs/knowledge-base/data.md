@@ -85,6 +85,7 @@ It does not certify live Auth, Storage, or database policies.
 - GUC context uses `AsyncLocalStorage`; database-local settings and RLS enforcement depend on the configured Prisma path, transaction scope, database role and deployed policies. The normal client returns without installing the GUC layer unless explicitly enabled. Do not infer database-enforced tenant isolation from the presence of `withApiGuc` in a route.
 - The preview transaction-flattening path replaces transactions with ordinary operations. `lib/db/transactionPolicy.ts` is the source contract for this mode: preview/development may flatten for non-atomic callers, atomic guardian-consent writes refuse that mode, and an explicit production flatten flag fails during Prisma initialization. Deployed flags were not inspected, and no live data-loss claim is made.
 - A Supabase Auth operation, a Prisma transaction, a Stripe request and an email send do not share one atomic transaction. Changes that cross these boundaries need idempotency, reconciliation and a durable outcome appropriate to the feature.
+- Admin [GDPR erase](../../app/api/admin/members/[id]/erase/route.ts) anonymizes an enrolled member (`@anonymized.invalid`) and keeps `CourseEnrollment` rows for reporting. A later POST without `force` on that marker is idempotent and must not hard-delete; super-admin `force=true` still hard-deletes. Soft-deleted `@deleted.invalid` rows after the legal-hold window stay on the hard-delete path.
 
 ## Recovery and schema changes
 

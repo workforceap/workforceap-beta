@@ -26,6 +26,18 @@ import {
   deleteUserStorageObjects,
 } from '@/lib/gdpr/deleteUserStorage';
 
+/** Marker used only by this admin GDPR erase path (distinct from `@deleted.invalid`). */
+const ANONYMIZED_ERASE_EMAIL_SUFFIX = '@anonymized.invalid';
+
+function anonymizedEraseEmail(userId: string): string {
+  const hash = `anon_${Buffer.from(userId).toString('base64url').slice(0, 12)}`;
+  return `${hash}${ANONYMIZED_ERASE_EMAIL_SUFFIX}`;
+}
+
+function isAnonymizedEraseEmail(email: string): boolean {
+  return email.endsWith(ANONYMIZED_ERASE_EMAIL_SUFFIX);
+}
+
 /**
  * POST /api/admin/members/[id]/erase
  *
@@ -86,6 +98,16 @@ export const POST = withApiGuc(async (
     }
     if (hasAdminAccess(existing.profile?.role ?? 'member', existing.userRoles.map((entry) => entry.role.name))) return NextResponse.json({ error: 'Administrator accounts cannot be erased from member management.' }, { status: 403 });
 
+    // A completed anonymize rewrites email to `@anonymized.invalid` and sets
+    // deletedAt. A later POST (audit failure after commit, double-submit, or
+    // "retry this action") must not fall through to hard delete — that
+    // cascades enrollments this path is meant to keep. Super-admin force
+    // still hard-deletes. Soft-deleted `@deleted.invalid` rows stay on the
+    // legal-hold hard-delete path.
+    if (!force && isAnonymizedEraseEmail(existing.email)) {
+      return NextResponse.json({ ok: true, action: 'anonymize', memberId: id });
+    }
+
     const extraPaths = [
       existing.profile?.resumeOriginalPath
         ? { bucket: MEMBER_RESUME_BUCKET, path: existing.profile.resumeOriginalPath }
@@ -138,7 +160,6 @@ export const POST = withApiGuc(async (
       // with the same field list as the shared anonymiser. One transaction, so
       // a failed profile scrub cannot leave deletedAt set — a retry would then
       // fall through to hard delete and drop the enrollment records.
-      const hash = `anon_${Buffer.from(id).toString('base64url').slice(0, 12)}`;
       await prisma.$transaction((tx) =>
         withTenantScope(
           orgId,
@@ -146,7 +167,7 @@ export const POST = withApiGuc(async (
             await db.user.update({
               where: { id },
               data: {
-                email: `${hash}@anonymized.invalid`,
+                email: anonymizedEraseEmail(id),
                 fullName: 'Anonymized User',
                 phone: null,
                 workspaceEmail: null,
@@ -178,7 +199,7 @@ export const POST = withApiGuc(async (
         targetType: 'user',
         targetId: id,
         metadata: { orgId, action: 'anonymize' },
-      });
+      }).catch((err) => console.error('[audit] member anonymize:', err));
       const actorRole = (await isSuperAdmin(user.id)) ? 'super_admin' : 'admin';
       await logAuditEvent({
         user: { id: user.id, role: actorRole },
@@ -223,7 +244,7 @@ export const POST = withApiGuc(async (
       targetType: 'user',
       targetId: id,
       metadata: { orgId, action: 'hard_delete', force },
-    });
+    }).catch((err) => console.error('[audit] member hard_delete:', err));
     const actorRole = (await isSuperAdmin(user.id)) ? 'super_admin' : 'admin';
     await logAuditEvent({
       user: { id: user.id, role: actorRole },
