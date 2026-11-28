@@ -57,7 +57,7 @@ vi.mock('@/lib/platform/programCatalog', () => ({
 }));
 
 vi.mock('@/lib/platform/trainingEnrollmentGate', () => ({
-  isMemberWioaVerified: vi.fn(() => ({ ok: true })),
+  canAssignWioaProgram: vi.fn(() => ({ ok: true })),
 }));
 
 vi.mock('@/lib/notifications/partner-notify', () => ({
@@ -83,7 +83,7 @@ import { GET as getEnrollment } from '@/app/api/member/enrollments/[id]/route';
 import { prisma } from '@/lib/db/prisma';
 import { getUser } from '@/lib/auth/server';
 import { getActivePrograms } from '@/lib/platform/programCatalog';
-import { isMemberWioaVerified } from '@/lib/platform/trainingEnrollmentGate';
+import { canAssignWioaProgram } from '@/lib/platform/trainingEnrollmentGate';
 import { NextRequest, after } from 'next/server';
 import { sendCourseEnrolledEmail } from '@/lib/email';
 
@@ -229,7 +229,7 @@ describe('POST /api/member/enroll', () => {
       programSlug: 'digital-literacy-empowerment-class',
       isPrimary: true,
     } as any);
-    vi.mocked(isMemberWioaVerified).mockReturnValue({ ok: false, code: 'WIOA_NOT_STARTED' });
+    vi.mocked(canAssignWioaProgram).mockReturnValue({ ok: false, code: 'WIOA_NOT_STARTED' });
 
     const res = await enrollPost(
       makePostRequest({ programSlug: 'digital-literacy-empowerment-class' })
@@ -239,7 +239,7 @@ describe('POST /api/member/enroll', () => {
       ok: true,
       programSlug: 'digital-literacy-empowerment-class',
     });
-    expect(isMemberWioaVerified).not.toHaveBeenCalled();
+    expect(canAssignWioaProgram).not.toHaveBeenCalled();
   });
 
   it('still WIOA-gates WIOA-funded programs', async () => {
@@ -257,12 +257,34 @@ describe('POST /api/member/enroll', () => {
       wioaReviewStatus: null,
       courseEnrollments: [],
     } as any);
-    vi.mocked(isMemberWioaVerified).mockReturnValue({ ok: false, code: 'WIOA_NOT_STARTED' });
+    vi.mocked(canAssignWioaProgram).mockReturnValue({ ok: false, code: 'WIOA_NOT_STARTED' });
 
     const res = await enrollPost(makePostRequest({ programSlug: 'tech-support' }));
     expect(res.status).toBe(400);
     expect(await res.json()).toMatchObject({ code: 'WIOA_NOT_STARTED' });
-    expect(isMemberWioaVerified).toHaveBeenCalled();
+    expect(canAssignWioaProgram).toHaveBeenCalled();
+  });
+
+  it('passes the qualifying screening to the program-assignment gate (WAP-165)', async () => {
+    vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user, email: 'user@example.com' } as any);
+    vi.mocked(getActivePrograms).mockResolvedValue([
+      { slug: 'tech-support', name: 'Tech Support', static: { title: 'Tech Support', fundingSource: 'WIOA' } },
+    ] as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      id: UUIDS.user,
+      enrolledProgram: null,
+      wioaReviewStatus: 'pending',
+      courseEnrollments: [],
+      applyEligibilityScreenings: [{ qualifies: true }],
+    } as any);
+    vi.mocked(canAssignWioaProgram).mockReturnValue({ ok: false, code: 'WIOA_PENDING' });
+
+    await enrollPost(makePostRequest({ programSlug: 'tech-support' }));
+    expect(canAssignWioaProgram).toHaveBeenCalledWith({
+      wioaReviewStatus: 'pending',
+      enrolledByAdminId: undefined,
+      screeningQualifies: true,
+    });
   });
 
   describe('idempotency and the NULL-pointer primary row (T02)', () => {
@@ -290,7 +312,7 @@ describe('POST /api/member/enroll', () => {
     beforeEach(() => {
       vi.mocked(getUser).mockResolvedValue({ id: UUIDS.user, email: 'user@example.com' } as any);
       vi.mocked(getActivePrograms).mockResolvedValue(PROGRAMS as any);
-      vi.mocked(isMemberWioaVerified).mockReturnValue({ ok: true } as any);
+      vi.mocked(canAssignWioaProgram).mockReturnValue({ ok: true } as any);
       vi.mocked(prisma.user.update).mockResolvedValue({
         email: 'user@example.com',
         fullName: 'Test User',

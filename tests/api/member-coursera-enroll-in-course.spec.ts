@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   sync: vi.fn(),
   manifest: vi.fn(),
   assignedCourses: vi.fn(),
+  programFunding: vi.fn(),
   RosterIncompleteError: class CourseraRosterIncompleteError extends Error {
     readonly code = 'COURSERA_ROSTER_INCOMPLETE';
     constructor(readonly reason: string) {
@@ -39,7 +40,10 @@ vi.mock('@/lib/content/courseraDiscoveredCatalog', () => ({
   DISCOVERED_COURSERA_PROGRAMS: { 'program-one': { courseraProgramId: 'provider-program' }, 'program-two': { courseraProgramId: 'provider-secondary' } },
 }));
 vi.mock('@/lib/content/programs', () => ({
-  getProgramBySlug: (slug: string) => ({ slug }),
+  getProgramBySlug: (slug: string) => {
+    const fundingSource = mocks.programFunding(slug) as string | undefined;
+    return fundingSource ? { slug, fundingSource } : { slug };
+  },
 }));
 vi.mock('@/lib/member/curriculumAssignment', () => ({
   getProgramCoursesForCurriculumVersion: mocks.assignedCourses,
@@ -78,6 +82,7 @@ const member = {
   fullName: 'Test Learner',
   enrolledProgram: 'program-one',
   courseraEnrollmentApproved: true,
+  wioaReviewStatus: 'verified',
   courseEnrollments: [{
     id: 'enrollment-one', programSlug: 'program-one', curriculumVersion: 'legacy-v1',
     isPrimary: true, enrolledAt: new Date('2026-08-01'),
@@ -261,6 +266,46 @@ describe('member Coursera enrollment and independent progress refresh', () => {
     expect(await response.json()).toMatchObject({ code: 'NOT_APPROVED' });
     expect(mocks.listUsersByEmail).not.toHaveBeenCalled();
     expect(mocks.after).not.toHaveBeenCalled();
+  });
+
+  describe('WIOA check at the seat (WAP-165)', () => {
+    it('blocks an approved member whose WIOA review was recorded as not eligible, before any provider operation', async () => {
+      for (const wioaReviewStatus of ['not_eligible', 'needs_info']) {
+        mocks.findUser.mockResolvedValue({ ...member, wioaReviewStatus });
+        const response = await POST(request());
+        expect(response.status).toBe(403);
+        expect(await response.json()).toMatchObject({ code: 'WIOA_NOT_ELIGIBLE' });
+      }
+      expect(mocks.listUsersByEmail).not.toHaveBeenCalled();
+      expect(mocks.enroll).not.toHaveBeenCalled();
+    });
+
+    it('does not strand an approved member whose review is pending or missing', async () => {
+      for (const wioaReviewStatus of ['pending', 'in_review', null]) {
+        mocks.findUser.mockResolvedValue({ ...member, wioaReviewStatus });
+        expect((await POST(request())).status).toBe(200);
+      }
+      expect(mocks.enroll).toHaveBeenCalledTimes(3);
+    });
+
+    it('lets an admin-assigned program through as an override', async () => {
+      mocks.findUser.mockResolvedValue({
+        ...member,
+        wioaReviewStatus: 'not_eligible',
+        courseEnrollments: [{ ...member.courseEnrollments[0], enrolledByAdminId: 'admin-one' }],
+      });
+      const response = await POST(request());
+      expect(response.status).toBe(200);
+      expect(mocks.enroll).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not apply to a program funded by something other than WIOA', async () => {
+      mocks.programFunding.mockReturnValue('Grant');
+      mocks.findUser.mockResolvedValue({ ...member, wioaReviewStatus: 'not_eligible' });
+      const response = await POST(request());
+      expect(response.status).toBe(200);
+      expect(mocks.enroll).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('leaves the approved curriculum validation gate in place', async () => {

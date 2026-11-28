@@ -8,7 +8,7 @@ import { sendCourseEnrolledEmail } from '@/lib/email';
 import { maybeSendCourseKickoffEmail } from '@/lib/coursera/courseKickoff';
 import { trackEvent } from '@/lib/events/track';
 import { getActivePrograms, isProgramSlugActiveInCatalog } from '@/lib/platform/programCatalog';
-import { isMemberWioaVerified } from '@/lib/platform/trainingEnrollmentGate';
+import { canAssignWioaProgram } from '@/lib/platform/trainingEnrollmentGate';
 import { awardPoints } from '@/lib/member/points';
 import { invalidateMemberState } from '@/lib/member/getMemberState';
 import { cookies } from 'next/headers';
@@ -90,13 +90,17 @@ export const POST = withApiGuc(async (request: Request) => {
           select: { enrolledByAdminId: true, programSlug: true },
           take: 1,
         },
+        // WAP-165: a qualifying screening is enough to be assigned a
+        // program; counselor verification is checked at the Coursera seat.
+        applyEligibilityScreenings: { select: { qualifies: true }, take: 1 },
       },
     });
 
     if (fundingSource === 'WIOA') {
-      const gate = isMemberWioaVerified({
+      const gate = canAssignWioaProgram({
         wioaReviewStatus: existing?.wioaReviewStatus,
         enrolledByAdminId: existing?.courseEnrollments?.[0]?.enrolledByAdminId,
+        screeningQualifies: existing?.applyEligibilityScreenings?.[0]?.qualifies,
       });
       if (!gate.ok) return { kind: 'wioa_blocked' as const, code: gate.code };
     }
