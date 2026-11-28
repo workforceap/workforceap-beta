@@ -42,6 +42,15 @@ describe('employer and assignment email HTML escaping', () => {
     expect(html).not.toContain('<b>Jordan</b>');
   });
 
+  it('currently lets a javascript: messagesUrl through escapeHtml (pinned)', () => {
+    const html = counselorAssignedHtml({
+      firstName: 'Taylor',
+      counselorName: 'Jordan',
+      messagesUrl: 'javascript:alert(1)',
+    });
+    expect(html).toContain('href="javascript:alert(1)"');
+  });
+
   it('escapes job posting fields in approval, rejection and submitted alerts', () => {
     const approved = jobApprovedHtml({ jobTitle: HOSTILE, companyName: '<b>Acme</b>' });
     const rejected = jobRejectedHtml({

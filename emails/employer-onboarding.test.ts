@@ -36,6 +36,14 @@ describe('employerVerifyEmailHtml', () => {
     assert.ok(html.includes('Hi &lt;script&gt;alert(1)&lt;/script&gt;,'));
     assert.ok(html.includes('href="https://evil.test/&quot; onclick=&quot;alert(1)"'));
   });
+
+  it('currently lets a javascript: verifyUrl through escapeHtml (pinned)', () => {
+    const html = employerVerifyEmailHtml({
+      contactName: 'Pat',
+      verifyUrl: 'javascript:alert(1)',
+    });
+    assert.ok(html.includes('href="javascript:alert(1)"'));
+  });
 });
 
 describe('employerSignupAdminAlertHtml', () => {
