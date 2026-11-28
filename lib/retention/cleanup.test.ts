@@ -9,6 +9,7 @@ import {
   WORKFLOW_DIAGNOSTIC_RETENTION_DAYS,
   getCutoffDate,
 } from './config';
+import { ANONYMIZED_EMAIL_SUFFIX } from '@/lib/member/deletedEmail';
 
 const mockDeleteMany = vi.fn();
 const mockFindMany = vi.fn();
@@ -634,7 +635,10 @@ describe('cleanupDeletedAccounts', () => {
     expect(result).toEqual({ deleted: 2, blocked: [] });
     expect(mockFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { deletedAt: { not: null, lt: expect.any(Date) } },
+        where: {
+          deletedAt: { not: null, lt: expect.any(Date) },
+          NOT: { email: { endsWith: ANONYMIZED_EMAIL_SUFFIX } },
+        },
         select: { id: true },
         take: 1000,
       }),
@@ -645,6 +649,19 @@ describe('cleanupDeletedAccounts', () => {
     // A purged account is gone; only held accounts go through the anonymiser.
     expect(mockAnonymizeMember).not.toHaveBeenCalled();
     expect(mockDeleteUserStorageObjects).not.toHaveBeenCalled();
+  });
+
+  it('excludes GDPR enrollment-preserving anonymizations from the purge selection', async () => {
+    mockFindMany.mockResolvedValueOnce([]);
+    await cleanupDeletedAccounts();
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          NOT: { email: { endsWith: ANONYMIZED_EMAIL_SUFFIX } },
+        }),
+      }),
+    );
+    expect(mockDeleteMany).not.toHaveBeenCalled();
   });
 
   it.each(['agreement revision', 'completed erasure fence'])('retains %s and cleans ordinary storage before purging an account', async () => {
@@ -816,7 +833,11 @@ describe('cleanupDeletedAccounts', () => {
     expect(mockFindMany).toHaveBeenCalledTimes(2);
     expect(mockFindMany).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        where: { deletedAt: { not: null, lt: expect.any(Date) }, id: { notIn: ['held'] } },
+        where: {
+          deletedAt: { not: null, lt: expect.any(Date) },
+          NOT: { email: { endsWith: ANONYMIZED_EMAIL_SUFFIX } },
+          id: { notIn: ['held'] },
+        },
       }),
     );
     // WAP-169: the row that stays behind is scrubbed through the shared

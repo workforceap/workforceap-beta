@@ -4,7 +4,11 @@
  * Defines how long each category of log/telemetry data is kept before
  * automated cleanup hard-deletes it. Member data (users, profiles,
  * enrollments, etc.) is NEVER auto-deleted by the cleanup job — only
- * log-like tables and no-account lead rows (WAP-172) are in scope.
+ * log-like tables, no-account lead rows (WAP-172), and restorable
+ * `@deleted.invalid` soft-deletes past DELETED_ACCOUNT_RETENTION_DAYS
+ * are in scope. Admin GDPR erase of an enrolled member uses
+ * `@anonymized.invalid` and is excluded from that account purge so
+ * enrollment/placement rows survive for reporting.
  *
  * GDPR right-to-erasure is handled separately via the admin erase endpoint.
  *

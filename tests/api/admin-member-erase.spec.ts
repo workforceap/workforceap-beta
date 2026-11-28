@@ -107,6 +107,7 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { deleteUserStorageObjects } from '@/lib/gdpr/deleteUserStorage';
 import { withTenantScope } from '@/lib/tenant/withTenantScope';
 import { ANONYMIZED_PROFILE_DATA } from '@/lib/member/anonymizeMember';
+import { ANONYMIZED_EMAIL_SUFFIX, buildAnonymizedEmail } from '@/lib/member/deletedEmail';
 
 const MEMBER_ID = 'member-1';
 
@@ -178,8 +179,15 @@ describe('POST /api/admin/members/[id]/erase', () => {
       ],
     });
     expect(update).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: MEMBER_ID }, data: expect.objectContaining({ deletedAt: expect.any(Date) }) }),
+      expect.objectContaining({
+        where: { id: MEMBER_ID },
+        data: expect.objectContaining({
+          deletedAt: expect.any(Date),
+          email: buildAnonymizedEmail(MEMBER_ID),
+        }),
+      }),
     );
+    expect(buildAnonymizedEmail(MEMBER_ID).endsWith(ANONYMIZED_EMAIL_SUFFIX)).toBe(true);
     expect(remove).not.toHaveBeenCalled();
     expect(disableAuthUserForSoftDelete).toHaveBeenCalledWith(supabaseAdmin, MEMBER_ID, 'member@example.com', {
       scrubMetadata: true,

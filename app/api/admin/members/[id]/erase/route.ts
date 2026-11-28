@@ -19,6 +19,7 @@ import {
   deleteSupabaseAuthUser,
   isSupabaseAuthUserMissing,
 } from '@/lib/gdpr/deleteAuthUser';
+import { buildAnonymizedEmail } from '@/lib/member/deletedEmail';
 import {
   ACCOUNT_STORAGE_DELETE_FAILED,
   MEMBER_FILES_BUCKET,
@@ -138,7 +139,8 @@ export const POST = withApiGuc(async (
       // with the same field list as the shared anonymiser. One transaction, so
       // a failed profile scrub cannot leave deletedAt set — a retry would then
       // fall through to hard delete and drop the enrollment records.
-      const hash = `anon_${Buffer.from(id).toString('base64url').slice(0, 12)}`;
+      // Use `@anonymized.invalid` (not `@deleted.invalid`) so the 30-day
+      // account purge does not treat this as a restorable soft-delete.
       await prisma.$transaction((tx) =>
         withTenantScope(
           orgId,
@@ -146,7 +148,7 @@ export const POST = withApiGuc(async (
             await db.user.update({
               where: { id },
               data: {
-                email: `${hash}@anonymized.invalid`,
+                email: buildAnonymizedEmail(id),
                 fullName: 'Anonymized User',
                 phone: null,
                 workspaceEmail: null,
