@@ -18,6 +18,7 @@ import {
   parsePendingResumeDraft,
   serializePendingResumeDraft,
 } from '@/lib/resume/pendingResumeDraft';
+import { selectResumeEditorSourceText } from '@/lib/resume/resumeEditorSource';
 
 type LiveSuggestion = ResumeSuggestion & { id: string; source?: 'live' | 'post' };
 function pendingResumeDraftKey(ownerToken: string): string {
@@ -325,6 +326,7 @@ export default function ResumeCoachWorkspace() {
     fetch('/api/member/resume?includePlainText=1')
       .then((r) => r.json())
       .then((d: {
+        enhancedText?: string | null;
         resumePlainText?: string | null;
         resumeRevision?: string;
         resumeDraftOwnerToken?: string;
@@ -334,7 +336,10 @@ export default function ResumeCoachWorkspace() {
         resumeDraftOwnerRef.current = typeof d.resumeDraftOwnerToken === 'string'
           ? d.resumeDraftOwnerToken
           : null;
-        const t = sanitizeResumePlainText(d.resumePlainText ?? '');
+        const t = selectResumeEditorSourceText({
+          enhancedText: d.enhancedText,
+          resumePlainText: d.resumePlainText,
+        });
         const pendingDraft = resumeDraftOwnerRef.current && resumeRevisionRef.current
           ? readPendingResumeDraft(resumeDraftOwnerRef.current, resumeRevisionRef.current)
           : null;
