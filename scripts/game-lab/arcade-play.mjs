@@ -13,8 +13,11 @@ export async function notice(frame) {
 export async function arcadeLevelWin(frame, id) {
   const card = frame.locator(`#games article[data-id="${id}"]`);
   const title = await card.getByRole('heading').innerText();
-  await card.getByRole('link', { name: /^Start / }).click();
-  assert.equal(new URL(frame.url()).search, `?game=${id}`);
+  const destination = new URL(`play.html?game=${id}`, frame.url()).href;
+  await Promise.all([
+    frame.waitForURL(destination, { waitUntil: 'domcontentloaded' }),
+    card.getByRole('link', { name: /^Start / }).click(),
+  ]);
   await notice(frame);
   assert.equal(await frame.locator('#mapTitle').innerText(), title);
   const game = (await import(`../../assets/game-lab/practice-arcade/games/${id}/game.mjs`)).default;

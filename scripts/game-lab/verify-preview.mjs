@@ -132,13 +132,17 @@ async function probe(request, target) {
   }
 }
 async function matrix(actorLabel, actor, request) {
-  for (const target of MATRIX_TARGETS) {
-    const observed = await probe(request, target);
-    const failures = judgeRow(actor, target, observed);
-    const { body, ...row } = observed;
-    report.matrix.push({ actor: actorLabel, path: target.path, kind: target.kind, target: target.name, ...row, failures });
-    fail(`matrix ${actorLabel} / ${target.name}`, failures);
+  // Keep actors/flag transitions serial. Limit concurrent GETs inside one fixed context.
+  for (let i = 0; i < MATRIX_TARGETS.length; i += 4) {
+    await Promise.all(MATRIX_TARGETS.slice(i, i + 4).map(async (target) => {
+      const observed = await probe(request, target);
+      const failures = judgeRow(actor, target, observed);
+      const { body, ...row } = observed;
+      report.matrix.push({ actor: actorLabel, path: target.path, kind: target.kind, target: target.name, ...row, failures });
+      fail(`matrix ${actorLabel} / ${target.name}`, failures);
+    }));
   }
+  console.log(`Probed ${MATRIX_TARGETS.length} targets: ${actorLabel}`);
 }
 async function effectiveRole(ctx) {
   const r = await ctx.request.get(`${BASE}/api/auth/me`, { failOnStatusCode: false });
