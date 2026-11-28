@@ -25,6 +25,7 @@ import { isTrainingActivityStale, trainingEligibleSince } from '@/lib/member/tra
 import { ACTIVE_APPLICATION_STATUSES } from '@/lib/member/jobPipelineDisplay';
 import { parseGoalDescription } from '@/lib/member/goalSteps';
 import { EVENT_LABELS, getLevelForPoints, getNextLevel } from '@/lib/member/pointsConfig';
+import { evaluateBadges, nextUnearnedBadge, type MemberBadge } from '@/lib/member/badgesConfig';
 import {
   buildMemberPointsTrend,
   memberPointsSpark,
@@ -505,6 +506,8 @@ type DashboardUserRow = Omit<MemberApprovalFacts, 'applications'> & {
   pointsTransactions: Array<{
     event: string;
     points: number;
+    entityId: string;
+    note: string | null;
     createdAt: Date;
   }>;
   _count: {
@@ -588,11 +591,23 @@ export function mapGoalSummaries(
 export function deriveNextBadge(args: {
   totalPoints: number;
   certCount: number;
+  /** Milestone badges, in definition order. Absent only for the empty home. */
+  milestoneBadges?: Pick<MemberBadge, 'key' | 'label' | 'earned' | 'have' | 'need'>[];
 }): {
   nextBadgeName: string;
   nextBadgePercent: number;
   nextBadgeRemaining: string;
 } {
+  const next = args.milestoneBadges ? nextUnearnedBadge(args.milestoneBadges as MemberBadge[]) : null;
+  if (next) {
+    const percent = Math.max(0, Math.min(100, Math.round((next.have / next.need) * 100)));
+    const left = Math.max(0, next.need - next.have);
+    return {
+      nextBadgeName: next.label,
+      nextBadgePercent: percent,
+      nextBadgeRemaining: `${left} of ${next.need}`,
+    };
+  }
   const currentLevel = getLevelForPoints(args.totalPoints);
   const nextLevel = getNextLevel(currentLevel.name);
   if (nextLevel) {
@@ -1192,9 +1207,19 @@ function shapeHome(args: {
   const pointsThisWeek = pointsTrend.thisWeek;
   const recentLedger = args.row.pointsTransactions.slice(0, 3);
   const totalPoints = args.row.memberPoints?.totalPoints ?? 0;
+  const longestStreak = args.row.memberPoints?.longestStreak ?? 0;
+  // Same nested page the ledger and sparkline already read — no new Prisma
+  // operation. The page is newest-first and capped, so a member whose badge
+  // events have all fallen off it shows the level ladder instead of a wrong
+  // "not earned". The points page and counselor view read the full set.
+  const badgePageComplete = args.row.pointsTransactions.length < POINTS_TRANSACTION_TAKE;
+  const milestoneBadges = badgePageComplete
+    ? evaluateBadges(args.row.pointsTransactions, { longestStreak })
+    : undefined;
   const badge = deriveNextBadge({
     totalPoints,
     certCount: args.row._count.userCertifications,
+    milestoneBadges,
   });
 
   // One resolver for "who is your counselor": the assignment is accepted only
@@ -1225,7 +1250,7 @@ function shapeHome(args: {
       lastActiveDate: args.row.memberPoints?.lastActiveDate,
     }),
     programCoursesNote: program ? describeCourseDenominator(validatedCourses) : null,
-    longestStreak: args.row.memberPoints?.longestStreak ?? 0,
+    longestStreak,
     goals: mapGoalSummaries(args.row.goals),
     nextLesson: nextModule?.title ?? doThisNext.title,
     nextLessonHref: nextModule?.href,
@@ -1441,7 +1466,7 @@ function userSelect(userId: string) {
     pointsTransactions: {
       orderBy: { createdAt: 'desc' as const },
       take: POINTS_TRANSACTION_TAKE,
-      select: { event: true, points: true, createdAt: true },
+      select: { event: true, points: true, entityId: true, note: true, createdAt: true },
     },
     _count: {
       select: {
