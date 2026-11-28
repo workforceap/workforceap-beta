@@ -345,15 +345,25 @@ try {
       check(`${label}: ${slug} play page loads nothing before Launch`, (await p.locator('iframe').count()) === 0 && !requests.some(gameReq));
       const f = await launch(p, slug);
       check(`${label}: ${slug} engine loads only after Launch`, slug.endsWith('-3d') ? requests.filter((u) => /three\.module/.test(u)).length === 1 : !requests.some((u) => /three\.module/.test(u)));
-      const geo = await p.evaluate(() => {
-        const box = (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right }; };
-        const d = document.querySelector('dialog[open]');
-        const title = d?.querySelector('h2');
-        const frame = d?.querySelector('iframe');
-        const exitBtn = d?.querySelector('[data-testid="game-lab-exit"]');
-        const top = exitBtn ? document.elementFromPoint((box(exitBtn).left + box(exitBtn).right) / 2, (box(exitBtn).top + box(exitBtn).bottom) / 2) : null;
-        return { modal: !!d && d.matches(':modal'), title: title && box(title), titleClipped: title ? title.scrollHeight > title.clientHeight + 1 : true, frame: frame && box(frame), exitOnTop: !!top && exitBtn.contains(top), vw: innerWidth, vh: innerHeight };
-      });
+      // The frame's flex height settles a frame or two after the game reports ready.
+      // Measure only once its box stops moving, so the check reads the settled layout.
+      let geo;
+      let settled = null;
+      for (let i = 0; i < 10; i++) {
+        geo = await p.evaluate(() => {
+          const box = (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right }; };
+          const d = document.querySelector('dialog[open]');
+          const title = d?.querySelector('h2');
+          const frame = d?.querySelector('iframe');
+          const exitBtn = d?.querySelector('[data-testid="game-lab-exit"]');
+          const top = exitBtn ? document.elementFromPoint((box(exitBtn).left + box(exitBtn).right) / 2, (box(exitBtn).top + box(exitBtn).bottom) / 2) : null;
+          return { modal: !!d && d.matches(':modal'), title: title && box(title), titleClipped: title ? title.scrollHeight > title.clientHeight + 1 : true, frame: frame && box(frame), exitOnTop: !!top && exitBtn.contains(top), vw: innerWidth, vh: innerHeight };
+        });
+        const sig = JSON.stringify(geo.frame);
+        if (sig === settled) break;
+        settled = sig;
+        await sleep(100);
+      }
       check(`${label}: ${slug} player is a top-layer modal: title, Exit and frame inside the viewport, nothing on top`,
         geo.modal && geo.exitOnTop && !geo.titleClipped && geo.title.top >= 0 && geo.frame.top >= geo.title.bottom - 1 && geo.frame.left <= 1 && Math.abs(geo.frame.right - geo.vw) < 2 && Math.abs(geo.frame.bottom - geo.vh) < 2, geo);
 
@@ -413,8 +423,9 @@ try {
         await networkWin(f);
         check(`${label}: ${slug} submitted attempt passes 10/10`, true);
       } else if (slug === 'practice-arcade') {
+        await f.locator('#games[aria-busy="false"]').waitFor({ timeout: 30000 });
         const hubGames = await f.locator('a[href*="play.html?game="]').count();
-        check(`${label}: ${slug} hub lists the program games`, hubGames >= 20);
+        check(`${label}: ${slug} hub lists the program games`, hubGames >= 20, { hubGames });
         const played = [];
         for (const gameId of ['digital-literacy-empowerment-class', 'comptia-security-professional-certificate', 'data-analytics-professional-certificate-google', 'demo-sort']) {
           const result = await arcadeLevelWin(f, gameId);
