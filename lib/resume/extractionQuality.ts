@@ -33,6 +33,13 @@ export const RESUME_TEXT_SAVE_ERROR =
 /** Minimum normalized prose required before a resume is persisted or sent to an agent. */
 export const MIN_SUBSTANTIVE_RESUME_TEXT_CHARS = 40;
 
+/**
+ * Hard cap for stored and edited resume prose. Member GET `includePlainText`
+ * and POST `/plain-text` share this so an editor cannot crop a stored draft.
+ * AI tool prefills keep their own smaller context budgets.
+ */
+export const RESUME_PLAIN_TEXT_MAX_CHARS = 120_000;
+
 function escaped(pattern: string): string {
   return pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
 }

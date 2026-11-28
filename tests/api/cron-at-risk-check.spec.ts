@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { AtRiskAlert, Prisma } from '@prisma/client';
 
 // ─── Set env before route module loads ───
 process.env.NEXT_PUBLIC_SITE_URL = 'https://test.workforceap.org';
@@ -69,10 +70,21 @@ function makeAuthorizedCronRequest(method = 'GET') {
   return makeCronRequest(method, { authorization: 'Bearer test-cron-secret' });
 }
 
+function resolvedPrismaPromise<T>(value: T): Prisma.PrismaPromise<T> {
+  const promise = new Promise<T>((resolve) => resolve(value));
+  return {
+    [Symbol.toStringTag]: 'PrismaPromise',
+    then: promise.then.bind(promise),
+    catch: promise.catch.bind(promise),
+    finally: promise.finally.bind(promise),
+  };
+}
+
 describe('GET /api/cron/at-risk-check', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.CRON_SECRET = 'test-cron-secret';
+    vi.mocked(prisma.atRiskAlert.updateMany).mockResolvedValue({ count: 0 });
   });
 
   afterEach(() => {
@@ -119,19 +131,27 @@ describe('GET /api/cron/at-risk-check', () => {
     expect(persistAtRiskAlert).toHaveBeenCalledTimes(2);
   });
 
-  it('resolves stale alerts for members no longer at risk', async () => {
+  it('resolves stale alerts only for members this run scored below medium', async () => {
     const scores = [{ userId: 'user-1', score: 20, factors: [], recommendedAction: '' }];
     vi.mocked(calculateAllAtRiskScores).mockResolvedValue(scores as any);
     vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([
-      { id: 'alert-1' },
-      { id: 'alert-2' },
+      { id: 'alert-1', updatedAt: new Date('2026-01-01') },
+      { id: 'alert-2', updatedAt: new Date('2026-01-01') },
     ] as any);
+    vi.mocked(prisma.atRiskAlert.updateMany).mockResolvedValue({ count: 2 });
     vi.mocked(prisma.user.findMany).mockResolvedValue([] as any);
 
     const res = await atRiskGET(makeAuthorizedCronRequest());
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.alertsResolved).toBe(2);
+    expect(prisma.atRiskAlert.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: { in: ['user-1'] },
+        }),
+      }),
+    );
     expect(prisma.atRiskAlert.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ status: 'resolved' }),
@@ -139,8 +159,37 @@ describe('GET /api/cron/at-risk-check', () => {
     );
   });
 
-  it('excludes member-reported escalations in the query so they cannot starve the take:100 batch', async () => {
+  it('does not treat unscored members as no longer at risk', async () => {
+    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([
+      { userId: 'scored-high', score: 85, factors: [{ description: 'No login' }], recommendedAction: 'Call' },
+      { userId: 'scored-low', score: 10, factors: [], recommendedAction: '' },
+    ] as any);
+    vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([] as any);
+
+    const res = await atRiskGET(makeAuthorizedCronRequest());
+    expect(res.status).toBe(200);
+    expect((await res.json()).alertsResolved).toBe(0);
+    const args = vi.mocked(prisma.atRiskAlert.findMany).mock.calls[0]?.[0] as { where: { userId: { in: string[] } } };
+    expect(args.where.userId.in).toEqual(['scored-low']);
+    expect(args.where.userId.in).not.toContain('scored-high');
+    expect(args.where.userId.in).not.toContain('never-scored');
+    expect(persistAtRiskAlert).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps every open alert when the scorer returns no members', async () => {
     vi.mocked(calculateAllAtRiskScores).mockResolvedValue([] as any);
+
+    const res = await atRiskGET(makeAuthorizedCronRequest());
+    expect(res.status).toBe(200);
+    expect((await res.json()).alertsResolved).toBe(0);
+    expect(prisma.atRiskAlert.findMany).not.toHaveBeenCalled();
+    expect(prisma.atRiskAlert.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('excludes member-reported escalations in the query so they cannot starve the take:100 batch', async () => {
+    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([
+      { userId: 'user-low', score: 10, factors: [], recommendedAction: '' },
+    ] as any);
     vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([] as any);
 
     const res = await atRiskGET(makeAuthorizedCronRequest());
@@ -148,6 +197,7 @@ describe('GET /api/cron/at-risk-check', () => {
     const args = vi.mocked(prisma.atRiskAlert.findMany).mock.calls[0]?.[0] as any;
     expect(args.take).toBe(100);
     expect(args.where.status).toEqual({ in: ['open', 'acknowledged'] });
+    expect(args.where.userId).toEqual({ in: ['user-low'] });
     expect(args.where.NOT).toEqual({
       OR: [
         { factors: { array_contains: [{ name: 'first90_trouble_reported' }] } },
@@ -176,9 +226,11 @@ describe('GET /api/cron/at-risk-check', () => {
       },
       {
         id: 'alert-scorer-only',
+        updatedAt: new Date('2026-01-01'),
         factors: [{ name: 'no_login_7_days', weight: 25, description: 'No login in 7 days' }],
       },
     ] as any);
+    vi.mocked(prisma.atRiskAlert.updateMany).mockResolvedValue({ count: 1 });
 
     const res = await atRiskGET(makeAuthorizedCronRequest());
     expect(res.status).toBe(200);
@@ -186,13 +238,78 @@ describe('GET /api/cron/at-risk-check', () => {
     expect(json.alertsResolved).toBe(1);
     expect(prisma.atRiskAlert.updateMany).toHaveBeenCalledTimes(1);
     expect(prisma.atRiskAlert.updateMany).toHaveBeenCalledWith({
-      where: { id: { in: ['alert-scorer-only'] } },
+      where: expect.objectContaining({
+        OR: [{ id: 'alert-scorer-only', updatedAt: new Date('2026-01-01') }],
+      }),
       data: { status: 'resolved', resolvedAt: expect.any(Date) },
     });
   });
 
+  it.each(['member escalation', 'new scorer result', 'staff resolution'] as const)(
+    'preserves a newer %s written between the candidate read and resolution',
+    async (change) => {
+      const row = {
+        id: 'alert-racing',
+        userId: 'user-low',
+        status: 'open',
+        score: 55,
+        factors: [{ name: 'no_login_7_days' }],
+        counselorId: null,
+        acknowledgedAt: null,
+        resolvedAt: null,
+        notifiedCounselorAt: null,
+        escalatedAt: null,
+        createdAt: new Date('2026-01-01'),
+        updatedAt: new Date('2026-01-01'),
+      } satisfies AtRiskAlert;
+      vi.mocked(calculateAllAtRiskScores).mockResolvedValue([
+        { userId: row.userId, score: 10, factors: [], recommendedAction: '' },
+      ] as any);
+      vi.mocked(prisma.atRiskAlert.findMany).mockImplementationOnce(() => {
+        const snapshot = { ...row, factors: [...row.factors] };
+        if (change === 'member escalation') row.factors.push({ name: 'first90_trouble_reported' });
+        if (change === 'new scorer result') row.score = 90;
+        if (change === 'staff resolution') row.status = 'resolved';
+        row.updatedAt = new Date(Date.now() + 1_000);
+        return resolvedPrismaPromise([snapshot]);
+      });
+      vi.mocked(prisma.atRiskAlert.updateMany).mockImplementationOnce((args) => {
+        // In-memory predicate evaluator models the interleaved writer; this is
+        // route behavior coverage, not evidence of PostgreSQL isolation.
+        const where = args?.where as {
+          id?: { in: string[] };
+          status?: { in: string[] };
+          userId?: { in: string[] };
+          updatedAt?: { lt: Date };
+          OR?: Array<{ id: string; updatedAt: Date }>;
+          NOT?: { OR: Array<{ factors: { array_contains: Array<{ name: string }> } }> };
+        };
+        const matches = (!where.id || where.id.in.includes(row.id))
+          && (!where.status || where.status.in.includes(row.status))
+          && (!where.userId || where.userId.in.includes(row.userId))
+          && (!where.updatedAt || row.updatedAt < where.updatedAt.lt)
+          && (!where.OR || where.OR.some((revision) => revision.id === row.id
+            && revision.updatedAt.getTime() === row.updatedAt.getTime()))
+          && (!where.NOT || !where.NOT.OR.some((excluded) =>
+            excluded.factors.array_contains.some((factor) =>
+              row.factors.some((current) => current.name === factor.name))));
+        if (matches) row.status = 'resolved';
+        return resolvedPrismaPromise({ count: Number(matches) });
+      });
+
+      const response = await atRiskGET(makeAuthorizedCronRequest());
+
+      expect(response.status).toBe(200);
+      expect((await response.json()).alertsResolved).toBe(0);
+      expect(row.status).toBe(change === 'staff resolution' ? 'resolved' : 'open');
+      expect(prisma.atRiskAlert.updateMany).toHaveBeenCalledTimes(1);
+    },
+  );
+
   it('does not call updateMany when every returned row is member-reported', async () => {
-    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([] as any);
+    vi.mocked(calculateAllAtRiskScores).mockResolvedValue([
+      { userId: 'user-low', score: 10, factors: [], recommendedAction: '' },
+    ] as any);
     vi.mocked(prisma.atRiskAlert.findMany).mockResolvedValue([
       { id: 'alert-member-reported', factors: [{ name: 'first90_trouble_reported' }] },
     ] as any);

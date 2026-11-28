@@ -34,6 +34,7 @@ import {
   getStarterProfileFieldLabels,
 } from "@/lib/member/starterProfileReview";
 import { MemberProfileKit } from "@/components/portal/kit/pages/member/MemberProfileKit";
+import { ProfileSectionFocus } from "@/components/portal/ProfileSectionFocus";
 import { isReadOnlyPortalAuditHeader } from "@/lib/audit/readOnlyPortalAudit";
 import { getMemberProfilePhotoSignedUrl } from "@/lib/portal/memberProfilePhotoUrl";
 
@@ -78,7 +79,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function DashboardProfilePage({
   searchParams,
 }: {
-  searchParams?: Promise<{ ui?: string }>;
+  searchParams?: Promise<{ ui?: string; section?: string }>;
 }) {
   const user = await getUser();
   if (!user) redirect("/login?redirectTo=/dashboard/profile");
@@ -86,6 +87,7 @@ export default async function DashboardProfilePage({
 
   const params = await searchParams;
   const requestedUi = typeof params?.ui === "string" ? params.ui : null;
+  const requestedSection = typeof params?.section === "string" ? params.section : null;
 
   const userSelect = {
     id: true,
@@ -303,6 +305,7 @@ export default async function DashboardProfilePage({
 
     return (
       <>
+        <ProfileSectionFocus section={requestedSection} />
         {profileLoadFailed ? <span hidden data-portal-error-state="member-profile-load" /> : null}
         {readinessResult.loadFailed ? (
           <span hidden data-portal-error-state="member-profile-readiness-load" />
@@ -356,6 +359,7 @@ export default async function DashboardProfilePage({
 
   return (
     <>
+      <ProfileSectionFocus section={requestedSection} />
       {profileLoadFailed ? <span hidden data-portal-error-state="member-profile-load" /> : null}
       {readOnlyAudit && (
         <span hidden data-portal-audit-suppressed="resume-storage-provider-and-member-state-cache" />

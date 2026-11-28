@@ -61,6 +61,7 @@ import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getMemberResumePlainText } from '@/lib/member/getMemberResumePlainText';
+import { RESUME_PLAIN_TEXT_MAX_CHARS } from '@/lib/resume/extractionQuality';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 
 function makeReq(url: string, init?: RequestInit) {
@@ -181,6 +182,7 @@ describe('GET /api/member/resume', () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.resumePlainText).toBe('plain resume text');
+    expect(getMemberResumePlainText).toHaveBeenCalledWith('user-123', RESUME_PLAIN_TEXT_MAX_CHARS);
   });
 
   it('returns no enhanced draft for an original-only text request when the original is unreadable', async () => {
@@ -207,7 +209,7 @@ describe('GET /api/member/resume', () => {
     );
     expect(originalOnly.status).toBe(200);
     expect((await originalOnly.json()).resumePlainText).toBeNull();
-    expect(getMemberResumePlainText).toHaveBeenCalledWith('user-123', 12000, { originalOnly: true });
+    expect(getMemberResumePlainText).toHaveBeenCalledWith('user-123', RESUME_PLAIN_TEXT_MAX_CHARS, { originalOnly: true });
 
     const defaultRead = await resumeGET(
       makeReq('http://localhost:3000/api/member/resume?includePlainText=1') as any,
