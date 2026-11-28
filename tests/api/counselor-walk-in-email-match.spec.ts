@@ -282,4 +282,50 @@ describe('walk-in email identity matching', () => {
     });
     expect(mocks.deleteUser).not.toHaveBeenCalled();
   });
+
+  it('does not delete Auth after User.create when profile provisioning fails', async () => {
+    mocks.profileCreate.mockRejectedValueOnce(new Error('deadlock detected'));
+    mocks.findUnique.mockResolvedValueOnce({ id: 'walk-in-new', deletedAt: null });
+
+    const response = await POST(request());
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: 'Failed to provision member account' });
+    expect(mocks.create).toHaveBeenCalledOnce();
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('does not delete Auth on a post-create failure even if the claim lookup is empty', async () => {
+    mocks.profileCreate.mockRejectedValueOnce(new Error('connection reset'));
+
+    const response = await POST(request());
+    expect(response.status).toBe(500);
+    expect(mocks.create).toHaveBeenCalledOnce();
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('fails closed on a non-unique create error when the claim lookup cannot run', async () => {
+    mocks.create.mockRejectedValueOnce(new Error('db timeout'));
+    mocks.findUnique.mockRejectedValueOnce(new Error('db unavailable'));
+
+    const response = await POST(request());
+    expect(response.status).toBe(500);
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('does not delete Auth when a concurrent sibling already claimed the id after a non-unique create error', async () => {
+    mocks.create.mockRejectedValueOnce(new Error('db timeout'));
+    mocks.findUnique.mockResolvedValueOnce({ id: 'walk-in-new', deletedAt: null });
+
+    const response = await POST(request());
+    expect(response.status).toBe(500);
+    expect(mocks.deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('deletes only unused Auth when User.create never landed and no row claims the id', async () => {
+    mocks.create.mockRejectedValueOnce(new Error('db timeout'));
+
+    const response = await POST(request());
+    expect(response.status).toBe(500);
+    expect(mocks.deleteUser).toHaveBeenCalledExactlyOnceWith('walk-in-new');
+  });
 });
