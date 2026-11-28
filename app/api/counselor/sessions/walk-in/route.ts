@@ -311,6 +311,7 @@ export const POST = withApiGuc(async (request: Request) => {
       });
     }
   
+    let createdAppUser = false;
     try {
       // Step 1: User.create goes through withTenantScope so the new row
       // is stamped with the active org and any explicit `organizationId`
@@ -327,6 +328,7 @@ export const POST = withApiGuc(async (request: Request) => {
           },
         }),
       );
+      createdAppUser = true;
   
       await prisma.$transaction(async (tx) => {
         await tx.profile.create({
@@ -356,11 +358,9 @@ export const POST = withApiGuc(async (request: Request) => {
       });
     } catch (err) {
       console.error('[walk-in] db transaction failed', err);
-      // Best-effort cleanup: remove the supabase auth user AND the prisma
-      // user row (if it was created in step 1) since we couldn't finish
-      // provisioning. Otherwise the email is taken but the member is
-      // half-provisioned. Belt-and-braces P2002 catch on email also
-      // returns the duplicate-account 409 response.
+      // Unique collisions: a concurrent walk-in may already own this Auth id
+      // or email. Never delete Auth in those cases except an unused invite
+      // colliding with a different member's email.
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
         const targets = uniqueConstraintTargets(err);
         const claimed = await claimedActiveAppUser(authUser.id);
@@ -378,14 +378,14 @@ export const POST = withApiGuc(async (request: Request) => {
           return existingMemberResponse();
         }
       }
-      try {
-        // Delete the prisma user if it was created — uses crossTenantOK
-        // because the cleanup is intentionally broad and we just want the
-        // row gone regardless of which tenant claimed it.
-        await crossTenantOK(() =>
-          prisma.user.deleteMany({ where: { id: authUser.id } })
-        );
-      } catch { /* swallow */ }
+      // Profile/assignment (or a non-unique User.create) failed. Invite already
+      // went out. If this request inserted the User row — or any live row still
+      // claims the Auth id — do not unwind: a concurrent walk-in may already
+      // have returned 409 existingMemberId for the same login.
+      const claimed = await claimedActiveAppUser(authUser.id);
+      if (claimed === 'lookup_failed' || claimed || createdAppUser) {
+        return NextResponse.json({ error: 'Failed to provision member account' }, { status: 500 });
+      }
       try {
         await supabase.auth.admin.deleteUser(authUser.id);
       } catch {
