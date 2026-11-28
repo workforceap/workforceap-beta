@@ -10,7 +10,8 @@ import {
   writeAssessmentProgress,
 } from '@/lib/assessment/progressStorage';
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+const router = vi.hoisted(() => ({ push: vi.fn(), refresh: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => router }));
 
 import AssessmentForm from '@/components/portal/AssessmentForm';
 import { SECTION_SAME_ANSWER_WARNING } from '@/lib/assessment/answerPattern';
@@ -156,6 +157,22 @@ describe('AssessmentForm', () => {
     await act(async () => fireEvent.click(screen.getByRole('button', { name: /next/i })));
     expect(screen.queryByRole('alert')).toBeNull();
     expect(screen.getByText(/^Q6\./)).toBeTruthy();
+  });
+
+  it('refreshes the server page after a saved submit so the attempt counter matches', async () => {
+    router.refresh.mockClear();
+    writeAssessmentProgress({
+      answers: Object.fromEntries(Array.from({ length: 35 }, (_, i) => [i + 1, 'A'])),
+      programInterest: 'IT Support',
+      step: 8,
+      seed: 'seed-one',
+    });
+    render(<AssessmentForm {...props} />);
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({ scorePct: 69, adminEmailSent: true })));
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Submit assessment' })));
+    expect(await screen.findByRole('heading', { name: 'WAPAT complete' })).toBeTruthy();
+    expect(router.refresh).toHaveBeenCalledOnce();
+    vi.unstubAllGlobals();
   });
 });
 

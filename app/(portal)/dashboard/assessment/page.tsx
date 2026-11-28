@@ -15,8 +15,11 @@ import Link from 'next/link';
 import { ClipboardCheck } from 'lucide-react';
 import { getCounselorStarterProfileReview, getStarterProfileFieldLabels } from '@/lib/member/starterProfileReview';
 import { formatPortalDate, formatPortalDateTime } from '@/lib/formatDate';
+import WapatReport from '@/components/assessment/WapatReport';
+import { wapatFromAnswers } from '@/lib/assessment/reviewRows';
+import { formatWapatPct } from '@/lib/assessment/wapat';
 
-const PAGE_TITLE = 'Skills check';
+const PAGE_TITLE = 'WAPAT';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
@@ -77,13 +80,23 @@ export default async function AssessmentPage({
             You can still message your counselor, get help, or update your profile from the menu.
           </div>
         ) : null}
-        <div style={{ maxWidth: 720 }}>
+        <div style={{ maxWidth: 720 }} className="wa-space-y-6">
           {retakePending ? <AssessmentRetakeNotice showLink={false} /> : null}
+          {!canSubmit && dbUser.assessmentCompleted ? <AssessmentCompletedCard
+            wapat={wapatFromAnswers(dbUser.assessmentAnswers)}
+            completedAt={dbUser.assessmentCompletedAt}
+            programInterest={dbUser.programInterest}
+          /> : null}
           <p>{Math.min(dbUser.assessmentAttemptCount, 2)} of 2 attempts completed.</p>
           <AssessmentResultHistory history={dbUser.assessmentHistory} />
           {!canSubmit ? (
             <>
-              {dbUser.assessmentAttemptCount >= 2 ? <p role="status">Both preassessment chances have been used. No further retakes are available.</p> : null}
+              {dbUser.assessmentAttemptCount >= 2 ? (
+                <p role="status">
+                  Both preassessment chances have been used. No further retakes are available from this page.
+                  {' '}To ask about another chance, <Link href="/dashboard/messages">message your counselor about a retake</Link>.
+                </p>
+              ) : null}
               {dbUser.assessmentAttemptCount === 1 ? (
                 <p role="status">
                   You have one final attempt available. Ask your counselor or administrator to authorize it.
@@ -91,11 +104,6 @@ export default async function AssessmentPage({
                   {' '}<Link href="/dashboard/messages">Message your counselor about a retake</Link>.
                 </p>
               ) : null}
-              {dbUser.assessmentCompleted ? <AssessmentCompletedCard
-                scorePct={dbUser.assessmentScorePct}
-                completedAt={dbUser.assessmentCompletedAt}
-                programInterest={dbUser.programInterest}
-              /> : null}
               {dbUser.assessmentCompleted ? <InterviewSteps
                 copy={{
                   preScreeningTitle: t('interviewSteps.preScreeningTitle'),
@@ -208,14 +216,15 @@ function InterviewSteps({
 }
 
 function AssessmentCompletedCard({
-  scorePct,
+  wapat,
   completedAt,
   programInterest,
 }: {
-  scorePct: number | null;
+  wapat: ReturnType<typeof wapatFromAnswers>;
   completedAt: Date | null;
   programInterest: string | null;
 }) {
+  const scorePct = wapat.total.pct;
   return (
     <div className="wa-kit-card">
       {scorePct != null ? (
@@ -251,8 +260,9 @@ function AssessmentCompletedCard({
           letterSpacing: '-0.02em',
         }}
       >
-        Preassessment complete
+        WAPAT complete
       </h2>
+      <WapatReport result={wapat} />
       <p style={{ color: 'var(--wa-muted)', lineHeight: 1.5, margin: '0 0 1.25rem', fontSize: 'var(--wa-type-body)' }}>
         {[
           completedAt ? `Finished ${formatPortalDate(completedAt)}` : null,

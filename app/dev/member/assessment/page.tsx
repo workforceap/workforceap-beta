@@ -5,6 +5,7 @@ import { DesignSurface, PageOpener } from '@/components/portal/kit';
 import AssessmentForm from '@/components/portal/AssessmentForm';
 import { assessmentConfirmMessage } from '@/lib/member/assessmentConfirmMessage';
 import MemberInterviewRequestButton from '@/components/portal/MemberInterviewRequestButton';
+import { computeWapat } from '@/lib/assessment/wapat';
 
 /**
  * Credential-free Training Preassessment proofs.
@@ -107,6 +108,8 @@ export default async function DevMemberAssessmentPage({
               previewOutcome={{
                 pct: 82,
                 message: assessmentConfirmMessage(82),
+                // Synthetic: 8/10 vocabulary, 11/14 reading, 7/11 math.
+                wapat: computeWapat(Array.from({ length: 35 }, (_, i) => ({ id: i + 1, answer: 'A', correct: i < 8 || (i >= 10 && i < 21) || (i >= 24 && i < 31) }))),
               }}
             />
           ) : (

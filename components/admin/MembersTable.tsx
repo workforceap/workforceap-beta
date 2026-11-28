@@ -1075,7 +1075,7 @@ export default function MembersTable({
             {
               key: 'score',
               header: (
-                <SortHeader label="Score %" sortKey="score" active={sortKey === 'score'} dir={sortDir} onSort={onSort} />
+                <SortHeader label="Points score % (legacy)" sortKey="score" active={sortKey === 'score'} dir={sortDir} onSort={onSort} />
               ),
               align: 'right',
               cell: (m) => (

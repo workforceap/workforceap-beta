@@ -85,7 +85,7 @@ export default function AdminInterviewReadyTable({ rows }: { rows: InterviewRead
             },
             {
               key: 'score',
-              header: 'Assessment %',
+              header: 'Points score % (legacy)',
               align: 'right',
               cell: (r) => (
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>{r.assessmentScorePct ?? '—'}</span>

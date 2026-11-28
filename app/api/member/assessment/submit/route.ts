@@ -15,7 +15,8 @@ import { escapeHtml, sanitizeEmailSubjectLine } from '@/lib/email/escapeHtml';
 import { plainTextEmailHtml } from '@/lib/email/plainTextEmail';
 import { sendBrandedEmailOrThrowOnSkip } from '@/lib/email/send';
 import { getAssessmentResultRecipients, getResend } from '@/lib/email';
-import { buildAssessmentReviewRows, formatAssessmentReviewText } from '@/lib/assessment/reviewRows';
+import { buildAssessmentReviewRows, formatAssessmentReviewText, wapatFromAnswers } from '@/lib/assessment/reviewRows';
+import { formatWapatPct, formatWapatText, WAPAT_FULL_NAME } from '@/lib/assessment/wapat';
 import { trackEvent } from '@/lib/events/track';
 import { awardPoints } from '@/lib/member/points';
 import { getCounselorStarterProfileReview, getStarterProfileFieldLabels } from '@/lib/member/starterProfileReview';
@@ -68,6 +69,9 @@ export const POST = withApiGuc(async (request: Request) => {
     }
 
     const { raw, pct } = scoreAssessment(answersTyped);
+    // WAPAT: same answers, graded by section and question count. The legacy
+    // points score above is still what is stored and used by other features.
+    const wapat = wapatFromAnswers(answersTyped);
   
     const orgId = await getActorOrganizationId(user.id);
     const dbUser = await prisma.$transaction((tx) => withTenantScope(orgId, (db) => db.user.findFirst({
@@ -144,7 +148,7 @@ export const POST = withApiGuc(async (request: Request) => {
       userId: user.id,
       eventName: 'apply_signup_completed',
       entityType: 'assessment',
-      metadata: { rawScore: raw, scorePct: pct, programInterest },
+      metadata: { rawScore: raw, scorePct: pct, wapatTotalPct: wapat.total.pct, programInterest },
       sourcePage: '/dashboard/assessment',
     });
   
@@ -168,7 +172,9 @@ export const POST = withApiGuc(async (request: Request) => {
             `Email: ${dbUser.email}`,
             `Phone: ${phone}`,
             `Program Interest: ${programInterest}`,
-            `Score: ${raw}/${TOTAL_POINTS} (${pct}%)`,
+            `${WAPAT_FULL_NAME} (WAPAT)`,
+            ...formatWapatText(wapat),
+            `Points score (legacy, weighted): ${raw}/${TOTAL_POINTS} (${pct}%)`,
             `Submitted: ${new Date().toISOString()}`,
             '',
             `Member account (WIOA assessment): ${siteUrl}/admin/members/${user.id}`,
@@ -179,7 +185,7 @@ export const POST = withApiGuc(async (request: Request) => {
         const result = await sendBrandedEmailOrThrowOnSkip(resend, {
           from: emailFrom,
           to: getAssessmentResultRecipients(),
-          subject: sanitizeEmailSubjectLine(`Training preassessment submitted — ${firstName} ${lastName} (${pct}%)`),
+          subject: sanitizeEmailSubjectLine(`WAPAT submitted — ${firstName} ${lastName} (${formatWapatPct(wapat.total)})`),
           html: plainTextEmailHtml(adminText),
           text: adminText,
         });
@@ -196,10 +202,12 @@ export const POST = withApiGuc(async (request: Request) => {
   
       try {
         const memberHtml = brandedEmailLayout({
-          title: 'Assessment Complete',
+          title: 'WAPAT Complete',
           bodyHtml: `
             <p>Hi ${escapeHtml(firstName)},</p>
-            <p>You've completed your readiness assessment. Your score: <strong>${raw}/${TOTAL_POINTS} (${pct}%)</strong>.</p>
+            <p>You've completed your readiness assessment (${WAPAT_FULL_NAME}, WAPAT).</p>
+            <p><strong>WAPAT Total Score: ${escapeHtml(formatWapatPct(wapat.total))}</strong></p>
+            <ul>${wapat.sections.map((s) => `<li>${escapeHtml(s.label)}: ${escapeHtml(formatWapatPct(s))}</li>`).join('')}</ul>
             <p>You're all set to continue to your training. Log in to your dashboard to access your Coursera courses.</p>
           `,
           ctaText: 'Go to Dashboard',
@@ -208,7 +216,7 @@ export const POST = withApiGuc(async (request: Request) => {
         const result = await sendBrandedEmailOrThrowOnSkip(resend, {
           from: emailFrom,
           to: dbUser.email,
-          subject: 'Assessment Complete — Workforce Advancement Project',
+          subject: 'WAPAT Complete — Workforce Advancement Project',
           html: memberHtml,
         });
         if (!result.data?.id) {
@@ -227,6 +235,7 @@ export const POST = withApiGuc(async (request: Request) => {
       ok: true,
       rawScore: raw,
       scorePct: pct,
+      wapat,
       emailsSent: memberEmailSent,
       adminEmailSent,
       profileReviewPending,
