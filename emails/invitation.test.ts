@@ -43,3 +43,21 @@ test('escapes untrusted inviter, role, personal message, login code and invite p
     /href="https:\/\/evil\.example\/&quot; onclick=&quot;alert\(1\)\/invite"/,
   );
 });
+
+test('currently lets a javascript: branding domain through escapeHtml (pinned)', () => {
+  const html = invitationHtml({
+    inviterName: 'Jordan Lee',
+    role: 'student',
+    loginCode: 'ABCD-1234',
+    branding: {
+      orgId: 'org-x',
+      name: 'WorkforceAP',
+      logoUrl: 'https://cdn.example/x.png',
+      primaryColor: '#0066ff',
+      supportEmail: 'ops@example.org',
+      domain: 'javascript:alert(1)',
+      domainLabel: 'evil.example',
+    },
+  });
+  assert.match(html, /href="javascript:alert\(1\)\/invite"/);
+});
