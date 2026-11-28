@@ -1509,6 +1509,18 @@ html.dark .workspace-shell-header,
 
 /* Member portal (mobile): bottom nav is primary; minimize top chrome. */
 @media (max-width: 768px) {
+  .workspace-shell-root[data-workspace-role="member"] .workspace-menu-btn {
+    flex-shrink: 0;
+    gap: 0.375rem;
+    padding-inline: 0.75rem;
+    background: var(--wa-accent-soft);
+    border-color: var(--wa-control-border);
+    color: var(--wa-accent-text);
+    font-size: var(--wa-type-body);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
   html[data-portal-role="member"] .workspace-shell-header__brand .workspace-shell-brand-block {
     display: none;
   }

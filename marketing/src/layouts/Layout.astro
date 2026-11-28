@@ -11,6 +11,10 @@ import AnalyticsHead from '../components/AnalyticsHead.astro';
 import ConsentBanner from '../components/ConsentBanner.astro';
 import { heroPhotoCssUrl, heroPhotoForKey, heroPhotoSequenceForKey } from '../../../lib/marketing/heroPhotos';
 import { brandedPageTitle } from '../../../lib/marketing/pageTitle';
+import enMessages from '../../../messages/en.json';
+import esMessages from '../../../messages/es.json';
+import frMessages from '../../../messages/fr.json';
+import ptMessages from '../../../messages/pt.json';
 export interface Props {
   title?: string;
   description?: string;
@@ -21,6 +25,11 @@ const {
   description = 'WorkforceAP is a 501(c)(3) nonprofit providing employer-aligned training, professional certificates, and career support at no cost to members who qualify through scholarship/grant funded membership.',
   lang = 'en',
 } = Astro.props;
+const menuLabels: Record<string, string> = {
+  en: enMessages.nav.menu, es: esMessages.nav.menu,
+  fr: frMessages.nav.menu, pt: ptMessages.nav.menu,
+};
+const menuLabel = menuLabels[lang] ?? menuLabels.en;
 // Every public <title>, og:title and twitter:title carries the brand once (lib/marketing/pageTitle.ts).
 const pageTitle = brandedPageTitle(title);
 // Primary nav with dropdowns — mirrors the portal/Next MainNav structure so
@@ -146,7 +155,7 @@ const heroPhotoUrl3 = `url('${heroPhoto3}')`;
   <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${(import.meta.env.PUBLIC_GTM_ID ?? process.env.NEXT_PUBLIC_GTM_ID ?? 'GTM-53JCT6WN').trim()}`} height="0" width="0" style="display:none;visibility:hidden" title="gtm"></iframe></noscript>
   <a class="skiplink" href="#main-content">Skip to content</a>
   <input class="navtoggle" type="checkbox" id="navtoggle" />
-  <label class="hamburger" for="navtoggle" aria-label="Toggle menu"><span></span><span></span><span></span></label>
+  <label class="hamburger" for="navtoggle"><span class="hamburger__bars" aria-hidden="true"><span></span><span></span><span></span></span><span class="hamburger__label">{menuLabel}</span></label>
   <nav class="top">
     <div class="wrap row">
       <a class="brand" href="/" aria-label="Workforce Advancement Project — home"><img class="brand-logo" src="/images/wap_logo.png" alt="Workforce Advancement Project" width="210" height="107" /></a>
