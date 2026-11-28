@@ -1,0 +1,436 @@
+{
+ "programSlug": "certified-logistics-technician-clt",
+ "programTitle": "Certified Logistics Technician (CLT)",
+ "category": "manufacturing",
+ "categoryLabel": "Manufacturing",
+ "brandColor": "#1a1a1a",
+ "providers": null,
+ "programDescription": null,
+ "hasTwcSyllabus": false,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "clt-course-1",
+   "courseTitle": "Introduction to Supply Chain Management",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Project Commander",
+   "missionTagline": "Prove you can map and manage a supply chain end to end",
+   "skillLabels": [
+    "Supply chain fundamentals",
+    "Logistics planning",
+    "Demand forecasting",
+    "ERP basics",
+    "Process mapping"
+   ],
+   "scenarioPrompt": "Your manager asks you to explain why a recent shipment of components arrived two weeks late, causing a production stoppage. Walk through the supply chain failure points you would investigate and how you would prevent it in the future.",
+   "quiz": [
+    {
+     "text": "A manufacturer notices that it frequently runs out of a key component even though orders are placed on a fixed schedule. Which supply chain concept best addresses this problem?",
+     "options": [
+      "Just-in-time manufacturing, which eliminates all safety stock to reduce holding costs",
+      "Demand forecasting with safety stock—analyzing historical usage patterns and lead time variability to set reorder points that prevent stockouts while avoiding excess inventory",
+      "Single-source procurement to reduce the number of vendors and simplify ordering",
+      "Increasing the order frequency to daily to ensure components are always available"
+     ],
+     "correctIndex": 1,
+     "explanation": "Demand forecasting combined with safety stock calculations addresses the root cause: variable demand and lead times. Fixed-schedule ordering without forecasting leads to either excess inventory or stockouts."
+    },
+    {
+     "text": "A logistics coordinator is asked to compare two suppliers: Supplier A has the lowest unit price but ships from overseas with a 6-week lead time; Supplier B costs 15% more but ships domestically in 3 days. Which factor most often drives the decision toward Supplier B despite the higher cost?",
+     "options": [
+      "Domestic suppliers always have better quality control processes",
+      "Total cost of ownership—when carrying costs, stockout risk, emergency freight, and production disruption costs are included, the lower unit price of Supplier A may result in a higher total cost",
+      "International shipping is prohibited for most manufacturing components",
+      "Supplier B's faster shipping time means the company can charge customers more"
+     ],
+     "correctIndex": 1,
+     "explanation": "Total cost of ownership (TCO) includes unit price, freight, duties, inventory carrying costs, and risk costs. A higher unit price with faster, reliable delivery often yields lower TCO than a cheaper but risky distant supplier."
+    },
+    {
+     "text": "During a supply chain review, you discover that each department (sales, production, procurement) maintains its own separate spreadsheet for inventory data, leading to conflicting numbers. What is the standard solution to this problem?",
+     "options": [
+      "Designate one person to manually reconcile all three spreadsheets weekly",
+      "Implement an integrated ERP system with a single shared database so all departments view and update the same real-time inventory data, eliminating conflicting records",
+      "Require each department to submit their spreadsheet to IT at the end of each day",
+      "Reduce the number of departments that track inventory to minimize data conflicts"
+     ],
+     "correctIndex": 1,
+     "explanation": "ERP systems solve the data siloing problem by providing a single source of truth. When sales, production, and procurement all operate from the same database, inventory decisions are based on accurate, real-time data."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "clt-course-2",
+   "courseTitle": "Inventory Management and Control",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Insight Analyst",
+   "missionTagline": "Prove you can optimize inventory levels with data",
+   "skillLabels": [
+    "Inventory control",
+    "ABC analysis",
+    "Cycle counting",
+    "Inventory metrics",
+    "Excel/data tools"
+   ],
+   "scenarioPrompt": "A warehouse manager shows you that carrying costs are high and stockouts still occur on certain SKUs. You have access to transaction history for 2,000 SKUs. Describe your analytical approach to diagnosing and fixing the inventory problem.",
+   "quiz": [
+    {
+     "text": "A company has 500 SKUs. Analysis shows that 50 SKUs account for 80% of annual inventory value. Which inventory management approach should be applied to these top 50 SKUs?",
+     "options": [
+      "Apply the same standard reorder point to all SKUs since treating items differently creates confusion",
+      "Apply ABC analysis—classify the top 50 as 'A' items requiring tighter controls, more frequent cycle counting, and closer monitoring of reorder points and supplier performance",
+      "Increase safety stock for all 500 SKUs equally to prevent any stockouts",
+      "Automate reordering for the bottom 450 SKUs since they are low-value"
+     ],
+     "correctIndex": 1,
+     "explanation": "ABC analysis prioritizes inventory management effort. 'A' items (high value, high impact) warrant tight control and frequent review. Applying equal effort to all SKUs wastes resources and misses the most critical items."
+    },
+    {
+     "text": "A cycle counting program shows that actual inventory for a fast-moving part is consistently 8-12 units lower than the system shows. What is the most likely root cause and first corrective step?",
+     "options": [
+      "The ERP system has a bug that overcounts fast-moving items automatically",
+      "Shrinkage or process breakdowns—unrecorded picks, receiving errors, or damage write-offs not entered in the system; investigate the paper trail from receiving through pick to identify where the discrepancy is created",
+      "Fast-moving parts should always have a built-in 10% buffer added to the system count",
+      "The cycle count process itself is inaccurate and should be replaced with an annual physical count"
+     ],
+     "correctIndex": 1,
+     "explanation": "Systematic cycle count discrepancies indicate a process gap—missing transactions somewhere in the flow. Tracing the paper or electronic trail from receipt to shipment identifies where inventory is leaving without being recorded."
+    },
+    {
+     "text": "A buyer wants to reduce inventory costs and considers ordering smaller quantities more frequently. What tradeoff must be analyzed before implementing this change?",
+     "options": [
+      "Smaller orders always reduce total inventory cost, so no tradeoff analysis is needed",
+      "Ordering costs (each order incurs processing, freight, and receiving labor costs) versus carrying costs (holding excess inventory costs capital and space)—Economic Order Quantity (EOQ) balances these to find the optimal order size",
+      "More frequent ordering increases supplier prices because suppliers prefer large orders",
+      "Smaller order quantities always result in stockouts because safety stock cannot compensate"
+     ],
+     "correctIndex": 1,
+     "explanation": "EOQ analysis reveals that total inventory cost is minimized at the intersection of ordering costs and carrying costs. Simply ordering more or less frequently without this analysis often increases total cost."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "clt-course-3",
+   "courseTitle": "Transportation and Distribution",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Operations Pro",
+   "missionTagline": "Prove you can select and manage transportation modes effectively",
+   "skillLabels": [
+    "Transportation modes",
+    "Freight management",
+    "Route optimization",
+    "Distribution networks",
+    "Carrier relations"
+   ],
+   "scenarioPrompt": "A company ships products to customers across the country using a single LTL carrier. Delivery times are inconsistent and costs are rising. You are asked to evaluate the distribution strategy and recommend improvements.",
+   "quiz": [
+    {
+     "text": "A manufacturer ships products to 200 customers, most of whom order small quantities. The current approach is individual LTL shipments to each customer. A consultant proposes consolidating shipments through a regional distribution center. What is the primary benefit of this approach?",
+     "options": [
+      "Regional distribution centers eliminate the need for carrier contracts",
+      "Consolidation reduces the per-unit freight cost by combining many small shipments into full truckloads to the DC, then distributing locally—lowering total transportation cost and improving delivery predictability",
+      "Customers prefer receiving shipments from regional centers because the product arrives fresher",
+      "LTL carriers refuse to deliver to areas served by regional distribution centers"
+     ],
+     "correctIndex": 1,
+     "explanation": "Freight consolidation through a DC trades the high per-unit cost of many small LTL shipments for the lower cost of full truckloads. Local last-mile distribution from the DC is typically faster and more predictable than long-haul LTL."
+    },
+    {
+     "text": "A logistics manager must choose between shipping a large industrial component by truck (5-day transit, moderate cost) or air freight (2-day transit, 4x the cost). Under what condition does air freight become the correct choice?",
+     "options": [
+      "Air freight is always justified because faster delivery improves customer satisfaction scores",
+      "When the cost of the 3-day delay exceeds the premium—such as a production line stoppage costing thousands per hour, a contract penalty, or a customer relationship risk that outweighs the additional freight cost",
+      "Air freight should be used for all shipments over a certain weight threshold",
+      "When the truck carrier's transit time guarantee is not in writing"
+     ],
+     "correctIndex": 1,
+     "explanation": "Transportation mode selection requires comparing the full cost of each option, including delay costs. Air freight's premium is justified when the cost of waiting—in production losses, penalties, or customer impact—exceeds the freight cost difference."
+    },
+    {
+     "text": "A distribution center handles 1,000 outbound shipments per day. The transport manager notices that 30% of trucks leave less than half full. What metric and strategy should be applied to improve this situation?",
+     "options": [
+      "Track on-time delivery percentage and add more carriers to fill the remaining space",
+      "Track trailer utilization rate and implement load planning software that groups orders by destination and size to maximize truck fill rates before dispatch",
+      "Reduce the number of daily shipments by requiring customers to place orders on specific days",
+      "Switch entirely to parcel carriers who handle any shipment size without fill rate concerns"
+     ],
+     "correctIndex": 1,
+     "explanation": "Low trailer utilization means paying for unused capacity. Load planning tools optimize how orders are combined and routed, maximizing truck fill and reducing cost per unit shipped."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "clt-course-4",
+   "courseTitle": "Warehouse Operations",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can design and optimize warehouse workflows",
+   "skillLabels": [
+    "Warehouse layout",
+    "Slotting optimization",
+    "Pick processes",
+    "WMS systems",
+    "Safety compliance"
+   ],
+   "scenarioPrompt": "A warehouse processes 5,000 picks per day but pickers are constantly walking long distances to retrieve fast-moving items stored in random locations. Productivity is low and errors are increasing. Redesign the approach.",
+   "quiz": [
+    {
+     "text": "A warehouse stores 2,000 SKUs but pickers walk an average of 8 miles per shift because fast-moving items are scattered throughout the facility. What is the most effective layout solution?",
+     "options": [
+      "Install moving walkways throughout the warehouse to reduce picker fatigue",
+      "Implement velocity-based slotting—place the highest-velocity (fastest-moving) SKUs closest to the shipping dock and pick start zone, so pickers travel minimal distance for the majority of their picks",
+      "Divide the warehouse into zones by product category so pickers learn one zone thoroughly",
+      "Add more pickers to compensate for the excessive travel time"
+     ],
+     "correctIndex": 1,
+     "explanation": "Velocity-based slotting is the fundamental warehouse layout strategy. Since 20% of SKUs typically account for 80% of picks, placing those items close to the starting point dramatically reduces total travel distance."
+    },
+    {
+     "text": "A warehouse management system (WMS) pick list directs a picker to Location A-03-B-12, but when the picker arrives, the location is empty. The WMS still shows 5 units in stock. What is the correct response?",
+     "options": [
+      "Continue to the next pick and report the discrepancy at the end of the shift",
+      "Immediately record a location discrepancy in the WMS, initiate an inventory adjustment, search for the item at alternate locations, and inform the supervisor so the order can be managed—accurate system data is more valuable than completing one pick without correction",
+      "Assume the previous shift lost the items and write off the inventory immediately",
+      "Pick from a nearby similar-looking item if the part numbers are close enough"
+     ],
+     "correctIndex": 1,
+     "explanation": "Inventory accuracy is the foundation of warehouse operations. Skipping discrepancy reporting propagates bad data and creates future shortfalls. Immediate correction keeps the WMS reliable and allows supervisors to fulfill the order."
+    },
+    {
+     "text": "A warehouse implements a batch picking process where one picker collects items for 10 orders simultaneously. What is the primary benefit and the primary risk of this approach?",
+     "options": [
+      "Benefit: eliminates the need for a WMS; Risk: pickers must memorize all 10 orders",
+      "Benefit: reduces total travel time by completing multiple orders in a single pass through the warehouse; Risk: increased pick errors and sorting complexity—without a strong verification process, items can be assigned to the wrong order",
+      "Benefit: allows each picker to specialize in one product category; Risk: orders with items in multiple categories must be split",
+      "Benefit: eliminates the need for a conveyor system; Risk: pickers become fatigued faster because of the heavier cart"
+     ],
+     "correctIndex": 1,
+     "explanation": "Batch picking increases productivity by reducing travel but introduces error risk at the sort and consolidation step. Strong verification processes (scan-to-cart, sort zones) are essential to capture the efficiency benefit without sacrificing accuracy."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "clt-course-5",
+   "courseTitle": "Procurement and Vendor Management",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Strategy Lead",
+   "missionTagline": "Prove you can source, evaluate, and manage supplier relationships",
+   "skillLabels": [
+    "Procurement process",
+    "Vendor evaluation",
+    "Contract management",
+    "Cost negotiation",
+    "Supplier scorecards"
+   ],
+   "scenarioPrompt": "Your company relies on a single supplier for a critical component. That supplier just notified you of a 6-week production shutdown. You have 3 weeks of inventory on hand. Describe your immediate response and long-term strategy to prevent this situation.",
+   "quiz": [
+    {
+     "text": "A procurement manager is evaluating two suppliers for a critical assembly component. Supplier X has the lowest price but has delivered late on 4 of the last 12 orders. Supplier Y costs 8% more but has a 99.8% on-time delivery record. How should this decision be made?",
+     "options": [
+      "Always choose the lowest price supplier and manage late deliveries through expediting",
+      "Evaluate total cost of late delivery—production stoppages, expedited freight, and customer impact—and compare against the 8% price premium; Supplier Y likely costs less when delivery performance is fully valued",
+      "Split the business equally between both suppliers regardless of the analysis",
+      "Require Supplier X to sign a penalty clause for late deliveries before awarding the contract"
+     ],
+     "correctIndex": 1,
+     "explanation": "Procurement decisions must account for total cost, not just unit price. Late deliveries generate hidden costs (expediting, downtime, customer penalties) that often exceed the price savings from a cheaper but unreliable supplier."
+    },
+    {
+     "text": "A buyer negotiating with a supplier hears: 'Our price is fixed—there's nothing to negotiate.' What is the most effective procurement response?",
+     "options": [
+      "Accept the fixed price immediately to maintain a positive supplier relationship",
+      "Expand the negotiation scope beyond unit price—explore payment terms (30 vs. 60 days net), order volume commitments for price breaks, packaging changes, delivery frequency, quality certifications, or value-added services that improve total value without changing the listed price",
+      "Threaten to immediately switch to a competitor supplier even if no alternative exists",
+      "Reduce the order quantity to force the supplier to lower their price"
+     ],
+     "correctIndex": 1,
+     "explanation": "Skilled negotiators understand that price is one variable in a multi-dimensional agreement. When price is firm, negotiating terms, volume, service levels, and payment creates value even without a unit price concession."
+    },
+    {
+     "text": "A vendor scorecard shows that a long-term supplier has gradually declined from a 94% quality rating to 81% over six months. The procurement team has not addressed it because the relationship is 'comfortable.' What is the correct action?",
+     "options": [
+      "Continue monitoring for another six months before taking action to allow time for improvement",
+      "Schedule a formal supplier performance review, share the scorecard data, set a specific improvement target with timeline, and begin qualifying an alternate source in parallel—declining quality without intervention continues to deteriorate and creates supply risk",
+      "Immediately terminate the supplier contract and switch to a new source",
+      "Reduce the order quantity from the supplier until quality improves on its own"
+     ],
+     "correctIndex": 1,
+     "explanation": "Supplier performance management requires proactive intervention before decline becomes critical. Formal review with data, clear targets, and parallel qualification protects supply while giving the supplier an opportunity to correct."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "clt-course-6",
+   "courseTitle": "Supply Chain Technology and SAP",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can use ERP and supply chain technology effectively",
+   "skillLabels": [
+    "SAP basics",
+    "ERP navigation",
+    "Supply chain software",
+    "Data entry accuracy",
+    "System reporting"
+   ],
+   "scenarioPrompt": "You are entering a purchase order into SAP and realize the vendor number you were given does not match the vendor name on the invoice. Describe how you would handle this discrepancy and why accurate data entry in ERP systems matters.",
+   "quiz": [
+    {
+     "text": "A logistics technician enters a goods receipt in SAP and accidentally records 500 units received instead of 50. The error is discovered 3 days later. What is the likely cascade of problems this error caused?",
+     "options": [
+      "No significant impact since ERP systems automatically correct data entry errors during nightly processing",
+      "The inventory record now shows 450 phantom units, procurement may cancel a needed reorder because it appears overstocked, accounts payable may process an incorrect invoice amount, and production may plan against units that don't exist—all requiring manual correction",
+      "The supplier will be notified automatically and will correct the order quantity",
+      "Only the accounts payable record is affected since warehouse inventory is tracked separately"
+     ],
+     "correctIndex": 1,
+     "explanation": "ERP systems integrate data across departments—one incorrect entry propagates to inventory, procurement, finance, and production planning simultaneously. Data accuracy at entry is critical because corrections require effort across multiple functions."
+    },
+    {
+     "text": "A supply chain analyst needs to identify which purchase orders are overdue for delivery. In an ERP system like SAP, what is the most efficient way to get this information?",
+     "options": [
+      "Email each buyer individually and ask them to check their own orders",
+      "Run a standard purchase order report filtered by delivery date less than today and status 'open'—ERP reporting allows cross-functional visibility into all open orders without requiring manual coordination",
+      "Check each vendor's website to see if they have shipped the orders yet",
+      "Wait until the receiving dock reports items as missing at end of month"
+     ],
+     "correctIndex": 1,
+     "explanation": "ERP reporting is one of the primary productivity advantages over manual systems. Standard reports with filters provide instant cross-functional visibility that would require hours of manual coordination otherwise."
+    },
+    {
+     "text": "A company is implementing SAP for the first time and needs to migrate 10 years of vendor, inventory, and order history from spreadsheets. A project manager suggests skipping data cleansing to save time. Why is this a high-risk decision?",
+     "options": [
+      "SAP requires data to be entered manually one record at a time, making migration irrelevant",
+      "Dirty data migrated into the ERP becomes the foundation for all future transactions—duplicate vendors generate incorrect payments, wrong inventory balances create procurement errors, and bad historical data produces inaccurate forecasts; cleansing before migration is far cheaper than correcting after go-live",
+      "Data cleansing is only important for customer records, not supply chain data",
+      "SAP's built-in validation will catch and fix all data quality issues during migration"
+     ],
+     "correctIndex": 1,
+     "explanation": "Data migration quality determines ERP success. Organizations that skip cleansing routinely face years of corrections, duplicate payments, and poor system adoption because users don't trust data they know is unreliable."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "clt-course-7",
+   "courseTitle": "Global Supply Chain and Trade",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Project Commander",
+   "missionTagline": "Prove you understand international logistics and compliance",
+   "skillLabels": [
+    "Import/export basics",
+    "Trade compliance",
+    "Customs documentation",
+    "Incoterms",
+    "Global logistics"
+   ],
+   "scenarioPrompt": "Your company is importing a container of electronics from a supplier in Asia for the first time. The shipment arrives at the port and customs holds it for 10 days, costing significant demurrage fees. Investigate what likely went wrong and how to prevent it.",
+   "quiz": [
+    {
+     "text": "A first-time importer's container is held at customs because the commercial invoice lists product descriptions as 'electronic parts' without HTS (Harmonized Tariff Schedule) codes. Why does this cause a delay and what should have been done?",
+     "options": [
+      "Customs holds shipments without HTS codes only for shipments from certain countries",
+      "HTS codes are required for customs to determine the applicable tariff rate and verify compliance—without them, customs cannot process the entry; the exporter should have applied correct HTS codes to all products before the commercial invoice was issued",
+      "HTS codes are optional documentation that speeds processing but is not required for entry",
+      "The freight forwarder is required by law to add HTS codes after the shipment arrives"
+     ],
+     "correctIndex": 1,
+     "explanation": "HTS codes are mandatory for import classification. They determine duty rates, restrictions, and compliance requirements. Shipments without correct codes cannot be processed and accumulate expensive port storage charges during the delay."
+    },
+    {
+     "text": "A supply chain manager is reviewing an import contract and sees the Incoterm 'FOB Shanghai.' What does this mean for the buyer's risk and cost responsibility?",
+     "options": [
+      "The seller is responsible for all costs and risk until the goods arrive at the buyer's warehouse",
+      "The buyer assumes risk and cost responsibility once the goods are loaded onto the vessel at Shanghai—from that point forward, the buyer is responsible for ocean freight, insurance, import duties, and domestic delivery",
+      "FOB means the freight is free and the buyer pays only import duties",
+      "The seller retains ownership of the goods until the buyer pays the final invoice"
+     ],
+     "correctIndex": 1,
+     "explanation": "FOB (Free On Board) is one of the most common Incoterms in global trade. Understanding the risk transfer point is critical because it determines who bears the cost of loss or damage during transit and who arranges insurance."
+    },
+    {
+     "text": "A company importing goods from a new country discovers that the product requires an import license before it can enter the US. The license application takes 60 days. The first shipment has already left the origin port. What is the risk and what should have been done?",
+     "options": [
+      "The shipment can be released to the buyer while the license application is pending",
+      "The shipment will be refused entry or placed in a bonded warehouse at the importer's expense until the license is obtained—trade compliance research, including license requirements, should be completed before any purchase order is issued to a foreign supplier",
+      "Import licenses are retroactively applied by customs once the application is submitted",
+      "The buyer can pay a fee to expedite customs clearance without the license"
+     ],
+     "correctIndex": 1,
+     "explanation": "Import license requirements must be researched before the supply relationship begins—not after goods are in transit. Reactive compliance creates costly delays, storage fees, and potential seizure of goods."
+    }
+   ]
+  },
+  {
+   "order": 8,
+   "courseSlug": "clt-course-8",
+   "courseTitle": "CLT Certification Preparation",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Strategy Lead",
+   "missionTagline": "Prove you can apply CLT knowledge to real workplace scenarios",
+   "skillLabels": [
+    "CLT exam preparation",
+    "Supply chain integration",
+    "Problem solving",
+    "Career readiness",
+    "Professional communication"
+   ],
+   "scenarioPrompt": "You are in a CLT certification interview. The interviewer says: 'Describe a logistics problem you have solved or would solve using the skills from this program.' Prepare a complete, compelling response.",
+   "quiz": [
+    {
+     "text": "A logistics technician is asked to reduce the company's freight spend by 10% without changing service levels. Which approach demonstrates the strongest application of CLT-level competency?",
+     "options": [
+      "Negotiate a blanket discount with the current carrier by threatening to switch providers",
+      "Conduct a freight audit to identify billing errors, analyze shipment data to find consolidation opportunities, benchmark current rates against market, and implement a carrier scorecard to hold providers accountable—systematic analysis and continuous improvement rather than one-time negotiation",
+      "Switch all shipments to the cheapest available carrier immediately",
+      "Reduce shipment frequency to lower total freight invoices regardless of inventory impact"
+     ],
+     "correctIndex": 1,
+     "explanation": "CLT-level competency means applying systematic analysis, not reactive tactics. A freight audit often recovers 1-3% in billing errors alone, and data-driven consolidation and benchmarking typically yield sustainable savings without service degradation."
+    },
+    {
+     "text": "During a job interview for a logistics coordinator role, a CLT-certified candidate is asked: 'What is the difference between a push and pull supply chain strategy?' What is the correct and complete answer?",
+     "options": [
+      "Push means suppliers deliver frequently; pull means the company picks up from the supplier",
+      "Push strategy produces and ships based on demand forecasts, building inventory ahead of customer orders; pull strategy produces and ships only in response to actual customer demand—pull reduces inventory risk but requires faster response capability; most companies use a hybrid approach",
+      "Push is used for domestic shipments; pull is used for international shipments",
+      "Push and pull refer to the physical handling method in the warehouse, not supply chain strategy"
+     ],
+     "correctIndex": 1,
+     "explanation": "Push vs. pull is a fundamental supply chain strategy concept. Interviewers use it to test whether candidates understand not just the definition but the tradeoffs—inventory risk vs. responsiveness—and practical application in real supply chains."
+    },
+    {
+     "text": "A new CLT graduate is starting their first logistics role and wants to add value quickly. Which approach will have the most impact in the first 90 days?",
+     "options": [
+      "Propose major system changes and process redesigns based on textbook best practices immediately",
+      "Learn the current state deeply before suggesting changes—shadow experienced team members, document current processes, measure key metrics, ask why things are done a certain way, and identify one specific, scoped improvement with measurable ROI to pilot with supervisor approval",
+      "Focus only on assigned tasks and avoid any process improvement until promoted",
+      "Implement lean manufacturing principles immediately since they apply universally to all logistics operations"
+     ],
+     "correctIndex": 1,
+     "explanation": "High-performing new hires earn credibility by understanding before changing. Learning the current state reveals why things are done a certain way, builds relationships, and ensures that proposed improvements are based on actual data rather than assumptions."
+    }
+   ]
+  }
+ ]
+}

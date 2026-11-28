@@ -1,0 +1,383 @@
+{
+ "programSlug": "comptia-a-professional-certificate",
+ "programTitle": "CompTIA A+ Professional Certificate (CompTIA A+)",
+ "category": "it-cyber",
+ "categoryLabel": "IT & Cybersecurity",
+ "brandColor": "#ad2c4d",
+ "providers": "Microsoft & Google via Coursera",
+ "programDescription": "Build foundational skills in IT, computer hardware, operating systems, networking, and customer service. Prepares students for the CompTIA A+ certification — a renowned credential for entry-level IT professionals seeking helpdesk and computer support roles.",
+ "hasTwcSyllabus": true,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "comptia-a-course-1",
+   "courseTitle": "IT Fundamentals and Hardware Essentials",
+   "hours": 7,
+   "syllabusDescription": "Identify and install key PC hardware components. Understand the role of BIOS, RAM, and CPU and their impact on system performance.",
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you know PC hardware components and how they work",
+   "skillLabels": [
+    "Hardware components",
+    "PC assembly",
+    "Troubleshooting",
+    "Windows",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A user brings in a desktop computer that will not power on at all—no fans spin, no lights come on. Using your IT fundamentals and hardware knowledge from this course, walk through the systematic diagnostic steps you would take to identify the faulty component.",
+   "quiz": [
+    {
+     "text": "A desktop PC shows no signs of power when the power button is pressed. You have confirmed the outlet is live. What is the NEXT best troubleshooting step?",
+     "options": [
+      "Replace the motherboard since it controls the power-on circuitry",
+      "Check that the power supply switch on the back of the PSU is in the ON position, verify the power cable is fully seated, and test with a known-good cable before opening the case",
+      "Open the case and reseat all RAM modules since RAM failures can prevent power-on",
+      "Replace the power button cable since the button itself is the most common cause of no-power symptoms"
+     ],
+     "correctIndex": 1,
+     "explanation": "Always eliminate the simplest external causes first. A flipped PSU switch or loose power cable requires zero tools to fix. External checks precede any internal hardware manipulation."
+    },
+    {
+     "text": "A technician installs a new 16GB RAM stick in a desktop that previously had 8GB. The BIOS reports only 8GB available. What is the MOST likely cause?",
+     "options": [
+      "The operating system is 32-bit and cannot address more than 4GB of RAM",
+      "The new RAM stick is not fully seated in the DIMM slot; re-seating it firmly until both retention clips click is the first troubleshooting step",
+      "The RAM stick is DDR5 but the motherboard only supports DDR4, causing it to be ignored",
+      "The BIOS version is outdated and needs to be updated to recognize the new RAM capacity"
+     ],
+     "correctIndex": 1,
+     "explanation": "Partially seated RAM is the most common cause of memory not being recognized. A fully seated DIMM requires firm pressure until both side clips lock—a common installation error for new technicians."
+    },
+    {
+     "text": "A desktop PC powers on but immediately powers off after 3 seconds, repeating this cycle. There is no display output. What is this behavior MOST consistent with?",
+     "options": [
+      "A software crash causing the operating system to restart in a loop",
+      "A thermal protection shutdown—the CPU is overheating almost instantly, likely due to improperly seated or missing CPU cooler, and the system shuts down before damage occurs",
+      "A failing hard drive causing the system to abort the boot process",
+      "Incompatible RAM causing the system to restart rather than display a POST error"
+     ],
+     "correctIndex": 1,
+     "explanation": "Immediate repeated power cycles (on for 2-3 seconds, then off) is the classic symptom of thermal protection triggering. A missing or improperly mounted CPU cooler causes CPU temperature to spike within seconds of power-on."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "comptia-a-course-2",
+   "courseTitle": "Networking, Peripherals, and Wireless Technologies",
+   "hours": 7,
+   "syllabusDescription": "Identify and configure essential peripheral devices for optimal system performance, troubleshoot displays, and install graphics cards.",
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can diagnose and fix networking and peripheral issues",
+   "skillLabels": [
+    "Networking basics",
+    "Wi-Fi troubleshooting",
+    "Peripherals",
+    "TCP/IP",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Three employees in the same room report their laptops cannot connect to the office Wi-Fi network, while employees on the other side of the office connect fine. Using your networking and wireless troubleshooting skills from this course, describe your diagnostic approach.",
+   "quiz": [
+    {
+     "text": "A laptop shows it is connected to Wi-Fi but cannot browse the internet or reach any network resources. The IP address shown is 169.254.x.x. What does this IP address indicate?",
+     "options": [
+      "The laptop is using a private IP address reserved for guest network access",
+      "The laptop received an APIPA (Automatic Private IP Addressing) address, meaning it could not reach the DHCP server—the Wi-Fi connection exists at the radio layer but network communication is broken",
+      "The IP address is from a legacy range and should work normally for internet access",
+      "The laptop's network adapter is malfunctioning and should be replaced"
+     ],
+     "correctIndex": 1,
+     "explanation": "169.254.x.x is an APIPA address, assigned automatically when DHCP fails. It means the device is associated with the Wi-Fi network but cannot communicate with the DHCP server to obtain a routable IP."
+    },
+    {
+     "text": "An office has 8 access points all configured on Wi-Fi channel 6. Users report slow speeds despite strong signal. What is causing the performance issue?",
+     "options": [
+      "Channel 6 is reserved for enterprise use and is slower than consumer channels",
+      "Co-channel interference—multiple APs on the same channel compete for airtime, degrading performance even with good signal strength; distributing APs across non-overlapping channels (1, 6, 11) eliminates this",
+      "The office has too many access points; reducing to 2-3 APs would improve performance",
+      "Signal strength is too high and causing interference with neighboring devices"
+     ],
+     "correctIndex": 1,
+     "explanation": "Co-channel interference occurs when nearby APs use the same channel, forcing devices to wait for each other to transmit. Non-overlapping channels (1, 6, 11 for 2.4GHz) prevent this contention."
+    },
+    {
+     "text": "A USB printer worked yesterday but today Windows shows it as 'offline' even though the printer's display shows 'Ready.' What are the TWO most likely causes to check first?",
+     "options": [
+      "The printer needs a firmware update and the printer driver needs to be reinstalled",
+      "The USB cable may have come loose or the port may have changed (check Device Manager), and the printer spooler service may have stopped—restarting the Print Spooler service resolves many 'offline' states",
+      "The printer's IP address changed, causing Windows to lose track of it",
+      "The printer needs to be power-cycled and the USB cable replaced with a new one"
+     ],
+     "correctIndex": 1,
+     "explanation": "USB printers showing 'offline' despite being powered on are most commonly caused by a loose USB connection or a stuck/stopped Print Spooler service. These two checks resolve the majority of cases before attempting driver reinstallation."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "comptia-a-course-3",
+   "courseTitle": "Advanced Networking, Virtualization, and IT Security",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can work with virtual environments and security controls",
+   "skillLabels": [
+    "Virtualization",
+    "Network security",
+    "Firewalls",
+    "VPN",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Your company is setting up a virtual machine environment for developers to test software without affecting production systems. A developer asks why they cannot access internal company resources from inside their VM. Using your virtualization and networking knowledge from this course, explain VM networking modes and how to fix their access issue.",
+   "quiz": [
+    {
+     "text": "A virtual machine is configured with NAT networking. The VM can browse the internet but cannot be accessed by other machines on the office network. What does this configuration explain?",
+     "options": [
+      "NAT networking is misconfigured; all VMs should use bridged mode for normal operation",
+      "NAT (Network Address Translation) routes the VM's outbound traffic through the host's IP, making the VM invisible to the local network—inbound connections from the network cannot reach the VM directly without port forwarding",
+      "The VM's firewall is blocking inbound connections; disable the firewall to allow access",
+      "The VM is using a different IP subnet than the office network, preventing cross-network communication"
+     ],
+     "correctIndex": 1,
+     "explanation": "NAT shares the host's IP for outbound traffic, masking the VM from the local network. For a developer VM that needs to receive connections from other machines, bridged mode is needed to give the VM its own network IP."
+    },
+    {
+     "text": "A developer's VM on a laptop connects to the office network in bridged mode. The developer takes the laptop home and the VM can no longer connect to the internet. What is MOST likely happening?",
+     "options": [
+      "The VM requires a VPN to function outside the office network",
+      "In bridged mode, the VM's network configuration (IP, gateway, DNS) came from the office DHCP server; at home, the VM is on a different network segment and may not automatically obtain a new IP from the home router's DHCP server",
+      "Bridged mode only works on wired connections; switching to Wi-Fi breaks the bridge",
+      "The VM's firewall is blocking home internet access but allowing office access"
+     ],
+     "correctIndex": 1,
+     "explanation": "Bridged mode VMs are full network participants. When the physical network changes (office to home), the VM needs a new IP from the new network's DHCP server. If DHCP does not reach the VM, it loses connectivity."
+    },
+    {
+     "text": "An employee connects to the company VPN from home and reports that after connecting, they cannot access their home printer or local network devices. What is causing this?",
+     "options": [
+      "The VPN client blocks all local area network access to prevent data leakage—this is by design",
+      "The VPN is likely configured as full-tunnel (all traffic routes through the VPN), which replaces the default gateway and blocks local LAN access; split-tunnel VPN would allow both VPN and local network access simultaneously",
+      "The home printer needs a VPN client installed to communicate with the employee's computer while connected",
+      "The company network is blocking mDNS broadcasts used for local device discovery"
+     ],
+     "correctIndex": 1,
+     "explanation": "Full-tunnel VPN routes all traffic through the corporate gateway, overriding the local route to the home LAN. Split-tunnel VPN routes only corporate traffic through the VPN while direct-routing local traffic—the standard solution for this problem."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "comptia-a-course-4",
+   "courseTitle": "Foundations of Computer Hardware and Storage",
+   "hours": 5,
+   "syllabusDescription": "A solid foundation in computer hardware and mass storage technologies, focused on concepts critical to passing the CompTIA A+ exams.",
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can select and troubleshoot storage and hardware components",
+   "skillLabels": [
+    "Storage types",
+    "Hardware selection",
+    "Troubleshooting",
+    "Windows",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A graphic designer reports their workstation is extremely slow when working with large video files. Their system has a 5-year-old 1TB HDD as the primary drive. You have budget for one upgrade. Using your hardware and storage knowledge from this course, recommend a specific upgrade and explain why it addresses the bottleneck.",
+   "quiz": [
+    {
+     "text": "A video editor's workstation takes 45 seconds to open a 4K video project that fits in RAM. The CPU is at 8% utilization during this time. What does this tell you about the bottleneck?",
+     "options": [
+      "The CPU is too slow to decompress the video format used in the project files",
+      "Storage is the bottleneck—the CPU is nearly idle, meaning it is waiting on data to be read from the storage drive rather than being limited by processing power",
+      "The GPU needs to be upgraded since video editing requires GPU acceleration for project loading",
+      "The operating system's file indexing service is competing with the project load for disk access"
+     ],
+     "correctIndex": 1,
+     "explanation": "Low CPU utilization combined with slow load times is the classic signature of a storage bottleneck. The CPU is idling while waiting for I/O to complete—upgrading storage will eliminate the wait."
+    },
+    {
+     "text": "A storage comparison shows: HDD 150 MB/s sequential read, SATA SSD 550 MB/s, NVMe SSD 3,500 MB/s. For a workstation editing 8K RAW video files that require sustained 1,200 MB/s read throughput, which is the MINIMUM viable option?",
+     "options": [
+      "SATA SSD at 550 MB/s since it is significantly faster than HDD",
+      "NVMe SSD at 3,500 MB/s since it is the only option that exceeds the 1,200 MB/s sustained throughput requirement with headroom for spikes",
+      "HDD with RAID 0 striping across 8 drives to achieve 1,200 MB/s aggregate throughput",
+      "Any option works since video editing software automatically compresses data to fit available bandwidth"
+     ],
+     "correctIndex": 1,
+     "explanation": "The 1,200 MB/s requirement exceeds both HDD and SATA SSD capabilities. NVMe SSDs are the only single-drive solution that meets this throughput requirement for professional 8K video editing workflows."
+    },
+    {
+     "text": "A technician replaces an HDD with an NVMe SSD in a laptop. The BIOS does not detect the new drive. What is the MOST likely cause?",
+     "options": [
+      "The NVMe SSD requires a driver to be installed before the BIOS can detect it",
+      "The M.2 slot may be configured for SATA only rather than NVMe/PCIe; or the NVMe option may need to be enabled in BIOS settings; or the SSD is not fully inserted into the M.2 connector",
+      "The laptop's power supply is insufficient to power an NVMe drive",
+      "The operating system must be reinstalled before the BIOS can recognize a new storage device"
+     ],
+     "correctIndex": 1,
+     "explanation": "Not all M.2 slots support both SATA and NVMe. A slot configured for SATA-only will not detect an NVMe drive; the BIOS may also need to have the NVMe protocol enabled. Physical seating issues are always worth checking first."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "comptia-a-course-5",
+   "courseTitle": "Operating Systems and Networking Fundamentals",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can support Windows and basic network configuration",
+   "skillLabels": [
+    "Windows administration",
+    "Command line tools",
+    "TCP/IP configuration",
+    "Troubleshooting",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A user calls saying they cannot access any websites but their colleague sitting next to them can. Both are on the same Wi-Fi network. The user's computer shows it is connected to Wi-Fi. Using your OS and networking skills from this course, describe the command-line diagnostic steps you would guide them through.",
+   "quiz": [
+    {
+     "text": "A user runs ipconfig and sees their IP is 192.168.1.45 with gateway 192.168.1.1. They can ping 8.8.8.8 (Google's DNS) but cannot open any websites in the browser. What is MOST likely the issue?",
+     "options": [
+      "The user's computer is blocked by the company firewall from accessing the internet",
+      "DNS resolution is likely failing—the user can reach IPs directly but cannot resolve domain names; running nslookup google.com will confirm whether the DNS server is returning correct results",
+      "The browser is corrupted and needs to be reinstalled",
+      "The gateway is routing to the wrong upstream provider"
+     ],
+     "correctIndex": 1,
+     "explanation": "Pinging IPs successfully but failing to open websites is the classic DNS failure symptom. Websites use domain names, not IPs—if DNS cannot resolve the name to an IP, the browser cannot connect regardless of network connectivity."
+    },
+    {
+     "text": "A Windows 11 user needs to find out which process is using port 8080 on their machine so they can stop it. Which command provides this information?",
+     "options": [
+      "ping localhost:8080",
+      "netstat -ano | findstr :8080",
+      "tracert 8080",
+      "ipconfig /all | findstr 8080"
+     ],
+     "correctIndex": 1,
+     "explanation": "netstat -ano shows all active connections with the associated process ID (PID). Piping through findstr :8080 filters to just that port. The PID can then be matched to a process in Task Manager."
+    },
+    {
+     "text": "A technician changes a Windows workstation's DNS settings to use a public DNS server (8.8.8.8). The computer can now resolve external websites but can no longer find internal company servers by hostname. What did this change break?",
+     "options": [
+      "The firewall rule that allowed DNS traffic to the internal DNS server",
+      "Internal DNS resolution—the company's internal DNS server resolves internal hostnames (like fileserver.company.local) that the public DNS server has no knowledge of; the internal DNS server must be used for internal name resolution",
+      "The DHCP lease, which automatically assigns internal DNS settings",
+      "Windows networking stack, which requires DNS servers to be configured via DHCP rather than manually"
+     ],
+     "correctIndex": 1,
+     "explanation": "Internal DNS servers resolve private hostnames that do not exist in public DNS. Replacing the internal DNS with a public server breaks resolution of all internal names—shared drives, intranet sites, and internal services all fail."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "comptia-a-course-6",
+   "courseTitle": "Advanced Networking, Security, and IT Operations",
+   "hours": 7,
+   "syllabusDescription": "Configure wireless access points (WAPs), secure connections with encryption, and troubleshoot wireless issues in home and enterprise environments.",
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can secure systems and manage IT operations professionally",
+   "skillLabels": [
+    "Security hardening",
+    "Active Directory",
+    "Endpoint management",
+    "Troubleshooting",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are onboarding a new employee at a company. You need to set up their Windows laptop, join it to the domain, configure appropriate user account permissions, and ensure the endpoint meets the company's security baseline. Using your advanced A+ skills from this course, walk through the setup process.",
+   "quiz": [
+    {
+     "text": "A new employee needs to install software for their job but their account does not have local administrator rights. The company policy requires standard user accounts. What is the CORRECT procedure?",
+     "options": [
+      "Promote the employee's account to local administrator so they can install software independently",
+      "Have an IT administrator install the approved software using their elevated credentials, then remove admin access; software installation should go through an IT approval and deployment process, not end-user admin rights",
+      "Ask the employee to download and install software in their user profile folder where admin rights are not required",
+      "Give the employee temporary admin access for 24 hours so they can install what they need"
+     ],
+     "correctIndex": 1,
+     "explanation": "Standard user accounts are a security control that limits the blast radius of malware and prevents unauthorized software installation. IT-managed software deployment maintains this control while still meeting legitimate business needs."
+    },
+    {
+     "text": "An employee's laptop is stolen. The laptop was joined to the domain but BitLocker was not enabled. What is the PRIMARY security risk?",
+     "options": [
+      "The attacker can join the stolen laptop to a different domain and access company email",
+      "The attacker can boot from a USB drive or remove the hard drive to read all file contents without needing Windows credentials—BitLocker encrypts the drive so data is unreadable without the recovery key",
+      "The attacker can use the laptop's saved Wi-Fi credentials to access the company network",
+      "The attacker can factory reset the laptop and sell it, causing only asset loss with no data exposure"
+     ],
+     "correctIndex": 1,
+     "explanation": "Windows passwords protect against logging in through the OS, but an unencrypted drive can be read directly from another machine. BitLocker full-disk encryption ensures stolen hardware does not become a data breach."
+    },
+    {
+     "text": "After joining a Windows laptop to a corporate domain, the user logs in with their domain credentials but their desktop preferences, mapped drives, and browser bookmarks from their previous machine are not present. What should the IT technician configure?",
+     "options": [
+      "Reinstall Windows on the new laptop and restore from a backup of the old machine",
+      "Ensure the user's roaming profile or folder redirection Group Policy is configured so their Desktop, Documents, and profile settings are stored on the domain server and follow the user to any domain-joined machine",
+      "Manually copy the user's profile folder from the old machine to the new one",
+      "Ask the user to recreate their preferences manually since profile migration is not supported between machines"
+     ],
+     "correctIndex": 1,
+     "explanation": "Roaming profiles and folder redirection via Group Policy store user data on domain servers so it follows users to any domain-joined machine—the enterprise solution for consistent user experience across hardware."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "comptia-a-course-7",
+   "courseTitle": "Practice Exams for CompTIA A+ Core 1 & Core 2",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Data Detective",
+   "missionTagline": "Prove you are ready to pass the CompTIA A+ exam",
+   "skillLabels": [
+    "Exam readiness",
+    "Troubleshooting methodology",
+    "Hardware knowledge",
+    "Security concepts",
+    "Critical thinking"
+   ],
+   "scenarioPrompt": "You are in a study session preparing for the CompTIA A+ Core 1 and Core 2 exams. You have completed all content but your practice exam scores are 68%—below the passing threshold of 75%. Using your exam preparation skills from this course, describe the targeted study strategy you would use in the remaining two weeks.",
+   "quiz": [
+    {
+     "text": "A CompTIA A+ candidate scores 82% on hardware topics but 54% on security topics. With two weeks left, how should they allocate their study time?",
+     "options": [
+      "Split time evenly across all topics to ensure comprehensive coverage of the exam objectives",
+      "Allocate the majority of study time to security topics where the score gap is largest, using domain-specific practice questions to build the missing knowledge, while doing lighter review of hardware to maintain that strength",
+      "Focus entirely on security and do not review hardware at all since it is already above passing threshold",
+      "Take the exam immediately while hardware knowledge is strong, then retake it after studying security"
+     ],
+     "correctIndex": 1,
+     "explanation": "Targeted gap-based study is more efficient than uniform review. A 54% in security represents the highest-risk domain; focused practice in that area has the greatest impact on overall score improvement."
+    },
+    {
+     "text": "A student consistently fails performance-based questions (PBQs) on the A+ practice exam even though they know the concepts. What is the MOST likely reason and fix?",
+     "options": [
+      "PBQs are graded differently from multiple-choice questions; the student should skip them on the real exam",
+      "PBQs test applied skills in simulated scenarios, not just factual recall; the student needs to practice by doing—setting up virtual machines, running command-line tools, and simulating network configurations rather than reading about them",
+      "The student is spending too much time on PBQs; they should answer them last and guess if necessary",
+      "PBQs are only in Core 2; the student is practicing on the wrong exam objectives"
+     ],
+     "correctIndex": 1,
+     "explanation": "Performance-based questions require hands-on applied skills that textbook study alone does not develop. Practical lab work with real tools builds the procedural memory needed to solve scenario-based problems under time pressure."
+    },
+    {
+     "text": "A candidate reads every practice question answer explanation—including the ones they got right. Why is this study technique effective for exam preparation?",
+     "options": [
+      "It is not effective; reading explanations for correct answers wastes time that should be spent on missed questions",
+      "Understanding WHY correct answers are right (not just which answer is right) deepens conceptual understanding, reveals common distractor patterns, and helps apply the same reasoning to novel questions on the real exam",
+      "It helps memorize the exact wording of correct answers in case the same question appears on the real exam",
+      "Reading all explanations increases total study hours, and more hours always correlates with higher scores"
+     ],
+     "correctIndex": 1,
+     "explanation": "Conceptual understanding beats memorization on professional certification exams. Reading explanations for correct answers reveals the reasoning framework behind the answer—enabling application to new scenarios not seen in practice."
+    }
+   ]
+  }
+ ]
+}

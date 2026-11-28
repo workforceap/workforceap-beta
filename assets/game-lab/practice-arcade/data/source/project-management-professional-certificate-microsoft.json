@@ -1,0 +1,436 @@
+{
+ "programSlug": "project-management-professional-certificate-microsoft",
+ "programTitle": "Project Management Professional Certificate (Microsoft)",
+ "category": null,
+ "categoryLabel": null,
+ "brandColor": null,
+ "providers": "Microsoft & Google via Coursera",
+ "programDescription": "This 10-course certificate program prepares students for a successful career in project management and supports those seeking PMP® certification. Through real-world examples, Agile and hybrid methodologies, and exam prep, students develop practical project leadership skills and familiarity with PMI project standards.",
+ "hasTwcSyllabus": true,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "pm-course-1",
+   "courseTitle": "Project Management Foundations",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Project Commander",
+   "missionTagline": "Prove you understand the fundamentals of managing a project",
+   "skillLabels": [
+    "Project lifecycle",
+    "Scope management",
+    "Microsoft Project",
+    "Stakeholder management",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are the project manager for a new employee onboarding system at a 200-person company. The HR director is the sponsor. Your first task is to define the project scope and create a project charter. Using your Project Management Foundations knowledge, describe what you would include in the charter and how you would prevent scope creep during the project.",
+   "quiz": [
+    {
+     "text": "A project manager's stakeholder keeps adding new feature requests after the project scope was formally agreed upon. What is the CORRECT process for handling these requests?",
+     "options": [
+      "Accommodate all requests since stakeholder satisfaction is the primary goal of project management",
+      "Log each request through the change control process, assess the impact on budget, schedule, and resources, and present the trade-offs to the sponsor before approving or rejecting the change",
+      "Decline all new requests since the scope was already approved and changes are not permitted",
+      "Add the requests to a future project backlog and commit to addressing them after the current project closes"
+     ],
+     "correctIndex": 1,
+     "explanation": "Change control is the formal mechanism for handling scope additions. It ensures every change is evaluated for impact before commitment—preventing budget overruns and missed deadlines caused by unchecked scope creep."
+    },
+    {
+     "text": "A project manager is asked to deliver a new HR onboarding system in 3 months with a fixed budget of $50,000. Two weeks in, the engineering team says the minimum viable version requires 5 months and $80,000. What framework helps the PM navigate this constraint conflict?",
+     "options": [
+      "The RACI matrix, which clarifies who is responsible for resolving the conflict",
+      "The project management triple constraint (scope, schedule, cost): to fit the original budget and timeline, scope must be reduced—the PM should facilitate a conversation with the sponsor about which features can be deferred",
+      "The critical path method, which will reveal which tasks can be compressed to meet the original timeline",
+      "The stakeholder register, which identifies who has authority to approve additional budget"
+     ],
+     "correctIndex": 1,
+     "explanation": "The triple constraint (scope-schedule-cost) defines the trade-off space. When two constraints are fixed, the third must flex. Reducing scope to fit fixed time and cost is the only mathematically sound option."
+    },
+    {
+     "text": "Near the end of a project, a stakeholder who was not involved in planning says they are unhappy with the deliverable because it does not meet their needs. What project management failure does this represent?",
+     "options": [
+      "A quality failure—the project team did not build the product to specification",
+      "A stakeholder identification and engagement failure—the affected stakeholder should have been identified and included in requirements gathering early in the project, not discovered at delivery",
+      "A communication failure—the project manager should have sent weekly status updates to all company employees",
+      "A scope creep failure—the stakeholder is attempting to add new requirements after project completion"
+     ],
+     "correctIndex": 1,
+     "explanation": "Incomplete stakeholder identification is a root cause of project failures. A stakeholder register and systematic stakeholder analysis early in the project lifecycle prevents late-discovery of affected parties."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "pm-course-2",
+   "courseTitle": "Initiating and Planning Projects",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Strategy Lead",
+   "missionTagline": "Prove you can build a solid project plan before work begins",
+   "skillLabels": [
+    "Work breakdown structure",
+    "Project planning",
+    "Microsoft Project",
+    "Resource planning",
+    "Communication"
+   ],
+   "scenarioPrompt": "You have been asked to manage a 90-day website redesign project for a workforce training organization. The deliverables include a new information architecture, visual design, content migration, and launch. Using the planning skills from this course, describe how you would create a Work Breakdown Structure (WBS) and initial project schedule.",
+   "quiz": [
+    {
+     "text": "A project manager creates a schedule where content migration starts on the same day as the website launch. The content must be migrated BEFORE launch is possible. What type of dependency is being violated?",
+     "options": [
+      "A resource dependency — the same team member cannot do both tasks simultaneously",
+      "A finish-to-start dependency — content migration must finish before launch can start; scheduling them concurrently ignores this logical constraint",
+      "A discretionary dependency — the project manager has chosen to overlap tasks to save time, which is a valid scheduling technique",
+      "An external dependency — the content migration depends on a vendor who has not been contracted yet"
+     ],
+     "correctIndex": 1,
+     "explanation": "Finish-to-start is the most common dependency type: Task B cannot start until Task A is complete. Violating logical dependencies produces schedules that cannot be executed as written."
+    },
+    {
+     "text": "A Work Breakdown Structure for a website redesign lists 'website' as a single task. Why is this insufficient and how should it be improved?",
+     "options": [
+      "It is sufficient; a WBS only needs to list the final deliverable, and sub-tasks are managed separately in the schedule",
+      "It is too vague to estimate, assign, or track; the WBS should decompose 'website' into discrete deliverables (e.g., information architecture, wireframes, visual design, content, testing, launch) until each component is small enough to estimate and assign to a single owner",
+      "The task name should be more formal; renaming it 'Website Redesign Project Deliverable 1.0' satisfies WBS requirements",
+      "A WBS should only contain tasks that take less than one day; 'website' should be split into hourly tasks"
+     ],
+     "correctIndex": 1,
+     "explanation": "A WBS decomposes deliverables until each element is estimable, assignable, and trackable. Vague top-level entries cannot be scheduled, resourced, or monitored—they are project planning in name only."
+    },
+    {
+     "text": "A project manager discovers during planning that the only developer available for the website build is also assigned full-time to another project during the same period. What is this called and how should it be resolved?",
+     "options": [
+      "A schedule conflict; resolve by asking both project managers to adjust their timelines simultaneously",
+      "A resource over-allocation; resolve by negotiating with the other project manager and resource manager to either phase the work, bring in a contractor, or adjust one project's timeline",
+      "A staffing shortage; the company should hire an additional developer before the project begins",
+      "A risk item; log it in the risk register and address it only if the developer cannot complete both projects"
+     ],
+     "correctIndex": 1,
+     "explanation": "Resource over-allocation is a planning failure that causes burnout and delays. It must be resolved during planning—not discovered during execution—through negotiation, phasing, or resource augmentation."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "pm-course-3",
+   "courseTitle": "Project Scheduling and Cost Management",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Analytics Pro",
+   "missionTagline": "Prove you can keep a project on schedule and within budget",
+   "skillLabels": [
+    "Earned value management",
+    "Critical path",
+    "Budget tracking",
+    "Microsoft Project",
+    "Analytical thinking"
+   ],
+   "scenarioPrompt": "Your website redesign project is 6 weeks in. The planned budget for 6 weeks was $30,000 and you have spent $35,000. However, the work completed at this point was only valued at $25,000 of planned work. Using the Earned Value Management concepts from this course, calculate the cost variance and schedule variance, and explain what they mean.",
+   "quiz": [
+    {
+     "text": "A project has Planned Value (PV) of $40,000, Earned Value (EV) of $32,000, and Actual Cost (AC) of $38,000. What is the Schedule Performance Index (SPI) and what does it indicate?",
+     "options": [
+      "SPI = 1.19, indicating the project is ahead of schedule",
+      "SPI = EV/PV = 32,000/40,000 = 0.80, indicating the project is achieving only 80 cents of planned work for every dollar of work that should have been done by now—the project is behind schedule",
+      "SPI = AC/EV = 38,000/32,000 = 1.19, indicating the project is over budget",
+      "SPI = PV-EV = 8,000, indicating the project is $8,000 behind the plan"
+     ],
+     "correctIndex": 1,
+     "explanation": "SPI = EV/PV measures schedule efficiency. A value below 1.0 means less work was completed than planned. SPI of 0.80 means the team is progressing at 80% of the planned rate—a significant schedule delay."
+    },
+    {
+     "text": "A project manager identifies that the critical path for a software launch runs through: Requirements (5d) → Design (3d) → Development (10d) → Testing (4d) → Launch. A stakeholder requests adding a 3-day UX review between Design and Development. What is the impact?",
+     "options": [
+      "None — the UX review can run in parallel with Development without affecting the timeline",
+      "The project end date moves out by 3 days because the UX review falls on the critical path between Design and Development",
+      "The impact depends on whether any other path through the project is longer than the current critical path plus 3 days",
+      "The impact is minimal since 3 days is only 13% of the development duration"
+     ],
+     "correctIndex": 1,
+     "explanation": "Any task added to the critical path directly extends the project end date by its duration. Since the UX review falls between two critical path tasks, it adds 3 days to the total project duration."
+    },
+    {
+     "text": "At project midpoint, a PM calculates a Cost Performance Index (CPI) of 0.72. The original project budget was $100,000. What is the Estimate at Completion (EAC) using the most common formula?",
+     "options": [
+      "EAC = $100,000 + actual overspend to date",
+      "EAC = Budget at Completion / CPI = $100,000 / 0.72 ≈ $138,889, meaning the project is forecast to cost about $139,000 if the current spending rate continues",
+      "EAC = $100,000 × 0.72 = $72,000, meaning the project will actually cost less than planned",
+      "EAC cannot be calculated at midpoint; it requires data from the final week of the project"
+     ],
+     "correctIndex": 1,
+     "explanation": "EAC = BAC / CPI is the standard forecast formula. A CPI of 0.72 means $0.72 of value is delivered per dollar spent—projecting a 39% cost overrun if the efficiency does not improve."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "pm-course-4",
+   "courseTitle": "Managing Project Risks, Changes and Stakeholders",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Project Commander",
+   "missionTagline": "Prove you can identify risks and manage them before they become problems",
+   "skillLabels": [
+    "Risk management",
+    "Change control",
+    "Stakeholder engagement",
+    "Problem-solving",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are managing a 6-month software implementation project. During a risk workshop, the team identifies three risks: (1) key developer may leave mid-project, (2) vendor may deliver integration specs late, (3) budget approval may be delayed. Using the risk management framework from this course, describe how you would assess, prioritize, and respond to each risk.",
+   "quiz": [
+    {
+     "text": "A project manager identifies that a key vendor has a history of late deliveries. This is a known risk. Which risk response strategy involves buying insurance or including penalty clauses in the vendor contract?",
+     "options": [
+      "Avoid — restructuring the project to eliminate dependency on the vendor",
+      "Transfer — shifting the financial consequence of the risk to a third party (the vendor) through contractual penalties or insurance",
+      "Mitigate — reducing the probability of late delivery through closer vendor management",
+      "Accept — acknowledging the risk and building a buffer into the schedule"
+     ],
+     "correctIndex": 1,
+     "explanation": "Risk transfer moves the financial impact of a risk to another party. Contract penalty clauses transfer the cost of lateness to the vendor; insurance transfers financial loss to an insurer."
+    },
+    {
+     "text": "A risk register shows a risk with probability = low and impact = catastrophic (total project failure). Should this risk be deprioritized because its probability is low?",
+     "options": [
+      "Yes — low probability risks can be accepted without active management since they are unlikely to occur",
+      "No — catastrophic impact risks require response planning regardless of probability; the potential consequence is too severe to leave unmanaged even if occurrence is unlikely",
+      "Yes — project managers have limited time and should focus on high-probability risks for maximum efficiency",
+      "No — all risks in a risk register require equal attention regardless of probability or impact"
+     ],
+     "correctIndex": 1,
+     "explanation": "Risk severity = probability × impact, but catastrophic-impact risks are treated as special cases. A low-probability, catastrophic-impact risk (sometimes called a 'black swan') warrants contingency planning because the consequences of occurrence are project-ending."
+    },
+    {
+     "text": "A project is 70% complete when a key stakeholder says they were never consulted about a critical design decision made in week 2. How should the project manager respond?",
+     "options": [
+      "Proceed with the current design since rework at 70% completion would be too costly",
+      "Acknowledge the engagement gap, assess the impact of the decision on the stakeholder's requirements, present options for addressing their concerns within current constraints, and update the stakeholder engagement plan to prevent future gaps",
+      "Blame the project sponsor for not including the stakeholder in the original kickoff",
+      "Add the stakeholder to all future communications and close the issue by saying they are now included"
+     ],
+     "correctIndex": 1,
+     "explanation": "Late stakeholder discovery requires both immediate triage of the current impact and a systemic fix to the engagement process. Simply adding them to emails without addressing the unmet need does not resolve the underlying issue."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "pm-course-5",
+   "courseTitle": "Project Leadership, Communication and Stakeholder Management",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Help Desk Pro",
+   "missionTagline": "Prove you can lead people and communicate to drive project success",
+   "skillLabels": [
+    "Leadership",
+    "Stakeholder communication",
+    "Conflict resolution",
+    "Team motivation",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are managing a cross-functional project team of 6 people from three different departments. Two team members from different departments have a conflict about whose requirements take priority, causing the project to stall. Your sponsor asks you to resolve it by end of week. Using your leadership and communication skills from this course, describe how you would facilitate a resolution.",
+   "quiz": [
+    {
+     "text": "Two team members disagree about which feature should be built first. The argument has escalated and they are no longer collaborating. As the project manager, what is the MOST effective first step?",
+     "options": [
+      "Escalate to the sponsor immediately and ask them to make the decision",
+      "Have individual conversations with each person to understand their perspective and concerns before bringing them together—this prevents defensive posturing in a group setting",
+      "Hold a team meeting and ask everyone to vote on which feature to prioritize",
+      "Make the decision yourself based on the project schedule and notify both parties of your decision"
+     ],
+     "correctIndex": 1,
+     "explanation": "Shuttle diplomacy before mediation is a key conflict resolution technique. Individual conversations reveal the real concerns and interests behind positions, enabling a joint session to focus on solutions rather than winning arguments."
+    },
+    {
+     "text": "A weekly project status email has a 10% open rate from stakeholders. The sponsor says they are 'always surprised by news at steering committee meetings.' What communication failure does this represent?",
+     "options": [
+      "Stakeholders are too busy to read project emails; this is an unavoidable aspect of stakeholder management",
+      "The communication plan does not match stakeholder preferences—if email has low engagement, the PM should use the format, frequency, and channel that stakeholders actually respond to, and confirm information was received",
+      "The status emails are too long; shortening them to one sentence will improve open rates",
+      "Stakeholders should be required to confirm receipt of all project communications via their manager"
+     ],
+     "correctIndex": 1,
+     "explanation": "A communication plan that is not working must be adapted. Stakeholder engagement requires using the channels and formats that actually reach people—not continuing an ineffective approach because it is convenient for the PM."
+    },
+    {
+     "text": "A project team member consistently misses deadlines but is the only person with expertise in a critical technical area. How should the project manager handle this?",
+     "options": [
+      "Remove the team member from the project to protect the schedule and find a replacement",
+      "Have a direct, private conversation to understand the cause of the missed deadlines, set clear expectations with agreed-upon milestones, offer support to address any blockers, and document the conversation—escalating only if the pattern continues",
+      "Publicly assign the team member's tasks to a colleague in the next team meeting to create accountability",
+      "Accept the missed deadlines since the team member's expertise makes them irreplaceable regardless of performance"
+     ],
+     "correctIndex": 1,
+     "explanation": "Performance issues require direct, private, documented conversations before escalation. Understanding the root cause (overload, unclear expectations, personal issues) enables a targeted response rather than a punitive one."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "pm-course-6",
+   "courseTitle": "Agile Project Management",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Operations Pro",
+   "missionTagline": "Prove you can run an agile team effectively",
+   "skillLabels": [
+    "Agile methodology",
+    "Scrum",
+    "Sprint planning",
+    "Backlog management",
+    "Communication"
+   ],
+   "scenarioPrompt": "Your organization wants to switch from waterfall to agile for a new mobile app development project. The product owner has a list of 50 potential features and no prioritization. Using your agile project management skills from this course, describe how you would help them build and prioritize the product backlog for the first sprint.",
+   "quiz": [
+    {
+     "text": "A product owner writes a backlog item: 'Build the entire user authentication system.' A Scrum team says this is not ready to sprint. What is wrong with this item and how should it be fixed?",
+     "options": [
+      "It is too technical; user stories should describe business outcomes without referencing technical implementation",
+      "It is too large (an epic) and lacks detail, acceptance criteria, and a user perspective; it should be broken into smaller user stories like 'As a new user, I want to create an account with my email so I can access the app'—each small enough to complete in one sprint",
+      "It should be written from the developer's perspective since developers are the ones building it",
+      "It is fine as written; the team should estimate it in story points and plan accordingly"
+     ],
+     "correctIndex": 1,
+     "explanation": "Large, vague items (epics) cannot be planned or completed in a sprint. User stories must be small, specific, written from a user perspective, and include acceptance criteria before they are considered sprint-ready."
+    },
+    {
+     "text": "During a sprint retrospective, three team members say the sprint goals were unclear and caused them to work on the wrong things for two days. What process improvement should the Scrum Master facilitate?",
+     "options": [
+      "Add more sprint planning meetings to compensate for unclear goals in future sprints",
+      "Improve sprint planning by ensuring the sprint goal is written, understood, and agreed upon by every team member before the sprint begins—and adding a Definition of Done review at the start",
+      "Assign a single team member to clarify all ambiguities rather than discussing them as a team",
+      "Shorten sprint duration from two weeks to one week so unclear goals have less time to cause damage"
+     ],
+     "correctIndex": 1,
+     "explanation": "A clear, shared sprint goal is a Scrum prerequisite that prevents misdirected work. Retrospective findings should translate into specific, actionable process improvements—not abstract commitments to 'do better.'"
+    },
+    {
+     "text": "A team's velocity over the past 4 sprints was 32, 28, 35, and 30 story points. The product owner wants to commit to 45 story points in the next sprint to catch up with a delayed timeline. What should the Scrum Master advise?",
+     "options": [
+      "Agree to 45 story points since the team has demonstrated they can work harder when needed",
+      "Advise against overcommitting—the team's sustainable velocity is approximately 30-32 points; committing to 45 creates quality risk and will likely result in incomplete stories or technical debt",
+      "Split the sprint into two parallel streams so different sub-teams can each deliver 22-23 points simultaneously",
+      "Accept the commitment and add overtime hours to compensate for the increased workload"
+     ],
+     "correctIndex": 1,
+     "explanation": "Velocity is a capacity planning tool, not a performance target to be inflated. Overcommitting beyond sustainable velocity reliably produces incomplete work, lower quality, and team burnout."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "pm-course-7",
+   "courseTitle": "Microsoft Project & Power BI for Project Managers",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can use Microsoft Project and Power BI to manage and report projects",
+   "skillLabels": [
+    "Microsoft Project",
+    "Power BI",
+    "Gantt charts",
+    "Dashboard reporting",
+    "Analytical thinking"
+   ],
+   "scenarioPrompt": "You are managing a 12-task project in Microsoft Project. Three tasks are on the critical path. You need to present a status dashboard to your sponsor using Power BI showing current schedule variance, budget variance, and critical path status. Describe how you would set up the Microsoft Project file and what visuals you would build in Power BI.",
+   "quiz": [
+    {
+     "text": "A project manager sets up a Microsoft Project schedule but forgets to save a baseline before work begins. Three weeks later the sponsor asks how the project compares to the original plan. What problem does the missing baseline cause?",
+     "options": [
+      "Microsoft Project will crash if you try to compare current data without a baseline",
+      "Without a baseline, Microsoft Project has no record of the original planned dates and costs to compare against—variance tracking, earned value calculations, and schedule comparison all become impossible",
+      "The project manager can manually reconstruct the baseline from the original scope document",
+      "The missing baseline only affects cost tracking; schedule variance can still be calculated without it"
+     ],
+     "correctIndex": 1,
+     "explanation": "A saved baseline is the reference point for all variance tracking in Microsoft Project. Without it, the tool can only show current status—not how far the project has drifted from the original plan."
+    },
+    {
+     "text": "A Power BI dashboard for a sponsor shows 15 different project metrics on a single page. The sponsor says they cannot quickly tell whether the project is on track. What is the MOST likely design problem?",
+     "options": [
+      "Power BI cannot display more than 10 metrics on a single page",
+      "The dashboard lacks a clear visual hierarchy—the most critical status indicators (on-track/off-track, schedule variance, budget variance) should be surfaced prominently as KPI cards at the top, with detailed metrics available on drill-down",
+      "The sponsor should receive a PDF report instead of an interactive dashboard",
+      "The dashboard uses too many colors; a monochrome design would be easier to read"
+     ],
+     "correctIndex": 1,
+     "explanation": "Executive dashboards must answer 'are we on track?' in under 5 seconds. A flat layout of 15 metrics forces the viewer to search for the most important information—visual hierarchy solves this."
+    },
+    {
+     "text": "You need to show a sponsor which tasks are on the critical path and their current status in a single Power BI visualization. Which combination of visuals BEST serves this need?",
+     "options": [
+      "A pie chart showing the percentage of critical path tasks completed",
+      "A Gantt-style bar chart or matrix filtered to critical path tasks showing planned vs. actual dates, combined with a KPI card showing whether the project end date has slipped",
+      "A scatter plot with task duration on the x-axis and resource cost on the y-axis",
+      "A card visual showing only the total number of critical path tasks"
+     ],
+     "correctIndex": 1,
+     "explanation": "A Gantt-style visual shows schedule relationships and slippage visually; a KPI card provides the single most important signal (on-time or not). Together they give the sponsor both the summary and the detail they need."
+    }
+   ]
+  },
+  {
+   "order": 8,
+   "courseSlug": "pm-course-8",
+   "courseTitle": "Project Management Capstone",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Strategy Lead",
+   "missionTagline": "Prove you can manage a project from initiation through close",
+   "skillLabels": [
+    "End-to-end project management",
+    "Lessons learned",
+    "Microsoft Project",
+    "Stakeholder management",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are presenting your project management capstone to a certification panel. The project you managed was a 90-day operational process improvement initiative that came in 2 weeks late and 8% over budget. Walk the panel through the key decisions you made, what caused the variance, and what you would do differently.",
+   "quiz": [
+    {
+     "text": "A project came in 2 weeks late due to a vendor delivering integration specs 10 days after the agreed date. During the lessons learned session, a panelist asks: 'Was this risk identified before the project started?' The honest answer is no. What should the PM say?",
+     "options": [
+      "Explain that vendor delays are impossible to predict and cannot be included in a risk register",
+      "Acknowledge that vendor delivery risk was not formally identified, explain that past project patterns showed vendor reliability was a known variable that should have been assessed, and describe how the risk register process will be improved for future projects",
+      "Attribute the delay entirely to the vendor and explain that the PM had no control over it",
+      "Explain that the project was still within acceptable variance and the delay does not indicate a planning failure"
+     ],
+     "correctIndex": 1,
+     "explanation": "Honest post-mortem analysis requires acknowledging what was missed in planning. Identifying the root cause of the gap (inadequate risk identification) and committing to a specific process improvement demonstrates professional maturity."
+    },
+    {
+     "text": "During project closeout, the sponsor asks the PM to archive all project documents for future reference. Which documents are MOST important to include for organizational learning?",
+     "options": [
+      "The original project charter and final budget report only",
+      "The risk register, lessons learned report, change log, final schedule vs. baseline comparison, and stakeholder feedback—together they provide the complete story of decisions made and outcomes achieved",
+      "The project manager's personal notes and email correspondence with the team",
+      "Only the final deliverable documentation; process artifacts are not useful after project close"
+     ],
+     "correctIndex": 1,
+     "explanation": "Comprehensive project archives enable future project managers to learn from decisions, understand what risks materialized, and avoid repeating the same mistakes. Lessons learned and the change log are among the most valuable artifacts."
+    },
+    {
+     "text": "A sponsor says the project achieved all its deliverables but stakeholder satisfaction scores were lower than expected. What does this gap between deliverable completion and satisfaction most likely indicate?",
+     "options": [
+      "The stakeholders have unrealistic expectations and the project should be considered a full success",
+      "Deliverables were completed but stakeholder needs or expectations were not fully understood or managed—a gap between what was built and what stakeholders actually needed or expected throughout the project",
+      "The satisfaction survey was flawed and does not reflect actual stakeholder sentiment",
+      "Stakeholder satisfaction is not a valid project success metric and should be removed from future evaluations"
+     ],
+     "correctIndex": 1,
+     "explanation": "Delivering scope on time and budget is necessary but not sufficient. Stakeholder satisfaction measures whether the project delivered value—a gap signals a requirements, communication, or expectation management failure."
+    }
+   ]
+  }
+ ]
+}

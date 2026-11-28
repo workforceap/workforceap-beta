@@ -1,0 +1,382 @@
+{
+ "programSlug": "ux-design-professional-certificate-google",
+ "programTitle": "User Experience & Interface Design Professional Certificate",
+ "category": "business",
+ "categoryLabel": "Business",
+ "brandColor": "#a47f38",
+ "providers": "Google via Coursera",
+ "programDescription": "This 160-hour professional certificate prepares learners for entry-level careers in user experience (UX) and user interface (UI) design. Built on Google's UX Design curriculum, learners move through the complete design process - empathizing with users, defining problems, ideating, building wireframes and low- and high-fidelity prototypes in Figma, conducting UX research and usability testing, and designing responsive, accessible interfaces for websites and mobile apps - and finish with portfolio-ready projects and job-search preparation.",
+ "hasTwcSyllabus": true,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "ux-design-course-1",
+   "courseTitle": "Foundations of User Experience (UX) Design",
+   "hours": 11,
+   "syllabusDescription": "Introduces the essential skills and concepts for entry-level UX design and how UX designers improve user interactions with products such as websites and mobile apps.",
+   "courseraSlug": "foundations-user-experience-design",
+   "missionName": "UX Champion",
+   "missionTagline": "Prove you understand what makes a great user experience",
+   "skillLabels": [
+    "UX fundamentals",
+    "User-centered design",
+    "Figma",
+    "Wireframing",
+    "Empathy"
+   ],
+   "scenarioPrompt": "You are interviewing at a startup that is building a mobile app for gig workers to track their hours and invoices. The product manager asks you to explain the UX design process you would follow from scratch and how you would ensure the app meets actual user needs rather than just what the team assumes they need. Using the foundations from this course, walk through your approach.",
+   "quiz": [
+    {
+     "text": "A startup founder insists the team skip user research and move directly to building the app because 'we already know what users want.' As the UX designer, how should you respond?",
+     "options": [
+      "Agree and begin wireframing immediately since the founder's domain expertise substitutes for formal research",
+      "Explain that assumptions without validation frequently lead to building features users do not need, and propose a quick round of user interviews to test the key assumptions before committing to a design direction",
+      "Commission a large formal research study before any design work begins",
+      "Build two versions of the app and let analytics determine which one users prefer after launch"
+     ],
+     "correctIndex": 1,
+     "explanation": "The core principle of user-centered design is validating assumptions with real users early. A quick interview round is proportionate—it does not require a full research program to catch critical misalignments."
+    },
+    {
+     "text": "A UX designer is told the checkout flow on an e-commerce site has a 70% drop-off rate. What is the MOST appropriate first action from a UX perspective?",
+     "options": [
+      "Redesign the checkout UI with a cleaner visual aesthetic",
+      "Conduct usability testing with real users to observe where and why they abandon the checkout process",
+      "Add a progress bar to the existing checkout flow to reassure users",
+      "Reduce the number of product images to make the page load faster"
+     ],
+     "correctIndex": 1,
+     "explanation": "Before designing a solution, a UX designer must understand the problem. Usability testing with real users reveals the specific friction points causing drop-off—assumptions about the cause are often wrong."
+    },
+    {
+     "text": "Which statement BEST distinguishes UX design from UI design?",
+     "options": [
+      "UX design focuses on colors and typography while UI design focuses on user flows",
+      "UX design encompasses the overall experience, including research, information architecture, and how a product feels to use; UI design focuses on the visual and interactive elements users see on screen",
+      "UX design is done before a product launches while UI design happens post-launch",
+      "UX and UI design are different names for the same discipline and the terms are interchangeable"
+     ],
+     "correctIndex": 1,
+     "explanation": "UX is broader—it includes research, task flows, information architecture, and overall usability. UI is a subset focused on the visual surface layer. Conflating them is a common misconception."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "ux-design-course-2",
+   "courseTitle": "Start the UX Design Process: Empathize, Define, and Ideate",
+   "hours": 20,
+   "syllabusDescription": "Empathize with users to understand pain points, define user needs with problem statements, and generate ideas for solutions.",
+   "courseraSlug": "start-ux-design-process",
+   "missionName": "Design Thinker",
+   "missionTagline": "Prove you can understand users and generate creative solutions",
+   "skillLabels": [
+    "User empathy",
+    "Problem statements",
+    "Ideation techniques",
+    "Figma",
+    "Research synthesis"
+   ],
+   "scenarioPrompt": "You are working on an app to help hourly workers find last-minute shift coverage. You have conducted five user interviews and your notes are full of observations. Using the empathize, define, and ideate framework from this course, describe how you would turn those raw interview notes into a problem statement and then generate design directions to explore.",
+   "quiz": [
+    {
+     "text": "After five user interviews about a shift-scheduling app, a designer has 40 sticky notes with observations. What technique BEST helps identify the most important themes?",
+     "options": [
+      "Read all 40 notes individually and highlight any that seem important",
+      "Group the notes by similarity using affinity mapping, then label each cluster to identify the dominant themes across interviews",
+      "Count how many times each specific word appears across the notes and rank by frequency",
+      "Share the raw notes with the product manager and let them identify the themes"
+     ],
+     "correctIndex": 1,
+     "explanation": "Affinity mapping organizes qualitative data into clusters that reveal patterns. It is the standard synthesis tool for turning interview notes into actionable insights before defining the problem."
+    },
+    {
+     "text": "A designer writes the following problem statement: 'Users need a better app.' Why is this problematic, and how should it be improved?",
+     "options": [
+      "It is too long and should be condensed to one word that captures the core need",
+      "It is vague and solution-focused. A better statement follows the format: '[User type] needs [specific need] because [insight from research]'",
+      "It uses the word 'users' which is too generic; it should specify a demographic like age or location",
+      "Problem statements should not mention the app at all since they exist before any solution is considered"
+     ],
+     "correctIndex": 1,
+     "explanation": "Effective problem statements are specific, user-centered, and insight-driven—not solution-focused. 'Better app' is a solution direction, not a defined user problem."
+    },
+    {
+     "text": "During an ideation session, a team member says 'that idea will never work technically' and shuts down several suggestions. How should the designer handle this?",
+     "options": [
+      "Agree and focus only on ideas the engineering team has already confirmed are feasible",
+      "Remind the team that ideation is a divergent phase where quantity and creativity are prioritized over feasibility; feasibility is evaluated in the next phase",
+      "End the ideation session early and move directly to prototyping the most practical ideas",
+      "Hold separate ideation sessions for designers and engineers to avoid this conflict"
+     ],
+     "correctIndex": 1,
+     "explanation": "Premature judgment kills ideation. The divergent phase (ideation) intentionally defers feasibility evaluation so creative options are not prematurely eliminated before their potential is explored."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "ux-design-course-3",
+   "courseTitle": "Build Wireframes and Low-Fidelity Prototypes",
+   "hours": 10,
+   "syllabusDescription": "Create storyboards, paper and digital wireframes, and low-fidelity prototypes using the design tool Figma.",
+   "courseraSlug": "wireframes-low-fidelity-prototypes",
+   "missionName": "Experience Architect",
+   "missionTagline": "Prove you can sketch flows before writing a line of code",
+   "skillLabels": [
+    "Wireframing",
+    "Low-fidelity prototyping",
+    "Figma",
+    "Information architecture"
+   ],
+   "scenarioPrompt": "You need to wireframe a mobile onboarding flow for a new budgeting app. The flow has four screens: welcome, account setup, bank connection, and a dashboard overview. Your product manager asks why you are spending time on rough wireframes instead of jumping to high-fidelity designs. Using your wireframing and prototyping skills from this course, explain your rationale and describe what your low-fidelity prototype would include.",
+   "quiz": [
+    {
+     "text": "A product team is debating whether to wireframe or go straight to high-fidelity mockups to save time. Which argument BEST justifies starting with wireframes?",
+     "options": [
+      "High-fidelity mockups take longer to build so wireframing always saves calendar time regardless of the project",
+      "Wireframes allow the team to validate structure, navigation, and content hierarchy quickly and cheaply before investing in detailed visual design that is expensive to rework",
+      "Wireframes are required by most app stores before a high-fidelity design can be submitted",
+      "Stakeholders prefer wireframes because they are easier to understand than polished mockups"
+     ],
+     "correctIndex": 1,
+     "explanation": "The core value of wireframing is cheap iteration. Structural problems caught in a rough sketch cost minutes to fix; the same problem discovered in a polished prototype costs hours."
+    },
+    {
+     "text": "A designer creates a wireframe for a checkout screen but does not include placeholder text for the form fields, leaving them blank. A developer reviewing the wireframe asks whether the fields are required. What does this reveal about the wireframe?",
+     "options": [
+      "The wireframe is appropriately minimal since field requirements are a back-end concern",
+      "The wireframe is missing annotations or placeholder content that communicate design intent, making it ambiguous for the development team",
+      "The wireframe is too detailed and should remove form fields entirely at this stage",
+      "The developer should build the feature with all fields required by default and adjust later"
+     ],
+     "correctIndex": 1,
+     "explanation": "Wireframes must communicate intent clearly enough for stakeholders and developers to give meaningful feedback. Blank fields without annotation leave critical interaction decisions undefined."
+    },
+    {
+     "text": "When linking wireframe screens into a low-fidelity prototype in Figma, what is the PRIMARY purpose of the prototype at this stage?",
+     "options": [
+      "To deliver a pixel-perfect preview of the final app for client sign-off",
+      "To simulate the user flow so stakeholders and test participants can experience the navigational sequence and identify gaps without requiring any code",
+      "To generate the production-ready HTML structure that developers will use to build the app",
+      "To showcase the visual brand identity including color palette and typography choices"
+     ],
+     "correctIndex": 1,
+     "explanation": "Low-fidelity prototypes are flow simulators, not final designs. Their value lies in making the navigational logic testable and discussable before any visual or engineering investment is made."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "ux-design-course-4",
+   "courseTitle": "Conduct UX Research and Test Early Concepts",
+   "hours": 13,
+   "syllabusDescription": "Plan and conduct usability studies to gather feedback, then refine low-fidelity designs based on research insights.",
+   "courseraSlug": "conduct-ux-research",
+   "missionName": "Research Analyst",
+   "missionTagline": "Prove you can run usability tests and turn findings into improvements",
+   "skillLabels": [
+    "Usability testing",
+    "Research synthesis",
+    "Figma",
+    "Interviewing",
+    "Critical thinking"
+   ],
+   "scenarioPrompt": "You have a low-fidelity prototype of a job-search app and need to run usability tests with five participants before the next sprint. Your manager asks how you will structure the sessions and how you will turn the raw observations into design recommendations. Using the research and testing methods from this course, describe your plan.",
+   "quiz": [
+    {
+     "text": "During a usability test, a participant cannot find the 'Save Job' button on the listing screen and eventually gives up. What is the MOST useful thing the facilitator should do in this moment?",
+     "options": [
+      "Point out the button location so the participant can complete the task and move on",
+      "Note the failure, ask the participant to think aloud about what they expected to see and where they looked, then let them continue without assistance",
+      "Stop the session and redesign the screen before continuing with the remaining participants",
+      "Skip the task and move to the next one so the participant does not feel frustrated"
+     ],
+     "correctIndex": 1,
+     "explanation": "Facilitators must resist helping participants during tasks—the struggle is the finding. The think-aloud prompt surfaces the mental model mismatch that explains why the button was hard to find."
+    },
+    {
+     "text": "After five usability test sessions, a researcher has 60 observations. Three participants could not complete the onboarding flow. Which action BEST prioritizes the insights for the design team?",
+     "options": [
+      "Report all 60 observations in a spreadsheet sorted alphabetically by screen name",
+      "Rank observations by frequency and severity—prioritizing issues that caused task failures across multiple participants over minor preferences noted by a single user",
+      "Present only the most dramatic failures and omit minor issues to keep the report concise",
+      "Survey the five participants after the test and ask them to rank the issues themselves"
+     ],
+     "correctIndex": 1,
+     "explanation": "Severity and frequency together determine priority. A failure affecting multiple participants warrants immediate attention; a single user preference is useful but lower urgency."
+    },
+    {
+     "text": "A product manager says the team should skip usability testing since 'we already did research at the beginning of the project.' How should a UX researcher respond?",
+     "options": [
+      "Agree since initial research covers user needs and subsequent testing is redundant",
+      "Explain that early research identifies user needs while usability testing evaluates whether the design solution actually meets those needs—they serve different purposes",
+      "Suggest replacing usability testing with an A/B test after launch since it provides real behavioral data",
+      "Agree but request that the engineering team add analytics to the app to serve as a substitute for testing"
+     ],
+     "correctIndex": 1,
+     "explanation": "Research and usability testing are complementary. Research defines the problem space; testing validates the solution. A design that solves the right problem can still be unusable."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "ux-design-course-5",
+   "courseTitle": "Create High-Fidelity Designs and Prototypes in Figma",
+   "hours": 18,
+   "syllabusDescription": "Build high-fidelity designs and interactive prototypes in Figma, collect feedback, and refine designs accordingly.",
+   "courseraSlug": "high-fidelity-designs-prototype",
+   "missionName": "Design Thinker",
+   "missionTagline": "Prove you can build polished, production-ready designs in Figma",
+   "skillLabels": [
+    "High-fidelity design",
+    "Figma components",
+    "Design systems",
+    "Prototyping",
+    "Accessibility"
+   ],
+   "scenarioPrompt": "You are preparing the final high-fidelity prototype of a restaurant ordering app for a stakeholder presentation. The engineering team needs to hand off the designs next week. Using your Figma skills from this course, describe how you would organize the Figma file, use components and styles, and ensure the prototype is ready for developer handoff.",
+   "quiz": [
+    {
+     "text": "A Figma file has 30 screens, each with a custom-styled button that is slightly different from screen to screen. A developer asks which button style is the final one. What is the ROOT cause of this problem and how should it be fixed?",
+     "options": [
+      "The developer should pick the most common button style and use it consistently in code",
+      "The design file was built without Figma components; converting the button to a master component and applying it across all screens ensures consistency and makes future changes propagate automatically",
+      "The designer should export all button variants and let the developer decide which to use",
+      "The problem is a Figma bug; resetting the file to an earlier version will restore consistency"
+     ],
+     "correctIndex": 1,
+     "explanation": "Ad-hoc styling without components causes drift. A master component with variants ensures every instance is identical and a single edit updates all instances—the core value of component-based design."
+    },
+    {
+     "text": "You are designing a form with light gray placeholder text on a white background. A teammate flags it for an accessibility review. What is the MOST likely concern?",
+     "options": [
+      "Gray placeholder text is non-standard and will confuse screen reader software",
+      "The color contrast between the light gray text and white background may fall below the WCAG 4.5:1 minimum ratio for normal text, making it difficult for users with low vision",
+      "Placeholder text should not be used in forms at all; labels should replace it",
+      "Gray is associated with disabled states and may confuse users about whether the field is active"
+     ],
+     "correctIndex": 1,
+     "explanation": "WCAG 2.1 requires a minimum 4.5:1 contrast ratio for normal text. Light gray on white frequently fails this threshold, making form fields inaccessible to users with low vision."
+    },
+    {
+     "text": "A developer reviewing your Figma handoff file says they cannot find the exact hex codes for the brand colors used in the design. What Figma feature would have prevented this problem?",
+     "options": [
+      "Exporting the design as a PDF so color values appear in the document metadata",
+      "Defining and applying shared Color Styles in Figma so developers can inspect any element and see the named style with its hex value",
+      "Including a color swatch screenshot in the project's Slack channel",
+      "Embedding the brand style guide PDF as a linked asset in the Figma file"
+     ],
+     "correctIndex": 1,
+     "explanation": "Figma's shared Color Styles make every color inspectable by name and hex value directly from any element. Without them, developers have to guess or ask—slowing handoff significantly."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "ux-design-course-6",
+   "courseTitle": "Responsive Web Design in Adobe XD",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Experience Architect",
+   "missionTagline": "Prove you can design experiences that work on any screen size",
+   "skillLabels": [
+    "Responsive design",
+    "Breakpoints",
+    "Adobe XD",
+    "Grid systems",
+    "Accessibility"
+   ],
+   "scenarioPrompt": "You are designing a job board website that must work on mobile phones, tablets, and desktops. Your manager asks you to explain how you will handle the layout differences across screen sizes and how Adobe XD helps you test this during the design phase. Using your responsive design skills from this course, describe your approach.",
+   "quiz": [
+    {
+     "text": "A designer creates a three-column job listing layout for desktop. At 768px (tablet width) the columns become too narrow to read. What is the BEST design decision?",
+     "options": [
+      "Scale all three columns proportionally so they remain equal width at every screen size",
+      "Define a breakpoint at or around 768px where the layout switches to two columns, and add another breakpoint for mobile where it collapses to a single column",
+      "Remove two of the three columns on tablet and show only the most popular job category",
+      "Require users to rotate their tablet to landscape mode to view the three-column layout"
+     ],
+     "correctIndex": 1,
+     "explanation": "Responsive design uses breakpoints to adapt layouts to available space. A two-column tablet layout and single-column mobile layout are standard reflow patterns for content-heavy pages."
+    },
+    {
+     "text": "A mobile design shows a navigation menu with eight items displayed as text links horizontally across the top. At 375px screen width they are all cut off. What is the MOST user-friendly responsive solution?",
+     "options": [
+      "Reduce the font size to 8px so all eight items fit on one line",
+      "Replace the horizontal nav with a hamburger menu icon that reveals the full navigation list when tapped",
+      "Remove four of the eight navigation items on mobile to fit the available space",
+      "Require users to scroll horizontally to see all navigation items"
+     ],
+     "correctIndex": 1,
+     "explanation": "A hamburger menu is the established mobile pattern for collapsing complex navigation into a single tap, preserving all options without cluttering the limited screen real estate."
+    },
+    {
+     "text": "While designing in Adobe XD you need to ensure that a card component resizes its width correctly when the viewport changes but keeps a fixed height. Which feature should you use?",
+     "options": [
+      "Set the card as a symbol and manually update it at each breakpoint",
+      "Use Adobe XD's responsive resize handles to pin the component's left and right edges while fixing the top and bottom edges",
+      "Export the card as an SVG and specify percentage widths in the CSS manually",
+      "Create three separate versions of the card—one for each breakpoint—and hide the unused versions"
+     ],
+     "correctIndex": 1,
+     "explanation": "XD's responsive resize with pinned edges lets you define which dimensions scale with the viewport and which remain fixed, enabling proper resizing without creating redundant artboards."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "ux-design-course-7",
+   "courseTitle": "Design a User Experience for Social Good & Prepare for Jobs",
+   "hours": 15,
+   "syllabusDescription": "Design a mobile app and a responsive website focused on social good, producing a cross-platform capstone for your UX portfolio.",
+   "courseraSlug": "ux-design-jobs",
+   "missionName": "UX Champion",
+   "missionTagline": "Prove you can design for impact and present your work professionally",
+   "skillLabels": [
+    "Social impact design",
+    "Portfolio presentation",
+    "Figma",
+    "Inclusive design",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are wrapping up your UX design certificate and need to present your capstone project—a community resource finder app for low-income families—to a panel at a job fair. Your portfolio piece must show your process, not just your final screens. Using the skills from this course, describe how you would structure your case study and what makes it stand out to a hiring manager.",
+   "quiz": [
+    {
+     "text": "A hiring manager reviewing two UX portfolios says one has beautiful final screens but no explanation of the design process, while the other has simpler screens but clearly documents research, iteration, and rationale. Which portfolio is likely to be more impressive and why?",
+     "options": [
+      "The one with beautiful screens, because visual quality is the primary signal of a designer's skill",
+      "The one documenting process, because it shows the designer can identify problems, make decisions, and iterate—skills that predict on-the-job performance better than aesthetics",
+      "Both are equally valuable; the hiring manager should weigh them based on the role's seniority level",
+      "The one with beautiful screens, because clients and stakeholders respond to visuals and will not read process documentation"
+     ],
+     "correctIndex": 1,
+     "explanation": "Process documentation reveals thinking and problem-solving ability. A designer who can articulate why decisions were made is far more valuable than one who can only produce attractive artifacts without context."
+    },
+    {
+     "text": "You are designing a social service resource finder for refugees who may have limited literacy in English. Which inclusive design consideration is MOST critical for this user group?",
+     "options": [
+      "Use a minimalist aesthetic with white space to appear modern and approachable",
+      "Support multiple languages, use iconography alongside text labels, and minimize the reading level required to navigate the app",
+      "Use large font sizes throughout since all elderly users have vision impairments",
+      "Add a chat feature so users can communicate with service providers directly"
+     ],
+     "correctIndex": 1,
+     "explanation": "Inclusive design for low-literacy or non-English-speaking users requires multilingual support and visual cues to reduce reliance on reading. These are functional accessibility decisions, not aesthetic ones."
+    },
+    {
+     "text": "During a job fair portfolio review, a recruiter asks: 'What would you do differently if you were to redo this project?' What does the BEST answer demonstrate?",
+     "options": [
+      "Confidence—the answer should emphasize what went well and deflect the question",
+      "Self-awareness and growth mindset—acknowledging a specific limitation, explaining why it occurred, and describing concretely what the revised approach would be",
+      "Deference—admitting the project was flawed and asking the recruiter what they would have done instead",
+      "Technical skill—naming a more advanced Figma feature that could have been used"
+     ],
+     "correctIndex": 1,
+     "explanation": "Hiring managers use this question to assess reflection and growth. A specific, honest answer that shows learning from the experience is far more compelling than either false confidence or excessive self-criticism."
+    }
+   ]
+  }
+ ]
+}

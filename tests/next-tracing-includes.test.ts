@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
 import nextConfig from '../next.config';
-import { GAME_LAB_ASSET_PATHS, GAME_LAB_GAMES, resolveGameLabAsset } from '../lib/game-lab/manifest';
+import { GAME_LAB_GAMES, GAME_LAB_SERVED_FILES, resolveGameLabAsset } from '../lib/game-lab/manifest';
 import { listAppEntryNames, tracedIncludeFiles, tracingKeyMatchesEntry } from '../scripts/lib/next-tracing-includes.mjs';
 
 // Behavior under test: which files `next build` puts in each route's serverless
@@ -28,9 +28,14 @@ describe('outputFileTracingIncludes', () => {
 
   it('bundles every file the Game Lab asset route can serve', async () => {
     const traced = await tracedIncludeFiles(includes, GAME_LAB_ASSET_ENTRY, root);
-    const served = GAME_LAB_GAMES.flatMap((game) =>
-      GAME_LAB_ASSET_PATHS.map((asset) => resolveGameLabAsset(game.slug, asset.split('/'))?.file),
-    );
+    expect(GAME_LAB_GAMES).toHaveLength(5);
+    const served = GAME_LAB_SERVED_FILES.filter((file) => {
+      const game = file.split('/')[2];
+      const segments = file.startsWith('assets/game-lab/vendor/') ? ['vendor', 'three.module.min.js'] : file.split('/').slice(3);
+      const slug = file.startsWith('assets/game-lab/vendor/') ? 'packet-quest-3d' : game;
+      return resolveGameLabAsset(slug, segments)?.file === file;
+    });
+    expect(served).toHaveLength(GAME_LAB_SERVED_FILES.length);
     expect(served.length).toBeGreaterThan(0);
     for (const file of served) {
       expect(file).toBeTypeOf('string');

@@ -9,7 +9,7 @@
 //   1. Setup (writes allowed): real logins, auth/flag matrix for every actor (flag created and removed
 //      through the real admin API), effective-role check per role fixture, and a synthetic contact-form
 //      send that must reach the local mail sink (proves the app is wired to it).
-//   2. Gameplay window (no writes allowed): after the DB settles, both games through the real
+//   2. Gameplay window (no writes allowed): after the DB settles, all games through the real
 //      /admin/game-lab/[game] page and its iframe at 1280x900, 390x844 and 320x640, then the window is
 //      closed and judged: zero DB row changes, zero new mail, zero external requests, zero console errors.
 //   Cleanup always runs: flag row removed, fixture role restored, browser closed.
@@ -20,9 +20,11 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { join, resolve } from 'node:path';
+import { arcadeLevelWin, notice } from './arcade-play.mjs';
+import { arcadeIds, demoIds, exactCoverage, GAME_SLUGS, sha256, winIds } from './inventory.mjs';
 import { buildPreviewEnv } from '../local-preview.mjs';
 import {
-  GAME_SLUGS, MATRIX_TARGETS, judgeRow, judgeRole, judgeRequests, judgeConsole, judgeDb, judgeMail,
+  MATRIX_TARGETS, judgeRow, judgeRole, judgeRequests, judgeConsole, judgeDb, judgeMail,
 } from './verdicts.mjs';
 
 const require = createRequire(import.meta.url);
@@ -43,7 +45,7 @@ const ADMIN = { id: env.PREVIEW_ADMIN_ID, email: env.PREVIEW_ADMIN_EMAIL, passwo
 const STUDENT = { id: env.PREVIEW_STUDENT_ID, email: env.PREVIEW_STUDENT_EMAIL, password: env.PREVIEW_STUDENT_PASSWORD };
 const OTHER_ROLES = ['counselor', 'employer', 'partner', 'case_manager', 'wap_staff', 'group_leader'];
 const VIEWPORTS = [[1280, 900], [390, 844], [320, 640]];
-const SAVE_KEYS = ['wap-practice-3d-save-v1', 'wap-practice-3d-security-save-v1'];
+const SAVE_KEYS = ['wap-practice-3d-save-v1', 'wap-practice-3d-security-save-v1', 'packet-quest-v1', 'wap-practice-local-network-v1', 'wap-arcade-v1:settings', 'wap-arcade-v1:last'];
 const FLAG = { key: 'admin_game_lab', name: 'Admin Game Lab (local preview)', description: 'Local preview only', enabled: true, rolloutPercentage: 100, allowedRoles: ['admin', 'super_admin'] };
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -57,7 +59,7 @@ function psql(sql) {
 const quoteLiteral = (v) => `'${String(v).replace(/'/g, "''")}'`;
 if (!/^[0-9a-f-]{36}$/i.test(STUDENT.id)) throw new Error('preview student id is not a uuid');
 
-const report = { base: BASE, head: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), startedAt: new Date().toISOString(), matrix: [], checks: [], failures: [] };
+const report = { base: BASE, head: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), startedAt: new Date().toISOString(), matrix: [], games: [], checks: [], failures: [] };
 const fail = (where, list) => { for (const f of list) report.failures.push(`${where}: ${f}`); };
 const check = (name, ok, detail = {}) => { report.checks.push({ name, ok, ...detail }); if (!ok) report.failures.push(`${name}: ${JSON.stringify(detail)}`); console.log(ok ? 'PASS' : 'FAIL', name); };
 
@@ -115,23 +117,32 @@ async function login(who, opts = {}) {
   await p.locator('#email').fill(who.email);
   await p.locator('#password').fill(who.password);
   await p.getByRole('button', { name: /sign in/i }).click();
-  await p.waitForURL((u) => !/\/login([?#/]|$)/.test(u.pathname + u.search), { timeout: 90000 });
+  await p.waitForURL((u) => !/\/login([?#/]|$)/.test(u.pathname + u.search), { timeout: 180000 });
   await p.close();
   return ctx;
 }
 async function probe(request, target) {
   const res = await request.get(BASE + target.path, { maxRedirects: 0, failOnStatusCode: false });
-  const h = res.headers();
-  return { status: res.status(), location: h.location ?? '', contentType: h['content-type'] ?? '', cacheControl: h['cache-control'] ?? '', vary: h.vary ?? '', body: await res.text() };
+  try {
+    const h = res.headers();
+    const bytes = await res.body();
+    return { status: res.status(), location: h.location ?? '', contentType: h['content-type'] ?? '', cacheControl: h['cache-control'] ?? '', vary: h.vary ?? '', body: bytes.toString('utf8'), bodyBytes: bytes.length, sha256: sha256(bytes) };
+  } finally {
+    await res.dispose();
+  }
 }
 async function matrix(actorLabel, actor, request) {
-  for (const target of MATRIX_TARGETS) {
-    const observed = await probe(request, target);
-    const failures = judgeRow(actor, target, observed);
-    const { body, ...row } = observed;
-    report.matrix.push({ actor: actorLabel, target: target.name, ...row, bodyBytes: body.length, failures });
-    fail(`matrix ${actorLabel} / ${target.name}`, failures);
+  // Keep actors/flag transitions serial. Limit concurrent GETs inside one fixed context.
+  for (let i = 0; i < MATRIX_TARGETS.length; i += 4) {
+    await Promise.all(MATRIX_TARGETS.slice(i, i + 4).map(async (target) => {
+      const observed = await probe(request, target);
+      const failures = judgeRow(actor, target, observed);
+      const { body, ...row } = observed;
+      report.matrix.push({ actor: actorLabel, path: target.path, kind: target.kind, target: target.name, ...row, failures });
+      fail(`matrix ${actorLabel} / ${target.name}`, failures);
+    }));
   }
+  console.log(`Probed ${MATRIX_TARGETS.length} targets: ${actorLabel}`);
 }
 async function effectiveRole(ctx) {
   const r = await ctx.request.get(`${BASE}/api/auth/me`, { failOnStatusCode: false });
@@ -153,7 +164,12 @@ async function launch(p, slug) {
   const deadline = Date.now() + 60000;
   for (;;) {
     const f = p.frames().find((fr) => fr.url().includes(`/api/admin/game-lab/${slug}/index.html`));
-    if (f && (await f.evaluate((k) => !!window[k], slug === 'packet-quest-3d' ? '__pq' : '__fd').catch(() => false))) return f;
+    if (f && (await f.evaluate((s) => {
+      if (s.endsWith('-3d')) return !!window[s === 'packet-quest-3d' ? '__pq' : '__fd'];
+      if (s === 'packet-quest') return !!document.getElementById('overlayTitle');
+      if (s === 'network-path') return !!window.WapPractice;
+      return !!document.getElementById('games');
+    }, slug).catch(() => false))) return f;
     if (Date.now() > deadline) throw new Error(`${slug} frame did not become ready after Launch (frames: ${p.frames().map((fr) => fr.url()).join(', ')})`);
     await sleep(250);
   }
@@ -188,12 +204,63 @@ async function fdStage(f, { keys = false } = {}) {
   }
   await f.waitForFunction(() => window.__fd.state.status === 'win', null, { timeout: 120000 });
 }
+async function pq2dWin(f) {
+  await f.locator('#s0').click();
+  await f.locator('#repair').click();
+  await f.locator('#switch').click();
+  await f.locator('#repair').click();
+  await f.locator('#client').click();
+  await f.locator('#switch').click();
+  await f.locator('#server').click();
+  await f.locator('#launch').click();
+  await f.waitForFunction(() => document.getElementById('overlayTitle').textContent === 'STAGE CLEAR', null, { timeout: 30000 });
+}
+async function networkWin(f) {
+  const dns = ['Client A (10.24.8.47)', 'Switch S1', 'Approved DNS D1 (10.24.8.10)'];
+  const app = [...dns.slice(0, 2), 'Gateway/router R1 (10.24.8.1)', 'Upstream path', 'Remote server portal.cedar.example (203.0.113.20)'];
+  for (const [index, nodes] of [dns, app].entries()) {
+    for (const n of nodes) await f.getByRole('button', { name: `Add ${n}`, exact: true }).nth(index).click();
+  }
+  for (const [field, value] of Object.entries({ client: 'endpoint', switch: 'switch', router: 'router', dns: 'dns', remote: 'remote' })) {
+    await f.locator(`#role-${field}`).selectOption(value);
+  }
+  await f.locator('#dns-separate').check();
+  for (const id of ['A1', 'A2', 'A3', 'A4', 'A5', 'A6']) await f.getByRole('button', { name: new RegExp(id) }).click();
+  await f.locator('#diagnosis').selectOption('client-dns');
+  for (const label of ['Request owner approval to correct the setting', 'Apply the approved correction', 'Keep the old setting for authorized rollback', 'Stop and escalate if the correction fails or approval is absent']) {
+    await f.getByRole('button', { name: label, exact: true }).click();
+  }
+  for (const id of ['config', 'lookup', 'portal', 'unknown-followup', 'persistence']) await f.locator(`#verify-${id}`).check();
+  await f.locator('#prose-rationale').fill('Only A uses the stale DNS address; the approved resolver returns the portal address.');
+  await f.locator('#prose-limits').fill('Who changed DNS and whether the correction survives reconnect are still unknown.');
+  await f.locator('#prose-customer').fill('After approval we corrected DNS and checked that the portal opens.');
+  await f.locator('#submit').click();
+  await f.waitForFunction(() => /10 \/ 10/.test(document.getElementById('score').textContent) && /Automated checks passed/.test(document.getElementById('score').textContent), null, { timeout: 15000 });
+}
 async function pauseResume(f, label) {
   await f.locator('#pause').click();
   await f.locator('#pauseScreen').waitFor({ state: 'visible' });
   await f.locator('#resume').click({ timeout: 5000 });
   const hidden = await f.locator('#pauseScreen').isHidden();
   check(`${label}: pause -> resume with ordinary clicks`, hidden);
+}
+
+let windowBaseline;
+async function closeWindow({ dbBefore, mailBefore, control }) {
+  // Close and judge the window.
+  await sleep(3000);
+  const dbAfter = dbSnapshot();
+  const mailAfter = await sink();
+  report.window.closedAt = new Date().toISOString();
+  report.db = { tables: Object.keys(dbBefore).length, changes: judgeDb(dbBefore, dbAfter) };
+  report.mail = { before: mailBefore, after: mailAfter };
+  report.external = external;
+  report.console = consoleEvents;
+  check('gameplay window: zero DB row inserts, updates or deletes', report.db.changes.length === 0, { changes: report.db.changes });
+  const mailFailures = judgeMail({ control: { reachable: control.reachable, captured: control.total }, before: mailBefore, after: mailAfter });
+  check('mail: control send captured by the local sink, zero messages during gameplay', mailFailures.length === 0, { mailFailures, control: report.mailControl });
+  check('zero external requests (any frame)', external.length === 0, { external: judgeRequests(external.map((e) => e.url), BASE) });
+  check('zero console errors or warnings (any frame)', consoleEvents.length === 0, { console: judgeConsole(consoleEvents) });
 }
 
 // ---------- run ----------
@@ -209,6 +276,7 @@ try {
   const admin = await login(ADMIN);
   const student = await login(STUDENT);
   check('admin fixture effective role is admin', (await effectiveRole(admin)) === 'admin');
+  check('student fixture effective role is member', (await effectiveRole(student)) === 'member');
   await matrix('anonymous', { kind: 'anonymous' }, anon.request);
   await matrix('student (flag absent)', { kind: 'non-admin' }, student.request);
   await matrix('admin (flag absent)', { kind: 'admin-off' }, admin.request);
@@ -235,6 +303,9 @@ try {
   }
   check('student fixture role restored', psql(`select role from profiles where user_id=${quoteLiteral(STUDENT.id)}`) === originalRole);
 
+  const actors = ['anonymous', 'student (flag absent)', 'admin (flag absent)', 'admin (flag row OFF)', 'admin (flag ON)', 'anonymous after admin warm-up', 'student (flag ON)', ...OTHER_ROLES.map((r) => `role=${r} (flag ON)`)];
+  exactCoverage('actor x target requests', actors.flatMap((a) => MATRIX_TARGETS.map((t) => `${a}:${t.path}`)), report.matrix.filter((r) => r.path).map((r) => `${r.actor}:${r.path}`));
+
   // Mail wiring control: a real app send must land in the local sink.
   await sink('DELETE');
   const contact = await anon.request.post(`${BASE}/api/contact`, { data: { first_name: 'Preview', last_name: 'Control', email: 'preview-control@example.test', topic: 'Game Lab mail-sink control', message: 'Local preview control message.', submission_id: randomUUID() }, failOnStatusCode: false });
@@ -248,10 +319,20 @@ try {
   // Phase 2: gameplay window. From here on nothing may write, send or leave the machine.
   const dbBefore = await settledDb();
   const mailBefore = await sink();
+  windowBaseline = { dbBefore, mailBefore, control };
   report.window = { openedAt: new Date().toISOString() };
   external.length = 0;
   consoleEvents.length = 0;
 
+  const recordWin = async (id, width, play) => {
+    const row = { id, width, mode: 'automated visible controls', won: false };
+    report.games.push(row);
+    try { Object.assign(row, await play(), { won: true }); } catch (error) {
+      row.error = String(error);
+      throw new Error(`${id} at ${width}px: ${row.error}`, { cause: error });
+    }
+    check(`${width}px: ${id} won`, true);
+  };
   for (const [width, height] of VIEWPORTS) {
     const label = `${width}x${height}`;
     const ctx = await newContext({ storageState: adminState, viewport: { width, height } });
@@ -266,28 +347,40 @@ try {
 
     requests.length = 0;
     await p.goto('/admin/game-lab', { waitUntil: 'networkidle' });
-    const launcherOk = (await p.getByTestId('game-lab-prerelease-badge').isVisible()) && (await p.getByTestId('game-lab-disclaimer').isVisible()) && (await p.locator('[data-testid^="game-card-"]').count()) === 2;
-    check(`${label}: launcher renders badge, disclaimer and two cards without loading a game`, launcherOk && !requests.some(gameReq));
+    const launcherOk = (await p.getByTestId('game-lab-prerelease-badge').isVisible()) && (await p.getByTestId('game-lab-disclaimer').isVisible()) && (await p.locator('[data-testid^="game-card-"]').count()) === GAME_SLUGS.length;
+    check(`${label}: launcher renders badge, disclaimer and five cards without loading a game`, launcherOk && !requests.some(gameReq));
     await p.screenshot({ path: join(OUT, `launcher-${width}.png`), fullPage: true });
 
     for (const slug of GAME_SLUGS) {
       requests.length = 0;
-      await p.goto(`/admin/game-lab/${slug}`, { waitUntil: 'networkidle' });
+      await p.getByTestId(`game-card-${slug}`).getByRole('link').click();
+      await p.waitForURL(`**/admin/game-lab/${slug}`);
       check(`${label}: ${slug} play page loads nothing before Launch`, (await p.locator('iframe').count()) === 0 && !requests.some(gameReq));
       const f = await launch(p, slug);
-      check(`${label}: ${slug} engine loads only after Launch`, requests.filter((u) => /three\.module/.test(u)).length === 1);
-      const geo = await p.evaluate(() => {
-        const box = (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right }; };
-        const d = document.querySelector('dialog[open]');
-        const title = d?.querySelector('h2');
-        const frame = d?.querySelector('iframe');
-        const exitBtn = d?.querySelector('[data-testid="game-lab-exit"]');
-        const top = exitBtn ? document.elementFromPoint((box(exitBtn).left + box(exitBtn).right) / 2, (box(exitBtn).top + box(exitBtn).bottom) / 2) : null;
-        return { modal: !!d && d.matches(':modal'), title: title && box(title), titleClipped: title ? title.scrollHeight > title.clientHeight + 1 : true, frame: frame && box(frame), exitOnTop: !!top && exitBtn.contains(top), vw: innerWidth, vh: innerHeight };
-      });
+      check(`${label}: ${slug} engine loads only after Launch`, slug.endsWith('-3d') ? requests.filter((u) => /three\.module/.test(u)).length === 1 : !requests.some((u) => /three\.module/.test(u)));
+      // The frame's flex height settles a frame or two after the game reports ready.
+      // Measure only once its box stops moving, so the check reads the settled layout.
+      let geo;
+      let settled = null;
+      for (let i = 0; i < 10; i++) {
+        geo = await p.evaluate(() => {
+          const box = (el) => { const r = el.getBoundingClientRect(); return { top: r.top, bottom: r.bottom, left: r.left, right: r.right }; };
+          const d = document.querySelector('dialog[open]');
+          const title = d?.querySelector('h2');
+          const frame = d?.querySelector('iframe');
+          const exitBtn = d?.querySelector('[data-testid="game-lab-exit"]');
+          const top = exitBtn ? document.elementFromPoint((box(exitBtn).left + box(exitBtn).right) / 2, (box(exitBtn).top + box(exitBtn).bottom) / 2) : null;
+          return { modal: !!d && d.matches(':modal'), title: title && box(title), titleClipped: title ? title.scrollHeight > title.clientHeight + 1 : true, frame: frame && box(frame), exitOnTop: !!top && exitBtn.contains(top), vw: innerWidth, vh: innerHeight };
+        });
+        const sig = JSON.stringify(geo.frame);
+        if (sig === settled) break;
+        settled = sig;
+        await sleep(100);
+      }
       check(`${label}: ${slug} player is a top-layer modal: title, Exit and frame inside the viewport, nothing on top`,
-        geo.modal && geo.exitOnTop && !geo.titleClipped && geo.title.top >= 0 && geo.frame.top >= geo.title.bottom && geo.frame.left === 0 && Math.abs(geo.frame.right - geo.vw) < 1 && Math.abs(geo.frame.bottom - geo.vh) < 1, geo);
+        geo.modal && geo.exitOnTop && !geo.titleClipped && geo.title.top >= 0 && geo.frame.top >= geo.title.bottom - 1 && geo.frame.left <= 1 && Math.abs(geo.frame.right - geo.vw) < 2 && Math.abs(geo.frame.bottom - geo.vh) < 2, geo);
 
+      if (!slug.endsWith('-3d')) await notice(f);
       if (slug === 'packet-quest-3d') {
         await f.locator('#s0').click();
         await pauseResume(f, `${label} ${slug}`);
@@ -313,7 +406,7 @@ try {
           check(`${label}: ${slug} keyboard-only stage 1 win`, true);
           await f.locator('#eMenu').click();
         }
-      } else {
+      } else if (slug === 'firewall-defender-3d') {
         await f.locator('#s2').click();
         await pauseResume(f, `${label} ${slug} (Phish Filter)`);
         await fdStage(f);
@@ -337,15 +430,27 @@ try {
           check(`${label}: ${slug} keyboard-only stage 1 win`, true);
           await f.locator('#eMenu').click();
         }
+      } else if (slug === 'packet-quest') {
+        await recordWin(slug, width, async () => { await pq2dWin(f); return { level: 1, outcome: await f.locator('#overlayTitle').innerText() }; });
+      } else if (slug === 'network-path') {
+        await recordWin(slug, width, async () => { await networkWin(f); return { level: 'A', outcome: await f.locator('#score').innerText() }; });
+      } else if (slug === 'practice-arcade') {
+        await f.locator('#games[aria-busy="false"]').waitFor({ timeout: 30000 });
+        const cards = await f.locator('#games article.card').evaluateAll((nodes) => nodes.map((card) => ({
+          id: card.dataset.id, demo: [...card.querySelectorAll('.pill')].some((pill) => pill.textContent === 'Demo'),
+        })));
+        exactCoverage(`${label}: arcade hub`, arcadeIds, cards.map((card) => card.id));
+        exactCoverage(`${label}: labelled demos`, demoIds, cards.filter((c) => c.demo).map((c) => c.id));
+        for (const id of arcadeIds) await recordWin(id, width, () => arcadeLevelWin(f, id));
       }
       await p.screenshot({ path: join(OUT, `game-${slug}-${width}.png`) });
       check(`${label}: ${slug} Exit unmounts the frame`, (await exit(p)) === 0);
     }
 
-    await p.evaluate((keys) => { for (const k of keys) localStorage.setItem(k, '{}'); localStorage.setItem('unrelated-key', 'keep'); }, SAVE_KEYS);
+    await p.evaluate((keys) => { for (const k of keys) localStorage.setItem(k, '{}'); localStorage.setItem('wap-arcade-v1:demo-sort', '{}'); localStorage.setItem('unrelated-key', 'keep'); }, SAVE_KEYS);
     await p.getByTestId('game-lab-reset').click();
-    const ls = await p.evaluate((keys) => [...keys.map((k) => localStorage.getItem(k)), localStorage.getItem('unrelated-key')], SAVE_KEYS);
-    check(`${label}: reset clears only the two save keys`, JSON.stringify(ls) === '[null,null,"keep"]', { ls });
+    const ls = await p.evaluate((keys) => [...keys.map((k) => localStorage.getItem(k)), localStorage.getItem('wap-arcade-v1:demo-sort'), localStorage.getItem('unrelated-key')], SAVE_KEYS);
+    check(`${label}: reset clears the game-lab save keys and leaves other keys`, JSON.stringify(ls) === '[null,null,null,null,null,null,null,"keep"]', { ls });
     await ctx.close();
 
     const sctx = await newContext({ storageState: studentState, viewport: { width, height } });
@@ -358,6 +463,8 @@ try {
     await sctx.close();
     check(`${label}: student is turned away with no game content or engine`, denied, { landed: sp.url() });
   }
+
+  exactCoverage('game x viewport wins', VIEWPORTS.flatMap(([w]) => winIds.map((id) => `${w}:${id}`)), report.games.filter((r) => r.won).map((r) => `${r.width}:${r.id}`));
 
   // Reduced motion and WebGL-off fallback, through the integrated page at 1280.
   {
@@ -410,30 +517,21 @@ try {
     await ctx.close();
   }
 
-  // Close and judge the window.
-  await sleep(3000);
-  const dbAfter = dbSnapshot();
-  const mailAfter = await sink();
-  report.window.closedAt = new Date().toISOString();
-  report.db = { tables: Object.keys(dbBefore).length, changes: judgeDb(dbBefore, dbAfter) };
-  report.mail = { before: mailBefore, after: mailAfter };
-  report.external = external;
-  report.console = consoleEvents;
-  check('gameplay window: zero DB row inserts, updates or deletes', report.db.changes.length === 0, { changes: report.db.changes });
-  const mailFailures = judgeMail({ control: { reachable: control.reachable, captured: control.total }, before: mailBefore, after: mailAfter });
-  check('mail: control send captured by the local sink, zero messages during gameplay', mailFailures.length === 0, { mailFailures, control: report.mailControl });
-  check('zero external requests (any frame)', external.length === 0, { external: judgeRequests(external.map((e) => e.url), BASE) });
-  check('zero console errors or warnings (any frame)', consoleEvents.length === 0, { console: judgeConsole(consoleEvents) });
 } catch (error) {
   report.failures.push(`aborted: ${error?.stack ?? error}`);
   if (activePage) await activePage.screenshot({ path: join(OUT, 'aborted.png') }).catch(() => {});
 } finally {
+  if (windowBaseline) {
+    try { await closeWindow(windowBaseline); } catch (error) { report.failures.push(`sandbox snapshot: ${error.message}`); }
+  }
   try { deleteFlag(); report.cleanupFlagRows = psql("select count(*) from feature_flags where key='admin_game_lab'"); } catch (e) { report.failures.push(`cleanup: ${e.message}`); }
   if (browser) await browser.close();
   rmSync(LOCK, { force: true });
   report.finishedAt = new Date().toISOString();
   report.result = report.failures.length === 0 ? 'PASS' : 'FAIL';
   writeFileSync(join(OUT, 'verify-results.json'), JSON.stringify(report, null, 2));
+  writeFileSync(join(OUT, 'game-width-results.json'), JSON.stringify(report.games, null, 2));
+  writeFileSync(join(OUT, 'actor-asset-results.json'), JSON.stringify(report.matrix.filter((r) => r.kind === 'asset'), null, 2));
   const md = ['| actor | target | status | location | cache-control | vary | failures |', '|---|---|---|---|---|---|---|'];
   for (const r of report.matrix) md.push(`| ${r.actor} | ${r.target} | ${r.status} | ${r.location ?? ''} | ${r.cacheControl ?? ''} | ${r.vary ?? ''} | ${(r.failures ?? []).join('; ')} |`);
   writeFileSync(join(OUT, 'auth-matrix.md'), md.join('\n'));

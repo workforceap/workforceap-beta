@@ -64,6 +64,9 @@ describe('Game Lab pages (flag-gated: not found while admin_game_lab is off)', (
     expect(screen.getByTestId('game-lab-prerelease-badge')).toBeTruthy();
     expect(screen.getByTestId('game-card-packet-quest-3d')).toBeTruthy();
     expect(screen.getByTestId('game-card-firewall-defender-3d').textContent).toContain('three stages and a boss');
+    expect(screen.getByTestId('game-card-packet-quest').textContent).toContain('Pre-release');
+    expect(screen.getByTestId('game-card-network-path')).toBeTruthy();
+    expect(screen.getByTestId('game-card-practice-arcade').textContent).toContain('20 program');
   });
 
   it('load nothing until Launch, then mount the frame in a modal and unmount it on Exit', async () => {

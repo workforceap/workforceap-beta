@@ -1,0 +1,2084 @@
+{
+  "generated": "2026-11-15T13:58:38.208Z",
+  "games": [
+    {
+      "programSlug": "ai-practitioner-professional-certificate-aws",
+      "programTitle": "AI Practitioner Professional Certificate (AWS)",
+      "gameTitle": "AI Flight School",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "ai-practitioner-course-1",
+          "courseTitle": "Introduction to Artificial Intelligence (AI)",
+          "levelId": "rule-or-learning",
+          "levelTitle": "Rule or Learning?",
+          "mechanic": "gate",
+          "skill": "Telling fixed-rule automation apart from machine learning",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=rule-or-learning"
+        },
+        {
+          "order": 2,
+          "courseSlug": "ai-practitioner-course-2",
+          "courseTitle": "Artificial Intelligence: An Overview",
+          "levelId": "build-the-flight-plan",
+          "levelTitle": "Build the Flight Plan",
+          "mechanic": "order",
+          "skill": "Putting the life cycle of an AI system in order",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=build-the-flight-plan"
+        },
+        {
+          "order": 3,
+          "courseSlug": "ai-practitioner-course-3",
+          "courseTitle": "Introduction to Digital Transformation Part 1",
+          "levelId": "pre-flight-checklist",
+          "levelTitle": "Pre-Flight Checklist",
+          "mechanic": "sort",
+          "skill": "Sorting the parts of a plan for an AI-driven change",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=pre-flight-checklist"
+        },
+        {
+          "order": 4,
+          "courseSlug": "ai-practitioner-course-4",
+          "courseTitle": "AI For All",
+          "levelId": "cleared-for-ai",
+          "levelTitle": "Cleared for AI?",
+          "mechanic": "gate",
+          "skill": "Spotting good everyday tasks for AI and tasks a person must own",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=cleared-for-ai"
+        },
+        {
+          "order": 5,
+          "courseSlug": "ai-practitioner-course-5",
+          "courseTitle": "AI Concepts and Strategy",
+          "levelId": "build-or-buy",
+          "levelTitle": "Build or Buy",
+          "mechanic": "lane",
+          "skill": "Framing build-or-buy choices and the return on an AI project",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=build-or-buy"
+        },
+        {
+          "order": 6,
+          "courseSlug": "ai-practitioner-course-6",
+          "courseTitle": "AI for Professional Communication",
+          "levelId": "final-approach",
+          "levelTitle": "Final Approach",
+          "mechanic": "gate",
+          "skill": "Checking AI-drafted messages before they reach people",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=final-approach"
+        },
+        {
+          "order": 7,
+          "courseSlug": "ai-practitioner-course-7",
+          "courseTitle": "Understand and Apply Artificial Intelligence Fundamentals",
+          "levelId": "flight-terms",
+          "levelTitle": "Ground School Terms",
+          "mechanic": "match",
+          "skill": "Connecting machine learning terms to what they mean",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=flight-terms"
+        },
+        {
+          "order": 8,
+          "courseSlug": "ai-practitioner-course-8",
+          "courseTitle": "AI for Business: Generation & Prediction",
+          "levelId": "generate-or-predict",
+          "levelTitle": "Generate or Predict",
+          "mechanic": "gate",
+          "skill": "Telling generation requests apart from prediction requests",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=generate-or-predict"
+        },
+        {
+          "order": 9,
+          "courseSlug": "ai-practitioner-course-9",
+          "courseTitle": "Artificial Intelligence: Ethics & Societal Challenges",
+          "levelId": "turbulence-check",
+          "levelTitle": "Turbulence Check",
+          "mechanic": "sort",
+          "skill": "Naming the ethics issue in an automated decision",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=turbulence-check"
+        },
+        {
+          "order": 10,
+          "courseSlug": "ai-practitioner-course-10",
+          "courseTitle": "ChatGPT — Foundations",
+          "levelId": "chat-cockpit",
+          "levelTitle": "Chat Cockpit",
+          "mechanic": "lane",
+          "skill": "Using ChatGPT well and knowing its limits",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=chat-cockpit"
+        },
+        {
+          "order": 11,
+          "courseSlug": "ai-practitioner-course-11",
+          "courseTitle": "ChatGPT for Beginners: Using AI for Market Research",
+          "levelId": "recon-mission",
+          "levelTitle": "Recon Mission",
+          "mechanic": "order",
+          "skill": "Putting a ChatGPT market research task in order",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=recon-mission"
+        },
+        {
+          "order": 12,
+          "courseSlug": "ai-practitioner-course-12",
+          "courseTitle": "AI Fundamentals with Claude",
+          "levelId": "handbook-radio",
+          "levelTitle": "Handbook Radio Check",
+          "mechanic": "gate",
+          "skill": "Judging Claude's answers against a long source document",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=handbook-radio"
+        },
+        {
+          "order": 13,
+          "courseSlug": "ai-practitioner-course-13",
+          "courseTitle": "Sales with AI",
+          "levelId": "pipeline-patrol",
+          "levelTitle": "Pipeline Patrol",
+          "mechanic": "match",
+          "skill": "Connecting sales AI uses to the problems they solve",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=pipeline-patrol"
+        },
+        {
+          "order": 14,
+          "courseSlug": "ai-practitioner-course-14",
+          "courseTitle": "AI for Marketing",
+          "levelId": "campaign-sort",
+          "levelTitle": "Campaign Control",
+          "mechanic": "sort",
+          "skill": "Sorting AI marketing tasks into campaign stages",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=campaign-sort"
+        },
+        {
+          "order": 15,
+          "courseSlug": "ai-practitioner-course-15",
+          "courseTitle": "Salesforce Certified AI Associate Certification",
+          "levelId": "crm-autopilot",
+          "levelTitle": "CRM Autopilot",
+          "mechanic": "lane",
+          "skill": "Telling predictive CRM AI from generative CRM AI",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=crm-autopilot"
+        },
+        {
+          "order": 16,
+          "courseSlug": "ai-practitioner-course-16",
+          "courseTitle": "AWS Artificial Intelligence Practitioner",
+          "levelId": "aws-hangar",
+          "levelTitle": "The AWS Hangar",
+          "mechanic": "match",
+          "skill": "Matching AWS AI services, prompt parts and responsible AI ideas",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=aws-hangar"
+        },
+        {
+          "order": 17,
+          "courseSlug": "ai-practitioner-course-17",
+          "courseTitle": "Lab, Project, and Test Preparation",
+          "levelId": "wings-check",
+          "levelTitle": "Mission Review",
+          "mechanic": "gate",
+          "skill": "Reviewing AI plans with everything from the program",
+          "link": "play.html?game=ai-practitioner-professional-certificate-aws&level=wings-check"
+        }
+      ]
+    },
+    {
+      "programSlug": "ai-professional-developer-certificate-ibm",
+      "programTitle": "AI Professional Practitioner Certificate",
+      "gameTitle": "Prompt Workshop",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "ai-dev-course-1",
+          "courseTitle": "Introduction to Software Engineering",
+          "levelId": "software-stages",
+          "levelTitle": "Software Stages",
+          "mechanic": "sort",
+          "skill": "Placing common tasks in the right software stage",
+          "link": "play.html?game=ai-professional-developer-certificate-ibm&level=software-stages"
+        },
+        {
+          "order": 2,
+          "courseSlug": "ai-dev-course-2",
+          "courseTitle": "Introduction to Artificial Intelligence (AI)",
+          "levelId": "is-it-an-ai-job",
+          "levelTitle": "Is It an AI Job?",
+          "mechanic": "gate",
+          "skill": "Telling when AI, plain rules or more data fits a job",
+          "link": "play.html?game=ai-professional-developer-certificate-ibm&level=is-it-an-ai-job"
+        },
+        {
+          "order": 3,
+          "courseSlug": "ai-dev-course-3",
+          "courseTitle": "Generative AI: Introduction and Applications",
+          "levelId": "words-and-safeguards",
+          "levelTitle": "Words and Safeguards",
+          "mechanic": "match",
+          "skill": "Connecting generative AI words to safe habits",
+          "link": "play.html?game=ai-professional-developer-certificate-ibm&level=words-and-safeguards"
+        },
+        {
+          "order": 4,
+          "courseSlug": "ai-dev-course-4",
+          "courseTitle": "Generative AI: Prompt Engineering Basics",
+          "levelId": "fix-the-prompt",
+          "levelTitle": "Fix the Prompt",
+          "mechanic": "gate",
+          "skill": "Choosing the right fix for a weak prompt",
+          "link": "play.html?game=ai-professional-developer-certificate-ibm&level=fix-the-prompt"
+        },
+        {
+          "order": 5,
+          "courseSlug": "ai-dev-course-5",
+          "courseTitle": "Python for Data Science, AI & Development",
+          "levelId": "python-pit-stop",
+          "levelTitle": "Python Pit Stop",
+          "mechanic": "lane",
+          "skill": "Matching data tasks to the right Python tool",
+          "link": "play.html?game=ai-professional-developer-certificate-ibm&level=python-pit-stop"
+        },
+        {
+          "order": 6,
+          "courseSlug": "ai-dev-course-6",
+          "courseTitle": "Developing AI Applications with Python and Flask",
+          "levelId": "route-to-response",
+          "levelTitle": "Route to Response",
+          "mechanic": "order",
+          "skill": "Putting a Flask AI route's steps in order",
+          "link": "play.html?game=ai-professional-developer-certificate-ibm&level=route-to-response"
+        },
+        {
+          "order": 7,
+          "courseSlug": "ai-dev-course-7",
+          "courseTitle": "Building Generative AI-Powered Applications with Python",
+          "levelId": "chatbot-pipeline",
+          "levelTitle": "Chatbot Pipeline",
+          "mechanic": "sort",
+          "skill": "Placing chatbot pipeline tasks in the right step",
+          "link": "play.html?game=ai-professional-developer-certificate-ibm&level=chatbot-pipeline"
+        },
+        {
+          "order": 8,
+          "courseSlug": "ai-dev-course-8",
+          "courseTitle": "Generative AI: Elevate your Software Development Career",
+          "levelId": "check-the-ai-code",
+          "levelTitle": "Check the AI Code",
+          "mechanic": "lane",
+          "skill": "Reviewing AI help and AI work with care",
+          "link": "play.html?game=ai-professional-developer-certificate-ibm&level=check-the-ai-code"
+        }
+      ]
+    },
+    {
+      "programSlug": "aws-cloud-technology-amazon",
+      "programTitle": "AWS Cloud Technology Professional Certificate (AWS)",
+      "gameTitle": "Cloud Crew",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "aws-course-1",
+          "courseTitle": "Introduction to Information Technology and AWS Cloud",
+          "levelId": "why-cloud",
+          "levelTitle": "Why Move to Cloud?",
+          "mechanic": "gate",
+          "skill": "Matching a business problem to a cloud benefit",
+          "link": "play.html?game=aws-cloud-technology-amazon&level=why-cloud"
+        },
+        {
+          "order": 2,
+          "courseSlug": "aws-course-2",
+          "courseTitle": "Providing Technical Support for AWS Workloads",
+          "levelId": "support-checks",
+          "levelTitle": "Support Call Steps",
+          "mechanic": "order",
+          "skill": "Working through a cloud problem in a sensible order",
+          "link": "play.html?game=aws-cloud-technology-amazon&level=support-checks"
+        },
+        {
+          "order": 3,
+          "courseSlug": "aws-course-3",
+          "courseTitle": "Developing Applications in Python on AWS",
+          "levelId": "pick-the-service",
+          "levelTitle": "Pick the Service",
+          "mechanic": "lane",
+          "skill": "Choosing the AWS service that fits a Python app task",
+          "link": "play.html?game=aws-cloud-technology-amazon&level=pick-the-service"
+        },
+        {
+          "order": 4,
+          "courseSlug": "aws-course-4",
+          "courseTitle": "Skills for Working as an AWS Cloud Consultant",
+          "levelId": "trim-the-bill",
+          "levelTitle": "Trim the Bill",
+          "mechanic": "sort",
+          "skill": "Choosing a sensible way to cut a cloud bill",
+          "link": "play.html?game=aws-cloud-technology-amazon&level=trim-the-bill"
+        },
+        {
+          "order": 5,
+          "courseSlug": "aws-course-5",
+          "courseTitle": "DevOps on AWS and Project Management",
+          "levelId": "devops-words",
+          "levelTitle": "DevOps Word Match",
+          "mechanic": "match",
+          "skill": "Connecting DevOps and project terms to their meanings",
+          "link": "play.html?game=aws-cloud-technology-amazon&level=devops-words"
+        },
+        {
+          "order": 6,
+          "courseSlug": "aws-course-6",
+          "courseTitle": "Automation in the AWS Cloud",
+          "levelId": "automate-it",
+          "levelTitle": "Automate It",
+          "mechanic": "gate",
+          "skill": "Picking the right tool to automate an operations job",
+          "link": "play.html?game=aws-cloud-technology-amazon&level=automate-it"
+        },
+        {
+          "order": 7,
+          "courseSlug": "aws-course-7",
+          "courseTitle": "Data Analytics and Databases on AWS",
+          "levelId": "data-tools",
+          "levelTitle": "Data Tool Dash",
+          "mechanic": "lane",
+          "skill": "Choosing the AWS data service for a job",
+          "link": "play.html?game=aws-cloud-technology-amazon&level=data-tools"
+        },
+        {
+          "order": 8,
+          "courseSlug": "aws-course-8",
+          "courseTitle": "Capstone: Following the AWS Well-Architected Framework",
+          "levelId": "pillar-review",
+          "levelTitle": "Pillar Review",
+          "mechanic": "sort",
+          "skill": "Spotting which Well-Architected pillar a gap belongs to",
+          "link": "play.html?game=aws-cloud-technology-amazon&level=pillar-review"
+        }
+      ]
+    },
+    {
+      "programSlug": "certified-logistics-technician-clt",
+      "programTitle": "Certified Logistics Technician (CLT)",
+      "gameTitle": "Dock Boss",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "clt-course-1",
+          "courseTitle": "Introduction to Supply Chain Management",
+          "levelId": "dock-to-door",
+          "levelTitle": "Dock to Door",
+          "mechanic": "sort",
+          "skill": "Following goods through the steps of a distribution center",
+          "link": "play.html?game=certified-logistics-technician-clt&level=dock-to-door"
+        },
+        {
+          "order": 2,
+          "courseSlug": "clt-course-2",
+          "courseTitle": "Inventory Management and Control",
+          "levelId": "count-what-counts",
+          "levelTitle": "Count What Counts",
+          "mechanic": "gate",
+          "skill": "Sorting stock items into ABC classes by yearly value",
+          "link": "play.html?game=certified-logistics-technician-clt&level=count-what-counts"
+        },
+        {
+          "order": 3,
+          "courseSlug": "clt-course-3",
+          "courseTitle": "Transportation and Distribution",
+          "levelId": "pick-your-ride",
+          "levelTitle": "Pick Your Ride",
+          "mechanic": "lane",
+          "skill": "Matching a shipment to the right transport mode",
+          "link": "play.html?game=certified-logistics-technician-clt&level=pick-your-ride"
+        },
+        {
+          "order": 4,
+          "courseSlug": "clt-course-4",
+          "courseTitle": "Warehouse Operations",
+          "levelId": "safe-moves-in-order",
+          "levelTitle": "Safe Moves in Order",
+          "mechanic": "order",
+          "skill": "Putting picking, forklift and put-away steps in order",
+          "link": "play.html?game=certified-logistics-technician-clt&level=safe-moves-in-order"
+        },
+        {
+          "order": 5,
+          "courseSlug": "clt-course-5",
+          "courseTitle": "Procurement and Vendor Management",
+          "levelId": "buyer-basics",
+          "levelTitle": "Buyer Basics",
+          "mechanic": "match",
+          "skill": "Connecting buying terms to what they mean",
+          "link": "play.html?game=certified-logistics-technician-clt&level=buyer-basics"
+        },
+        {
+          "order": 6,
+          "courseSlug": "clt-course-6",
+          "courseTitle": "Supply Chain Technology and SAP",
+          "levelId": "check-before-you-post",
+          "levelTitle": "Check Before You Save",
+          "mechanic": "gate",
+          "skill": "Deciding what to do when entering data in an ERP system",
+          "link": "play.html?game=certified-logistics-technician-clt&level=check-before-you-post"
+        },
+        {
+          "order": 7,
+          "courseSlug": "clt-course-7",
+          "courseTitle": "Global Supply Chain and Trade",
+          "levelId": "customs-ready",
+          "levelTitle": "Customs Ready",
+          "mechanic": "lane",
+          "skill": "Knowing the basic papers and terms of importing",
+          "link": "play.html?game=certified-logistics-technician-clt&level=customs-ready"
+        },
+        {
+          "order": 8,
+          "courseSlug": "clt-course-8",
+          "courseTitle": "CLT Certification Preparation",
+          "levelId": "dock-boss-review",
+          "levelTitle": "Dock Boss Review",
+          "mechanic": "match",
+          "skill": "Reviewing key ideas from the whole logistics program",
+          "link": "play.html?game=certified-logistics-technician-clt&level=dock-boss-review"
+        }
+      ]
+    },
+    {
+      "programSlug": "certified-production-technician-cpt",
+      "programTitle": "Certified Production Technician (CPT)",
+      "gameTitle": "Line Lead",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "cpt-course-1",
+          "courseTitle": "Introduction to Manufacturing",
+          "levelId": "follow-the-flow",
+          "levelTitle": "Follow the Flow",
+          "mechanic": "sort",
+          "skill": "Telling raw material, work in process and finished goods apart",
+          "link": "play.html?game=certified-production-technician-cpt&level=follow-the-flow"
+        },
+        {
+          "order": 2,
+          "courseSlug": "cpt-course-2",
+          "courseTitle": "Blueprint Reading and Technical Drawing",
+          "levelId": "in-or-out",
+          "levelTitle": "In or Out?",
+          "mechanic": "gate",
+          "skill": "Checking measured parts against the tolerance on a drawing",
+          "link": "play.html?game=certified-production-technician-cpt&level=in-or-out"
+        },
+        {
+          "order": 3,
+          "courseSlug": "cpt-course-3",
+          "courseTitle": "Machining and CNC Operations",
+          "levelId": "prove-the-program",
+          "levelTitle": "Prove the Program",
+          "mechanic": "order",
+          "skill": "Putting CNC setup and response steps in a safe order",
+          "link": "play.html?game=certified-production-technician-cpt&level=prove-the-program"
+        },
+        {
+          "order": 4,
+          "courseSlug": "cpt-course-4",
+          "courseTitle": "Welding Fundamentals",
+          "levelId": "weld-words",
+          "levelTitle": "Weld Words",
+          "mechanic": "match",
+          "skill": "Connecting weld defects, gear and symbols to what they mean",
+          "link": "play.html?game=certified-production-technician-cpt&level=weld-words"
+        },
+        {
+          "order": 5,
+          "courseSlug": "cpt-course-5",
+          "courseTitle": "Quality Control and Inspection",
+          "levelId": "read-the-chart",
+          "levelTitle": "Read the Chart",
+          "mechanic": "gate",
+          "skill": "Deciding when a control chart calls for action",
+          "link": "play.html?game=certified-production-technician-cpt&level=read-the-chart"
+        },
+        {
+          "order": 6,
+          "courseSlug": "cpt-course-6",
+          "courseTitle": "Safety and OSHA Compliance",
+          "levelId": "safe-or-stop",
+          "levelTitle": "Safe or Stop?",
+          "mechanic": "gate",
+          "skill": "Choosing the safe move when a hazard shows up on the floor",
+          "link": "play.html?game=certified-production-technician-cpt&level=safe-or-stop"
+        },
+        {
+          "order": 7,
+          "courseSlug": "cpt-course-7",
+          "courseTitle": "Lean Manufacturing Principles",
+          "levelId": "lean-tools",
+          "levelTitle": "Lean Tool Run",
+          "mechanic": "lane",
+          "skill": "Matching a lean tool or waste to a problem on the floor",
+          "link": "play.html?game=certified-production-technician-cpt&level=lean-tools"
+        },
+        {
+          "order": 8,
+          "courseSlug": "cpt-course-8",
+          "courseTitle": "Production Technology Capstone",
+          "levelId": "shift-review",
+          "levelTitle": "Full Shift Review",
+          "mechanic": "sort",
+          "skill": "Choosing the first move for safety, quality and improvement issues",
+          "link": "play.html?game=certified-production-technician-cpt&level=shift-review"
+        }
+      ]
+    },
+    {
+      "programSlug": "comptia-a-professional-certificate",
+      "programTitle": "CompTIA A+ Professional Certificate (CompTIA A+)",
+      "gameTitle": "Bench Tech",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "comptia-a-course-1",
+          "courseTitle": "IT Fundamentals and Hardware Essentials",
+          "levelId": "name-the-part",
+          "levelTitle": "Name the Part",
+          "mechanic": "sort",
+          "skill": "Matching a job inside the PC to the part that does it",
+          "link": "play.html?game=comptia-a-professional-certificate&level=name-the-part"
+        },
+        {
+          "order": 2,
+          "courseSlug": "comptia-a-course-2",
+          "courseTitle": "Networking, Peripherals, and Wireless Technologies",
+          "levelId": "wifi-and-ports",
+          "levelTitle": "Wi-Fi and Ports",
+          "mechanic": "lane",
+          "skill": "Picking the fix for common Wi-Fi and device problems",
+          "link": "play.html?game=comptia-a-professional-certificate&level=wifi-and-ports"
+        },
+        {
+          "order": 3,
+          "courseSlug": "comptia-a-course-3",
+          "courseTitle": "Advanced Networking, Virtualization, and IT Security",
+          "levelId": "virtual-and-secure",
+          "levelTitle": "Virtual and Secure",
+          "mechanic": "match",
+          "skill": "Connecting virtual machine and network security terms to meanings",
+          "link": "play.html?game=comptia-a-professional-certificate&level=virtual-and-secure"
+        },
+        {
+          "order": 4,
+          "courseSlug": "comptia-a-course-4",
+          "courseTitle": "Foundations of Computer Hardware and Storage",
+          "levelId": "find-the-bottleneck",
+          "levelTitle": "Find the Bottleneck",
+          "mechanic": "gate",
+          "skill": "Choosing the upgrade that fixes a slow computer",
+          "link": "play.html?game=comptia-a-professional-certificate&level=find-the-bottleneck"
+        },
+        {
+          "order": 5,
+          "courseSlug": "comptia-a-course-5",
+          "courseTitle": "Operating Systems and Networking Fundamentals",
+          "levelId": "command-line-steps",
+          "levelTitle": "Command Line Steps",
+          "mechanic": "order",
+          "skill": "Putting command line troubleshooting steps in order",
+          "link": "play.html?game=comptia-a-professional-certificate&level=command-line-steps"
+        },
+        {
+          "order": 6,
+          "courseSlug": "comptia-a-course-6",
+          "courseTitle": "Advanced Networking, Security, and IT Operations",
+          "levelId": "lock-it-down",
+          "levelTitle": "Lock It Down",
+          "mechanic": "sort",
+          "skill": "Choosing the security control that fixes a risk",
+          "link": "play.html?game=comptia-a-professional-certificate&level=lock-it-down"
+        },
+        {
+          "order": 7,
+          "courseSlug": "comptia-a-course-7",
+          "courseTitle": "Practice Exams for CompTIA A+ Core 1 & Core 2",
+          "levelId": "bench-triage",
+          "levelTitle": "Bench Triage",
+          "mechanic": "gate",
+          "skill": "Telling hardware, software and network problems apart",
+          "link": "play.html?game=comptia-a-professional-certificate&level=bench-triage"
+        }
+      ]
+    },
+    {
+      "programSlug": "comptia-network-professional-certificate",
+      "programTitle": "CompTIA Network+ Professional Certificate",
+      "gameTitle": "Route Runner",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "comptia-network-course-1",
+          "courseTitle": "Introduction to Networking",
+          "levelId": "layer-sort",
+          "levelTitle": "Layer Sort",
+          "mechanic": "sort",
+          "skill": "Placing network parts and data on the right OSI layer",
+          "link": "play.html?game=comptia-network-professional-certificate&level=layer-sort"
+        },
+        {
+          "order": 2,
+          "courseSlug": "comptia-network-course-2",
+          "courseTitle": "Networking Fundamentals",
+          "levelId": "whats-broken",
+          "levelTitle": "What's Broken?",
+          "mechanic": "gate",
+          "skill": "Telling DNS, DHCP and default gateway problems apart",
+          "link": "play.html?game=comptia-network-professional-certificate&level=whats-broken"
+        },
+        {
+          "order": 3,
+          "courseSlug": "comptia-network-course-3",
+          "courseTitle": "Introduction to Contemporary Operating Systems and Hardware",
+          "levelId": "command-line-dash",
+          "levelTitle": "Command Line Dash",
+          "mechanic": "lane",
+          "skill": "Picking the right network command on Windows or Linux",
+          "link": "play.html?game=comptia-network-professional-certificate&level=command-line-dash"
+        },
+        {
+          "order": 4,
+          "courseSlug": "comptia-network-course-4",
+          "courseTitle": "Introduction to Networking and Storage",
+          "levelId": "storage-sort",
+          "levelTitle": "Storage Sort",
+          "mechanic": "sort",
+          "skill": "Telling NAS, SAN and direct-attached storage apart",
+          "link": "play.html?game=comptia-network-professional-certificate&level=storage-sort"
+        },
+        {
+          "order": 5,
+          "courseSlug": "comptia-network-course-5",
+          "courseTitle": "Basics of Cisco Networking",
+          "levelId": "switch-setup",
+          "levelTitle": "Switch Setup",
+          "mechanic": "order",
+          "skill": "Putting Cisco IOS steps for a VLAN in the right order",
+          "link": "play.html?game=comptia-network-professional-certificate&level=switch-setup"
+        },
+        {
+          "order": 6,
+          "courseSlug": "comptia-network-course-6",
+          "courseTitle": "CCNA Foundations",
+          "levelId": "acl-checkpoint",
+          "levelTitle": "ACL Checkpoint",
+          "mechanic": "gate",
+          "skill": "Reading an access control list from top to bottom",
+          "link": "play.html?game=comptia-network-professional-certificate&level=acl-checkpoint"
+        },
+        {
+          "order": 7,
+          "courseSlug": "comptia-network-course-7",
+          "courseTitle": "TCP/IP and Advanced Topics",
+          "levelId": "protocol-connect",
+          "levelTitle": "Protocol Connect",
+          "mechanic": "match",
+          "skill": "Connecting TCP/IP protocols, ports and IPv6 terms to their jobs",
+          "link": "play.html?game=comptia-network-professional-certificate&level=protocol-connect"
+        },
+        {
+          "order": 8,
+          "courseSlug": "comptia-network-course-8",
+          "courseTitle": "Operating Systems and Networking Fundamentals",
+          "levelId": "trace-the-fault",
+          "levelTitle": "Trace the Fault",
+          "mechanic": "order",
+          "skill": "Putting network troubleshooting checks in the right order",
+          "link": "play.html?game=comptia-network-professional-certificate&level=trace-the-fault"
+        },
+        {
+          "order": 9,
+          "courseSlug": "comptia-network-course-9",
+          "courseTitle": "Network Foundations and Addressing",
+          "levelId": "subnet-sprint",
+          "levelTitle": "Subnet Sprint",
+          "mechanic": "lane",
+          "skill": "Sizing subnets and finding which subnet holds an address",
+          "link": "play.html?game=comptia-network-professional-certificate&level=subnet-sprint"
+        }
+      ]
+    },
+    {
+      "programSlug": "comptia-security-professional-certificate",
+      "programTitle": "CompTIA Security+ Professional Certificate",
+      "gameTitle": "Lockdown",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "comptia-security-course-1",
+          "courseTitle": "Network Security Fundamentals",
+          "levelId": "firewall-checkpoint",
+          "levelTitle": "Firewall Checkpoint",
+          "mechanic": "gate",
+          "skill": "Deciding which connections the firewall should let through",
+          "link": "play.html?game=comptia-security-professional-certificate&level=firewall-checkpoint"
+        },
+        {
+          "order": 2,
+          "courseSlug": "comptia-security-course-2",
+          "courseTitle": "Security Threats and Vulnerabilities",
+          "levelId": "name-the-threat",
+          "levelTitle": "Name the Threat",
+          "mechanic": "match",
+          "skill": "Connecting common threats to how they work",
+          "link": "play.html?game=comptia-security-professional-certificate&level=name-the-threat"
+        },
+        {
+          "order": 3,
+          "courseSlug": "comptia-security-course-3",
+          "courseTitle": "System Hardening and Endpoint Security",
+          "levelId": "harden-the-fleet",
+          "levelTitle": "Harden the Fleet",
+          "mechanic": "order",
+          "skill": "Putting patching, cleanup and hardening steps in order",
+          "link": "play.html?game=comptia-security-professional-certificate&level=harden-the-fleet"
+        },
+        {
+          "order": 4,
+          "courseSlug": "comptia-security-course-4",
+          "courseTitle": "Cryptography and Secure Communications",
+          "levelId": "key-master",
+          "levelTitle": "Key Master",
+          "mechanic": "lane",
+          "skill": "Picking the right tool to keep data secret and unchanged",
+          "link": "play.html?game=comptia-security-professional-certificate&level=key-master"
+        }
+      ]
+    },
+    {
+      "programSlug": "core-construction-training-certificate",
+      "programTitle": "Core Construction Training Certificate",
+      "gameTitle": "Site Ready",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "construction-course-1",
+          "courseTitle": "Introduction to Construction Industry",
+          "levelId": "who-does-what",
+          "levelTitle": "Who Does What",
+          "mechanic": "sort",
+          "skill": "Telling apart the main roles on a construction project",
+          "link": "play.html?game=core-construction-training-certificate&level=who-does-what"
+        },
+        {
+          "order": 2,
+          "courseSlug": "construction-course-2",
+          "courseTitle": "Blueprint Reading and Construction Math",
+          "levelId": "scale-and-math",
+          "levelTitle": "Scale and Math Run",
+          "mechanic": "lane",
+          "skill": "Reading drawing scales and doing quick site math",
+          "link": "play.html?game=core-construction-training-certificate&level=scale-and-math"
+        },
+        {
+          "order": 3,
+          "courseSlug": "construction-course-3",
+          "courseTitle": "Construction Safety and OSHA-10",
+          "levelId": "safe-or-stop",
+          "levelTitle": "Safe or Stop",
+          "mechanic": "gate",
+          "skill": "Spotting hazards and knowing when to stop work and report",
+          "link": "play.html?game=core-construction-training-certificate&level=safe-or-stop"
+        },
+        {
+          "order": 4,
+          "courseSlug": "construction-course-4",
+          "courseTitle": "Hand and Power Tools",
+          "levelId": "tool-setup",
+          "levelTitle": "Tool Setup",
+          "mechanic": "order",
+          "skill": "Putting power saw setup steps in a safe order",
+          "link": "play.html?game=core-construction-training-certificate&level=tool-setup"
+        },
+        {
+          "order": 5,
+          "courseSlug": "construction-course-5",
+          "courseTitle": "Concrete and Masonry Fundamentals",
+          "levelId": "concrete-and-block",
+          "levelTitle": "Concrete and Block",
+          "mechanic": "match",
+          "skill": "Matching concrete and masonry terms and fixes to what they mean",
+          "link": "play.html?game=core-construction-training-certificate&level=concrete-and-block"
+        },
+        {
+          "order": 6,
+          "courseSlug": "construction-course-6",
+          "courseTitle": "Carpentry and Framing Basics",
+          "levelId": "frame-it-up",
+          "levelTitle": "Frame It Up",
+          "mechanic": "lane",
+          "skill": "Naming the parts of a framed wall and checking it for square",
+          "link": "play.html?game=core-construction-training-certificate&level=frame-it-up"
+        },
+        {
+          "order": 7,
+          "courseSlug": "construction-course-7",
+          "courseTitle": "Electrical and Plumbing Basics",
+          "levelId": "rough-in-ready",
+          "levelTitle": "Rough-In Ready",
+          "mechanic": "order",
+          "skill": "Putting rough-in work and trade safety steps in order",
+          "link": "play.html?game=core-construction-training-certificate&level=rough-in-ready"
+        },
+        {
+          "order": 8,
+          "courseSlug": "construction-course-8",
+          "courseTitle": "Construction Readiness Capstone",
+          "levelId": "site-ready-review",
+          "levelTitle": "Site Ready Review",
+          "mechanic": "gate",
+          "skill": "Judging when to go ahead and when to stop and ask on the job",
+          "link": "play.html?game=core-construction-training-certificate&level=site-ready-review"
+        }
+      ]
+    },
+    {
+      "programSlug": "cybersecurity-professional-certificate-google",
+      "programTitle": "Networking and Cybersecurity Professional Certificate (Net+, Sec+)",
+      "gameTitle": "Breach Watch",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "cybersecurity-course-1",
+          "courseTitle": "Foundations of Cybersecurity",
+          "levelId": "cia-check",
+          "levelTitle": "CIA Check",
+          "mechanic": "sort",
+          "skill": "Spotting which part of the CIA triad an incident harms",
+          "link": "play.html?game=cybersecurity-professional-certificate-google&level=cia-check"
+        },
+        {
+          "order": 2,
+          "courseSlug": "cybersecurity-course-2",
+          "courseTitle": "Play It Safe: Manage Security Risks",
+          "levelId": "risk-playbook",
+          "levelTitle": "Risk Playbook",
+          "mechanic": "match",
+          "skill": "Connecting framework and control terms to what they mean",
+          "link": "play.html?game=cybersecurity-professional-certificate-google&level=risk-playbook"
+        },
+        {
+          "order": 3,
+          "courseSlug": "cybersecurity-course-3",
+          "courseTitle": "Connect and Protect: Networks and Network Security",
+          "levelId": "firewall-watch",
+          "levelTitle": "Firewall Watch",
+          "mechanic": "gate",
+          "skill": "Deciding what to do with network traffic at the firewall",
+          "link": "play.html?game=cybersecurity-professional-certificate-google&level=firewall-watch"
+        },
+        {
+          "order": 4,
+          "courseSlug": "cybersecurity-course-4",
+          "courseTitle": "Tools of the Trade: Linux and SQL",
+          "levelId": "command-line-run",
+          "levelTitle": "Command Line Run",
+          "mechanic": "lane",
+          "skill": "Picking the right Linux command or SQL clause for a task",
+          "link": "play.html?game=cybersecurity-professional-certificate-google&level=command-line-run"
+        },
+        {
+          "order": 5,
+          "courseSlug": "cybersecurity-course-5",
+          "courseTitle": "Assets, Threats, and Vulnerabilities",
+          "levelId": "know-the-pieces",
+          "levelTitle": "Know the Pieces",
+          "mechanic": "sort",
+          "skill": "Telling assets, threats and vulnerabilities apart",
+          "link": "play.html?game=cybersecurity-professional-certificate-google&level=know-the-pieces"
+        },
+        {
+          "order": 6,
+          "courseSlug": "cybersecurity-course-6",
+          "courseTitle": "Sound the Alarm: Detection and Response",
+          "levelId": "incident-drill",
+          "levelTitle": "Incident Drill",
+          "mechanic": "order",
+          "skill": "Putting incident response steps in the right order",
+          "link": "play.html?game=cybersecurity-professional-certificate-google&level=incident-drill"
+        },
+        {
+          "order": 7,
+          "courseSlug": "cybersecurity-course-7",
+          "courseTitle": "Automate Cybersecurity Tasks with Python",
+          "levelId": "script-sprint",
+          "levelTitle": "Script Sprint",
+          "mechanic": "lane",
+          "skill": "Choosing the Python tool that fits a log-checking task",
+          "link": "play.html?game=cybersecurity-professional-certificate-google&level=script-sprint"
+        },
+        {
+          "order": 8,
+          "courseSlug": "cybersecurity-course-8",
+          "courseTitle": "Put It to Work: Prepare for Cybersecurity Jobs",
+          "levelId": "shift-handoff",
+          "levelTitle": "Shift Handoff",
+          "mechanic": "gate",
+          "skill": "Deciding which alerts to close, handle, or escalate",
+          "link": "play.html?game=cybersecurity-professional-certificate-google&level=shift-handoff"
+        }
+      ]
+    },
+    {
+      "programSlug": "data-analytics-professional-certificate-google",
+      "programTitle": "Management Analyst & Business Intelligence Professional Certificate",
+      "gameTitle": "Insight Lab",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "data-analytics-course-1",
+          "courseTitle": "Foundations: Data, Data, Everywhere",
+          "levelId": "spot-the-step",
+          "levelTitle": "Spot the Step",
+          "mechanic": "sort",
+          "skill": "Telling the steps of the data analysis process apart",
+          "link": "play.html?game=data-analytics-professional-certificate-google&level=spot-the-step"
+        },
+        {
+          "order": 2,
+          "courseSlug": "data-analytics-course-2",
+          "courseTitle": "Ask Questions to Make Data-Driven Decisions",
+          "levelId": "clear-the-ask",
+          "levelTitle": "Clear the Ask",
+          "mechanic": "gate",
+          "skill": "Checking whether a request is clear enough to start",
+          "link": "play.html?game=data-analytics-professional-certificate-google&level=clear-the-ask"
+        },
+        {
+          "order": 3,
+          "courseSlug": "data-analytics-course-3",
+          "courseTitle": "Prepare Data for Exploration",
+          "levelId": "know-your-data",
+          "levelTitle": "Know Your Data",
+          "mechanic": "match",
+          "skill": "Connecting data prep terms and habits to their meaning",
+          "link": "play.html?game=data-analytics-professional-certificate-google&level=know-your-data"
+        },
+        {
+          "order": 4,
+          "courseSlug": "data-analytics-course-4",
+          "courseTitle": "Process Data from Dirty to Clean",
+          "levelId": "clean-sweep",
+          "levelTitle": "Clean Sweep",
+          "mechanic": "order",
+          "skill": "Putting data cleaning steps in a safe order",
+          "link": "play.html?game=data-analytics-professional-certificate-google&level=clean-sweep"
+        },
+        {
+          "order": 5,
+          "courseSlug": "data-analytics-course-5",
+          "courseTitle": "Analyze Data to Answer Questions",
+          "levelId": "query-lane",
+          "levelTitle": "Query Lane",
+          "mechanic": "lane",
+          "skill": "Choosing the right SQL piece for a common question",
+          "link": "play.html?game=data-analytics-professional-certificate-google&level=query-lane"
+        },
+        {
+          "order": 6,
+          "courseSlug": "data-analytics-course-6",
+          "courseTitle": "Share Data Through the Art of Visualization",
+          "levelId": "pick-the-chart",
+          "levelTitle": "Pick the Chart",
+          "mechanic": "gate",
+          "skill": "Choosing a chart that fits the question",
+          "link": "play.html?game=data-analytics-professional-certificate-google&level=pick-the-chart"
+        },
+        {
+          "order": 7,
+          "courseSlug": "data-analytics-course-7",
+          "courseTitle": "Data Analysis with R Programming",
+          "levelId": "r-toolbox",
+          "levelTitle": "R Toolbox",
+          "mechanic": "match",
+          "skill": "Matching common R and tidyverse functions to their jobs",
+          "link": "play.html?game=data-analytics-professional-certificate-google&level=r-toolbox"
+        },
+        {
+          "order": 8,
+          "courseSlug": "data-analytics-course-8",
+          "courseTitle": "Google Data Analytics Capstone",
+          "levelId": "final-review",
+          "levelTitle": "Final Review",
+          "mechanic": "lane",
+          "skill": "Reviewing the whole analysis process from question to story",
+          "link": "play.html?game=data-analytics-professional-certificate-google&level=final-review"
+        }
+      ]
+    },
+    {
+      "programSlug": "data-science-professional-certificate-ibm",
+      "programTitle": "Database Administrator (DBA) Professional Certificate (IBM)",
+      "gameTitle": "Data Detective",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "data-science-course-1",
+          "courseTitle": "What is Data Science?",
+          "levelId": "question-sorter",
+          "levelTitle": "Question Sorter",
+          "mechanic": "sort",
+          "skill": "Telling reports, predictions and recommendations apart",
+          "link": "play.html?game=data-science-professional-certificate-ibm&level=question-sorter"
+        },
+        {
+          "order": 2,
+          "courseSlug": "data-science-course-2",
+          "courseTitle": "Tools for Data Science",
+          "levelId": "tool-run",
+          "levelTitle": "Tool Run",
+          "mechanic": "lane",
+          "skill": "Picking the right tool for each part of data work",
+          "link": "play.html?game=data-science-professional-certificate-ibm&level=tool-run"
+        },
+        {
+          "order": 3,
+          "courseSlug": "data-science-course-3",
+          "courseTitle": "Data Science Methodology",
+          "levelId": "method-map",
+          "levelTitle": "Method Map",
+          "mechanic": "order",
+          "skill": "Putting the steps of a data science project in order",
+          "link": "play.html?game=data-science-professional-certificate-ibm&level=method-map"
+        },
+        {
+          "order": 4,
+          "courseSlug": "data-science-course-4",
+          "courseTitle": "Python for Data Science, AI & Development",
+          "levelId": "python-pairs",
+          "levelTitle": "Python Pairs",
+          "mechanic": "match",
+          "skill": "Connecting Python building blocks to what they do",
+          "link": "play.html?game=data-science-professional-certificate-ibm&level=python-pairs"
+        },
+        {
+          "order": 5,
+          "courseSlug": "data-science-course-5",
+          "courseTitle": "Python Project for Data Science",
+          "levelId": "chart-check",
+          "levelTitle": "Chart Check",
+          "mechanic": "gate",
+          "skill": "Deciding if pulled data is ready for a chart",
+          "link": "play.html?game=data-science-professional-certificate-ibm&level=chart-check"
+        },
+        {
+          "order": 6,
+          "courseSlug": "data-science-course-6",
+          "courseTitle": "Databases and SQL for Data Science with Python",
+          "levelId": "sql-sorter",
+          "levelTitle": "SQL Sorter",
+          "mechanic": "sort",
+          "skill": "Telling which SQL statements build, change or read data",
+          "link": "play.html?game=data-science-professional-certificate-ibm&level=sql-sorter"
+        },
+        {
+          "order": 7,
+          "courseSlug": "data-science-course-7",
+          "courseTitle": "Data Analysis with Python",
+          "levelId": "explore-run",
+          "levelTitle": "Explore Run",
+          "mechanic": "lane",
+          "skill": "Choosing pandas tools and reading what the results mean",
+          "link": "play.html?game=data-science-professional-certificate-ibm&level=explore-run"
+        },
+        {
+          "order": 8,
+          "courseSlug": "data-science-course-8",
+          "courseTitle": "Data Visualization with Python",
+          "levelId": "chart-match",
+          "levelTitle": "Chart Match",
+          "mechanic": "match",
+          "skill": "Matching charts and chart parts to the story they tell",
+          "link": "play.html?game=data-science-professional-certificate-ibm&level=chart-match"
+        },
+        {
+          "order": 9,
+          "courseSlug": "data-science-course-9",
+          "courseTitle": "Machine Learning with Python",
+          "levelId": "model-sorter",
+          "levelTitle": "Model Sorter",
+          "mechanic": "sort",
+          "skill": "Telling classification, regression and clustering apart",
+          "link": "play.html?game=data-science-professional-certificate-ibm&level=model-sorter"
+        },
+        {
+          "order": 10,
+          "courseSlug": "data-science-course-10",
+          "courseTitle": "Applied Data Science Capstone",
+          "levelId": "capstone-review",
+          "levelTitle": "Capstone Review",
+          "mechanic": "gate",
+          "skill": "Spotting what needs fixing before a project is shared",
+          "link": "play.html?game=data-science-professional-certificate-ibm&level=capstone-review"
+        }
+      ]
+    },
+    {
+      "programSlug": "demo-lane",
+      "programTitle": "Demo: Steer practice",
+      "gameTitle": "Courier Run",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "demo-course-1",
+          "courseTitle": "Demo Course One: Working Safely Online",
+          "levelId": "keep-or-report",
+          "levelTitle": "Keep or Report",
+          "mechanic": "gate",
+          "skill": "Spotting emails that should be reported",
+          "link": "play.html?game=demo-lane&level=keep-or-report"
+        },
+        {
+          "order": 2,
+          "courseSlug": "demo-course-2",
+          "courseTitle": "Demo Course Two: Inside the Computer",
+          "levelId": "name-the-part",
+          "levelTitle": "Name the Part",
+          "mechanic": "lane",
+          "skill": "Matching computer parts to the job they do",
+          "link": "play.html?game=demo-lane&level=name-the-part"
+        },
+        {
+          "order": 3,
+          "courseSlug": "demo-course-3",
+          "courseTitle": "Demo Course Three: Everyday Troubleshooting",
+          "levelId": "first-step",
+          "levelTitle": "First Step First",
+          "mechanic": "lane",
+          "skill": "Choosing a sensible first step for common problems",
+          "link": "play.html?game=demo-lane&level=first-step"
+        },
+        {
+          "order": 4,
+          "courseSlug": "demo-course-4",
+          "courseTitle": "Demo Course Four: Networking Basics",
+          "levelId": "network-words",
+          "levelTitle": "Network Words",
+          "mechanic": "lane",
+          "skill": "Recognizing basic networking terms",
+          "link": "play.html?game=demo-lane&level=network-words"
+        },
+        {
+          "order": 5,
+          "courseSlug": "demo-course-5",
+          "courseTitle": "Demo Course Five: Security Habits",
+          "levelId": "safe-habits",
+          "levelTitle": "Safe Habits",
+          "mechanic": "lane",
+          "skill": "Picking the safer choice in everyday security",
+          "link": "play.html?game=demo-lane&level=safe-habits"
+        }
+      ]
+    },
+    {
+      "programSlug": "demo-match",
+      "programTitle": "IT Basics Practice Demo",
+      "gameTitle": "Cable Crew",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "demo-course-1",
+          "courseTitle": "Working Safely with Technology",
+          "levelId": "safe-or-risky",
+          "levelTitle": "Safe or Risky?",
+          "mechanic": "gate",
+          "skill": "Spotting messages and requests that look risky",
+          "link": "play.html?game=demo-match&level=safe-or-risky"
+        },
+        {
+          "order": 2,
+          "courseSlug": "demo-course-2",
+          "courseTitle": "Computer Hardware Basics",
+          "levelId": "parts-of-a-computer",
+          "levelTitle": "Parts of a Computer",
+          "mechanic": "match",
+          "skill": "Connecting computer parts to the job each one does",
+          "link": "play.html?game=demo-match&level=parts-of-a-computer"
+        },
+        {
+          "order": 3,
+          "courseSlug": "demo-course-3",
+          "courseTitle": "Networks and the Internet",
+          "levelId": "network-words",
+          "levelTitle": "Network Words",
+          "mechanic": "match",
+          "skill": "Connecting common network terms to their meaning",
+          "link": "play.html?game=demo-match&level=network-words"
+        },
+        {
+          "order": 4,
+          "courseSlug": "demo-course-4",
+          "courseTitle": "Supporting Users",
+          "levelId": "first-fix",
+          "levelTitle": "Problem and First Fix",
+          "mechanic": "match",
+          "skill": "Connecting a common problem to the first thing to check",
+          "link": "play.html?game=demo-match&level=first-fix"
+        },
+        {
+          "order": 5,
+          "courseSlug": "demo-course-5",
+          "courseTitle": "Staying Secure Online",
+          "levelId": "account-safety",
+          "levelTitle": "Account Safety Words",
+          "mechanic": "match",
+          "skill": "Connecting security words to what they protect you from",
+          "link": "play.html?game=demo-match&level=account-safety"
+        }
+      ]
+    },
+    {
+      "programSlug": "demo-order",
+      "programTitle": "IT Support Professional Certificate (demo)",
+      "gameTitle": "Step by Step",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "it-support-course-1",
+          "courseTitle": "Introduction to Technical Support",
+          "levelId": "tier-one-or-up",
+          "levelTitle": "Handle or Escalate?",
+          "mechanic": "gate",
+          "skill": "Knowing which tickets Tier 1 can close on its own",
+          "link": "play.html?game=demo-order&level=tier-one-or-up"
+        },
+        {
+          "order": 2,
+          "courseSlug": "it-support-course-2",
+          "courseTitle": "Help Desk Processes and Workflows",
+          "levelId": "help-desk-flow",
+          "levelTitle": "Ticket Life Cycle",
+          "mechanic": "order",
+          "skill": "Putting the steps of a support job in order",
+          "link": "play.html?game=demo-order&level=help-desk-flow"
+        },
+        {
+          "order": 3,
+          "courseSlug": "it-support-course-3",
+          "courseTitle": "Hardware Troubleshooting Basics",
+          "levelId": "no-power",
+          "levelTitle": "Nothing Turns On",
+          "mechanic": "order",
+          "skill": "Working a hardware job one step at a time",
+          "link": "play.html?game=demo-order&level=no-power"
+        },
+        {
+          "order": 4,
+          "courseSlug": "it-support-course-4",
+          "courseTitle": "Introduction to Computer Networking",
+          "levelId": "web-page-trip",
+          "levelTitle": "A Page Appears",
+          "mechanic": "order",
+          "skill": "Following data across a network from start to finish",
+          "link": "play.html?game=demo-order&level=web-page-trip"
+        },
+        {
+          "order": 5,
+          "courseSlug": "it-support-course-5",
+          "courseTitle": "Security Basics for IT Support",
+          "levelId": "phish-response",
+          "levelTitle": "Spot and Report",
+          "mechanic": "order",
+          "skill": "Responding calmly to a suspicious email and locking down an account",
+          "link": "play.html?game=demo-order&level=phish-response"
+        }
+      ]
+    },
+    {
+      "programSlug": "demo-sort",
+      "programTitle": "Demo: IT Basics",
+      "gameTitle": "Sort It Out",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "demo-it-basics-1",
+          "courseTitle": "Staying Safe Online",
+          "levelId": "safe-or-report",
+          "levelTitle": "Open or Report?",
+          "mechanic": "gate",
+          "skill": "Spotting emails that are safe to open and ones to report",
+          "link": "play.html?game=demo-sort&level=safe-or-report"
+        },
+        {
+          "order": 2,
+          "courseSlug": "demo-it-basics-2",
+          "courseTitle": "Inside a Computer",
+          "levelId": "computer-parts",
+          "levelTitle": "Parts of a Computer",
+          "mechanic": "sort",
+          "skill": "Sorting computer parts by the job they do",
+          "link": "play.html?game=demo-sort&level=computer-parts"
+        },
+        {
+          "order": 3,
+          "courseSlug": "demo-it-basics-3",
+          "courseTitle": "Files and Folders",
+          "levelId": "file-types",
+          "levelTitle": "What Kind of File?",
+          "mechanic": "sort",
+          "skill": "Telling file types apart by their extension",
+          "link": "play.html?game=demo-sort&level=file-types"
+        },
+        {
+          "order": 4,
+          "courseSlug": "demo-it-basics-4",
+          "courseTitle": "Handling Information",
+          "levelId": "how-private",
+          "levelTitle": "How Private Is It?",
+          "mechanic": "sort",
+          "skill": "Sorting information by who is allowed to see it",
+          "link": "play.html?game=demo-sort&level=how-private"
+        },
+        {
+          "order": 5,
+          "courseSlug": "demo-it-basics-5",
+          "courseTitle": "Storage and Backups",
+          "levelId": "storage-sizes",
+          "levelTitle": "How Big Is It?",
+          "mechanic": "sort",
+          "skill": "Matching everyday files to their usual storage size",
+          "link": "play.html?game=demo-sort&level=storage-sizes"
+        }
+      ]
+    },
+    {
+      "programSlug": "demo-world-a",
+      "programTitle": "Kit demo (worlds A)",
+      "gameTitle": "World Tour A",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "demo-course-1",
+          "courseTitle": "Demo: Data Center Basics",
+          "levelId": "rack-alerts",
+          "levelTitle": "Rack Alerts",
+          "mechanic": "gate",
+          "skill": "Deciding which server room alerts need action now",
+          "link": "play.html?game=demo-world-a&level=rack-alerts"
+        },
+        {
+          "order": 2,
+          "courseSlug": "demo-course-2",
+          "courseTitle": "Demo: Warehouse Receiving",
+          "levelId": "dock-check",
+          "levelTitle": "Dock Check",
+          "mechanic": "gate",
+          "skill": "Accepting or holding deliveries at the receiving dock",
+          "link": "play.html?game=demo-world-a&level=dock-check"
+        },
+        {
+          "order": 3,
+          "courseSlug": "demo-course-3",
+          "courseTitle": "Demo: Medical Office Basics",
+          "levelId": "front-desk",
+          "levelTitle": "Front Desk",
+          "mechanic": "gate",
+          "skill": "Choosing the right next step for a clinic front desk request",
+          "link": "play.html?game=demo-world-a&level=front-desk"
+        },
+        {
+          "order": 4,
+          "courseSlug": "demo-course-4",
+          "courseTitle": "Demo: Factory Floor Safety",
+          "levelId": "line-sort",
+          "levelTitle": "Line Sort",
+          "mechanic": "sort",
+          "skill": "Sorting factory floor issues by who should handle them",
+          "link": "play.html?game=demo-world-a&level=line-sort"
+        }
+      ]
+    },
+    {
+      "programSlug": "demo-world-b",
+      "programTitle": "Kit preview program",
+      "gameTitle": "World Preview B",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "preview-course-1",
+          "courseTitle": "Preview Course 1",
+          "levelId": "site-checks",
+          "levelTitle": "Morning Site Checks",
+          "mechanic": "gate",
+          "skill": "Deciding if a site task is safe to start",
+          "link": "play.html?game=demo-world-b&level=site-checks"
+        },
+        {
+          "order": 2,
+          "courseSlug": "preview-course-2",
+          "courseTitle": "Preview Course 2",
+          "levelId": "studio-review",
+          "levelTitle": "Design Review Round",
+          "mechanic": "gate",
+          "skill": "Giving a clear next step on a design draft",
+          "link": "play.html?game=demo-world-b&level=studio-review"
+        },
+        {
+          "order": 3,
+          "courseSlug": "preview-course-3",
+          "courseTitle": "Preview Course 3",
+          "levelId": "cloud-routing",
+          "levelTitle": "Cloud Request Routing",
+          "mechanic": "gate",
+          "skill": "Choosing how to handle a cloud service request",
+          "link": "play.html?game=demo-world-b&level=cloud-routing"
+        },
+        {
+          "order": 4,
+          "courseSlug": "preview-course-4",
+          "courseTitle": "Preview Course 4",
+          "levelId": "lab-data-types",
+          "levelTitle": "Sort the Lab Data",
+          "mechanic": "sort",
+          "skill": "Recognizing common kinds of data in a lab sheet",
+          "link": "play.html?game=demo-world-b&level=lab-data-types"
+        }
+      ]
+    },
+    {
+      "programSlug": "digital-literacy-empowerment-class",
+      "programTitle": "Workforce AP Digital Literacy Course",
+      "gameTitle": "Click Confident",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "digital-literacy-course-1",
+          "courseTitle": "Computer Basics",
+          "levelId": "safe-or-risky",
+          "levelTitle": "Safe or Risky?",
+          "mechanic": "gate",
+          "skill": "Telling safe online habits from risky ones",
+          "link": "play.html?game=digital-literacy-empowerment-class&level=safe-or-risky"
+        },
+        {
+          "order": 2,
+          "courseSlug": "digital-literacy-course-2",
+          "courseTitle": "Internet Basics",
+          "levelId": "browser-basics",
+          "levelTitle": "Browser Basics",
+          "mechanic": "lane",
+          "skill": "Using a web browser and searching with key words",
+          "link": "play.html?game=digital-literacy-empowerment-class&level=browser-basics"
+        },
+        {
+          "order": 3,
+          "courseSlug": "digital-literacy-course-3",
+          "courseTitle": "Email Basics",
+          "levelId": "send-it-right",
+          "levelTitle": "Send It Right",
+          "mechanic": "order",
+          "skill": "Writing and sending an email in the right order",
+          "link": "play.html?game=digital-literacy-empowerment-class&level=send-it-right"
+        },
+        {
+          "order": 4,
+          "courseSlug": "digital-literacy-course-4",
+          "courseTitle": "Cybersecurity Basics: Online Scams and Fraud",
+          "levelId": "scam-sorter",
+          "levelTitle": "Scam Sorter",
+          "mechanic": "sort",
+          "skill": "Recognizing common scams and the signs they share",
+          "link": "play.html?game=digital-literacy-empowerment-class&level=scam-sorter"
+        }
+      ]
+    },
+    {
+      "programSlug": "digital-marketing-e-commerce-google",
+      "programTitle": "Digital Marketing & E-Commerce Professional Certificate (Google)",
+      "gameTitle": "Shop Launch",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "marketing-course-1",
+          "courseTitle": "Foundations of Digital Marketing and E-commerce",
+          "levelId": "where-is-the-shopper",
+          "levelTitle": "Where Is the Shopper?",
+          "mechanic": "gate",
+          "skill": "Spotting which stage of the marketing funnel a shopper is in",
+          "link": "play.html?game=digital-marketing-e-commerce-google&level=where-is-the-shopper"
+        },
+        {
+          "order": 2,
+          "courseSlug": "marketing-course-2",
+          "courseTitle": "Attract and Engage Customers with Digital Marketing",
+          "levelId": "get-found",
+          "levelTitle": "Get Found",
+          "mechanic": "match",
+          "skill": "Connecting search and content words to what they mean",
+          "link": "play.html?game=digital-marketing-e-commerce-google&level=get-found"
+        },
+        {
+          "order": 3,
+          "courseSlug": "marketing-course-3",
+          "courseTitle": "From Likes to Leads: Interact with Customers Online",
+          "levelId": "comment-desk",
+          "levelTitle": "Comment Desk",
+          "mechanic": "gate",
+          "skill": "Choosing how to respond to public social media comments",
+          "link": "play.html?game=digital-marketing-e-commerce-google&level=comment-desk"
+        },
+        {
+          "order": 4,
+          "courseSlug": "marketing-course-4",
+          "courseTitle": "Think Outside the Inbox: Email Marketing",
+          "levelId": "inbox-levers",
+          "levelTitle": "Inbox Levers",
+          "mechanic": "sort",
+          "skill": "Telling what email changes affect: opens, clicks or audience",
+          "link": "play.html?game=digital-marketing-e-commerce-google&level=inbox-levers"
+        },
+        {
+          "order": 5,
+          "courseSlug": "marketing-course-5",
+          "courseTitle": "Assess for Success: Marketing Analytics and Measurement",
+          "levelId": "test-and-track",
+          "levelTitle": "Test and Track",
+          "mechanic": "order",
+          "skill": "Putting a fair test and a campaign check in the right order",
+          "link": "play.html?game=digital-marketing-e-commerce-google&level=test-and-track"
+        },
+        {
+          "order": 6,
+          "courseSlug": "marketing-course-6",
+          "courseTitle": "Make the Sale: Build, Launch, and Manage E-commerce Stores",
+          "levelId": "cart-rescue",
+          "levelTitle": "Cart Rescue",
+          "mechanic": "lane",
+          "skill": "Picking simple fixes that help shoppers finish an order",
+          "link": "play.html?game=digital-marketing-e-commerce-google&level=cart-rescue"
+        },
+        {
+          "order": 7,
+          "courseSlug": "marketing-course-7",
+          "courseTitle": "Satisfaction Guaranteed: Develop Customer Loyalty Online",
+          "levelId": "fans-or-critics",
+          "levelTitle": "Fans or Critics",
+          "mechanic": "sort",
+          "skill": "Reading customer survey scores to keep buyers coming back",
+          "link": "play.html?game=digital-marketing-e-commerce-google&level=fans-or-critics"
+        }
+      ]
+    },
+    {
+      "programSlug": "health-information-technology-mchit",
+      "programTitle": "Medical Billing, Coding, and Health Information Technician Certificate (MBCHIT)",
+      "gameTitle": "Clean Claim",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "mchit-course-1",
+          "courseTitle": "Introduction to Health Information Technology",
+          "levelId": "chart-schedule-bill",
+          "levelTitle": "Chart, Schedule or Bill",
+          "mechanic": "sort",
+          "skill": "Sorting clinic tasks into the systems that handle them",
+          "link": "play.html?game=health-information-technology-mchit&level=chart-schedule-bill"
+        },
+        {
+          "order": 2,
+          "courseSlug": "mchit-course-2",
+          "courseTitle": "Medical Terminology and Anatomy",
+          "levelId": "word-parts",
+          "levelTitle": "Word Parts",
+          "mechanic": "match",
+          "skill": "Connecting medical word parts to their meanings",
+          "link": "play.html?game=health-information-technology-mchit&level=word-parts"
+        },
+        {
+          "order": 3,
+          "courseSlug": "mchit-course-3",
+          "courseTitle": "Health Information Management",
+          "levelId": "records-request",
+          "levelTitle": "Records Room",
+          "mechanic": "order",
+          "skill": "Putting records release and retention steps in order",
+          "link": "play.html?game=health-information-technology-mchit&level=records-request"
+        },
+        {
+          "order": 4,
+          "courseSlug": "mchit-course-4",
+          "courseTitle": "Electronic Health Records (EHR)",
+          "levelId": "chart-builder",
+          "levelTitle": "Chart Builder",
+          "mechanic": "sort",
+          "skill": "Placing visit details in the right part of the EHR",
+          "link": "play.html?game=health-information-technology-mchit&level=chart-builder"
+        },
+        {
+          "order": 5,
+          "courseSlug": "mchit-course-5",
+          "courseTitle": "Healthcare Law, Ethics & HIPAA",
+          "levelId": "share-or-stop",
+          "levelTitle": "Share or Stop",
+          "mechanic": "gate",
+          "skill": "Deciding when patient information can be shared",
+          "link": "play.html?game=health-information-technology-mchit&level=share-or-stop"
+        },
+        {
+          "order": 6,
+          "courseSlug": "mchit-course-6",
+          "courseTitle": "Medical Coding: ICD-10 and CPT",
+          "levelId": "code-set-sprint",
+          "levelTitle": "Code Set Sprint",
+          "mechanic": "lane",
+          "skill": "Choosing the right code set and following basic coding rules",
+          "link": "play.html?game=health-information-technology-mchit&level=code-set-sprint"
+        },
+        {
+          "order": 7,
+          "courseSlug": "mchit-course-7",
+          "courseTitle": "Revenue Cycle Management",
+          "levelId": "claim-journey",
+          "levelTitle": "Claim Journey",
+          "mechanic": "order",
+          "skill": "Putting the steps of the revenue cycle in order",
+          "link": "play.html?game=health-information-technology-mchit&level=claim-journey"
+        },
+        {
+          "order": 8,
+          "courseSlug": "mchit-course-8",
+          "courseTitle": "Capstone: HIT Practice Simulation",
+          "levelId": "clean-claim-check",
+          "levelTitle": "Clean Claim Check",
+          "mechanic": "gate",
+          "skill": "Checking a claim from intake to coding before it goes out",
+          "link": "play.html?game=health-information-technology-mchit&level=clean-claim-check"
+        }
+      ]
+    },
+    {
+      "programSlug": "help-desk-demo",
+      "programTitle": "IT Support Professional Certificate (IBM)",
+      "gameTitle": "Help Desk Hero",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "it-support-course-1",
+          "courseTitle": "Introduction to Technical Support",
+          "levelId": "ticket-triage",
+          "levelTitle": "Ticket Triage",
+          "mechanic": "gate",
+          "skill": "Choosing the right next step for a help desk ticket",
+          "link": "play.html?game=help-desk-demo&level=ticket-triage"
+        },
+        {
+          "order": 2,
+          "courseSlug": "it-support-course-2",
+          "courseTitle": "Introduction to Hardware and Operating Systems",
+          "levelId": "hardware-or-software",
+          "levelTitle": "Hardware or Software?",
+          "mechanic": "gate",
+          "skill": "Telling hardware faults apart from software problems",
+          "link": "play.html?game=help-desk-demo&level=hardware-or-software"
+        }
+      ]
+    },
+    {
+      "programSlug": "it-automation-with-python-google",
+      "programTitle": "IT Automation with Python",
+      "gameTitle": "Script Shift",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "it-auto-course-1",
+          "courseTitle": "Crash Course on Python",
+          "levelId": "name-check",
+          "levelTitle": "Name Check",
+          "mechanic": "gate",
+          "skill": "Checking usernames against a simple rule",
+          "link": "play.html?game=it-automation-with-python-google&level=name-check"
+        },
+        {
+          "order": 2,
+          "courseSlug": "it-auto-course-2",
+          "courseTitle": "Using Python to Interact with the Operating System",
+          "levelId": "pick-the-call",
+          "levelTitle": "Pick the Call",
+          "mechanic": "lane",
+          "skill": "Matching a file or system chore to the right Python call",
+          "link": "play.html?game=it-automation-with-python-google&level=pick-the-call"
+        },
+        {
+          "order": 3,
+          "courseSlug": "it-auto-course-3",
+          "courseTitle": "Introduction to Git and GitHub",
+          "levelId": "branch-and-share",
+          "levelTitle": "Branch and Share",
+          "mechanic": "order",
+          "skill": "Putting a safe Git workflow in order",
+          "link": "play.html?game=it-automation-with-python-google&level=branch-and-share"
+        },
+        {
+          "order": 4,
+          "courseSlug": "it-auto-course-4",
+          "courseTitle": "Troubleshooting and Debugging Techniques",
+          "levelId": "first-move",
+          "levelTitle": "First Move",
+          "mechanic": "gate",
+          "skill": "Choosing the best next step when a script misbehaves",
+          "link": "play.html?game=it-automation-with-python-google&level=first-move"
+        },
+        {
+          "order": 5,
+          "courseSlug": "it-auto-course-5",
+          "courseTitle": "Configuration Management and the Cloud",
+          "levelId": "same-every-time",
+          "levelTitle": "Same Every Time",
+          "mechanic": "match",
+          "skill": "Connecting configuration management terms to their meaning",
+          "link": "play.html?game=it-automation-with-python-google&level=same-every-time"
+        },
+        {
+          "order": 6,
+          "courseSlug": "it-auto-course-6",
+          "courseTitle": "Automating Real-World Tasks with Python",
+          "levelId": "keep-it-safe",
+          "levelTitle": "Keep It Safe",
+          "mechanic": "sort",
+          "skill": "Deciding where each piece of a monitoring script belongs",
+          "link": "play.html?game=it-automation-with-python-google&level=keep-it-safe"
+        }
+      ]
+    },
+    {
+      "programSlug": "it-support-professional-certificate-ibm",
+      "programTitle": "IT Support Professional Certificate (IBM)",
+      "gameTitle": "Help Desk Hero",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "it-support-course-1",
+          "courseTitle": "Introduction to Technical Support",
+          "levelId": "ticket-triage",
+          "levelTitle": "Ticket Triage",
+          "mechanic": "gate",
+          "skill": "Choosing the right next step for a help desk ticket",
+          "link": "play.html?game=it-support-professional-certificate-ibm&level=ticket-triage"
+        },
+        {
+          "order": 2,
+          "courseSlug": "it-support-course-2",
+          "courseTitle": "Introduction to Hardware and Operating Systems",
+          "levelId": "parts-and-tools",
+          "levelTitle": "Parts and Tools",
+          "mechanic": "lane",
+          "skill": "Matching computer parts and Windows tools to the problem",
+          "link": "play.html?game=it-support-professional-certificate-ibm&level=parts-and-tools"
+        },
+        {
+          "order": 3,
+          "courseSlug": "it-support-course-3",
+          "courseTitle": "Introduction to Software, Programming, and Databases",
+          "levelId": "isolate-and-query",
+          "levelTitle": "Isolate and Query",
+          "mechanic": "order",
+          "skill": "Isolating an app problem and reading a simple SQL query",
+          "link": "play.html?game=it-support-professional-certificate-ibm&level=isolate-and-query"
+        },
+        {
+          "order": 4,
+          "courseSlug": "it-support-course-4",
+          "courseTitle": "Introduction to Networking and Storage",
+          "levelId": "sort-the-network",
+          "levelTitle": "Sort the Network",
+          "mechanic": "sort",
+          "skill": "Telling network types, cables, drives and addresses apart",
+          "link": "play.html?game=it-support-professional-certificate-ibm&level=sort-the-network"
+        },
+        {
+          "order": 5,
+          "courseSlug": "it-support-course-5",
+          "courseTitle": "Introduction to Cybersecurity Essentials",
+          "levelId": "spot-the-risk",
+          "levelTitle": "Spot the Risk",
+          "mechanic": "gate",
+          "skill": "Responding safely to security requests at the help desk",
+          "link": "play.html?game=it-support-professional-certificate-ibm&level=spot-the-risk"
+        },
+        {
+          "order": 6,
+          "courseSlug": "it-support-course-6",
+          "courseTitle": "Introduction to Cloud Computing",
+          "levelId": "cloud-match-up",
+          "levelTitle": "Cloud Match-Up",
+          "mechanic": "match",
+          "skill": "Connecting cloud terms to what they mean and who handles what",
+          "link": "play.html?game=it-support-professional-certificate-ibm&level=cloud-match-up"
+        },
+        {
+          "order": 7,
+          "courseSlug": "it-support-course-7",
+          "courseTitle": "Technical Support Case Studies and Capstone Project",
+          "levelId": "case-closed",
+          "levelTitle": "Case Closed",
+          "mechanic": "order",
+          "skill": "Reviewing earlier courses on a real case, from call to close",
+          "link": "play.html?game=it-support-professional-certificate-ibm&level=case-closed"
+        }
+      ]
+    },
+    {
+      "programSlug": "project-management-professional-certificate-microsoft",
+      "programTitle": "Project Management Professional Certificate (Microsoft)",
+      "gameTitle": "Launch Plan",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "pm-course-1",
+          "courseTitle": "Project Management Foundations",
+          "levelId": "scope-check",
+          "levelTitle": "Scope Check",
+          "mechanic": "gate",
+          "skill": "Telling agreed scope apart from new requests",
+          "link": "play.html?game=project-management-professional-certificate-microsoft&level=scope-check"
+        },
+        {
+          "order": 2,
+          "courseSlug": "pm-course-2",
+          "courseTitle": "Initiating and Planning Projects",
+          "levelId": "plan-the-launch",
+          "levelTitle": "Plan the Launch",
+          "mechanic": "order",
+          "skill": "Putting planning and scheduling steps in a logical order",
+          "link": "play.html?game=project-management-professional-certificate-microsoft&level=plan-the-launch"
+        },
+        {
+          "order": 3,
+          "courseSlug": "pm-course-3",
+          "courseTitle": "Project Scheduling and Cost Management",
+          "levelId": "track-the-numbers",
+          "levelTitle": "Track the Numbers",
+          "mechanic": "lane",
+          "skill": "Reading earned value, cost, schedule and critical path basics",
+          "link": "play.html?game=project-management-professional-certificate-microsoft&level=track-the-numbers"
+        },
+        {
+          "order": 4,
+          "courseSlug": "pm-course-4",
+          "courseTitle": "Managing Project Risks, Changes and Stakeholders",
+          "levelId": "risk-response",
+          "levelTitle": "Risk Response",
+          "mechanic": "sort",
+          "skill": "Matching a risk response to the right strategy",
+          "link": "play.html?game=project-management-professional-certificate-microsoft&level=risk-response"
+        },
+        {
+          "order": 5,
+          "courseSlug": "pm-course-5",
+          "courseTitle": "Project Leadership, Communication and Stakeholder Management",
+          "levelId": "team-talk",
+          "levelTitle": "Team Talk",
+          "mechanic": "gate",
+          "skill": "Choosing how to handle people and communication problems",
+          "link": "play.html?game=project-management-professional-certificate-microsoft&level=team-talk"
+        },
+        {
+          "order": 6,
+          "courseSlug": "pm-course-6",
+          "courseTitle": "Agile Project Management",
+          "levelId": "sprint-run",
+          "levelTitle": "Sprint Run",
+          "mechanic": "lane",
+          "skill": "Recalling basic Agile and Scrum terms and roles",
+          "link": "play.html?game=project-management-professional-certificate-microsoft&level=sprint-run"
+        },
+        {
+          "order": 7,
+          "courseSlug": "pm-course-7",
+          "courseTitle": "Microsoft Project & Power BI for Project Managers",
+          "levelId": "tools-of-the-trade",
+          "levelTitle": "Tools of the Trade",
+          "mechanic": "match",
+          "skill": "Connecting Microsoft Project and Power BI terms to their meaning",
+          "link": "play.html?game=project-management-professional-certificate-microsoft&level=tools-of-the-trade"
+        },
+        {
+          "order": 8,
+          "courseSlug": "pm-course-8",
+          "courseTitle": "Project Management Capstone",
+          "levelId": "wrap-it-up",
+          "levelTitle": "Wrap It Up",
+          "mechanic": "order",
+          "skill": "Reviewing a whole project from start to close",
+          "link": "play.html?game=project-management-professional-certificate-microsoft&level=wrap-it-up"
+        }
+      ]
+    },
+    {
+      "programSlug": "software-developer-professional-certificate-ibm",
+      "programTitle": "AI and Software Developer Professional Certificate (IBM)",
+      "gameTitle": "Ship It",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "software-dev-course-1",
+          "courseTitle": "Introduction to Software Engineering",
+          "levelId": "phase-sorter",
+          "levelTitle": "Phase Sorter",
+          "mechanic": "sort",
+          "skill": "Placing everyday team tasks in the right SDLC phase",
+          "link": "play.html?game=software-developer-professional-certificate-ibm&level=phase-sorter"
+        },
+        {
+          "order": 2,
+          "courseSlug": "software-dev-course-2",
+          "courseTitle": "Introduction to HTML, CSS, & JavaScript",
+          "levelId": "page-parts",
+          "levelTitle": "Page Parts",
+          "mechanic": "sort",
+          "skill": "Telling which job HTML, CSS or JavaScript should do",
+          "link": "play.html?game=software-developer-professional-certificate-ibm&level=page-parts"
+        },
+        {
+          "order": 3,
+          "courseSlug": "software-dev-course-3",
+          "courseTitle": "Getting Started with Git and GitHub",
+          "levelId": "branch-and-merge",
+          "levelTitle": "Branch and Merge",
+          "mechanic": "order",
+          "skill": "Putting everyday Git and GitHub steps in the right order",
+          "link": "play.html?game=software-developer-professional-certificate-ibm&level=branch-and-merge"
+        },
+        {
+          "order": 4,
+          "courseSlug": "software-dev-course-4",
+          "courseTitle": "Python for Data Science, AI & Development",
+          "levelId": "python-sprint",
+          "levelTitle": "Python Sprint",
+          "mechanic": "lane",
+          "skill": "Recalling Python data types, structures and basic tools",
+          "link": "play.html?game=software-developer-professional-certificate-ibm&level=python-sprint"
+        },
+        {
+          "order": 5,
+          "courseSlug": "software-dev-course-5",
+          "courseTitle": "Developing Front-End Apps with React",
+          "levelId": "react-links",
+          "levelTitle": "React Links",
+          "mechanic": "match",
+          "skill": "Connecting React ideas to what they do and how to fix them",
+          "link": "play.html?game=software-developer-professional-certificate-ibm&level=react-links"
+        },
+        {
+          "order": 6,
+          "courseSlug": "software-dev-course-6",
+          "courseTitle": "Developing Back-End Apps with Node.js and Express",
+          "levelId": "status-check",
+          "levelTitle": "Status Check",
+          "mechanic": "gate",
+          "skill": "Choosing the right HTTP status code for an Express API reply",
+          "link": "play.html?game=software-developer-professional-certificate-ibm&level=status-check"
+        },
+        {
+          "order": 7,
+          "courseSlug": "software-dev-course-7",
+          "courseTitle": "Django Application Development with SQL and Databases",
+          "levelId": "model-to-page",
+          "levelTitle": "Model to Page",
+          "mechanic": "order",
+          "skill": "Putting Django and SQL steps in the right order",
+          "link": "play.html?game=software-developer-professional-certificate-ibm&level=model-to-page"
+        },
+        {
+          "order": 8,
+          "courseSlug": "software-dev-course-8",
+          "courseTitle": "Introduction to Containers w/ Docker, Kubernetes & OpenShift",
+          "levelId": "container-terms",
+          "levelTitle": "Container Yard",
+          "mechanic": "match",
+          "skill": "Connecting Docker and Kubernetes terms to what they do",
+          "link": "play.html?game=software-developer-professional-certificate-ibm&level=container-terms"
+        },
+        {
+          "order": 9,
+          "courseSlug": "software-dev-course-9",
+          "courseTitle": "Application Development using Microservices and Serverless",
+          "levelId": "call-or-queue",
+          "levelTitle": "Call or Queue",
+          "mechanic": "gate",
+          "skill": "Deciding when a service should call directly or send to a queue",
+          "link": "play.html?game=software-developer-professional-certificate-ibm&level=call-or-queue"
+        }
+      ]
+    },
+    {
+      "programSlug": "ux-design-professional-certificate-google",
+      "programTitle": "User Experience & Interface Design Professional Certificate",
+      "gameTitle": "Sketch to Ship",
+      "levels": [
+        {
+          "order": 1,
+          "courseSlug": "ux-design-course-1",
+          "courseTitle": "Foundations of User Experience (UX) Design",
+          "levelId": "who-does-what",
+          "levelTitle": "Who Does What",
+          "mechanic": "sort",
+          "skill": "Telling research, structure and visual look apart in design work",
+          "link": "play.html?game=ux-design-professional-certificate-google&level=who-does-what"
+        },
+        {
+          "order": 2,
+          "courseSlug": "ux-design-course-2",
+          "courseTitle": "Start the UX Design Process: Empathize, Define, and Ideate",
+          "levelId": "notes-to-needs",
+          "levelTitle": "Notes to Needs",
+          "mechanic": "gate",
+          "skill": "Telling observations, problem statements and ideas apart",
+          "link": "play.html?game=ux-design-professional-certificate-google&level=notes-to-needs"
+        },
+        {
+          "order": 3,
+          "courseSlug": "ux-design-course-3",
+          "courseTitle": "Build Wireframes and Low-Fidelity Prototypes",
+          "levelId": "sketch-the-flow",
+          "levelTitle": "Sketch the Flow",
+          "mechanic": "order",
+          "skill": "Putting wireframing and design process steps in order",
+          "link": "play.html?game=ux-design-professional-certificate-google&level=sketch-the-flow"
+        },
+        {
+          "order": 4,
+          "courseSlug": "ux-design-course-4",
+          "courseTitle": "Conduct UX Research and Test Early Concepts",
+          "levelId": "watch-and-learn",
+          "levelTitle": "Watch and Learn",
+          "mechanic": "lane",
+          "skill": "Running a usability test and acting on what you see",
+          "link": "play.html?game=ux-design-professional-certificate-google&level=watch-and-learn"
+        },
+        {
+          "order": 5,
+          "courseSlug": "ux-design-course-5",
+          "courseTitle": "Create High-Fidelity Designs and Prototypes in Figma",
+          "levelId": "polish-the-parts",
+          "levelTitle": "Polish the Parts",
+          "mechanic": "match",
+          "skill": "Connecting Figma and accessibility terms to what they mean",
+          "link": "play.html?game=ux-design-professional-certificate-google&level=polish-the-parts"
+        },
+        {
+          "order": 6,
+          "courseSlug": "ux-design-course-6",
+          "courseTitle": "Responsive Web Design in Adobe XD",
+          "levelId": "fit-every-screen",
+          "levelTitle": "Fit Every Screen",
+          "mechanic": "gate",
+          "skill": "Choosing how a layout should adapt to screen width",
+          "link": "play.html?game=ux-design-professional-certificate-google&level=fit-every-screen"
+        },
+        {
+          "order": 7,
+          "courseSlug": "ux-design-course-7",
+          "courseTitle": "Design a User Experience for Social Good & Prepare for Jobs",
+          "levelId": "job-fair-showcase",
+          "levelTitle": "Job Fair Showcase",
+          "mechanic": "lane",
+          "skill": "Reviewing the whole design process and sharing it well",
+          "link": "play.html?game=ux-design-professional-certificate-google&level=job-fair-showcase"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,542 @@
+{
+ "programSlug": "data-science-professional-certificate-ibm",
+ "programTitle": "Database Administrator (DBA) Professional Certificate (IBM)",
+ "category": "cloud-data",
+ "categoryLabel": "Cloud & Data",
+ "brandColor": "#a47f38",
+ "providers": "IBM via Coursera",
+ "programDescription": "This 160-hour professional certificate prepares learners for careers as database administrators. Learners first build relational database and SQL foundations, then develop the operational skills at the center of database administration: installation and configuration, user access and security, backup and recovery, monitoring and performance tuning, automation with Linux and shell scripting, data movement through ETL pipelines, and data warehouse management, culminating in a portfolio-ready database administration capstone.",
+ "hasTwcSyllabus": true,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "data-science-course-1",
+   "courseTitle": "What is Data Science?",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Research Analyst",
+   "missionTagline": "Prove you can explain what data science does in plain language",
+   "skillLabels": [
+    "Data science overview",
+    "Career paths",
+    "Analytical thinking",
+    "SQL",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are at a career fair and a company representative asks you to explain, in two minutes, what data science is, how it differs from data analytics, and what kind of business problems it is best suited to solve. Using your foundations from What is Data Science, give your answer.",
+   "quiz": [
+    {
+     "text": "A business analyst produces monthly sales reports showing what happened last quarter. A data scientist builds a model that predicts which customers will stop buying next month. What is the KEY difference between these roles?",
+     "options": [
+      "The analyst uses Excel while the data scientist uses Python—the tools define the roles",
+      "The analyst produces descriptive insights about past events; the data scientist builds predictive models that forecast future outcomes to enable proactive decisions",
+      "The data scientist's work is more accurate because machine learning models are more reliable than manual reports",
+      "Both roles are essentially the same; the title difference is purely organizational"
+     ],
+     "correctIndex": 1,
+     "explanation": "The fundamental distinction is descriptive (what happened) versus predictive (what will happen). Data science adds the predictive and prescriptive dimensions that go beyond traditional analytics reporting."
+    },
+    {
+     "text": "A startup has six months of customer data and wants to build an AI system to predict which product features will drive the most revenue growth. A data scientist reviews the request. What is the MOST important concern to raise first?",
+     "options": [
+      "The data science team needs more powerful computing hardware before starting this project",
+      "Six months of data may be insufficient to train a reliable predictive model, especially if seasonal patterns exist; more data collection time or alternative analytical approaches may be needed",
+      "Revenue prediction is an analytics problem, not a data science problem, so the wrong team was assigned",
+      "The product team should define features first, then the data scientist can confirm revenue impact after launch"
+     ],
+     "correctIndex": 1,
+     "explanation": "Data quality and quantity are the foundation of any data science project. Insufficient historical data leads to unreliable models—raising this concern early prevents wasted effort."
+    },
+    {
+     "text": "A hospital wants to use data science to reduce patient readmissions. A data scientist proposes building a model that flags high-risk patients for extra follow-up care. What type of problem is this?",
+     "options": [
+      "An unsupervised clustering problem—grouping patients by similarity without a defined outcome",
+      "A supervised binary classification problem—using historical patient data with known readmission outcomes to train a model that predicts readmission risk for new patients",
+      "A natural language processing problem—analyzing doctor's notes to find patterns in language",
+      "A time series forecasting problem—predicting the total number of readmissions per week"
+     ],
+     "correctIndex": 1,
+     "explanation": "Predicting a binary outcome (readmitted or not) using historical labeled data is a classic supervised classification problem. The model learns from past cases to classify future patients."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "data-science-course-2",
+   "courseTitle": "Tools for Data Science",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you know which tool to use for each stage of data work",
+   "skillLabels": [
+    "Jupyter Notebooks",
+    "Python",
+    "R",
+    "SQL",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A new data scientist on your team asks which tools they should learn first and how those tools connect in a typical project workflow. Using your Tools for Data Science knowledge, walk them through the toolchain from data ingestion through model development and sharing.",
+   "quiz": [
+    {
+     "text": "A data scientist is exploring a new dataset and wants to write code, see output immediately, add narrative explanations, and share the analysis as a document with their team. Which tool is BEST suited for this workflow?",
+     "options": [
+      "A plain Python script (.py file) run from the command line",
+      "A Jupyter Notebook, which combines executable code cells, inline output, and markdown narrative in a single shareable document",
+      "A SQL client connected directly to the database",
+      "A spreadsheet application like Excel or Google Sheets"
+     ],
+     "correctIndex": 1,
+     "explanation": "Jupyter Notebooks are the standard tool for exploratory data analysis because they combine code execution, immediate output display, and narrative documentation in one shareable artifact."
+    },
+    {
+     "text": "A data scientist needs to join three large database tables, filter rows based on date ranges, and aggregate the result before loading it into Python for modeling. Which tool should handle this step?",
+     "options": [
+      "Load all three tables into Python DataFrames and perform all joins and filtering in pandas",
+      "Use SQL to perform the joins, filtering, and aggregation directly in the database before loading only the needed result into Python",
+      "Use R's dplyr to connect to the database and process the tables",
+      "Export all three tables to CSV files and merge them manually in Excel"
+     ],
+     "correctIndex": 1,
+     "explanation": "SQL databases are optimized for set operations like joins, filters, and aggregations on large tables. Doing this work in the database before loading into Python is faster and uses less memory."
+    },
+    {
+     "text": "A data science team's Jupyter Notebooks are stored only on individual laptops. A critical analysis cannot be reproduced because the original analyst left the company. What practice would have prevented this?",
+     "options": [
+      "Notebooks should be printed to PDF regularly so a paper copy is always available",
+      "Version-controlling notebooks in a shared Git repository so the code, environment specifications, and analysis history are accessible to the whole team",
+      "Each analyst should email their latest notebook to the team lead at the end of each week",
+      "Notebooks should be rewritten as Python scripts before being shared since scripts are more reproducible"
+     ],
+     "correctIndex": 1,
+     "explanation": "Version control in a shared repository is the standard practice for reproducibility and knowledge continuity. It ensures the full history of the analysis is preserved and accessible to the team."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "data-science-course-3",
+   "courseTitle": "Data Science Methodology",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Discovery Expert",
+   "missionTagline": "Prove you can follow a structured methodology from problem to solution",
+   "skillLabels": [
+    "CRISP-DM",
+    "Problem framing",
+    "Hypothesis testing",
+    "Analytical thinking",
+    "Communication"
+   ],
+   "scenarioPrompt": "A hospital administrator wants to know why their patient satisfaction scores dropped 12% over the past year. You are leading the data science investigation. Using the CRISP-DM methodology covered in this course, walk through the first three phases of your approach and explain what you would deliver at the end of each phase.",
+   "quiz": [
+    {
+     "text": "A data scientist jumps directly from receiving a business problem to building a predictive model without exploring the available data first. Which CRISP-DM phase did they skip and what risk does this create?",
+     "options": [
+      "They skipped the Deployment phase; the model may not work in the production environment",
+      "They skipped the Data Understanding phase; without exploring data quality, distributions, and gaps, the model may be built on assumptions that the data does not support",
+      "They skipped the Evaluation phase; the model's accuracy cannot be verified without prior data exploration",
+      "They skipped the Business Understanding phase; the model may solve the wrong problem"
+     ],
+     "correctIndex": 1,
+     "explanation": "Data Understanding reveals whether the available data can actually answer the business question. Skipping it leads to models built on incomplete or unsuitable data discovered only after significant development effort."
+    },
+    {
+     "text": "During the Data Preparation phase of a CRISP-DM project, an analyst finds that 40% of records in the key target variable column are missing. What is the MOST important action?",
+     "options": [
+      "Proceed with the 60% of complete records since that is a sufficient sample size for most models",
+      "Investigate why 40% of values are missing before deciding whether to impute, exclude, or obtain the missing data—since the missingness pattern itself may be analytically meaningful",
+      "Impute all missing values with the column mean to preserve the full dataset size",
+      "Drop the target variable column and find an alternative proxy variable for the analysis"
+     ],
+     "correctIndex": 1,
+     "explanation": "40% missing data on the target variable is critical. The pattern of missingness (random vs. systematic) determines the right strategy. Blindly imputing or dropping can introduce severe bias into the model."
+    },
+    {
+     "text": "After completing a data science project and deploying a model, the team moves on to the next project. Six months later, the model's predictions deteriorate. What CRISP-DM principle did they overlook?",
+     "options": [
+      "The Modeling phase should have included a wider variety of algorithms to ensure one remained accurate over time",
+      "CRISP-DM is a cyclical process; the Evaluation and Deployment phases include ongoing monitoring and re-evaluation, with the expectation of iterating back through the cycle as business conditions change",
+      "The Business Understanding phase did not specify a model lifespan, so the team had no obligation to maintain it",
+      "The Data Preparation phase should have included future data to make the model forward-looking"
+     ],
+     "correctIndex": 1,
+     "explanation": "CRISP-DM's cyclical nature means deployment is not the end. Models require ongoing monitoring and retraining as data distributions and business contexts evolve—treating deployment as final is a common mistake."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "data-science-course-4",
+   "courseTitle": "Python for Data Science, AI & Development",
+   "hours": 24,
+   "syllabusDescription": "Builds Python skills in syntax, data structures, functions, and libraries used to script, automate, and interact with databases and data pipelines.",
+   "courseraSlug": "python-for-applied-data-science-ai",
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can write Python to handle real data science tasks",
+   "skillLabels": [
+    "Python",
+    "Pandas",
+    "NumPy",
+    "Data manipulation",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You receive a dataset of hospital patient records with columns for age, diagnosis, length_of_stay, and readmitted. The age column has some string values ('unknown') mixed with integers, and length_of_stay has negative values that appear to be errors. Describe the Python/pandas code approach you would take to clean and prepare this data for modeling.",
+   "quiz": [
+    {
+     "text": "A NumPy array contains patient ages: [25, 34, -1, 67, 999, 42]. Which values are MOST suspicious as data entry errors and what is the appropriate initial response?",
+     "options": [
+      "All values appear valid; medical datasets sometimes include placeholder codes like -1 and 999",
+      "-1 and 999 are suspicious as likely sentinel values or entry errors; investigate the data dictionary to confirm their meaning before deciding whether to treat them as missing or remove them",
+      "Remove -1 immediately since age cannot be negative, and keep 999 since it may represent a patient over 100",
+      "Replace all suspicious values with the array mean to preserve dataset size"
+     ],
+     "correctIndex": 1,
+     "explanation": "Sentinel values like -1 and 999 are common in healthcare data as null indicators or system codes. Removing them before understanding their meaning may eliminate valid records or required coding conventions."
+    },
+    {
+     "text": "A pandas DataFrame column 'age' contains a mix of integers and the string 'unknown'. You run df['age'].mean() and get a TypeError. What is the correct fix?",
+     "options": [
+      "Filter out all rows where age is not an integer before calculating the mean",
+      "Use pd.to_numeric(df['age'], errors='coerce') to convert the column, which turns 'unknown' into NaN, then call .mean() which automatically skips NaN values",
+      "Use df['age'].astype(int) to force all values to integers, which will convert 'unknown' to 0",
+      "Replace 'unknown' with 0 using df['age'].replace('unknown', 0) before calculating the mean"
+     ],
+     "correctIndex": 1,
+     "explanation": "pd.to_numeric with errors='coerce' is the clean solution—it converts valid numbers and silently turns non-numeric strings into NaN. The .mean() method skips NaN by default, giving a correct result."
+    },
+    {
+     "text": "You need to create a new binary column 'high_risk' that is 1 if length_of_stay > 7 and readmitted == 1, and 0 otherwise. Which pandas code is correct?",
+     "options": [
+      "df['high_risk'] = df['length_of_stay'] > 7 and df['readmitted'] == 1",
+      "df['high_risk'] = ((df['length_of_stay'] > 7) & (df['readmitted'] == 1)).astype(int)",
+      "df['high_risk'] = df.apply(lambda x: 1 if x.length_of_stay > 7 and x.readmitted == 1)",
+      "df['high_risk'] = df[df['length_of_stay'] > 7 & df['readmitted'] == 1]"
+     ],
+     "correctIndex": 1,
+     "explanation": "Element-wise boolean operations on pandas Series require & (not Python's and) and parentheses around each condition. .astype(int) converts True/False to 1/0. The other options use Python scalars or invalid syntax."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "data-science-course-5",
+   "courseTitle": "Python Project for Data Science",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Insight Analyst",
+   "missionTagline": "Prove you can complete an end-to-end Python data project",
+   "skillLabels": [
+    "Web scraping",
+    "Pandas",
+    "Data visualization",
+    "Python",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are building a stock price dashboard for a finance team. You need to pull historical price data using a Python library, clean it, and visualize price trends for two companies on the same chart. Describe the Python workflow you would use from data retrieval through the final chart.",
+   "quiz": [
+    {
+     "text": "You retrieved stock price data for two companies as separate DataFrames with different date ranges. You need to plot both on the same chart aligned by date. What is the BEST preparation step before plotting?",
+     "options": [
+      "Plot both DataFrames on the same axes directly; matplotlib will align dates automatically",
+      "Merge or align the two DataFrames on the date index so both series share the same date axis before plotting",
+      "Resample both DataFrames to weekly frequency to reduce the number of data points",
+      "Export both DataFrames to CSV and use Excel to create the combined chart"
+     ],
+     "correctIndex": 1,
+     "explanation": "Plotting unaligned date series produces mismatched x-axis values. Merging on the date index (or aligning the index) ensures both lines correspond to the same dates on the chart."
+    },
+    {
+     "text": "A stock price DataFrame has a 'Date' column stored as strings. After plotting the data, the x-axis shows dates out of order. What is the BEST fix?",
+     "options": [
+      "Sort the DataFrame by the 'Date' column alphabetically since date strings sort correctly in alphabetical order",
+      "Convert the 'Date' column to datetime using pd.to_datetime(), set it as the DataFrame index, and sort the index before plotting",
+      "Manually specify the x-axis tick positions and labels in matplotlib to force the correct order",
+      "Add an integer sequence column and use it as the x-axis instead of the date strings"
+     ],
+     "correctIndex": 1,
+     "explanation": "String dates sort lexicographically, not chronologically. Converting to datetime enables proper temporal sorting and allows matplotlib to correctly space and label date intervals on the x-axis."
+    },
+    {
+     "text": "Your stock dashboard shows a sharp price spike in a single day that appears to be a data error. The value is 10x higher than the surrounding days. What is the BEST approach before including it in a report?",
+     "options": [
+      "Remove the data point since it is clearly an outlier that will distort trend analysis",
+      "Cross-reference the value against another data source (e.g., financial news or a different API) to determine whether the spike reflects a real market event before deciding how to handle it",
+      "Replace the spike value with the average of the surrounding five days to smooth the trend",
+      "Keep the spike and add a footnote explaining that outliers exist in real-world financial data"
+     ],
+     "correctIndex": 1,
+     "explanation": "Stock prices do have legitimate extreme moves (stock splits, merger announcements). Cross-referencing before removing protects against discarding valid data that represents a real and important market event."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "data-science-course-6",
+   "courseTitle": "Databases and SQL for Data Science with Python",
+   "hours": 18,
+   "syllabusDescription": "Covers relational database creation and SQL with DDL/DML, joins, views, transactions, stored procedures, and accessing databases from Python.",
+   "courseraSlug": "sql-data-science",
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can query databases to answer data science questions",
+   "skillLabels": [
+    "SQL",
+    "Database querying",
+    "Python DB integration",
+    "Data analysis",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are a data scientist at a healthcare organization. You need to query a patient database to find the average length of stay by diagnosis category for patients admitted in 2023, excluding records where length_of_stay is NULL or negative. Then you need to load the result into a pandas DataFrame for further analysis. Describe the SQL query and Python integration approach.",
+   "quiz": [
+    {
+     "text": "A data scientist writes a SQL query that joins a patients table to a diagnoses table and returns 50,000 rows. They load the entire result into a pandas DataFrame. The query runs in 2 seconds but the Python processing takes 3 minutes. What is the BEST optimization?",
+     "options": [
+      "Add more RAM to the Python server so it can process larger DataFrames faster",
+      "Push more aggregation and filtering into the SQL query so Python receives a smaller, pre-processed result—databases are optimized for these operations at scale",
+      "Switch from pandas to a faster DataFrame library like polars",
+      "Run the SQL query in parallel threads to retrieve data faster"
+     ],
+     "correctIndex": 1,
+     "explanation": "Databases are purpose-built for filtering, joining, and aggregation at scale. Moving more work into SQL reduces the data transferred to Python and eliminates redundant in-memory processing."
+    },
+    {
+     "text": "You need to find all patients where the admission date is in 2023 AND the diagnosis is either 'pneumonia' OR 'sepsis'. Which SQL WHERE clause is correct?",
+     "options": [
+      "WHERE YEAR(admission_date) = 2023 AND diagnosis = 'pneumonia' OR diagnosis = 'sepsis'",
+      "WHERE YEAR(admission_date) = 2023 AND (diagnosis = 'pneumonia' OR diagnosis = 'sepsis')",
+      "WHERE YEAR(admission_date) = 2023 OR diagnosis IN ('pneumonia', 'sepsis')",
+      "WHERE admission_date = 2023 AND diagnosis = 'pneumonia' AND diagnosis = 'sepsis'"
+     ],
+     "correctIndex": 1,
+     "explanation": "Without parentheses around the OR clause, SQL evaluates AND before OR, making the first option return all 2023 pneumonia patients plus all sepsis patients regardless of year. Parentheses enforce the intended grouping."
+    },
+    {
+     "text": "A Python script uses string formatting to build a SQL query from user input: query = 'SELECT * FROM patients WHERE name = ' + user_input. A user enters '; DROP TABLE patients; --'. What is this attack called and how should it be prevented?",
+     "options": [
+      "A buffer overflow attack; prevent it by limiting the length of user_input to 50 characters",
+      "SQL injection; prevent it by using parameterized queries (e.g., cursor.execute('SELECT * FROM patients WHERE name = ?', [user_input])) which safely escape all user input",
+      "A denial-of-service attack; prevent it by rate-limiting the number of database queries per user",
+      "A privilege escalation attack; prevent it by running the database as a read-only user"
+     ],
+     "correctIndex": 1,
+     "explanation": "SQL injection inserts malicious SQL through user input. Parameterized queries pass user input as a data value, not as part of the SQL structure, completely preventing the injection."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "data-science-course-7",
+   "courseTitle": "Data Analysis with Python",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Data Detective",
+   "missionTagline": "Prove you can analyze data with pandas and draw valid conclusions",
+   "skillLabels": [
+    "Exploratory data analysis",
+    "Pandas",
+    "Correlation analysis",
+    "Statistical thinking",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are analyzing a dataset of used cars to help an auto dealer understand what factors most influence price. The dataset has columns for make, year, mileage, condition, and sale_price. Describe how you would use pandas to explore this dataset and identify the key drivers of price.",
+   "quiz": [
+    {
+     "text": "A pandas corr() matrix shows that mileage has a correlation of -0.78 with sale_price. What does this mean in plain language for the auto dealer?",
+     "options": [
+      "Cars with higher mileage tend to sell for higher prices—the negative sign indicates the scale is inverted",
+      "There is a strong negative linear relationship: as mileage increases, sale price tends to decrease significantly—high mileage is one of the strongest predictors of lower price in this dataset",
+      "Mileage and price are unrelated since a correlation below -1 is invalid",
+      "78% of the variation in sale price is explained by mileage alone"
+     ],
+     "correctIndex": 1,
+     "explanation": "A correlation of -0.78 indicates a strong negative relationship. The value does not mean 78% of variance is explained (that would be R²); it means that higher mileage strongly tends to correspond with lower prices."
+    },
+    {
+     "text": "A data analyst groups used car data by 'condition' (Excellent, Good, Fair, Poor) and calculates the mean sale price for each group. The results show Excellent averages $18,000 and Poor averages $6,000. A manager asks if this proves condition causes higher prices. What is the MOST accurate response?",
+     "options": [
+      "Yes, the analysis proves that improving a car's condition will increase its sale price",
+      "The analysis shows a strong association between condition and price, but correlation does not imply causation—other factors like age and make also correlate with both condition and price",
+      "No conclusion can be drawn from group means alone; only regression analysis is valid for price analysis",
+      "The result is misleading because mean is skewed by outliers; median should be used instead"
+     ],
+     "correctIndex": 1,
+     "explanation": "Correlation and association do not establish causation. Confounding variables (older cars are often in poorer condition and worth less regardless of condition) must be controlled before claiming condition causes price differences."
+    },
+    {
+     "text": "A used car dataset has 15,000 rows. df.describe() shows the 'year' column has a minimum value of 1900. The data is supposed to contain only cars from 1990 onward. What action should be taken?",
+     "options": [
+      "Keep the 1900 value since vintage cars are a valid part of the used car market",
+      "Filter the DataFrame to remove records with year < 1990, then re-run describe() to verify the range is now correct before proceeding with analysis",
+      "Replace all year values below 1990 with the median year to preserve row count",
+      "Treat the 1900 value as a rounding error and round all year values up to the nearest decade"
+     ],
+     "correctIndex": 1,
+     "explanation": "A minimum year of 1900 in a 1990+ dataset signals a data quality problem—likely a default value or entry error. Removing out-of-scope records and validating the fix maintains analytical integrity."
+    }
+   ]
+  },
+  {
+   "order": 8,
+   "courseSlug": "data-science-course-8",
+   "courseTitle": "Data Visualization with Python",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Design Thinker",
+   "missionTagline": "Prove you can turn Python analysis into clear, compelling visuals",
+   "skillLabels": [
+    "Matplotlib",
+    "Seaborn",
+    "Data storytelling",
+    "Chart selection",
+    "Communication"
+   ],
+   "scenarioPrompt": "You have completed an analysis showing that patient readmission rates vary significantly by age group and diagnosis category. Your hospital's executive team needs to understand the findings in a 5-minute briefing. Using your Python visualization skills, describe which charts you would build, what library you would use, and how you would make them executive-ready.",
+   "quiz": [
+    {
+     "text": "You need to show how readmission rates differ across 5 age groups and 4 diagnosis categories simultaneously. Which visualization type BEST handles this two-variable comparison?",
+     "options": [
+      "A pie chart for each diagnosis category showing the proportion of each age group",
+      "A grouped bar chart or heatmap showing readmission rate at the intersection of each age group and diagnosis category",
+      "A scatter plot with age on the x-axis and readmission rate on the y-axis, colored by diagnosis",
+      "Five separate line charts—one per age group—each showing readmission rates by diagnosis"
+     ],
+     "correctIndex": 1,
+     "explanation": "A grouped bar chart or heatmap directly encodes both variables in a single view, making comparisons between and within categories easy. Scatter plots lose categorical structure; separate charts require more cognitive work to compare."
+    },
+    {
+     "text": "A seaborn heatmap uses the default color gradient and an executive says they cannot tell the high values from the medium values. What is the BEST fix?",
+     "options": [
+      "Add a data table next to the heatmap so exact numbers are always visible",
+      "Switch to a diverging or sequential colormap with high contrast between extremes (e.g., 'YlOrRd'), annotate cells with the actual values using annot=True, and add a clear colorbar label",
+      "Reduce the number of categories displayed so fewer cells need to be distinguished",
+      "Export the heatmap to Excel and apply conditional formatting for better color control"
+     ],
+     "correctIndex": 1,
+     "explanation": "A high-contrast colormap plus cell annotations (annot=True) makes heatmap values unambiguous for non-technical audiences. Relying on gradient alone for value discrimination is insufficient for executive presentations."
+    },
+    {
+     "text": "A matplotlib chart for the executive presentation has a title 'Figure 3', axis labels 'x' and 'y', a legend with entries 'Series1' and 'Series2', and six different colors with no explanation. What is the MOST critical improvement to make?",
+     "options": [
+      "Change the chart type from a bar chart to a line chart for a more professional appearance",
+      "Replace all placeholder labels with meaningful text: a descriptive title, labeled axes with units, and a legend that names what each series represents—so the chart communicates without additional explanation",
+      "Remove the legend entirely and use a single color scheme to simplify the visual",
+      "Add a caption below the chart explaining what Figure 3 represents in the broader report"
+     ],
+     "correctIndex": 1,
+     "explanation": "A chart that requires external explanation to understand has failed its communication goal. Descriptive titles, labeled axes, and a meaningful legend make a chart self-explanatory—essential for executive audiences."
+    }
+   ]
+  },
+  {
+   "order": 9,
+   "courseSlug": "data-science-course-9",
+   "courseTitle": "Machine Learning with Python",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Analytics Pro",
+   "missionTagline": "Prove you can build, evaluate, and improve ML models",
+   "skillLabels": [
+    "Scikit-learn",
+    "Model evaluation",
+    "Classification",
+    "Regression",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are building a machine learning model to predict whether a job applicant will be hired based on resume features. Your first logistic regression model achieves 91% accuracy, but your manager flags that it only correctly identifies 23% of actual hires. Using your ML evaluation skills from this course, explain what is happening and what you would do to fix it.",
+   "quiz": [
+    {
+     "text": "A model predicts loan default with 97% accuracy. Out of 1,000 test cases, only 30 are actual defaults. The model predicts 'no default' for all 1,000 cases. How is 97% accuracy possible and why is this model useless?",
+     "options": [
+      "The 97% is a calculation error; a model that never predicts defaults cannot have high accuracy",
+      "Because 970 of 1,000 cases are non-defaults, predicting 'no default' for everything achieves 97% accuracy—but the model identifies zero actual defaults, making it worthless for its intended purpose",
+      "The model is 97% accurate on non-defaults and should be combined with a separate model for defaults",
+      "The model is overfit to the training data and should be retrained with more epochs"
+     ],
+     "correctIndex": 1,
+     "explanation": "On imbalanced datasets, accuracy is misleading. A model that predicts only the majority class scores high on accuracy while completely failing on the minority class—the one that actually matters for the business problem."
+    },
+    {
+     "text": "A hiring model has high precision (when it predicts 'hire', it is usually right) but very low recall (it misses most good candidates). In a talent-scarce market, which metric should the team optimize for and why?",
+     "options": [
+      "Precision, because making a wrong hire is more costly than missing a good candidate",
+      "Recall, because missing qualified candidates means the company fails to fill roles—in a talent-scarce market, catching as many good candidates as possible is more important than avoiding every incorrect recommendation",
+      "F1 score, because it always represents the best balance between precision and recall",
+      "Accuracy, because it reflects overall model correctness across all predictions"
+     ],
+     "correctIndex": 1,
+     "explanation": "The relative cost of false negatives versus false positives determines which metric to optimize. In a scarce talent market, missing good candidates (false negatives) is the costlier error—making recall the priority metric."
+    },
+    {
+     "text": "A data scientist splits a dataset into training and test sets, trains a model, and achieves 95% accuracy on both splits. A colleague suggests using cross-validation instead. Why?",
+     "options": [
+      "Cross-validation trains more models simultaneously, completing the job faster",
+      "A single train/test split can produce optimistic or pessimistic estimates depending on which rows happen to land in each split; k-fold cross-validation averages performance across multiple splits for a more reliable and stable estimate",
+      "Cross-validation is required by sklearn and cannot be avoided in production workflows",
+      "Cross-validation uses less memory than a single train/test split since it processes data in batches"
+     ],
+     "correctIndex": 1,
+     "explanation": "A single split introduces variance based on which specific rows ended up in train vs. test. k-fold cross-validation reduces this variance by evaluating the model across k different splits and averaging the results."
+    }
+   ]
+  },
+  {
+   "order": 10,
+   "courseSlug": "data-science-course-10",
+   "courseTitle": "Applied Data Science Capstone",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Data Detective",
+   "missionTagline": "Prove you can run a complete applied data science project",
+   "skillLabels": [
+    "End-to-end data science",
+    "Model deployment",
+    "Pandas",
+    "Scikit-learn",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are presenting your applied data science capstone to a technical hiring panel. They ask you to walk through the complete project—from business problem through data collection, cleaning, modeling, evaluation, and findings—and explain the most important decision you made and why. Using the full methodology from this certificate, describe your project narrative.",
+   "quiz": [
+    {
+     "text": "During a capstone presentation a panel member asks: 'Your model performs well in your notebook. How would you deploy it so other teams can use it in production?' What demonstrates the strongest answer?",
+     "options": [
+      "Explain that deployment is outside the scope of a data science role—it is the engineering team's responsibility",
+      "Describe serializing the model with joblib or pickle, wrapping it in a Flask or FastAPI service that accepts inputs and returns predictions, containerizing it with Docker, and monitoring prediction quality post-deployment",
+      "Share the Jupyter Notebook with the other team and walk them through running it manually when needed",
+      "Export the model's predictions to a CSV file that other teams can reference for their specific use cases"
+     ],
+     "correctIndex": 1,
+     "explanation": "Production deployment involves serialization, an API wrapper, containerization, and monitoring. A data scientist who understands this end-to-end path is significantly more valuable than one who stops at notebook-level analysis."
+    },
+    {
+     "text": "A capstone project uses a random forest model that achieves the best test accuracy. The interviewer asks: 'Why did you choose this model over simpler options like logistic regression?' Which answer demonstrates genuine model selection reasoning?",
+     "options": [
+      "Random forests are always better than logistic regression because they are more advanced",
+      "I compared both models on cross-validated performance metrics; random forest outperformed logistic regression on recall for the minority class, justifying the added complexity—though I noted that logistic regression would have been preferable if interpretability was a primary requirement",
+      "I chose random forest because it was taught in the course and I was familiar with the implementation",
+      "I tested all available sklearn classifiers and selected the one with the highest accuracy on the test set"
+     ],
+     "correctIndex": 1,
+     "explanation": "Strong model selection reasoning compares options, names the specific metric that drove the choice, acknowledges trade-offs (accuracy vs. interpretability), and shows awareness that the 'best' model depends on context."
+    },
+    {
+     "text": "After completing a capstone, a reviewer notes that you evaluated the model only on the test set you created. They ask how you would validate it more rigorously before recommending production use. What is the BEST answer?",
+     "options": [
+      "Run the model on the original training set to confirm it achieves similar accuracy",
+      "Evaluate the model on a completely held-out external validation set—ideally data from a different time period or source—and perform error analysis on the cases it gets wrong to understand failure patterns",
+      "Increase the test set size to 50% of the full dataset for a more comprehensive evaluation",
+      "Submit the model to a Kaggle competition to benchmark its performance against other data scientists"
+     ],
+     "correctIndex": 1,
+     "explanation": "External validation on out-of-distribution or time-shifted data is the most rigorous test of real-world performance. Error analysis on failures reveals systematic weaknesses that aggregate metrics hide."
+    }
+   ]
+  }
+ ]
+}

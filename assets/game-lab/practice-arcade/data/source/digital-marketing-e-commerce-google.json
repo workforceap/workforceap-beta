@@ -1,0 +1,383 @@
+{
+ "programSlug": "digital-marketing-e-commerce-google",
+ "programTitle": "Digital Marketing & E-Commerce Professional Certificate (Google)",
+ "category": "business",
+ "categoryLabel": "Business",
+ "brandColor": "#a47f38",
+ "providers": "Google via Coursera",
+ "programDescription": "Throughout this program, you will gain in-demand skills that prepare you for an entry-level job and learn how to use tools and platforms like Canva, Constant Contact, Google Ads, Google Analytics, Hootsuite, HubSpot, Mailchimp, Shopify, and Twitter.",
+ "hasTwcSyllabus": true,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "marketing-course-1",
+   "courseTitle": "Foundations of Digital Marketing and E-commerce",
+   "hours": 11,
+   "syllabusDescription": "Explore entry-level jobs in digital marketing and e-commerce and identify the roles and functions those jobs play within an organization.",
+   "courseraSlug": null,
+   "missionName": "Project Commander",
+   "missionTagline": "Prove you understand how digital marketing creates business value",
+   "skillLabels": [
+    "Digital marketing strategy",
+    "Marketing funnel",
+    "E-commerce fundamentals",
+    "Analytics",
+    "Communication"
+   ],
+   "scenarioPrompt": "A local retail shop wants to start selling online and reach new customers through digital marketing. They have a $2,000/month budget and no existing digital presence. Using your digital marketing foundations from this course, describe how you would prioritize their marketing channels and why.",
+   "quiz": [
+    {
+     "text": "A small e-commerce store gets 5,000 monthly website visitors but only 25 purchases. Which metric should the marketing team focus on improving first?",
+     "options": [
+      "Total website traffic — increasing visitors will automatically increase purchase volume",
+      "Conversion rate (purchases ÷ visitors = 0.5%) — improving how many existing visitors complete a purchase is typically more cost-effective than acquiring more traffic at the same conversion rate",
+      "Average order value — encouraging existing customers to spend more per transaction",
+      "Social media follower count — a larger audience will eventually convert to more sales"
+     ],
+     "correctIndex": 1,
+     "explanation": "At 0.5% conversion rate, the store is losing 99.5% of its visitors without a purchase. Improving conversion on existing traffic is more efficient than paying to acquire more visitors who face the same friction."
+    },
+    {
+     "text": "A digital marketer wants to reach potential customers who are actively searching for the products their company sells. Which digital marketing channel MOST directly targets this intent?",
+     "options": [
+      "Display advertising, which shows visual ads to users browsing unrelated websites",
+      "Search engine marketing (SEM/PPC), which shows ads to users at the moment they search for relevant keywords—capturing existing intent rather than creating it",
+      "Social media advertising, which targets users based on demographics and interests",
+      "Email marketing, which reaches existing subscribers rather than new prospective customers"
+     ],
+     "correctIndex": 1,
+     "explanation": "Search ads intercept users at the exact moment of purchase intent. Unlike display or social ads that interrupt users doing other things, search ads appear when users are actively looking for what you sell."
+    },
+    {
+     "text": "A marketing manager runs three digital campaigns simultaneously with the same budget but no tracking parameters. After the month, they cannot determine which campaign drove the most sales. What should have been set up beforehand?",
+     "options": [
+      "Separate social media accounts for each campaign so results are automatically separated",
+      "UTM parameters on all campaign links so analytics tools can attribute traffic and conversions to the correct campaign, channel, and ad",
+      "Three separate website landing pages—one per campaign—to isolate traffic by destination",
+      "A weekly manual review of all orders to identify which channel the customer came from"
+     ],
+     "correctIndex": 1,
+     "explanation": "UTM parameters tag URLs with campaign source, medium, and name so Google Analytics can attribute conversions accurately. Without them, all traffic appears as one undifferentiated source making ROI comparison impossible."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "marketing-course-2",
+   "courseTitle": "Attract and Engage Customers with Digital Marketing",
+   "hours": 13,
+   "syllabusDescription": "Attract and engage customers online using SEO, SEM, and display ads. Explore the marketing funnel and how to guide customers through each stage.",
+   "courseraSlug": null,
+   "missionName": "Design Thinker",
+   "missionTagline": "Prove you can create content that attracts and engages the right audience",
+   "skillLabels": [
+    "Content marketing",
+    "SEO fundamentals",
+    "Brand voice",
+    "Canva",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are the digital marketing coordinator for a workforce development nonprofit. You need to create a content plan that attracts job seekers to the website and keeps them engaged through the application process. Using your content marketing and SEO skills from this course, describe your content strategy.",
+   "quiz": [
+    {
+     "text": "A nonprofit wants to rank in Google search results for people looking for free job training programs in their city. Which SEO approach is MOST effective for this goal?",
+     "options": [
+      "Add the keyword 'free job training' to the website's page title, headings, and content where it fits naturally, and build local authority through Google Business Profile and local backlinks",
+      "Buy Google Search ads targeting 'free job training' since organic SEO takes too long",
+      "Repeat the keyword 'free job training' 50 times on each page to signal relevance to Google",
+      "Create social media posts with the keyword since Google now indexes all social media content"
+     ],
+     "correctIndex": 0,
+     "explanation": "On-page SEO with natural keyword placement in titles, headings, and content—combined with local authority signals like Google Business Profile—is the foundation of organic local search ranking."
+    },
+    {
+     "text": "A content team publishes 3 blog posts per week but none of them rank in search results or drive traffic after 6 months. Which audit should they conduct first?",
+     "options": [
+      "A competitor analysis to find out how many blog posts competitors publish per week",
+      "A keyword research audit to determine whether the topics being written about have actual search volume and whether the content targets keywords the audience is actually using",
+      "A social media audit to see how many people are sharing the blog posts",
+      "A technical SEO audit to check whether the blog pages load within 2 seconds"
+     ],
+     "correctIndex": 1,
+     "explanation": "Content without keyword research often targets topics nobody searches for. Keyword research ensures content maps to real search demand—the prerequisite for organic traffic growth regardless of writing quality."
+    },
+    {
+     "text": "A nonprofit's website has a 78% bounce rate on the homepage for visitors who arrived from Google search. What does this most likely indicate?",
+     "options": [
+      "The website loads too slowly, causing visitors to leave before the page fully renders",
+      "There is a mismatch between what the search ad or organic listing promised and what the homepage delivers—visitors arrive with a specific intent that the homepage does not immediately address",
+      "The homepage is too long and visitors are leaving before scrolling to the relevant content",
+      "78% bounce rate is normal for nonprofit websites since their audiences are less engaged than e-commerce shoppers"
+     ],
+     "correctIndex": 1,
+     "explanation": "High bounce rate on search traffic indicates message mismatch—the landing page does not match the search intent that brought the visitor. The fix is aligning page content with the keywords driving traffic."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "marketing-course-3",
+   "courseTitle": "From Likes to Leads: Interact with Customers Online",
+   "hours": 18,
+   "syllabusDescription": "Create effective social media marketing strategies. Build a strong online presence as part of any digital marketing plan.",
+   "courseraSlug": null,
+   "missionName": "Client Champion",
+   "missionTagline": "Prove you can build relationships with customers through social media",
+   "skillLabels": [
+    "Social media management",
+    "Community engagement",
+    "Customer response",
+    "Brand voice",
+    "Communication"
+   ],
+   "scenarioPrompt": "You manage social media for a workforce development nonprofit. A former student posts publicly on your Facebook page saying the program 'wasted their time and did not help them get a job.' The post has 12 reactions and 3 comments from others sharing similar frustrations. Using your social media interaction skills from this course, describe how you would respond.",
+   "quiz": [
+    {
+     "text": "A company's social media account receives a comment from a customer saying their order arrived damaged and they are 'extremely disappointed.' What is the BEST first public response?",
+     "options": [
+      "Ask the customer to send a photo of the damage so the claim can be verified before committing to any resolution",
+      "Publicly acknowledge the issue with empathy ('We're so sorry to hear this'), thank them for letting you know, and invite them to connect via DM or email with their order details for immediate resolution",
+      "Delete the comment and reach out privately so other customers do not see the complaint",
+      "Explain publicly that damaged deliveries are the shipping carrier's responsibility and provide the carrier's claims number"
+     ],
+     "correctIndex": 1,
+     "explanation": "A public empathetic response signals to all viewers that the brand takes complaints seriously. Moving detailed resolution to a private channel protects customer data and allows a more personal conversation."
+    },
+    {
+     "text": "A nonprofit's social media manager notices their Instagram engagement rate dropped from 4.2% to 1.8% over two months despite posting the same number of times per week. What is the MOST productive analytical step?",
+     "options": [
+      "Increase posting frequency to compensate for the lower engagement rate",
+      "Review the content from both periods to identify differences—topic, format (video vs. image), posting time, caption length—and compare high-performing vs. low-performing posts to understand what changed",
+      "Switch to a different social media platform where engagement rates are typically higher",
+      "Run a paid promotion campaign to artificially boost the engagement metrics back to previous levels"
+     ],
+     "correctIndex": 1,
+     "explanation": "Engagement rate changes are caused by something specific. A content audit comparing the two periods surfaces the variable that changed—whether that is content format, topic relevance, algorithm changes, or audience shift."
+    },
+    {
+     "text": "A social media manager asks whether they should respond to every single comment on posts, including simple emoji reactions and one-word compliments. What is the BEST practice?",
+     "options": [
+      "Respond to every comment including emojis and single-word reactions to maximize engagement signals",
+      "Prioritize responses to comments with questions, complaints, or substantive feedback; acknowledge positive comments when time allows; use the time saved from one-word reactions to create quality responses to high-value interactions",
+      "Only respond to complaints and never engage with positive comments to avoid appearing to play favorites",
+      "Turn off comments on all posts to avoid the time burden of moderation and response"
+     ],
+     "correctIndex": 1,
+     "explanation": "Quality of engagement matters more than volume. Focusing response effort on substantive comments—questions, concerns, detailed feedback—creates more meaningful community relationships than acknowledging every emoji."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "marketing-course-4",
+   "courseTitle": "Think Outside the Inbox: Email Marketing",
+   "hours": 17,
+   "syllabusDescription": "Run a successful email marketing campaign — connect with customers, boost engagement, drive sales, and build loyalty.",
+   "courseraSlug": null,
+   "missionName": "Data Detective",
+   "missionTagline": "Prove you can run email campaigns that convert",
+   "skillLabels": [
+    "Email marketing",
+    "A/B testing",
+    "Segmentation",
+    "Mailchimp",
+    "Analytical thinking"
+   ],
+   "scenarioPrompt": "You are running a promotional email campaign for a workforce development nonprofit to increase enrollment applications. The last campaign had a 14% open rate and 1.2% click-through rate. Using your email marketing skills from this course, describe how you would design the next campaign to improve both metrics.",
+   "quiz": [
+    {
+     "text": "An email campaign to 10,000 subscribers has a 12% open rate and a 0.8% click-through rate. The team wants to run an A/B test. Which element has the MOST direct impact on the open rate specifically?",
+     "options": [
+      "The body copy length—shorter emails generate more opens because subscribers can read them faster",
+      "The subject line—it is the primary factor subscribers evaluate when deciding whether to open an email",
+      "The call-to-action button color—a more visible button encourages more opens",
+      "The sender name—using a personal name instead of a company name improves open rates"
+     ],
+     "correctIndex": 1,
+     "explanation": "Open rate is decided before the email is opened—it is driven by the subject line (and sender name to a lesser extent). Body copy, buttons, and images only affect click-through rate, which requires the email to be opened first."
+    },
+    {
+     "text": "An email list has 5,000 subscribers but the open rate has dropped from 25% to 11% over 6 months. The content has not changed significantly. What is the MOST likely cause and fix?",
+     "options": [
+      "Email clients updated their spam filters; switch to a different email service provider",
+      "The list has grown stale—many subscribers are no longer active or interested; a list cleaning campaign (re-engagement series followed by removing non-openers) will improve deliverability and engagement rates",
+      "The send time changed; move campaigns back to Tuesday mornings for better open rates",
+      "Industry-wide open rates declined; the current rate is acceptable and no action is needed"
+     ],
+     "correctIndex": 1,
+     "explanation": "Declining open rates on unchanged content typically signal list fatigue or staleness. Email providers use engagement signals (opens, clicks) to determine inbox placement—cleaning inactive subscribers protects deliverability."
+    },
+    {
+     "text": "An email marketing team sends the same enrollment promotion email to all 8,000 subscribers regardless of whether they are current students, alumni, or new prospects. Which improvement would MOST increase relevance and click-through rate?",
+     "options": [
+      "Send the email twice—once at the start and once at the end of the month",
+      "Segment the list and send tailored versions: new prospects get awareness messaging, alumni get a referral ask, and current students get upsell information—so each group receives content relevant to their relationship with the organization",
+      "Add more images to the email to make it more visually engaging for all subscriber types",
+      "Increase the email length to include all possible information so every subscriber finds something relevant"
+     ],
+     "correctIndex": 1,
+     "explanation": "Email segmentation delivers relevant content to each subscriber group. Relevance is the top driver of click-through rate—a generic message for all segments produces lower engagement than targeted messages for each."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "marketing-course-5",
+   "courseTitle": "Assess for Success: Marketing Analytics and Measurement",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Insight Analyst",
+   "missionTagline": "Prove you can use data to measure and improve marketing performance",
+   "skillLabels": [
+    "Google Analytics",
+    "Marketing KPIs",
+    "Data interpretation",
+    "A/B testing",
+    "Analytical thinking"
+   ],
+   "scenarioPrompt": "You are presenting the quarterly marketing performance report to a nonprofit's board. The board wants to know whether the $15,000 spent on digital marketing this quarter was worth it. Using your marketing analytics skills from this course, describe which metrics you would present and how you would frame the ROI conversation.",
+   "quiz": [
+    {
+     "text": "A marketing manager reports 'our social media campaign reached 500,000 people this month.' A board member asks: 'How many of those people enrolled in a program?' The manager does not know. What does this reveal about the campaign measurement approach?",
+     "options": [
+      "Reach is the most important social media metric and the board member is asking the wrong question",
+      "The campaign tracked a vanity metric (reach) without linking it to a business outcome (enrollments); effective measurement requires connecting top-of-funnel metrics to conversion goals",
+      "500,000 reach is an impressive result that clearly justifies the campaign investment",
+      "Social media conversions cannot be tracked; the board member should accept reach as the primary success metric"
+     ],
+     "correctIndex": 1,
+     "explanation": "Vanity metrics like reach look impressive but do not answer 'did this create value?' Marketing analytics must connect channel activity to business outcomes—enrollments, applications, revenue—to justify investment."
+    },
+    {
+     "text": "Google Analytics shows that search traffic converts to applications at 4.2% while social traffic converts at 0.6%, but social traffic is 3x larger in volume. How should the marketing team allocate the next quarter's budget?",
+     "options": [
+      "Increase social media spend since it generates 3x more traffic volume",
+      "Analyze cost per conversion for each channel: if search drives more applications per dollar spent despite lower volume, shift budget toward search while testing ways to improve the social conversion rate",
+      "Divide the budget equally between both channels since both are generating some conversions",
+      "Stop social media entirely since its conversion rate is below 1%"
+     ],
+     "correctIndex": 1,
+     "explanation": "Volume and conversion rate together determine cost per acquisition. Higher conversion rate often means search delivers more value per dollar—but the budget decision requires comparing cost per acquisition across channels, not rate alone."
+    },
+    {
+     "text": "A marketing team runs an A/B test on two landing page versions. After 1 week, Version B has a 6.2% conversion rate versus Version A's 5.8%. They declare Version B the winner. What is the MOST important statistical concern with this conclusion?",
+     "options": [
+      "The test ran for too long; A/B tests should be concluded within 48 hours for maximum accuracy",
+      "One week may not provide sufficient sample size for the difference to be statistically significant; the result could be random noise rather than a real performance difference—significance should be verified before declaring a winner",
+      "The 0.4% difference is too small to matter practically; neither version is better",
+      "A/B tests require at least three versions to draw valid conclusions about the winner"
+     ],
+     "correctIndex": 1,
+     "explanation": "Statistical significance prevents acting on random variation. A small observed difference with insufficient sample size may flip in the next week. Tools like a significance calculator confirm whether the result is reliable."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "marketing-course-6",
+   "courseTitle": "Make the Sale: Build, Launch, and Manage E-commerce Stores",
+   "hours": 13,
+   "syllabusDescription": "How businesses and individuals sell products online — including platforms like Shopify. Walk through creating a mock e-commerce store.",
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can set up and manage an e-commerce store effectively",
+   "skillLabels": [
+    "Shopify",
+    "E-commerce operations",
+    "Product catalog management",
+    "Checkout optimization",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are helping a nonprofit set up an online store to sell branded merchandise for fundraising. They have 12 products, need a simple checkout, and want to track which products are selling best. Using your e-commerce skills from this course, describe how you would set up the store and what operational processes you would establish.",
+   "quiz": [
+    {
+     "text": "An e-commerce store's checkout has 8 form fields including optional fields for fax number and secondary address. The cart abandonment rate at checkout is 72%. Which change would MOST directly reduce abandonment?",
+     "options": [
+      "Add a progress bar to the checkout so customers know how many steps remain",
+      "Audit the form fields and remove or make optional all non-essential fields—every extra field reduces conversion; the minimum viable checkout needs name, shipping address, email, and payment",
+      "Add customer reviews to the checkout page to increase confidence",
+      "Offer a discount code field at checkout to reward customers who persist through the long form"
+     ],
+     "correctIndex": 1,
+     "explanation": "Form field count is directly correlated with checkout abandonment. Every unnecessary field introduces friction. The minimum required information for a completed transaction is the optimal checkout length."
+    },
+    {
+     "text": "A Shopify store shows that the 'Tote Bag' product has 340 views but only 8 purchases (2.4% conversion rate) while the 'T-Shirt' has 180 views and 22 purchases (12.2% conversion rate). What is the MOST productive action?",
+     "options": [
+      "Increase paid advertising for the tote bag since it has more traffic potential",
+      "Investigate why the tote bag converts poorly despite high interest—check pricing, product photos, description clarity, and available sizes compared to the t-shirt—then test improvements",
+      "Discontinue the tote bag since its conversion rate is too low to justify keeping it in the catalog",
+      "Reduce the tote bag price by 50% to convert more of its existing traffic"
+     ],
+     "correctIndex": 1,
+     "explanation": "High traffic with low conversion indicates interest without purchase intent being satisfied. Investigating and fixing the friction (unclear photos, price mismatch, missing information) is more effective than simply dropping the price."
+    },
+    {
+     "text": "A customer adds items to their online cart but leaves without purchasing. Which e-commerce tactic BEST recovers this potential sale?",
+     "options": [
+      "Run a general social media ad campaign to increase brand awareness among all visitors",
+      "Send an automated cart abandonment email sequence—a reminder at 1 hour, a follow-up at 24 hours with a small incentive if appropriate—to bring the specific customer back to complete their purchase",
+      "Lower the price of all products in the store by 10% to convert future visitors more easily",
+      "Add a pop-up discount offer that triggers immediately when any user visits the homepage"
+     ],
+     "correctIndex": 1,
+     "explanation": "Cart abandonment emails target the highest-intent customers—people who already decided to buy. Automated sequences with personalized product reminders consistently recover 5-15% of abandoned carts."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "marketing-course-7",
+   "courseTitle": "Satisfaction Guaranteed: Develop Customer Loyalty Online",
+   "hours": 13,
+   "syllabusDescription": "Strategies for building customer loyalty in e-commerce, w/ tools to develop client relationships.",
+   "courseraSlug": null,
+   "missionName": "Support Hero",
+   "missionTagline": "Prove you can turn one-time buyers into loyal customers",
+   "skillLabels": [
+    "Customer loyalty",
+    "Retention marketing",
+    "NPS",
+    "Customer journey",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are the customer experience coordinator for an online training program. Completion rates are at 34% and few graduates return for additional courses. Using your customer loyalty skills from this course, describe the retention strategy you would implement to increase completion rates and repeat enrollment.",
+   "quiz": [
+    {
+     "text": "An online course platform sees that 60% of students who enroll stop engaging after week 2. What is the MOST effective retention strategy to address this specific drop-off point?",
+     "options": [
+      "Send a discount offer to all inactive students to motivate them to return",
+      "Analyze what happens in week 2 specifically—are lessons too long? Is there a particularly difficult assessment? Address the specific friction causing drop-off rather than applying a generic incentive",
+      "Reduce the total course length by 50% so students complete before losing interest",
+      "Send daily reminder emails starting from day 1 to maintain engagement throughout the course"
+     ],
+     "correctIndex": 1,
+     "explanation": "Week 2 drop-off is a signal about something specific in the course experience at that point. Diagnosing and fixing the friction is more effective and sustainable than incentivizing past the problem without fixing it."
+    },
+    {
+     "text": "A student completes a workforce training program and gives an NPS score of 9 out of 10. What is the BEST next action to maximize the value of this satisfied customer?",
+     "options": [
+      "Log the score in the NPS database and move on since the student is already satisfied",
+      "Follow up personally to thank them, ask for a testimonial or review, invite them to refer friends, and present them with information about the next relevant course—converting their satisfaction into advocacy and repeat enrollment",
+      "Offer a significant discount on their next course since high NPS customers deserve rewards",
+      "Ask them to complete a detailed survey about every aspect of the program to gather exhaustive feedback"
+     ],
+     "correctIndex": 1,
+     "explanation": "NPS promoters (scores 9-10) are the most valuable customers for growth. Activating their satisfaction through referral requests and relevant upsell offers converts high satisfaction into measurable business outcomes."
+    },
+    {
+     "text": "A digital marketing coordinator sees that 85% of new customer revenue comes from repeat buyers who enrolled in at least two programs. Acquiring a new student costs $120 in marketing; a returning student costs $8 to re-engage. What is the MOST important strategic implication?",
+     "options": [
+      "The organization should eliminate new customer acquisition since it is 15x more expensive",
+      "Retention and re-engagement of existing students should be a primary investment priority—the data shows repeat students are both the largest revenue source and the most cost-efficient to convert",
+      "The new customer acquisition cost of $120 is acceptable since those customers eventually become repeat buyers",
+      "Both acquisition and retention costs are too high; the organization should rely on organic word-of-mouth instead"
+     ],
+     "correctIndex": 1,
+     "explanation": "When 85% of revenue comes from repeat customers at 15x lower acquisition cost, the data clearly prioritizes retention investment. This is a foundational customer lifetime value insight that should drive budget allocation."
+    }
+   ]
+  }
+ ]
+}

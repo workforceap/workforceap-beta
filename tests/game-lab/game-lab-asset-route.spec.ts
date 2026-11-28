@@ -14,7 +14,7 @@ vi.mock('@/lib/game-lab/access', () => ({ canUseGameLab: mocks.canUseGameLab }))
 vi.mock('@/lib/db/withRequestGuc', () => ({ withApiGuc: (fn: unknown) => fn }));
 
 import { GET } from '@/app/api/admin/game-lab/[game]/[...asset]/route';
-import { GAME_LAB_GAMES, resolveGameLabAsset } from '@/lib/game-lab/manifest';
+import { GAME_LAB_GAMES, GAME_LAB_SERVED_FILES, resolveGameLabAsset } from '@/lib/game-lab/manifest';
 
 function call(game: string, asset: string[]): Promise<Response> {
   return (GET as unknown as (r: Request, c: { params: Promise<{ game: string; asset: string[] }> }) => Promise<Response>)(
@@ -46,18 +46,14 @@ describe('Game Lab asset route', () => {
 
   for (const game of GAME_LAB_GAMES) {
     it(`serves every ${game.slug} manifest entry with explicit MIME and private no-store`, async () => {
-      const entries: [string[], string][] = [
-        [['index.html'], 'text/html; charset=utf-8'],
-        [['game.mjs'], 'text/javascript; charset=utf-8'],
-        [['rules.mjs'], 'text/javascript; charset=utf-8'],
-        [['look.mjs'], 'text/javascript; charset=utf-8'],
-        [['scene.mjs'], 'text/javascript; charset=utf-8'],
-        [['vendor', 'three.module.min.js'], 'text/javascript; charset=utf-8'],
-      ];
-      for (const [asset, type] of entries) {
+      const files = GAME_LAB_SERVED_FILES.filter((file) => file.startsWith(`assets/game-lab/${game.slug}/`) || (game.slug.endsWith('-3d') && file === 'assets/game-lab/vendor/three.module.min.js'));
+      expect(files.length).toBeGreaterThan(0);
+      for (const file of files) {
+        const asset = file.replace(`assets/game-lab/${game.slug}/`, '').replace('assets/game-lab/', '').split('/');
         const res = await call(game.slug, asset);
-        expect(res.status, asset.join('/')).toBe(200);
-        expect(res.headers.get('content-type')).toBe(type);
+        expect(res.status, file).toBe(200);
+        const expected = resolveGameLabAsset(game.slug, asset);
+        expect(res.headers.get('content-type')).toBe(expected?.contentType ?? null);
         expect(res.headers.get('cache-control')).toBe('private, no-store, max-age=0');
         expect(res.headers.get('vary')).toBe('Cookie');
         expect(res.headers.get('x-content-type-options')).toBe('nosniff');
@@ -66,12 +62,15 @@ describe('Game Lab asset route', () => {
     });
   }
 
-  it('serves the shared vendored three.js blob for both games', async () => {
+  it('serves the shared vendored three.js blob for the two original 3D games only', async () => {
     const disk = readFileSync(join(process.cwd(), 'assets/game-lab/vendor/three.module.min.js'));
-    for (const game of GAME_LAB_GAMES) {
-      const res = await call(game.slug, ['vendor', 'three.module.min.js']);
+    for (const game of ['packet-quest-3d', 'firewall-defender-3d']) {
+      const res = await call(game, ['vendor', 'three.module.min.js']);
       expect(Buffer.from(await res.arrayBuffer()).equals(disk)).toBe(true);
     }
+    // The arcade vendors its own copy under kit/vendor and must not reach the shared one.
+    expect((await call('practice-arcade', ['vendor', 'three.module.min.js'])).status).toBe(404);
+    expect((await call('packet-quest', ['vendor', 'three.module.min.js'])).status).toBe(404);
   });
 
   it('returns 404 for unknown games, unknown assets, tests, readmes and case variants', async () => {
@@ -83,7 +82,11 @@ describe('Game Lab asset route', () => {
       ['packet-quest-3d', ['browser-check.mjs']],
       ['packet-quest-3d', ['INDEX.HTML']],
       ['Packet-Quest-3D', ['index.html']],
-      ['packet-quest-3d', ['vendor', 'THREE-LICENSE.txt']],
+      ['packet-quest', ['game.mjs']],
+      ['network-path', ['rules.mjs']],
+      ['practice-arcade', ['tools', 'serve.mjs']],
+      ['practice-arcade', ['kit', 'mechanics', 'gate.test.mjs']],
+      ['practice-arcade', ['kit', 'AUTHORING.md']],
       ['packet-quest-3d', ['vendor', 'three.module.min.js', 'x']],
     ];
     for (const [game, asset] of cases) {
@@ -104,6 +107,8 @@ describe('Game Lab asset route', () => {
       ['/etc/passwd'],
       ['C:\Windows\win.ini'],
       ['index.html\u0000.png'],
+      ['games', '..', 'registry.mjs'],
+      ['kit', 'vendor', '..', '..', 'hub.mjs'],
     ];
     for (const asset of attempts) {
       const res = await call('packet-quest-3d', asset);
@@ -118,5 +123,9 @@ describe('Game Lab asset route', () => {
     });
     expect(resolveGameLabAsset('packet-quest-3d', ['constructor'])).toBeNull();
     expect(resolveGameLabAsset('packet-quest-3d', ['__proto__'])).toBeNull();
+    expect(resolveGameLabAsset('practice-arcade', ['games', 'demo-sort', 'game.mjs'])?.file).toBe('assets/game-lab/practice-arcade/games/demo-sort/game.mjs');
+    expect(resolveGameLabAsset('practice-arcade', ['games', 'not-a-game', 'game.mjs'])).toBeNull();
+    expect(resolveGameLabAsset('practice-arcade', ['..', 'packet-quest', 'rules.mjs'])).toBeNull();
+    expect(resolveGameLabAsset('practice-arcade', ['games\\demo-sort\\game.mjs'])).toBeNull();
   });
 });

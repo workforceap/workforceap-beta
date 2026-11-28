@@ -1,0 +1,436 @@
+{
+ "programSlug": "data-analytics-professional-certificate-google",
+ "programTitle": "Management Analyst & Business Intelligence Professional Certificate",
+ "category": "cloud-data",
+ "categoryLabel": "Cloud & Data",
+ "brandColor": "#a47f38",
+ "providers": "Google & IBM via Coursera",
+ "programDescription": "This 160-hour professional certificate prepares learners for careers as management analysts and business intelligence professionals. Learners build the core competencies of management consulting and business analysis - problem scoping, stakeholder and requirements management, business strategy, and financial analysis - and combine them with data analytics, visualization, and dashboarding to turn data into recommendations that help organizations operate more efficiently and effectively, culminating in an integrated consulting capstone and a professional portfolio.",
+ "hasTwcSyllabus": true,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "data-analytics-course-1",
+   "courseTitle": "Foundations: Data, Data, Everywhere",
+   "hours": 12,
+   "syllabusDescription": "Introduces the world of data analytics - the analyst mindset, tools, and the data lifecycle used to support decision-making.",
+   "courseraSlug": "foundations-data",
+   "missionName": "Data Detective",
+   "missionTagline": "Prove you understand what data analytics is and why it matters",
+   "skillLabels": [
+    "Data analysis fundamentals",
+    "Analytical thinking",
+    "Spreadsheets",
+    "SQL",
+    "Critical thinking"
+   ],
+   "scenarioPrompt": "You are interviewing for a junior analyst role at a retail company. The interviewer asks you to explain, in plain language, how a data analyst adds value to a business and what the typical steps in the data analysis process look like. Drawing on the foundations you learned in this course, walk through your answer.",
+   "quiz": [
+    {
+     "text": "A retail manager notices sales dropped 15% last month and asks the data team to 'figure out what happened.' Which phase of the data analysis process does this request initiate?",
+     "options": [
+      "Process — cleaning the sales data so it is ready for analysis",
+      "Ask — defining the problem and clarifying what questions the data needs to answer",
+      "Share — presenting the findings to stakeholders in a clear format",
+      "Act — implementing changes based on prior analysis results"
+     ],
+     "correctIndex": 1,
+     "explanation": "Before touching any data, analysts must define the problem clearly. The manager's request kicks off the Ask phase, where the analyst works to turn a vague concern into specific, answerable questions."
+    },
+    {
+     "text": "An analyst is given a spreadsheet with customer purchase data and asked to find the average order value. After calculating it, they notice some rows have negative values that seem like data entry errors. What should they do NEXT?",
+     "options": [
+      "Include the negative values in the average since removing data could introduce bias",
+      "Proceed to the Share phase and note the anomalies as a footnote in the presentation",
+      "Flag the anomalies, investigate their source, and clean the data before re-calculating the average",
+      "Delete all rows with unusual values and re-run the calculation without further investigation"
+     ],
+     "correctIndex": 2,
+     "explanation": "The Process phase requires cleaning data before analysis. Simply deleting rows without investigation could remove valid edge cases; the analyst should understand the anomaly before deciding how to handle it."
+    },
+    {
+     "text": "A company wants to know whether its new loyalty program is increasing repeat purchases. What type of data would BEST help answer this question?",
+     "options": [
+      "Customer satisfaction survey scores collected before the program launched",
+      "Transactional records showing purchase frequency per customer before and after enrollment in the loyalty program",
+      "Social media mentions of the brand during the same time period",
+      "The number of loyalty program sign-ups per week since launch"
+     ],
+     "correctIndex": 1,
+     "explanation": "To measure whether repeat purchases increased, you need transactional data that can be compared across time for the same customers—specifically before and after loyalty program enrollment."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "data-analytics-course-2",
+   "courseTitle": "Ask Questions to Make Data-Driven Decisions",
+   "hours": 15,
+   "syllabusDescription": "Builds skills to ask effective questions, work with stakeholders, and use data to make sound, evidence-based decisions.",
+   "courseraSlug": "ask-questions-make-decisions",
+   "missionName": "Insight Analyst",
+   "missionTagline": "Prove you can frame the right questions before touching data",
+   "skillLabels": [
+    "Problem definition",
+    "Structured thinking",
+    "Spreadsheets",
+    "SQL",
+    "Communication"
+   ],
+   "scenarioPrompt": "A marketing director comes to you saying 'our email campaigns aren't performing well.' Before pulling any data, you need to turn this vague complaint into precise, answerable questions. Using the SMART question framework and the structured thinking skills from this course, describe how you would approach the conversation and what specific questions you would formulate.",
+   "quiz": [
+    {
+     "text": "A stakeholder asks an analyst: 'Can you look into why our app users are unhappy?' Which revision BEST transforms this into a SMART question?",
+     "options": [
+      "Can you find out if users like the app?",
+      "What percentage of users who rated the app 3 stars or below in Q1 cited slow load times as their primary complaint?",
+      "Are users happy with the new features we added last year?",
+      "How many app reviews do we have and what do they say?"
+     ],
+     "correctIndex": 1,
+     "explanation": "The revised question is Specific (ratings ≤3 stars), Measurable (percentage), Action-oriented (identifies a root cause to act on), Relevant (maps to user satisfaction), and Time-bound (Q1)."
+    },
+    {
+     "text": "During a stakeholder meeting, the sales VP says they want a report on 'all sales data.' How should an analyst respond?",
+     "options": [
+      "Pull all available sales data and deliver a comprehensive report covering every metric",
+      "Ask clarifying questions to narrow the scope—such as which time period, which product lines, and what business decision the report will inform",
+      "Decline the request until the VP provides a formal written specification",
+      "Build the report using last year's data and offer to update it once the scope is clarified"
+     ],
+     "correctIndex": 1,
+     "explanation": "Asking clarifying questions before starting saves time and ensures the analysis answers the right business question. Jumping into broad data pulls wastes effort and often misses the point."
+    },
+    {
+     "text": "An analyst is preparing a dashboard for a regional manager who oversees five store locations. The manager says they just want to 'see how the stores are doing.' What is the BEST next step?",
+     "options": [
+      "Build a comprehensive dashboard with every available metric so the manager can find what they need",
+      "Ask the manager what decisions they need to make with this data and which metrics most directly inform those decisions",
+      "Copy a dashboard template from a previous project since store performance is always measured the same way",
+      "Send the manager the raw data export and let them filter it themselves"
+     ],
+     "correctIndex": 1,
+     "explanation": "Understanding the decision the stakeholder needs to make focuses the analysis. Without knowing the intended use, a dashboard risks being too broad to be actionable."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "data-analytics-course-3",
+   "courseTitle": "Prepare Data for Exploration",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Analytics Pro",
+   "missionTagline": "Prove you can source and organize data responsibly",
+   "skillLabels": [
+    "Data collection",
+    "Data organization",
+    "Spreadsheets",
+    "SQL",
+    "Attention to detail"
+   ],
+   "scenarioPrompt": "You are a junior analyst at a healthcare staffing company. You have been asked to build a dataset of open nursing positions across three hospital partners. Each hospital sends data in a different format—one as a CSV, one as an Excel file, and one through a shared Google Sheet. Using your preparation skills from this course, describe how you would consolidate and organize this data reliably.",
+   "quiz": [
+    {
+     "text": "An analyst receives a dataset where the 'hire date' column contains entries formatted as '01/15/2024', '2024-01-15', and 'January 15, 2024'—all for the same date. What is the MOST important reason to standardize this column before analysis?",
+     "options": [
+      "It makes the spreadsheet look more professional when shared with stakeholders",
+      "Inconsistent date formats prevent accurate sorting, filtering, and date-based calculations",
+      "Different formats indicate the data came from different sources and should be treated as separate datasets",
+      "Standardizing dates is optional if the analyst manually reviews every row before reporting"
+     ],
+     "correctIndex": 1,
+     "explanation": "Mixed date formats break sorting and date functions. A filter or calculation comparing '01/15/2024' to '2024-01-15' as text strings will fail or return incorrect results."
+    },
+    {
+     "text": "You are combining employee records from two company systems and find that one system uses 'EMP-1234' as the employee ID format while the other uses '1234' with no prefix. What should you do BEFORE merging the two tables?",
+     "options": [
+      "Use the numeric IDs from both systems since numbers are more universally compatible",
+      "Choose a consistent ID format, document the transformation rule, and apply it across both datasets before joining",
+      "Merge the tables immediately and resolve ID conflicts afterward by comparing employee names",
+      "Keep both ID formats as separate columns so either can be used for lookups"
+     ],
+     "correctIndex": 1,
+     "explanation": "Joining on mismatched key formats will produce failed matches or phantom duplicates. Standardizing keys and documenting the rule ensures a clean, repeatable merge."
+    },
+    {
+     "text": "A dataset you received from a vendor contains a column labeled 'revenue' but no data dictionary is included. Some values appear to be in dollars while others seem too small and may be in thousands. What is the BEST action before using this column?",
+     "options": [
+      "Assume dollars since that is the most common unit and proceed with analysis",
+      "Contact the vendor to confirm the unit of measure and document the response before using the column",
+      "Divide all values by 1,000 to normalize them and note this assumption in the report",
+      "Drop the column and use a different revenue source to avoid uncertainty"
+     ],
+     "correctIndex": 1,
+     "explanation": "Using a column whose units are unknown can corrupt every calculation that depends on it. Confirming and documenting the unit is a basic data preparation responsibility."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "data-analytics-course-4",
+   "courseTitle": "Process Data from Dirty to Clean",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Data Detective",
+   "missionTagline": "Prove you can find and fix data quality problems",
+   "skillLabels": [
+    "Data cleaning",
+    "Data validation",
+    "Spreadsheets",
+    "SQL",
+    "Attention to detail"
+   ],
+   "scenarioPrompt": "You are handed a customer database with 12,000 rows to clean before a marketing campaign. Initial review shows duplicate emails, blank phone fields, inconsistent state abbreviations (some 'CA', some 'California'), and several rows where the customer age is listed as '999'. Using the data cleaning techniques from this course, describe your systematic approach to making this dataset usable.",
+   "quiz": [
+    {
+     "text": "An analyst runs a query and finds 847 duplicate rows in a customer table. Before deleting them, what is the MOST important step?",
+     "options": [
+      "Delete all but one instance of each duplicate immediately to speed up the cleaning process",
+      "Investigate why the duplicates exist—whether from a system error, a data import issue, or a legitimate scenario—before deciding how to handle them",
+      "Flag the duplicates with a 'DUPLICATE' label and leave the decision to the stakeholder",
+      "Merge the duplicate rows into one by concatenating all their field values"
+     ],
+     "correctIndex": 1,
+     "explanation": "Blindly deleting duplicates can remove legitimate records if the duplication has a business explanation (e.g., a customer with two accounts). Understanding the source first prevents data loss."
+    },
+    {
+     "text": "A spreadsheet column for US state uses 'California', 'CA', 'Calif.', and 'ca' for the same state. Which approach BEST cleans this column for use in a pivot table?",
+     "options": [
+      "Sort the column alphabetically so all variants appear together and manually fix them",
+      "Use a standardization formula or find-and-replace to convert all variants to the two-letter abbreviation 'CA', then validate with a COUNTIF check",
+      "Create separate categories for each spelling variant and treat them as distinct regions",
+      "Leave the column as-is and apply a wildcard filter whenever California data is needed"
+     ],
+     "correctIndex": 1,
+     "explanation": "Standardizing to a single consistent value (like the USPS two-letter code) ensures filters, pivot tables, and joins produce accurate grouped results. A validation check confirms all variants were caught."
+    },
+    {
+     "text": "While cleaning a dataset, you find that the 'annual_salary' column contains the value 0 for 230 employees. What is the MOST appropriate next step?",
+     "options": [
+      "Replace all zeros with the column average to avoid distorting aggregate calculations",
+      "Treat zeros as null values and remove those rows from the dataset entirely",
+      "Investigate whether the zeros represent actual salaries, data entry errors, or null placeholders before deciding how to handle them",
+      "Cap the value at the minimum wage equivalent since zero salary is legally impossible"
+     ],
+     "correctIndex": 2,
+     "explanation": "Zero could indicate a true value (e.g., unpaid interns), a null placeholder, or a system error. Replacing zeros without investigation imposes assumptions that may introduce more error than the original issue."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "data-analytics-course-5",
+   "courseTitle": "Analyze Data to Answer Questions",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Insight Analyst",
+   "missionTagline": "Prove you can pull meaningful answers from real data",
+   "skillLabels": [
+    "Data aggregation",
+    "Sorting and filtering",
+    "Spreadsheets",
+    "SQL",
+    "Critical thinking"
+   ],
+   "scenarioPrompt": "A regional sales manager asks you to find out which product category generated the most revenue in Q3 and whether that category's performance improved compared to Q2. You have a SQL database with a sales table containing columns: sale_id, product_category, revenue, sale_date. Using the analysis skills from this course, describe the queries and steps you would take to answer both questions.",
+   "quiz": [
+    {
+     "text": "An analyst needs to find the top 5 sales representatives by total revenue for the current year. The data is in a SQL table called 'sales' with columns rep_name and revenue. Which query accomplishes this correctly?",
+     "options": [
+      "SELECT rep_name, revenue FROM sales ORDER BY revenue DESC LIMIT 5;",
+      "SELECT rep_name, SUM(revenue) AS total_revenue FROM sales GROUP BY rep_name ORDER BY total_revenue DESC LIMIT 5;",
+      "SELECT rep_name, COUNT(revenue) FROM sales GROUP BY rep_name LIMIT 5;",
+      "SELECT TOP 5 rep_name FROM sales WHERE revenue = MAX(revenue);"
+     ],
+     "correctIndex": 1,
+     "explanation": "SUM with GROUP BY aggregates revenue per rep, ORDER BY DESC sorts highest first, and LIMIT 5 returns only the top five. The other options either skip aggregation or use invalid syntax."
+    },
+    {
+     "text": "You are analyzing customer order data and need to find customers who placed more than 3 orders in a single month. Which SQL clause filters the aggregated results?",
+     "options": [
+      "WHERE COUNT(order_id) > 3",
+      "HAVING COUNT(order_id) > 3",
+      "FILTER COUNT(order_id) > 3",
+      "GROUP BY customer_id WHERE order_count > 3"
+     ],
+     "correctIndex": 1,
+     "explanation": "HAVING filters on aggregated values (like COUNT), whereas WHERE filters individual rows before aggregation. This is a core distinction in SQL data analysis."
+    },
+    {
+     "text": "A spreadsheet contains monthly website traffic data for two years. A manager asks whether traffic this year is higher than last year on average. What is the BEST analytical approach?",
+     "options": [
+      "Look at the highest traffic month in each year and compare those two peak values",
+      "Calculate the average monthly traffic for each year separately and compare the two averages, noting any seasonal patterns",
+      "Add up all traffic from both years and divide by 24 to get an overall average",
+      "Compare only the most recent month this year to the same month last year"
+     ],
+     "correctIndex": 1,
+     "explanation": "Comparing yearly averages accounts for all 12 months in each period. Comparing only peaks or a single month introduces sampling bias and ignores the full distribution."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "data-analytics-course-6",
+   "courseTitle": "Share Data Through the Art of Visualization",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Design Thinker",
+   "missionTagline": "Prove you can turn data into visuals that drive decisions",
+   "skillLabels": [
+    "Data visualization",
+    "Tableau",
+    "Storytelling with data",
+    "Presentation",
+    "Communication"
+   ],
+   "scenarioPrompt": "You have completed an analysis showing that customer churn increased significantly among users aged 25–34 over the past two quarters. Your audience is the executive team—non-technical leaders who make budget decisions. Using the visualization and storytelling skills from this course, describe how you would present this finding including chart choice, narrative structure, and how you would avoid misleading the audience.",
+   "quiz": [
+    {
+     "text": "You need to show how a company's market share has changed across five competitors over the past three years. Which visualization type BEST communicates this trend?",
+     "options": [
+      "A pie chart for each year showing each competitor's share",
+      "A grouped or stacked area line chart showing each competitor's share percentage over the three-year period",
+      "A single bar chart comparing all competitors only for the most recent year",
+      "A scatter plot with competitor name on one axis and share on the other"
+     ],
+     "correctIndex": 1,
+     "explanation": "Line or area charts are ideal for showing change over time across multiple categories. Three separate pie charts make comparison across time extremely difficult for the human eye."
+    },
+    {
+     "text": "A bar chart shows customer satisfaction scores ranging from 78% to 82%. The chart's Y-axis starts at 75% rather than 0%. What is the primary concern with this design?",
+     "options": [
+      "The chart uses too many colors making it difficult to read",
+      "Truncating the Y-axis exaggerates the visual difference between bars, potentially misleading viewers about the magnitude of change",
+      "Bar charts are the wrong chart type for percentage data",
+      "The chart should include grid lines to help readers estimate exact values"
+     ],
+     "correctIndex": 1,
+     "explanation": "Starting an axis at a non-zero value inflates visual differences. A 4-point spread looks dramatic on a truncated axis but is small on a 0–100% scale. This can mislead decision-makers."
+    },
+    {
+     "text": "You are building a Tableau dashboard for a logistics team. The team needs to monitor delivery delays by region in real time. Which dashboard design principle is MOST important to apply?",
+     "options": [
+      "Add as many metrics as possible so the team always has complete information",
+      "Focus the dashboard on the single most important question the team needs to answer and use visual hierarchy to make the key metric immediately obvious",
+      "Use animations and transitions between views to make the dashboard more engaging",
+      "Match the color scheme of the company website to reinforce branding"
+     ],
+     "correctIndex": 1,
+     "explanation": "Effective dashboards prioritize one central question. Overloading with metrics creates cognitive noise that slows decisions—visual hierarchy ensures the key signal is seen first."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "data-analytics-course-7",
+   "courseTitle": "Data Analysis with R Programming",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Data Detective",
+   "missionTagline": "Prove you can use R to explore and summarize data",
+   "skillLabels": [
+    "R programming",
+    "Data frames",
+    "ggplot2",
+    "tidyverse",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are a data analyst at a public health nonprofit. You have a CSV of vaccination rates by county and need to produce a cleaned summary and a bar chart showing the ten counties with the lowest rates. You will use R with tidyverse. Describe the R code steps you would take, from importing the data through producing the chart.",
+   "quiz": [
+    {
+     "text": "An R analyst runs summary(df$revenue) and sees the maximum value is 9,999,999 while all other values are under 500,000. What is the BEST next step?",
+     "options": [
+      "Remove the outlier immediately since it will skew the mean",
+      "Filter to rows where revenue == 9999999 and investigate whether it is a data entry error, a sentinel value, or a legitimate record",
+      "Replace the maximum value with the median of the column to preserve row count",
+      "Re-import the CSV using a different delimiter in case the value is a parsing artifact"
+     ],
+     "correctIndex": 1,
+     "explanation": "Investigating before removing preserves analytical integrity. The value could be a cap used as a null indicator (e.g., 9999999), a real outlier, or an entry error—each requires a different fix."
+    },
+    {
+     "text": "You need to filter an R data frame called 'sales' to rows where region equals 'West' and revenue is greater than 10000, then select only the columns rep_name and revenue. Which dplyr code is correct?",
+     "options": [
+      "sales[sales$region == 'West' & sales$revenue > 10000, c('rep_name', 'revenue')]",
+      "sales %>% filter(region == 'West', revenue > 10000) %>% select(rep_name, revenue)",
+      "sales %>% select(rep_name, revenue) %>% filter(region == 'West' & revenue > 10000)",
+      "filter(sales, region = 'West', revenue > 10000) %>% select(rep_name, revenue)"
+     ],
+     "correctIndex": 1,
+     "explanation": "Option B uses correct dplyr pipe syntax: filter first narrows rows using == (not =), then select picks columns. Option C would work but select before filter on a large frame is less efficient. Option D uses = instead of == which causes an error."
+    },
+    {
+     "text": "A ggplot2 bar chart you built shows all 50 state names on the X-axis but they are unreadable because they overlap. What is the BEST fix?",
+     "options": [
+      "Reduce the font size to 4pt so all labels fit without overlapping",
+      "Add theme(axis.text.x = element_text(angle = 45, hjust = 1)) to rotate the labels diagonally",
+      "Remove the X-axis labels entirely and rely on the chart title to identify states",
+      "Switch to a pie chart since it handles many categories better"
+     ],
+     "correctIndex": 1,
+     "explanation": "Rotating axis labels 45 degrees with right-justification (hjust=1) is the standard ggplot2 fix for crowded categorical labels. Pie charts handle many categories worse, not better."
+    }
+   ]
+  },
+  {
+   "order": 8,
+   "courseSlug": "data-analytics-course-8",
+   "courseTitle": "Google Data Analytics Capstone",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Insight Analyst",
+   "missionTagline": "Prove you can run an end-to-end analytics case study",
+   "skillLabels": [
+    "End-to-end analysis",
+    "Portfolio presentation",
+    "Spreadsheets",
+    "SQL",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are presenting your capstone case study to a panel of hiring managers. They ask you to walk through how you approached the business question, what tools you used at each stage, and what you would do differently if you had more time. Using the full cycle you completed in the Google Data Analytics Capstone, describe your analytical process and what your results revealed.",
+   "quiz": [
+    {
+     "text": "During a capstone presentation a hiring manager asks: 'How do we know your conclusion is valid and not just a coincidence in the data?' What is the BEST response?",
+     "options": [
+      "Explain that the dataset is large so the findings are statistically reliable by default",
+      "Describe the validation steps taken—such as checking for data integrity, testing the finding against a holdout period, or noting the sample size and confidence level",
+      "Acknowledge that all data analysis involves uncertainty and defer the question to a senior analyst",
+      "Show the original raw data export so the reviewer can verify the numbers themselves"
+     ],
+     "correctIndex": 1,
+     "explanation": "Analytical rigor is demonstrated by the validation steps, not data volume alone. Describing integrity checks and confidence measures shows the interviewer you understand evidence-based conclusions."
+    },
+    {
+     "text": "After completing a capstone analysis you discover a segment of the data you did not fully explore that might change your recommendation. What should you do?",
+     "options": [
+      "Omit the unexplored segment from the presentation to avoid undermining your main findings",
+      "Acknowledge it as a limitation in the presentation, explain what impact it might have, and recommend it as a next step for further analysis",
+      "Restart the entire analysis to incorporate the new segment before presenting",
+      "Include the segment in the raw data appendix without commenting on it"
+     ],
+     "correctIndex": 1,
+     "explanation": "Proactively naming limitations builds credibility. Identifying the gap and framing it as a next step shows analytical maturity—more impressive than pretending the analysis is complete."
+    },
+    {
+     "text": "A recruiter reviewing your portfolio asks why you chose a bar chart instead of a line chart for a particular visualization. Which answer demonstrates the strongest understanding?",
+     "options": [
+      "Bar charts look more professional in slide decks than line charts",
+      "The data compared discrete categories (product lines) at a single point in time—bar charts are better for category comparisons, while line charts are better for continuous trends over time",
+      "I used a bar chart because that is what was used in the course example dataset",
+      "Both chart types show the same information so the choice does not matter significantly"
+     ],
+     "correctIndex": 1,
+     "explanation": "Justifying a visualization choice based on data type and the question being answered demonstrates mastery of data visualization principles, not just tool familiarity."
+    }
+   ]
+  }
+ ]
+}

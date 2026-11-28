@@ -1,20 +1,14 @@
 // Pure pass/fail rules for the Game Lab local-preview verification (scripts/game-lab/verify-preview.mjs).
-// No I/O here, so tests/game-lab/verdicts.test.mjs can prove that a wrong status, a content leak,
+// tests/game-lab/verdicts.test.mjs proves that a wrong status, a content leak,
 // an external request, a console error, a DB write or a missing/non-empty mail sink cannot PASS.
 
-export const GAME_SLUGS = ['packet-quest-3d', 'firewall-defender-3d'];
+import { assets, GAME_SLUGS } from './inventory.mjs';
 
-/** Targets probed for every actor. `kind` decides the expected result. */
 export const MATRIX_TARGETS = [
   { name: 'launcher', path: '/admin/game-lab', kind: 'page' },
-  { name: 'play PQ', path: '/admin/game-lab/packet-quest-3d', kind: 'page' },
-  { name: 'play FD', path: '/admin/game-lab/firewall-defender-3d', kind: 'page' },
+  ...GAME_SLUGS.map((slug) => ({ name: `play ${slug}`, path: `/admin/game-lab/${slug}`, kind: 'page' })),
   { name: 'unknown game page', path: '/admin/game-lab/not-a-game', kind: 'unknown-page' },
-  { name: 'PQ index.html', path: '/api/admin/game-lab/packet-quest-3d/index.html', kind: 'asset', type: 'text/html' },
-  { name: 'PQ game.mjs', path: '/api/admin/game-lab/packet-quest-3d/game.mjs', kind: 'asset', type: 'text/javascript' },
-  { name: 'PQ vendor three', path: '/api/admin/game-lab/packet-quest-3d/vendor/three.module.min.js', kind: 'asset', type: 'text/javascript' },
-  { name: 'FD index.html', path: '/api/admin/game-lab/firewall-defender-3d/index.html', kind: 'asset', type: 'text/html' },
-  { name: 'FD rules.mjs', path: '/api/admin/game-lab/firewall-defender-3d/rules.mjs', kind: 'asset', type: 'text/javascript' },
+  ...assets,
   { name: 'unknown asset', path: '/api/admin/game-lab/packet-quest-3d/nope.mjs', kind: 'deny-asset' },
   { name: 'README not served', path: '/api/admin/game-lab/packet-quest-3d/README.md', kind: 'deny-asset' },
   { name: 'unknown game asset', path: '/api/admin/game-lab/not-a-game/index.html', kind: 'deny-asset' },
@@ -35,6 +29,15 @@ const GAME_CONTENT = [
   /from '\.\/(rules|scene|look)\.mjs'/,
   /WebGLRenderer/,
   /export const STAGES\b/,
+  /data-game-lab-prerelease/,
+  /PACKET QUEST/,
+  /Follow a request through the local network/,
+  /WAP Practice hub/,
+  /window\.__arcade\b/,
+  /"programCount": 20/,
+  /portal\.cedar\.example/,
+  /id: 'demo-sort'/,
+  /Original WAP Practice demo/,
 ];
 
 export function hasGameContent(body) {
@@ -79,12 +82,19 @@ export function judgeRow(actor, target, observed) {
   const failures = [];
   if (!want.status.includes(observed.status)) failures.push(`status ${observed.status}, expected ${want.status.join('|')}`);
   const content = hasGameContent(observed.body);
-  if (want.content && !content) failures.push('expected game content, none found');
+  if (target.kind === 'asset') {
+    if (want.content) {
+      if (observed.bodyBytes !== target.bytes || observed.sha256 !== target.sha256) failures.push('wrong asset bytes');
+    } else {
+      const error = actor.kind === 'anonymous' ? 'Unauthorized' : 'Not found';
+      if (observed.body !== JSON.stringify({ error }) || observed.contentType?.split(';')[0] !== 'application/json') failures.push('unexpected asset denial payload');
+    }
+  } else if (want.content && !content) failures.push('expected game content, none found');
   if (!want.content && content) failures.push('LEAK: game content served');
   if (want.notFoundShell && !isNotFoundShell(observed.body)) failures.push('expected the not-found shell');
   if (want.locationIncludes && !String(observed.location ?? '').includes(want.locationIncludes)) failures.push(`redirect to ${observed.location}, expected ${want.locationIncludes}`);
   if (want.locationExcludes && String(observed.location ?? '').includes(want.locationExcludes)) failures.push(`redirect stays in ${want.locationExcludes}`);
-  if (want.type && !String(observed.contentType ?? '').startsWith(want.type)) failures.push(`content-type ${observed.contentType}, expected ${want.type}`);
+  if (want.type && observed.contentType !== want.type) failures.push(`content-type ${observed.contentType}, expected ${want.type}`);
   if (want.privateNoStore && !(/\bprivate\b/.test(observed.cacheControl ?? '') && /\bno-store\b/.test(observed.cacheControl ?? ''))) failures.push(`cache-control ${observed.cacheControl}`);
   if (want.varyCookie && !/\bcookie\b/i.test(observed.vary ?? '')) failures.push(`vary ${observed.vary}`);
   return failures;

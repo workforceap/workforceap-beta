@@ -1,0 +1,383 @@
+{
+ "programSlug": "it-support-professional-certificate-ibm",
+ "programTitle": "IT Support Professional Certificate (IBM)",
+ "category": null,
+ "categoryLabel": null,
+ "brandColor": null,
+ "providers": "IBM & Google via Coursera",
+ "programDescription": "Learn the latest skills and tools used by IT support professionals — including hardware and software setup, technical support, customer service, ticketing systems, service level agreements, and troubleshooting. Prepares students for entry-level IT support roles.",
+ "hasTwcSyllabus": true,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "it-support-course-1",
+   "courseTitle": "Introduction to Technical Support",
+   "hours": 12,
+   "syllabusDescription": "Essential tools, customer service skills, and industry certifications.",
+   "courseraSlug": null,
+   "missionName": "Support Hero",
+   "missionTagline": "Prove you can handle a help desk ticket from start to resolution",
+   "skillLabels": [
+    "Ticketing systems",
+    "Customer communication",
+    "Troubleshooting methodology",
+    "Escalation",
+    "Communication"
+   ],
+   "scenarioPrompt": "It is your first week on a help desk and a frustrated user calls saying their computer 'just stopped working.' They are a sales manager who has a client call in 20 minutes. Using the technical support principles from this course, describe how you would handle this call—from opening the ticket through diagnosis and resolution.",
+   "quiz": [
+    {
+     "text": "A help desk technician receives a ticket: 'My email isn't working.' Before suggesting any solutions, what is the MOST important first step?",
+     "options": [
+      "Tell the user to restart their computer as that fixes most email problems",
+      "Ask clarifying questions to define the exact problem: Is email not loading at all? Are they getting an error message? Can they access email on another device? When did it last work?",
+      "Escalate immediately to the email administrator since email issues are Tier 2 problems",
+      "Check the email server status page first since the issue is probably a server outage"
+     ],
+     "correctIndex": 1,
+     "explanation": "Troubleshooting begins with fully defining the problem. 'Email isn't working' could mean a dozen different issues—clarifying questions narrow the scope and prevent wasted effort on the wrong solution."
+    },
+    {
+     "text": "A user calls frustrated because the same printer problem has been logged and 'fixed' three times in the past month. What does this repeat-ticket pattern indicate and what should the technician do?",
+     "options": [
+      "The user is misusing the printer; they should receive retraining before another ticket is opened",
+      "Previous fixes addressed the symptom but not the root cause; the technician should escalate to Tier 2 for a deeper investigation into why the fix is not permanent",
+      "The printer should be replaced immediately since recurring issues always indicate hardware failure",
+      "The ticketing system has a bug causing duplicate tickets; the three tickets are likely the same unresolved issue"
+     ],
+     "correctIndex": 1,
+     "explanation": "Recurring tickets on the same issue signal a symptomatic fix that left the root cause unresolved. Escalation to a more experienced technician for root cause analysis breaks the cycle."
+    },
+    {
+     "text": "A user asks a help desk technician to share the fix they just applied so the user can 'do it themselves next time.' How should the technician respond?",
+     "options": [
+      "Refuse to share the information since users performing their own repairs creates liability",
+      "Provide a clear explanation of what was done and why, document the solution in the ticket for future reference, and note any steps that require IT access so the user understands what they can and cannot do independently",
+      "Share only the steps that do not involve any IT-restricted systems or settings",
+      "Redirect the user to the company's self-service IT portal and end the call"
+     ],
+     "correctIndex": 1,
+     "explanation": "Empowering users with knowledge reduces repeat tickets and builds trust. Clear documentation of the fix in the ticket also builds the knowledge base for the entire support team."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "it-support-course-2",
+   "courseTitle": "Introduction to Hardware and Operating Systems",
+   "hours": 16,
+   "syllabusDescription": "Essential hardware and operating system knowledge for a career in IT support, networking, cybersecurity, or software development.",
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can diagnose hardware and OS issues confidently",
+   "skillLabels": [
+    "Hardware components",
+    "Operating systems",
+    "Troubleshooting",
+    "Windows",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A user reports that their Windows workstation is running extremely slowly, the fan is loud, and the system occasionally freezes. They have not installed any new software. Using your hardware and OS knowledge from this course, describe how you would diagnose this issue step by step.",
+   "quiz": [
+    {
+     "text": "A Windows workstation runs slowly and Task Manager shows the physical memory usage is consistently at 95% with several applications open. What is the MOST likely root cause and appropriate fix?",
+     "options": [
+      "The hard drive is failing; replace it with an SSD to improve system responsiveness",
+      "The system has insufficient RAM for the user's workload; adding more RAM is the most direct solution, though closing unnecessary background applications can provide immediate temporary relief",
+      "The CPU is throttling due to thermal issues; clean the cooling vents and reapply thermal paste",
+      "The operating system has a memory leak; reinstalling Windows will resolve the high memory usage"
+     ],
+     "correctIndex": 1,
+     "explanation": "Consistently maxed-out physical memory means the system is paging to disk, causing slowness. Adding RAM addresses the root cause. Closing apps helps temporarily but does not solve the underlying capacity problem."
+    },
+    {
+     "text": "A laptop runs hot and the CPU performance drops significantly under load—a phenomenon known as thermal throttling. What is the MOST likely hardware cause?",
+     "options": [
+      "The battery is overcharging and generating excess heat that throttles the CPU",
+      "The cooling system is obstructed or degraded—dust-blocked vents, a failing fan, or dried thermal paste between the CPU and heat sink is preventing heat from dissipating, causing the CPU to slow itself to avoid damage",
+      "The CPU is defective and needs to be replaced with a higher-rated model",
+      "The operating system power settings are configured to reduce performance when the battery level drops below 50%"
+     ],
+     "correctIndex": 1,
+     "explanation": "Thermal throttling is a CPU self-protection mechanism triggered when cooling fails. Cleaning vents, replacing thermal paste, and ensuring the fan works are the standard hardware interventions."
+    },
+    {
+     "text": "A user's Windows computer shows a Blue Screen of Death (BSOD) with the error 'MEMORY_MANAGEMENT' twice this week. What does this error most likely indicate?",
+     "options": [
+      "The user has too many browser tabs open and the operating system ran out of virtual memory",
+      "There is likely a faulty RAM module or a RAM compatibility issue; running Windows Memory Diagnostic (mdsched.exe) is the appropriate first diagnostic step",
+      "The hard drive is failing and Windows cannot access the page file stored on disk",
+      "A recent Windows Update introduced a software bug that causes this error on certain hardware configurations"
+     ],
+     "correctIndex": 1,
+     "explanation": "MEMORY_MANAGEMENT BSODs frequently indicate faulty RAM. Windows Memory Diagnostic tests RAM for errors without requiring additional tools—the standard first step before considering hardware replacement."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "it-support-course-3",
+   "courseTitle": "Introduction to Software, Programming, and Databases",
+   "hours": 18,
+   "syllabusDescription": "Basics of software, cloud computing, programming, and databases. Covers software types, the software lifecycle, browser management, and security.",
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can support software and database issues at a help desk level",
+   "skillLabels": [
+    "Software troubleshooting",
+    "Basic SQL",
+    "Application support",
+    "Problem-solving",
+    "Communication"
+   ],
+   "scenarioPrompt": "A user submits a ticket saying their HR application crashes whenever they try to generate a report. Other users on the same team can generate reports without issues. Using your software support knowledge from this course, describe the troubleshooting steps you would take to isolate whether this is a user-specific issue, a software issue, or a database issue.",
+   "quiz": [
+    {
+     "text": "An application crashes for one user but works for all other users on the same team. Which troubleshooting step BEST isolates whether the problem is user-specific or system-wide?",
+     "options": [
+      "Reinstall the application on the affected user's machine immediately",
+      "Log in to the application as the affected user on a different machine that works for others—if the crash follows the user account, the issue is profile or permissions-related; if not, it is local to their machine",
+      "Ask the affected user to wait 24 hours to see if the problem resolves on its own",
+      "Escalate to the application vendor immediately since crashes are always software bugs"
+     ],
+     "correctIndex": 1,
+     "explanation": "Testing the user account on a known-good machine isolates the variable. If the problem follows the account, focus on permissions and profile settings. If the machine is the culprit, focus on local software or configuration."
+    },
+    {
+     "text": "An HR application generates reports by querying a database. A technician notices the error log says 'query timeout exceeded' when the crash occurs. What does this indicate?",
+     "options": [
+      "The application has a bug in its report-generation code that should be fixed by the development team",
+      "The database query underlying the report is taking too long to complete—possibly due to a missing index, a slow query, or database server load; the DBA should investigate the query performance",
+      "The user's computer is too slow to handle the report generation and needs a hardware upgrade",
+      "The database credentials stored in the application have expired and need to be renewed"
+     ],
+     "correctIndex": 1,
+     "explanation": "A query timeout means the database operation exceeded the allowed time limit. This is a database performance issue—typically a missing index, a poorly written query, or high server load—requiring DBA investigation."
+    },
+    {
+     "text": "A user asks an IT support technician to give them direct database access so they can fix their own data entry errors. Why should this request be declined and what is the appropriate alternative?",
+     "options": [
+      "Direct database access is technically difficult to set up and would take too long to configure",
+      "Granting direct database access bypasses application-level validation and audit trails, creating data integrity and security risks; the correct path is using the application's built-in correction workflow or submitting a change request to the DBA",
+      "The user likely does not have the SQL knowledge required to make safe changes directly",
+      "Database access requires a paid license that the company may not have available"
+     ],
+     "correctIndex": 1,
+     "explanation": "Application-level workflows enforce business rules and maintain audit logs. Direct database access bypasses these controls, risking data corruption and compliance violations—regardless of the user's intent."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "it-support-course-4",
+   "courseTitle": "Introduction to Networking and Storage",
+   "hours": 12,
+   "syllabusDescription": "Foundational skills in networking, storage, and system administration. Network types, cables, topologies, and how data moves through networks.",
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can diagnose basic network and storage problems",
+   "skillLabels": [
+    "Networking fundamentals",
+    "TCP/IP",
+    "Storage",
+    "Troubleshooting",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Five employees in the same office report they cannot access the shared network drive, but internet access is working fine. One employee in a different part of the building can access the drive. Using your networking and storage knowledge from this course, describe your step-by-step troubleshooting approach.",
+   "quiz": [
+    {
+     "text": "Five users cannot access a network share but can browse the internet. One user in a different network zone can access the share. What is the MOST likely cause?",
+     "options": [
+      "The file server is offline since five users are affected simultaneously",
+      "The five affected users are likely on a different network segment or VLAN than the one user who can connect; a routing rule or firewall policy may be blocking access from their subnet to the file server",
+      "The five users all have incorrect Windows credentials stored in Credential Manager",
+      "The shared drive is full and rejecting new connections from users who last connected"
+     ],
+     "correctIndex": 1,
+     "explanation": "When internet works but a specific internal resource does not, and the pattern follows a physical location or subnet, the issue is likely network segmentation—a VLAN, firewall rule, or routing policy blocking access from that segment."
+    },
+    {
+     "text": "A user reports their computer is very slow when saving files to the local hard drive. Task Manager shows disk usage at 100% during save operations. What is the MOST likely hardware cause?",
+     "options": [
+      "The network connection to the file server is slow, causing a backup of pending saves",
+      "A traditional spinning hard disk (HDD) under heavy load frequently saturates to 100% disk usage; replacing with an SSD would dramatically improve read/write performance",
+      "The RAM is insufficient and Windows is using the hard drive as virtual memory (page file)",
+      "The file system is corrupted and needs to be repaired using chkdsk"
+     ],
+     "correctIndex": 1,
+     "explanation": "HDDs have mechanical limitations that cause 100% utilization under normal workloads. SSDs eliminate seek time and dramatically improve throughput—the most effective long-term fix for persistent disk saturation."
+    },
+    {
+     "text": "A network technician runs 'ping 192.168.1.50' from a user's computer and gets 'Request timed out.' The file server IP is 192.168.1.50. What does this result indicate?",
+     "options": [
+      "The ping program is not installed on the user's computer and needs to be downloaded",
+      "The computer cannot reach the file server at the IP level—either the server is offline, the IP is wrong, a firewall is blocking ICMP, or there is a routing problem between the computer and the server",
+      "The file server is running but has rejected the connection because the user lacks permission",
+      "The network cable is faulty since timeout errors only occur with physical connectivity problems"
+     ],
+     "correctIndex": 1,
+     "explanation": "A ping timeout means no IP-level response reached the computer. The root cause could be the server being down, a wrong IP, a firewall blocking ICMP, or a routing failure—further diagnostic steps are needed to differentiate."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "it-support-course-5",
+   "courseTitle": "Introduction to Cybersecurity Essentials",
+   "hours": 12,
+   "syllabusDescription": "Beginner-friendly course on essential cybersecurity skills for anyone using computers and the internet.",
+   "courseraSlug": null,
+   "missionName": "Help Desk Pro",
+   "missionTagline": "Prove you can handle security-related support requests safely",
+   "skillLabels": [
+    "Security awareness",
+    "Password management",
+    "Phishing response",
+    "Endpoint security",
+    "Communication"
+   ],
+   "scenarioPrompt": "A user calls the help desk saying they received an email claiming to be from IT asking them to click a link and reset their password immediately or their account will be locked. They clicked the link and entered their credentials before realizing it looked suspicious. Using your cybersecurity essentials knowledge, describe how you would handle this call.",
+   "quiz": [
+    {
+     "text": "A user just entered their corporate credentials on what appears to be a phishing site. What is the SINGLE most time-critical action the help desk must take?",
+     "options": [
+      "Run a malware scan on the user's computer to check for keyloggers",
+      "Immediately reset or disable the compromised account to prevent attackers from using the stolen credentials before they can establish persistence",
+      "Send a company-wide warning email about the phishing campaign",
+      "Collect the phishing URL and submit it to the security team for analysis"
+     ],
+     "correctIndex": 1,
+     "explanation": "The attacker now has valid credentials and every minute they remain active increases risk. Account reset or disablement is the single most time-critical containment action—everything else is secondary."
+    },
+    {
+     "text": "A user calls and says someone from 'IT Security' called them requesting their password to 'verify their account.' The caller knew the user's employee ID and manager's name. How should the help desk respond?",
+     "options": [
+      "Confirm the user's identity and provide their account details to the caller if they call back through official channels",
+      "Explain that IT will never ask for a password over the phone regardless of what information the caller knows; advise the user not to share any credentials and report the call as a social engineering attempt",
+      "Ask the user to put the caller on hold while the help desk verifies the caller's employee ID",
+      "Transfer the call directly to the security team and let them determine whether the caller is legitimate"
+     ],
+     "correctIndex": 1,
+     "explanation": "Knowing a user's employee ID or manager's name does not authenticate a caller—that information is often available through LinkedIn or email directories. No legitimate IT team asks for passwords over the phone."
+    },
+    {
+     "text": "A user's laptop was lost on a business trip and it was not encrypted. The laptop contained customer contracts and employee records. What is the FIRST action the IT support team should take?",
+     "options": [
+      "Order a replacement laptop and focus on restoring the user's productivity as quickly as possible",
+      "Initiate the data breach response procedure: remotely wipe the device if MDM allows, notify the security team and management, and assess what regulated data may have been exposed for potential breach notification obligations",
+      "Change the user's account passwords so the lost laptop cannot be used to access company systems",
+      "Run a remote backup to ensure all files on the lost laptop are saved before the device is decommissioned"
+     ],
+     "correctIndex": 1,
+     "explanation": "An unencrypted laptop with sensitive data is a reportable data breach event. Remote wipe, breach assessment, and notification obligations are all initiated simultaneously—not sequentially."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "it-support-course-6",
+   "courseTitle": "Introduction to Cloud Computing",
+   "hours": 12,
+   "syllabusDescription": "Basics of cloud computing and supporting technologies. Service models like IaaS and SaaS, plus public, private, and hybrid cloud setups.",
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can support and explain cloud services to business users",
+   "skillLabels": [
+    "Cloud fundamentals",
+    "SaaS/IaaS/PaaS",
+    "Cloud troubleshooting",
+    "Problem-solving",
+    "Communication"
+   ],
+   "scenarioPrompt": "A department manager asks you to explain the difference between SaaS, PaaS, and IaaS in plain language, and to recommend which type is appropriate for three scenarios: a small team that wants to use cloud email, a startup that needs to host a custom web application, and a developer who needs a virtual machine to run tests. Using your cloud computing knowledge, walk through each scenario.",
+   "quiz": [
+    {
+     "text": "A company's cloud file storage service is unavailable due to an outage at the cloud provider. The company had no backup plan. Which cloud responsibility model principle did the company overlook?",
+     "options": [
+      "The cloud provider is fully responsible for all data protection and the company has no obligations",
+      "Under the shared responsibility model, the customer is responsible for data backup strategies even when using SaaS—the provider guarantees infrastructure uptime but not protection against data loss from outages",
+      "Cloud providers guarantee 100% uptime under their SLAs so this outage is a breach of contract",
+      "Backup is only necessary for on-premises systems; cloud data is automatically redundant"
+     ],
+     "correctIndex": 1,
+     "explanation": "Cloud shared responsibility means customers own their data backup strategy. Provider SLAs cover infrastructure availability but do not protect against data loss scenarios the customer is responsible for preventing."
+    },
+    {
+     "text": "A developer needs to test a new application on a specific Linux distribution and kernel version. They need full control over the OS configuration. Which cloud service model is MOST appropriate?",
+     "options": [
+      "SaaS — use a cloud-based development environment that handles OS management automatically",
+      "IaaS — provision a virtual machine with the specific Linux distribution and kernel version required, giving full OS-level control",
+      "PaaS — deploy to a cloud platform that manages the runtime environment on the developer's behalf",
+      "FaaS — deploy the application as serverless functions that run without any OS management"
+     ],
+     "correctIndex": 1,
+     "explanation": "IaaS provides virtual machines where the customer controls the OS, distributions, and all software installed. PaaS and SaaS abstract the OS layer away, making them unsuitable when specific OS configuration is required."
+    },
+    {
+     "text": "A cloud storage bucket containing sensitive employee records is publicly accessible on the internet due to a misconfigured permission setting. Who is responsible for this security failure?",
+     "options": [
+      "The cloud provider, because they allowed the bucket to be made public",
+      "The customer, because configuring access controls on cloud resources is a customer responsibility under the shared responsibility model—the provider supplies the tools, but the customer must configure them securely",
+      "Both parties equally, since cloud security is always a joint responsibility with 50/50 liability",
+      "Neither party, because misconfigured cloud storage is an industry-wide problem without a clear responsible party"
+     ],
+     "correctIndex": 1,
+     "explanation": "Cloud shared responsibility assigns data and access configuration to the customer. The provider supplies the access control mechanisms; the customer is responsible for applying them correctly."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "it-support-course-7",
+   "courseTitle": "Technical Support Case Studies and Capstone Project",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can resolve complex support cases from start to finish",
+   "skillLabels": [
+    "Case analysis",
+    "Root cause analysis",
+    "Documentation",
+    "Problem-solving",
+    "Communication"
+   ],
+   "scenarioPrompt": "You are presenting your capstone support case to a hiring panel at an IT services company. The case involved a recurring VPN authentication failure affecting remote employees on a specific ISP. Walk them through how you diagnosed the root cause, what you tried, what worked, and what you documented in the knowledge base.",
+   "quiz": [
+    {
+     "text": "During a support case investigation, every attempted fix resolves the problem temporarily but it returns within a week. What does this pattern most strongly indicate?",
+     "options": [
+      "The support technician is incorrectly implementing the fixes and should be replaced",
+      "The fixes are treating symptoms rather than the root cause; a structured root cause analysis is needed to identify and eliminate the underlying problem permanently",
+      "The problem is caused by an external factor outside IT control, such as a vendor service outage",
+      "The issue requires a hardware replacement since software fixes are clearly insufficient"
+     ],
+     "correctIndex": 1,
+     "explanation": "Recurring issues after repeated fixes are the clearest signal of symptom-level repairs. Root cause analysis tools like the 5 Whys or fishbone diagram systematically trace symptoms back to the underlying cause."
+    },
+    {
+     "text": "You resolve a complex multi-day support case involving a VPN authentication issue. What is the MOST valuable thing you can do before closing the ticket?",
+     "options": [
+      "Ask the user to complete a satisfaction survey so the ticket can be closed with a high rating",
+      "Write a detailed knowledge base article documenting the symptoms, diagnostic steps taken, root cause identified, and resolution—so future technicians can resolve the same issue in minutes rather than days",
+      "Notify your manager that you resolved the issue so it can be included in your performance review",
+      "Close the ticket immediately so it does not negatively affect the team's average resolution time metric"
+     ],
+     "correctIndex": 1,
+     "explanation": "Knowledge base documentation is the highest-value output of any complex case resolution. It multiplies the value of one technician's work by making the solution instantly available to the entire support team."
+    },
+    {
+     "text": "A capstone reviewer asks: 'Looking back at your VPN case, what would you do differently?' Which type of answer demonstrates the strongest professional growth?",
+     "options": [
+      "Say the case was handled perfectly and there is nothing you would change",
+      "Identify a specific decision point where earlier log collection or a different diagnostic sequence would have reduced the resolution time, and explain what you would do differently and why",
+      "Acknowledge that the case was too difficult for your current skill level and you would escalate it faster next time",
+      "Suggest that the company should invest in better monitoring tools so technicians do not need to diagnose manually"
+     ],
+     "correctIndex": 1,
+     "explanation": "Reflective answers with specific improvements at identifiable decision points demonstrate analytical self-awareness. This is more compelling than false confidence, excessive humility, or deflecting to external factors."
+    }
+   ]
+  }
+ ]
+}

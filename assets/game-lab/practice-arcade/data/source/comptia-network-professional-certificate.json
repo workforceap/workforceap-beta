@@ -1,0 +1,489 @@
+{
+ "programSlug": "comptia-network-professional-certificate",
+ "programTitle": "CompTIA Network+ Professional Certificate",
+ "category": "it-cyber",
+ "categoryLabel": "IT & Cybersecurity",
+ "brandColor": "#ad2c4d",
+ "providers": null,
+ "programDescription": null,
+ "hasTwcSyllabus": false,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "comptia-network-course-1",
+   "courseTitle": "Introduction to Networking",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you understand the fundamentals of how networks function",
+   "skillLabels": [
+    "OSI model",
+    "Network topologies",
+    "Basic protocols",
+    "Troubleshooting",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A manager asks you to explain in plain language how data gets from their laptop to a website server when they type a URL into a browser. Using your Introduction to Networking knowledge, walk through the process using the OSI model layers as a framework.",
+   "quiz": [
+    {
+     "text": "A network technician needs to understand at which OSI layer a router operates to troubleshoot a routing problem. Which layer is correct?",
+     "options": [
+      "Layer 1 (Physical) — routers process electrical signals on network cables",
+      "Layer 2 (Data Link) — routers use MAC addresses to forward frames between network segments",
+      "Layer 3 (Network) — routers examine IP addresses to make forwarding decisions between networks",
+      "Layer 4 (Transport) — routers inspect port numbers to prioritize traffic types"
+     ],
+     "correctIndex": 2,
+     "explanation": "Routers operate at Layer 3 (Network) and use IP addresses to make forwarding decisions. Layer 2 switches use MAC addresses; Layer 4 devices like firewalls can inspect port numbers."
+    },
+    {
+     "text": "Data is sent from a laptop to a server. At which OSI layer does the data get divided into segments for reliable delivery?",
+     "options": [
+      "Layer 2 (Data Link) — frames segment data for transmission over the local network",
+      "Layer 3 (Network) — packets segment data for routing across networks",
+      "Layer 4 (Transport) — TCP segments data into manageable pieces with sequence numbers for ordered, reliable delivery",
+      "Layer 5 (Session) — the session layer divides data into logical units for each communication session"
+     ],
+     "correctIndex": 2,
+     "explanation": "Layer 4 (Transport) is where TCP segments data and adds sequence numbers for ordered, reliable delivery. Segmentation enables large data transfers to be broken into manageable pieces that can be reassembled correctly."
+    },
+    {
+     "text": "A network engineer says two offices are connected at 'Layer 1.' What does this mean in practical terms?",
+     "options": [
+      "The offices share the same IP address range and routing table",
+      "The offices are connected at the physical layer—using a physical medium like fiber optic cable, copper cable, or wireless radio frequency to transmit raw bits between locations",
+      "The offices use the same application protocols for communication",
+      "The offices are managed by the same network administrator and use identical configurations"
+     ],
+     "correctIndex": 1,
+     "explanation": "Layer 1 (Physical) refers to the actual physical transmission medium—cables, connectors, and signals. A Layer 1 connection between offices means a physical medium (often fiber or microwave) carries raw bit streams between them."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "comptia-network-course-2",
+   "courseTitle": "Networking Fundamentals",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can configure and verify basic network settings",
+   "skillLabels": [
+    "IP addressing",
+    "Subnetting",
+    "DHCP",
+    "DNS",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are setting up a small office network from scratch. The office has 20 users, a shared printer, and needs internet access. Using your networking fundamentals from this course, describe how you would design the IP address scheme, configure DHCP, and ensure DNS works correctly.",
+   "quiz": [
+    {
+     "text": "An office has 20 computers, all receiving IPs via DHCP. The printer must always have the same IP so print jobs can be directed to it reliably. What is the BEST approach?",
+     "options": [
+      "Assign the printer an IP address outside the DHCP scope range and configure it as a static IP on the printer itself, ensuring DHCP never assigns that address to another device",
+      "Configure the DHCP server to give the printer a new IP each time but remember to update the print server configuration after each renewal",
+      "Give the printer and all computers static IP addresses since DHCP is unreliable for office environments",
+      "Reserve the last IP in the subnet (e.g., 192.168.1.254) for the printer by configuring it as a DHCP exclusion only—no static configuration needed"
+     ],
+     "correctIndex": 0,
+     "explanation": "Static IP assignment on the device itself (or a DHCP reservation by MAC address) is the standard approach for printers and servers that need a predictable address. The static IP must fall outside the DHCP scope to prevent conflicts."
+    },
+    {
+     "text": "A network has the IP range 192.168.10.0/24. How many usable host addresses does this provide?",
+     "options": [
+      "256 usable addresses",
+      "254 usable addresses — the network address (192.168.10.0) and broadcast address (192.168.10.255) are reserved and cannot be assigned to hosts",
+      "255 usable addresses",
+      "252 usable addresses because routers, DNS, and DHCP servers each reserve one address"
+     ],
+     "correctIndex": 1,
+     "explanation": "A /24 subnet has 256 total addresses (2^8). The first address is the network address and the last is the broadcast address—both unusable for hosts. This leaves 254 usable host addresses."
+    },
+    {
+     "text": "Users on a new office network can access websites by IP address (e.g., ping 8.8.8.8 works) but cannot access websites by name (e.g., google.com fails). What is misconfigured?",
+     "options": [
+      "The default gateway is pointed to the wrong router",
+      "The DNS server address in the DHCP configuration is missing or incorrect—clients are not receiving a valid DNS server to resolve domain names to IP addresses",
+      "The subnet mask is wrong, preventing the clients from recognizing the DNS server on the local network",
+      "The ISP's upstream DNS server is temporarily offline"
+     ],
+     "correctIndex": 1,
+     "explanation": "IP connectivity works (ping to IP succeeds) but name resolution fails—this is a DNS configuration issue. The DHCP server option 6 (DNS Server) is the most common place where the DNS server address is missing or wrong."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "comptia-network-course-3",
+   "courseTitle": "Introduction to Contemporary Operating Systems and Hardware",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can support networking across different operating systems",
+   "skillLabels": [
+    "Cross-platform networking",
+    "Linux networking",
+    "Windows networking",
+    "Troubleshooting",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "Your company has a mixed environment of Windows and Linux servers. A Linux web server cannot communicate with a Windows file server. Both are on the same network segment. Using your cross-platform networking knowledge, describe the diagnostic commands you would use on each OS and the most common causes of this failure.",
+   "quiz": [
+    {
+     "text": "On a Linux server, you run 'ip addr' and see the network interface shows 'state DOWN'. What does this indicate and what command would you use to bring it up?",
+     "options": [
+      "The interface cable is disconnected; run 'ip link set eth0 up' to signal the switch to reconnect",
+      "The network interface is administratively disabled; run 'ip link set eth0 up' (replacing eth0 with the actual interface name) to enable it",
+      "The server is not connected to the internet; 'state DOWN' refers to WAN connectivity only",
+      "The interface driver needs to be reinstalled; 'state DOWN' indicates a driver failure"
+     ],
+     "correctIndex": 1,
+     "explanation": "An interface in 'state DOWN' is administratively disabled or not connected. The 'ip link set [interface] up' command enables the interface at Layer 2 so it can communicate on the network."
+    },
+    {
+     "text": "A Linux server can ping a Windows file server by IP but cannot connect to its SMB file shares. What is the MOST likely cause?",
+     "options": [
+      "Linux does not support SMB connections; a different file-sharing protocol must be used",
+      "The Windows firewall may be blocking SMB ports (TCP 445) from the Linux server's IP; or the Linux client needs the Samba client package installed to communicate over the SMB protocol",
+      "The Linux server needs to be in the same Windows domain as the file server to access shares",
+      "SMB traffic requires a Layer 2 VLAN tag that Linux networking does not support by default"
+     ],
+     "correctIndex": 1,
+     "explanation": "SMB connectivity requires TCP port 445 to be open through the Windows firewall and the appropriate client software (samba-client or cifs-utils on Linux). Ping success confirms IP connectivity but does not test application-layer protocols."
+    },
+    {
+     "text": "You need to test whether TCP port 443 is open on a remote server from a Linux machine without a browser or specialized tool. Which command works?",
+     "options": [
+      "ping remote-server -p 443",
+      "nc -zv remote-server 443  (or: telnet remote-server 443)",
+      "traceroute remote-server --port 443",
+      "nslookup remote-server 443"
+     ],
+     "correctIndex": 1,
+     "explanation": "netcat (nc) with -z (scan without sending data) and -v (verbose) tests TCP connectivity to a specific port. Ping tests ICMP only and cannot test specific TCP ports; traceroute does not test specific port connectivity."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "comptia-network-course-4",
+   "courseTitle": "Introduction to Networking and Storage",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can design and troubleshoot networked storage solutions",
+   "skillLabels": [
+    "NAS/SAN",
+    "Network storage",
+    "iSCSI",
+    "Troubleshooting",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A small business wants to add centralized file storage so all employees can access shared files from their workstations. They have a 1Gbps office network. Using your networking and storage knowledge from this course, compare NAS and SAN for this use case and recommend the appropriate solution.",
+   "quiz": [
+    {
+     "text": "A small business wants shared file storage that employees access from Windows and Mac laptops. Which storage technology is MOST appropriate?",
+     "options": [
+      "SAN with Fibre Channel, because it provides the highest performance for any storage workload",
+      "NAS (Network-Attached Storage) using SMB/CIFS for Windows and NFS or SMB for Mac, because it provides file-level access over the existing Ethernet network without requiring specialized hardware",
+      "DAS (Direct-Attached Storage) connected to one workstation and shared over the network",
+      "iSCSI SAN, because it uses the existing Ethernet network and is therefore equivalent to NAS in cost and complexity"
+     ],
+     "correctIndex": 1,
+     "explanation": "NAS is designed for file-level sharing over standard Ethernet, making it the natural fit for multi-user file access in a small business. SAN provides block-level storage suited for databases and VMs—more complex and costly than needed here."
+    },
+    {
+     "text": "A NAS device shows all lights as normal but users cannot access file shares. Ping to the NAS IP succeeds from all workstations. What should be checked NEXT?",
+     "options": [
+      "Replace the NAS device since hardware failure is the most common cause of share inaccessibility",
+      "Verify the file sharing service (SMB/CIFS) is running on the NAS, check firewall rules for SMB ports (TCP 445), and confirm the share permissions allow the affected user accounts",
+      "Reboot all workstations to refresh the network connection to the NAS",
+      "Check the NAS capacity—full storage devices stop serving shares until space is freed"
+     ],
+     "correctIndex": 1,
+     "explanation": "Ping success confirms network reachability. Service-level inaccessibility with network connectivity points to the sharing service being stopped, firewall blocking the SMB port, or permission configuration—not physical connectivity."
+    },
+    {
+     "text": "A company's backup solution uses iSCSI to connect a backup server to a SAN over the existing 1Gbps network. Backup jobs are taking 6 hours instead of the expected 2 hours. What should be investigated first?",
+     "options": [
+      "The SAN hardware is too old and needs to be replaced with a newer model",
+      "Network utilization during backup—iSCSI competes with regular office traffic on the shared 1Gbps network; running backups during low-traffic hours or dedicating a separate NIC for iSCSI traffic are common solutions",
+      "The backup software is misconfigured and should be reinstalled",
+      "The backup target is full and writing is slower due to storage pressure"
+     ],
+     "correctIndex": 1,
+     "explanation": "iSCSI over shared Ethernet competes for bandwidth with regular office traffic. Backup throughput is often limited by network contention rather than storage performance—isolating iSCSI to a dedicated NIC or VLAN is a standard optimization."
+    }
+   ]
+  },
+  {
+   "order": 5,
+   "courseSlug": "comptia-network-course-5",
+   "courseTitle": "Basics of Cisco Networking",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can configure and verify basic Cisco network devices",
+   "skillLabels": [
+    "Cisco IOS",
+    "Switch configuration",
+    "VLANs",
+    "Routing basics",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are configuring a new Cisco switch for a company that has two departments—HR and Engineering—which should not see each other's traffic. Using your Cisco networking basics, describe the commands you would use to create VLANs for each department and assign ports to the correct VLAN.",
+   "quiz": [
+    {
+     "text": "A network administrator connects two Cisco switches and needs all VLANs to pass between them. Which port configuration should be used on the inter-switch link?",
+     "options": [
+      "Access mode on both ends, with VLAN 1 assigned to carry all traffic",
+      "Trunk mode (802.1Q) on both switch ports, which allows frames from multiple VLANs to traverse the link using VLAN tags",
+      "Routed mode, which enables Layer 3 routing between the switches",
+      "Monitor mode, which forwards all VLANs without requiring configuration"
+     ],
+     "correctIndex": 1,
+     "explanation": "802.1Q trunk ports tag Ethernet frames with VLAN IDs, allowing traffic from multiple VLANs to share a single physical link between switches. Access ports carry untagged traffic for a single VLAN only."
+    },
+    {
+     "text": "After assigning a Cisco switch port to VLAN 20 with the command 'switchport access vlan 20', the connected device cannot communicate with other devices on VLAN 20. What should be checked first?",
+     "options": [
+      "The connected device's IP address may be on the wrong subnet for VLAN 20",
+      "Verify the port is in access mode with 'show interfaces [port] switchport' and confirm VLAN 20 exists in the VLAN database with 'show vlan brief'—a non-existent VLAN prevents communication",
+      "The device's network cable needs to be replaced with a Category 6 cable for VLAN support",
+      "The switch needs to be rebooted for VLAN assignments to take effect"
+     ],
+     "correctIndex": 1,
+     "explanation": "Assigning a port to a VLAN that does not exist in the switch's VLAN database silently fails—the port joins the VLAN but traffic is not forwarded. Verifying the VLAN exists in 'show vlan brief' is a critical diagnostic step."
+    },
+    {
+     "text": "A Cisco switch shows the following output: 'FastEthernet0/1 is down, line protocol is down.' What does this MOST likely indicate?",
+     "options": [
+      "The switch port has been administratively shut down using the 'shutdown' command",
+      "There is a physical layer issue—most commonly no cable connected, a faulty cable, or a connected device that is powered off—the interface has no active signal at the physical layer",
+      "The port's VLAN assignment has been removed, causing the logical interface to go down",
+      "The port is in half-duplex mode and cannot detect the connected device's full-duplex signal"
+     ],
+     "correctIndex": 1,
+     "explanation": "'Line protocol is down' alongside 'interface is down' indicates a physical layer failure—no signal is being received. Cable connectivity, cable health, and the connected device's power state are the first things to check."
+    }
+   ]
+  },
+  {
+   "order": 6,
+   "courseSlug": "comptia-network-course-6",
+   "courseTitle": "CCNA Foundations",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you have the foundation-level skills for Cisco certification",
+   "skillLabels": [
+    "OSPF/routing protocols",
+    "ACLs",
+    "Cisco IOS",
+    "Network design",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are setting up a Cisco router for a branch office. The office has a local LAN and needs to route traffic to headquarters over a WAN link. You need to configure a static route to headquarters and an access control list to block certain traffic. Walk through the IOS commands you would use.",
+   "quiz": [
+    {
+     "text": "A network engineer configures an access control list with these entries: permit 192.168.10.0 0.0.0.255; deny any. Which traffic is allowed?",
+     "options": [
+      "All traffic from all networks except 192.168.10.0/24",
+      "Only traffic from the 192.168.10.0/24 subnet is permitted; all other traffic is denied by the explicit deny any rule",
+      "No traffic is allowed since the deny any overrides everything above it",
+      "Traffic from 192.168.10.0/24 is allowed outbound only; all inbound traffic is denied"
+     ],
+     "correctIndex": 1,
+     "explanation": "ACLs are processed top-to-bottom and the first matching rule applies. Traffic from 192.168.10.0/24 matches the first permit rule and is allowed. All other traffic falls through to the deny any rule and is blocked."
+    },
+    {
+     "text": "A Cisco router has a static route to 10.10.0.0/16 via 192.168.1.1. A new network 10.10.5.0/24 needs to use a different path via 192.168.1.2. What routing principle determines which route the router uses for traffic destined to 10.10.5.1?",
+     "options": [
+      "The static route entered first takes precedence regardless of prefix length",
+      "Longest prefix match — the more specific /24 route (10.10.5.0/24) matches 10.10.5.1 before the less specific /16 route does; traffic goes via 192.168.1.2",
+      "Administrative distance — static routes always have lower distance than dynamic routes",
+      "Load balancing — the router splits traffic between both routes equally"
+     ],
+     "correctIndex": 1,
+     "explanation": "Longest prefix match is the fundamental IP routing decision rule. A /24 route is more specific than a /16 route and always wins for addresses within its range—enabling traffic engineering by adding more specific routes."
+    },
+    {
+     "text": "You apply an ACL to an interface with the command 'ip access-group 101 in'. What does the 'in' keyword specify?",
+     "options": [
+      "The ACL is an inbound rule that the interface evaluates as traffic enters the router from that interface",
+      "The ACL allows inbound internet traffic only and blocks all outbound traffic",
+      "The ACL is stored in the router's internal memory (RAM) rather than flash storage",
+      "The ACL applies to inbound management traffic like SSH and Telnet only"
+     ],
+     "correctIndex": 0,
+     "explanation": "The 'in' keyword applies the ACL to traffic arriving on the interface (entering the router). 'Out' applies it to traffic leaving through that interface. Direction matters critically for ACL placement and effectiveness."
+    }
+   ]
+  },
+  {
+   "order": 7,
+   "courseSlug": "comptia-network-course-7",
+   "courseTitle": "TCP/IP and Advanced Topics",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you understand TCP/IP deeply enough to troubleshoot complex issues",
+   "skillLabels": [
+    "TCP/IP stack",
+    "IPv6",
+    "Network protocols",
+    "Packet analysis",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A developer reports their application is intermittently dropping connections to a remote server over TCP. The connections seem to establish fine but drop after a few minutes of idle time. Using your TCP/IP knowledge from this course, explain the likely cause and how to diagnose and fix it.",
+   "quiz": [
+    {
+     "text": "A TCP connection is established successfully but the session drops after exactly 5 minutes of inactivity every time. What is the MOST likely cause?",
+     "options": [
+      "The TCP retransmission timer is set to 5 minutes and drops the connection after that period",
+      "A stateful firewall or NAT device between the client and server has a 5-minute idle session timeout that removes the connection tracking entry—subsequent packets find no matching session and are dropped",
+      "The server application has a 5-minute idle timeout configured in its connection settings",
+      "TCP's TIME_WAIT state expires after 5 minutes and the connection cannot be reused"
+     ],
+     "correctIndex": 1,
+     "explanation": "NAT and stateful firewall session tables expire idle TCP sessions to free memory. When packets arrive for an expired session, the device has no record of the connection and drops the packets—causing the application-layer timeout."
+    },
+    {
+     "text": "A packet capture shows TCP retransmissions every 3 seconds for a specific connection, but pings between the same hosts succeed with normal latency. What does this indicate?",
+     "options": [
+      "The network path has severe packet loss affecting all traffic types",
+      "The retransmissions are specific to that TCP session—possible causes include a misconfigured TCP window size, selective packet drops by a firewall targeting that specific flow, or an application-level acknowledgment delay",
+      "The target server is overloaded and cannot process all incoming TCP connections",
+      "The DNS name is resolving to the wrong IP, causing packets to take an incorrect path"
+     ],
+     "correctIndex": 1,
+     "explanation": "Retransmissions on one flow with clean pings indicate a session-specific problem rather than general network loss. Firewalls that rate-limit or drop specific flows, window size mismatches, and application ACK delays all cause this pattern."
+    },
+    {
+     "text": "An organization migrating to IPv6 finds that some systems can communicate with each other over IPv6 but cannot reach IPv6 internet resources. What is the MOST likely cause?",
+     "options": [
+      "IPv6 requires a separate physical network from IPv4 and the cables are cross-connected",
+      "The default IPv6 gateway is not configured or is incorrect—internal IPv6 communication works because hosts discover each other via NDP, but routing to external IPv6 addresses requires a properly configured gateway",
+      "IPv6 is not supported on the internet; only internal networks can use IPv6",
+      "The IPv6 addresses are in the wrong prefix range and need to be reassigned to the correct global unicast range"
+     ],
+     "correctIndex": 1,
+     "explanation": "IPv6 hosts use Neighbor Discovery Protocol for local communication without a gateway. Reaching external IPv6 resources requires a gateway router that knows how to forward IPv6 traffic to the ISP's IPv6 upstream."
+    }
+   ]
+  },
+  {
+   "order": 8,
+   "courseSlug": "comptia-network-course-8",
+   "courseTitle": "Operating Systems and Networking Fundamentals",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can configure network settings across operating systems",
+   "skillLabels": [
+    "Network configuration",
+    "Windows/Linux",
+    "Command-line tools",
+    "Troubleshooting",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "You are supporting a mixed Windows and Ubuntu Linux environment. An Ubuntu workstation cannot reach the internet while Windows machines on the same switch work fine. Using your cross-platform networking skills from this course, describe the diagnostic commands specific to Ubuntu you would use.",
+   "quiz": [
+    {
+     "text": "An Ubuntu workstation's ip addr output shows the main network interface with no IPv4 address. What command should the technician run next to attempt to obtain an IP from DHCP?",
+     "options": [
+      "sudo ifconfig eth0 dhcp",
+      "sudo dhclient eth0  (or the appropriate interface name)",
+      "sudo ip addr add dhcp dev eth0",
+      "sudo netplan apply --dhcp"
+     ],
+     "correctIndex": 1,
+     "explanation": "dhclient manually triggers a DHCP request on the specified interface. This is the standard command for forcing IP address acquisition on Ubuntu when the interface is up but has no address from DHCP."
+    },
+    {
+     "text": "A Linux workstation has a valid IP and can ping its default gateway but cannot ping 8.8.8.8 (an external IP). What does this indicate?",
+     "options": [
+      "The default gateway IP is wrong; the workstation is pinging itself instead of the router",
+      "The gateway is not routing traffic to the internet—possible causes include a routing table issue on the router, an upstream ISP problem, or a firewall rule blocking outbound ICMP beyond the local network",
+      "The workstation's DNS is misconfigured and cannot resolve 8.8.8.8 as a domain name",
+      "8.8.8.8 blocks ICMP ping requests from certain networks; use a different test IP"
+     ],
+     "correctIndex": 1,
+     "explanation": "Pinging the gateway succeeds (local routing works) but external IPs fail—the problem is at or beyond the gateway. The router is either not forwarding to the internet, has a broken route, or the ISP link is down."
+    },
+    {
+     "text": "A technician checks /etc/resolv.conf on a Linux server and sees it is empty. What effect does this have on the server's network functionality?",
+     "options": [
+      "No effect—Linux automatically queries DNS servers discovered via DHCP without requiring resolv.conf",
+      "DNS name resolution will fail for all hostname lookups; the server can still communicate by IP address but cannot resolve domain names until a valid nameserver entry is added to resolv.conf",
+      "The server will use the system's hosts file exclusively, resolving only hostnames manually added to /etc/hosts",
+      "The empty file disables all network interfaces until resolv.conf is populated"
+     ],
+     "correctIndex": 1,
+     "explanation": "resolv.conf specifies the DNS servers for name resolution. An empty file means no DNS server is configured—hostname lookups fail. IP-based communication still works, but any service that relies on domain names (websites, NTP, etc.) will break."
+    }
+   ]
+  },
+  {
+   "order": 9,
+   "courseSlug": "comptia-network-course-9",
+   "courseTitle": "Network Foundations and Addressing",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can design and troubleshoot network addressing schemes",
+   "skillLabels": [
+    "Subnetting",
+    "IPv4/IPv6",
+    "VLSM",
+    "Network design",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A company is opening three new branch offices and needs you to subnet their 192.168.50.0/24 network to give each branch exactly 50 usable host addresses, with as little waste as possible. Using your subnetting skills from this course, calculate the appropriate subnet mask and show the three subnets.",
+   "quiz": [
+    {
+     "text": "A network requires 50 usable host addresses per subnet. Which subnet mask provides the MINIMUM number of addresses that meets this requirement?",
+     "options": [
+      "/25 (subnet mask 255.255.255.128) providing 126 usable addresses",
+      "/26 (subnet mask 255.255.255.192) providing 62 usable addresses — this is the smallest subnet that accommodates 50 hosts (2^6 - 2 = 62 ≥ 50)",
+      "/27 (subnet mask 255.255.255.224) providing 30 usable addresses",
+      "/24 (subnet mask 255.255.255.0) providing 254 usable addresses"
+     ],
+     "correctIndex": 1,
+     "explanation": "A /26 gives 6 host bits (2^6 = 64 total, 62 usable). This is the smallest subnet where 62 ≥ 50 required hosts. A /27 gives only 30 usable addresses—insufficient. VLSM principles prefer the most efficient subnet size."
+    },
+    {
+     "text": "An organization is running out of IPv4 addresses internally. Their IT manager proposes switching to the 10.0.0.0/8 private range. A network engineer says this provides 16,777,214 usable addresses. How is this calculated?",
+     "options": [
+      "The /8 prefix means 8 bits are used for the network, leaving 24 bits for hosts: 2^24 = 16,777,216 total, minus 2 reserved = 16,777,214 usable",
+      "The 10.x.x.x range spans from 10.0.0.1 to 10.255.255.254, which is counted manually",
+      "The /8 means the network has 8 subnets, each with 2,097,152 addresses",
+      "IPv4 addressing maxes out at 16,777,216 regardless of prefix; this is a coincidence"
+     ],
+     "correctIndex": 0,
+     "explanation": "A /8 prefix uses 8 bits for the network portion, leaving 24 host bits. 2^24 = 16,777,216 total addresses minus the network address and broadcast address = 16,777,214 usable—the standard formula."
+    },
+    {
+     "text": "Two subnets are defined: 192.168.1.0/25 and 192.168.1.128/25. A host is assigned the IP 192.168.1.130. The network administrator claims this host is on the first subnet. Are they correct?",
+     "options": [
+      "Yes, because 192.168.1.130 falls within the 192.168.1.0 network range",
+      "No, because 192.168.1.128/25 covers 192.168.1.128 through 192.168.1.255—address .130 falls in the second subnet, not the first",
+      "Yes, because .130 is less than 192 and both subnets share the same /25 mask",
+      "There is not enough information to determine which subnet .130 belongs to without knowing the gateway IP"
+     ],
+     "correctIndex": 1,
+     "explanation": "A /25 divides the /24 exactly in half: first half is .0-.127, second half is .128-.255. The address .130 falls in the second subnet (192.168.1.128/25). The administrator is incorrect."
+    }
+   ]
+  }
+ ]
+}

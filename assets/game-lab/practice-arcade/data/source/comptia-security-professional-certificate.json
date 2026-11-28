@@ -1,0 +1,224 @@
+{
+ "programSlug": "comptia-security-professional-certificate",
+ "programTitle": "CompTIA Security+ Professional Certificate",
+ "category": "it-cyber",
+ "categoryLabel": "IT & Cybersecurity",
+ "brandColor": "#ad2c4d",
+ "providers": null,
+ "programDescription": null,
+ "hasTwcSyllabus": false,
+ "courses": [
+  {
+   "order": 1,
+   "courseSlug": "comptia-security-course-1",
+   "courseTitle": "Network Security Fundamentals",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you can identify and defend against network-level threats",
+   "skillLabels": [
+    "Network security architecture",
+    "Firewalls",
+    "IDS/IPS",
+    "DMZ design",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A company asks you to design a network security architecture for a web application that must be accessible from the internet while protecting the internal corporate network. Using your network security fundamentals from this course, describe the architecture including DMZ placement, firewall rules, and monitoring controls.",
+   "quiz": [
+    {
+     "text": "A web server in a DMZ needs to query a database on the internal network. Which firewall rule set BEST follows the principle of least privilege?",
+     "options": [
+      "Allow all traffic from the DMZ to the internal network to ensure the web application can access any resource it needs",
+      "Allow only traffic from the web server's specific IP to the database server's IP on the specific database port (e.g., TCP 3306 for MySQL), and deny all other DMZ-to-internal traffic",
+      "Block all traffic from the DMZ to the internal network and use a reverse proxy to handle database queries",
+      "Allow the DMZ to initiate connections to the internal network on ports 80 and 443 only"
+     ],
+     "correctIndex": 1,
+     "explanation": "Least privilege firewalling restricts traffic to the exact source IP, destination IP, and port required for legitimate operation. Any other traffic from the DMZ to the internal network should be denied—limiting the blast radius of a compromised DMZ server."
+    },
+    {
+     "text": "An IDS fires an alert for a port scan originating from an IP inside the corporate network targeting internal servers. What does this most likely indicate?",
+     "options": [
+      "A network administrator is running an authorized vulnerability scan and the IDS is generating a false positive",
+      "A device inside the network may be compromised and conducting reconnaissance—potentially part of a lateral movement phase of an attack; the alert should be investigated immediately",
+      "The IDS signature database is outdated and incorrectly flagging normal network discovery traffic",
+      "A developer is testing a new network monitoring tool and the traffic pattern matches a port scan signature"
+     ],
+     "correctIndex": 1,
+     "explanation": "Internal port scanning is a red flag for lateral movement—a common attacker behavior after initial compromise. While authorized scans are possible, an unexplained internal scan requires immediate investigation to rule out compromise."
+    },
+    {
+     "text": "A company's DMZ contains a public web server and a public email server. Both need to accept traffic from the internet, but only on specific ports. Which firewall rule type BEST describes the minimum required inbound rules?",
+     "options": [
+      "Permit any traffic from any internet IP to any IP in the DMZ",
+      "Permit TCP 80 and 443 to the web server IP, permit TCP 25 to the email server IP, and deny all other inbound traffic to the DMZ by default",
+      "Permit all TCP traffic to the DMZ but use IDS to block malicious packets",
+      "Permit inbound traffic from trusted countries only using geo-blocking"
+     ],
+     "correctIndex": 1,
+     "explanation": "Allowing only the specific ports and destination IPs needed for each public service implements the least privilege principle. A default deny-all with specific permit exceptions is the standard secure inbound rule architecture."
+    }
+   ]
+  },
+  {
+   "order": 2,
+   "courseSlug": "comptia-security-course-2",
+   "courseTitle": "Security Threats and Vulnerabilities",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Tech Builder",
+   "missionTagline": "Prove you can identify and categorize security threats accurately",
+   "skillLabels": [
+    "Malware types",
+    "Social engineering",
+    "Attack vectors",
+    "Threat intelligence",
+    "Critical thinking"
+   ],
+   "scenarioPrompt": "Your company's security team receives a report that an employee's computer has been sending data to an unknown external IP address at night. Investigation reveals the computer has software installed that disguises itself as a system utility but includes a remote access component. Using your threats and vulnerabilities knowledge from this course, classify this threat and describe the appropriate response.",
+   "quiz": [
+    {
+     "text": "An employee receives an email with an attachment labeled 'Q3 Salary Review.pdf.exe'. They open it, nothing visible happens, but their antivirus starts alerting on unusual activity. What type of malware is this MOST likely?",
+     "options": [
+      "A virus, because it spreads to other files on the computer after execution",
+      "A Trojan horse—malware disguised as a legitimate file that executes malicious code when opened, without the user realizing anything harmful occurred",
+      "Ransomware, because it encrypts files and the antivirus is detecting the encryption activity",
+      "A worm, because it arrived via email and may spread to the employee's contacts automatically"
+     ],
+     "correctIndex": 1,
+     "explanation": "A double extension (.pdf.exe) disguises an executable as a document—a classic Trojan horse delivery method. The malware executes when opened, performs its malicious action silently, and presents no obvious symptoms to the user."
+    },
+    {
+     "text": "A security analyst receives a report of a zero-day vulnerability in a widely used enterprise software product. The vendor has not released a patch. What is the MOST appropriate immediate response?",
+     "options": [
+      "Wait for the vendor's patch since there is no actionable step without an official fix",
+      "Apply compensating controls: temporarily isolate affected systems from the internet if possible, increase monitoring for exploitation indicators, block known attack vectors (e.g., specific file types or network indicators), and apply virtual patching via WAF or IPS if signatures are available",
+      "Uninstall the affected software immediately, accepting the loss of functionality until a patch is released",
+      "Notify the vendor and wait 90 days per responsible disclosure norms before taking internal action"
+     ],
+     "correctIndex": 1,
+     "explanation": "Zero-day response requires compensating controls when a patch is unavailable. Compensating controls reduce the attack surface while the permanent fix is developed—waiting for a patch without any mitigation is unacceptable."
+    },
+    {
+     "text": "An attacker sends 10,000 emails to a company's employees, each personalizing the message with the recipient's name, manager's name, and project they are working on. What type of attack is this and why is it more dangerous than a generic phishing campaign?",
+     "options": [
+      "A brute force attack using social data to guess employee passwords through email",
+      "Spear phishing—targeted phishing that uses personalized information to increase credibility and click-through rates; it is more dangerous because the personalization makes the email harder to identify as malicious and recipients are more likely to comply",
+      "A watering hole attack that compromises a website the employees are likely to visit",
+      "A vishing attack conducted over email rather than voice calls"
+     ],
+     "correctIndex": 1,
+     "explanation": "Spear phishing uses personal context (names, roles, active projects) to make malicious emails appear legitimate. The personalization dramatically increases success rates compared to generic mass phishing because it exploits trust and familiarity."
+    }
+   ]
+  },
+  {
+   "order": 3,
+   "courseSlug": "comptia-security-course-3",
+   "courseTitle": "System Hardening and Endpoint Security",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Systems Pro",
+   "missionTagline": "Prove you can harden systems and protect endpoints from attack",
+   "skillLabels": [
+    "System hardening",
+    "Endpoint protection",
+    "Patch management",
+    "Group Policy",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A security audit finds that a Windows server has 47 unnecessary services running, default administrator credentials unchanged, no endpoint protection installed, and 3 months of unpatched Windows updates. Using your system hardening skills from this course, prioritize and describe the remediation steps.",
+   "quiz": [
+    {
+     "text": "A server has the default administrator username 'Administrator' and password 'admin123'. This combination is listed in credential stuffing databases. What is the FASTEST risk reduction action?",
+     "options": [
+      "Install a firewall to block external access to the server's RDP port",
+      "Immediately change the password to a long, complex, unique credential and consider renaming the Administrator account—credential stuffing attacks can succeed in seconds and this is the highest-priority fix",
+      "Enable account lockout after 3 failed attempts to slow down brute-force attacks",
+      "Disable RDP entirely and only use console access for server administration"
+     ],
+     "correctIndex": 1,
+     "explanation": "Known-default credentials in public databases make the account trivially compromisable. Changing the password immediately eliminates this specific risk in under a minute—faster than any other control to implement."
+    },
+    {
+     "text": "A Windows server has 47 services running, including services for fax, Bluetooth, and remote registry. None of these are used in the server's role as a web server. Why is disabling them important?",
+     "options": [
+      "Running unused services wastes CPU and RAM, reducing web server performance",
+      "Each running service is an attack surface—a vulnerability in an unused service can be exploited to compromise the server; disabling unnecessary services reduces the number of entry points an attacker can target",
+      "Windows licensing fees are calculated per running service, so fewer services reduces operating costs",
+      "Services running in the background interfere with web server response times during peak traffic"
+     ],
+     "correctIndex": 1,
+     "explanation": "Attack surface reduction is a core hardening principle. Every running service that is not needed represents an additional vulnerability that could be exploited—removing the service eliminates the risk entirely."
+    },
+    {
+     "text": "A patch management policy requires testing security patches in a staging environment for 30 days before production deployment. A critical zero-day patch is released for an actively exploited vulnerability. Should the 30-day testing period be followed?",
+     "options": [
+      "Yes, the testing period must always be followed to prevent untested patches from breaking production",
+      "No, for actively exploited critical vulnerabilities the risk of exploitation outweighs the risk of a patch causing issues; the patch should be tested on an accelerated timeline (hours to days) and deployed to production as quickly as safely possible",
+      "Yes, but the patch can be applied to the most critical servers only after a 15-day shortened test period",
+      "No, all security patches should always bypass testing and go directly to production since vendor patches are reliable"
+     ],
+     "correctIndex": 1,
+     "explanation": "Risk-based patch management adjusts timelines based on threat severity. An actively exploited zero-day in production represents immediate risk—the testing period should be compressed, not eliminated, but timeliness is critical."
+    }
+   ]
+  },
+  {
+   "order": 4,
+   "courseSlug": "comptia-security-course-4",
+   "courseTitle": "Cryptography and Secure Communications",
+   "hours": null,
+   "syllabusDescription": null,
+   "courseraSlug": null,
+   "missionName": "Code Architect",
+   "missionTagline": "Prove you understand cryptography and can apply it to secure communications",
+   "skillLabels": [
+    "Encryption",
+    "PKI",
+    "TLS/SSL",
+    "Hashing",
+    "Problem-solving"
+   ],
+   "scenarioPrompt": "A developer asks you to review the security of a new web application. You find it uses HTTP instead of HTTPS for the login page, stores passwords as MD5 hashes, and uses a self-signed certificate on the internal admin panel. Using your cryptography knowledge from this course, identify the risks and recommend the correct implementations.",
+   "quiz": [
+    {
+     "text": "A web application stores user passwords as MD5 hashes. An attacker obtains the hash database. Why is this a critical security failure despite the passwords being hashed?",
+     "options": [
+      "MD5 is an encryption algorithm and the attacker can decrypt the hashes directly",
+      "MD5 is a fast, collision-prone hash function that lacks a salt; attackers can use precomputed rainbow tables or GPU-accelerated brute force to reverse billions of MD5 hashes per second—password-hashing algorithms like bcrypt or Argon2 are deliberately slow and salted to resist this",
+      "MD5 hashes are stored in a publicly accessible database and the attacker does not need to crack them",
+      "The attacker can use a length-extension attack on MD5 hashes to forge authentication tokens"
+     ],
+     "correctIndex": 1,
+     "explanation": "MD5's speed is a vulnerability for password storage—it allows billions of guesses per second. Purpose-built password hashing algorithms are slow by design (work factor) and include per-password salts to defeat precomputed tables."
+    },
+    {
+     "text": "A user visits a website and their browser shows a padlock icon and the URL begins with https://. What does this guarantee about the connection?",
+     "options": [
+      "The website is legitimate and the company behind it has been verified as trustworthy",
+      "The connection between the browser and server is encrypted with TLS, preventing eavesdropping or tampering of data in transit; it does NOT guarantee the website owner is who they claim to be without checking the certificate details",
+      "The website is free from malware and the content has been verified by the certificate authority",
+      "The user's data is encrypted at rest on the server in addition to being encrypted in transit"
+     ],
+     "correctIndex": 1,
+     "explanation": "HTTPS guarantees an encrypted channel (TLS). It does not guarantee the legitimacy or trustworthiness of the site owner—a phishing site can have a valid TLS certificate. DV certificates verify domain ownership only, not organizational identity."
+    },
+    {
+     "text": "An administrator configures a VPN using a pre-shared key (PSK) that is the company name. Why is this a weak security configuration?",
+     "options": [
+      "Pre-shared keys cannot be used with modern VPN protocols; certificates are required",
+      "A predictable PSK based on the company name is vulnerable to dictionary attacks; any attacker who knows the company name can attempt to authenticate to the VPN by testing this likely key before trying others",
+      "Pre-shared keys expire after 30 days and a key based on the company name would be forgotten",
+      "VPN authentication requires asymmetric keys; using a symmetric PSK bypasses authentication entirely"
+     ],
+     "correctIndex": 1,
+     "explanation": "Dictionary attacks test commonly used and predictable values—company names are in every VPN pre-shared key dictionary. PSKs should be long, random strings. Certificate-based authentication eliminates this risk entirely."
+    }
+   ]
+  }
+ ]
+}
