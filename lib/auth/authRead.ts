@@ -46,6 +46,42 @@ export async function readAuthWithRetry<T extends { error?: unknown }>(
   }
 }
 
+/**
+ * auth-js logs its own copy of an expired-session refresh failure: every
+ * `createServerClient` registers an `onAuthStateChange` listener, and the
+ * library's initial-session emission refreshes an expired access token and
+ * `console.error`s the AuthApiError when the refresh token is gone (auth-js
+ * GoTrueClient `_emitInitialSession`). Our own read of the same failure is
+ * already classified and handled as a signed-out visitor, so that duplicate
+ * must not reach error logs. Only a lone AuthError argument that classifies
+ * as a stale session is downgraded; every other console.error passes through.
+ */
+export function isSupabaseStaleSessionLog(args: readonly unknown[]): boolean {
+  if (args.length !== 1) return false;
+  const [value] = args;
+  return typeof value === 'object' && value !== null && '__isAuthError' in value
+    && classifyAuthReadFailure(value) === 'stale_session';
+}
+
+const STALE_SESSION_CONSOLE_FILTER = Symbol.for('wap.auth.staleSessionConsoleFilter');
+type FilterableConsole = Pick<Console, 'error' | 'info'> & { [STALE_SESSION_CONSOLE_FILTER]?: true };
+
+/** Idempotent; stateless per call, so concurrent requests in one isolate are unaffected. */
+export function installSupabaseStaleSessionConsoleFilter(target: Pick<Console, 'error' | 'info'> = console): void {
+  const filterable = target as FilterableConsole;
+  if (filterable[STALE_SESSION_CONSOLE_FILTER]) return;
+  const original = target.error;
+  target.error = function filteredConsoleError(this: unknown, ...args: unknown[]) {
+    if (isSupabaseStaleSessionLog(args)) {
+      // Never forward the error itself: its message/stack is not needed and keeps tokens out of logs.
+      target.info('[supabase-auth] Session is no longer valid');
+      return;
+    }
+    return original.apply(this, args);
+  };
+  filterable[STALE_SESSION_CONSOLE_FILTER] = true;
+}
+
 /** Keep expected session expiry out of error logs, without logging cookie/token data. */
 export function reportAuthReadFailure(error: unknown, context: string): AuthReadFailure {
   const kind = classifyAuthReadFailure(error);

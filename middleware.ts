@@ -38,7 +38,11 @@ import {
 } from '@/lib/apply/applyReferralCapture';
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/requestId';
 import { WAP_USER_ID_HEADER } from '@/lib/auth/layoutUserId';
-import { readAuthWithRetry, reportAuthReadFailure } from '@/lib/auth/authRead';
+import {
+  installSupabaseStaleSessionConsoleFilter,
+  readAuthWithRetry,
+  reportAuthReadFailure,
+} from '@/lib/auth/authRead';
 import { hasSupabaseAuthCookies, shouldTalkToGoTrue, isSupabaseAuthTokenCookieName, isSupabasePkceCookieName } from '@/lib/auth/supabaseAuthCookie';
 import { isUnauthenticatedBrowserNavigationApiPath } from '@/lib/auth/tenantApiNavigation';
 import {
@@ -61,6 +65,10 @@ import {
 const WAP_ORG_ID_HEADER = 'x-wap-org-id';
 /** Always-set header carrying the normalized Host so Node-runtime resolvers can populate cache. */
 const WAP_HOST_HEADER = 'x-wap-host';
+
+// auth-js console.errors its own copy of a stale-session refresh failure that
+// handleAuthFailure below already treats as signed out (see authRead.ts).
+installSupabaseStaleSessionConsoleFilter();
 
 const PORTAL_PATHS = [
   '/dashboard',
