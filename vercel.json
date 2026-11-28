@@ -35,6 +35,10 @@
       "schedule": "5 * * * *"
     },
     {
+      "path": "/api/cron/coursera-hours-snapshot",
+      "schedule": "45 4 * * *"
+    },
+    {
       "path": "/api/cron/course-accountability",
       "schedule": "13 15 * * *"
     },

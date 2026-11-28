@@ -29,6 +29,7 @@ export const CRON_JOB_NAME_BY_PATH: Readonly<Record<string, string | null>> = {
   '/api/cron/coursera-b4b-sync': 'cron_coursera_b4b_sync',
   '/api/cron/coursera-sync': 'cron_coursera_sync',
   '/api/cron/coursera-training-sync': 'cron_coursera_training_sync',
+  '/api/cron/coursera-hours-snapshot': 'cron_coursera_hours_snapshot',
   '/api/cron/course-accountability': 'cron_course_accountability',
   // No `cron_` prefix: withCronLogging('data_cleanup').
   '/api/cron/data-cleanup': 'data_cleanup',

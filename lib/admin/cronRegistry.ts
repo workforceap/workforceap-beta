@@ -209,6 +209,20 @@ export const CRON_REGISTRY: CronDef[] = [
     workflowKey: 'cron_coursera_training_sync',
   },
   {
+    id: 'coursera-hours-snapshot',
+    name: 'Coursera learning hours snapshot',
+    description:
+      'Records each learner\'s cumulative Coursera learning hours for the Central-time day into coursera_learning_hours_snapshots, so daily study minutes can be read for the student sign-in timesheet.',
+    schedule: '45 4 * * *',
+    scheduleLabel: 'Daily 4:45 AM UTC',
+    apiPath: '/api/cron/coursera-hours-snapshot',
+    method: 'GET',
+    icon: 'schedule',
+    category: 'admin',
+    audienceDescription: 'Internal data sync (no outbound email)',
+    workflowKey: 'cron_coursera_hours_snapshot',
+  },
+  {
     id: 'coursera-sync',
     name: 'Coursera skillset progress sync',
     description:
