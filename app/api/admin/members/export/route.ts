@@ -124,41 +124,35 @@ async function _GET(request: NextRequest) {
     // Get last activity events for health calculation
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const lastEvents = await prisma.memberEvent.groupBy({
-      by: ['userId'],
-      where: {
-        userId: { in: members.map((m) => m.id) },
-        createdAt: { gte: thirtyDaysAgo },
-        ...MEMBER_ACTIVITY_EVENT_WHERE,
-      },
-      _max: { createdAt: true },
-    });
+    const memberIds = members.map((m) => m.id);
+    // Independent aggregates: run them together instead of one after another.
+    // The last-activity (_max) and recent-count (_count) reads share the same
+    // filter, so they are a single groupBy.
+    const [eventStats, courseActivity] = await Promise.all([
+      prisma.memberEvent.groupBy({
+        by: ['userId'],
+        where: {
+          userId: { in: memberIds },
+          createdAt: { gte: thirtyDaysAgo },
+          ...MEMBER_ACTIVITY_EVENT_WHERE,
+        },
+        _max: { createdAt: true },
+        _count: { _all: true },
+      }),
+      // Coursera / course work writes no member_events row (Mike, 2026-09-20:
+      // activity is "login, any Coursera action, any tools skills etc.").
+      prisma.courseProgress.groupBy({
+        by: ['userId'],
+        where: { userId: { in: memberIds } },
+        _max: { lastActivityAt: true },
+      }),
+    ]);
     const lastEventMap = new Map<string, Date>();
-    for (const e of lastEvents) {
-      if (e._max.createdAt) lastEventMap.set(e.userId, e._max.createdAt);
-    }
-
-    const recentEvents = await prisma.memberEvent.groupBy({
-      by: ['userId'],
-      where: {
-        userId: { in: members.map((m) => m.id) },
-        createdAt: { gte: thirtyDaysAgo },
-        ...MEMBER_ACTIVITY_EVENT_WHERE,
-      },
-      _count: { _all: true },
-    });
     const recentEventMap = new Map<string, number>();
-    for (const e of recentEvents) {
+    for (const e of eventStats) {
+      if (e._max.createdAt) lastEventMap.set(e.userId, e._max.createdAt);
       recentEventMap.set(e.userId, e._count._all);
     }
-
-    // Coursera / course work writes no member_events row (Mike, 2026-09-20:
-    // activity is "login, any Coursera action, any tools skills etc.").
-    const courseActivity = await prisma.courseProgress.groupBy({
-      by: ['userId'],
-      where: { userId: { in: members.map((m) => m.id) } },
-      _max: { lastActivityAt: true },
-    });
     const courseActivityMap = new Map<string, Date>();
     for (const row of courseActivity) {
       if (row._max.lastActivityAt) courseActivityMap.set(row.userId, row._max.lastActivityAt);

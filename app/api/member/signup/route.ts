@@ -1,3 +1,4 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { pickExactEmailMatch, normalizeEmail, EXACT_EMAIL_CANDIDATE_LIMIT } from '@/lib/db/exactEmailMatch';
 import { crossTenantOK } from '@/lib/tenant/withTenantScope';
 import { withSystemGuc } from '@/lib/db/withRequestGuc';
@@ -17,17 +18,9 @@ import { prisma } from '@/lib/db/prisma';
 import { normalizePartnerRef, PARTNER_REF_COOKIE, partnerRefCookieClearOptions } from '@/lib/apply/applyReferralCapture';
 import { normalizePostLoginRedirect } from '@/lib/auth/postLoginRedirect';
 
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
-
 export async function POST(request: NextRequest) {
   try {
-    const ip = getClientIp(request);
+    const ip = getClientIpFromRequest(request);
   
     const { success: rateOk } = await checkSignupRateLimit(ip);
     if (!rateOk) {

@@ -117,8 +117,30 @@ async function renderMemberDashboard(
   // measured wait is a separate read, taken only while the application
   // itself is under review, so the loader keeps its operation budget.
   const homeCounselorContext = home.counselorContext ?? null;
-  const counselorContext = homeCounselorContext?.awaiting === 'approval' && home.organizationId
-    ? { ...homeCounselorContext, waitEstimate: await getApprovalWaitEstimate(home.organizationId) }
+  const waitEstimateOrgId =
+    homeCounselorContext?.awaiting === 'approval' ? home.organizationId : null;
+  // First-login guidance (WAP-194): the wizard while onboarding is not done,
+  // then the first-visit tour once. Never two tours: with `guided_tours_v2`
+  // on, the shell's first-login strip and Help menu own the tour, so the
+  // legacy auto-start stays off. The flag is read only when the auto-start
+  // could apply at all.
+  const onboarding = home.onboarding;
+  // The wait estimate, the staff-viewer check and the tour offer are
+  // independent reads: run them together instead of as three serial round
+  // trips. Role reads are request-cached (the layout already resolved them),
+  // so the staff check is not a new round trip on a member's visit.
+  const [waitEstimate, staffViewer, tourOffer] = await Promise.all([
+    waitEstimateOrgId ? getApprovalWaitEstimate(waitEstimateOrgId) : Promise.resolve(null),
+    // Staff looking at a member home see the same notice My Program shows
+    // (the retired legacy home showed it too).
+    canBypassMemberAssessment(user.id).catch((e) => {
+      console.error('[dashboard] canBypassMemberAssessment failed', e);
+      return false;
+    }),
+    onboarding?.showTour ? getTourOffer(user.id, 'member.home') : Promise.resolve(null),
+  ]);
+  const counselorContext = homeCounselorContext && waitEstimateOrgId
+    ? { ...homeCounselorContext, waitEstimate }
     : homeCounselorContext;
   const approvalCard = (
     <MemberApprovalStatusCard
@@ -129,24 +151,7 @@ async function renderMemberDashboard(
       variant="compact"
     />
   );
-  // Staff looking at a member home see the same notice My Program shows
-  // (the retired legacy home showed it too). Role reads are request-cached (the layout already
-  // resolved them), so this is not a new round trip on a member's visit.
-  let staffViewer = false;
-  try {
-    staffViewer = await canBypassMemberAssessment(user.id);
-  } catch (e) {
-    console.error('[dashboard] canBypassMemberAssessment failed', e);
-  }
-  // First-login guidance (WAP-194): the wizard while onboarding is not done,
-  // then the first-visit tour once. Never two tours: with `guided_tours_v2`
-  // on, the shell's first-login strip and Help menu own the tour, so the
-  // legacy auto-start stays off. The flag is read only when the auto-start
-  // could apply at all.
-  const onboarding = home.onboarding;
-  const tourAutoStart = onboarding?.showTour
-    ? (await getTourOffer(user.id, 'member.home'))?.enabled !== true
-    : false;
+  const tourAutoStart = onboarding?.showTour ? tourOffer?.enabled !== true : false;
   let superAdmin = false;
   if (onboarding && (onboarding.showWizard || tourAutoStart)) {
     try {

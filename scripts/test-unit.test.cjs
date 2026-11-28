@@ -17,9 +17,10 @@ for (const file of ['scripts/ci-workflow.test.ts', 'scripts\\ci-workflow.test.ts
     const result = run(['--only', file]);
     assert.equal(result.status, 0, result.stdout + result.stderr);
     assert.match(result.stdout, /Running 1 test file\(s\)/);
-    assert.match(result.stdout, /ok 1 - actual workflows cover every PR base and retain complete release gates/);
-    assert.match(result.stdout, /# tests 1\r?\n/);
-    assert.match(result.stdout, /# pass 1\r?\n/);
+    // Node 22 (CI) prints TAP when piped; Node 24+ defaults to the spec reporter.
+    assert.match(result.stdout, /(?:ok 1 - |✔ )actual workflows cover every PR base and retain complete release gates/);
+    assert.match(result.stdout, /(?:# |ℹ )tests 1\r?\n/);
+    assert.match(result.stdout, /(?:# |ℹ )pass 1\r?\n/);
   });
 }
 
@@ -35,7 +36,7 @@ test('--only exits non-zero when every named file is skipped instead of running 
   assert.match(result.stderr, /npm run test:vitest/);
   // Nothing was handed to `node --test`.
   assert.doesNotMatch(result.stdout, /Running \d+ test file\(s\)/);
-  assert.doesNotMatch(result.stdout, /TAP version/);
+  assert.doesNotMatch(result.stdout, /TAP version|ℹ tests /);
 });
 
 test('--only still rejects a file the runner does not own', () => {

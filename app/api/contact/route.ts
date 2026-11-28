@@ -1,3 +1,4 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { NextRequest, NextResponse } from 'next/server';
 import { checkContactRateLimit } from '@/lib/rate-limit';
 import { verifyTurnstileResponse } from '@/lib/turnstile/verifyTurnstile';
@@ -21,18 +22,10 @@ function respond(request: NextRequest, body: Record<string, unknown>, status: nu
   return NextResponse.json(body, { status });
 }
 
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
-
 export async function POST(request: NextRequest) {
   const nativeForm = isNativeFormPost(request);
   try {
-    const ip = getClientIp(request);
+    const ip = getClientIpFromRequest(request);
     const { success: rateOk } = await checkContactRateLimit(ip);
     if (!rateOk) {
       return respond(request, { error: 'Too many submissions. Please try again in an hour.' }, 429);

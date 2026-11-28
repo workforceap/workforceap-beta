@@ -6,6 +6,25 @@ const { spawnSync } = require('node:child_process');
 const { tmpdir } = require('node:os');
 const { join } = require('node:path');
 
+
+/**
+ * Create a symlink for a test, or skip the test when the OS refuses (Windows
+ * without Developer Mode / admin rights raises EPERM). Returns true when the
+ * link exists.
+ */
+function symlinkOrSkip(t, target, linkPath) {
+  try {
+    symlinkSync(target, linkPath);
+    return true;
+  } catch (error) {
+    if (error && (error.code === 'EPERM' || error.code === 'EACCES')) {
+      t.skip('symlinks need elevated privileges on this machine (' + error.code + ')');
+      return false;
+    }
+    throw error;
+  }
+}
+
 let guard;
 test.before(async () => { guard = await import('./check-supabase-history.mjs'); });
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
@@ -124,7 +143,7 @@ test('CLI rejects a symlink in place of archived original SQL', (t) => {
   const saved = join(f.root, 'original.sql');
   copyFileSync(archive, saved);
   unlinkSync(archive);
-  symlinkSync(saved, archive);
+  if (!symlinkOrSkip(t, saved, archive)) return;
   const r = f.run();
   assert.equal(r.status, 1);
   assert.match(r.output, /Expected a regular file/);

@@ -112,6 +112,36 @@ gate), not by Postgres.
   even future owner-connections are bound. Retire this doc into
   `docs/SECURITY-CHECKLIST.md`.
 
+## WAP_RLS_STRICT cutover (opt-in fail-closed switch)
+
+`lib/db/prisma.ts` now has an opt-in strict mode, **default off**, so Stage 4's
+"flip fail-open to fail-closed" is an env change instead of a code change.
+
+- `WAP_RLS_STRICT=true` makes a bare Prisma query that runs with an active GUC
+  context outside an explicit `$transaction` **throw**. Unset (or any other value)
+  keeps today's behaviour: log `[prisma:guc]` via `console.error` and continue.
+- It only has an effect when the GUC layer is active (`WAP_RLS_GUC_ENABLED=true`).
+  With the GUC layer off there is no middleware to throw from.
+- Current production (table-owner connection, RLS not forced, GUC layer off) is
+  unaffected. Do not set `WAP_RLS_STRICT` anywhere until the steps below are done.
+
+Exact cutover order (`#2459`, `#2697`, `#2718` are the DB-side prerequisites):
+
+1. Land and apply `#2459` / `#2697` / `#2718` on a branch database first; confirm
+   `scripts/p1/test-force-rls.ts` passes against it.
+2. Create/point the app at the non-owner `wap_app` role (no BYPASSRLS) for one
+   canary surface. Production DB changes need Mike's explicit approval.
+3. Set `WAP_RLS_GUC_ENABLED=true` on that surface only, with `WAP_RLS_STRICT`
+   still unset. Watch `[prisma:guc]` errors in Sentry for a week; the count must
+   be zero (Stage 2 telemetry).
+4. Set `WAP_RLS_STRICT=true` on the same canary. Run authed smoke tests per role
+   (member / counselor / admin / employer / partner). Any 500 whose message starts
+   with `[prisma:guc] Query` is a bare call that needs wrapping.
+5. Widen route group by group; member portal last. Optionally FORCE the P0 tables
+   once all surfaces are strict.
+6. Rollback at any step: unset `WAP_RLS_STRICT` (and, if needed,
+   `WAP_RLS_GUC_ENABLED`) and redeploy. No schema change is involved.
+
 ## Bottom line for leadership
 
 - Nothing sensitive is reachable from outside today — verified live, not

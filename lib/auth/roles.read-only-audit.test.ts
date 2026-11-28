@@ -82,3 +82,37 @@ describe('super-admin portal fallbacks during read-only audits', () => {
     expect(mocks.employerFindFirst).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('super-admin portal fallbacks never write on the read path', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.cookieGet.mockReturnValue(undefined);
+    mocks.partnerUserFindUnique.mockResolvedValue(null);
+    mocks.partnerFindFirst.mockResolvedValue(null);
+    mocks.employerFindFirst.mockResolvedValue(null);
+    mocks.employerFindUnique.mockResolvedValue(null);
+  });
+
+  it('does not upsert a fallback partner during a normal (non-audit) read', async () => {
+    await expect(getPartnerForUser('admin-1', {
+      isSuperAdminHint: true,
+      readOnlyAudit: false,
+    })).resolves.toBeNull();
+
+    expect(mocks.partnerUpsert).not.toHaveBeenCalled();
+    expect(mocks.userFindUnique).not.toHaveBeenCalled();
+    // cookie fallback lookup + fallback-slug lookup + any-active lookup are all reads
+    expect(mocks.partnerFindFirst).toHaveBeenCalled();
+  });
+
+  it('does not upsert a fallback employer during a normal (non-audit) read', async () => {
+    await expect(getEmployerForUser('admin-1', {
+      isSuperAdminHint: true,
+      readOnlyAudit: false,
+    })).resolves.toBeNull();
+
+    expect(mocks.userUpsert).not.toHaveBeenCalled();
+    expect(mocks.employerUpsert).not.toHaveBeenCalled();
+    expect(mocks.userFindUnique).not.toHaveBeenCalled();
+  });
+});

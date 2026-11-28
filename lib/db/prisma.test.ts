@@ -2,7 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { getGucContext, runWithGucContext, inTransactionStorage, buildGucContext, ANONYMOUS_GUC_CONTEXT } from './gucContext';
-import { buildGucSql, requiresExplicitTransactionForGucContext } from './prisma';
+import {
+  buildGucOutsideTransactionMessage,
+  buildGucSql,
+  isRlsStrictEnabled,
+  requiresExplicitTransactionForGucContext,
+  shouldRejectGucContextOutsideTransaction,
+} from './prisma';
 
 test('buildGucSql generates set_config statements', () => {
   const ctx = {
@@ -81,4 +87,27 @@ test('ANONYMOUS_GUC_CONTEXT produces empty GUC sql', () => {
   assert.ok(sql.includes("set_config('app.current_user_id', '', true)"));
   assert.ok(sql.includes("set_config('app.current_org_id', '', true)"));
   assert.ok(sql.includes("set_config('app.current_role', 'anonymous', true)"));
+});
+
+test('WAP_RLS_STRICT is opt-in: off unless exactly "true"', () => {
+  assert.equal(isRlsStrictEnabled({}), false);
+  assert.equal(isRlsStrictEnabled({ WAP_RLS_STRICT: '' }), false);
+  assert.equal(isRlsStrictEnabled({ WAP_RLS_STRICT: 'false' }), false);
+  assert.equal(isRlsStrictEnabled({ WAP_RLS_STRICT: '1' }), false);
+  assert.equal(isRlsStrictEnabled({ WAP_RLS_STRICT: 'true' }), true);
+});
+
+test('strict mode rejects an active GUC context outside a transaction; default stays fail-open', () => {
+  const ctx = { userId: 'u-1', orgId: 'o-1', role: 'member' as const };
+  // default (strict off): never rejects, matches current prod owner-role behaviour
+  assert.equal(shouldRejectGucContextOutsideTransaction(ctx, false, false), false);
+  // strict on: rejects only when a context is active and we are not in a transaction
+  assert.equal(shouldRejectGucContextOutsideTransaction(ctx, false, true), true);
+  assert.equal(shouldRejectGucContextOutsideTransaction(ctx, true, true), false);
+  assert.equal(shouldRejectGucContextOutsideTransaction(undefined, false, true), false);
+});
+
+test('GUC outside-transaction message names the model and action', () => {
+  assert.match(buildGucOutsideTransactionMessage('User', 'findMany'), /Query "User\.findMany"/);
+  assert.match(buildGucOutsideTransactionMessage(undefined, 'queryRaw'), /Query "raw\.queryRaw"/);
 });

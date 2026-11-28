@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db/prisma';
 import { promoteCsvProgressToCanonical } from '@/lib/coursera/csvImport.server';
 import { refreshMemberProgramProgressRollup } from '@/lib/member/courseProgress';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
+import { forEachInChunks } from '@/lib/util/forEachInChunks';
 
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { auditLog } from '@/lib/audit';
@@ -12,6 +13,9 @@ import { logAuditEvent } from '@/lib/audit/log';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
+
+/** Rollup refreshes run this many at a time instead of up to 100 strictly in series. */
+const ROLLUP_CONCURRENCY = 5;
 
 async function requireAdminUser() {
   const user = await getUser();
@@ -43,14 +47,14 @@ async function requireAdminUser() {
   let rollupsRun = 0;
   let rollupErrors = 0;
 
-  for (const { userId, programSlug } of membersWithProgress) {
+  await forEachInChunks(membersWithProgress, ROLLUP_CONCURRENCY, async ({ userId, programSlug }) => {
     try {
       await refreshMemberProgramProgressRollup(userId, programSlug);
       rollupsRun++;
     } catch {
       rollupErrors++;
     }
-  }
+  });
 
   void auditLog({ actorUserId: admin.id, action: 'admin_coursera_sync_progress', targetType: 'User', targetId: admin.id, metadata: {} }).catch(() => {});
   logAuditEvent({ user: { id: admin.id, role: 'admin' }, verb: 'created', object: { type: 'CourseraSyncProgress', id: admin.id }, result: { success: true } }).catch(() => {});

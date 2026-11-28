@@ -20,6 +20,10 @@ import { getOrganizationBranding } from '@/lib/tenant/organizationBranding';
 import { checkBulkEmailRateLimit } from '@/lib/rate-limit';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
+// Up to 100 paced Resend sends plus ~6 sequential DB calls per member: give the
+// function the full 60s window instead of the platform default.
+export const maxDuration = 60;
+
 const MAX_MEMBERS = 100;
 const MAX_SUBJECT = 200;
 const MAX_BODY = 8000;
@@ -34,6 +38,13 @@ const bodySchema = z.object({
 
 function getFrom(): string {
   return process.env.EMAIL_FROM || 'WorkforceAP <hello@workforceap.org>';
+}
+
+const EMAIL_PATTERN = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+
+/** Provider errors often echo the recipient address; never return it in the JSON body. */
+function redactEmails(message: string): string {
+  return message.replace(EMAIL_PATTERN, '[redacted email]');
 }
 
 function substituteVars(template: string, vars: Record<string, string>): string {
@@ -108,10 +119,11 @@ async function _POST(request: NextRequest) {
     const waitForSendSlot = createBoundedPacer({ intervalMs: BULK_EMAIL_CRON_INTERVAL_MS });
 
     for (const member of members) {
-      const firstName = member.fullName.trim().split(/\s+/)[0] || 'there';
+      const fullName = member.fullName?.trim() ?? '';
+      const firstName = fullName.split(/\s+/)[0] || 'there';
       const vars = {
         firstName,
-        fullName: member.fullName,
+        fullName,
         email: member.email,
         programName: member.enrolledProgram ?? 'your program',
       };
@@ -192,7 +204,9 @@ async function _POST(request: NextRequest) {
         const msg = err instanceof FixtureRecipientSkippedError
           ? `skipped (${err.reason})`
           : err instanceof Error ? err.message : String(err);
-        errors.push(`${member.fullName} (${member.email}): ${msg}`);
+        // Identify the member by name and id only; the email address is PII and
+        // may also appear inside the provider message, so redact both.
+        errors.push(`${fullName || 'Member'} (${member.id}): ${redactEmails(msg)}`);
         console.error(`[bulk-email] failed for ${member.id}:`, err);
       }
     }

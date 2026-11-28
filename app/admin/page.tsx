@@ -12,6 +12,7 @@ import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { getTriageDigest, type TriageDigest } from '@/lib/admin/triageDigest';
 import { getAdminCommandCenter, type AdminCommandCenter } from '@/lib/admin/commandCenter';
 import { loadAdminApprovalQueue } from '@/lib/admin/loadAdminApprovalQueue';
+import { loadLatestCronRuns } from '@/lib/admin/loadLatestCronRuns';
 import {
   adminApplicationsQueueCopy,
   emptyAdminApprovalQueue,
@@ -149,16 +150,13 @@ export default async function AdminTodayPage({
           console.error('[admin/page] message SLA count failed', error);
           return 0;
         }),
-        // Cron freshness for the "System health" rows: one indexed
-        // findFirst per job on CronExecution (the table /admin/crons reads).
+        // Cron freshness for the "System health" rows: the latest run per job
+        // on CronExecution (the table /admin/crons reads) in ONE
+        // DISTINCT ON (job_name) query rather than one findFirst per job.
         // Platform-wide, so loaded for platform admins only — tenant admins
         // get an honest "Not checked here" pointer instead.
         scope.superAdmin
-          ? Promise.all(COMMAND_CENTER_CRON_ROWS.map((def) => prisma.cronExecution.findFirst({
-              where: { jobName: def.jobName },
-              orderBy: { startedAt: 'desc' },
-              select: { jobName: true, status: true, startedAt: true, completedAt: true },
-            }))).then((rows): CronRunSnapshot[] => rows.filter((row): row is CronRunSnapshot => row != null))
+          ? loadLatestCronRuns(COMMAND_CENTER_CRON_ROWS.map((def) => def.jobName))
             .catch((error): CronRunSnapshot[] | null => {
               console.error('[admin/page] cron freshness load failed', error);
               return null;

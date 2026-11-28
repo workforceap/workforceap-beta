@@ -1,3 +1,4 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUser } from '@/lib/auth/server';
@@ -11,14 +12,6 @@ import { canReviewActorActOnApplication, resolveReviewActor } from '@/lib/counse
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wioa/denialReason';
 
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
-
 const statusSchema = z.object({
   status: z.enum(['PENDING', 'APPROVED', 'DENIED', 'NEEDS_INFO']),
   notes: z.string().max(2000).optional(),
@@ -29,7 +22,7 @@ export const PATCH = withApiGuc(async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
-    const ip = getClientIp(request);
+    const ip = getClientIpFromRequest(request);
     const { success: rateOk } = await checkAuthRateLimit(`admin:${ip}`);
     if (!rateOk) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

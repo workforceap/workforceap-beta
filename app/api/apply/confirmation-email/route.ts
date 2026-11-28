@@ -1,3 +1,4 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { sendApplicationConfirmationEmail } from '@/lib/email';
@@ -13,19 +14,9 @@ const schema = z.object({
   fullName: z.string().min(1),
 });
 
-function getClientIp(request: NextRequest) {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    request.headers.get('x-real-ip') ??
-    request.headers.get('cf-connecting-ip') ??
-    request.headers.get('x-vercel-forwarded-for') ??
-    'unknown'
-  );
-}
-
 async function _POST(request: NextRequest) {
   try {
-    const { success } = await checkConfirmationEmailRateLimit(getClientIp(request));
+    const { success } = await checkConfirmationEmailRateLimit(getClientIpFromRequest(request));
     if (!success) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
