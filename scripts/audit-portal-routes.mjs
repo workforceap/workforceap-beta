@@ -40,6 +40,7 @@ import {
   classifyCollectedPortalAuditRow,
   trackSameOriginDataRequests,
 } from './lib/portal-audit-data-requests.mjs';
+import { independentDataRequestErrors } from './lib/portal-audit-pending.mjs';
 import {
   PORTAL_AUDIT_NAVIGATION_TIMEOUT_MS,
   PORTAL_AUDIT_VIEWPORTS,
@@ -1027,8 +1028,9 @@ async function auditRedirectOnlyRoutes(browser, role, storageState, fixtureClaim
           inspection,
           consoleErrorCount: dataRequests.consoleErrors.length,
           pageErrorCount: pageErrors.length,
-          dataErrorCount: dataRequests.errors.length,
+          dataErrorCount: independentDataRequestErrors(dataRequests.errors, dataRequests).length,
           abortedDataRequestCount: dataRequests.abortedDataRequestCount,
+          pendingDataRequestCount: dataRequests.pendingDataRequestCount,
           blockedWriteRequestCount: readOnlyGuard.blockedWriteCount(page),
         }));
         if (result.failureReasons.length === 0) {
@@ -1210,7 +1212,7 @@ async function exerciseReadOnlyNavigation(
           errorFallbackDetected: sourceInspection.errorFallbackDetected,
           consoleErrorCount: uniqueDiagnostics(dataRequests.consoleErrors).length,
           pageErrorCount: uniqueDiagnostics(pageErrors).length,
-          otherFailureCount: dataRequests.errors.length +
+          otherFailureCount: independentDataRequestErrors(dataRequests.errors, dataRequests).length +
             (readOnlyGuard.blockedWriteCount(page) > 0 ? 1 : 0),
         });
         result.status = verifiedDestination ? 'not_applicable' : 'failed';
@@ -1296,7 +1298,8 @@ async function exerciseReadOnlyNavigation(
       errorFallbackDetected: targetInspection.errorFallbackDetected,
       consoleErrorCount: uniqueDiagnostics(dataRequests.consoleErrors).length,
       pageErrorCount: uniqueDiagnostics(pageErrors).length,
-      otherFailureCount: result.failureReasons.length + dataRequests.errors.length +
+      otherFailureCount: result.failureReasons.length +
+        independentDataRequestErrors(dataRequests.errors, dataRequests).length +
         (readOnlyGuard.blockedWriteCount(page) > 0 ? 1 : 0),
     });
     result.status = result.failureReasons.length === 0 ? 'passed' : 'failed';
@@ -1335,14 +1338,16 @@ async function exerciseReadOnlyNavigation(
     ) {
       result.reason = 'action_checks_failed';
     }
+    const independentDataErrors = independentDataRequestErrors(dataRequests.errors, dataRequests);
     verifiedDestination = verifiedDestination &&
       (result.status === 'passed' ||
         (result.status === 'not_applicable' && result.reason === 'declared_empty_state_verified')) &&
-      dataRequests.errors.length === 0 &&
+      independentDataErrors.length === 0 &&
       result.blockedWriteRequestCount === 0;
     if (
-      dataRequests.errors.length > 0 ||
-      (dataRequests.abortedDataRequestCount > 0 && !verifiedDestination)
+      independentDataErrors.length > 0 ||
+      ((dataRequests.abortedDataRequestCount > 0 || dataRequests.pendingDataRequestCount > 0) &&
+        !verifiedDestination)
     ) {
       const previousStatus = result.status;
       result.failureReasons = [
