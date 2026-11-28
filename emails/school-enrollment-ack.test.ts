@@ -67,4 +67,15 @@ describe('schoolEnrollmentPartnerAckHtml', () => {
     assert.ok(!html.includes('Grade:'));
     assert.ok(!html.includes('@example.com'));
   });
+
+  it('currently lets a javascript: partnerPortalUrl through escapeHtml (pinned)', () => {
+    const html = schoolEnrollmentPartnerAckHtml({
+      partnerName: 'Concordia High School',
+      studentName: 'Jamie Student',
+      studentEmail: 'jamie@example.com',
+      programInterest: 'IT Support',
+      partnerPortalUrl: 'javascript:alert(1)',
+    });
+    assert.match(html, /href="javascript:alert\(1\)"/);
+  });
 });
