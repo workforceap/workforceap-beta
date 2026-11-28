@@ -1,3 +1,4 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { createEmployerUser } from '@/lib/employer/service';
 import { after, NextRequest, NextResponse } from 'next/server';
 import { employerSignupSchema } from '@/lib/validation/employer';
@@ -14,17 +15,9 @@ import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg
 import { cleanupCreatedEmployerSignupAuthUser } from './_signupCleanup';
 import { notifyDiscord } from '@/lib/notify/discord';
 
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
-
 export async function POST(request: NextRequest) {
   try {
-    const ip = getClientIp(request);
+    const ip = getClientIpFromRequest(request);
 
     const { success: rateOk } = await checkPartnerSignupRateLimit(ip);
     if (!rateOk) {

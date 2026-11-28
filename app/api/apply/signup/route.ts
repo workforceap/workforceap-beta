@@ -1,3 +1,4 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { saveEligibilityScreening } from '@/lib/apply/saveEligibilityScreening';
 import { buildApplicationReport } from '@/lib/apply/applicationReport';
 import { emailIssue, usPhoneIssue } from '@/lib/apply/contactValidation';
@@ -80,14 +81,6 @@ import {
  */
 function seatCapNote(partnerName: string): string {
   return `Seat cap reached for ${partnerName} sponsorship — funding pending admin review`;
-}
-
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
 }
 
 const accountRecoveryRequiredResponse = () =>
@@ -195,7 +188,7 @@ const applySignupSchema = z.object({
 
 export const POST = withApiGuc(async (request: NextRequest) => {
   try {
-    const ip = getClientIp(request);
+    const ip = getClientIpFromRequest(request);
     const { success: rateOk } = await checkApplySignupRateLimit(ip);
     if (!rateOk) {
       return NextResponse.json(

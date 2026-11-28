@@ -1,3 +1,4 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { after, NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
@@ -78,18 +79,10 @@ const submitSchema = z.object({
   partnerAmbassadorReferral: z.string().trim().max(200).optional().nullable(),
 });
 
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
-
 export const POST = withApiGuc(
   async (request: NextRequest, context: { params: Promise<{ token: string }> }) => {
     try {
-      const ip = getClientIp(request);
+      const ip = getClientIpFromRequest(request);
       const { success: rateOk } = await checkPublicQuestionnaireSubmitRateLimit(ip);
       if (!rateOk) {
         return NextResponse.json(

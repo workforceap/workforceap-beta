@@ -1,19 +1,12 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { NextRequest, NextResponse } from 'next/server';
 import { checkCareersRecommendRateLimit } from '@/lib/rate-limit';
 import { buildCareerMatchResult } from '@/lib/onet/recommend';
 import { quizAnswersSchema } from '@/lib/onet/quizSchema';
 
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
-
 export async function POST(request: NextRequest) {
   try {
-  const ip = getClientIp(request);
+  const ip = getClientIpFromRequest(request);
   const { success: rateOk } = await checkCareersRecommendRateLimit(ip);
   if (!rateOk) {
     return NextResponse.json(

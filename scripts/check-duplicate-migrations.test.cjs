@@ -10,6 +10,24 @@ const checker = fs.readFileSync(path.join(__dirname, 'check-duplicate-migrations
 const reviewedBytes = fs.readFileSync(path.join(__dirname, 'migration-collision-baseline.json'));
 const reviewed = JSON.parse(reviewedBytes);
 const legacyPrefix = reviewed.groups[0].timestamp;
+
+/**
+ * Create a symlink for a test, or skip the test when the OS refuses (Windows
+ * without Developer Mode / admin rights raises EPERM). Returns true when the
+ * link exists.
+ */
+function symlinkOrSkip(t, target, linkPath) {
+  try {
+    fs.symlinkSync(target, linkPath);
+    return true;
+  } catch (error) {
+    if (error && (error.code === 'EPERM' || error.code === 'EACCES')) {
+      t.skip('symlinks need elevated privileges on this machine (' + error.code + ')');
+      return false;
+    }
+    throw error;
+  }
+}
 const [first, second] = reviewed.groups[0].migrations.map((entry) => entry.directory);
 const sha256 = (text) => createHash('sha256').update(text).digest('hex');
 
@@ -216,7 +234,7 @@ test('does not follow a migration SQL symlink', (t) => {
   const name = '20260201120000_link';
   fs.mkdirSync(path.join(f.migrations, name));
   fs.writeFileSync(path.join(f.root, 'outside.sql'), 'SELECT 1;');
-  fs.symlinkSync(path.join(f.root, 'outside.sql'), path.join(f.migrations, name, 'migration.sql'));
+  if (!symlinkOrSkip(t, path.join(f.root, 'outside.sql'), path.join(f.migrations, name, 'migration.sql'))) return;
   assert.equal(f.run().status, 1);
 });
 
@@ -224,7 +242,7 @@ test('does not follow a timestamped migration directory symlink', (t) => {
   const f = fixture(t);
   fs.mkdirSync(path.join(f.root, 'outside'));
   fs.writeFileSync(path.join(f.root, 'outside', 'migration.sql'), 'SELECT 1;');
-  fs.symlinkSync(path.join(f.root, 'outside'), path.join(f.migrations, '20260201120000_link'));
+  if (!symlinkOrSkip(t, path.join(f.root, 'outside'), path.join(f.migrations, '20260201120000_link'))) return;
   assert.equal(f.run().status, 1);
 });
 

@@ -1,5 +1,5 @@
 import { cache } from 'react';
-import { getProfileRole, getStoredRoleIdentity, isSuperAdmin } from '@/lib/auth/roles';
+import { getProfileRole, getStoredRoleIdentity, getUserRoles, hasAdminAccess, isSuperAdmin } from '@/lib/auth/roles';
 import { getPortalSwitcherRoles, type PortalSwitcherRole } from '@/lib/auth/portalRoleSwitcher';
 import { normalizeRoleName } from '@/lib/auth/roleAccess';
 import { withDbRetry } from '@/lib/db/withDbRetry';
@@ -23,13 +23,26 @@ export const getMemberDashboardAccess = cache(async function getMemberDashboardA
   // same request-cached provisioning promise before cached role reads begin.
   // A failed provision rejects access; read-only audit never writes rows.
   await ensureCurrentAppUserProvisioned(userId);
-  const [profileRole, superAdmin, storedIdentity] = await Promise.all([
+  const [profileRole, superAdmin, storedIdentity, userRoleNames] = await Promise.all([
     withDbRetry(() => getProfileRole(userId)),
     withDbRetry(() => isSuperAdmin(userId)),
     withDbRetry(() => getStoredRoleIdentity(userId)),
+    withDbRetry(() => getUserRoles(userId)),
   ]);
 
-  const portalRoles = await getPortalSwitcherRoles(userId, { superAdmin });
+  // Forward what this function already resolved so the switcher does not
+  // re-derive it (same formulas as getPortalSwitcherRoles / isAdmin). Only the
+  // employer / partner / counselor lookups remain, and they run in parallel.
+  const portalRoles = await getPortalSwitcherRoles(userId, {
+    superAdmin,
+    userRoleNames,
+    hasMemberProfile: Boolean(
+      storedIdentity.userExists &&
+      !storedIdentity.deletedAt &&
+      normalizeRoleName(storedIdentity.profileRole) === 'member'
+    ),
+    hasAdmin: hasAdminAccess(profileRole, userRoleNames),
+  });
   const memberInSwitcher = portalRoles.some(({ role }) => role === 'member');
   const nonMemberPortal = portalRoles.some(({ role }) => role !== 'member');
   // `user_roles.member` is a baseline row on staff accounts. Mixed portal

@@ -141,6 +141,20 @@ function classify(relPath) {
   return null;
 }
 
+/**
+ * Default `node --test` concurrency is (CPU count - 1) parallel file processes.
+ * On Windows that many simultaneous processes crash the worker-thread resume
+ * suites (lib/resume/*.test.ts) that pass standalone. Cap it there; Linux CI
+ * keeps node's default. `WAP_TEST_CONCURRENCY=<n>` overrides on any platform.
+ */
+const WINDOWS_TEST_CONCURRENCY = 4;
+function testConcurrencyArgs() {
+  const override = Number.parseInt(process.env.WAP_TEST_CONCURRENCY ?? '', 10);
+  if (Number.isInteger(override) && override > 0) return [`--test-concurrency=${override}`];
+  if (process.platform === 'win32') return [`--test-concurrency=${WINDOWS_TEST_CONCURRENCY}`];
+  return [];
+}
+
 async function main() {
   const discovered = (await listTestFiles()).sort();
   const all = ONLY.size ? discovered.filter((file) => ONLY.has(file)) : discovered;
@@ -224,7 +238,7 @@ async function main() {
       // files as parallel processes, which raced shared rows and stacked
       // long interactive transactions on a 4-vCPU runner. Run them one file
       // at a time; the default mocked lane keeps node's default parallelism.
-      ...(REAL_DB ? ['--test-concurrency=1'] : []),
+      ...(REAL_DB ? ['--test-concurrency=1'] : testConcurrencyArgs()),
       ...runnable,
     ],
     { stdio: 'inherit', cwd: ROOT, env },

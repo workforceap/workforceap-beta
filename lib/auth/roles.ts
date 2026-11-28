@@ -279,22 +279,9 @@ export async function getPartnerForUser(
       return { partnerId: fallbackPartner.id, partner: fallbackPartner, orgBranding, hasDirectPartnerLink: false };
     }
 
+    // Read path: never seed (upsert) a fallback partner here. A page render or nav
+    // check must not write. Seed explicitly via ensureSuperAdminFallbackPartner().
     if (!readOnlyAudit) {
-      const actor = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { organizationId: true },
-      });
-      const ensuredFallbackPartner = await ensureSuperAdminFallbackPartner(actor?.organizationId);
-      if (ensuredFallbackPartner) {
-        const orgBranding = await getOrgBranding(ensuredFallbackPartner.organizationId);
-        return {
-          partnerId: ensuredFallbackPartner.id,
-          partner: { ...ensuredFallbackPartner, logoUrl: null, brandColor: null },
-          orgBranding,
-          hasDirectPartnerLink: false,
-        };
-      }
-
       const anyActivePartner = await prisma.partner.findFirst({
         where: { active: true },
         orderBy: { createdAt: 'asc' },
@@ -410,7 +397,11 @@ async function resolvePreviewFallbackOrganizationId(
   return getDefaultOrganizationId();
 }
 
-async function ensureSuperAdminFallbackPartner(
+/**
+ * Explicit seeding entry point for the preview/demo super-admin fallback
+ * partner. NOT for request read paths (getPartnerForUser no longer calls it).
+ */
+export async function ensureSuperAdminFallbackPartner(
   preferredOrganizationId?: string | null,
 ): Promise<{
   id: string;
@@ -441,7 +432,11 @@ async function ensureSuperAdminFallbackPartner(
   });
 }
 
-async function ensureSuperAdminFallbackEmployer(
+/**
+ * Explicit seeding entry point for the preview/demo super-admin fallback
+ * employer. NOT for request read paths (getEmployerForUser no longer calls it).
+ */
+export async function ensureSuperAdminFallbackEmployer(
   preferredOrganizationId?: string | null,
 ): Promise<{
   id: string;
@@ -549,14 +544,9 @@ export async function getEmployerForUser(
     });
     if (fallbackEmployer) return mapEmployerRow(fallbackEmployer);
 
+    // Read path: never seed (upsert) a fallback employer here. A page render or nav
+    // check must not write. Seed explicitly via ensureSuperAdminFallbackEmployer().
     if (!readOnlyAudit) {
-      const actor = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { organizationId: true },
-      });
-      const ensuredFallbackEmployer = await ensureSuperAdminFallbackEmployer(actor?.organizationId);
-      if (ensuredFallbackEmployer) return mapEmployerRow(ensuredFallbackEmployer);
-
       const anyActiveEmployer = await prisma.employer.findFirst({
         where: { status: 'active' },
         orderBy: { createdAt: 'asc' },

@@ -65,33 +65,36 @@ async function syncMember(member: MemberRow): Promise<MemberOutcome> {
       skillsetIds,
     });
 
-    let withProgress = 0;
-    for (const element of progress.elements) {
-      if (!element.skillsetId) continue;
-      await prisma.$transaction((tx) =>
-        tx.courseraSkillsetProgress.upsert({
-          where: {
-            userId_skillsetId: { userId: member.id, skillsetId: element.skillsetId },
-          },
-          create: {
-            userId: member.id,
-            skillsetId: element.skillsetId,
-            skillsetName: element.skillsetName,
-            progressPct: element.progressPercent,
-            programId,
-            programSlug: member.enrolledProgram ?? null,
-          },
-          update: {
-            skillsetName: element.skillsetName,
-            progressPct: element.progressPercent,
-            programId,
-            programSlug: member.enrolledProgram ?? null,
-            lastSyncedAt: new Date(),
-          },
-        }),
+    // One batched transaction per member (one pooled connection) instead of a
+    // separate $transaction per skillset element.
+    const elements = progress.elements.filter((element) => element.skillsetId);
+    if (elements.length > 0) {
+      await prisma.$transaction(
+        elements.map((element) =>
+          prisma.courseraSkillsetProgress.upsert({
+            where: {
+              userId_skillsetId: { userId: member.id, skillsetId: element.skillsetId },
+            },
+            create: {
+              userId: member.id,
+              skillsetId: element.skillsetId,
+              skillsetName: element.skillsetName,
+              progressPct: element.progressPercent,
+              programId,
+              programSlug: member.enrolledProgram ?? null,
+            },
+            update: {
+              skillsetName: element.skillsetName,
+              progressPct: element.progressPercent,
+              programId,
+              programSlug: member.enrolledProgram ?? null,
+              lastSyncedAt: new Date(),
+            },
+          }),
+        ),
       );
-      if (element.progressPercent > 0) withProgress += 1;
     }
+    const withProgress = elements.filter((element) => element.progressPercent > 0).length;
 
     return { userId: member.id, status: 'ok', withProgress };
   } catch (error) {

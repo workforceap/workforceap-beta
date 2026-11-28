@@ -21,6 +21,40 @@ export function requiresExplicitTransactionForGucContext(ctx: GucContext | undef
   return Boolean(ctx && !isInTransaction);
 }
 
+/**
+ * Opt-in strict RLS mode (`WAP_RLS_STRICT=true`). Default OFF.
+ *
+ * When on (and the GUC layer is active via `WAP_RLS_GUC_ENABLED=true`), a
+ * Prisma query that runs with an active GUC context outside an explicit
+ * `$transaction` throws instead of logging. That is the fail-closed behaviour
+ * the RLS cutover needs once FORCE ROW LEVEL SECURITY is on and the app
+ * connects as a non-owner role (silent fail-open would mean silent empty reads).
+ *
+ * It is deliberately NOT enabled by default: today production connects as the
+ * table owner with RLS not forced, and #1631 showed that throwing here 500s every
+ * bare-prisma route. See docs/RLS-ROLLOUT-PLAN.md ("WAP_RLS_STRICT cutover").
+ */
+export function isRlsStrictEnabled(env: Record<string, string | undefined> = process.env): boolean {
+  return env.WAP_RLS_STRICT === 'true';
+}
+
+/** True when a query with this context/transaction state must be rejected under strict mode. */
+export function shouldRejectGucContextOutsideTransaction(
+  ctx: GucContext | undefined,
+  isInTransaction: boolean,
+  strict: boolean,
+): boolean {
+  return strict && requiresExplicitTransactionForGucContext(ctx, isInTransaction);
+}
+
+export function buildGucOutsideTransactionMessage(model: string | undefined, action: string): string {
+  return (
+    `[prisma:guc] Query "${model ?? 'raw'}.${action}" ran with an active GUC context ` +
+    `outside an explicit $transaction. Wrap RLS-protected Prisma calls in prisma.$transaction() ` +
+    `so transaction-local GUCs remain visible to PostgreSQL policies.`
+  );
+}
+
 export function buildGucSql(ctx: GucContext): string {
   // Use `set_config(name, value, is_local)` instead of `SET LOCAL <name> = <value>`
   // because PostgreSQL's parser rejects `SET LOCAL app.current_role = ...` —
@@ -151,19 +185,20 @@ function createPrismaClient(): PrismaClient {
     const ctx = getGucContext();
 
     if (requiresExplicitTransactionForGucContext(ctx, inTransaction)) {
-      // FAIL-OPEN (P0 hotfix): #1631 made this throw, which 500'd every
+      const message = buildGucOutsideTransactionMessage(params.model, params.action);
+      // Opt-in fail-closed (WAP_RLS_STRICT=true): set in the SAME change that
+      // flips FORCE ROW LEVEL SECURITY and moves the app onto a non-owner role,
+      // when fail-open would mean silent empty reads.
+      if (shouldRejectGucContextOutsideTransaction(ctx, inTransaction, isRlsStrictEnabled())) {
+        throw new Error(message);
+      }
+      // FAIL-OPEN (default; P0 hotfix): #1631 made this throw, which 500'd every
       // withApiGuc route still using bare prisma calls — including
       // /api/auth/login — for ~24h in prod. RLS is enabled but NOT forced
       // (relforcerowsecurity=false) and the app connects as table owner, so
       // the transaction-local GUC is not yet load-bearing for authorization.
-      // Log loudly so the $transaction migration can continue, and flip this
-      // back to a throw in the same change that flips FORCE ROW LEVEL
-      // SECURITY — at that point fail-open would mean silent empty reads.
-      console.error(
-        `[prisma:guc] Query "${params.model ?? 'raw'}.${params.action}" ran with an active GUC context ` +
-          `outside an explicit $transaction. Wrap RLS-protected Prisma calls in prisma.$transaction() ` +
-          `so transaction-local GUCs remain visible to PostgreSQL policies.`,
-      );
+      // Log loudly so the $transaction migration can continue.
+      console.error(message);
     }
 
     // Development-only warning when queries run outside any GUC context.

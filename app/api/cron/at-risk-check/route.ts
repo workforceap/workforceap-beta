@@ -13,9 +13,13 @@ import { logCronRun } from '@/lib/admin/logCronRun';
 import { authorizeCronRequest } from '@/lib/cron/authorizeCronRequest';
 import { withCronLogging } from '@/lib/cron/withCronLogging';
 import { setCronRecordsProcessed } from '@/lib/cron/cronExecution';
+import { forEachInChunks } from '@/lib/util/forEachInChunks';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
+
+/** Alerts persisted in parallel per chunk (each is one read + one write; keeps the DB pool bounded). */
+const PERSIST_CONCURRENCY = 10;
 
 /**
  * Nightly at-risk check — THE at-risk scorer (WAP-30 / TODO-006).
@@ -44,9 +48,9 @@ async function handle(request: Request) {
   ).length;
 
   const atRiskScores = scores.filter((s) => s.score >= THRESHOLDS.MEDIUM);
-  for (const score of atRiskScores) {
-    await persistAtRiskAlert(score);
-  }
+  // Members are independent, so persist in bounded parallel chunks instead of
+  // one round trip at a time (a full active-member scan can be thousands).
+  await forEachInChunks(atRiskScores, PERSIST_CONCURRENCY, (score) => persistAtRiskAlert(score));
 
   const activeAlertUserIds = new Set(atRiskScores.map((s) => s.userId));
 

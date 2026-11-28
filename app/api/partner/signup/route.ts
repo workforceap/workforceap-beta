@@ -1,3 +1,4 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db/prisma';
@@ -13,14 +14,6 @@ import { resolveProvisionOrganizationId } from '@/lib/tenant/resolveProvisionOrg
 import { withApiGuc } from '@/lib/db/withRequestGuc';
 
 const ADMIN_EMAIL = 'info@workforceap.org';
-
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
 
 function slugify(s: string): string {
   return s
@@ -74,7 +67,7 @@ const signupSchema = z.object({
 
 export const POST = withApiGuc(async (request: NextRequest) => {
   try {
-    const ip = getClientIp(request);
+    const ip = getClientIpFromRequest(request);
     const { success: rateOk } = await checkPartnerSignupRateLimit(ip);
     if (!rateOk) {
       return NextResponse.json(

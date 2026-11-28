@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db/prisma';
 import { assignMemberCounselor } from '@/lib/counselor/assignment';
 import { notifyCounselorOfStaffAssignment, type StaffAssignedMember } from '@/lib/counselor/staffAssignmentNotify';
 import { withApiGuc } from '@/lib/db/withRequestGuc';
+import { forEachInChunks } from '@/lib/util/forEachInChunks';
 import { programDisplayTitle } from '@/lib/content/programTitle';
 import { assertStaffCanAccessMemberRecord } from '@/lib/counselor/staffMemberAccess';
 import { logInboxZeroBulkAuditEvent } from '@/lib/counselor/inboxZeroAudit';
@@ -39,6 +40,9 @@ import {
 } from '@/lib/counselor/bulkFollowUpGuard';
 
 const MAX_BATCH = 50;
+// Members are processed in parallel chunks of this size (bounded so a 50-member
+// batch does not exhaust the DB pool or flood the audit/notification writers).
+const BULK_CONCURRENCY = 5;
 
 const bodySchema = z.discriminatedUnion('action', [
   z.object({
@@ -69,6 +73,12 @@ const bodySchema = z.discriminatedUnion('action', [
 ]);
 
 type BulkResult = { memberId: string; ok: boolean; error?: string; warning?: string; skipped?: boolean };
+
+/** Chunks finish out of order; return results in the order the caller sent the members. */
+function inRequestOrder(results: BulkResult[], memberIds: readonly string[]): BulkResult[] {
+  const position = new Map(memberIds.map((id, index) => [id, index] as const));
+  return [...results].sort((a, b) => (position.get(a.memberId) ?? 0) - (position.get(b.memberId) ?? 0));
+}
 
 export const POST = withApiGuc(async (request: Request) => {
   try {
@@ -101,12 +111,12 @@ export const POST = withApiGuc(async (request: Request) => {
         return NextResponse.json({ error: 'Unknown template' }, { status: 400 });
       }
 
-      for (const memberId of memberIds) {
+      await forEachInChunks(memberIds, BULK_CONCURRENCY, async (memberId) => {
         try {
           if (!(await assertStaffCanAccessMemberRecord(user.id, memberId))) {
             results.push({ memberId, ok: false, error: 'not_found' });
             failed += 1;
-            continue;
+            return;
           }
 
           const orgId = await getSubjectOrganizationId(memberId);
@@ -119,7 +129,7 @@ export const POST = withApiGuc(async (request: Request) => {
           if (!member) {
             results.push({ memberId, ok: false, error: 'not_found' });
             failed += 1;
-            continue;
+            return;
           }
 
           const rendered = renderFollowUpTemplate(template, {
@@ -130,14 +140,14 @@ export const POST = withApiGuc(async (request: Request) => {
           if (!normalized.ok) {
             results.push({ memberId, ok: false, error: normalized.error });
             failed += 1;
-            continue;
+            return;
           }
 
           const thread = await getOrCreateMemberCounselorThread(memberId);
           if (!(await assertStaffCanPost(user.id, thread.id))) {
             results.push({ memberId, ok: false, error: 'forbidden' });
             failed += 1;
-            continue;
+            return;
           }
 
           const message = await prisma.$transaction(async (tx) => {
@@ -166,7 +176,7 @@ export const POST = withApiGuc(async (request: Request) => {
           if (!message) {
             results.push({ memberId, ok: false, skipped: true, error: BULK_FOLLOW_UP_REPEAT_ERROR });
             skipped += 1;
-            continue;
+            return;
           }
 
           await notifyMemberOfBulkFollowUp({
@@ -200,17 +210,17 @@ export const POST = withApiGuc(async (request: Request) => {
           results.push({ memberId, ok: false, error: 'internal' });
           failed += 1;
         }
-      }
-      return NextResponse.json({ ok: true, action: 'follow_up', sent, skipped, failed, results });
+      });
+      return NextResponse.json({ ok: true, action: 'follow_up', sent, skipped, failed, results: inRequestOrder(results, memberIds) });
     }
 
     if (parsed.data.action === 'mark_contacted') {
-      for (const memberId of memberIds) {
+      await forEachInChunks(memberIds, BULK_CONCURRENCY, async (memberId) => {
         try {
           if (!(await assertStaffCanAccessMemberRecord(user.id, memberId))) {
             results.push({ memberId, ok: false, error: 'not_found' });
             failed += 1;
-            continue;
+            return;
           }
           await auditLog({
             actorUserId: user.id,
@@ -240,8 +250,8 @@ export const POST = withApiGuc(async (request: Request) => {
           results.push({ memberId, ok: false, error: 'internal' });
           failed += 1;
         }
-      }
-      return NextResponse.json({ ok: true, action: 'mark_contacted', sent, failed, results });
+      });
+      return NextResponse.json({ ok: true, action: 'mark_contacted', sent, failed, results: inRequestOrder(results, memberIds) });
     }
 
     if (parsed.data.action === 'reassign') {
@@ -260,12 +270,12 @@ export const POST = withApiGuc(async (request: Request) => {
       }
 
       const assignedToCounselor: StaffAssignedMember[] = [];
-      for (const memberId of memberIds) {
+      await forEachInChunks(memberIds, BULK_CONCURRENCY, async (memberId) => {
         try {
           if (!(await assertStaffCanAccessMemberRecord(user.id, memberId))) {
             results.push({ memberId, ok: false, error: 'not_found' });
             failed += 1;
-            continue;
+            return;
           }
           const member = await withTenantScope(orgId, (db) =>
             db.user.findFirst({
@@ -276,7 +286,7 @@ export const POST = withApiGuc(async (request: Request) => {
           if (!member) {
             results.push({ memberId, ok: false, error: 'not_found' });
             failed += 1;
-            continue;
+            return;
           }
 
           const { previousCounselorUserId, previousCounselorName } = await prisma.$transaction((tx) => assignMemberCounselor(tx, {
@@ -317,7 +327,7 @@ export const POST = withApiGuc(async (request: Request) => {
           results.push({ memberId, ok: false, error: 'internal' });
           failed += 1;
         }
-      }
+      });
 
       await notifyCounselorOfStaffAssignment({
         counselorUserId: targetCounselor.userId,
@@ -331,19 +341,21 @@ export const POST = withApiGuc(async (request: Request) => {
         action: 'reassign',
         sent,
         failed,
-        results,
+        results: inRequestOrder(results, memberIds),
         counselorName: targetCounselor.user.fullName,
         warnings: [...new Set(results.flatMap((result) => result.warning ? [result.warning] : []))],
       });
     }
 
     const trimmedReason = parsed.data.reason.trim();
-    for (const memberId of memberIds) {
+    // Narrowing on `parsed.data` does not survive into the chunk callback below.
+    const dismissFlagsInput = parsed.data.flags ?? [];
+    await forEachInChunks(memberIds, BULK_CONCURRENCY, async (memberId) => {
       try {
         if (!(await assertStaffCanAccessMemberRecord(user.id, memberId))) {
           results.push({ memberId, ok: false, error: 'not_found' });
           failed += 1;
-          continue;
+          return;
         }
         await auditLog({
           actorUserId: user.id,
@@ -353,12 +365,12 @@ export const POST = withApiGuc(async (request: Request) => {
           metadata: {
             memberId,
             reason: trimmedReason,
-            flags: parsed.data.flags ?? [],
+            flags: dismissFlagsInput,
             dismissedAt: new Date().toISOString(),
             bulk: true,
           },
         });
-        const dismissFlags = parsed.data.flags ?? [];
+        const dismissFlags = dismissFlagsInput;
         await prisma.$transaction((tx) => persistEvent({
           userId: memberId,
           eventName: 'counselor_inbox_zero_dismissed',
@@ -378,7 +390,7 @@ export const POST = withApiGuc(async (request: Request) => {
           request,
           extensions: {
             reason: trimmedReason,
-            flags: parsed.data.flags ?? [],
+            flags: dismissFlagsInput,
             batchSize: memberIds.length,
           },
         }).catch((e) => console.error('[bulk dismiss] AuditEvent:', e));
@@ -389,9 +401,9 @@ export const POST = withApiGuc(async (request: Request) => {
         results.push({ memberId, ok: false, error: 'internal' });
         failed += 1;
       }
-    }
+    });
 
-    return NextResponse.json({ ok: true, action: 'dismiss', sent, failed, results });
+    return NextResponse.json({ ok: true, action: 'dismiss', sent, failed, results: inRequestOrder(results, memberIds) });
   } catch (err) {
     console.error('[counselor/inbox-zero/bulk] unhandled:', err);
     return NextResponse.json({ error: 'Bulk action failed' }, { status: 500 });

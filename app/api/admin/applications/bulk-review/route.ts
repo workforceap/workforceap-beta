@@ -1,3 +1,4 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUser } from '@/lib/auth/server';
@@ -13,14 +14,6 @@ import { DENIAL_REASON_REQUIRED_MESSAGE, isMissingDenialReason } from '@/lib/wio
 
 // Same cap the existing member bulk-update route uses (app/api/admin/members/bulk-update).
 const MAX_APPLICATIONS = 100;
-
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
 
 const bodySchema = z.object({
   applicationIds: z.array(z.string().min(1)).min(1).max(MAX_APPLICATIONS),
@@ -47,7 +40,7 @@ const bodySchema = z.object({
  */
 async function _POST(request: NextRequest) {
   try {
-    const ip = getClientIp(request);
+    const ip = getClientIpFromRequest(request);
     const { success: rateOk } = await checkAuthRateLimit(`admin:${ip}`);
     if (!rateOk) {
       return NextResponse.json({ error: 'Too many requests' }, { status: 429 });

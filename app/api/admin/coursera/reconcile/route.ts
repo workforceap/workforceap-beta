@@ -26,9 +26,17 @@ import { withApiGuc } from '@/lib/db/withRequestGuc';
  *   - admin in the actor's organization (super_admin bypasses tenant)
  */
 
+// The Coursera roster drain + a full WAP user scan can exceed the platform
+// default; allow the full 60s window.
+export const maxDuration = 60;
+
 const DEFAULT_PROGRAM_ID = 'TpIlAogTQ8-SJQKIE8PP9w';
 const DEFAULT_ROW_LIMIT = 200;
 const MAX_ROW_LIMIT = 1000;
+// Hard ceiling on the WAP-side scan so one org can never load an unbounded
+// table into memory. If hit, the response is flagged `truncated` and the
+// wap-only / matched counts are lower bounds.
+const MAX_WAP_USER_SCAN = 20000;
 
 type RowStatus = 'matched' | 'coursera-only' | 'wap-only' | 'wrong-course';
 
@@ -52,6 +60,8 @@ type ReconcileResponse = {
     wapOnly: number;
     wrongCourse: number;
   };
+  /** True when the WAP user scan hit MAX_WAP_USER_SCAN; summary counts are then lower bounds. */
+  truncated: boolean;
   rows: ReconcileRow[];
 };
 
@@ -116,9 +126,11 @@ async function _GET(request: NextRequest) {
   
     // Pull all WAP users + their CourseEnrollment for this org.
     // Both reads pinned to the actor's org via withTenantScope.
-    const wapUsers = await withTenantScope(orgId, (db) =>
+    const wapUsersScanned = await withTenantScope(orgId, (db) =>
       db.user.findMany({
         where: { deletedAt: null },
+        orderBy: { id: 'asc' },
+        take: MAX_WAP_USER_SCAN + 1,
         select: {
           id: true,
           email: true,
@@ -135,6 +147,9 @@ async function _GET(request: NextRequest) {
       }),
     );
   
+    const truncated = wapUsersScanned.length > MAX_WAP_USER_SCAN;
+    const wapUsers = truncated ? wapUsersScanned.slice(0, MAX_WAP_USER_SCAN) : wapUsersScanned;
+
     const wapByEmail = new Map<
       string,
       { id: string; email: string; fullName: string; programSlug: string | null }
@@ -247,6 +262,7 @@ async function _GET(request: NextRequest) {
         wapOnly,
         wrongCourse,
       },
+      truncated,
       rows: rows.slice(0, limit),
     };
   

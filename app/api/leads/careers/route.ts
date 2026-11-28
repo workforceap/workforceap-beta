@@ -1,3 +1,4 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { NextRequest, NextResponse } from 'next/server';
 import { checkContactRateLimit } from '@/lib/rate-limit';
 import { verifyTurnstileResponse } from '@/lib/turnstile/verifyTurnstile';
@@ -6,21 +7,13 @@ import { contactFormDataToBody, isNativeFormPost } from '@/lib/contact/nativeFor
 import { validateCareersLeadPayload } from '@/lib/validation/careersLead';
 
 
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    request.headers.get('x-real-ip') ||
-    'unknown'
-  );
-}
-
 export async function POST(request: NextRequest) {
   const nativeForm = isNativeFormPost(request);
   const respond = (body: Record<string, unknown>, init: { status?: number } = {}) => nativeForm
     ? new NextResponse(null, { status: 303, headers: { Location: (init.status ?? 200) < 400 ? '/careers/thank-you' : '/careers#careers-form-error' } })
     : NextResponse.json(body, init);
   try {
-    const ip = getClientIp(request);
+    const ip = getClientIpFromRequest(request);
     const { success: rateOk } = await checkContactRateLimit(ip);
     if (!rateOk) {
       return respond(

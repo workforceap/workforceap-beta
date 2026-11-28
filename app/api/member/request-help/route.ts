@@ -1,3 +1,4 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { NextRequest, NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
@@ -19,7 +20,7 @@ export const POST = withApiGuc(async (request: NextRequest) => {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1';
+    const ip = getClientIpFromRequest(request);
     const { success: withinLimit } = await checkContactRateLimit(ip);
     if (!withinLimit) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });

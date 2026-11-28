@@ -1,3 +1,4 @@
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth/server';
 import { prisma } from '@/lib/db/prisma';
@@ -7,16 +8,6 @@ import { mapCourseraIdentityAndProgress } from '@/lib/coursera/mapIdentityAndPro
 import { auditLog } from '@/lib/audit';
 import { createNotification } from '@/lib/notifications/create';
 
-function getClientIp(request: Request) {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    request.headers.get('x-real-ip') ??
-    request.headers.get('cf-connecting-ip') ??
-    request.headers.get('x-vercel-forwarded-for') ??
-    'unknown'
-  );
-}
-
 function normalizeEmail(value: unknown) {
   return typeof value === 'string' ? value.trim().toLowerCase() : '';
 }
@@ -24,7 +15,7 @@ function normalizeEmail(value: unknown) {
 export const POST = withApiGuc(async (request: Request) => {
   try {
     // Rate-limit Coursera identity spray (AUDIT §H-S14).
-    const { success } = await checkCourseraIdentityRateLimit(getClientIp(request));
+    const { success } = await checkCourseraIdentityRateLimit(getClientIpFromRequest(request));
     if (!success) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }

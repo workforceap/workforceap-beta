@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import { getUser } from '@/lib/auth/server';
 import { isAdmin } from '@/lib/auth/roles';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db/prisma';
 import { getActorOrganizationId } from '@/lib/tenant/organization';
 import { auditLog } from '@/lib/audit';
@@ -118,6 +119,47 @@ async function getDemographics(orgId: string) {
   };
 }
 
+/** Page size for the member read; keeps each query/result bounded without capping the totals. */
+const MEMBER_PAGE_SIZE = 1000;
+
+/**
+ * Reads every member row for the org in id-ordered keyset pages instead of one
+ * unbounded `findMany`. Headline totals here must stay exact (no silent cap),
+ * so we chunk rather than `take`.
+ */
+async function loadOutcomeMembers(memberUser: Prisma.UserWhereInput) {
+  const members: Array<{
+    id: string;
+    enrolledProgram: string | null;
+    enrolledAt: Date | null;
+    placementRecord: { salaryOffered: number | null; startDate: Date | null } | null;
+  }> = [];
+  let cursor: string | undefined;
+  for (;;) {
+    const page = await prisma.user.findMany({
+      where: { ...memberUser, deletedAt: null },
+      orderBy: { id: 'asc' },
+      take: MEMBER_PAGE_SIZE,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      select: {
+        id: true,
+        enrolledProgram: true,
+        enrolledAt: true,
+        placementRecord: {
+          select: {
+            salaryOffered: true,
+            startDate: true,
+          },
+        },
+      },
+    });
+    members.push(...page);
+    if (page.length < MEMBER_PAGE_SIZE) break;
+    cursor = page[page.length - 1].id;
+  }
+  return members;
+}
+
 /**
  * Computes the outcomes dashboard payload for one org. Pulled out of `_GET`
  * so it can be wrapped in `unstable_cache` — placements/members/demographics
@@ -130,32 +172,17 @@ async function computeOutcomesPayload(orgId: string) {
   // Placement data, member data, and demographics are independent reads —
   // run them together instead of one round trip at a time.
   const memberUser = { organizationId: orgId, ...MEMBER_ONLY_WHERE };
-  const [placements, members, demographics, completedByProgram, retentionGroups] = await Promise.all([
-    prisma.placementRecord.findMany({
+  const [salaryStats, members, demographics, completedByProgram, retentionGroups] = await Promise.all([
+    // PERF: aggregate in SQL instead of hydrating every placement row (and
+    // instead of reading PlacementRecord a second time via the member join).
+    // avg/min/max ignore null salaries, matching the previous JS filter.
+    prisma.placementRecord.aggregate({
       where: { user: memberUser },
-      select: {
-        salaryOffered: true,
-        userId: true,
-        programSlug: true,
-      },
+      _avg: { salaryOffered: true },
+      _min: { salaryOffered: true },
+      _max: { salaryOffered: true },
     }),
-    prisma.user.findMany({
-      where: {
-        ...memberUser,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        enrolledProgram: true,
-        enrolledAt: true,
-        placementRecord: {
-          select: {
-            salaryOffered: true,
-            startDate: true,
-          },
-        },
-      },
-    }),
+    loadOutcomeMembers(memberUser),
     getDemographics(orgId),
     loadCompletedTrainingByProgram(orgId),
     prisma.placementRecord.groupBy({
@@ -180,17 +207,17 @@ async function computeOutcomesPayload(orgId: string) {
     : 0;
 
   // Salary analysis
-  const salaries = placements
-    .map((p) => p.salaryOffered)
-    .filter((s): s is number => s !== null && s !== undefined);
-
   // null (not $0) when no placement carries a salary (F6).
-  const avgSalary = salaries.length > 0
-    ? Math.round(salaries.reduce((a, b) => a + b, 0) / salaries.length)
+  const avgSalaryRaw = salaryStats._avg.salaryOffered;
+  const minSalary = salaryStats._min.salaryOffered;
+  const maxSalary = salaryStats._max.salaryOffered;
+  const avgSalary = avgSalaryRaw !== null && avgSalaryRaw !== undefined
+    ? Math.round(avgSalaryRaw)
     : null;
 
-  const salaryRange = salaries.length > 0
-    ? { min: Math.min(...salaries), max: Math.max(...salaries) }
+  const salaryRange = minSalary !== null && minSalary !== undefined
+    && maxSalary !== null && maxSalary !== undefined
+    ? { min: minSalary, max: maxSalary }
     : null;
 
   // Program effectiveness, keyed by canonical program slug so alias slugs

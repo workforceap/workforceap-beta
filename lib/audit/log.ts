@@ -1,4 +1,5 @@
 import 'server-only';
+import { getClientIpFromRequest } from '@/lib/http/clientIp';
 
 import type { Prisma } from '@prisma/client';
 import type { NextRequest } from 'next/server';
@@ -110,13 +111,16 @@ export function buildXapiStatement(options: {
   return statement;
 }
 
+/** Trusted client IP for audit rows; null when no trusted proxy header is present. */
+function trustedAuditIp(request: Request | NextRequest): string | null {
+  const ip = getClientIpFromRequest(request);
+  return ip === 'unknown' ? null : ip;
+}
+
 export function auditRequestMeta(request?: Request | NextRequest): AuditRequestMeta {
   if (!request) return {};
   return {
-    ip:
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-      request.headers.get('x-real-ip') ||
-      null,
+    ip: trustedAuditIp(request),
     ua: request.headers.get('user-agent'),
   };
 }
